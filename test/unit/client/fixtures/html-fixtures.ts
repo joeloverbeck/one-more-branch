@@ -440,47 +440,32 @@ export function buildConceptsPageHtml(): string {
   return `
     <main class="container" id="concepts-page">
       <section class="form-section">
-        <h1>Story Concepts</h1>
-        <section id="concept-generate-section">
-          <h2>Generate New Concepts</h2>
-          <form id="concept-generate-form">
+        <h1>Develop Concept Seeds</h1>
+        <section id="concept-develop-section">
+          <h2>Develop a Saved Seed</h2>
+          <form id="concept-develop-form">
             <div class="form-group">
-              <select id="kernel-selector">
-                <option value="">Select a saved kernel...</option>
+              <select id="seed-selector" required>
+                <option value="">Select a saved seed...</option>
+                <optgroup label="Fantasy">
+                  <option value="seed-1">A dark mage rises</option>
+                </optgroup>
               </select>
             </div>
-            <article id="selected-kernel-summary" style="display:none;">
-              <span id="selected-kernel-dramatic-thesis"></span>
-              <span id="selected-kernel-value-at-stake"></span>
-              <span id="selected-kernel-opposing-force"></span>
-              <span id="selected-kernel-thematic-question"></span>
-              <span id="selected-kernel-overall-score"></span>
+            <article id="selected-seed-summary" style="display:none;">
+              <h3 id="selected-seed-hook"></h3>
+              <div id="selected-seed-badges"></div>
+              <div id="selected-seed-fields"></div>
             </article>
-            <div class="form-group"><textarea id="protagonistDetails"></textarea></div>
-            <div class="form-group"><input type="text" id="genreVibes"></div>
-            <div class="form-group"><input type="text" id="moodKeywords"></div>
-            <div class="form-group"><input type="text" id="contentPreferences"></div>
             <div class="form-group">
               <input type="password" id="conceptApiKey" required>
             </div>
             <div class="form-actions">
-              <button type="button" id="generate-concepts-btn" class="btn btn-primary btn-large" disabled>
-                Generate Concepts
+              <button type="button" id="develop-concept-btn" class="btn btn-primary btn-large" disabled>
+                Develop Concept
               </button>
             </div>
           </form>
-        </section>
-        <section id="concept-selection-section" style="display: none;">
-          <h2 class="section-title">Review & Select Concepts</h2>
-          <div class="concept-selection-controls">
-            <button id="select-all-concepts-btn" type="button" class="btn btn-secondary btn-small">Select All</button>
-            <button id="deselect-all-concepts-btn" type="button" class="btn btn-secondary btn-small">Deselect All</button>
-            <span id="concept-selection-counter" class="concept-selection-counter"></span>
-          </div>
-          <div id="concept-selection-cards" class="spine-options-container"></div>
-          <div class="form-actions">
-            <button id="develop-concepts-btn" type="button" class="btn btn-primary" disabled>Continue with Selected</button>
-          </div>
         </section>
         <section id="concept-results-section" class="spine-section" style="display: none;">
           <div id="concept-cards" class="spine-options-container"></div>

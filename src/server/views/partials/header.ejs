@@ -1,14 +1,31 @@
+<% const cp = typeof currentPath !== 'undefined' ? currentPath : ''; %>
 <header class="site-header">
   <div class="container">
     <a href="/" class="logo">One More Branch</a>
     <nav>
-      <a href="/">Stories</a>
-      <a href="/kernels">Kernels</a>
-      <a href="/concepts">Concepts</a>
-      <a href="/evolve">Evolve Concepts</a>
-      <a href="/evolve-kernels">Evolve Kernels</a>
-      <a href="/stories/new">New Adventure</a>
-      <a href="/logs">Prompt Logs</a>
+      <div class="nav-dropdown<%= cp === '/' || cp.startsWith('/stories') ? ' nav-dropdown--active' : '' %>">
+        <button class="nav-dropdown__trigger" type="button">Stories</button>
+        <div class="nav-dropdown__menu">
+          <a href="/" class="nav-dropdown__item<%= cp === '/' ? ' nav-dropdown__item--active' : '' %>">Existing Stories</a>
+          <a href="/stories/new" class="nav-dropdown__item<%= cp === '/stories/new' ? ' nav-dropdown__item--active' : '' %>">New Adventure</a>
+        </div>
+      </div>
+      <div class="nav-dropdown<%= cp.startsWith('/kernels') || cp.startsWith('/evolve-kernels') ? ' nav-dropdown--active' : '' %>">
+        <button class="nav-dropdown__trigger" type="button">Kernels</button>
+        <div class="nav-dropdown__menu">
+          <a href="/kernels" class="nav-dropdown__item<%= cp === '/kernels' ? ' nav-dropdown__item--active' : '' %>">Generate Kernels</a>
+          <a href="/evolve-kernels" class="nav-dropdown__item<%= cp === '/evolve-kernels' ? ' nav-dropdown__item--active' : '' %>">Evolve Kernels</a>
+        </div>
+      </div>
+      <div class="nav-dropdown<%= cp.startsWith('/concept') || cp.startsWith('/evolve') ? ' nav-dropdown--active' : '' %>">
+        <button class="nav-dropdown__trigger" type="button">Concepts</button>
+        <div class="nav-dropdown__menu">
+          <a href="/concept-seeds" class="nav-dropdown__item<%= cp === '/concept-seeds' ? ' nav-dropdown__item--active' : '' %>">Generate Seeds</a>
+          <a href="/concepts" class="nav-dropdown__item<%= cp === '/concepts' ? ' nav-dropdown__item--active' : '' %>">Develop Seeds</a>
+          <a href="/evolve" class="nav-dropdown__item<%= cp === '/evolve' ? ' nav-dropdown__item--active' : '' %>">Evolve Concepts</a>
+        </div>
+      </div>
+      <a href="/logs"<%= cp === '/logs' ? ' class="active"' : '' %>>Prompt Logs</a>
     </nav>
   </div>
 </header>

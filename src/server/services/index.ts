@@ -21,6 +21,8 @@ export {
   type ConceptService,
   type DevelopConceptsInput,
   type DevelopConceptsResult,
+  type DevelopSingleConceptInput,
+  type DevelopSingleConceptResult,
   type GenerateConceptsInput,
   type GenerateConceptsResult,
   type IdeateConceptsInput,

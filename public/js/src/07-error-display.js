@@ -48,13 +48,16 @@
       errorDiv.setAttribute('aria-live', 'polite');
 
       const form = document.querySelector('.story-form');
-      const conceptGenerateSection = document.getElementById('concept-generate-section');
+      const seedGenerateSection = document.getElementById('seed-generate-section');
+      const conceptDevelopSection = document.getElementById('concept-develop-section');
       const formSection = document.querySelector('.form-section');
 
       if (form && form.parentNode) {
         form.parentNode.insertBefore(errorDiv, form);
-      } else if (conceptGenerateSection && conceptGenerateSection.parentNode) {
-        conceptGenerateSection.parentNode.insertBefore(errorDiv, conceptGenerateSection);
+      } else if (seedGenerateSection && seedGenerateSection.parentNode) {
+        seedGenerateSection.parentNode.insertBefore(errorDiv, seedGenerateSection);
+      } else if (conceptDevelopSection && conceptDevelopSection.parentNode) {
+        conceptDevelopSection.parentNode.insertBefore(errorDiv, conceptDevelopSection);
       } else if (formSection) {
         formSection.insertAdjacentElement('afterbegin', errorDiv);
       } else {

@@ -1,8 +1,4 @@
-import {
-  createEvaluatedConceptFixture,
-  createConceptSeedFixture,
-  createConceptCharacterWorldFixture,
-} from '../../../fixtures/concept-generator';
+import { createEvaluatedConceptFixture } from '../../../fixtures/concept-generator';
 import { buildConceptsPageHtml } from '../fixtures/html-fixtures';
 import { loadAppAndInit } from '../helpers/app-loader';
 
@@ -21,6 +17,12 @@ describe('concepts page renderer', () => {
     return new Promise((resolve) => setTimeout(resolve, 0));
   }
 
+  function extractUrl(input: RequestInfo | URL): string {
+    if (typeof input === 'string') return input;
+    if (input instanceof URL) return input.toString();
+    return input.url;
+  }
+
   beforeEach(() => {
     fetchMock = jest.fn();
     global.fetch = fetchMock;
@@ -33,97 +35,61 @@ describe('concepts page renderer', () => {
     document.body.innerHTML = '';
   });
 
-  function mockKernelEndpoints(
-    url: string,
-  ): Response | null {
-    if (url === '/kernels/api/list') {
-      return mockJsonResponse({ success: true, kernels: [{ id: 'kernel-1', name: 'Kernel 1' }] });
-    }
-    if (url === '/kernels/api/kernel-1') {
+  function mockSeedEndpoint(url: string): Response | null {
+    if (url.startsWith('/concept-seeds/api/seed-1')) {
       return mockJsonResponse({
         success: true,
-        kernel: {
-          id: 'kernel-1',
-          name: 'Kernel 1',
-          evaluatedKernel: {
-            kernel: {
-              dramaticThesis: 'Control destroys trust',
-              valueAtStake: 'Trust',
-              opposingForce: 'Fear of uncertainty',
-              directionOfChange: 'IRONIC',
-              conflictAxis: 'JUSTICE_VS_MERCY',
-              dramaticStance: 'IRONIC',
-              thematicQuestion: 'Can safety exist without control?',
-              antithesis: 'Counter-argument challenges the thesis.',
-            },
-            overallScore: 82,
-          },
+        seed: {
+          id: 'seed-1',
+          name: 'A dark mage rises',
+          oneLineHook: 'A dark mage rises',
+          genreFrame: 'FANTASY',
+          conflictAxis: 'POWER_VS_MORALITY',
+          protagonistRole: 'Dark mage',
         },
       });
     }
     return null;
   }
 
-  function extractUrl(input: RequestInfo | URL): string {
-    if (typeof input === 'string') return input;
-    if (input instanceof URL) return input.toString();
-    return input.url;
-  }
-
-  async function setupAndIdeate(): Promise<void> {
-    document.body.innerHTML = buildConceptsPageHtml();
-    loadAppAndInit();
-
-    const apiKeyInput = document.getElementById('conceptApiKey') as HTMLInputElement;
-    const kernelSelector = document.getElementById('kernel-selector') as HTMLSelectElement;
-    const genreInput = document.getElementById('genreVibes') as HTMLInputElement;
-    const protagonistInput = document.getElementById('protagonistDetails') as HTMLTextAreaElement;
-
-    apiKeyInput.value = 'sk-or-valid-test-key-12345';
-    apiKeyInput.dispatchEvent(new Event('input'));
-    protagonistInput.value = 'A disgraced former surgeon';
-    protagonistInput.dispatchEvent(new Event('input'));
-    await flushPromises();
-    kernelSelector.value = 'kernel-1';
-    kernelSelector.dispatchEvent(new Event('change'));
-    await flushPromises();
-    genreInput.value = 'dark fantasy';
-
-    const generateBtn = document.getElementById('generate-concepts-btn') as HTMLButtonElement;
-    generateBtn.click();
-    await flushPromises();
-  }
-
-  async function setupWithTwoPhasePayload(evaluatedConcepts: unknown[]): Promise<void> {
-    const seeds = [createConceptSeedFixture(1)];
-    const characterWorlds = [createConceptCharacterWorldFixture(1)];
-
+  async function setupAndDevelop(evaluatedConcept: unknown, verification?: unknown): Promise<void> {
     fetchMock.mockImplementation((input: RequestInfo | URL) => {
       const url = extractUrl(input);
-      const kernelResp = mockKernelEndpoints(url);
-      if (kernelResp) return Promise.resolve(kernelResp);
+      const seedResp = mockSeedEndpoint(url);
+      if (seedResp) return Promise.resolve(seedResp);
 
-      if (url === '/concepts/api/generate/ideate') {
-        return Promise.resolve(mockJsonResponse({ success: true, seeds, characterWorlds }));
-      }
       if (url === '/concepts/api/generate/develop') {
-        return Promise.resolve(mockJsonResponse({ success: true, evaluatedConcepts, verifications: [] }));
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            evaluatedConcept,
+            verification: verification ?? null,
+          }),
+        );
       }
 
       return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
     });
 
-    // Phase 1: ideate
-    await setupAndIdeate();
+    document.body.innerHTML = buildConceptsPageHtml();
+    loadAppAndInit();
 
-    // Phase 2: develop
-    const developBtn = document.getElementById('develop-concepts-btn') as HTMLButtonElement;
+    const apiKeyInput = document.getElementById('conceptApiKey') as HTMLInputElement;
+    const seedSelector = document.getElementById('seed-selector') as HTMLSelectElement;
+
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+    apiKeyInput.dispatchEvent(new Event('input'));
+    seedSelector.value = 'seed-1';
+    seedSelector.dispatchEvent(new Event('change'));
+    await flushPromises();
+
+    const developBtn = document.getElementById('develop-concept-btn') as HTMLButtonElement;
     developBtn.click();
     await flushPromises();
   }
 
   it('renders whatIfQuestion, ironicTwist, and playerFantasy when present', async () => {
-    await setupWithTwoPhasePayload([createEvaluatedConceptFixture(1)]);
+    await setupAndDevelop(createEvaluatedConceptFixture(1));
 
     const cardText = document.getElementById('concept-cards')?.textContent ?? '';
     expect(cardText).toContain('What If:');
@@ -134,19 +100,17 @@ describe('concepts page renderer', () => {
     expect(cardText).toContain('Player fantasy 1.');
   });
 
-  it('renders concept cards when enrichment fields are missing', async () => {
+  it('renders concept card when enrichment fields are missing', async () => {
     const concept = createEvaluatedConceptFixture(2);
     const missingFields = { ...concept.concept } as Record<string, unknown>;
     delete missingFields['whatIfQuestion'];
     delete missingFields['ironicTwist'];
     delete missingFields['playerFantasy'];
 
-    await setupWithTwoPhasePayload([
-      {
-        ...concept,
-        concept: missingFields,
-      },
-    ]);
+    await setupAndDevelop({
+      ...concept,
+      concept: missingFields,
+    });
 
     const card = document.querySelector('#concept-cards .concept-card');
     expect(card).not.toBeNull();
@@ -156,18 +120,18 @@ describe('concepts page renderer', () => {
     expect(cardText).not.toContain('Player Fantasy:');
   });
 
-  it('logs server debug details to console when concept ideation fails', async () => {
+  it('logs server debug details to console when concept development fails', async () => {
     fetchMock.mockImplementation((input: RequestInfo | URL) => {
       const url = extractUrl(input);
-      const kernelResp = mockKernelEndpoints(url);
-      if (kernelResp) return Promise.resolve(kernelResp);
+      const seedResp = mockSeedEndpoint(url);
+      if (seedResp) return Promise.resolve(seedResp);
 
-      if (url === '/concepts/api/generate/ideate') {
+      if (url === '/concepts/api/generate/develop') {
         return Promise.resolve(
           mockJsonResponse(
             {
               success: false,
-              error: 'API error: Scored concept 4 has invalid scores',
+              error: 'API error: Failed to develop concept',
               code: 'STRUCTURE_PARSE_ERROR',
               retryable: true,
               debug: {
@@ -184,20 +148,24 @@ describe('concepts page renderer', () => {
       return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
     });
 
-    await setupAndIdeate();
+    document.body.innerHTML = buildConceptsPageHtml();
+    loadAppAndInit();
 
-    expect(console.error).toHaveBeenCalledWith(
-      'Concept ideation error code:',
-      'STRUCTURE_PARSE_ERROR',
-      '| Retryable:',
-      true,
-    );
-    expect(console.error).toHaveBeenCalledWith(
-      'Concept ideation debug info:',
-      expect.objectContaining({
-        rawContent: '{"scoredConcepts":[{"scores":"N/A"}]}',
-        parseStage: 'message_content',
-      }),
-    );
+    const apiKeyInput = document.getElementById('conceptApiKey') as HTMLInputElement;
+    const seedSelector = document.getElementById('seed-selector') as HTMLSelectElement;
+
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+    apiKeyInput.dispatchEvent(new Event('input'));
+    seedSelector.value = 'seed-1';
+    seedSelector.dispatchEvent(new Event('change'));
+    await flushPromises();
+
+    const developBtn = document.getElementById('develop-concept-btn') as HTMLButtonElement;
+    developBtn.click();
+    await flushPromises();
+
+    const errorDiv = document.querySelector('.alert-error');
+    expect(errorDiv).not.toBeNull();
+    expect(errorDiv?.textContent).toContain('Failed to develop concept');
   });
 });

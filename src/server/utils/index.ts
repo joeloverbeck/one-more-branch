@@ -37,6 +37,8 @@ export {
 } from './view-helpers.js';
 export { groupConceptsByGenre } from './group-concepts-by-genre.js';
 export type { GenreGroup } from './group-concepts-by-genre.js';
+export { groupSeedsByGenre } from './group-seeds-by-genre.js';
+export type { SeedGenreGroup } from './group-seeds-by-genre.js';
 export type {
   ActDisplayInfo,
   ConstraintPanelData,

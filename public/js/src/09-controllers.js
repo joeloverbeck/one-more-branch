@@ -1184,6 +1184,7 @@
     initNewStoryPage();
     initBriefingPage();
     initConceptsPage();
+    initConceptSeedsPage();
     initKernelsPage();
     initEvolutionPage();
     initKernelEvolutionPage();
