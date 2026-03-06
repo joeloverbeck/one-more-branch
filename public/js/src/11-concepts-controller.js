@@ -25,6 +25,7 @@
     var currentEditConceptId = null;
     var lastEvaluatedConcept = null;
     var lastVerification = null;
+    var lastSourceKernelId = null;
     var selectedSeedId = '';
 
     // Restore API key
@@ -156,6 +157,7 @@
         setApiKey(apiKey);
         lastEvaluatedConcept = data.evaluatedConcept;
         lastVerification = data.verification || null;
+        lastSourceKernelId = data.sourceKernelId || null;
 
         renderDevelopedConcept(data.evaluatedConcept, data.verification);
       } catch (error) {
@@ -215,6 +217,9 @@
         };
         if (lastVerification) {
           saveBody.verificationResult = lastVerification;
+        }
+        if (lastSourceKernelId) {
+          saveBody.sourceKernelId = lastSourceKernelId;
         }
 
         var response = await fetch('/concepts/api/save', {

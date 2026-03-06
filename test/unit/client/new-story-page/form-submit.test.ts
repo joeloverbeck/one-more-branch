@@ -2,6 +2,24 @@ import { buildNewStoryPageHtml } from '../fixtures/html-fixtures';
 import { loadAppAndInit } from '../helpers/app-loader';
 import { mockJsonResponse } from '../helpers/fetch-helpers';
 
+const MOCK_KERNEL = {
+  dramaticThesis: 'Power corrupts',
+  antithesis: 'Power enables justice',
+  valueAtStake: 'Moral integrity',
+  opposingForce: 'Ambition',
+  directionOfChange: 'NEGATIVE',
+  conflictAxis: 'POWER_VS_MORALITY',
+  dramaticStance: 'TRAGIC',
+  thematicQuestion: 'Can one wield power without losing oneself?',
+  valueSpectrum: {
+    positive: 'Integrity',
+    contrary: 'Pragmatism',
+    contradictory: 'Corruption',
+    negationOfNegation: 'Tyranny',
+  },
+  moralArgument: 'Absolute power corrupts absolutely',
+};
+
 const MOCK_SPINE_OPTIONS = [
   {
     centralDramaticQuestion: 'Can a broken warrior find redemption?',
@@ -95,11 +113,33 @@ describe('new story form submit', () => {
     btn.click();
   }
 
+  async function selectKernel(): Promise<void> {
+    const selector = document.getElementById('kernel-selector-story') as HTMLSelectElement;
+    const option = document.createElement('option');
+    option.value = 'kernel-1';
+    option.textContent = 'Test Kernel';
+    selector.appendChild(option);
+
+    fetchMock.mockImplementationOnce(() =>
+      Promise.resolve(
+        mockJsonResponse({
+          success: true,
+          kernel: { id: 'kernel-1', evaluatedKernel: { kernel: MOCK_KERNEL } },
+        })
+      )
+    );
+
+    selector.value = 'kernel-1';
+    selector.dispatchEvent(new Event('change'));
+    await jest.runAllTimersAsync();
+  }
+
   it('POSTs to /stories/generate-spines when Generate Spine is clicked', async () => {
     setupPage();
     // Skip concept selector to show manual section
     (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
+    await selectKernel();
 
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
@@ -141,6 +181,7 @@ describe('new story form submit', () => {
     setupPage();
     (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm({ apiKey: 'sk-or-my-special-key-abc' });
+    await selectKernel();
 
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
@@ -161,6 +202,7 @@ describe('new story form submit', () => {
     setupPage();
     (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
+    await selectKernel();
 
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
@@ -185,6 +227,7 @@ describe('new story form submit', () => {
     setupPage();
     (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
+    await selectKernel();
 
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
@@ -224,6 +267,7 @@ describe('new story form submit', () => {
     setupPage();
     (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
+    await selectKernel();
 
     // Add concept spec fields dynamically to the DOM (they exist in the real EJS template)
     const manualSection = document.getElementById('manual-story-section') as HTMLElement;
@@ -276,6 +320,7 @@ describe('new story form submit', () => {
     setupPage();
     (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
+    await selectKernel();
 
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
@@ -299,6 +344,7 @@ describe('new story form submit', () => {
     setupPage();
     (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
+    await selectKernel();
 
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
@@ -318,6 +364,7 @@ describe('new story form submit', () => {
     setupPage();
     (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
+    await selectKernel();
 
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
@@ -339,6 +386,7 @@ describe('new story form submit', () => {
     setupPage();
     (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
     fillForm();
+    await selectKernel();
 
     // Add an NPC via the UI controls
     const nameInput = document.getElementById('npc-name-input') as HTMLInputElement;

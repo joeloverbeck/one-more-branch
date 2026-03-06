@@ -6664,6 +6664,11 @@ function createRecapModalController(initialData) {
         return false;
       }
 
+      if (!selectedKernelForStory) {
+        showFormError('A thematic kernel must be selected before generating spine options.');
+        return false;
+      }
+
       return true;
     }
 
@@ -7203,6 +7208,7 @@ function createRecapModalController(initialData) {
     var currentEditConceptId = null;
     var lastEvaluatedConcept = null;
     var lastVerification = null;
+    var lastSourceKernelId = null;
     var selectedSeedId = '';
 
     // Restore API key
@@ -7334,6 +7340,7 @@ function createRecapModalController(initialData) {
         setApiKey(apiKey);
         lastEvaluatedConcept = data.evaluatedConcept;
         lastVerification = data.verification || null;
+        lastSourceKernelId = data.sourceKernelId || null;
 
         renderDevelopedConcept(data.evaluatedConcept, data.verification);
       } catch (error) {
@@ -7393,6 +7400,9 @@ function createRecapModalController(initialData) {
         };
         if (lastVerification) {
           saveBody.verificationResult = lastVerification;
+        }
+        if (lastSourceKernelId) {
+          saveBody.sourceKernelId = lastSourceKernelId;
         }
 
         var response = await fetch('/concepts/api/save', {

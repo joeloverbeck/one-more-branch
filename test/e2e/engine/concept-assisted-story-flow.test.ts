@@ -62,7 +62,7 @@ jest.mock('@/logging/index', () => ({
 
 import { storyEngine } from '@/engine';
 import { generateStoryStructure, decomposeEntities } from '@/llm';
-import type { StoryId, StorySpine } from '@/models';
+import type { StoryId, StoryKernel, StorySpine } from '@/models';
 import { conceptSeedRoutes } from '@/server/routes/concept-seeds';
 import { conceptRoutes } from '@/server/routes/concepts';
 import { storyRoutes } from '@/server/routes/stories';
@@ -136,6 +136,24 @@ const mockSpine: StorySpine = {
   characterArcType: 'POSITIVE_CHANGE',
   toneFeel: ['grim', 'tense', 'political'],
   toneAvoid: ['whimsical', 'comedic'],
+};
+
+const mockKernel: StoryKernel = {
+  dramaticThesis: 'Power corrupts',
+  antithesis: 'Power enables justice',
+  valueAtStake: 'Moral integrity',
+  opposingForce: 'Ambition',
+  directionOfChange: 'NEGATIVE',
+  conflictAxis: 'POWER_VS_MORALITY',
+  dramaticStance: 'TRAGIC',
+  thematicQuestion: 'Can one wield power without losing oneself?',
+  valueSpectrum: {
+    positive: 'Integrity',
+    contrary: 'Pragmatism',
+    contradictory: 'Corruption',
+    negationOfNegation: 'Tyranny',
+  },
+  moralArgument: 'Absolute power corrupts absolutely',
 };
 
 const noopNext: NextFunction = jest.fn();
@@ -419,6 +437,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
           conceptSpec: hardenedConcept,
           apiKey: 'valid-key-12345',
           spine: mockSpine,
+          storyKernel: mockKernel,
         },
       } as Request,
       { status: createStatus, json: createJson } as unknown as Response,

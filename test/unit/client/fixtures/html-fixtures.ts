@@ -410,6 +410,13 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
               <label for="tone">Tone/Genre</label>
               <textarea id="tone" name="tone" rows="3"></textarea>
             </div>
+            <div class="form-group">
+              <label for="kernel-selector-story">Story Kernel *</label>
+              <select id="kernel-selector-story">
+                <option value="">-- Select a kernel (required) --</option>
+              </select>
+              <div id="kernel-display-panel" class="kernel-display-panel" style="display: none;"></div>
+            </div>
             <div class="form-actions">
               <button type="button" id="generate-spine-btn" class="btn btn-primary btn-large">Generate Spine</button>
             </div>

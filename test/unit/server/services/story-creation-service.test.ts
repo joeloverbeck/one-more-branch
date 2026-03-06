@@ -1,7 +1,26 @@
 import { LLMError } from '@/llm/llm-client-types';
 import { logger } from '@/logging';
+import { StoryKernel } from '@/models/story-kernel';
 import { logLLMError, validateStoryInput } from '@/server/services/story-creation-service';
 import { createConceptSpecFixture } from '../../../fixtures/concept-generator';
+
+const VALID_KERNEL: StoryKernel = {
+  dramaticThesis: 'Power corrupts',
+  antithesis: 'Power enables justice',
+  valueAtStake: 'Moral integrity',
+  opposingForce: 'Ambition',
+  directionOfChange: 'NEGATIVE',
+  conflictAxis: 'POWER_VS_MORALITY',
+  dramaticStance: 'TRAGIC',
+  thematicQuestion: 'Can one wield power without losing oneself?',
+  valueSpectrum: {
+    positive: 'Integrity',
+    contrary: 'Pragmatism',
+    contradictory: 'Corruption',
+    negationOfNegation: 'Tyranny',
+  },
+  moralArgument: 'Absolute power corrupts absolutely',
+};
 
 describe('story-creation-service', () => {
   describe('validateStoryInput', () => {
@@ -12,6 +31,7 @@ describe('story-creation-service', () => {
         worldbuilding: '  A medieval fantasy world  ',
         tone: '  Epic  ',
         apiKey: '  sk-valid-api-key-12345  ',
+        storyKernel: VALID_KERNEL,
       });
 
       expect(result.valid).toBe(true);
@@ -22,6 +42,7 @@ describe('story-creation-service', () => {
           worldbuilding: 'A medieval fantasy world',
           tone: 'Epic',
           apiKey: 'sk-valid-api-key-12345',
+          storyKernel: VALID_KERNEL,
         });
       }
     });
@@ -106,6 +127,7 @@ describe('story-creation-service', () => {
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
+        storyKernel: VALID_KERNEL,
       });
 
       expect(result.valid).toBe(true);
@@ -122,6 +144,7 @@ describe('story-creation-service', () => {
         worldbuilding: '  Fantasy realm  ',
         tone: '  Dark  ',
         apiKey: 'sk-valid-api-key-12345',
+        storyKernel: VALID_KERNEL,
       });
 
       expect(result.valid).toBe(true);
@@ -136,6 +159,7 @@ describe('story-creation-service', () => {
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
+        storyKernel: VALID_KERNEL,
       });
 
       expect(result.valid).toBe(true);
@@ -155,6 +179,7 @@ describe('story-creation-service', () => {
         ],
         startingSituation: '  In a dark tavern  ',
         apiKey: 'sk-valid-api-key-12345',
+        storyKernel: VALID_KERNEL,
       });
 
       expect(result.valid).toBe(true);
@@ -171,6 +196,7 @@ describe('story-creation-service', () => {
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
+        storyKernel: VALID_KERNEL,
         conceptSpec,
       });
 
@@ -185,6 +211,7 @@ describe('story-creation-service', () => {
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
+        storyKernel: VALID_KERNEL,
         conceptSpec: {
           oneLineHook: 'Only one field',
         },
@@ -201,6 +228,7 @@ describe('story-creation-service', () => {
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
+        storyKernel: VALID_KERNEL,
         conceptSpec: {
           oneLineHook: 'A hook',
           coreConflictLoop: '',
@@ -214,7 +242,34 @@ describe('story-creation-service', () => {
       }
     });
 
-    it('validates in correct priority order: title, characterConcept, apiKey', () => {
+    it('returns error when storyKernel is missing', () => {
+      const result = validateStoryInput({
+        title: 'My Story',
+        characterConcept: 'A brave adventurer seeking fortune',
+        apiKey: 'sk-valid-api-key-12345',
+      });
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error).toBe('A story kernel is required');
+      }
+    });
+
+    it('returns error when storyKernel is invalid', () => {
+      const result = validateStoryInput({
+        title: 'My Story',
+        characterConcept: 'A brave adventurer seeking fortune',
+        apiKey: 'sk-valid-api-key-12345',
+        storyKernel: { dramaticThesis: 'incomplete' },
+      });
+
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error).toBe('A story kernel is required');
+      }
+    });
+
+    it('validates in correct priority order: title, characterConcept, apiKey, storyKernel', () => {
       // All invalid - should fail on title first
       let result = validateStoryInput({});
       expect(result.valid).toBe(false);
@@ -237,6 +292,17 @@ describe('story-creation-service', () => {
       expect(result.valid).toBe(false);
       if (!result.valid) {
         expect(result.error).toBe('OpenRouter API key is required');
+      }
+
+      // Title, characterConcept, apiKey valid - should fail on storyKernel
+      result = validateStoryInput({
+        title: 'Valid',
+        characterConcept: 'Long enough concept',
+        apiKey: 'sk-valid-api-key-12345',
+      });
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.error).toBe('A story kernel is required');
       }
     });
   });

@@ -292,6 +292,7 @@ describe('Concept Route Integration', () => {
       success: true,
       evaluatedConcept,
       verification,
+      sourceKernelId: 'kernel-1',
     });
   });
 

@@ -9,7 +9,7 @@ import {
 } from '@/llm';
 import { runAnalystEvaluation } from '@/engine/analyst-evaluation';
 import { reconcileState } from '@/engine/state-reconciler';
-import type { StoryId, StorySpine } from '@/models';
+import type { StoryId, StoryKernel, StorySpine } from '@/models';
 import { playRoutes } from '@/server/routes/play';
 import { storyRoutes } from '@/server/routes/stories';
 import {
@@ -148,6 +148,24 @@ const mockSpine: StorySpine = {
   characterArcType: 'POSITIVE_CHANGE',
   toneFeel: ['grim', 'tense', 'political'],
   toneAvoid: ['whimsical', 'comedic'],
+};
+
+const mockKernel: StoryKernel = {
+  dramaticThesis: 'Power corrupts',
+  antithesis: 'Power enables justice',
+  valueAtStake: 'Moral integrity',
+  opposingForce: 'Ambition',
+  directionOfChange: 'NEGATIVE',
+  conflictAxis: 'POWER_VS_MORALITY',
+  dramaticStance: 'TRAGIC',
+  thematicQuestion: 'Can one wield power without losing oneself?',
+  valueSpectrum: {
+    positive: 'Integrity',
+    contrary: 'Pragmatism',
+    contradictory: 'Corruption',
+    negationOfNegation: 'Tyranny',
+  },
+  moralArgument: 'Absolute power corrupts absolutely',
 };
 
 type RouteLayer = {
@@ -333,6 +351,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           tone: 'fantasy',
           apiKey: 'mock-api-key-12345',
           spine: mockSpine,
+          storyKernel: mockKernel,
         },
       } as Request,
       res
@@ -379,6 +398,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           characterConcept: `${TEST_PREFIX} make-choice`,
           apiKey: 'mock-api-key-12345',
           spine: mockSpine,
+          storyKernel: mockKernel,
         },
       } as Request,
       createRes.res
@@ -502,6 +522,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           characterConcept: `${TEST_PREFIX} replay`,
           apiKey: 'mock-api-key-12345',
           spine: mockSpine,
+          storyKernel: mockKernel,
         },
       } as Request,
       createRes.res
@@ -666,6 +687,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
           characterConcept: `${TEST_PREFIX} open-thread-panel`,
           apiKey: 'mock-api-key-12345',
           spine: mockSpine,
+          storyKernel: mockKernel,
         },
       } as Request,
       createRes.res

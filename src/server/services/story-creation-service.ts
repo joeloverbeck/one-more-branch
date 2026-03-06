@@ -60,6 +60,10 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
   const conceptSpec = isConceptSpec(input.conceptSpec) ? input.conceptSpec : undefined;
   const storyKernel = isStoryKernel(input.storyKernel) ? input.storyKernel : undefined;
 
+  if (!storyKernel) {
+    return { valid: false, error: 'A story kernel is required' };
+  }
+
   const validNpcs = input.npcs
     ?.map((npc) => ({
       name: (npc.name ?? '').trim(),

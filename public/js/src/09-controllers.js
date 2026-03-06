@@ -846,6 +846,11 @@
         return false;
       }
 
+      if (!selectedKernelForStory) {
+        showFormError('A thematic kernel must be selected before generating spine options.');
+        return false;
+      }
+
       return true;
     }
 

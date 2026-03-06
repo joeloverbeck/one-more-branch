@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 import { storyEngine } from '@/engine';
 import { LLMError } from '@/llm/llm-client-types';
 import { createChoice, createPage, createStory, parseStoryId } from '@/models';
-import type { StorySpine } from '@/models';
+import type { StoryKernel, StorySpine } from '@/models';
 import { storyRoutes } from '@/server/routes/stories';
 import { generationProgressService } from '@/server/services';
 import { createConceptSpecFixture } from '../../../fixtures/concept-generator';
@@ -46,6 +46,24 @@ const mockSpine: StorySpine = {
   toneAvoid: ['whimsical', 'comedic'],
   wantNeedCollisionPoint: 'Test collision point',
   protagonistDeepestFear: 'Test deepest fear',
+};
+
+const mockKernel: StoryKernel = {
+  dramaticThesis: 'Power corrupts',
+  antithesis: 'Power enables justice',
+  valueAtStake: 'Moral integrity',
+  opposingForce: 'Ambition',
+  directionOfChange: 'NEGATIVE',
+  conflictAxis: 'POWER_VS_MORALITY',
+  dramaticStance: 'TRAGIC',
+  thematicQuestion: 'Can one wield power without losing oneself?',
+  valueSpectrum: {
+    positive: 'Integrity',
+    contrary: 'Pragmatism',
+    contradictory: 'Corruption',
+    negationOfNegation: 'Tyranny',
+  },
+  moralArgument: 'Absolute power corrupts absolutely',
 };
 
 describe('storyRoutes', () => {
@@ -251,6 +269,7 @@ describe('storyRoutes', () => {
             tone: '  Trimmed Tone  ',
             apiKey: '  valid-key-12345  ',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, render, redirect } as unknown as Response
@@ -265,6 +284,7 @@ describe('storyRoutes', () => {
         tone: 'Trimmed Tone',
         apiKey: 'valid-key-12345',
         spine: mockSpine,
+        storyKernel: mockKernel,
       });
       expect(redirect).toHaveBeenCalledWith(
         '/play/550e8400-e29b-41d4-a716-446655440000/briefing'
@@ -288,6 +308,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, render, redirect } as unknown as Response
@@ -329,6 +350,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'invalid-key',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, render, redirect } as unknown as Response
@@ -368,6 +390,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, render, redirect } as unknown as Response
@@ -407,6 +430,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, render, redirect } as unknown as Response
@@ -447,6 +471,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, render, redirect } as unknown as Response
@@ -488,6 +513,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, render, redirect } as unknown as Response
@@ -530,6 +556,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, render, redirect } as unknown as Response
@@ -570,6 +597,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, render, redirect } as unknown as Response
@@ -606,6 +634,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, render, redirect } as unknown as Response
@@ -849,6 +878,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
             conceptSpec: { oneLineHook: 'Only one field' },
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -899,6 +929,7 @@ describe('storyRoutes', () => {
             tone: '  Trimmed Tone  ',
             apiKey: '  valid-key-12345  ',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -912,6 +943,7 @@ describe('storyRoutes', () => {
         tone: 'Trimmed Tone',
         apiKey: 'valid-key-12345',
         spine: mockSpine,
+        storyKernel: mockKernel,
       });
       expect(json).toHaveBeenCalledWith({
         success: true,
@@ -952,6 +984,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
             conceptSpec,
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -965,6 +998,7 @@ describe('storyRoutes', () => {
         apiKey: 'valid-key-12345',
         conceptSpec,
         spine: mockSpine,
+        storyKernel: mockKernel,
       });
       expect(json).toHaveBeenCalledWith({
         success: true,
@@ -1011,6 +1045,7 @@ describe('storyRoutes', () => {
             tone: 'No Progress Tone',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -1023,6 +1058,7 @@ describe('storyRoutes', () => {
         tone: 'No Progress Tone',
         apiKey: 'valid-key-12345',
         spine: mockSpine,
+        storyKernel: mockKernel,
       });
       const prepareStoryCallArg = prepareStorySpy.mock.calls[0]?.[0] as
         | { onGenerationStage?: unknown }
@@ -1075,6 +1111,7 @@ describe('storyRoutes', () => {
             startingSituation: '  You awaken in a dark cave  ',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -1089,6 +1126,7 @@ describe('storyRoutes', () => {
         startingSituation: 'You awaken in a dark cave',
         apiKey: 'valid-key-12345',
         spine: mockSpine,
+        storyKernel: mockKernel,
       });
       expect(json).toHaveBeenCalledWith({
         success: true,
@@ -1149,6 +1187,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
             progressId: ' progress-success-1 ',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -1195,6 +1234,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -1226,6 +1266,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'invalid-key',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -1260,6 +1301,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -1294,6 +1336,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -1328,6 +1371,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -1359,6 +1403,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -1396,6 +1441,7 @@ describe('storyRoutes', () => {
             tone: 'Epic',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
@@ -1446,6 +1492,7 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
             progressId: 'progress-error-1',
             spine: mockSpine,
+            storyKernel: mockKernel,
           },
         } as Request,
         { status, json } as unknown as Response
