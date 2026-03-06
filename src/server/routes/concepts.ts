@@ -122,6 +122,7 @@ conceptRoutes.post(
         success: true,
         evaluatedConcept: result.evaluatedConcept,
         verification: result.verification,
+        sourceKernelId: seed.sourceKernelId,
       });
     } catch (error) {
       if (error instanceof LLMError) {

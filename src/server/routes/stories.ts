@@ -136,6 +136,16 @@ storyRoutes.post(
       const validatedKernel: StoryKernel | undefined =
         isStoryKernel(body.storyKernel) ? body.storyKernel : undefined;
 
+      if (!validatedKernel) {
+        if (progressId) {
+          generationProgressService.fail(progressId, 'A story kernel is required');
+        }
+        return res.status(400).json({
+          success: false,
+          error: 'A story kernel is required for spine generation',
+        });
+      }
+
       const validatedVerification: ConceptVerification | undefined =
         body.conceptVerification &&
         typeof body.conceptVerification === 'object' &&
