@@ -15,6 +15,7 @@ import {
 } from '../../persistence/kernel-repository.js';
 import { kernelService } from '../services/index.js';
 import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
+import { groupKernelsByConflictAxis } from '../utils/group-kernels-by-conflict-axis.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
 
 export const kernelRoutes = Router();
@@ -40,9 +41,11 @@ kernelRoutes.get(
   '/',
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const kernels = await listKernels();
+    const conflictAxisGroups = groupKernelsByConflictAxis(kernels);
     return res.render('pages/kernels', {
       title: 'Story Kernels - One More Branch',
       kernels,
+      conflictAxisGroups,
     });
   }),
 );
@@ -51,7 +54,8 @@ kernelRoutes.get(
   '/api/list',
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const kernels = await listKernels();
-    return res.json({ success: true, kernels });
+    const conflictAxisGroups = groupKernelsByConflictAxis(kernels);
+    return res.json({ success: true, kernels, conflictAxisGroups });
   }),
 );
 
