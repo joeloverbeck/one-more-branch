@@ -194,6 +194,35 @@ describe('kernel-evaluator', () => {
     expect(() => parseKernelScoringResponse({}, [createKernel(1)])).toThrow('missing scoredKernels array');
   });
 
+  it('parseKernelScoringResponse deduplicates duplicate kernels and accepts', () => {
+    const payload = createScoringPayload();
+    // Duplicate last kernel
+    payload.scoredKernels.push(createScoredKernelPayload(6));
+
+    const expectedKernels = Array.from({ length: 6 }, (_, index) => createKernel(index + 1));
+    const parsed = parseKernelScoringResponse(payload, expectedKernels);
+
+    expect(parsed).toHaveLength(6);
+    expect(mockLogger.warn).toHaveBeenCalledWith('Kernel evaluator: deduplicated scored kernels', {
+      rawCount: 7,
+      dedupedCount: 6,
+    });
+  });
+
+  it('parseKernelScoringResponse rejects wrong count even after dedup', () => {
+    const payload = createScoringPayload();
+    // Duplicate kernel 6 but also remove kernel 5 — after dedup we get 5 unique, not 6
+    payload.scoredKernels.push(createScoredKernelPayload(6));
+    payload.scoredKernels = payload.scoredKernels.filter(
+      (item) => item.kernel.dramaticThesis !== 'Thesis 5',
+    );
+
+    const expectedKernels = Array.from({ length: 6 }, (_, index) => createKernel(index + 1));
+    expect(() => parseKernelScoringResponse(payload, expectedKernels)).toThrow(
+      'must include exactly 6 kernels',
+    );
+  });
+
   it('parseKernelScoringResponse rejects omitted kernels', () => {
     const payload = createScoringPayload();
     payload.scoredKernels = payload.scoredKernels.slice(0, 5);
@@ -241,6 +270,46 @@ describe('kernel-evaluator', () => {
     const systemMessage = messages[0]?.content ?? '';
     expect(systemMessage).toContain('Evaluate all provided kernels');
     expect(systemMessage).toContain('Do not rescore and do not alter kernels');
+  });
+
+  it('evaluateKernels deduplicates deep-eval response with duplicate kernels', async () => {
+    const scoringPayload = createScoringPayload();
+
+    const deepPayload = {
+      evaluatedKernels: [
+        ...Array.from({ length: 6 }, (_, index) => ({
+          kernel: createKernel(index + 1),
+          strengths: [`Strength ${index + 1}`],
+          weaknesses: [`Weakness ${index + 1}`],
+          tradeoffSummary: `Tradeoff ${index + 1}`,
+        })),
+        // Duplicate kernel 6
+        {
+          kernel: createKernel(6),
+          strengths: ['Strength 6 dup'],
+          weaknesses: ['Weakness 6 dup'],
+          tradeoffSummary: 'Tradeoff 6 dup',
+        },
+      ],
+    };
+
+    fetchMock
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(scoringPayload)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(deepPayload)));
+
+    const result = await evaluateKernels(
+      {
+        kernels: Array.from({ length: 6 }, (_, index) => createKernel(index + 1)),
+        userSeeds: { apiKey: 'test-api-key' },
+      },
+      'test-api-key',
+    );
+
+    expect(result.evaluatedKernels).toHaveLength(6);
+    expect(mockLogger.warn).toHaveBeenCalledWith('Kernel evaluator: deduplicated deep-eval kernels', {
+      rawCount: 7,
+      dedupedCount: 6,
+    });
   });
 
   it('evaluateKernels runs scoring then deep-eval and returns all evaluated kernels', async () => {

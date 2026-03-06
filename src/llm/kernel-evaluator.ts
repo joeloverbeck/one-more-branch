@@ -166,6 +166,16 @@ function kernelIdentityKey(kernel: StoryKernel): string {
   ].join('::');
 }
 
+function deduplicateScoredKernels<T extends { kernel: StoryKernel }>(items: readonly T[]): readonly T[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = kernelIdentityKey(item.kernel);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function ensureExactKernelCoverage(
   parsedKernels: readonly { kernel: StoryKernel }[],
   expectedKernels: readonly StoryKernel[],
@@ -200,10 +210,17 @@ export function parseKernelScoringResponse(
     throw new LLMError('Kernel scoring response missing scoredKernels array', 'STRUCTURE_PARSE_ERROR', true);
   }
 
-  const parsedKernels = data['scoredKernels'].map((kernel, index) => parseScoredKernel(kernel, index));
+  const rawParsed = data['scoredKernels'].map((kernel, index) => parseScoredKernel(kernel, index));
+  const parsedKernels = deduplicateScoredKernels(rawParsed);
+  if (rawParsed.length !== parsedKernels.length) {
+    logger.warn('Kernel evaluator: deduplicated scored kernels', {
+      rawCount: rawParsed.length,
+      dedupedCount: parsedKernels.length,
+    });
+  }
   ensureExactKernelCoverage(parsedKernels, expectedKernels, 'Kernel scoring response');
 
-  return parsedKernels.sort((a, b) => b.overallScore - a.overallScore);
+  return [...parsedKernels].sort((a, b) => b.overallScore - a.overallScore);
 }
 
 function parseDeepEvaluatedKernel(
@@ -251,9 +268,16 @@ function parseKernelDeepEvaluationResponse(
     );
   }
 
-  const parsedKernels = data['evaluatedKernels'].map((kernel, index) =>
+  const rawParsed = data['evaluatedKernels'].map((kernel, index) =>
     parseDeepEvaluatedKernel(kernel, index),
   );
+  const parsedKernels = deduplicateScoredKernels(rawParsed);
+  if (rawParsed.length !== parsedKernels.length) {
+    logger.warn('Kernel evaluator: deduplicated deep-eval kernels', {
+      rawCount: rawParsed.length,
+      dedupedCount: parsedKernels.length,
+    });
+  }
 
   ensureExactKernelCoverage(
     parsedKernels,

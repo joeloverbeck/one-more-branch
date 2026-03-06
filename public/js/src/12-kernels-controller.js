@@ -149,7 +149,7 @@
       generatedSection.scrollIntoView({ behavior: 'smooth' });
     }
 
-    function renderSavedKernels(kernels) {
+    function renderSavedKernels(kernels, conflictAxisGroups) {
       savedContainer.innerHTML = '';
       savedKernelsById = {};
 
@@ -160,8 +160,35 @@
 
       kernels.forEach(function (savedKernel) {
         savedKernelsById[savedKernel.id] = savedKernel;
-        savedContainer.appendChild(createSavedCard(savedKernel));
       });
+
+      if (Array.isArray(conflictAxisGroups) && conflictAxisGroups.length > 0) {
+        conflictAxisGroups.forEach(function (group) {
+          var details = document.createElement('details');
+          details.className = 'genre-group';
+          details.dataset.genre = group.genre;
+
+          var summary = document.createElement('summary');
+          summary.className = 'genre-group__header';
+          summary.innerHTML =
+            '<span class="genre-group__label">' + escapeHtml(group.displayLabel) + '</span>' +
+            '<span class="genre-group__count">(' + group.kernels.length + ')</span>';
+          details.appendChild(summary);
+
+          var body = document.createElement('div');
+          body.className = 'genre-group__body spine-options-container';
+          group.kernels.forEach(function (savedKernel) {
+            body.appendChild(createSavedCard(savedKernel));
+          });
+          details.appendChild(body);
+
+          savedContainer.appendChild(details);
+        });
+      } else {
+        kernels.forEach(function (savedKernel) {
+          savedContainer.appendChild(createSavedCard(savedKernel));
+        });
+      }
     }
 
     async function loadSavedKernels() {
@@ -175,7 +202,7 @@
         throw new Error(data.error || 'Failed to load kernels');
       }
 
-      renderSavedKernels(data.kernels);
+      renderSavedKernels(data.kernels, data.conflictAxisGroups);
     }
 
     async function handleGenerate() {
