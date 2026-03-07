@@ -106,33 +106,45 @@ type IdeateSceneBody = {
   pageId?: number;
   choiceIndex?: number;
   protagonistGuidance?: unknown;
+  progressId?: unknown;
 };
 
 playRoutes.post(
   '/:storyId/ideate-scene',
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const storyId = flattenParam(req.params['storyId']);
-    const { apiKey, mode, pageId, choiceIndex, protagonistGuidance: rawGuidance } =
-      req.body as IdeateSceneBody;
+    const {
+      apiKey,
+      mode,
+      pageId,
+      choiceIndex,
+      protagonistGuidance: rawGuidance,
+      progressId: rawProgressId,
+    } = req.body as IdeateSceneBody;
 
     const protagonistGuidance = normalizeProtagonistGuidance(rawGuidance);
+    const progress = createRouteGenerationProgress(rawProgressId, 'scene-ideation');
 
     if (typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+      progress.fail('OpenRouter API key is required');
       return res.status(400).json({ success: false, error: 'OpenRouter API key is required' });
     }
 
     try {
       const story = await storyEngine.loadStory(storyId as StoryId);
       if (!story) {
+        progress.fail('Story not found');
         return res.status(404).json({ success: false, error: 'Story not found' });
       }
 
       if (!story.decomposedCharacters || !story.decomposedWorld) {
+        progress.fail('Story is not fully prepared');
         return res.status(400).json({ success: false, error: 'Story is not fully prepared' });
       }
 
       if (mode === 'continuation') {
         if (pageId === undefined || choiceIndex === undefined) {
+          progress.fail('Missing pageId or choiceIndex for continuation');
           return res
             .status(400)
             .json({ success: false, error: 'Missing pageId or choiceIndex for continuation' });
@@ -140,15 +152,18 @@ playRoutes.post(
 
         const parentPage = await storyEngine.getPage(storyId as StoryId, pageId as PageId);
         if (!parentPage) {
+          progress.fail('Parent page not found');
           return res.status(404).json({ success: false, error: 'Parent page not found' });
         }
 
         const choice = parentPage.choices[choiceIndex];
         if (!choice) {
+          progress.fail('Invalid choice index');
           return res.status(400).json({ success: false, error: 'Invalid choice index' });
         }
 
         if (choice.nextPageId !== null) {
+          progress.fail('Choice already explored');
           return res.status(400).json({
             success: false,
             error: 'Choice already explored; scene ideation is only available for unexplored choices',
@@ -181,7 +196,15 @@ playRoutes.post(
           protagonistGuidance,
         };
 
+        progress.onGenerationStage?.({ stage: 'IDEATING_SCENE', status: 'started', attempt: 1 });
         const result = await generateSceneDirections(context, apiKey);
+        progress.onGenerationStage?.({
+          stage: 'IDEATING_SCENE',
+          status: 'completed',
+          attempt: 1,
+          durationMs: 0,
+        });
+        progress.complete();
         return res.json({ success: true, options: result.options });
       }
 
@@ -198,11 +221,20 @@ playRoutes.post(
         startingSituation: story.startingSituation,
       };
 
+      progress.onGenerationStage?.({ stage: 'IDEATING_SCENE', status: 'started', attempt: 1 });
       const result = await generateSceneDirections(context, apiKey);
+      progress.onGenerationStage?.({
+        stage: 'IDEATING_SCENE',
+        status: 'completed',
+        attempt: 1,
+        durationMs: 0,
+      });
+      progress.complete();
       return res.json({ success: true, options: result.options });
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       logger.error('Scene ideation failed:', { error: err.message, stack: err.stack });
+      progress.fail(err.message);
       return res.status(500).json({ success: false, error: 'Scene ideation failed' });
     }
   })
