@@ -524,6 +524,9 @@ export function buildEscalationDirective(
     lines.push(
       '- The final choice intents should create pathways that can all credibly converge to this ending visual.'
     );
+    lines.push(
+      'Consider setting isEnding to true if this resolution beat completes the story arc and no further scenes are needed.'
+    );
   }
 
   lines.push('');

@@ -32,6 +32,5 @@ export const FIELD_SEPARATION = `FIELD SEPARATION:
   - choices
   - sceneSummary
   - protagonistAffect
-  - isEnding
 - READ-ONLY CONTEXT:
   - inventory, health, location, threats, constraints, threads, canon, and NPC state sections in the prompt.`;

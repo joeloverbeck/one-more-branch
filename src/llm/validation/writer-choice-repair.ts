@@ -94,8 +94,7 @@ export function repairCorruptedChoices(rawJson: unknown): WriterChoiceRepairResu
     return { repairedJson: rawJson, repaired: false };
   }
 
-  const isEnding = source['isEnding'] === true;
-  if (isEnding || choices.length >= 2) {
+  if (choices.length >= 2) {
     return { repairedJson: rawJson, repaired: false };
   }
 

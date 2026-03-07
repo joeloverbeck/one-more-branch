@@ -77,7 +77,6 @@ describe('llm client integration (mocked fetch)', () => {
       },
       sceneSummary: 'Test summary of the scene events and consequences.',
       delayedConsequencesCreated: [],
-      isEnding: false,
     };
 
     fetchMock.mockResolvedValue(openRouterBodyFromContent(JSON.stringify(structured)));
@@ -92,7 +91,6 @@ describe('llm client integration (mocked fetch)', () => {
     );
 
     expect(result.narrative.length).toBeGreaterThan(100);
-    expect(result.isEnding).toBe(false);
   });
 
   it('should generate continuation writer output when plan is passed as separate argument', async () => {
@@ -135,7 +133,6 @@ describe('llm client integration (mocked fetch)', () => {
       },
       sceneSummary: 'Mechanical defenses activate and force an immediate tactical decision.',
       delayedConsequencesCreated: [],
-      isEnding: false,
     };
 
     fetchMock.mockResolvedValue(openRouterBodyFromContent(JSON.stringify(structured)));
@@ -206,6 +203,5 @@ describe('llm client integration (mocked fetch)', () => {
     );
 
     expect(result.narrative.length).toBeGreaterThan(80);
-    expect(result.isEnding).toBe(false);
   });
 });

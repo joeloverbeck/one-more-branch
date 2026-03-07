@@ -189,8 +189,15 @@ ${dataRules}
 ${protagonistSpeechSection}${sceneCharacterVoicesSection}TONE/GENRE: ${context.tone}
 
 ${buildSpineSection(context.spine)}${plannerSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${context.pagePlan?.isEnding ? `
+=== ENDING DIRECTIVE ===
+The planner has determined this is the story's conclusion. Write this scene as a satisfying ending:
+- Make the ending feel earned and meaningful
+- Provide narrative closure for the protagonist's journey
+- Do NOT leave major narrative threads unresolved
+- protagonistAffect should capture the protagonist's final emotional state
 
-REQUIREMENTS (follow all):
+` : ''}REQUIREMENTS (follow all):
 1. Choose the scene opening based on what matters next
    - Option A (immediate continuation): Start exactly where the previous scene ended with an action, dialogue, or reaction in the next 1-2 beats
    - Option B (time cut): If nothing meaningful happens for a while (travel, waiting, resting, routine), SKIP time and open at the next scene where the choice's consequences matter
@@ -202,8 +209,6 @@ REQUIREMENTS (follow all):
 5. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
 6. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
 7. Each scene should advance or complicate the protagonist's relationship to their Need and Want. Show how consequences of their choices move them toward or away from their true Need, even as they pursue their Want.
-
-REMINDER: If the player's choice naturally leads to a story conclusion, set isEnding: true. protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
 
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. React to the player's choice immediately and visibly

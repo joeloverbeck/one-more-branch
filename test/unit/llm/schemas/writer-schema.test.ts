@@ -17,7 +17,6 @@ describe('WRITER_GENERATION_SCHEMA', () => {
       'narrative',
       'protagonistAffect',
       'sceneSummary',
-      'isEnding',
     ]);
     expect(schema.additionalProperties).toBe(false);
   });
@@ -42,7 +41,7 @@ describe('WRITER_GENERATION_SCHEMA', () => {
     expect(schema.properties.choices).toBeUndefined();
     expect(schema.properties.protagonistAffect.type).toBe('object');
     expect(schema.properties.sceneSummary.type).toBe('string');
-    expect(schema.properties.isEnding.type).toBe('boolean');
+    expect(schema.properties.isEnding).toBeUndefined();
   });
 
   it('should reject all state and canon mutation fields in properties and required', () => {

@@ -105,7 +105,6 @@ const validStructuredPayload = {
   },
   sceneSummary: 'Test summary of the scene events and consequences.',
   delayedConsequencesCreated: [],
-  isEnding: false,
 };
 
 const validPlannerPayload = {
@@ -164,6 +163,7 @@ const validReducedPlannerPayload = {
   continuityAnchors: validPlannerPayload.continuityAnchors,
   writerBrief: validPlannerPayload.writerBrief,
   dramaticQuestion: validPlannerPayload.dramaticQuestion,
+  isEnding: false,
   choiceIntents: validPlannerPayload.choiceIntents,
 };
 
@@ -488,7 +488,6 @@ describe('llm client', () => {
         dominantMotivation: 'Resolve the error',
       },
       sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
     };
 
     fetchMock.mockResolvedValue(
@@ -628,7 +627,6 @@ describe('llm client', () => {
         dominantMotivation: 'Resolve the error',
       },
       sceneSummary: 'Test summary of the scene events and consequences.',
-      isEnding: false,
     };
 
     fetchMock.mockResolvedValue(

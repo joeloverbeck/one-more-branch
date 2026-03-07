@@ -16,7 +16,6 @@ describe('validateWriterResponse', () => {
           dominantMotivation: 'Survive and escape',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
-        isEnding: false,
       },
       'raw json response'
     );
@@ -26,7 +25,6 @@ describe('validateWriterResponse', () => {
     expect(result.protagonistAffect.primaryEmotion).toBe('fear');
     expect(result.protagonistAffect.primaryIntensity).toBe('strong');
     expect(result.sceneSummary).toBe('Test summary of the scene events and consequences.');
-    expect(result.isEnding).toBe(false);
   });
 
   it('trims creative string fields', () => {
@@ -41,7 +39,6 @@ describe('validateWriterResponse', () => {
           dominantMotivation: '  Survive  ',
         },
         sceneSummary: '  Test summary of the scene events and consequences.  ',
-        isEnding: false,
       },
       'raw json response'
     );
@@ -61,7 +58,6 @@ describe('validateWriterResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         sceneSummary: 'Test summary of the scene events and consequences.',
-        isEnding: false,
       },
       'raw json response'
     );
@@ -81,7 +77,6 @@ describe('validateWriterResponse', () => {
       {
         narrative: VALID_NARRATIVE,
         sceneSummary: 'Test summary of the scene events and consequences.',
-        isEnding: false,
       },
       rawResponse
     );
@@ -98,7 +93,6 @@ describe('validateWriterResponse', () => {
         newCanonFacts: [{ text: 'Legacy canon', factType: 'LAW' }],
         inventoryAdded: ['Legacy inventory'],
         sceneSummary: 'Test summary of the scene events and consequences.',
-        isEnding: false,
       },
       'raw json response'
     ) as unknown as Record<string, unknown>;
@@ -115,8 +109,7 @@ describe('validateWriterResponse', () => {
         {
           narrative: '',
           sceneSummary: 'Test summary of the scene events and consequences.',
-          isEnding: false,
-        },
+          },
         'raw json response'
       )
     ).toThrow();

@@ -64,10 +64,6 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
           description:
             'A 2-3 sentence factual summary of what happened in this scene. Focus on key events, decisions made, and consequences. This will be used as context for future scenes, so emphasize plot-relevant facts over atmospheric details.',
         },
-        isEnding: {
-          type: 'boolean',
-          description: 'True only when the story concludes and choices is empty.',
-        },
       },
       required: [...WRITER_REQUIRED_FIELDS],
       additionalProperties: false,

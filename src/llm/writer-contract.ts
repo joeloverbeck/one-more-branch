@@ -4,7 +4,6 @@ export const WRITER_REQUIRED_FIELDS = [
   'narrative',
   'protagonistAffect',
   'sceneSummary',
-  'isEnding',
 ] as const;
 
 export const WRITER_CHOICE_REQUIRED_FIELDS = ['text', 'choiceType', 'primaryDelta'] as const;

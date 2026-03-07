@@ -16,7 +16,6 @@ export function validateWriterResponse(rawJson: unknown, rawResponse: string): P
       })),
       dominantMotivation: validated.protagonistAffect.dominantMotivation.trim(),
     },
-    isEnding: validated.isEnding,
     sceneSummary: validated.sceneSummary.trim(),
     rawResponse,
   };

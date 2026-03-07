@@ -23,7 +23,6 @@ export const WriterResultSchema = z.object({
   narrative: z.string().min(50, 'Narrative must be at least 50 characters'),
   protagonistAffect: ProtagonistAffectSchema.optional().default(WRITER_DEFAULT_PROTAGONIST_AFFECT),
   sceneSummary: z.string().min(20),
-  isEnding: z.boolean(),
 });
 
 export type ValidatedWriterResult = z.infer<typeof WriterResultSchema>;

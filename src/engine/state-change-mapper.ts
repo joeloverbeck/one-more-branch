@@ -20,6 +20,7 @@ export type PageBuildResult = PageWriterResult &
     | 'characterStateChangesAdded'
     | 'characterStateChangesRemoved'
   > & {
+    readonly isEnding: boolean;
     readonly choices: Array<{
       text: string;
       choiceType: ChoiceType;
