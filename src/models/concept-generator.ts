@@ -321,6 +321,7 @@ export interface ConceptEvolverSeederContext {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
+  readonly contentPackets?: readonly ContentPacket[];
 }
 
 export interface ConceptEvolverSeederResult {
@@ -381,6 +382,7 @@ export interface ConceptEvolverContext {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
+  readonly contentPackets?: readonly ContentPacket[];
 }
 
 export interface ConceptEvolutionResult {

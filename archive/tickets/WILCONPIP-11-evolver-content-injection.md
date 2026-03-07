@@ -1,5 +1,6 @@
 # WILCONPIP-11: Concept Evolver Content Injection Strategy
 
+**Status**: COMPLETED
 **Effort**: M
 **Dependencies**: WILCONPIP-01, WILCONPIP-10
 **Spec reference**: "Concept Evolver Integration"
@@ -39,8 +40,19 @@ Extend the concept evolver to support content packet injection as a mutation str
 
 ### Invariants
 
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
-- [ ] All existing tests pass unchanged
-- [ ] Evolver-seeder output schema is unchanged (6 seeds, same fields)
-- [ ] `ConceptSeedFields` type is unchanged
+- [x] `npm run typecheck` passes
+- [x] `npm run lint` passes
+- [x] All existing tests pass unchanged
+- [x] Evolver-seeder output schema is unchanged (6 seeds, same fields)
+- [x] `ConceptSeedFields` type is unchanged
+
+## Outcome
+
+- **Completion date**: 2026-03-07
+- **Changes made**:
+  - Added `contentPackets?: readonly ContentPacket[]` to `ConceptEvolverSeederContext` and `ConceptEvolverContext` in `src/models/concept-generator.ts`
+  - Added `buildContentPacketsBlock()` and `buildWildnessInvariantsBlock()` to `src/llm/prompts/concept-evolver-seeder-prompt.ts`, conditionally included in user message
+  - Added `contentPackets` passthrough to architect and engineer contexts in `src/llm/concept-evolver.ts`
+  - Added 8 new tests across evolver-seeder-prompt and concept-evolver test files
+- **Deviations**: None. `concept-evolver-seeder.ts` required no changes since it already passes the full context object to the prompt builder.
+- **Verification**: typecheck passes, lint passes, 3002/3002 unit tests pass (241 suites)
