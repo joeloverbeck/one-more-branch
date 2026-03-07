@@ -1,7 +1,25 @@
+import type { ContentPacket } from '../../../../src/models/content-packet';
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
 import { buildConceptArchitectPrompt } from '../../../../src/llm/prompts/concept-architect-prompt';
 import type { ConceptArchitectContext } from '../../../../src/models';
 import { createConceptSeedFixture } from '../../../fixtures/concept-generator';
+
+function createContentPacketFixture(id = 'content_1'): ContentPacket {
+  return {
+    contentId: id,
+    sourceSparkIds: ['spark_1'],
+    contentKind: 'INSTITUTION',
+    coreAnomaly: 'A hospital that heals by redistributing pain',
+    humanAnchor: 'A nurse addicted to absorbing others suffering',
+    socialEngine: 'The Bureau of Equitable Suffering',
+    choicePressure: 'Accept your pain or redistribute it to the vulnerable',
+    signatureImage: 'Patients screaming in a ward where no one is injured',
+    escalationPath: 'The bureau begins drafting civilians for mandatory pain duty',
+    wildnessInvariant: 'Pain is a transferable public resource',
+    dullCollapse: 'Generic dystopian healthcare',
+    interactionVerbs: ['absorb', 'transfer', 'refuse', 'petition'],
+  };
+}
 
 function createContext(seedCount = 6): ConceptArchitectContext {
   return {
@@ -119,6 +137,37 @@ describe('concept-architect-prompt', () => {
       expect(userMessage).toContain('ConceptCharacterWorld');
       expect(userMessage).toContain('actionVerbs');
       expect(userMessage).toContain('settingAxioms');
+    });
+
+    it('includes content packet grounding instructions when packets provided', () => {
+      const packet = createContentPacketFixture();
+      const context: ConceptArchitectContext = {
+        ...createContext(),
+        contentPackets: [packet],
+      };
+      const messages = buildConceptArchitectPrompt(context);
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).toContain('CONTENT PACKETS');
+      expect(userMessage).toContain(packet.coreAnomaly);
+      expect(userMessage).toContain(packet.socialEngine);
+    });
+
+    it('omits content packet section when packets undefined', () => {
+      const messages = buildConceptArchitectPrompt(createContext());
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).not.toContain('CONTENT PACKETS');
+    });
+
+    it('instructs at least one keyInstitution from packet socialEngine', () => {
+      const packet = createContentPacketFixture();
+      const context: ConceptArchitectContext = {
+        ...createContext(),
+        contentPackets: [packet],
+      };
+      const messages = buildConceptArchitectPrompt(context);
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).toContain('keyInstitution');
+      expect(userMessage).toContain('socialEngine');
     });
   });
 });

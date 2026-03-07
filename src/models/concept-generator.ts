@@ -1,3 +1,4 @@
+import type { ContentPacket } from './content-packet.js';
 import type { ConflictAxis, ConflictType } from './conflict-taxonomy.js';
 import { CONFLICT_AXES, isConflictAxis, isConflictType } from './conflict-taxonomy.js';
 import type { StoryKernel } from './story-kernel.js';
@@ -304,6 +305,7 @@ export interface ConceptSeederContext {
   readonly contentPreferences?: string;
   readonly kernel?: StoryKernel;
   readonly excludedGenres?: readonly GenreFrame[];
+  readonly contentPackets?: readonly ContentPacket[];
 }
 
 export interface ConceptSeederResult {
@@ -333,6 +335,7 @@ export interface ConceptArchitectContext {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
+  readonly contentPackets?: readonly ContentPacket[];
 }
 
 export interface ConceptArchitectResult {
@@ -348,6 +351,7 @@ export interface ConceptEngineerContext {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
+  readonly contentPackets?: readonly ContentPacket[];
 }
 
 export interface ConceptEngineerResult {

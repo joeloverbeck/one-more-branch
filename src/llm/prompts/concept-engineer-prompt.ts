@@ -1,3 +1,4 @@
+import type { ContentPacket } from '../../models/content-packet.js';
 import type {
   ConceptEngineerContext,
   ConceptSeedFields,
@@ -36,6 +37,27 @@ WEILAND ARC ENGINEERING:
 - protagonistLie should be the false belief that the deadlineMechanism exploits.
 - protagonistTruth should be the realization that, if embraced, would dissolve the Lie and resolve the moral argument.
 - wantNeedCollisionSketch should describe the moment where the protagonist's conscious goal (want) directly prevents their inner transformation (need).`;
+}
+
+function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
+  const packetEntries = packets
+    .map(
+      (p) =>
+        `- [${p.contentId}] coreAnomaly: ${p.coreAnomaly}
+  wildnessInvariant: ${p.wildnessInvariant}
+  socialEngine: ${p.socialEngine}
+  signatureImage: ${p.signatureImage}
+  escalationPath: ${p.escalationPath}`,
+    )
+    .join('\n');
+
+  return `CONTENT PACKETS — ENGINEERING CONSTRAINTS:
+The following content packets anchor these concepts. When engineering conflict forces:
+- pressureSource, incitingDisruption, or ironicTwist MUST emerge directly from the packet's socialEngine or escalationPath.
+- elevatorParagraph MUST preserve the packet's signature image or wildnessInvariant — do not let the pitch flatten into generic genre language.
+- protagonistLie / protagonistTruth SHOULD collide with the packet's core contradiction.
+
+${packetEntries}`;
 }
 
 function normalize(value: string | undefined): string | undefined {
@@ -78,6 +100,10 @@ export function buildConceptEngineerPrompt(context: ConceptEngineerContext): Cha
   const kernelBlock = buildKernelBlock(context.kernel);
   if (kernelBlock) {
     userSections.push(kernelBlock);
+  }
+
+  if (context.contentPackets && context.contentPackets.length > 0) {
+    userSections.push(buildContentPacketsBlock(context.contentPackets));
   }
 
   const protagonistDetails = normalize(context.protagonistDetails);

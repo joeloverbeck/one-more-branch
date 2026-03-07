@@ -1,5 +1,23 @@
+import type { ContentPacket } from '../../../../src/models/content-packet';
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
 import { buildConceptSeederPrompt } from '../../../../src/llm/prompts/concept-seeder-prompt';
+
+function createContentPacketFixture(id = 'content_1'): ContentPacket {
+  return {
+    contentId: id,
+    sourceSparkIds: ['spark_1'],
+    contentKind: 'ENTITY',
+    coreAnomaly: 'A sentient fog that digests memory',
+    humanAnchor: 'A grief counselor who lost her own memories',
+    socialEngine: 'Memory insurance industry',
+    choicePressure: 'Protect others or recover your own past',
+    signatureImage: 'A woman breathing fog that glows with stolen dreams',
+    escalationPath: 'The fog begins targeting entire neighborhoods',
+    wildnessInvariant: 'The fog is alive and feeds on remembering',
+    dullCollapse: 'Generic amnesia thriller',
+    interactionVerbs: ['inhale', 'shelter', 'bargain', 'forget'],
+  };
+}
 
 describe('concept-seeder-prompt', () => {
   describe('buildConceptSeederPrompt', () => {
@@ -157,6 +175,43 @@ describe('concept-seeder-prompt', () => {
 
       expect(userMessage).toContain('OUTPUT REQUIREMENTS');
       expect(userMessage).toContain('ConceptSeed');
+    });
+
+    it('includes CONTENT PACKETS section when packets provided', () => {
+      const packet = createContentPacketFixture();
+      const messages = buildConceptSeederPrompt({
+        genreVibes: 'noir',
+        contentPackets: [packet],
+      });
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).toContain('CONTENT PACKETS');
+    });
+
+    it('omits CONTENT PACKETS section when packets undefined', () => {
+      const messages = buildConceptSeederPrompt({ genreVibes: 'noir' });
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).not.toContain('CONTENT PACKETS');
+    });
+
+    it('omits CONTENT PACKETS section when packets array is empty', () => {
+      const messages = buildConceptSeederPrompt({
+        genreVibes: 'noir',
+        contentPackets: [],
+      });
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).not.toContain('CONTENT PACKETS');
+    });
+
+    it('includes each packet coreAnomaly, wildnessInvariant, socialEngine, signatureImage', () => {
+      const packet = createContentPacketFixture();
+      const messages = buildConceptSeederPrompt({
+        contentPackets: [packet],
+      });
+      const userMessage = messages[1]?.content ?? '';
+      expect(userMessage).toContain(packet.coreAnomaly);
+      expect(userMessage).toContain(packet.wildnessInvariant);
+      expect(userMessage).toContain(packet.socialEngine);
+      expect(userMessage).toContain(packet.signatureImage);
     });
   });
 });
