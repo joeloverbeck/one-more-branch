@@ -20,6 +20,7 @@ import {
   parsePageIdFromFileName,
   serializePage,
 } from '@/persistence/page-serializer';
+import type { StoryBible } from '@/llm/lorekeeper-types';
 
 function buildTestPage(overrides?: Partial<Page>): Page {
   const basePage: Page = {
@@ -103,7 +104,6 @@ function buildTestFileData(overrides?: Partial<PageFileData>): PageFileData {
     },
     protagonistAffect: createDefaultProtagonistAffect(),
     structureVersionId: null,
-    storyBible: null,
     analystResult: null,
     thematicValence: 'AMBIGUOUS',
     threadAges: {},
@@ -269,6 +269,29 @@ describe('page-serializer', () => {
           secrets: ['Voss hid the evacuation codes.'],
         },
       ]);
+    });
+
+    it('does not serialize storyBible even when present on the page', () => {
+      const storyBible: StoryBible = {
+        sceneWorldContext: 'Foggy harbor at dawn.',
+        relevantCharacters: [
+          {
+            name: 'Mira',
+            role: 'ally',
+            relevantProfile: 'Ex-smuggler with a strict code.',
+            speechPatterns: 'Direct and concise.',
+            protagonistRelationship: 'Trusted but cautious.',
+            currentState: 'Watching the docks.',
+          },
+        ],
+        relevantCanonFacts: ['The harbor is controlled by the syndicate.'],
+        relevantHistory: 'Mira helped the protagonist escape once before.',
+      };
+      const page = buildTestPage({ storyBible });
+
+      const fileData = serializePage(page);
+
+      expect(fileData).not.toHaveProperty('storyBible');
     });
 
     it('creates deep copies to prevent mutation', () => {
@@ -470,6 +493,23 @@ describe('page-serializer', () => {
           secrets: ['Voss hid the evacuation codes.'],
         },
       ]);
+    });
+
+    it('always deserializes storyBible as null', () => {
+      const fileData = buildTestFileData();
+      const legacyLikePayload = {
+        ...fileData,
+        storyBible: {
+          sceneWorldContext: 'Legacy field that should be ignored',
+          relevantCharacters: [],
+          relevantCanonFacts: [],
+          relevantHistory: '',
+        },
+      } as PageFileData;
+
+      const page = deserializePage(legacyLikePayload);
+
+      expect(page.storyBible).toBeNull();
     });
 
     it('parses structureVersionId when provided', () => {

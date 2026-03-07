@@ -35,6 +35,4 @@ export {
   fileDataToAccumulatedNpcRelationships,
 } from './npc-relationship-converter';
 
-export { storyBibleToFileData, fileDataToStoryBible } from './story-bible-converter';
-
 export { analystResultToFileData, fileDataToAnalystResult } from './analyst-result-converter';
