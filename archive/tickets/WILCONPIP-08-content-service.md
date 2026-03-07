@@ -1,5 +1,7 @@
 # WILCONPIP-08: ContentService Orchestration Layer
 
+**Status**: COMPLETED
+
 **Effort**: M
 **Dependencies**: WILCONPIP-02, WILCONPIP-03, WILCONPIP-04, WILCONPIP-05, WILCONPIP-06, WILCONPIP-07
 **Spec reference**: "Service Layer Design"
@@ -15,8 +17,13 @@ Also exposes individual stage methods for fine-grained control. Follows the `cre
 ## Files to Touch
 
 - `src/server/services/content-service.ts` — NEW: `ContentService` interface, `createContentService()` factory, `contentService` singleton export
-- `src/config/generation-stage-metadata.json` — add 4 new stage entries: `DISTILLING_TASTE`, `GENERATING_SPARKS`, `PACKAGING_CONTENT`, `EVALUATING_CONTENT` with display names and phrase pools
-- `src/config/stage-model.ts` — add model selection entries for the 4 new stages (if this file maps stage IDs to models)
+- `src/server/services/index.ts` — re-export ContentService types and singleton
+- `src/config/generation-stage-metadata.json` — add 5 new stage entries: `DISTILLING_TASTE`, `GENERATING_SPARKS`, `PACKAGING_CONTENT`, `EVALUATING_CONTENT`, `GENERATING_CONTENT` (one-shot path) with display names and phrase pools
+- Run `node scripts/sync-stage-metadata.js` after metadata changes to regenerate `src/engine/generated-generation-stages.ts`
+
+**No changes needed to:**
+- `src/config/stage-model.ts` — generic lookup function, no per-stage entries
+- `src/config/llm-stage-registry.ts` — already has `contentOneShot`, `contentTasteDistiller`, `contentSparkstormer`, `contentPacketer`, `contentEvaluator`
 
 ## Out of Scope
 
@@ -38,7 +45,8 @@ Also exposes individual stage methods for fine-grained control. Follows the `cre
 - [ ] Unit test: `generateSparks` calls sparkstormer generation with correct context
 - [ ] Unit test: each method fires `onGenerationStage` callbacks for its stage
 - [ ] Unit test: `generateContentQuick` requires apiKey (throws on missing)
-- [ ] Unit test: generation-stage-metadata.json includes all 4 new stages with non-empty phrase pools
+- [ ] Unit test: `generateContentQuick` fires `onGenerationStage` callback for `GENERATING_CONTENT` stage
+- [ ] Unit test: generation-stage-metadata.json includes all 5 new stages with non-empty phrase pools
 
 ### Invariants
 
@@ -47,3 +55,11 @@ Also exposes individual stage methods for fine-grained control. Follows the `cre
 - [ ] All existing tests pass unchanged
 - [ ] No changes to ConceptService or its tests
 - [ ] Service uses dependency injection (deps parameter) following ConceptService pattern
+
+## Outcome
+
+- **Completed**: 2026-03-07
+- **Files created**: `src/server/services/content-service.ts`, `test/unit/server/services/content-service.test.ts`
+- **Files modified**: `src/config/generation-stage-metadata.json` (5 new stages), `src/engine/generated-generation-stages.ts` (auto-synced), `src/server/services/index.ts` (re-exports), `test/unit/engine/types.test.ts` (stage list updated)
+- **Deviations**: Added a 5th stage `GENERATING_CONTENT` for the one-shot path (not in original ticket). Removed `stage-model.ts` from files to touch since it's a generic lookup and `llm-stage-registry.ts` already had entries.
+- **Verification**: typecheck clean, lint clean, 270 suites / 3220 tests pass, no changes to ConceptService
