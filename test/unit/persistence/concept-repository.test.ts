@@ -36,6 +36,7 @@ function createSavedConcept(id: string): SavedConcept {
         llmFeasibility: 4,
         ironicPremise: 3,
         sceneGenerativePower: 3,
+        contentCharge: 3,
       },
       overallScore: 82,
       passes: true,

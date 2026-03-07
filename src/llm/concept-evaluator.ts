@@ -86,6 +86,7 @@ function parseScores(value: unknown, index: number): ConceptDimensionScores {
     llmFeasibility: parseClampedScore(data['llmFeasibility'], 'llmFeasibility', label),
     ironicPremise: parseClampedScore(data['ironicPremise'], 'ironicPremise', label),
     sceneGenerativePower: parseClampedScore(data['sceneGenerativePower'], 'sceneGenerativePower', label),
+    contentCharge: parseClampedScore(data['contentCharge'], 'contentCharge', label),
   };
 }
 
@@ -126,6 +127,11 @@ function parseScoreEvidence(value: unknown, index: number): ConceptScoreEvidence
     sceneGenerativePower: requireNonEmptyStringArray(
       data['sceneGenerativePower'],
       'sceneGenerativePower',
+      `${label} scoreEvidence`,
+    ),
+    contentCharge: requireNonEmptyStringArray(
+      data['contentCharge'],
+      'contentCharge',
       `${label} scoreEvidence`,
     ),
   };

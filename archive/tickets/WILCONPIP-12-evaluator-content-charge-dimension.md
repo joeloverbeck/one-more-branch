@@ -1,5 +1,7 @@
 # WILCONPIP-12: Concept Evaluator contentCharge Scoring Dimension
 
+**Status**: COMPLETED
+
 **Effort**: L
 **Dependencies**: WILCONPIP-01
 **Spec reference**: "Concept Evaluator Changes"
@@ -54,3 +56,10 @@ Rubric:
 - [ ] Existing saved concepts load correctly via upcast hook
 - [ ] `computeOverallScore` with all scores at 5 still returns 100
 - [ ] Weight rebalancing does not change the relative ordering of existing dimensions
+
+## Outcome
+
+- **Completed**: 2026-03-07
+- **Changes**: Added `contentCharge` as 8th scoring dimension to concept evaluator. Updated types, weights (rebalanced: conflictEngine 20→18, llmFeasibility 20→18, ironicPremise 15→14, sceneGenerativePower 10→5, contentCharge 10), thresholds (contentCharge: 2), validators, JSON schema, prompt rubric, LLM response parsers, and persistence upcast for legacy payloads. Updated all test fixtures and mocks across 7 test files. Added new unit tests for all acceptance criteria.
+- **Deviations**: Also updated `src/llm/concept-evaluator.ts` and `src/llm/concept-single-evaluator.ts` (parseScores/parseScoreEvidence functions) which were not listed in the ticket but required for type compliance.
+- **Verification**: typecheck passes, lint passes, 271 test suites / 3265 tests pass

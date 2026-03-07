@@ -53,6 +53,7 @@ export function createConceptScoresFixture(): ConceptDimensionScores {
     llmFeasibility: 4,
     ironicPremise: 3,
     sceneGenerativePower: 4,
+    contentCharge: 3,
   };
 }
 
@@ -80,6 +81,7 @@ export function createScoredConceptFixture(index = 1): ScoredConcept {
       llmFeasibility: [`Feasibility evidence ${index}`],
       ironicPremise: [`Irony evidence ${index}`],
       sceneGenerativePower: [`Scene generative evidence ${index}`],
+      contentCharge: [`Content charge evidence ${index}`],
     },
     overallScore: 80,
     passes: true,

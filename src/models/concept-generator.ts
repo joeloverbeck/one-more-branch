@@ -203,6 +203,7 @@ export interface ConceptDimensionScores {
   readonly llmFeasibility: number;
   readonly ironicPremise: number;
   readonly sceneGenerativePower: number;
+  readonly contentCharge: number;
 }
 
 export interface ConceptScoreEvidence {
@@ -213,6 +214,7 @@ export interface ConceptScoreEvidence {
   readonly llmFeasibility: readonly string[];
   readonly ironicPremise: readonly string[];
   readonly sceneGenerativePower: readonly string[];
+  readonly contentCharge: readonly string[];
 }
 
 export interface ScoredConcept {
@@ -468,12 +470,13 @@ export interface ConceptVerificationResult {
 
 export const CONCEPT_SCORING_WEIGHTS = {
   hookStrength: 10,
-  conflictEngine: 20,
+  conflictEngine: 18,
   agencyBreadth: 15,
   noveltyLeverage: 10,
-  llmFeasibility: 20,
-  ironicPremise: 15,
-  sceneGenerativePower: 10,
+  llmFeasibility: 18,
+  ironicPremise: 14,
+  sceneGenerativePower: 5,
+  contentCharge: 10,
 } as const;
 
 export const CONCEPT_PASS_THRESHOLDS = {
@@ -484,6 +487,7 @@ export const CONCEPT_PASS_THRESHOLDS = {
   llmFeasibility: 3,
   ironicPremise: 3,
   sceneGenerativePower: 3,
+  contentCharge: 2,
 } as const;
 
 export function computeOverallScore(scores: ConceptDimensionScores): number {
@@ -494,7 +498,8 @@ export function computeOverallScore(scores: ConceptDimensionScores): number {
     (scores.noveltyLeverage * CONCEPT_SCORING_WEIGHTS.noveltyLeverage) / 5 +
     (scores.llmFeasibility * CONCEPT_SCORING_WEIGHTS.llmFeasibility) / 5 +
     (scores.ironicPremise * CONCEPT_SCORING_WEIGHTS.ironicPremise) / 5 +
-    (scores.sceneGenerativePower * CONCEPT_SCORING_WEIGHTS.sceneGenerativePower) / 5
+    (scores.sceneGenerativePower * CONCEPT_SCORING_WEIGHTS.sceneGenerativePower) / 5 +
+    (scores.contentCharge * CONCEPT_SCORING_WEIGHTS.contentCharge) / 5
   );
 }
 
@@ -506,6 +511,7 @@ export function passesConceptThresholds(scores: ConceptDimensionScores): boolean
     scores.noveltyLeverage >= CONCEPT_PASS_THRESHOLDS.noveltyLeverage &&
     scores.llmFeasibility >= CONCEPT_PASS_THRESHOLDS.llmFeasibility &&
     scores.ironicPremise >= CONCEPT_PASS_THRESHOLDS.ironicPremise &&
-    scores.sceneGenerativePower >= CONCEPT_PASS_THRESHOLDS.sceneGenerativePower
+    scores.sceneGenerativePower >= CONCEPT_PASS_THRESHOLDS.sceneGenerativePower &&
+    scores.contentCharge >= CONCEPT_PASS_THRESHOLDS.contentCharge
   );
 }

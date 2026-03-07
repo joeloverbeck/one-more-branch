@@ -44,6 +44,7 @@ function createScoredConceptPayload(index: number): {
     llmFeasibility: number;
     ironicPremise: number;
     sceneGenerativePower: number;
+    contentCharge: number;
   };
   scoreEvidence: {
     hookStrength: readonly string[];
@@ -53,6 +54,7 @@ function createScoredConceptPayload(index: number): {
     llmFeasibility: readonly string[];
     ironicPremise: readonly string[];
     sceneGenerativePower: readonly string[];
+    contentCharge: readonly string[];
   };
 } {
   return {
@@ -65,6 +67,7 @@ function createScoredConceptPayload(index: number): {
       llmFeasibility: 5,
       ironicPremise: 3,
       sceneGenerativePower: 3,
+      contentCharge: 3,
     },
     scoreEvidence: {
       hookStrength: [`Hook evidence ${index}`],
@@ -74,6 +77,7 @@ function createScoredConceptPayload(index: number): {
       llmFeasibility: [`Feasibility evidence ${index}`],
       ironicPremise: ['Irony evidence'],
       sceneGenerativePower: ['Scene evidence'],
+      contentCharge: ['Content charge evidence'],
     },
   };
 }
@@ -246,6 +250,46 @@ describe('concept-evaluator', () => {
     expect(systemMessage).toContain('Evaluate all provided scored concepts');
     expect(systemMessage).toContain('Do not rescore and do not alter concepts');
     expect(userMessage).toContain('conceptId');
+  });
+
+  it('scoring prompt rubric includes contentCharge dimension', () => {
+    const conceptIds = ['concept_1'];
+    const messages = buildConceptEvaluatorScoringPrompt({
+      concepts: [createValidConcept(1)],
+      userSeeds: { apiKey: 'test-api-key' },
+    }, conceptIds);
+
+    const systemMessage = messages[0]?.content ?? '';
+    expect(systemMessage).toContain('contentCharge');
+    expect(systemMessage).toContain('unforgettable concrete impossibilities');
+  });
+
+  it('scoring prompt weights include contentCharge', () => {
+    const conceptIds = ['concept_1'];
+    const messages = buildConceptEvaluatorScoringPrompt({
+      concepts: [createValidConcept(1)],
+      userSeeds: { apiKey: 'test-api-key' },
+    }, conceptIds);
+
+    const systemMessage = messages[0]?.content ?? '';
+    expect(systemMessage).toContain('contentCharge: weight');
+  });
+
+  it('scoring schema includes contentCharge in scores and evidence', () => {
+    const schema = CONCEPT_EVALUATION_SCORING_SCHEMA as unknown as Record<string, unknown>;
+    const jsonSchema = schema['json_schema'] as Record<string, unknown>;
+    const schemaBody = jsonSchema['schema'] as Record<string, unknown>;
+    const props = schemaBody['properties'] as Record<string, unknown>;
+    const scoredConcepts = props['scoredConcepts'] as Record<string, unknown>;
+    const items = scoredConcepts['items'] as Record<string, unknown>;
+    const itemProps = items['properties'] as Record<string, unknown>;
+    const scores = itemProps['scores'] as Record<string, unknown>;
+    const scoreProps = scores['properties'] as Record<string, unknown>;
+    const evidence = itemProps['scoreEvidence'] as Record<string, unknown>;
+    const evidenceProps = evidence['properties'] as Record<string, unknown>;
+
+    expect(scoreProps).toHaveProperty('contentCharge');
+    expect(evidenceProps).toHaveProperty('contentCharge');
   });
 
   it('evaluateConcepts runs scoring then deep-eval and returns all evaluated concepts', async () => {
