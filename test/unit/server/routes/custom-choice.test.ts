@@ -118,8 +118,8 @@ describe('POST /:storyId/custom-choice', () => {
         ...page.choices,
         {
           text: 'Custom choice',
-          choiceType: ChoiceType.TACTICAL_APPROACH,
-          primaryDelta: PrimaryDelta.GOAL_SHIFT,
+          choiceType: ChoiceType.INTERVENE,
+          primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE,
           nextPageId: null,
         },
       ],
@@ -143,28 +143,28 @@ describe('POST /:storyId/custom-choice', () => {
       storyId,
       1,
       'Custom choice',
-      ChoiceType.TACTICAL_APPROACH,
-      PrimaryDelta.GOAL_SHIFT
+      ChoiceType.INTERVENE,
+      PrimaryDelta.GOAL_PRIORITY_CHANGE
     );
     expect(status).not.toHaveBeenCalled();
     expect(json).toHaveBeenCalledWith({
       choices: [
         {
           text: 'Choice A',
-          choiceType: ChoiceType.TACTICAL_APPROACH,
-          primaryDelta: PrimaryDelta.GOAL_SHIFT,
+          choiceType: ChoiceType.INTERVENE,
+          primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE,
           nextPageId: null,
         },
         {
           text: 'Choice B',
-          choiceType: ChoiceType.TACTICAL_APPROACH,
-          primaryDelta: PrimaryDelta.GOAL_SHIFT,
+          choiceType: ChoiceType.INTERVENE,
+          primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE,
           nextPageId: null,
         },
         {
           text: 'Custom choice',
-          choiceType: ChoiceType.TACTICAL_APPROACH,
-          primaryDelta: PrimaryDelta.GOAL_SHIFT,
+          choiceType: ChoiceType.INTERVENE,
+          primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE,
           nextPageId: null,
         },
       ],
@@ -240,8 +240,8 @@ describe('POST /:storyId/custom-choice', () => {
         ...page.choices,
         {
           text: text500,
-          choiceType: ChoiceType.TACTICAL_APPROACH,
-          primaryDelta: PrimaryDelta.GOAL_SHIFT,
+          choiceType: ChoiceType.INTERVENE,
+          primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE,
           nextPageId: null,
         },
       ],

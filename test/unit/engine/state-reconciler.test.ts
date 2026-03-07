@@ -36,13 +36,13 @@ function buildWriterResult(overrides?: Partial<PageWriterResult>): PageWriterRes
     choices: [
       {
         text: 'Slip into the market crowd',
-        choiceType: 'TACTICAL_APPROACH',
-        primaryDelta: 'LOCATION_CHANGE',
+        choiceType: 'INTERVENE',
+        primaryDelta: 'LOCATION_ACCESS_CHANGE',
       },
       {
         text: 'Confront the nearest sentry',
-        choiceType: 'CONFRONTATION',
-        primaryDelta: 'THREAT_SHIFT',
+        choiceType: 'CONTEST',
+        primaryDelta: 'THREAT_LEVEL_CHANGE',
       },
     ],
     protagonistAffect: {

@@ -36,9 +36,9 @@ const TEST_OPTIONS: GenerationOptions = {
 function makeValidResponse(): { choices: { text: string; choiceType: string; primaryDelta: string }[] } {
   return {
     choices: [
-      { text: 'Demand an explanation', choiceType: 'CONFRONTATION', primaryDelta: 'INFORMATION_REVEALED' },
-      { text: 'Flee the scene quickly', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
-      { text: 'Investigate the noise', choiceType: 'INVESTIGATION', primaryDelta: 'THREAT_SHIFT' },
+      { text: 'Demand an explanation', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' },
+      { text: 'Flee the scene quickly', choiceType: 'WITHDRAW', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+      { text: 'Investigate the noise', choiceType: 'INVESTIGATE', primaryDelta: 'THREAT_LEVEL_CHANGE' },
     ],
   };
 }
@@ -71,16 +71,16 @@ describe('generateChoiceGeneratorWithFallback', () => {
 
     expect(result.choices).toHaveLength(3);
     expect(result.choices[0].text).toBe('Demand an explanation');
-    expect(result.choices[0].choiceType).toBe('CONFRONTATION');
-    expect(result.choices[0].primaryDelta).toBe('INFORMATION_REVEALED');
+    expect(result.choices[0].choiceType).toBe('CONTEST');
+    expect(result.choices[0].primaryDelta).toBe('INFORMATION_STATE_CHANGE');
     expect(result.rawResponse).toBeDefined();
   });
 
   it('trims choice text whitespace', async () => {
     const body = {
       choices: [
-        { text: '  Demand an explanation  ', choiceType: 'CONFRONTATION', primaryDelta: 'INFORMATION_REVEALED' },
-        { text: '  Flee the scene  ', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+        { text: '  Demand an explanation  ', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' },
+        { text: '  Flee the scene  ', choiceType: 'WITHDRAW', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
       ],
     };
     mockSuccessResponse(body);
@@ -124,7 +124,7 @@ describe('generateChoiceGeneratorWithFallback', () => {
   });
 
   it('throws validation error for invalid response structure', async () => {
-    const body = { choices: [{ text: 'Go', choiceType: 'CONFRONTATION', primaryDelta: 'INFORMATION_REVEALED' }] };
+    const body = { choices: [{ text: 'Go', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' }] };
     mockSuccessResponse(body);
 
     await expect(

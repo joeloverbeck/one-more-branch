@@ -97,13 +97,13 @@ describe('LLM types', () => {
         choices: [
           {
             text: 'Take the left path',
-            choiceType: 'PATH_DIVERGENCE',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'NAVIGATE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Take the right path',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'GOAL_SHIFT',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'GOAL_PRIORITY_CHANGE',
           },
         ],
         currentLocation: 'Forest crossroads',
@@ -526,13 +526,13 @@ describe('LLM types', () => {
         choices: [
           {
             text: 'Hide behind the crates',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'EXPOSURE_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'SECRECY_EXPOSURE_CHANGE',
           },
           {
             text: 'Call out to the footsteps',
-            choiceType: 'CONFRONTATION',
-            primaryDelta: 'RELATIONSHIP_CHANGE',
+            choiceType: 'CONTEST',
+            primaryDelta: 'RELATIONSHIP_ALIGNMENT_CHANGE',
           },
         ],
         currentLocation: 'Dimly lit warehouse',
@@ -604,11 +604,11 @@ describe('LLM types', () => {
       const result: PageWriterResult = {
         narrative: 'The forest darkens as you step forward.',
         choices: [
-          { text: 'Draw your sword', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+          { text: 'Draw your sword', choiceType: 'CONTEST', primaryDelta: 'THREAT_LEVEL_CHANGE' },
           {
             text: 'Retreat quietly',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
         ],
         protagonistAffect: {
@@ -632,11 +632,11 @@ describe('LLM types', () => {
       const result: PageWriterResult = {
         narrative: 'The forest darkens as you step forward.',
         choices: [
-          { text: 'Draw your sword', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
+          { text: 'Draw your sword', choiceType: 'CONTEST', primaryDelta: 'THREAT_LEVEL_CHANGE' },
           {
             text: 'Retreat quietly',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
         ],
         currentLocation: 'Dark forest path',
@@ -680,12 +680,12 @@ describe('LLM types', () => {
           {
             text: 'Signal allies with the flare',
             choiceType: 'ALLIANCE_REINFORCEMENT',
-            primaryDelta: 'RELATIONSHIP_CHANGE',
+            primaryDelta: 'RELATIONSHIP_ALIGNMENT_CHANGE',
           },
           {
             text: 'Secure the tower doors',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'THREAT_SHIFT',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'THREAT_LEVEL_CHANGE',
           },
         ],
         protagonistAffect: {
@@ -730,8 +730,8 @@ describe('LLM types', () => {
       const result: PageWriterResult = {
         narrative: 'Test',
         choices: [
-          { text: 'A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          { text: 'A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+          { text: 'B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
         ],
         protagonistAffect: {
           primaryEmotion: 'neutral',
@@ -754,8 +754,8 @@ describe('LLM types', () => {
       const result: PageWriterResult = {
         narrative: 'Test',
         choices: [
-          { text: 'A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          { text: 'A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+          { text: 'B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
         ],
         currentLocation: '',
         threatsAdded: [],

@@ -125,8 +125,8 @@ export async function addChoice(
   storyId: StoryId,
   pageId: PageId,
   choiceText: string,
-  choiceType: ChoiceType = ChoiceType.TACTICAL_APPROACH,
-  primaryDelta: PrimaryDelta = PrimaryDelta.GOAL_SHIFT
+  choiceType: ChoiceType = ChoiceType.INTERVENE,
+  primaryDelta: PrimaryDelta = PrimaryDelta.GOAL_PRIORITY_CHANGE
 ): Promise<Page> {
   return withLock(storyId, async () => {
     const page = await loadPage(storyId, pageId);

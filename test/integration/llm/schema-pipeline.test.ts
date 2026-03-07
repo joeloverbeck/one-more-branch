@@ -137,13 +137,13 @@ describe('schema pipeline integration', () => {
         choices: [
           {
             text: 'Speak to the elder',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'GOAL_SHIFT',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'GOAL_PRIORITY_CHANGE',
           },
           {
             text: 'Wait in silence',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
           },
         ],
         currentLocation: 'The elder council chamber',
@@ -294,11 +294,11 @@ describe('schema pipeline integration', () => {
       const rawJson = {
         narrative: VALID_NARRATIVE,
         choices: [
-          { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Open the door', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
           {
             text: 'Climb the tower',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
           },
         ],
         threatsAdded: ['', '  ', 'Ghostly watcher', '\n'],

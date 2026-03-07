@@ -49,8 +49,8 @@ describe('llm barrel exports', () => {
     const pageWriterResult: PageWriterResult = {
       narrative: 'The bridge shakes as thunder rolls over the ravine.',
       choices: [
-        { text: 'Cross quickly', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-        { text: 'Retreat to camp', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Cross quickly', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+        { text: 'Retreat to camp', choiceType: 'WITHDRAW', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
       ],
       protagonistAffect: {
         primaryEmotion: 'fear',

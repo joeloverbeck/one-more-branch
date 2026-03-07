@@ -33,8 +33,8 @@ function buildWriterResult(overrides?: Partial<PageWriterResult>): PageWriterRes
     choices: [
       {
         text: 'Hide deeper',
-        choiceType: ChoiceType.TACTICAL_APPROACH,
-        primaryDelta: PrimaryDelta.LOCATION_CHANGE,
+        choiceType: ChoiceType.INTERVENE,
+        primaryDelta: PrimaryDelta.LOCATION_ACCESS_CHANGE,
       },
     ],
     protagonistAffect: {

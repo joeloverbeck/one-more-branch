@@ -61,20 +61,20 @@ function mockFetchNetworkError(): jest.SpyInstance {
 
 const VALID_CHOICE_A = {
   text: 'Confront the guard directly',
-  choiceType: 'CONFRONTATION',
-  primaryDelta: 'THREAT_SHIFT',
+  choiceType: 'CONTEST',
+  primaryDelta: 'THREAT_LEVEL_CHANGE',
 };
 
 const VALID_CHOICE_B = {
   text: 'Sneak past through the shadows',
-  choiceType: 'TACTICAL_APPROACH',
-  primaryDelta: 'LOCATION_CHANGE',
+  choiceType: 'INTERVENE',
+  primaryDelta: 'LOCATION_ACCESS_CHANGE',
 };
 
 const VALID_CHOICE_C = {
   text: 'Search for an alternate route',
-  choiceType: 'INVESTIGATION',
-  primaryDelta: 'INFORMATION_REVEALED',
+  choiceType: 'INVESTIGATE',
+  primaryDelta: 'INFORMATION_STATE_CHANGE',
 };
 
 const BASE_WRITER_OUTPUT = {
@@ -145,8 +145,8 @@ describe('buildSupplementaryMessages', () => {
     const messages = buildSupplementaryMessages('Narrative.', 'Summary.', [VALID_CHOICE_A]);
     const userContent = messages[1]!.content;
     expect(userContent).toContain('Confront the guard directly');
-    expect(userContent).toContain('CONFRONTATION');
-    expect(userContent).toContain('THREAT_SHIFT');
+    expect(userContent).toContain('CONTEST');
+    expect(userContent).toContain('THREAT_LEVEL_CHANGE');
   });
 
   it('truncates narrative exceeding 2000 chars', () => {
@@ -181,7 +181,7 @@ describe('validateSupplementaryResponse', () => {
   });
 
   it('filters out choices with invalid choiceType', () => {
-    const invalid = { text: 'Do something', choiceType: 'INVALID_TYPE', primaryDelta: 'GOAL_SHIFT' };
+    const invalid = { text: 'Do something', choiceType: 'INVALID_TYPE', primaryDelta: 'GOAL_PRIORITY_CHANGE' };
     const result = validateSupplementaryResponse([VALID_CHOICE_B, invalid]);
     expect(result).toHaveLength(1);
     expect(result![0]!.text).toBe(VALID_CHOICE_B.text);
@@ -190,7 +190,7 @@ describe('validateSupplementaryResponse', () => {
   it('filters out choices with invalid primaryDelta', () => {
     const invalid = {
       text: 'Do something',
-      choiceType: 'TACTICAL_APPROACH',
+      choiceType: 'INTERVENE',
       primaryDelta: 'INVALID_DELTA',
     };
     const result = validateSupplementaryResponse([invalid, VALID_CHOICE_C]);
@@ -201,8 +201,8 @@ describe('validateSupplementaryResponse', () => {
   it('filters out choices with text shorter than 3 chars', () => {
     const tooShort = {
       text: 'Go',
-      choiceType: 'TACTICAL_APPROACH',
-      primaryDelta: 'LOCATION_CHANGE',
+      choiceType: 'INTERVENE',
+      primaryDelta: 'LOCATION_ACCESS_CHANGE',
     };
     const result = validateSupplementaryResponse([tooShort, VALID_CHOICE_B]);
     expect(result).toHaveLength(1);
@@ -223,8 +223,8 @@ describe('validateSupplementaryResponse', () => {
   it('caps at 4 supplementary choices', () => {
     const choices = Array.from({ length: 6 }, (_, i) => ({
       text: `Choice number ${i + 1} with enough text`,
-      choiceType: 'TACTICAL_APPROACH',
-      primaryDelta: 'LOCATION_CHANGE',
+      choiceType: 'INTERVENE',
+      primaryDelta: 'LOCATION_ACCESS_CHANGE',
     }));
     const result = validateSupplementaryResponse(choices);
     expect(result).toHaveLength(4);
@@ -233,8 +233,8 @@ describe('validateSupplementaryResponse', () => {
   it('trims whitespace from choice text', () => {
     const choice = {
       text: '  Walk through the door  ',
-      choiceType: 'TACTICAL_APPROACH',
-      primaryDelta: 'LOCATION_CHANGE',
+      choiceType: 'INTERVENE',
+      primaryDelta: 'LOCATION_ACCESS_CHANGE',
     };
     const result = validateSupplementaryResponse([choice]);
     expect(result![0]!.text).toBe('Walk through the door');

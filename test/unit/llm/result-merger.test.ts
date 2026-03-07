@@ -25,8 +25,8 @@ describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
       beatResolution: 'The scene stabilizes',
     });
     const choices = [
-      { text: 'Go left', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT },
-      { text: 'Go right', choiceType: ChoiceType.INVESTIGATION, primaryDelta: PrimaryDelta.INFORMATION_REVEALED },
+      { text: 'Go left', choiceType: ChoiceType.INTERVENE, primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE },
+      { text: 'Go right', choiceType: ChoiceType.INVESTIGATE, primaryDelta: PrimaryDelta.INFORMATION_STATE_CHANGE },
     ];
 
     const result = mergePageWriterAndReconciledStateWithAnalystResults(

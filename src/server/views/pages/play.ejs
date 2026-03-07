@@ -322,15 +322,30 @@
                        title="<%= primaryDeltaLabels[choice.primaryDelta] || '' %>"
                        width="32" height="32" loading="lazy"
                        onerror="this.style.display='none'">
+                  <% if (choice.choiceShape) { %>
+                  <img class="choice-icon choice-icon--shape"
+                       src="/images/icons/<%= choice.choiceShape.toLowerCase().replace(/_/g, '-') %>.png"
+                       alt=""
+                       title="<%= choiceShapeLabels[choice.choiceShape] || '' %>"
+                       width="32" height="32" loading="lazy"
+                       onerror="this.style.display='none'">
+                  <% } %>
                 </span>
                 <button
-                  class="choice-btn"
+                  class="choice-btn<%= choice.choiceShape ? ' choice-shape--' + choice.choiceShape.toLowerCase() : '' %>"
                   data-choice-index="<%= index %>"
                   data-choice-type="<%= choice.choiceType %>"
                   data-primary-delta="<%= choice.primaryDelta %>"
+                  <% if (choice.choiceSubtype) { %>data-choice-subtype="<%= choice.choiceSubtype %>"<% } %>
+                  <% if (choice.choiceShape) { %>data-choice-shape="<%= choice.choiceShape %>"<% } %>
                   <% if (choice.nextPageId) { %>data-explored="true"<% } %>
                 >
-                  <span class="choice-text"><%= choice.text %></span>
+                  <span class="choice-text-group">
+                    <span class="choice-text"><%= choice.text %></span>
+                    <% if (choice.choiceSubtype) { %>
+                    <span class="choice-subtype">&#8627; <%= choice.choiceSubtype %></span>
+                    <% } %>
+                  </span>
                 </button>
                 <% if (choice.nextPageId) { %>
                 <span class="explored-marker" title="Previously explored">&#8617;</span>
@@ -384,27 +399,31 @@
             </div>
             <div class="custom-choice-enums">
               <select class="custom-choice-type">
-                <option value="TACTICAL_APPROACH">Method/Tactic</option>
-                <option value="MORAL_DILEMMA">Moral Choice</option>
-                <option value="IDENTITY_EXPRESSION">Define Yourself</option>
-                <option value="RELATIONSHIP_SHIFT">Relationship</option>
-                <option value="RESOURCE_COMMITMENT">Spend/Risk</option>
-                <option value="INVESTIGATION">Investigate</option>
-                <option value="PATH_DIVERGENCE">Change Direction</option>
-                <option value="CONFRONTATION">Confront/Fight</option>
-                <option value="AVOIDANCE_RETREAT">Avoid/Flee</option>
+                <option value="INVESTIGATE">Investigate</option>
+                <option value="REVEAL">Reveal</option>
+                <option value="PERSUADE">Persuade</option>
+                <option value="CONNECT">Connect</option>
+                <option value="DECEIVE">Deceive</option>
+                <option value="CONTEST">Contest</option>
+                <option value="COMMIT">Commit</option>
+                <option value="INTERVENE">Intervene</option>
+                <option value="NAVIGATE">Navigate</option>
+                <option value="WITHDRAW">Withdraw</option>
+                <option value="SUBMIT">Submit</option>
               </select>
               <select class="custom-choice-delta">
-                <option value="LOCATION_CHANGE">Location</option>
-                <option value="GOAL_SHIFT">Goal</option>
-                <option value="RELATIONSHIP_CHANGE">Relationship</option>
-                <option value="URGENCY_CHANGE">Time Pressure</option>
-                <option value="ITEM_CONTROL">Item</option>
-                <option value="EXPOSURE_CHANGE">Attention</option>
-                <option value="CONDITION_CHANGE">Condition</option>
-                <option value="INFORMATION_REVEALED">Information</option>
-                <option value="THREAT_SHIFT">Danger</option>
-                <option value="CONSTRAINT_CHANGE">Limitation</option>
+                <option value="LOCATION_ACCESS_CHANGE">Location</option>
+                <option value="GOAL_PRIORITY_CHANGE">Goal</option>
+                <option value="RELATIONSHIP_ALIGNMENT_CHANGE">Relationship</option>
+                <option value="TIME_PRESSURE_CHANGE">Time Pressure</option>
+                <option value="RESOURCE_CONTROL_CHANGE">Resource</option>
+                <option value="INFORMATION_STATE_CHANGE">Information</option>
+                <option value="SECRECY_EXPOSURE_CHANGE">Exposure</option>
+                <option value="CONDITION_STATUS_CHANGE">Condition</option>
+                <option value="THREAT_LEVEL_CHANGE">Danger</option>
+                <option value="OBLIGATION_RULE_CHANGE">Obligation</option>
+                <option value="POWER_AUTHORITY_CHANGE">Power</option>
+                <option value="IDENTITY_REPUTATION_CHANGE">Identity</option>
               </select>
             </div>
             <div class="alert alert-error play-error" id="play-error" style="display: none;" role="alert" aria-live="polite"></div>

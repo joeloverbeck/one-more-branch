@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ChoiceType, PrimaryDelta } from '../../models/choice-enums.js';
+import { ChoiceType, ChoiceShape, PrimaryDelta } from '../../models/choice-enums.js';
 
 const ChoiceObjectSchema = z.object({
   text: z
@@ -8,6 +8,8 @@ const ChoiceObjectSchema = z.object({
     .max(500, 'Choice text must be at most 500 characters'),
   choiceType: z.nativeEnum(ChoiceType),
   primaryDelta: z.nativeEnum(PrimaryDelta),
+  choiceSubtype: z.string().nullable().optional(),
+  choiceShape: z.nativeEnum(ChoiceShape).nullable().optional(),
 });
 
 export const ChoiceGeneratorResultSchema = z

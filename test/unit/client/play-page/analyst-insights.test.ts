@@ -387,8 +387,8 @@ describe('analyst insights modal', () => {
       analystResult: createMockAnalystResult({ sceneMomentum: 'STASIS' }),
       isEnding: false,
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
     loadAppAndInit();
@@ -405,7 +405,7 @@ describe('analyst insights modal', () => {
             narrativeText: 'Next page.',
             sceneSummary: 'The scene unfolded dramatically.',
             choices: [
-              { text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+              { text: 'Continue', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
             ],
             isEnding: false,
             analystResult: createMockAnalystResult({

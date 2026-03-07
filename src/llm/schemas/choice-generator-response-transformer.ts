@@ -12,6 +12,8 @@ export function validateChoiceGeneratorResponse(
       text: choice.text.trim(),
       choiceType: choice.choiceType,
       primaryDelta: choice.primaryDelta,
+      ...(choice.choiceSubtype != null ? { choiceSubtype: choice.choiceSubtype } : {}),
+      ...(choice.choiceShape != null ? { choiceShape: choice.choiceShape } : {}),
     })),
     rawResponse,
   };

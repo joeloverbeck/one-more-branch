@@ -1,4 +1,8 @@
-import { CHOICE_TYPE_VALUES, PRIMARY_DELTA_VALUES } from '../models/choice-enums.js';
+import {
+  CHOICE_TYPE_VALUES,
+  CHOICE_SHAPE_VALUES,
+  PRIMARY_DELTA_VALUES,
+} from '../models/choice-enums.js';
 
 export const WRITER_REQUIRED_FIELDS = [
   'narrative',
@@ -10,6 +14,7 @@ export const WRITER_CHOICE_REQUIRED_FIELDS = ['text', 'choiceType', 'primaryDelt
 
 export const WRITER_CHOICE_TYPE_ENUM = [...CHOICE_TYPE_VALUES];
 export const WRITER_PRIMARY_DELTA_ENUM = [...PRIMARY_DELTA_VALUES];
+export const WRITER_CHOICE_SHAPE_ENUM = [...CHOICE_SHAPE_VALUES];
 
 export const WRITER_EMOTION_INTENSITY_ENUM = [
   'mild',

@@ -46,8 +46,8 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   const pageId = options.pageId ?? 1;
   const narrativeText = options.narrativeText ?? 'You stand at a crossroads.';
   const choices = options.choices ?? [
-    { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-    { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
+    { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+    { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
   ];
   const isEnding = options.isEnding ?? false;
   const openThreads = options.openThreads ?? [];
@@ -191,12 +191,12 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
     </div>
     <div class="custom-choice-enums">
       <select class="custom-choice-type">
-        <option value="TACTICAL_APPROACH">Method/Tactic</option>
-        <option value="MORAL_DILEMMA">Moral Choice</option>
+        <option value="INTERVENE">Method/Tactic</option>
+        <option value="COMMIT">Moral Choice</option>
       </select>
       <select class="custom-choice-delta">
-        <option value="LOCATION_CHANGE">Location</option>
-        <option value="GOAL_SHIFT">Goal</option>
+        <option value="LOCATION_ACCESS_CHANGE">Location</option>
+        <option value="GOAL_PRIORITY_CHANGE">Goal</option>
       </select>
     </div>
     <div class="alert alert-error play-error" id="play-error" style="display: none;" role="alert" aria-live="polite"></div>

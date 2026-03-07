@@ -47,8 +47,8 @@ jest.mock('@/llm', () => ({
   generateStateAccountant: jest.fn(),
   generateChoices: jest.fn().mockResolvedValue({
     choices: [
-      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Option A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Option B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ],
     rawResponse: '{}',
   }),
@@ -274,13 +274,13 @@ const openingResult = createMockFinalResult({
   choices: [
     {
       text: 'Pursue the masked courier through the archive tunnels',
-      choiceType: 'TACTICAL_APPROACH',
-      primaryDelta: 'GOAL_SHIFT',
+      choiceType: 'INTERVENE',
+      primaryDelta: 'GOAL_PRIORITY_CHANGE',
     },
     {
       text: 'Hide in the crowd and decode the clock anomaly first',
-      choiceType: 'INVESTIGATION',
-      primaryDelta: 'INFORMATION_REVEALED',
+      choiceType: 'INVESTIGATE',
+      primaryDelta: 'INFORMATION_STATE_CHANGE',
     },
   ],
   currentLocation: 'Rain-soaked capital square',
@@ -308,13 +308,13 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): PageWrit
       choices: [
         {
           text: 'Press deeper toward the signal source',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
         },
         {
           text: 'Retreat and brief your contact',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       currentLocation: 'Submerged archive tunnel',
@@ -347,13 +347,13 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): PageWrit
       choices: [
         {
           text: 'Exfiltrate with the logs',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
         },
         {
           text: 'Trigger a distraction in the chamber',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       currentLocation: 'Signal chamber deep in archive',
@@ -385,13 +385,13 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): PageWrit
     choices: [
       {
         text: 'Follow a rotation change to the east gate',
-        choiceType: 'TACTICAL_APPROACH',
-        primaryDelta: 'GOAL_SHIFT',
+        choiceType: 'INTERVENE',
+        primaryDelta: 'GOAL_PRIORITY_CHANGE',
       },
       {
         text: 'Wait for a second anomaly cycle',
-        choiceType: 'INVESTIGATION',
-        primaryDelta: 'INFORMATION_REVEALED',
+        choiceType: 'INVESTIGATE',
+        primaryDelta: 'INFORMATION_STATE_CHANGE',
       },
     ],
     currentLocation: 'Hidden in capital square crowd',
@@ -486,8 +486,8 @@ describe('Structured Story E2E', () => {
       if (context.narrative.includes('rain-soaked capital')) {
         return Promise.resolve({
           choices: [
-            { text: 'Pursue the masked courier through the archive tunnels', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
-            { text: 'Hide in the crowd and decode the clock anomaly first', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+            { text: 'Pursue the masked courier through the archive tunnels', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
+            { text: 'Hide in the crowd and decode the clock anomaly first', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
           ],
           rawResponse: '{}',
         });
@@ -495,8 +495,8 @@ describe('Structured Story E2E', () => {
       if (context.narrative.includes('catch the courier')) {
         return Promise.resolve({
           choices: [
-            { text: 'Press deeper toward the signal source', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
-            { text: 'Retreat and brief your contact', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+            { text: 'Press deeper toward the signal source', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
+            { text: 'Retreat and brief your contact', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
           ],
           rawResponse: '{}',
         });
@@ -504,16 +504,16 @@ describe('Structured Story E2E', () => {
       if (context.narrative.includes('signal chamber')) {
         return Promise.resolve({
           choices: [
-            { text: 'Exfiltrate with the logs', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
-            { text: 'Trigger a distraction in the chamber', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+            { text: 'Exfiltrate with the logs', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
+            { text: 'Trigger a distraction in the chamber', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
           ],
           rawResponse: '{}',
         });
       }
       return Promise.resolve({
         choices: [
-          { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
-          { text: 'Investigate surroundings', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          { text: 'Continue forward', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
+          { text: 'Investigate surroundings', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
         ],
         rawResponse: '{}',
       });

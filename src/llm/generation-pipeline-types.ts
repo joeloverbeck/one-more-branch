@@ -1,5 +1,5 @@
 import type { PageId } from '../models/id.js';
-import type { ChoiceType, PrimaryDelta } from '../models/choice-enums.js';
+import type { ChoiceType, ChoiceShape, PrimaryDelta } from '../models/choice-enums.js';
 import type { DeviationResult } from '../models/story-arc.js';
 import type { StateReconciliationResult } from '../engine/state-reconciler-types.js';
 import type {
@@ -46,6 +46,8 @@ export interface ContinuationGenerationResult
     text: string;
     choiceType: ChoiceType;
     primaryDelta: PrimaryDelta;
+    choiceSubtype?: string;
+    choiceShape?: ChoiceShape;
   }>;
   readonly beatConcluded: boolean;
   readonly beatResolution: string;

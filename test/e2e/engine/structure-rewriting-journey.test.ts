@@ -47,8 +47,8 @@ jest.mock('@/llm', () => ({
   generateStateAccountant: jest.fn(),
   generateChoices: jest.fn().mockResolvedValue({
     choices: [
-      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Option A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Option B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ],
     rawResponse: '{}',
   }),
@@ -274,13 +274,13 @@ const openingResult = createMockFinalResult({
   choices: [
     {
       text: 'Commit to the alliance publicly',
-      choiceType: 'TACTICAL_APPROACH',
-      primaryDelta: 'GOAL_SHIFT',
+      choiceType: 'INTERVENE',
+      primaryDelta: 'GOAL_PRIORITY_CHANGE',
     },
     {
       text: 'Refuse and go underground',
-      choiceType: 'INVESTIGATION',
-      primaryDelta: 'INFORMATION_REVEALED',
+      choiceType: 'INVESTIGATE',
+      primaryDelta: 'INFORMATION_STATE_CHANGE',
     },
   ],
   currentLocation: 'Flooded parliament steps',
@@ -406,13 +406,13 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
       choices: [
         {
           text: 'Leak your true intent to a dockworker ally',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
         },
         {
           text: 'Double down publicly to gain rank',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       currentLocation: 'Alliance chamber interior',
@@ -440,13 +440,13 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
       choices: [
         {
           text: 'Rebuild trust with dockworkers',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
         },
         {
           text: 'Attempt immediate forum confrontation',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       currentLocation: 'Alliance controlled territory',
@@ -580,8 +580,8 @@ describe('Structure Rewriting Journey E2E', () => {
       if (context.narrative.includes('parliament steps')) {
         return Promise.resolve({
           choices: [
-            { text: 'Commit to the alliance publicly', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
-            { text: 'Refuse and go underground', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+            { text: 'Commit to the alliance publicly', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
+            { text: 'Refuse and go underground', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
           ],
           rawResponse: '{}',
         });
@@ -589,8 +589,8 @@ describe('Structure Rewriting Journey E2E', () => {
       if (context.narrative.includes('copy sealed dispatches')) {
         return Promise.resolve({
           choices: [
-            { text: 'Leak your true intent to a dockworker ally', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
-            { text: 'Double down publicly to gain rank', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+            { text: 'Leak your true intent to a dockworker ally', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
+            { text: 'Double down publicly to gain rank', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
           ],
           rawResponse: '{}',
         });
@@ -598,16 +598,16 @@ describe('Structure Rewriting Journey E2E', () => {
       if (context.narrative.includes('covert leak is exposed')) {
         return Promise.resolve({
           choices: [
-            { text: 'Rebuild trust with dockworkers', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
-            { text: 'Attempt immediate forum confrontation', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+            { text: 'Rebuild trust with dockworkers', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
+            { text: 'Attempt immediate forum confrontation', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
           ],
           rawResponse: '{}',
         });
       }
       return Promise.resolve({
         choices: [
-          { text: 'Option A', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
-          { text: 'Option B', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          { text: 'Option A', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
+          { text: 'Option B', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
         ],
         rawResponse: '{}',
       });

@@ -7,48 +7,73 @@
 
 ## Summary
 
-The State Accountant currently receives the full story context (~150KB) — identical to what the Planner receives. The Accountant's job is to generate state mutation intents from the Planner's reduced plan. It likely doesn't need the full story structure, world facts, or spine to do this. Reduce its context to state-relevant information only.
+The State Accountant currently receives the Planner's full continuation context via `buildPlannerContinuationContextSection()`. This monolithic builder includes many planner-specific sections that are irrelevant to state mutation planning. Create a dedicated accountant context builder that includes only state-relevant sections.
 
 ## Problem
 
-The Accountant receives via `PagePlanContext`:
-- Full story structure (acts, beats, pacing) — likely not needed for state mutations
-- Full decomposed world facts — likely not needed unless location changes
-- Full spine — not needed for state mutations
-- Tone keywords — not needed for state mutations
-- Full decomposed characters — may be partially needed for character state changes
+The accountant reuses `buildPlannerContinuationContextSection()` from `src/llm/prompts/sections/planner/continuation-context.ts`. This function includes sections the accountant does not need:
 
-The Accountant only needs:
-- The Planner's reduced plan (scene intent, continuity anchors)
-- Current active state (to know what can be mutated)
-- Character names and key traits (for character state changes)
-- Current inventory/health (to know what exists)
+**Planner-specific sections (not needed for state mutations):**
+- **Dramatic Irony Opportunities** — analyst output about character beliefs/secrets/false beliefs; irrelevant to state mutation intents
+- **Escalation Directive** — beat role instructions (escalation, turning point, reflection, midpoint directives); guides scene planning, not state changes
+- **Pacing Briefing** — analyst pacing nudge/directive and momentum trajectory warnings; irrelevant to state intent generation
+- **Thematic Trajectory Warning** — warns about consecutive thematic valence trends; planner concern only
+- **Narrative Focus Warning** — warns about broadening vs deepening trends; planner concern only
+- **Premise Promise Warning** — late-act unfulfilled premise promises; planner concern only
+- **Value Spectrum Guidance** (McKee) — moral argument and value spectrum tracking; planner concern only
+- **Grandparent narrative** — full text of scene-before-last for style continuity; not needed for state mutations
+- **Tone drift warning** — analyst tone drift correction; planner concern only
+
+**Duplicate sections (already built separately in `state-accountant-prompt.ts`):**
+- **Thread Aging** — built at line 107-109 of `state-accountant-prompt.ts`, also included inside `buildPlannerContinuationContextSection()` at line 675
+- **Tracked Promises** — built at lines 111-116 of `state-accountant-prompt.ts`, also included inside `buildPlannerContinuationContextSection()` at line 677-679
+- **Payoff Feedback** — built at lines 118-125 of `state-accountant-prompt.ts`, also included inside `buildPlannerContinuationContextSection()` at line 681-683
+
+**Sections the accountant DOES need (must be retained):**
+- World facts (state mutations must validate against world entities)
+- Decomposed characters (needed for character state changes)
+- Story structure + accumulated structure state (tells accountant which beat/act we're in, affecting state scope)
+- Spine (referenced in accountant rules: "consider how state changes serve the Need vs Want conflict")
+- Tone/toneFeel/toneAvoid (already in system prompt)
+- All active state sections (location, threats, constraints, threads)
+- Inventory, health, character state, canon
+- NPC agendas and relationships
+- Previous narrative and player's choice (context for what state changed)
+- Protagonist affect (emotional context for state decisions)
+- Earlier scene summaries (narrative context)
+- Pending consequences (state-relevant: tracks delayed consequences with trigger conditions)
 
 ## Proposed Fix
 
-1. Create a `StateAccountantContext` type that is a subset of `PagePlanContext`
-2. Include only: reduced plan, active state, inventory, health, character state, character names, current location
-3. Update `accountant-generation.ts` to accept the reduced context
-4. Update `accountant-prompt-builder.ts` to build from reduced context
-5. Verify generated state intents remain equivalent quality
+1. **Create `buildAccountantContinuationContextSection()`** in `src/llm/prompts/sections/planner/continuation-context.ts`:
+   - Copy from `buildPlannerContinuationContextSection()` but remove the planner-specific sections listed above
+   - Remove: `buildPacingBriefingSection`, `buildThematicTrajectoryWarningSection`, `buildNarrativeFocusWarningSection`, `buildEscalationDirective`, `buildPremisePromiseWarningSection`, `buildValueSpectrumGuidanceSection`, `buildDramaticIronyOpportunitiesSection`, grandparent narrative, tone drift warning
+   - Remove: `buildThreadAgingSection`, `buildTrackedPromisesSection`, `buildPayoffFeedbackSection` (these are already built separately in the accountant prompt)
+
+2. **Update `src/llm/prompts/state-accountant-prompt.ts`**:
+   - Import and use `buildAccountantContinuationContextSection()` instead of `buildPlannerContinuationContextSection()`
+   - Keep the existing standalone thread aging, tracked promises, and payoff feedback sections (they use accountant-specific options like `includePromiseIds: false`)
+
+3. **Export the new function** from `src/llm/prompts/sections/planner/index.ts`
 
 ## Files to Touch
 
-- `src/llm/accountant-generation.ts` — accept reduced context type
-- `src/llm/prompts/accountant-prompt-builder.ts` — build from reduced context
-- `src/engine/page-service.ts` — construct reduced context for accountant
-- `test/` — update mocks and tests
+- `src/llm/prompts/sections/planner/continuation-context.ts` — add `buildAccountantContinuationContextSection()`
+- `src/llm/prompts/sections/planner/index.ts` — export new function
+- `src/llm/prompts/state-accountant-prompt.ts` — use new context builder
+- `test/` — update any tests that mock or assert on accountant prompt content
 
 ## Risks
 
-- Accountant may need more context than expected for edge cases (e.g., world-fact-driven state changes)
-- Should A/B test: compare state intent quality with full vs. reduced context
-- Mitigation: start with conservative reduction (keep characters, drop structure/spine/world), expand later
+- **Low risk**: The removed sections are clearly planner-specific (planning directives, trajectory warnings, style continuity text) and have no bearing on state mutation intent generation
+- **Mitigation**: The accountant retains all state-relevant context (active state, inventory, health, characters, world facts, structure, spine, canon, NPC state, pending consequences)
+- **Verification**: Compare accountant prompt token counts before and after; verify state intent quality is unchanged
 
 ## Acceptance Criteria
 
 - [ ] `npm run typecheck` passes
-- [ ] Accountant receives reduced context (no full structure, spine, or world facts)
-- [ ] Generated state intents remain coherent with planner intent
-- [ ] Token usage for Accountant stage reduced by ~30-40%
+- [ ] `npm run lint` passes
+- [ ] Accountant continuation prompt no longer includes: dramatic irony, escalation directive, pacing briefing, thematic trajectory, narrative focus, premise promise warning, value spectrum, grandparent narrative, tone drift warning
+- [ ] Accountant continuation prompt no longer duplicates thread aging, tracked promises, or payoff feedback sections
 - [ ] All existing tests pass
+- [ ] Token usage for Accountant continuation stage reduced (estimated ~20-30% reduction)

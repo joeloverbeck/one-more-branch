@@ -33,8 +33,8 @@ describe('escapeHtml and escapeHtmlWithBreaks (exercised through DOM)', () => {
   function clickAndGetNarrative(narrativeText: string): Promise<string> {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
     loadAppAndInit();
@@ -46,7 +46,7 @@ describe('escapeHtml and escapeHtmlWithBreaks (exercised through DOM)', () => {
           page: {
             id: 2,
             narrativeText,
-            choices: [{ text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
+            choices: [{ text: 'Go', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' }],
             isEnding: false,
             openThreads: [],
             openThreadOverflowSummary: null,
@@ -95,8 +95,8 @@ describe('escapeHtml and escapeHtmlWithBreaks (exercised through DOM)', () => {
   it('escapes HTML in state changes', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
     loadAppAndInit();
@@ -108,7 +108,7 @@ describe('escapeHtml and escapeHtmlWithBreaks (exercised through DOM)', () => {
           page: {
             id: 2,
             narrativeText: 'Story.',
-            choices: [{ text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
+            choices: [{ text: 'Go', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' }],
             isEnding: false,
             openThreads: [],
             openThreadOverflowSummary: null,

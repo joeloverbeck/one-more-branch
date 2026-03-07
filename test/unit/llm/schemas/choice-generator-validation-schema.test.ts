@@ -4,8 +4,8 @@ import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 function makeChoice(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     text: 'Demand an explanation',
-    choiceType: ChoiceType.CONFRONTATION,
-    primaryDelta: PrimaryDelta.INFORMATION_REVEALED,
+    choiceType: ChoiceType.CONTEST,
+    primaryDelta: PrimaryDelta.INFORMATION_STATE_CHANGE,
     ...overrides,
   };
 }
@@ -15,7 +15,7 @@ describe('ChoiceGeneratorResultSchema', () => {
     const input = {
       choices: [
         makeChoice(),
-        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.AVOIDANCE_RETREAT, primaryDelta: PrimaryDelta.LOCATION_CHANGE }),
+        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.WITHDRAW, primaryDelta: PrimaryDelta.LOCATION_ACCESS_CHANGE }),
       ],
     };
     expect(() => ChoiceGeneratorResultSchema.parse(input)).not.toThrow();
@@ -25,8 +25,8 @@ describe('ChoiceGeneratorResultSchema', () => {
     const input = {
       choices: [
         makeChoice(),
-        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.AVOIDANCE_RETREAT }),
-        makeChoice({ text: 'Investigate quietly', choiceType: ChoiceType.INVESTIGATION }),
+        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.WITHDRAW }),
+        makeChoice({ text: 'Investigate quietly', choiceType: ChoiceType.INVESTIGATE }),
       ],
     };
     expect(() => ChoiceGeneratorResultSchema.parse(input)).not.toThrow();
@@ -40,7 +40,7 @@ describe('ChoiceGeneratorResultSchema', () => {
   it('rejects more than 5 choices', () => {
     const input = {
       choices: Array.from({ length: 6 }, (_, i) =>
-        makeChoice({ text: `Choice ${i + 1}`, choiceType: Object.values(ChoiceType)[i % 9] })
+        makeChoice({ text: `Choice ${i + 1}`, choiceType: Object.values(ChoiceType)[i % Object.values(ChoiceType).length] })
       ),
     };
     expect(() => ChoiceGeneratorResultSchema.parse(input)).toThrow(/at most 5 choices/);
@@ -50,7 +50,7 @@ describe('ChoiceGeneratorResultSchema', () => {
     const input = {
       choices: [
         makeChoice({ text: 'Demand an explanation' }),
-        makeChoice({ text: 'DEMAND AN EXPLANATION', choiceType: ChoiceType.INVESTIGATION }),
+        makeChoice({ text: 'DEMAND AN EXPLANATION', choiceType: ChoiceType.INVESTIGATE }),
       ],
     };
     expect(() => ChoiceGeneratorResultSchema.parse(input)).toThrow(/unique/i);
@@ -60,7 +60,7 @@ describe('ChoiceGeneratorResultSchema', () => {
     const input = {
       choices: [
         makeChoice({ text: 'Go' }),
-        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.AVOIDANCE_RETREAT }),
+        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.WITHDRAW }),
       ],
     };
     expect(() => ChoiceGeneratorResultSchema.parse(input)).toThrow(/at least 3 characters/);
@@ -70,7 +70,7 @@ describe('ChoiceGeneratorResultSchema', () => {
     const input = {
       choices: [
         makeChoice({ text: 'x'.repeat(501) }),
-        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.AVOIDANCE_RETREAT }),
+        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.WITHDRAW }),
       ],
     };
     expect(() => ChoiceGeneratorResultSchema.parse(input)).toThrow(/at most 500 characters/);
@@ -80,7 +80,7 @@ describe('ChoiceGeneratorResultSchema', () => {
     const input = {
       choices: [
         makeChoice({ choiceType: 'INVALID_TYPE' }),
-        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.AVOIDANCE_RETREAT }),
+        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.WITHDRAW }),
       ],
     };
     expect(() => ChoiceGeneratorResultSchema.parse(input)).toThrow();
@@ -90,7 +90,7 @@ describe('ChoiceGeneratorResultSchema', () => {
     const input = {
       choices: [
         makeChoice({ primaryDelta: 'INVALID_DELTA' }),
-        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.AVOIDANCE_RETREAT }),
+        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.WITHDRAW }),
       ],
     };
     expect(() => ChoiceGeneratorResultSchema.parse(input)).toThrow();

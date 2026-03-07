@@ -23,8 +23,8 @@ jest.mock('@/llm', () => ({
   generateStateAccountant: jest.fn(),
   generateChoices: jest.fn().mockResolvedValue({
     choices: [
-      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Option A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Option B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ],
     rawResponse: '{}',
   }),
@@ -87,18 +87,18 @@ const openingResult = createMockFinalResult({
   choices: [
     {
       text: 'Scout the beacon tower before midnight',
-      choiceType: 'TACTICAL_APPROACH',
-      primaryDelta: 'GOAL_SHIFT',
+      choiceType: 'INTERVENE',
+      primaryDelta: 'GOAL_PRIORITY_CHANGE',
     },
     {
       text: 'Check the patrol schedules at the border checkpoint',
-      choiceType: 'INVESTIGATION',
-      primaryDelta: 'INFORMATION_REVEALED',
+      choiceType: 'INVESTIGATE',
+      primaryDelta: 'INFORMATION_STATE_CHANGE',
     },
     {
       text: 'Search for a safer hiding spot deeper in the stalled district',
-      choiceType: 'PATH_DIVERGENCE',
-      primaryDelta: 'LOCATION_CHANGE',
+      choiceType: 'NAVIGATE',
+      primaryDelta: 'LOCATION_ACCESS_CHANGE',
     },
   ],
   currentLocation: 'District boundary near cellar hideout',
@@ -134,13 +134,13 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): PageWrite
       choices: [
         {
           text: 'Climb the tower to disable the beacon',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
         },
         {
           text: 'Hide and observe the patrol pattern',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       currentLocation: 'Beacon tower base',
@@ -172,13 +172,13 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): PageWrite
       choices: [
         {
           text: 'Copy the full schedule and escape',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
         },
         {
           text: 'Sabotage the schedule board',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       currentLocation: 'Border checkpoint interior',
@@ -204,13 +204,13 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): PageWrite
       choices: [
         {
           text: 'Set up a long-term hideout',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
         },
         {
           text: 'Use the time dilation to plan your next move',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       currentLocation: 'Time-dilated warehouse in stalled district',
@@ -239,13 +239,13 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): PageWrite
     choices: [
       {
         text: 'Surrender to protect your sibling',
-        choiceType: 'TACTICAL_APPROACH',
-        primaryDelta: 'GOAL_SHIFT',
+        choiceType: 'INTERVENE',
+        primaryDelta: 'GOAL_PRIORITY_CHANGE',
       },
       {
         text: 'Make a desperate escape attempt',
-        choiceType: 'INVESTIGATION',
-        primaryDelta: 'INFORMATION_REVEALED',
+        choiceType: 'INVESTIGATE',
+        primaryDelta: 'INFORMATION_STATE_CHANGE',
       },
     ],
     currentLocation: 'Exposed position near patrol route',
@@ -277,13 +277,13 @@ const replayOpeningResult = createMockFinalResult({
   choices: [
     {
       text: 'Swim under the bridge while they argue',
-      choiceType: 'TACTICAL_APPROACH',
-      primaryDelta: 'GOAL_SHIFT',
+      choiceType: 'INTERVENE',
+      primaryDelta: 'GOAL_PRIORITY_CHANGE',
     },
     {
       text: 'Wait for the water level to change',
-      choiceType: 'INVESTIGATION',
-      primaryDelta: 'INFORMATION_REVEALED',
+      choiceType: 'INVESTIGATE',
+      primaryDelta: 'INFORMATION_STATE_CHANGE',
     },
   ],
   currentLocation: 'Canal waterway beneath bridge',
@@ -311,13 +311,13 @@ function buildReplayWriterResult(): ReturnType<typeof buildWriterResult> {
     choices: [
       {
         text: 'Surface at the safe house dock',
-        choiceType: 'TACTICAL_APPROACH',
-        primaryDelta: 'GOAL_SHIFT',
+        choiceType: 'INTERVENE',
+        primaryDelta: 'GOAL_PRIORITY_CHANGE',
       },
       {
         text: 'Continue underwater to the testimony hall',
-        choiceType: 'INVESTIGATION',
-        primaryDelta: 'INFORMATION_REVEALED',
+        choiceType: 'INVESTIGATE',
+        primaryDelta: 'INFORMATION_STATE_CHANGE',
       },
     ],
     currentLocation: 'Underwater passage beneath bridge',

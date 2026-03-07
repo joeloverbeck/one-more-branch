@@ -1,8 +1,8 @@
 import type { JsonSchema } from '../llm-client-types.js';
 import {
-  WRITER_CHOICE_REQUIRED_FIELDS,
   WRITER_CHOICE_TYPE_ENUM,
   WRITER_PRIMARY_DELTA_ENUM,
+  WRITER_CHOICE_SHAPE_ENUM,
 } from '../writer-contract.js';
 
 export const CHOICE_GENERATOR_SCHEMA: JsonSchema = {
@@ -27,20 +27,33 @@ export const CHOICE_GENERATOR_SCHEMA: JsonSchema = {
                 type: 'string',
                 enum: WRITER_CHOICE_TYPE_ENUM,
                 description:
-                  'What this choice is ABOUT. TACTICAL_APPROACH=method/tactic, MORAL_DILEMMA=value conflict, IDENTITY_EXPRESSION=self-definition, RELATIONSHIP_SHIFT=changing a relationship, RESOURCE_COMMITMENT=spending/risking something scarce, INVESTIGATION=examining/learning/revealing, PATH_DIVERGENCE=fundamentally different direction, CONFRONTATION=engaging/fighting, AVOIDANCE_RETREAT=fleeing/hiding/de-escalating.',
+                  'What the protagonist is mainly DOING. INVESTIGATE=learning, REVEAL=telling, PERSUADE=changing another\'s decision without force, CONNECT=aligning with/protecting/trusting someone, DECEIVE=misleading, CONTEST=open opposition, COMMIT=binding yourself through cost/promise, INTERVENE=acting on a system/object/environment, NAVIGATE=route/order/target selection, WITHDRAW=reducing contact/exposure, SUBMIT=yielding to external demand.',
               },
               primaryDelta: {
                 type: 'string',
                 enum: WRITER_PRIMARY_DELTA_ENUM,
                 description:
-                  'What this choice primarily CHANGES in the world. LOCATION_CHANGE=protagonist moves, GOAL_SHIFT=objective changes, RELATIONSHIP_CHANGE=NPC stance shifts, URGENCY_CHANGE=time pressure shifts, ITEM_CONTROL=significant object changes hands, EXPOSURE_CHANGE=attention/suspicion changes, CONDITION_CHANGE=physical condition changes, INFORMATION_REVEALED=new knowledge gained, THREAT_SHIFT=danger introduced/neutralized, CONSTRAINT_CHANGE=limitation imposed/lifted.',
+                  'What this choice primarily CHANGES in the world. LOCATION_ACCESS_CHANGE=protagonist moves or gains/loses access, GOAL_PRIORITY_CHANGE=objective changes or reprioritizes, RELATIONSHIP_ALIGNMENT_CHANGE=NPC stance/trust/alliance shifts, TIME_PRESSURE_CHANGE=urgency increases or decreases, RESOURCE_CONTROL_CHANGE=significant resource changes hands, INFORMATION_STATE_CHANGE=new knowledge gained or lost, SECRECY_EXPOSURE_CHANGE=how much attention/suspicion protagonist draws, CONDITION_STATUS_CHANGE=physical condition changes, THREAT_LEVEL_CHANGE=danger introduced/escalated/neutralized, OBLIGATION_RULE_CHANGE=limitation/rule imposed or lifted, POWER_AUTHORITY_CHANGE=hierarchy/authority shifts, IDENTITY_REPUTATION_CHANGE=how protagonist is perceived changes.',
+              },
+              choiceSubtype: {
+                anyOf: [{ type: 'string' }, { type: 'null' }],
+                description:
+                  'Optional free-text subtype for nuance, e.g. "CONFESSION", "BARGAIN", "DISGUISE". Null if not applicable.',
+              },
+              choiceShape: {
+                anyOf: [
+                  { type: 'string', enum: WRITER_CHOICE_SHAPE_ENUM },
+                  { type: 'null' },
+                ],
+                description:
+                  'What kind of pressure this choice creates. RELAXED=no urgency, OBVIOUS=clearly correct path, TRADEOFF=gain X lose Y, DILEMMA=two bad options, GAMBLE=unknown outcome, TEMPTATION=easy but costly, SACRIFICE=costly but right, FLAVOR=cosmetic difference. Null if not applicable.',
               },
             },
-            required: [...WRITER_CHOICE_REQUIRED_FIELDS],
+            required: ['text', 'choiceType', 'primaryDelta', 'choiceSubtype', 'choiceShape'],
             additionalProperties: false,
           },
           description:
-            'Array of 2-4 structured choice objects. Each choice MUST have a different choiceType OR primaryDelta from all other choices. Typically 3 choices; add a 4th only when truly warranted.',
+            'Array of 2-4 structured choice objects. No two choices may share both the same choiceType AND the same primaryDelta. Typically 3 choices; add a 4th only when truly warranted.',
         },
       },
       required: ['choices'],

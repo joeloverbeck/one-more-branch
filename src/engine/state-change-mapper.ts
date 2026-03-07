@@ -1,5 +1,5 @@
 import type { ActiveStateChanges } from '../models';
-import type { ChoiceType, PrimaryDelta } from '../models/choice-enums';
+import type { ChoiceType, ChoiceShape, PrimaryDelta } from '../models/choice-enums';
 import type { PageWriterResult } from '../llm/writer-types';
 import type { StateReconciliationResult } from './state-reconciler-types';
 
@@ -25,6 +25,8 @@ export type PageBuildResult = PageWriterResult &
       text: string;
       choiceType: ChoiceType;
       primaryDelta: PrimaryDelta;
+      choiceSubtype?: string;
+      choiceShape?: ChoiceShape;
     }>;
   };
 

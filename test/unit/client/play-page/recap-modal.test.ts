@@ -32,7 +32,7 @@ describe('story recap modal', () => {
         id: 2,
         narrativeText: 'Story continues.',
         sceneSummary: 'Scene two summary.',
-        choices: [{ text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
+        choices: [{ text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' }],
         isEnding: false,
         openThreads: [],
         openThreadOverflowSummary: null,
@@ -133,7 +133,7 @@ describe('story recap modal', () => {
     document.body.innerHTML = buildPlayPageHtml({
       recapSummaries: [{ pageId: 1, summary: 'Scene one summary.' }],
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
       ],
     });
     fetchMock.mockImplementation((url: string) => {

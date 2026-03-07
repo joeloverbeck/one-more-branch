@@ -61,8 +61,8 @@ jest.mock('@/llm', () => ({
   generateLorekeeperBible: jest.fn(),
   generateChoices: jest.fn().mockResolvedValue({
     choices: [
-      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Option A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Option B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ],
     rawResponse: '{}',
   }),
@@ -243,11 +243,11 @@ function buildOpeningResult(): ReconciliationWriterPayload {
     ...createMockPageWriterResult({
       narrative: 'You step into the fog-shrouded city as whispers follow your every step.',
       choices: [
-        { text: 'Follow the whispers', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Follow the whispers', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
         {
           text: 'Seek shelter in the tavern',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       protagonistAffect: createMockProtagonistAffect({
@@ -292,13 +292,13 @@ function buildContinuationResult(overrides?: Partial<PageWriterResult>): Reconci
       choices: [
         {
           text: 'Enter the marked door',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
         },
         {
           text: 'Double back to the square',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       protagonistAffect: createMockProtagonistAffect({

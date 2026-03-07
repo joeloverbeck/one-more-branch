@@ -15,6 +15,8 @@ interface ChoiceCandidate {
   readonly text: string;
   readonly choiceType: string;
   readonly primaryDelta: string;
+  readonly choiceSubtype?: string;
+  readonly choiceShape?: string;
 }
 
 function isValidChoice(candidate: unknown): candidate is ChoiceCandidate {
@@ -25,13 +27,17 @@ function isValidChoice(candidate: unknown): candidate is ChoiceCandidate {
   const text = obj['text'];
   const choiceType = obj['choiceType'];
   const primaryDelta = obj['primaryDelta'];
+  const choiceSubtype = obj['choiceSubtype'];
+  const choiceShape = obj['choiceShape'];
   return (
     typeof text === 'string' &&
     text.length >= 3 &&
     typeof choiceType === 'string' &&
     CHOICE_TYPE_SET.has(choiceType) &&
     typeof primaryDelta === 'string' &&
-    PRIMARY_DELTA_SET.has(primaryDelta)
+    PRIMARY_DELTA_SET.has(primaryDelta) &&
+    (choiceSubtype === undefined || choiceSubtype === null || typeof choiceSubtype === 'string') &&
+    (choiceShape === undefined || choiceShape === null || typeof choiceShape === 'string')
   );
 }
 
@@ -65,6 +71,8 @@ function attemptChoiceReconstruction(corruptedText: string): ChoiceCandidate[] |
         text: truncateAtWordBoundary(item.text, MAX_CHOICE_TEXT_LENGTH),
         choiceType: item.choiceType,
         primaryDelta: item.primaryDelta,
+        ...(item.choiceSubtype != null ? { choiceSubtype: item.choiceSubtype } : {}),
+        ...(item.choiceShape != null ? { choiceShape: item.choiceShape } : {}),
       });
     }
 

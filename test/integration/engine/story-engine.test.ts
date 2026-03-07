@@ -49,8 +49,8 @@ jest.mock('@/llm', () => ({
   generateLorekeeperBible: jest.fn(),
   generateChoices: jest.fn().mockResolvedValue({
     choices: [
-      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Option A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Option B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ],
     rawResponse: '{}',
   }),
@@ -262,13 +262,13 @@ const openingResult = createMockPageWriterResult({
   choices: [
     {
       text: 'Investigate the ember trail',
-      choiceType: 'TACTICAL_APPROACH',
-      primaryDelta: 'GOAL_SHIFT',
+      choiceType: 'INTERVENE',
+      primaryDelta: 'GOAL_PRIORITY_CHANGE',
     },
     {
       text: 'Question the ferryman',
-      choiceType: 'INVESTIGATION',
-      primaryDelta: 'INFORMATION_REVEALED',
+      choiceType: 'INVESTIGATE',
+      primaryDelta: 'INFORMATION_STATE_CHANGE',
     },
   ],
   protagonistAffect: createMockProtagonistAffect({
@@ -291,13 +291,13 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
       choices: [
         {
           text: 'Enter the ash-marked chapel',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
         },
         {
           text: 'Return to the docks with proof',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       protagonistAffect: createMockProtagonistAffect({
@@ -319,13 +319,13 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
     choices: [
       {
         text: 'Accept passage to the hidden pier',
-        choiceType: 'TACTICAL_APPROACH',
-        primaryDelta: 'GOAL_SHIFT',
+        choiceType: 'INTERVENE',
+        primaryDelta: 'GOAL_PRIORITY_CHANGE',
       },
       {
         text: 'Detain the ferryman for answers',
-        choiceType: 'INVESTIGATION',
-        primaryDelta: 'INFORMATION_REVEALED',
+        choiceType: 'INVESTIGATE',
+        primaryDelta: 'INFORMATION_STATE_CHANGE',
       },
     ],
     protagonistAffect: createMockProtagonistAffect({
@@ -508,8 +508,8 @@ describe('story-engine integration', () => {
       if (context.narrative.includes('harbor lights')) {
         return Promise.resolve({
           choices: [
-            { text: 'Investigate the ember trail', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
-            { text: 'Question the ferryman', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+            { text: 'Investigate the ember trail', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
+            { text: 'Question the ferryman', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
           ],
           rawResponse: '{}',
         });
@@ -517,16 +517,16 @@ describe('story-engine integration', () => {
       if (context.narrative.includes('embers down alleys')) {
         return Promise.resolve({
           choices: [
-            { text: 'Enter the ash-marked chapel', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
-            { text: 'Return to the docks with proof', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+            { text: 'Enter the ash-marked chapel', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
+            { text: 'Return to the docks with proof', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
           ],
           rawResponse: '{}',
         });
       }
       return Promise.resolve({
         choices: [
-          { text: 'Accept passage to the hidden pier', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
-          { text: 'Detain the ferryman for answers', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          { text: 'Accept passage to the hidden pier', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
+          { text: 'Detain the ferryman for answers', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
         ],
         rawResponse: '{}',
       });

@@ -15,10 +15,13 @@ export { Choice, createChoice, isChoice, isChoiceExplored } from './choice';
 export {
   ChoiceType,
   PrimaryDelta,
+  ChoiceShape,
   CHOICE_TYPE_VALUES,
   PRIMARY_DELTA_VALUES,
+  CHOICE_SHAPE_VALUES,
   CHOICE_TYPE_COLORS,
   PRIMARY_DELTA_LABELS,
+  CHOICE_SHAPE_LABELS,
 } from './choice-enums';
 
 export {

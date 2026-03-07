@@ -71,13 +71,13 @@ const validStructuredPayload = {
   choices: [
     {
       text: 'Advance toward the chanting',
-      choiceType: 'TACTICAL_APPROACH',
-      primaryDelta: 'GOAL_SHIFT',
+      choiceType: 'INTERVENE',
+      primaryDelta: 'GOAL_PRIORITY_CHANGE',
     },
     {
       text: 'Retreat and seal the grate',
-      choiceType: 'AVOIDANCE_RETREAT',
-      primaryDelta: 'LOCATION_CHANGE',
+      choiceType: 'WITHDRAW',
+      primaryDelta: 'LOCATION_ACCESS_CHANGE',
     },
   ],
   currentLocation: 'The drowned vault',

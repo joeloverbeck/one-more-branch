@@ -1,18 +1,29 @@
 import { isPageId, PageId } from './id';
-import { ChoiceType, CHOICE_TYPE_VALUES, PrimaryDelta, PRIMARY_DELTA_VALUES } from './choice-enums';
+import {
+  ChoiceType,
+  CHOICE_TYPE_VALUES,
+  ChoiceShape,
+  CHOICE_SHAPE_VALUES,
+  PrimaryDelta,
+  PRIMARY_DELTA_VALUES,
+} from './choice-enums';
 
 export interface Choice {
   readonly text: string;
   readonly choiceType: ChoiceType;
   readonly primaryDelta: PrimaryDelta;
+  readonly choiceSubtype?: string;
+  readonly choiceShape?: ChoiceShape;
   nextPageId: PageId | null;
 }
 
 export function createChoice(
   text: string,
   nextPageId: PageId | null = null,
-  choiceType: ChoiceType = ChoiceType.TACTICAL_APPROACH,
-  primaryDelta: PrimaryDelta = PrimaryDelta.GOAL_SHIFT
+  choiceType: ChoiceType = ChoiceType.INTERVENE,
+  primaryDelta: PrimaryDelta = PrimaryDelta.GOAL_PRIORITY_CHANGE,
+  choiceSubtype?: string,
+  choiceShape?: ChoiceShape
 ): Choice {
   const trimmedText = text.trim();
   if (trimmedText.length === 0) {
@@ -31,12 +42,26 @@ export function createChoice(
     throw new Error(`Invalid primaryDelta: ${String(primaryDelta)}`);
   }
 
-  return {
+  if (choiceShape !== undefined && !CHOICE_SHAPE_VALUES.includes(choiceShape)) {
+    throw new Error(`Invalid choiceShape: ${String(choiceShape)}`);
+  }
+
+  const choice: Choice = {
     text: trimmedText,
     choiceType,
     primaryDelta,
     nextPageId,
   };
+
+  if (choiceSubtype !== undefined) {
+    (choice as { choiceSubtype?: string }).choiceSubtype = choiceSubtype;
+  }
+
+  if (choiceShape !== undefined) {
+    (choice as { choiceShape?: ChoiceShape }).choiceShape = choiceShape;
+  }
+
+  return choice;
 }
 
 export function isChoice(value: unknown): value is Choice {

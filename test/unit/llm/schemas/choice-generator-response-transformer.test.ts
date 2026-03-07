@@ -3,8 +3,8 @@ import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 
 function makeRawChoices(): { text: string; choiceType: string; primaryDelta: string }[] {
   return [
-    { text: '  Demand an explanation  ', choiceType: 'CONFRONTATION', primaryDelta: 'INFORMATION_REVEALED' },
-    { text: '  Flee the scene  ', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+    { text: '  Demand an explanation  ', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' },
+    { text: '  Flee the scene  ', choiceType: 'WITHDRAW', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
   ];
 }
 
@@ -15,8 +15,8 @@ describe('validateChoiceGeneratorResponse', () => {
 
     expect(result.choices).toHaveLength(2);
     expect(result.choices[0].text).toBe('Demand an explanation');
-    expect(result.choices[0].choiceType).toBe(ChoiceType.CONFRONTATION);
-    expect(result.choices[0].primaryDelta).toBe(PrimaryDelta.INFORMATION_REVEALED);
+    expect(result.choices[0].choiceType).toBe(ChoiceType.CONTEST);
+    expect(result.choices[0].primaryDelta).toBe(PrimaryDelta.INFORMATION_STATE_CHANGE);
     expect(result.choices[1].text).toBe('Flee the scene');
     expect(result.rawResponse).toBe('{"choices":[...]}');
   });
@@ -29,23 +29,23 @@ describe('validateChoiceGeneratorResponse', () => {
   });
 
   it('throws on invalid input', () => {
-    const rawJson = { choices: [{ text: 'Go', choiceType: 'CONFRONTATION', primaryDelta: 'INFORMATION_REVEALED' }] };
+    const rawJson = { choices: [{ text: 'Go', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' }] };
     expect(() => validateChoiceGeneratorResponse(rawJson, '{}')).toThrow();
   });
 
   it('maps all enum values correctly', () => {
     const rawJson = {
       choices: [
-        { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Choice B', choiceType: 'MORAL_DILEMMA', primaryDelta: 'RELATIONSHIP_CHANGE' },
-        { text: 'Choice C', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'THREAT_SHIFT' },
+        { text: 'Choice A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+        { text: 'Choice B', choiceType: 'COMMIT', primaryDelta: 'RELATIONSHIP_ALIGNMENT_CHANGE' },
+        { text: 'Choice C', choiceType: 'NAVIGATE', primaryDelta: 'THREAT_LEVEL_CHANGE' },
       ],
     };
     const result = validateChoiceGeneratorResponse(rawJson, '{}');
 
-    expect(result.choices[0].choiceType).toBe(ChoiceType.TACTICAL_APPROACH);
-    expect(result.choices[0].primaryDelta).toBe(PrimaryDelta.GOAL_SHIFT);
-    expect(result.choices[1].choiceType).toBe(ChoiceType.MORAL_DILEMMA);
-    expect(result.choices[2].choiceType).toBe(ChoiceType.PATH_DIVERGENCE);
+    expect(result.choices[0].choiceType).toBe(ChoiceType.INTERVENE);
+    expect(result.choices[0].primaryDelta).toBe(PrimaryDelta.GOAL_PRIORITY_CHANGE);
+    expect(result.choices[1].choiceType).toBe(ChoiceType.COMMIT);
+    expect(result.choices[2].choiceType).toBe(ChoiceType.NAVIGATE);
   });
 });

@@ -141,7 +141,9 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     id: context.pageId,
     narrativeText: result.narrative,
     sceneSummary: result.sceneSummary,
-    choices: result.choices.map((c) => createChoice(c.text, null, c.choiceType, c.primaryDelta)),
+    choices: result.choices.map((c) =>
+      createChoice(c.text, null, c.choiceType, c.primaryDelta, c.choiceSubtype, c.choiceShape)
+    ),
     activeStateChanges: mapToActiveStateChanges(result, lifecycle.effectiveThreadsResolved),
     inventoryChanges: createInventoryChanges(result.inventoryAdded, result.inventoryRemoved),
     healthChanges: createHealthChanges(result.healthAdded, result.healthRemoved),

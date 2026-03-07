@@ -43,13 +43,13 @@ describe('llm client integration (mocked fetch)', () => {
       choices: [
         {
           text: 'Consult the brass star map',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
         },
         {
           text: 'Climb to the highest platform',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       currentLocation: 'The abandoned observatory',
@@ -99,13 +99,13 @@ describe('llm client integration (mocked fetch)', () => {
       choices: [
         {
           text: 'Jam the nearest gear with your wrench',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'CONSTRAINT_CHANGE',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'OBLIGATION_RULE_CHANGE',
         },
         {
           text: 'Follow the moving starlight pattern',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
+          choiceType: 'INVESTIGATE',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
         },
       ],
       currentLocation: 'The observatory lower ring',
