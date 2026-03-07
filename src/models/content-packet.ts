@@ -97,3 +97,31 @@ export interface ContentEvaluation {
   readonly weaknesses: readonly string[];
   readonly recommendedRole: ContentPacketRole;
 }
+
+// --- One-shot content generation types ---
+
+export interface ContentOneShotContext {
+  readonly exemplarIdeas: readonly string[];
+  readonly genreVibes?: string;
+  readonly moodKeywords?: string;
+  readonly contentPreferences?: string;
+  readonly kernelBlock?: string;
+}
+
+export interface ContentOneShotPacket {
+  readonly title: string;
+  readonly contentKind: ContentKind;
+  readonly coreAnomaly: string;
+  readonly humanAnchor: string;
+  readonly socialEngine: string;
+  readonly choicePressure: string;
+  readonly signatureImage: string;
+  readonly escalationHint: string;
+  readonly wildnessInvariant: string;
+  readonly dullCollapse: string;
+}
+
+export interface ContentOneShotResult {
+  readonly packets: readonly ContentOneShotPacket[];
+  readonly rawResponse: string;
+}

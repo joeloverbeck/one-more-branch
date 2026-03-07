@@ -26,6 +26,7 @@ export const LLM_STAGE_KEYS = [
   'sceneIdeator',
   'structureRewrite',
   'spineRewrite',
+  'contentOneShot',
 ] as const;
 
 export type LlmStage = (typeof LLM_STAGE_KEYS)[number];

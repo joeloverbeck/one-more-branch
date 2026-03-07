@@ -368,6 +368,9 @@ export type {
   ContentPacket,
   ContentEvaluationScores,
   ContentEvaluation,
+  ContentOneShotContext,
+  ContentOneShotPacket,
+  ContentOneShotResult,
 } from './content-packet';
 export {
   CONTENT_KIND_VALUES,
