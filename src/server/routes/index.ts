@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { conceptSeedRoutes } from './concept-seeds';
 import { conceptRoutes } from './concepts';
+import { contentPacketRoutes } from './content-packets';
 import { evolutionRoutes } from './evolution';
 import { homeRoutes } from './home';
 import { kernelEvolutionRoutes } from './kernel-evolution';
@@ -26,4 +27,5 @@ router.use('/kernels', kernelRoutes);
 router.use('/logs', logRoutes);
 router.use('/stories', storyRoutes);
 router.use('/play', playRoutes);
+router.use('/content-packets', contentPacketRoutes);
 router.use('/generation-progress', progressRoutes);

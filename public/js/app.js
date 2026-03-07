@@ -1397,6 +1397,91 @@ const STAGE_PHRASE_POOLS = {
     'Scoring integrity: how many setpieces are truly irreplaceable...',
     'Finalizing concept scenario assessment...',
   ],
+  DISTILLING_TASTE: [
+    'Extracting the collision patterns beneath your exemplars...',
+    'Separating deep taste from surface dressing...',
+    'Mapping your appetite for the grotesque, the tender, the strange...',
+    'Cataloguing the human aches your ideas orbit around...',
+    'Identifying the social engines that drive your imagination...',
+    'Distilling tonal DNA from raw creative impulse...',
+    'Sifting anti-patterns from generative instincts...',
+    'Reading the risk appetite encoded in your exemplars...',
+    'Tracing the scene appetites hidden in your choices...',
+    'Listening for what your ideas refuse to be...',
+    'Inferring the mechanisms your imagination favors...',
+    'Crystallizing the generative DNA beneath the surface...',
+    'Measuring the distance between your taste and generic output...',
+    'Identifying what makes your creative instincts dangerous...',
+    'Cataloguing the human anchors that ground your weirdness...',
+  ],
+  GENERATING_SPARKS: [
+    'Firing raw imaginative sparks into the dark...',
+    'Colliding impossible things with ordinary human domains...',
+    'Generating concrete impossibilities that imply scenes...',
+    'Breeding structural irony into half the sparks...',
+    'Mixing intimate, civic, and civilizational scale...',
+    'Refusing to explain the sparks into safety...',
+    'Rejecting generic output in favor of the unmistakable...',
+    'Testing each spark for human stake and social frame...',
+    'Crossing transformation with bureaucracy with desire...',
+    'Generating sparks that could only exist in this taste profile...',
+    'Forcing dangerous sincerity over glib parody...',
+    'Spraying divergent imagination across ten content kinds...',
+    'Ensuring no spark retreats into stock genre comfort...',
+    'Igniting sparks where the solution creates a worse problem...',
+    'Producing raw story matter before structure sandpapers it...',
+  ],
+  PACKAGING_CONTENT: [
+    'Expanding the best sparks into load-bearing content packets...',
+    'Anchoring each packet with an unforgettable signature image...',
+    'Defining the wildness invariant that must survive downstream...',
+    'Articulating what each packet collapses into if watered down...',
+    'Identifying the social engine each anomaly creates...',
+    'Specifying the branching dilemma each packet naturally forces...',
+    'Mapping escalation paths from strange to stranger...',
+    'Ensuring weirdness is load-bearing, not decorative...',
+    'Generating interaction verbs the player could plausibly do...',
+    'Testing that each packet implies scenes and choices, not just lore...',
+    'Refusing to flatten sparks into generic genre language...',
+    'Building content packets strong enough to seed story concepts...',
+    'Connecting human anchors to impossible social consequences...',
+    'Forging the choice pressure baked into each anomaly...',
+    'Ensuring multiple scales and tonal textures across packets...',
+  ],
+  EVALUATING_CONTENT: [
+    'Scoring image charge: is there an unforgettable concrete visual?',
+    'Measuring human ache: is there a live emotional wound inside?',
+    'Testing social load-bearing: does the anomaly create institutions?',
+    'Assessing branching pressure: does it force meaningful choices?',
+    'Checking anti-genericity: could this be mistaken for stock genre?',
+    'Evaluating scene burst: does it imply multiple vivid scenes?',
+    'Detecting structural irony: is contradiction baked in?',
+    'Judging concept utility: is this a primary seed or decoration?',
+    'Separating primary seeds from secondary mutagens...',
+    'Identifying image-only packets that lack interactive force...',
+    'Rejecting packets that are merely decorative weirdness...',
+    'Ranking packets by their ability to anchor entire concepts...',
+    'Distinguishing load-bearing content from cosmetic strangeness...',
+    'Scoring each packet across eight quality dimensions...',
+    'Finalizing content evaluations and role assignments...',
+  ],
+  GENERATING_CONTENT: [
+    'Inferring your imaginative taste from the exemplars...',
+    'Generating concrete impossibilities that drive stories...',
+    'Colliding the uncanny with the ordinary in one pass...',
+    'Producing wild content packets with human ache at the center...',
+    'Forging signature images that sell premises by themselves...',
+    'Ensuring every packet contains a branching dilemma...',
+    'Building escalation paths from the mundane to the monstrous...',
+    'Defining wildness invariants that later stages cannot sand off...',
+    'Testing what each packet collapses into without its weirdness...',
+    'Mixing transformation, ritual, policy, romance, and ecology...',
+    'Refusing to output generic scaffolding or safe abstractions...',
+    'Generating story matter that demands to be operationalized...',
+    'Producing packets that could each anchor a different concept...',
+    'Ensuring dangerous sincerity over cosmetic genre dressing...',
+    'Crystallizing wild content from raw creative appetite...',
+  ],
 };
 
 const STAGE_DISPLAY_NAMES = {
@@ -1427,6 +1512,11 @@ const STAGE_DISPLAY_NAMES = {
   STRESS_TESTING_CONCEPT: 'HARDENING',
   ANALYZING_SPECIFICITY: 'ANALYZING',
   GENERATING_SCENARIOS: 'ENVISIONING',
+  DISTILLING_TASTE: 'DISTILLING',
+  GENERATING_SPARKS: 'SPARKING',
+  PACKAGING_CONTENT: 'PACKAGING',
+  EVALUATING_CONTENT: 'EVALUATING',
+  GENERATING_CONTENT: 'IMAGINING',
 };
 
 // ── Configuration ──────────────────────────────────────────────────
@@ -8247,6 +8337,242 @@ function createRecapModalController(initialData) {
 
     updateDevelopButtonState();
   }
+
+// Content Packets UI Controller
+
+function initContentPacketsPage() {
+  var page = document.getElementById('content-packets-page');
+  if (!page) return;
+
+  var form = document.getElementById('content-generate-form');
+  var progressEl = document.getElementById('content-generation-progress');
+  var statusEl = document.getElementById('content-generation-status');
+  var resultsEl = document.getElementById('content-generation-results');
+  var generatedList = document.getElementById('generated-packets-list');
+  var generateBtn = document.getElementById('content-generate-btn');
+
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      handleContentGenerate();
+    });
+  }
+
+  // Pin/delete buttons on saved packets
+  page.addEventListener('click', function (e) {
+    var target = e.target;
+    if (target.classList.contains('pin-packet-btn')) {
+      handlePinPacket(target.getAttribute('data-id'));
+    } else if (target.classList.contains('delete-packet-btn')) {
+      handleDeletePacket(target.getAttribute('data-id'));
+    } else if (target.classList.contains('save-generated-btn')) {
+      handleSaveGenerated(target);
+    }
+  });
+
+  function getApiKey() {
+    var input = document.getElementById('contentApiKey');
+    return input ? input.value.trim() : '';
+  }
+
+  function parseExemplarIdeas() {
+    var textarea = document.getElementById('exemplarIdeas');
+    if (!textarea) return [];
+    return textarea.value
+      .split('\n')
+      .map(function (line) { return line.trim(); })
+      .filter(function (line) { return line.length > 0; });
+  }
+
+  function handleContentGenerate() {
+    var apiKey = getApiKey();
+    if (!apiKey || apiKey.length < 10) {
+      alert('Please enter a valid OpenRouter API key.');
+      return;
+    }
+
+    var ideas = parseExemplarIdeas();
+    if (ideas.length === 0) {
+      alert('Please enter at least one exemplar idea.');
+      return;
+    }
+
+    var usePipeline = document.getElementById('usePipeline');
+    var pipeline = usePipeline ? usePipeline.checked : false;
+
+    var moodInput = document.getElementById('contentMoodKeywords');
+    var prefInput = document.getElementById('contentPreferences');
+
+    var payload = {
+      exemplarIdeas: ideas,
+      apiKey: apiKey,
+      pipeline: pipeline,
+    };
+
+    if (moodInput && moodInput.value.trim()) {
+      if (pipeline) {
+        payload.moodOrGenre = moodInput.value.trim();
+      } else {
+        payload.moodKeywords = moodInput.value.trim();
+      }
+    }
+    if (prefInput && prefInput.value.trim()) {
+      payload.contentPreferences = prefInput.value.trim();
+    }
+
+    if (generateBtn) generateBtn.disabled = true;
+    if (progressEl) progressEl.style.display = 'block';
+    if (resultsEl) resultsEl.style.display = 'none';
+    if (statusEl) statusEl.textContent = 'Generating content packets...';
+
+    fetch('/content-packets/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (progressEl) progressEl.style.display = 'none';
+        if (generateBtn) generateBtn.disabled = false;
+
+        if (!data.success) {
+          alert('Generation failed: ' + (data.error || 'Unknown error'));
+          return;
+        }
+
+        renderGeneratedPackets(data.packets || []);
+      })
+      .catch(function (err) {
+        if (progressEl) progressEl.style.display = 'none';
+        if (generateBtn) generateBtn.disabled = false;
+        alert('Generation failed: ' + err.message);
+      });
+  }
+
+  function renderGeneratedPackets(packets) {
+    if (!generatedList || !resultsEl) return;
+    if (packets.length === 0) {
+      generatedList.innerHTML = '<p>No packets generated.</p>';
+      resultsEl.style.display = 'block';
+      return;
+    }
+
+    var html = packets.map(function (pkt, idx) {
+      var title = pkt.title || pkt.coreAnomaly || 'Packet ' + (idx + 1);
+      var kind = pkt.contentKind || 'UNKNOWN';
+      return (
+        '<article class="story-card">' +
+          '<div class="story-card-content">' +
+            '<h3 class="story-title">' + escapeHtml(title) + '</h3>' +
+            '<dl class="story-details">' +
+              '<div class="story-detail-row"><dt>Kind</dt><dd>' + escapeHtml(kind) + '</dd></div>' +
+              '<div class="story-detail-row"><dt>Core Anomaly</dt><dd>' + escapeHtml(pkt.coreAnomaly || '') + '</dd></div>' +
+              '<div class="story-detail-row"><dt>Wildness Invariant</dt><dd>' + escapeHtml(pkt.wildnessInvariant || '') + '</dd></div>' +
+              '<div class="story-detail-row"><dt>Signature Image</dt><dd>' + escapeHtml(pkt.signatureImage || '') + '</dd></div>' +
+            '</dl>' +
+            '<button class="btn btn-sm btn-primary save-generated-btn" ' +
+              'data-packet=\'' + escapeAttr(JSON.stringify(pkt)) + '\'>' +
+              'Save' +
+            '</button>' +
+          '</div>' +
+        '</article>'
+      );
+    }).join('');
+
+    generatedList.innerHTML = html;
+    resultsEl.style.display = 'block';
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+
+  function escapeAttr(str) {
+    return str.replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+  }
+
+  function handleSaveGenerated(btn) {
+    var packetData;
+    try {
+      packetData = JSON.parse(btn.getAttribute('data-packet'));
+    } catch (_e) {
+      alert('Invalid packet data');
+      return;
+    }
+
+    var apiKey = getApiKey();
+    var packetId = 'cp-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
+
+    fetch('/content-packets/api/' + encodeURIComponent(packetId) + '/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ packet: packetData, apiKey: apiKey }),
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.success) {
+          btn.textContent = 'Saved';
+          btn.disabled = true;
+        } else {
+          alert('Save failed: ' + (data.error || 'Unknown error'));
+        }
+      })
+      .catch(function (err) {
+        alert('Save failed: ' + err.message);
+      });
+  }
+
+  function handlePinPacket(packetId) {
+    if (!packetId) return;
+
+    fetch('/content-packets/api/' + encodeURIComponent(packetId) + '/pin', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.success) {
+          window.location.reload();
+        } else {
+          alert('Pin toggle failed: ' + (data.error || 'Unknown error'));
+        }
+      })
+      .catch(function (err) {
+        alert('Pin toggle failed: ' + err.message);
+      });
+  }
+
+  function handleDeletePacket(packetId) {
+    if (!packetId) return;
+    if (!confirm('Delete this content packet?')) return;
+
+    fetch('/content-packets/api/' + encodeURIComponent(packetId), {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.success) {
+          var card = document.querySelector('[data-packet-id="' + packetId + '"]');
+          if (card) card.remove();
+        } else {
+          alert('Delete failed: ' + (data.error || 'Unknown error'));
+        }
+      })
+      .catch(function (err) {
+        alert('Delete failed: ' + err.message);
+      });
+  }
+}
+
+// Auto-init on DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initContentPacketsPage);
+} else {
+  initContentPacketsPage();
+}
 
   // ── Kernels Page Controller ─────────────────────────────────────
 
