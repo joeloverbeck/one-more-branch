@@ -218,6 +218,7 @@ export async function processPostGeneration(
           fulfilledPremisePromises: parentPage?.accumulatedFulfilledPremisePromises ?? [],
           spine: story.spine,
           genreFrame: story.conceptSpec?.genreFrame,
+          protagonistName: story.decomposedCharacters?.[0]?.name ?? '',
           apiKey,
           logContext,
           onGenerationStage,

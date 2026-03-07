@@ -108,6 +108,7 @@ describe('runAnalystEvaluation', () => {
     antithesis: 'Order requires domination, not restraint.',
     premisePromises: [] as readonly string[],
     fulfilledPremisePromises: [] as readonly string[],
+    protagonistName: 'Test Hero',
     apiKey: 'test-key',
     logContext: { storyId: 's1' },
   };

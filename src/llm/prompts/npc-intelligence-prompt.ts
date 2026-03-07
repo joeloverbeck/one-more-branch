@@ -24,6 +24,7 @@ NPC-PROTAGONIST RELATIONSHIP SHIFTS:
 INFORMATION ASYMMETRY DETECTION:
 - Emit knowledgeAsymmetryDetected as an array of per-character observations grounded in scene evidence.
 - Each entry must include: characterName, knownFacts, falseBeliefs, secrets.
+- Use the protagonist's actual name (provided above) as characterName, NEVER use generic labels like "Protagonist" or "the protagonist".
 - Use [] for knownFacts/falseBeliefs/secrets when no evidence exists for that bucket.
 - Only include characters with meaningful updates or clearly evidenced knowledge state in this scene.
 - Emit dramaticIronyOpportunities as concrete opportunities created by knowledge gaps in this scene.
@@ -78,7 +79,8 @@ export function buildNpcIntelligencePrompt(context: NpcIntelligenceContext): Cha
   const npcAgendasSection = buildNpcAgendasSection(context);
   const npcRelationshipsSection = buildNpcRelationshipsSection(context);
 
-  const userContent = `${spineSection}${genreConventionsSection}${npcAgendasSection}${npcRelationshipsSection}
+  const userContent = `${spineSection}${genreConventionsSection}${npcAgendasSection}${npcRelationshipsSection}PROTAGONIST: ${context.protagonistName}
+
 NARRATIVE TO EVALUATE:
 ${context.narrative}`;
 

@@ -40,6 +40,7 @@ NPC-PROTAGONIST RELATIONSHIP SHIFTS:
 INFORMATION ASYMMETRY DETECTION:
 - Emit knowledgeAsymmetryDetected as an array of per-character observations grounded in scene evidence.
 - Each entry must include: characterName, knownFacts, falseBeliefs, secrets.
+- Use the protagonist's actual name (provided above) as characterName, NEVER use generic labels like "Protagonist" or "the protagonist".
 - Use [] for knownFacts/falseBeliefs/secrets when no evidence exists for that bucket.
 - Only include characters with meaningful updates or clearly evidenced knowledge state in this scene.
 - Emit dramaticIronyOpportunities as concrete opportunities created by knowledge gaps in this scene.
@@ -49,7 +50,8 @@ INFORMATION ASYMMETRY DETECTION:
 ### 2) User Message
 
 ```text
-{{spineSection}}{{genreConventionsSection}}{{npcAgendasSection}}{{npcRelationshipsSection}}
+{{spineSection}}{{genreConventionsSection}}{{npcAgendasSection}}{{npcRelationshipsSection}}PROTAGONIST: {{protagonistName}}
+
 NARRATIVE TO EVALUATE:
 {{narrative}}
 ```
@@ -102,6 +104,7 @@ Optional sections are conditionally included:
 | Context Field | Description |
 |---|---|
 | `narrative` | The narrative text to evaluate |
+| `protagonistName` | Protagonist's full name (from decomposedCharacters[0].name) |
 | `accumulatedNpcAgendas` | Optional current NPC agendas (goals, fears) |
 | `accumulatedNpcRelationships` | Optional NPC-protagonist relationships (dynamic, valence, tension) |
 | `spine` | Optional StorySpine for spine section |

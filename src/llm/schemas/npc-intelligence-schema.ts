@@ -60,7 +60,11 @@ export const NPC_INTELLIGENCE_SCHEMA: JsonSchema = {
           items: {
             type: 'object',
             properties: {
-              characterName: { type: 'string' },
+              characterName: {
+                type: 'string',
+                description:
+                  'Full character name — use the protagonist name provided, never generic labels like "Protagonist".',
+              },
               knownFacts: { type: 'array', items: { type: 'string' } },
               falseBeliefs: { type: 'array', items: { type: 'string' } },
               secrets: { type: 'array', items: { type: 'string' } },
