@@ -7,7 +7,7 @@ import type { DecomposedCharacter } from '../models/decomposed-character';
 import type { ActiveState } from '../models/state/active-state';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship';
-import type { DetectedRelationshipShift } from '../llm/analyst-types';
+import type { AgendaResolverAnalystSignals } from '../llm/npc-intelligence-types';
 import type { StoryStructure } from '../models/story-arc';
 import type { StorySpine } from '../models/story-spine';
 import type { VersionedStoryStructure } from '../models/structure-version';
@@ -33,9 +33,8 @@ export interface NpcAgendaContext {
   readonly storyStructure: StoryStructure | null;
   readonly spine?: StorySpine;
   readonly parentActiveState: ActiveState;
-  readonly analystNpcCoherenceIssues?: string;
+  readonly analystSignals?: AgendaResolverAnalystSignals;
   readonly parentAccumulatedNpcRelationships?: AccumulatedNpcRelationships;
-  readonly analystRelationshipShifts?: readonly DetectedRelationshipShift[];
   readonly deviationContext?: DeviationContextForAgendas;
   readonly tone?: string;
   readonly toneFeel?: readonly string[];
@@ -69,9 +68,8 @@ export async function resolveNpcAgendas(
         context.currentStructureVersion?.structure ?? context.storyStructure ?? undefined,
       spine: context.spine,
       activeState: context.parentActiveState,
-      analystNpcCoherenceIssues: context.analystNpcCoherenceIssues,
+      analystSignals: context.analystSignals,
       currentRelationships: context.parentAccumulatedNpcRelationships,
-      analystRelationshipShifts: context.analystRelationshipShifts,
       deviationContext: context.deviationContext,
       tone: context.tone,
       toneFeel: context.toneFeel,

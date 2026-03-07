@@ -225,6 +225,13 @@ export async function processPostGeneration(
         })
       : null;
   const analystResult = analystEval?.result ?? null;
+  const agendaResolverAnalystSignals = analystResult
+    ? {
+        npcCoherenceIssues: analystResult.npcCoherenceIssues,
+        relationshipShiftsDetected: analystResult.relationshipShiftsDetected,
+        knowledgeAsymmetryDetected: analystResult.knowledgeAsymmetryDetected,
+      }
+    : undefined;
   const analystDurationMs = analystEval?.durationMs ?? null;
   if (analystEval?.degradation) {
     degradedStages.push(analystEval.degradation);
@@ -370,9 +377,8 @@ export async function processPostGeneration(
           openThreads: [],
         }
       : parentState!.accumulatedActiveState,
-    analystNpcCoherenceIssues: analystResult?.npcCoherenceIssues,
+    analystSignals: agendaResolverAnalystSignals,
     parentAccumulatedNpcRelationships,
-    analystRelationshipShifts: analystResult?.relationshipShiftsDetected,
     deviationContext:
       deviationInfo?.detected && activeStructureVersion
         ? {
