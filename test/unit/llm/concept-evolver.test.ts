@@ -14,6 +14,7 @@ import { evolveConceptIdeas } from '../../../src/llm/concept-evolver';
 import { generateEvolvedConceptSeeds } from '../../../src/llm/concept-evolver-seeder';
 import { generateConceptCharacterWorlds } from '../../../src/llm/concept-architect';
 import { generateConceptEngines } from '../../../src/llm/concept-engineer';
+import type { ContentPacket } from '../../../src/models/content-packet';
 import type { ConceptEvolverContext } from '../../../src/models';
 import {
   createConceptSeedFixture,
@@ -21,6 +22,23 @@ import {
   createConceptEngineFixture,
   createEvaluatedConceptFixture,
 } from '../../fixtures/concept-generator';
+
+function createContentPacketFixture(id = 'content_1'): ContentPacket {
+  return {
+    contentId: id,
+    sourceSparkIds: ['spark_1'],
+    contentKind: 'ENTITY',
+    coreAnomaly: 'A sentient fog that digests memory',
+    humanAnchor: 'A grief counselor who lost her own memories',
+    socialEngine: 'Memory insurance industry',
+    choicePressure: 'Protect others or recover your own past',
+    signatureImage: 'A woman breathing fog that glows with stolen dreams',
+    escalationPath: 'The fog begins targeting entire neighborhoods',
+    wildnessInvariant: 'The fog is alive and feeds on remembering',
+    dullCollapse: 'Generic amnesia thriller',
+    interactionVerbs: ['inhale', 'shelter', 'bargain', 'forget'],
+  };
+}
 
 const mockGenerateEvolvedSeeds = generateEvolvedConceptSeeds as jest.MockedFunction<
   typeof generateEvolvedConceptSeeds
@@ -197,6 +215,54 @@ describe('concept-evolver', () => {
       mockGenerateEngines.mockRejectedValue(error);
 
       await expect(evolveConceptIdeas(createContext(), 'test-api-key')).rejects.toBe(error);
+    });
+
+    it('passes contentPackets to architect and engineer contexts', async () => {
+      const packets = [createContentPacketFixture('content_1'), createContentPacketFixture('content_2')];
+      const context: ConceptEvolverContext = {
+        ...createContext(),
+        contentPackets: packets,
+      };
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      const engines = createEngines(6);
+
+      mockGenerateEvolvedSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+      mockGenerateCharacterWorlds.mockResolvedValue({ characterWorlds, rawResponse: 'raw' });
+      mockGenerateEngines.mockResolvedValue({ engines, rawResponse: 'raw' });
+
+      await evolveConceptIdeas(context, 'test-api-key');
+
+      expect(mockGenerateCharacterWorlds).toHaveBeenCalledWith(
+        expect.objectContaining({ contentPackets: packets }),
+        'test-api-key',
+        undefined,
+      );
+      expect(mockGenerateEngines).toHaveBeenCalledWith(
+        expect.objectContaining({ contentPackets: packets }),
+        'test-api-key',
+        undefined,
+      );
+    });
+
+    it('existing evolver calls without contentPackets still work unchanged', async () => {
+      const context = createContext();
+      const seeds = createSeeds(6);
+      const characterWorlds = createCharacterWorlds(6);
+      const engines = createEngines(6);
+
+      mockGenerateEvolvedSeeds.mockResolvedValue({ seeds, rawResponse: 'raw' });
+      mockGenerateCharacterWorlds.mockResolvedValue({ characterWorlds, rawResponse: 'raw' });
+      mockGenerateEngines.mockResolvedValue({ engines, rawResponse: 'raw' });
+
+      const result = await evolveConceptIdeas(context, 'test-api-key');
+
+      expect(result.concepts).toHaveLength(6);
+      expect(mockGenerateCharacterWorlds).toHaveBeenCalledWith(
+        expect.objectContaining({ contentPackets: undefined }),
+        'test-api-key',
+        undefined,
+      );
     });
   });
 });

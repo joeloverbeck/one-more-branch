@@ -1,3 +1,4 @@
+import type { ContentPacket } from '../../models/content-packet.js';
 import type { ConceptEvolverSeederContext, EvaluatedConcept } from '../../models/concept-generator.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -7,6 +8,34 @@ import { buildToneDirective } from './sections/shared/tone-block.js';
 function normalize(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
+}
+
+function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
+  const packetEntries = packets
+    .map(
+      (p) =>
+        `- [${p.contentId}] coreAnomaly: ${p.coreAnomaly}
+  wildnessInvariant: ${p.wildnessInvariant}
+  socialEngine: ${p.socialEngine}
+  signatureImage: ${p.signatureImage}`,
+    )
+    .join('\n');
+
+  return `CONTENT PACKETS:
+The following content packets provide concrete imaginative payloads. Each evolved seed MUST engage with at least one packet's wildnessInvariant. Seeds may fuse packet material with parent strengths. Do not sand off the packet's weirdness into generic genre language.
+
+${packetEntries}`;
+}
+
+function buildWildnessInvariantsBlock(packets: readonly ContentPacket[]): string {
+  const invariants = packets
+    .map((p) => `- [${p.contentId}]: ${p.wildnessInvariant}`)
+    .join('\n');
+
+  return `WILDNESS INVARIANTS:
+The following invariants from content packets MUST be preserved or intensified in evolved seeds. Do not normalize, dilute, or replace them with generic genre equivalents.
+
+${invariants}`;
 }
 
 const ROLE_INTRO =
@@ -111,6 +140,11 @@ ${buildParentPayload(context.parentConcepts)}`,
     userSections.push(
       `USER CREATIVE MANDATE (evolved offspring MUST embody ALL of the following):\n${mandateParts.join('\n')}\nMutation changes form, not tonal identity. Every offspring must centrally express all listed qualities.`,
     );
+  }
+
+  if (context.contentPackets && context.contentPackets.length > 0) {
+    userSections.push(buildContentPacketsBlock(context.contentPackets));
+    userSections.push(buildWildnessInvariantsBlock(context.contentPackets));
   }
 
   userSections.push(

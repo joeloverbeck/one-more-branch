@@ -17,6 +17,7 @@ function createEvaluatedConcept(): EvaluatedConcept {
       llmFeasibility: 4,
       ironicPremise: 3,
       sceneGenerativePower: 3,
+      contentCharge: 3,
     },
     overallScore: 82,
     passes: true,
@@ -37,6 +38,7 @@ function createScoredConcept(): ScoredConcept {
       llmFeasibility: 4,
       ironicPremise: 3,
       sceneGenerativePower: 3,
+      contentCharge: 3,
     },
     scoreEvidence: {
       hookStrength: ['Immediate premise clarity'],
@@ -46,6 +48,7 @@ function createScoredConcept(): ScoredConcept {
       llmFeasibility: ['Clear constraints and institutions'],
       ironicPremise: ['Irony evidence'],
       sceneGenerativePower: ['Scene evidence'],
+      contentCharge: ['Concrete impossibility present'],
     },
     overallScore: 82,
     passes: true,
@@ -283,6 +286,22 @@ describe('saved-concept model guards', () => {
         },
         conceptIntegrityScore: 85,
       },
+    };
+
+    expect(isSavedConcept(value)).toBe(false);
+  });
+
+  it('rejects SavedConcept when scores missing contentCharge', () => {
+    const ec = createEvaluatedConcept();
+    const scoresWithout: Record<string, unknown> = { ...ec.scores };
+    delete scoresWithout['contentCharge'];
+    const value = {
+      id: 'concept-1',
+      name: 'Memory Courier',
+      createdAt: '2026-02-19T00:00:00.000Z',
+      updatedAt: '2026-02-19T00:00:00.000Z',
+      seeds: {},
+      evaluatedConcept: { ...ec, scores: scoresWithout },
     };
 
     expect(isSavedConcept(value)).toBe(false);

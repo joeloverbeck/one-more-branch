@@ -32,6 +32,7 @@ function createScores(): ConceptDimensionScores {
     llmFeasibility: 4,
     ironicPremise: 3,
     sceneGenerativePower: 3,
+    contentCharge: 3,
   };
 }
 
@@ -79,6 +80,7 @@ function createScoredConcept(index = 1): ScoredConcept {
       llmFeasibility: [`Feasibility evidence ${index}`],
       ironicPremise: [`Irony evidence ${index}`],
       sceneGenerativePower: [`Scene evidence ${index}`],
+      contentCharge: [`Content charge evidence ${index}`],
     },
     overallScore: 80,
     passes: true,

@@ -87,6 +87,7 @@ function parseScores(value: unknown): ConceptDimensionScores {
       'sceneGenerativePower',
       label,
     ),
+    contentCharge: parseClampedScore(data['contentCharge'], 'contentCharge', label),
   };
 }
 
@@ -109,6 +110,7 @@ function parseScoreEvidence(value: unknown): ConceptScoreEvidence {
       'sceneGenerativePower',
       ev,
     ),
+    contentCharge: requireNonEmptyStringArray(data['contentCharge'], 'contentCharge', ev),
   };
 }
 

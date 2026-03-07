@@ -50,3 +50,20 @@ export {
   type EvolveKernelsResult,
   type KernelEvolutionService,
 } from './kernel-evolution-service.js';
+export {
+  createContentService,
+  contentService,
+  type ContentService,
+  type ContentQuickInput,
+  type ContentQuickResult,
+  type ContentPipelineInput,
+  type ContentPipelineResult,
+  type DistillTasteInput,
+  type DistillTasteResult,
+  type GenerateSparksInput,
+  type GenerateSparksResult,
+  type PackageContentInput,
+  type PackageContentResult,
+  type EvaluatePacketsInput,
+  type EvaluatePacketsResult,
+} from './content-service.js';

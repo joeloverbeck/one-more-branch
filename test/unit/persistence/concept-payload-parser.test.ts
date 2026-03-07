@@ -42,4 +42,50 @@ describe('parseSavedConcept', () => {
       'Invalid SavedConcept payload at /bad/path.json'
     );
   });
+
+  it('upcasts legacy payload missing contentCharge in evaluatedConcept scores', () => {
+    const modern = createSavedConceptFixture();
+    const scoresWithout: Record<string, unknown> = { ...modern.evaluatedConcept.scores };
+    delete scoresWithout['contentCharge'];
+    const legacy = {
+      ...modern,
+      evaluatedConcept: {
+        ...modern.evaluatedConcept,
+        scores: scoresWithout,
+      },
+    };
+
+    const result = parseSavedConcept(legacy, '/test/path.json');
+
+    expect(result.evaluatedConcept.scores.contentCharge).toBe(0);
+  });
+
+  it('upcasts legacy payload missing contentCharge in preHardenedConcept scores', () => {
+    const modern = createSavedConceptFixture({
+      preHardenedConcept: createEvaluatedConceptFixture(2),
+    });
+    const scoresWithout: Record<string, unknown> = { ...modern.preHardenedConcept!.scores };
+    delete scoresWithout['contentCharge'];
+    const legacy = {
+      ...modern,
+      preHardenedConcept: {
+        ...modern.preHardenedConcept!,
+        scores: scoresWithout,
+      },
+    };
+
+    const result = parseSavedConcept(legacy, '/test/path.json');
+
+    expect(result.preHardenedConcept!.scores.contentCharge).toBe(0);
+  });
+
+  it('preserves existing contentCharge score during upcast', () => {
+    const modern = createSavedConceptFixture();
+
+    const result = parseSavedConcept(modern, '/test/path.json');
+
+    expect(result.evaluatedConcept.scores.contentCharge).toBe(
+      modern.evaluatedConcept.scores.contentCharge
+    );
+  });
 });

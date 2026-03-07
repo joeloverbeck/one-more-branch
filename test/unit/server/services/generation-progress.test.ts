@@ -105,6 +105,7 @@ describe('generation-progress service', () => {
       'kernel-evolution',
       'scene-ideation',
       'structure-rewrite',
+      'content-generation',
     ]);
 
     const service = createGenerationProgressService();
@@ -112,6 +113,7 @@ describe('generation-progress service', () => {
     service.start('progress-concept', 'concept-generation');
     service.start('progress-evolution', 'concept-evolution');
     service.start('progress-kernel', 'kernel-generation');
+    service.start('progress-content', 'content-generation');
 
     const beginSnapshot = service.get('progress-begin');
     const conceptSnapshot = service.get('progress-concept');

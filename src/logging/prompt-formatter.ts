@@ -31,7 +31,12 @@ export type PromptType =
   | 'entity-decomposer'
   | 'sceneIdeator'
   | 'choiceGenerator'
-  | 'writer-choice-repair';
+  | 'writer-choice-repair'
+  | 'contentOneShot'
+  | 'contentTasteDistiller'
+  | 'contentSparkstormer'
+  | 'contentPacketer'
+  | 'contentEvaluator';
 
 const NOOP_PROMPT_SINK: PromptSink = {
   appendPrompt: () => Promise.resolve(),

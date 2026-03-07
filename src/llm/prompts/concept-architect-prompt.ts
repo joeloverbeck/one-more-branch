@@ -1,3 +1,4 @@
+import type { ContentPacket } from '../../models/content-packet.js';
 import type { ConceptArchitectContext, ConceptSeedFields } from '../../models/concept-generator.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -30,6 +31,27 @@ CHARACTER GROUNDING (Weiland):
 - The protagonist's coreFlaw should connect to a Lie they believe.
 - The protagonist's motivations should be driven by the Ghost (backstory wound).
 - The Lie/Truth/Ghost fields will be generated in the engineer stage; architect should design the character so these fields emerge naturally.`;
+}
+
+function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
+  const packetEntries = packets
+    .map(
+      (p) =>
+        `- [${p.contentId}] coreAnomaly: ${p.coreAnomaly}
+  wildnessInvariant: ${p.wildnessInvariant}
+  socialEngine: ${p.socialEngine}
+  signatureImage: ${p.signatureImage}`,
+    )
+    .join('\n');
+
+  return `CONTENT PACKETS — GROUNDING INSTRUCTIONS:
+The following content packets anchor these concepts. When designing character and world:
+- settingAxioms MUST operationalize the packet's impossible rule (coreAnomaly).
+- At least one keyInstitution MUST emerge from the packet's socialEngine.
+- coreConflictLoop MUST put pressure on the packet's choicePressure.
+- Do NOT normalize the packet into stock genre dressing — preserve the wildnessInvariant.
+
+${packetEntries}`;
 }
 
 function normalize(value: string | undefined): string | undefined {
@@ -65,6 +87,10 @@ export function buildConceptArchitectPrompt(context: ConceptArchitectContext): C
   const kernelBlock = buildKernelBlock(context.kernel);
   if (kernelBlock) {
     userSections.push(kernelBlock);
+  }
+
+  if (context.contentPackets && context.contentPackets.length > 0) {
+    userSections.push(buildContentPacketsBlock(context.contentPackets));
   }
 
   const protagonistDetails = normalize(context.protagonistDetails);

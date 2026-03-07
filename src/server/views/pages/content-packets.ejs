@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container" id="content-packets-page">
+    <section class="form-section">
+      <h1>Content Packets</h1>
+
+      <section id="content-generate-section">
+        <h2>Generate Content Packets</h2>
+        <form id="content-generate-form">
+          <div class="form-group">
+            <label for="exemplarIdeas">Exemplar Ideas *</label>
+            <textarea
+              id="exemplarIdeas"
+              required
+              rows="5"
+              placeholder="Enter your exemplar ideas, one per line..."
+            ></textarea>
+            <p class="form-help">
+              Describe imaginative ideas that represent your creative taste. One idea per line.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="contentMoodKeywords">Mood / Genre Keywords</label>
+            <input
+              type="text"
+              id="contentMoodKeywords"
+              placeholder="dark comedy, body horror, social satire..."
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="contentPreferences">Content Preferences</label>
+            <textarea
+              id="contentPreferences"
+              rows="2"
+              placeholder="Optional preferences for the kind of content you want..."
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="usePipeline">
+              Use full pipeline (taste distiller + sparkstormer + packeter + evaluator)
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="contentApiKey">OpenRouter API Key *</label>
+            <input type="password" id="contentApiKey" required placeholder="sk-or-...">
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="content-generate-btn">
+            Generate Content Packets
+          </button>
+        </form>
+
+        <div id="content-generation-progress" style="display: none;">
+          <div class="spinner"></div>
+          <p id="content-generation-status">Generating...</p>
+        </div>
+
+        <div id="content-generation-results" style="display: none;">
+          <h3>Generated Packets</h3>
+          <div id="generated-packets-list"></div>
+        </div>
+      </section>
+
+      <section id="saved-packets-section">
+        <h2>Saved Packets</h2>
+        <% if (packets.length === 0) { %>
+          <p class="empty-state">No saved content packets yet. Generate some above.</p>
+        <% } else { %>
+          <div class="packets-grid" id="saved-packets-grid">
+            <% packets.forEach(packet => { %>
+              <article class="story-card" data-packet-id="<%= packet.id %>">
+                <div class="story-card-content">
+                  <h3 class="story-title">
+                    <%= packet.name %>
+                    <% if (packet.pinned) { %>
+                      <span class="pin-badge" title="Pinned">&#128204;</span>
+                    <% } %>
+                  </h3>
+                  <dl class="story-details">
+                    <div class="story-detail-row">
+                      <dt>Kind</dt>
+                      <dd><%= packet.contentKind %></dd>
+                    </div>
+                    <div class="story-detail-row">
+                      <dt>Core Anomaly</dt>
+                      <dd><%= packet.coreAnomaly %></dd>
+                    </div>
+                    <div class="story-detail-row">
+                      <dt>Wildness Invariant</dt>
+                      <dd><%= packet.wildnessInvariant %></dd>
+                    </div>
+                    <div class="story-detail-row">
+                      <dt>Role</dt>
+                      <dd><%= packet.recommendedRole %></dd>
+                    </div>
+                  </dl>
+                  <div class="story-card-actions">
+                    <button class="btn btn-sm pin-packet-btn" data-id="<%= packet.id %>">
+                      <%= packet.pinned ? 'Unpin' : 'Pin' %>
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-packet-btn" data-id="<%= packet.id %>">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </article>
+            <% }); %>
+          </div>
+        <% } %>
+      </section>
+    </section>
+  </main>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

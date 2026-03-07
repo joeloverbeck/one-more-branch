@@ -1,3 +1,4 @@
+import type { ContentPacket } from '../../models/content-packet.js';
 import type { ConceptSeederContext } from '../../models/concept-generator.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -13,6 +14,23 @@ const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - The seed's conflictAxis MUST match the kernel's conflictAxis.
 - Each seed should feel materially different in play, not cosmetic variants.
 - CRITICAL: Diversity means different genres and play textures. It does NOT mean distributing user vibes across concepts. Every concept must centrally embody ALL user-specified vibes, moods, and content preferences.`;
+
+function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
+  const packetEntries = packets
+    .map(
+      (p) =>
+        `- [${p.contentId}] coreAnomaly: ${p.coreAnomaly}
+  wildnessInvariant: ${p.wildnessInvariant}
+  socialEngine: ${p.socialEngine}
+  signatureImage: ${p.signatureImage}`,
+    )
+    .join('\n');
+
+  return `CONTENT PACKETS:
+The following content packets provide concrete imaginative payloads. Each concept seed MUST use exactly 1 primaryContentId from these packets. Each seed may optionally fuse 1 secondaryContentId. The concept MUST preserve the packet's wildnessInvariant — do not sand it off or normalize it into generic genre language. The seed must carry forward a signatureImageHook derived from the packet's signatureImage.
+
+${packetEntries}`;
+}
 
 function normalize(value: string | undefined): string | undefined {
   const trimmed = value?.trim();
@@ -86,6 +104,10 @@ The user has specified their protagonist. Every concept seed MUST feature a prot
       `USER CREATIVE MANDATE (every concept MUST embody ALL of the following):\n${mandateParts.join('\n')}\nThese are non-negotiable. Each concept must centrally express every listed quality, though HOW each manifests may differ creatively across concepts.`,
     );
   }
+  if (context.contentPackets && context.contentPackets.length > 0) {
+    userSections.push(buildContentPacketsBlock(context.contentPackets));
+  }
+
   if (kernel) {
     const kernelLines = [
       `SELECTED STORY KERNEL:`,

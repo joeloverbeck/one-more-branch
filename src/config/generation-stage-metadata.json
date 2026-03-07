@@ -1494,6 +1494,111 @@
         "Scoring integrity: how many setpieces are truly irreplaceable...",
         "Finalizing concept scenario assessment..."
       ]
+    },
+    {
+      "id": "DISTILLING_TASTE",
+      "displayName": "DISTILLING",
+      "phrases": [
+        "Extracting the collision patterns beneath your exemplars...",
+        "Separating deep taste from surface dressing...",
+        "Mapping your appetite for the grotesque, the tender, the strange...",
+        "Cataloguing the human aches your ideas orbit around...",
+        "Identifying the social engines that drive your imagination...",
+        "Distilling tonal DNA from raw creative impulse...",
+        "Sifting anti-patterns from generative instincts...",
+        "Reading the risk appetite encoded in your exemplars...",
+        "Tracing the scene appetites hidden in your choices...",
+        "Listening for what your ideas refuse to be...",
+        "Inferring the mechanisms your imagination favors...",
+        "Crystallizing the generative DNA beneath the surface...",
+        "Measuring the distance between your taste and generic output...",
+        "Identifying what makes your creative instincts dangerous...",
+        "Cataloguing the human anchors that ground your weirdness..."
+      ]
+    },
+    {
+      "id": "GENERATING_SPARKS",
+      "displayName": "SPARKING",
+      "phrases": [
+        "Firing raw imaginative sparks into the dark...",
+        "Colliding impossible things with ordinary human domains...",
+        "Generating concrete impossibilities that imply scenes...",
+        "Breeding structural irony into half the sparks...",
+        "Mixing intimate, civic, and civilizational scale...",
+        "Refusing to explain the sparks into safety...",
+        "Rejecting generic output in favor of the unmistakable...",
+        "Testing each spark for human stake and social frame...",
+        "Crossing transformation with bureaucracy with desire...",
+        "Generating sparks that could only exist in this taste profile...",
+        "Forcing dangerous sincerity over glib parody...",
+        "Spraying divergent imagination across ten content kinds...",
+        "Ensuring no spark retreats into stock genre comfort...",
+        "Igniting sparks where the solution creates a worse problem...",
+        "Producing raw story matter before structure sandpapers it..."
+      ]
+    },
+    {
+      "id": "PACKAGING_CONTENT",
+      "displayName": "PACKAGING",
+      "phrases": [
+        "Expanding the best sparks into load-bearing content packets...",
+        "Anchoring each packet with an unforgettable signature image...",
+        "Defining the wildness invariant that must survive downstream...",
+        "Articulating what each packet collapses into if watered down...",
+        "Identifying the social engine each anomaly creates...",
+        "Specifying the branching dilemma each packet naturally forces...",
+        "Mapping escalation paths from strange to stranger...",
+        "Ensuring weirdness is load-bearing, not decorative...",
+        "Generating interaction verbs the player could plausibly do...",
+        "Testing that each packet implies scenes and choices, not just lore...",
+        "Refusing to flatten sparks into generic genre language...",
+        "Building content packets strong enough to seed story concepts...",
+        "Connecting human anchors to impossible social consequences...",
+        "Forging the choice pressure baked into each anomaly...",
+        "Ensuring multiple scales and tonal textures across packets..."
+      ]
+    },
+    {
+      "id": "EVALUATING_CONTENT",
+      "displayName": "EVALUATING",
+      "phrases": [
+        "Scoring image charge: is there an unforgettable concrete visual?",
+        "Measuring human ache: is there a live emotional wound inside?",
+        "Testing social load-bearing: does the anomaly create institutions?",
+        "Assessing branching pressure: does it force meaningful choices?",
+        "Checking anti-genericity: could this be mistaken for stock genre?",
+        "Evaluating scene burst: does it imply multiple vivid scenes?",
+        "Detecting structural irony: is contradiction baked in?",
+        "Judging concept utility: is this a primary seed or decoration?",
+        "Separating primary seeds from secondary mutagens...",
+        "Identifying image-only packets that lack interactive force...",
+        "Rejecting packets that are merely decorative weirdness...",
+        "Ranking packets by their ability to anchor entire concepts...",
+        "Distinguishing load-bearing content from cosmetic strangeness...",
+        "Scoring each packet across eight quality dimensions...",
+        "Finalizing content evaluations and role assignments..."
+      ]
+    },
+    {
+      "id": "GENERATING_CONTENT",
+      "displayName": "IMAGINING",
+      "phrases": [
+        "Inferring your imaginative taste from the exemplars...",
+        "Generating concrete impossibilities that drive stories...",
+        "Colliding the uncanny with the ordinary in one pass...",
+        "Producing wild content packets with human ache at the center...",
+        "Forging signature images that sell premises by themselves...",
+        "Ensuring every packet contains a branching dilemma...",
+        "Building escalation paths from the mundane to the monstrous...",
+        "Defining wildness invariants that later stages cannot sand off...",
+        "Testing what each packet collapses into without its weirdness...",
+        "Mixing transformation, ritual, policy, romance, and ecology...",
+        "Refusing to output generic scaffolding or safe abstractions...",
+        "Generating story matter that demands to be operationalized...",
+        "Producing packets that could each anchor a different concept...",
+        "Ensuring dangerous sincerity over cosmetic genre dressing...",
+        "Crystallizing wild content from raw creative appetite..."
+      ]
     }
   ]
 }

@@ -1,4 +1,5 @@
 import {
+  CONCEPT_PASS_THRESHOLDS,
   CONCEPT_SCORING_WEIGHTS,
   CONFLICT_AXES,
   DRIFT_RISK_MITIGATION_TYPES,
@@ -10,6 +11,7 @@ import {
   isDriftRiskMitigationType,
   isGenreFrame,
   isSettingScale,
+  passesConceptThresholds,
   type ConceptDimensionScores,
 } from '../../src/models/concept-generator';
 import { createConceptSpecFixture } from '../fixtures/concept-generator';
@@ -57,6 +59,7 @@ describe('concept-generator types', () => {
       llmFeasibility: 5,
       ironicPremise: 5,
       sceneGenerativePower: 5,
+      contentCharge: 5,
     };
 
     expect(computeOverallScore(scores)).toBe(100);
@@ -71,6 +74,7 @@ describe('concept-generator types', () => {
       llmFeasibility: 0,
       ironicPremise: 0,
       sceneGenerativePower: 0,
+      contentCharge: 0,
     };
 
     expect(computeOverallScore(scores)).toBe(0);
@@ -85,6 +89,7 @@ describe('concept-generator types', () => {
       llmFeasibility: 0,
       ironicPremise: 3,
       sceneGenerativePower: 2,
+      contentCharge: 3,
     };
 
     expect(computeOverallScore(scores)).toBeGreaterThan(0);
@@ -123,5 +128,53 @@ describe('concept-generator types', () => {
     const missingEscapeValve = { ...valid };
     delete missingEscapeValve['escapeValve'];
     expect(isConceptSpec(missingEscapeValve)).toBe(false);
+  });
+
+  it('includes contentCharge in CONCEPT_SCORING_WEIGHTS', () => {
+    expect(CONCEPT_SCORING_WEIGHTS).toHaveProperty('contentCharge');
+    expect(CONCEPT_SCORING_WEIGHTS.contentCharge).toBeGreaterThan(0);
+  });
+
+  it('includes contentCharge in CONCEPT_PASS_THRESHOLDS', () => {
+    expect(CONCEPT_PASS_THRESHOLDS).toHaveProperty('contentCharge');
+    expect(CONCEPT_PASS_THRESHOLDS.contentCharge).toBeGreaterThanOrEqual(0);
+  });
+
+  it('includes contentCharge contribution in computeOverallScore', () => {
+    const baseScores: ConceptDimensionScores = {
+      hookStrength: 0,
+      conflictEngine: 0,
+      agencyBreadth: 0,
+      noveltyLeverage: 0,
+      llmFeasibility: 0,
+      ironicPremise: 0,
+      sceneGenerativePower: 0,
+      contentCharge: 0,
+    };
+
+    const withContentCharge: ConceptDimensionScores = { ...baseScores, contentCharge: 5 };
+    expect(computeOverallScore(withContentCharge)).toBeGreaterThan(0);
+  });
+
+  it('passesConceptThresholds fails when contentCharge is below threshold', () => {
+    const passing: ConceptDimensionScores = {
+      hookStrength: 5,
+      conflictEngine: 5,
+      agencyBreadth: 5,
+      noveltyLeverage: 5,
+      llmFeasibility: 5,
+      ironicPremise: 5,
+      sceneGenerativePower: 5,
+      contentCharge: 5,
+    };
+
+    expect(passesConceptThresholds(passing)).toBe(true);
+
+    const failingContentCharge: ConceptDimensionScores = {
+      ...passing,
+      contentCharge: CONCEPT_PASS_THRESHOLDS.contentCharge - 1,
+    };
+
+    expect(passesConceptThresholds(failingContentCharge)).toBe(false);
   });
 });
