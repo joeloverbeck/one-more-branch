@@ -23,6 +23,7 @@ export interface NarrativeStateLifecycleInput {
   readonly analystPromisesDetected: readonly DetectedPromise[];
   readonly analystPromisesResolved: readonly string[];
   readonly analystPremisePromiseFulfilled: string | null;
+  readonly canonicalPremisePromises?: readonly string[];
 }
 
 export interface NarrativeStateLifecycleOutput {
@@ -75,12 +76,39 @@ export function computeNarrativeStateLifecycle(
   );
 
   const accumulatedFulfilledPremisePromises = (() : readonly string[] => {
-    const inherited = input.isOpening ? [] : input.parentAccumulatedFulfilledPremisePromises;
-    const fulfilledNow = (input.isOpening ? null : input.analystPremisePromiseFulfilled)?.trim() ?? '';
-    if (fulfilledNow.length === 0 || inherited.includes(fulfilledNow)) {
-      return inherited;
+    const canonicalByTrimmed = new Map<string, string>();
+    for (const promise of input.canonicalPremisePromises ?? []) {
+      const trimmed = promise.trim();
+      if (trimmed.length > 0 && !canonicalByTrimmed.has(trimmed)) {
+        canonicalByTrimmed.set(trimmed, promise);
+      }
     }
-    return [...inherited, fulfilledNow];
+
+    const inherited = input.isOpening ? [] : (input.parentAccumulatedFulfilledPremisePromises ?? []);
+    const inheritedCanonical: string[] = [];
+    const inheritedSeen = new Set<string>();
+    for (const fulfilled of inherited) {
+      const trimmed = fulfilled.trim();
+      if (trimmed.length === 0) {
+        continue;
+      }
+      const canonical = canonicalByTrimmed.get(trimmed);
+      if (!canonical || inheritedSeen.has(trimmed)) {
+        continue;
+      }
+      inheritedCanonical.push(canonical);
+      inheritedSeen.add(trimmed);
+    }
+
+    const fulfilledNow = (input.isOpening ? null : input.analystPremisePromiseFulfilled)?.trim() ?? '';
+    if (fulfilledNow.length === 0 || inheritedSeen.has(fulfilledNow)) {
+      return inheritedCanonical;
+    }
+    const canonicalFulfilledNow = canonicalByTrimmed.get(fulfilledNow);
+    if (!canonicalFulfilledNow) {
+      return inheritedCanonical;
+    }
+    return [...inheritedCanonical, canonicalFulfilledNow];
   })();
 
   return {
@@ -105,5 +133,7 @@ export function computeAccumulatedKnowledgeState(
   for (const entry of input.detectedKnowledgeAsymmetry) {
     byCharacter.set(entry.characterName, entry);
   }
-  return Array.from(byCharacter.values());
+  return Array.from(byCharacter.values()).filter(
+    (entry) => entry.falseBeliefs.length > 0 || entry.secrets.length > 0
+  );
 }

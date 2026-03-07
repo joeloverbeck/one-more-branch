@@ -343,7 +343,7 @@ describe('page-builder', () => {
       ]);
     });
 
-    it('marks analyst-triggered delayed consequences as triggered after aging', () => {
+    it('prunes analyst-triggered delayed consequences after aging', () => {
       const result = buildMockGenerationResult();
       const context: PageBuildContext = {
         pageId: parsePageId(5),
@@ -408,16 +408,6 @@ describe('page-builder', () => {
           currentAge: 3,
           triggered: false,
           sourcePageId: parsePageId(2),
-        },
-        {
-          id: 'dc-2',
-          description: 'Checkpoint guards are now searching for the protagonist.',
-          triggerCondition: 'A checkpoint interaction occurs.',
-          minPagesDelay: 1,
-          maxPagesDelay: 3,
-          currentAge: 2,
-          triggered: true,
-          sourcePageId: parsePageId(3),
         },
       ]);
     });
@@ -683,6 +673,7 @@ describe('page-builder', () => {
         analystPromisesDetected: [],
         analystPromisesResolved: [],
         analystPremisePromiseFulfilled: 'Promise B',
+        storyPremisePromises: ['Promise A', 'Promise B'],
         parentAccumulatedNpcAgendas: {},
         parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
         pageActIndex: 0,
@@ -718,6 +709,43 @@ describe('page-builder', () => {
         analystPromisesDetected: [],
         analystPromisesResolved: [],
         analystPremisePromiseFulfilled: 'Promise A',
+        storyPremisePromises: ['Promise A', 'Promise B'],
+        parentAccumulatedNpcAgendas: {},
+        parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
+        pageActIndex: 0,
+        pageBeatIndex: 0,
+      };
+
+      const page = buildPage(result, context);
+      expect(page.accumulatedFulfilledPremisePromises).toEqual(['Promise A']);
+    });
+
+    it('ignores fulfilled premise promises that are not in story premise promises', () => {
+      const result = buildMockGenerationResult();
+      const context: PageBuildContext = {
+        pageId: parsePageId(2),
+        parentPageId: parsePageId(1),
+        parentChoiceIndex: 0,
+        parentAccumulatedActiveState: {
+          currentLocation: '',
+          activeThreats: [],
+          activeConstraints: [],
+          openThreads: [],
+        },
+        parentAccumulatedInventory: [],
+        parentAccumulatedHealth: [],
+        parentAccumulatedCharacterState: {},
+        structureState: createEmptyAccumulatedStructureState(),
+        structureVersionId: null,
+        storyBible: null,
+        analystResult: null,
+        parentThreadAges: {},
+        parentAccumulatedPromises: [],
+        parentAccumulatedFulfilledPremisePromises: ['Promise A', 'Unknown Promise'],
+        analystPromisesDetected: [],
+        analystPromisesResolved: [],
+        analystPremisePromiseFulfilled: 'Another unknown promise',
+        storyPremisePromises: ['Promise A', 'Promise B'],
         parentAccumulatedNpcAgendas: {},
         parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
         pageActIndex: 0,

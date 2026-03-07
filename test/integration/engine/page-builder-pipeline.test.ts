@@ -57,6 +57,7 @@ function makeOpeningContext(overrides: Partial<PageBuildContext> = {}): PageBuil
     parentAccumulatedPromises: [],
     analystPromisesDetected: [],
     analystPromisesResolved: [],
+    storyPremisePromises: ['Promise A', 'Promise B'],
     parentAccumulatedNpcAgendas: {},
     parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
     pageActIndex: 0,
@@ -87,6 +88,7 @@ function makeContinuationContext(
     parentAccumulatedPromises: parentPage.accumulatedPromises,
     analystPromisesDetected: [],
     analystPromisesResolved: [],
+    storyPremisePromises: ['Promise A', 'Promise B'],
     parentAccumulatedNpcAgendas: parentPage.accumulatedNpcAgendas,
     parentAccumulatedNpcRelationships: parentPage.accumulatedNpcRelationships,
     pageActIndex: 0,
@@ -249,6 +251,40 @@ describe('page-builder pipeline integration', () => {
       // Relationship stored
       expect(page2.npcRelationshipUpdates).toEqual([relationship]);
       expect(page2.accumulatedNpcRelationships['Bartender']).toEqual(relationship);
+    });
+  });
+
+  describe('delayed consequence lifecycle pruning', () => {
+    it('removes triggered delayed consequences from accumulated state', () => {
+      const page1 = buildPage(
+        createMockFinalResult(),
+        makeOpeningContext({
+          analystResult: createMockAnalystResult({
+            delayedConsequencesCreated: [
+              {
+                description: 'A patrol starts checking passes.',
+                triggerCondition: 'The protagonist reaches a checkpoint.',
+                minPagesDelay: 1,
+                maxPagesDelay: 3,
+              },
+            ],
+          }),
+        })
+      );
+
+      expect(page1.accumulatedDelayedConsequences).toHaveLength(1);
+      expect(page1.accumulatedDelayedConsequences[0]?.id).toBe('dc-1');
+
+      const page2 = buildPage(
+        createMockFinalResult(),
+        makeContinuationContext(2, page1, {
+          analystResult: createMockAnalystResult({
+            delayedConsequencesTriggered: ['dc-1'],
+          }),
+        })
+      );
+
+      expect(page2.accumulatedDelayedConsequences).toEqual([]);
     });
   });
 

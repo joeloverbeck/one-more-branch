@@ -103,6 +103,7 @@ describe('computeNarrativeStateLifecycle', () => {
       ],
       analystPromisesResolved: ['pr-999'],
       analystPremisePromiseFulfilled: 'Ignored on opening',
+      canonicalPremisePromises: ['Promise A', 'Promise B'],
     });
 
     expect(result.effectiveThreadsResolved).toEqual([]);
@@ -159,6 +160,7 @@ describe('computeNarrativeStateLifecycle', () => {
       ],
       analystPromisesResolved: ['pr-1'],
       analystPremisePromiseFulfilled: 'Promise B',
+      canonicalPremisePromises: ['Promise A', 'Promise B'],
     });
 
     expect(result.effectiveThreadsResolved).toEqual(['td-1', 'td-2']);
@@ -183,6 +185,28 @@ describe('computeNarrativeStateLifecycle', () => {
       analystPromisesDetected: [],
       analystPromisesResolved: [],
       analystPremisePromiseFulfilled: 'Promise A',
+      canonicalPremisePromises: ['Promise A', 'Promise B'],
+    });
+
+    expect(result.accumulatedFulfilledPremisePromises).toEqual(['Promise A']);
+  });
+
+  it('ignores non-canonical fulfilled premise promises', () => {
+    const result = computeNarrativeStateLifecycle({
+      isOpening: false,
+      parentOpenThreads: [makeThread()],
+      parentThreadAges: { 'td-1': 0 },
+      parentPromiseAgeEpoch: 10,
+      currentPromiseAgeEpoch: 11,
+      parentAccumulatedPromises: [makePromise()],
+      parentAccumulatedFulfilledPremisePromises: ['Promise A', 'Not In Canon'],
+      threadsAdded: [],
+      threadsResolved: [],
+      analystResult: null,
+      analystPromisesDetected: [],
+      analystPromisesResolved: [],
+      analystPremisePromiseFulfilled: 'Another unknown promise',
+      canonicalPremisePromises: ['Promise A', 'Promise B'],
     });
 
     expect(result.accumulatedFulfilledPremisePromises).toEqual(['Promise A']);
@@ -253,5 +277,28 @@ describe('computeAccumulatedKnowledgeState', () => {
         secrets: ['Old secret'],
       },
     ]);
+  });
+
+  it('prunes entries without unresolved asymmetry', () => {
+    const result = computeAccumulatedKnowledgeState({
+      parentAccumulatedKnowledgeState: [
+        {
+          characterName: 'Captain Voss',
+          knownFacts: ['Old fact'],
+          falseBeliefs: ['Old false belief'],
+          secrets: ['Old secret'],
+        },
+      ],
+      detectedKnowledgeAsymmetry: [
+        {
+          characterName: 'Captain Voss',
+          knownFacts: ['Updated fact'],
+          falseBeliefs: [],
+          secrets: [],
+        },
+      ],
+    });
+
+    expect(result).toEqual([]);
   });
 });

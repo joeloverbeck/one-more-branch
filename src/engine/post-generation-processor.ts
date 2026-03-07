@@ -441,6 +441,7 @@ export async function processPostGeneration(
     analystPromisesDetected: analystResult?.promisesDetected ?? [],
     analystPromisesResolved: analystResult?.promisesResolved ?? [],
     analystPremisePromiseFulfilled: analystResult?.premisePromiseFulfilled ?? null,
+    storyPremisePromises: story.premisePromises ?? [],
     parentAccumulatedNpcAgendas,
     npcAgendaUpdates: agendaResolverResult?.updatedAgendas,
     parentAccumulatedNpcRelationships,
