@@ -35,7 +35,8 @@ export type PromptType =
   | 'contentOneShot'
   | 'contentTasteDistiller'
   | 'contentSparkstormer'
-  | 'contentPacketer';
+  | 'contentPacketer'
+  | 'contentEvaluator';
 
 const NOOP_PROMPT_SINK: PromptSink = {
   appendPrompt: () => Promise.resolve(),

@@ -1,3 +1,5 @@
+**Status**: COMPLETED
+
 # WILCONPIP-07: Content Evaluator Prompt (Stage 0d)
 
 **Effort**: S
@@ -26,15 +28,22 @@ Implement the Content Evaluator LLM stage. This is a lightweight filter that sco
 
 ### Tests
 
-- [ ] Unit test: `buildContentEvaluatorPrompt` includes CONTENT_POLICY section
-- [ ] Unit test: response parser validates each evaluation has `contentId`, `scores`, `strengths`, `weaknesses`, `recommendedRole`
-- [ ] Unit test: response parser validates `recommendedRole` is one of PRIMARY_SEED/SECONDARY_MUTAGEN/IMAGE_ONLY/REJECT
-- [ ] Unit test: response parser validates all 8 score dimensions are present and numeric (0-5 range)
-- [ ] Unit test: response parser rejects evaluations with missing fields
+- [x] Unit test: `buildContentEvaluatorPrompt` includes CONTENT_POLICY section
+- [x] Unit test: response parser validates each evaluation has `contentId`, `scores`, `strengths`, `weaknesses`, `recommendedRole`
+- [x] Unit test: response parser validates `recommendedRole` is one of PRIMARY_SEED/SECONDARY_MUTAGEN/IMAGE_ONLY/REJECT
+- [x] Unit test: response parser validates all 8 score dimensions are present and numeric (0-5 range)
+- [x] Unit test: response parser rejects evaluations with missing fields
 
 ### Invariants
 
-- [ ] `npm run typecheck` passes
-- [ ] `npm run lint` passes
-- [ ] All existing tests pass unchanged
-- [ ] Uses `runLlmStage` for LLM call
+- [x] `npm run typecheck` passes
+- [x] `npm run lint` passes
+- [x] All existing tests pass unchanged
+- [x] Uses `runLlmStage` for LLM call
+
+## Outcome
+
+- **Completion date**: 2026-03-07
+- **What was changed**: Created content-evaluator-prompt.ts, content-evaluator-schema.ts, content-evaluator-generation.ts. Added ContentEvaluatorContext/ContentEvaluatorResult to models. Added 'contentEvaluator' to LlmStage registry and PromptType. 14 unit tests.
+- **Deviations**: None
+- **Verification**: typecheck passes, lint passes, 269 suites / 3202 tests pass

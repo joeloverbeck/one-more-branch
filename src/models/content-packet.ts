@@ -164,3 +164,15 @@ export interface ContentPacketerResult {
   readonly packets: readonly ContentPacket[];
   readonly rawResponse: string;
 }
+
+// --- Content evaluator types ---
+
+export interface ContentEvaluatorContext {
+  readonly packets: readonly ContentPacket[];
+  readonly tasteProfile?: TasteProfile;
+}
+
+export interface ContentEvaluatorResult {
+  readonly evaluations: readonly ContentEvaluation[];
+  readonly rawResponse: string;
+}
