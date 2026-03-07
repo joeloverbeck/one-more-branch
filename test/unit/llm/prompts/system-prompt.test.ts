@@ -107,16 +107,6 @@ describe('composeOpeningDataRules', () => {
     expect(rules).not.toContain('REMOVAL QUALITY');
   });
 
-  it('includes strict choice guidelines when choiceGuidance is strict', () => {
-    const rules = composeOpeningDataRules({ choiceGuidance: 'strict' });
-    expect(rules).toContain('CHOICE REQUIREMENTS:');
-    expect(rules).toContain('DIVERGENCE ENFORCEMENT');
-  });
-
-  it('does NOT include strict choice guidelines when choiceGuidance is basic', () => {
-    const rules = composeOpeningDataRules({ choiceGuidance: 'basic' });
-    expect(rules).not.toContain('CHOICE REQUIREMENTS:');
-  });
 });
 
 describe('composeContinuationDataRules', () => {
@@ -142,17 +132,6 @@ describe('composeContinuationDataRules', () => {
     expect(rules).not.toContain('ESTABLISHMENT RULES (OPENING):');
     expect(rules).not.toContain('OPENING ACTIVE STATE QUALITY:');
     expect(rules).not.toContain('OPENING CANON QUALITY:');
-  });
-
-  it('includes strict choice guidelines when choiceGuidance is strict', () => {
-    const rules = composeContinuationDataRules({ choiceGuidance: 'strict' });
-    expect(rules).toContain('CHOICE REQUIREMENTS:');
-    expect(rules).toContain('DIVERGENCE ENFORCEMENT');
-  });
-
-  it('does NOT include strict choice guidelines when choiceGuidance is basic', () => {
-    const rules = composeContinuationDataRules({ choiceGuidance: 'basic' });
-    expect(rules).not.toContain('CHOICE REQUIREMENTS:');
   });
 
   describe('when hasStoryBible is true', () => {
@@ -182,9 +161,5 @@ describe('composeContinuationDataRules', () => {
       expect(rules).toContain('HEALTH MANAGEMENT:');
     });
 
-    it('still supports strict choice guidelines', () => {
-      const rules = composeContinuationDataRules({ hasStoryBible: true, choiceGuidance: 'strict' });
-      expect(rules).toContain('CHOICE REQUIREMENTS:');
-    });
   });
 });

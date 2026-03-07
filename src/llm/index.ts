@@ -39,6 +39,8 @@ export type {
   StructureRewriteResult,
 } from './structure-rewrite-types.js';
 export type { PageWriterResult, FinalPageGenerationResult } from './writer-types.js';
+export type { ChoiceGeneratorResult } from './choice-generator-types.js';
+export type { ChoiceGeneratorContext } from './prompts/choice-generator-prompt.js';
 
 export { CONTENT_POLICY } from './content-policy.js';
 
@@ -69,6 +71,7 @@ export {
   generateLorekeeperBible,
   generatePagePlan,
   generateStateAccountant,
+  generateChoices,
   validateApiKey,
 } from './client.js';
 

@@ -46,11 +46,10 @@ ${previousNarrative}
 
 export function buildContinuationPrompt(
   context: ContinuationContext,
-  options?: PromptOptions
+  _options?: PromptOptions
 ): ChatMessage[] {
   const hasBible = !!context.storyBible;
   const dataRules = composeContinuationDataRules({
-    ...options,
     hasStoryBible: hasBible,
   });
 
@@ -68,17 +67,6 @@ ${context.pagePlan.writerBrief.mustIncludeBeats.map((beat) => `  - ${beat}`).joi
 ${context.pagePlan.writerBrief.forbiddenRecaps.map((item) => `  - ${item}`).join('\n') || '  - (none)'}
 
 Use this guidance to shape this scene while still following all writer schema requirements.
-
-`
-    : '';
-  const choiceIntentSection = context.pagePlan?.choiceIntents?.length
-    ? `=== CHOICE INTENT GUIDANCE (from planner) ===
-Dramatic Question: ${context.pagePlan.dramaticQuestion}
-
-Proposed Choice Intents:
-${context.pagePlan.choiceIntents.map((intent, i) => `${i + 1}. [${intent.choiceType} / ${intent.primaryDelta}] ${intent.hook}`).join('\n')}
-
-Use these choice intents as a starting blueprint. You may adjust if the narrative takes an unexpected turn, but aim to preserve the dramatic question framing and tag divergence.
 
 `
     : '';
@@ -200,7 +188,7 @@ ${dataRules}
 
 ${protagonistSpeechSection}${sceneCharacterVoicesSection}TONE/GENRE: ${context.tone}
 
-${buildSpineSection(context.spine)}${plannerSection}${choiceIntentSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${buildSpineSection(context.spine)}${plannerSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
 
 REQUIREMENTS (follow all):
 1. Choose the scene opening based on what matters next
@@ -211,20 +199,17 @@ REQUIREMENTS (follow all):
 2. Show the direct, immediate consequences of the player's choice - the story must react
 3. Advance the narrative naturally - time passes, situations evolve, new elements emerge
 4. Maintain consistency with all established facts and the current state
-5. Present 3 new meaningful structured choice objects with text, choiceType, and primaryDelta - each choice MUST have a different choiceType OR primaryDelta (add a 4th only when the situation truly warrants another distinct path)
-6. Ensure choices are divergent via their enum tags - each must change a different dimension of the story
-7. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
-8. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
-9. Each scene should advance or complicate the protagonist's relationship to their Need and Want. Show how consequences of their choices move them toward or away from their true Need, even as they pursue their Want.
+5. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
+6. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
+7. Each scene should advance or complicate the protagonist's relationship to their Need and Want. Show how consequences of their choices move them toward or away from their true Need, even as they pursue their Want.
 
-REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
+REMINDER: If the player's choice naturally leads to a story conclusion, set isEnding: true. protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
 
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. React to the player's choice immediately and visibly
 2. Maintain consistency with established state, canon, and continuity
-3. Choices answer the scene's dramatic question with divergent tags
-4. Prose quality: character-filtered, emotionally resonant, forward-moving
-5. sceneSummary and protagonistAffect accuracy`;
+3. Prose quality: character-filtered, emotionally resonant, forward-moving
+4. sceneSummary and protagonistAffect accuracy`;
 
   const toneParams = {
     tone: context.tone,

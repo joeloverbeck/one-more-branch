@@ -6,7 +6,6 @@ import type { LorekeeperResult } from '@/llm/lorekeeper-types';
 import type { PageWriterResult } from '@/llm/writer-types';
 import type { PagePlanGenerationResult } from '@/llm/planner-types';
 import type { GenerationStageCallback } from '@/engine/types';
-import { ChoiceType, PrimaryDelta } from '@/models/choice-enums';
 
 jest.mock('@/llm', () => ({
   generateLorekeeperBible: jest.fn(),
@@ -95,13 +94,6 @@ const mockLorekeeperResult: LorekeeperResult = {
 
 const mockWriterResult: PageWriterResult = {
   narrative: 'The knight knelt before the throne.',
-  choices: [
-    {
-      text: 'Speak',
-      choiceType: ChoiceType.TACTICAL_APPROACH,
-      primaryDelta: PrimaryDelta.GOAL_SHIFT,
-    },
-  ],
   sceneSummary: 'Knight meets king',
   protagonistAffect: {
     primaryEmotion: 'awe',
@@ -112,21 +104,6 @@ const mockWriterResult: PageWriterResult = {
   },
   isEnding: false,
   rawResponse: '{}',
-  currentLocation: 'throne room',
-  threatsAdded: [],
-  threatsRemoved: [],
-  constraintsAdded: [],
-  constraintsRemoved: [],
-  threadsAdded: [],
-  threadsResolved: [],
-  newCanonFacts: [],
-  newCharacterCanonFacts: {},
-  inventoryAdded: [],
-  inventoryRemoved: [],
-  healthAdded: [],
-  healthRemoved: [],
-  characterStateChangesAdded: [],
-  characterStateChangesRemoved: [],
 };
 
 function createBaseContext(

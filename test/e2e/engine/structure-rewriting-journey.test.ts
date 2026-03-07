@@ -9,6 +9,7 @@ import {
   generatePagePlan,
   generateStateAccountant,
   generateStoryStructure,
+  generateChoices,
 } from '@/llm';
 import { StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
@@ -44,6 +45,13 @@ jest.mock('@/llm', () => ({
   generateNpcIntelligenceEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
+  generateChoices: jest.fn().mockResolvedValue({
+    choices: [
+      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
+    rawResponse: '{}',
+  }),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -85,6 +93,7 @@ const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunc
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
+const mockedGenerateChoices = generateChoices as jest.MockedFunction<typeof generateChoices>;
 
 function extractStructureResult(
   ar: AnalystResult
@@ -576,6 +585,30 @@ describe('Structure Rewriting Journey E2E', () => {
     mockedGenerateWriterPage.mockImplementation((context) =>
       Promise.resolve(buildWriterResult(context.selectedChoice))
     );
+    mockedGenerateChoices.mockImplementation((context) => {
+      if (context.narrative.includes('parliament steps')) {
+        return Promise.resolve({ choices: openingResult.choices, rawResponse: '{}' });
+      }
+      if (context.narrative.includes('copy sealed dispatches')) {
+        return Promise.resolve({
+          choices: buildWriterResult('Commit to the alliance publicly').choices,
+          rawResponse: '{}',
+        });
+      }
+      if (context.narrative.includes('covert leak is exposed')) {
+        return Promise.resolve({
+          choices: buildWriterResult('Leak your true intent to a dockworker ally').choices,
+          rawResponse: '{}',
+        });
+      }
+      return Promise.resolve({
+        choices: [
+          { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+        ],
+        rawResponse: '{}',
+      });
+    });
     mockedGenerateStructureEvaluation.mockImplementation((context) => {
       const ar = buildAnalystResult(context.narrative);
       return Promise.resolve(extractStructureResult(ar));

@@ -1,4 +1,5 @@
 import type { ActiveStateChanges } from '../models';
+import type { ChoiceType, PrimaryDelta } from '../models/choice-enums';
 import type { PageWriterResult } from '../llm/writer-types';
 import type { StateReconciliationResult } from './state-reconciler-types';
 
@@ -18,7 +19,13 @@ export type PageBuildResult = PageWriterResult &
     | 'healthRemoved'
     | 'characterStateChangesAdded'
     | 'characterStateChangesRemoved'
-  >;
+  > & {
+    readonly choices: Array<{
+      text: string;
+      choiceType: ChoiceType;
+      primaryDelta: PrimaryDelta;
+    }>;
+  };
 
 /**
  * Maps reconciled state fields to ActiveStateChanges.

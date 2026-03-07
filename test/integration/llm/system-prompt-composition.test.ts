@@ -146,19 +146,6 @@ describe('opening data rules composition', () => {
     });
   });
 
-  describe('options handling', () => {
-    it('adds STRICT_CHOICE_GUIDELINES when choiceGuidance: strict', () => {
-      const rules = composeOpeningDataRules({ choiceGuidance: 'strict' });
-      expect(rules).toContain('CHOICE REQUIREMENTS:');
-      expect(rules).toContain('IN-CHARACTER');
-      expect(rules).toContain('DIVERGENCE ENFORCEMENT');
-    });
-
-    it('does NOT add strict guidelines when choiceGuidance: basic', () => {
-      const rules = composeOpeningDataRules({ choiceGuidance: 'basic' });
-      expect(rules).not.toContain('CHOICE REQUIREMENTS:');
-    });
-  });
 });
 
 describe('continuation data rules composition', () => {
@@ -200,19 +187,6 @@ describe('continuation data rules composition', () => {
     it('does NOT include CANON QUALITY CRITERIA section', () => {
       const rules = composeContinuationDataRules();
       expect(rules).not.toContain('CANON QUALITY CRITERIA:');
-    });
-  });
-
-  describe('options handling', () => {
-    it('adds STRICT_CHOICE_GUIDELINES when choiceGuidance: strict', () => {
-      const rules = composeContinuationDataRules({ choiceGuidance: 'strict' });
-      expect(rules).toContain('CHOICE REQUIREMENTS:');
-      expect(rules).toContain('DIVERGENCE ENFORCEMENT');
-    });
-
-    it('does NOT add strict guidelines when choiceGuidance: basic', () => {
-      const rules = composeContinuationDataRules({ choiceGuidance: 'basic' });
-      expect(rules).not.toContain('CHOICE REQUIREMENTS:');
     });
   });
 

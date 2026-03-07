@@ -18,11 +18,17 @@ export interface DelayedConsequenceDraft {
 
 export interface PageWriterResult {
   narrative: string;
-  choices: Array<{ text: string; choiceType: ChoiceType; primaryDelta: PrimaryDelta }>;
   sceneSummary: string;
   protagonistAffect: ProtagonistAffect;
   isEnding: boolean;
   rawResponse: string;
 }
 
-export type FinalPageGenerationResult = PageWriterResult & StateReconciliationResult;
+export type FinalPageGenerationResult = PageWriterResult &
+  StateReconciliationResult & {
+    readonly choices: Array<{
+      text: string;
+      choiceType: ChoiceType;
+      primaryDelta: PrimaryDelta;
+    }>;
+  };

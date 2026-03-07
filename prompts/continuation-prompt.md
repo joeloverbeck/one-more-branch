@@ -29,7 +29,7 @@ The following sections are **always included** regardless of Story Bible presenc
 - Protagonist affect
 - Protagonist speech fingerprint (decomposed characters are always present)
 - NPC voice fingerprints (when story bible + decomposed characters are available; falls back to lorekeeper's `speechPatterns` for unmatched NPCs)
-- Planner guidance and choice intents
+- Planner guidance (scene intent, writer brief)
 - Grandparent and parent full narrative (voice continuity)
 - Player's choice
 
@@ -129,7 +129,6 @@ HEALTH MANAGEMENT:
 FIELD SEPARATION:
 - CREATIVE OUTPUT FIELDS:
   - narrative
-  - choices
   - sceneSummary
   - protagonistAffect
   - isEnding
@@ -229,63 +228,6 @@ Before generating your response, mentally verify:
 5. Am I acknowledging active threats and constraints?
 {{/if}}
 
-{{#if choiceGuidance === 'strict'}}
-CHOICE REQUIREMENTS:
-Each choice is a structured object with text, choiceType, and primaryDelta.
-Each choice should satisfy all of the following:
-
-0. DRAMATIC COHERENCE: All choices must be natural answers to the same immediate dramatic question raised by the scene's final moment. If the planner provided a dramaticQuestion, ground your choices in it.
-1. IN-CHARACTER: The protagonist would genuinely consider this action given their personality and situation
-2. CONSEQUENTIAL: The choice meaningfully changes the story direction
-3. DIVERGENT: Each choice MUST have a different choiceType OR primaryDelta from all other choices
-4. ACTIONABLE: Describes a concrete action with active verbs (not "think about" or "consider")
-5. BALANCED: Mix of cautious, bold, and creative options when appropriate
-6. VERB-FIRST: Start each choice text with a clear immediate action verb (e.g., "Demand", "Flee", "Accept", "Attack")
-7. SCENE-HOOKING: Each choice must introduce a distinct next-scene hook
-
-CHOICE TYPE VALUES (what the choice is ABOUT):
-- TACTICAL_APPROACH: Choosing a method or tactic to accomplish the current objective
-- MORAL_DILEMMA: A value conflict where each option has genuine ethical costs
-- IDENTITY_EXPRESSION: Defining or revealing who the protagonist is
-- RELATIONSHIP_SHIFT: Changing how the protagonist relates to another character
-- RESOURCE_COMMITMENT: Spending, risking, or giving up something scarce
-- INVESTIGATION: Choosing what to examine, learn, reveal, or conceal
-- PATH_DIVERGENCE: Committing to a fundamentally different story direction
-- CONFRONTATION: Choosing to engage, fight, threaten, or stand ground
-- AVOIDANCE_RETREAT: Choosing to flee, hide, de-escalate, or avoid
-
-PRIMARY DELTA VALUES (what the choice CHANGES in the world):
-- LOCATION_CHANGE: Protagonist moves to a different place
-- GOAL_SHIFT: Protagonist's immediate objective changes
-- RELATIONSHIP_CHANGE: NPC stance/trust/dynamic shifts
-- URGENCY_CHANGE: Time pressure increases or decreases
-- ITEM_CONTROL: Possession of a significant object shifts
-- EXPOSURE_CHANGE: How much attention/suspicion protagonist draws
-- CONDITION_CHANGE: Physical condition, injury, or ailment gained/lost
-- INFORMATION_REVEALED: New knowledge gained, mystery advances
-- THREAT_SHIFT: Active danger introduced, escalated, or neutralized
-- CONSTRAINT_CHANGE: Limitation on protagonist imposed or lifted
-
-DIVERGENCE ENFORCEMENT:
-Each choice MUST have a different choiceType OR a different primaryDelta from all other choices.
-Do not repeat the same (choiceType, primaryDelta) combination across choices.
-If you cannot produce at least 2 choices with different tags, consider making this an ENDING.
-
-FORBIDDEN CHOICE PATTERNS:
-- "Do nothing" / "Wait and see" (unless dramatically appropriate)
-- Choices that contradict established character traits without justification
-- Choices so similar they effectively lead to the same path
-- Meta-choices like "See what happens" or "Continue exploring"
-- Passive phrasing: "Consider talking to..." instead of "Talk to..."
-
-CHOICE FORMATTING EXAMPLE:
-{
-  "text": "Demand to know who the target is before agreeing",
-  "choiceType": "CONFRONTATION",
-  "primaryDelta": "INFORMATION_REVEALED"
-}
-{{/if}}
-
 PROTAGONIST: {{protagonist.name}}
 PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
 Vocabulary: {{protagonist.speechFingerprint.vocabularyProfile}}
@@ -330,16 +272,6 @@ Writer Brief:
 {{pagePlan.writerBrief.forbiddenRecaps as indented bullets}}
 
 Use this guidance to shape this scene while still following all writer schema requirements.
-{{/if}}
-
-{{#if pagePlan.choiceIntents.length}}
-=== CHOICE INTENT GUIDANCE (from planner) ===
-Dramatic Question: {{pagePlan.dramaticQuestion}}
-
-Proposed Choice Intents:
-{{pagePlan.choiceIntents as numbered list: "N. [choiceType / primaryDelta] hook"}}
-
-Use these choice intents as a starting blueprint. You may adjust if the narrative takes an unexpected turn, but aim to preserve the dramatic question framing and tag divergence.
 {{/if}}
 
 {{#if reconciliationFailureReasons.length}}
@@ -454,22 +386,21 @@ REQUIREMENTS (follow all):
 2. Show the direct, immediate consequences of the player's choice - the story must react
 3. Advance the narrative naturally - time passes, situations evolve, new elements emerge
 4. Maintain consistency with all established facts and the current state
-5. Present 3 new meaningful structured choice objects with text, choiceType, and primaryDelta - each choice MUST have a different choiceType OR primaryDelta (add a 4th only when the situation truly warrants another distinct path)
-6. Ensure choices are divergent via their enum tags - each must change a different dimension of the story
-7. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
-8. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
-9. Each scene should advance or complicate the protagonist's relationship to their Need and Want. Show how consequences of their choices move them toward or away from their true Need, even as they pursue their Want.
+5. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
+6. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
+7. Each scene should advance or complicate the protagonist's relationship to their Need and Want. Show how consequences of their choices move them toward or away from their true Need, even as they pursue their Want.
 
-REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (empty choices array, isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
+NOTE: Choices are generated by a dedicated Choice Generator stage after the writer. The writer does NOT produce choices.
+
+REMINDER: If the player's choice naturally leads to a story conclusion, make it an ending (isEnding: true). protagonistAffect should capture the protagonist's emotional state at the end of this scene - consider how the events of this scene have affected them.
 
 TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneFeel}}. Avoid: {{toneAvoid}}.
 
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. React to the player's choice immediately and visibly
 2. Maintain consistency with established state, canon, and continuity
-3. Choices answer the scene's dramatic question with divergent tags
-4. Prose quality: character-filtered, emotionally resonant, forward-moving
-5. sceneSummary and protagonistAffect accuracy
+3. Prose quality: character-filtered, emotionally resonant, forward-moving
+4. sceneSummary and protagonistAffect accuracy
 ```
 
 ## JSON Response Shape
@@ -477,13 +408,6 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 ```json
 {
   "narrative": "{{second-person scene prose, min length enforced}}",
-  "choices": [
-    {
-      "text": "{{verb-first player choice text}}",
-      "choiceType": "{{TACTICAL_APPROACH|MORAL_DILEMMA|IDENTITY_EXPRESSION|RELATIONSHIP_SHIFT|RESOURCE_COMMITMENT|INVESTIGATION|PATH_DIVERGENCE|CONFRONTATION|AVOIDANCE_RETREAT}}",
-      "primaryDelta": "{{LOCATION_CHANGE|GOAL_SHIFT|RELATIONSHIP_CHANGE|URGENCY_CHANGE|ITEM_CONTROL|EXPOSURE_CHANGE|CONDITION_CHANGE|INFORMATION_REVEALED|THREAT_SHIFT|CONSTRAINT_CHANGE}}"
-    }
-  ],
   "protagonistAffect": {
     "primaryEmotion": "{{emotion}}",
     "primaryIntensity": "{{mild|moderate|strong|overwhelming}}",
@@ -501,4 +425,4 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 }
 ```
 
-- `choices` is 2-4 items when `isEnding=false`; exactly `[]` when `isEnding=true`.
+Note: Choices are no longer part of the writer output. They are generated by the dedicated **Choice Generator** stage that runs after the writer. See `prompts/choice-generator-prompt.md`.

@@ -184,39 +184,6 @@ describe('buildOpeningPrompt', () => {
     expect(messages[1]?.role).toBe('user');
   });
 
-  it('should include strict choice guidelines in user message when choiceGuidance: strict', () => {
-    const messages = buildOpeningPrompt(
-      {
-        tone: 'dark fantasy',
-        decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
-        decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
-      },
-      { choiceGuidance: 'strict' }
-    );
-
-    const user = getUserMessage(messages);
-    expect(user).toContain('CHOICE REQUIREMENTS:');
-    expect(user).toContain('IN-CHARACTER');
-    expect(user).toContain('DIVERGENT');
-    expect(user).toContain('FORBIDDEN CHOICE PATTERNS');
-  });
-
-  it('should include DIVERGENCE ENFORCEMENT in user message with strict choice guidelines', () => {
-    const messages = buildOpeningPrompt(
-      {
-        tone: 'dark fantasy',
-        decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
-        decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
-      },
-      { choiceGuidance: 'strict' }
-    );
-
-    const user = getUserMessage(messages);
-    expect(user).toContain('DIVERGENCE ENFORCEMENT');
-    expect(user).toContain('choiceType');
-    expect(user).toContain('primaryDelta');
-  });
-
   it('should include read-only continuity guidance for opening data rules', () => {
     const messages = buildOpeningPrompt({
       tone: 'dark fantasy',
@@ -254,20 +221,6 @@ describe('buildOpeningPrompt', () => {
     const system = getSystemMessage(messages);
     expect(system).toContain('Show character through action');
     expect(system).toContain('avoid sprawling recaps');
-  });
-
-  it('should NOT include strict choice guidelines when choiceGuidance: basic', () => {
-    const messages = buildOpeningPrompt(
-      {
-        tone: 'dark fantasy',
-        decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
-        decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
-      },
-      { choiceGuidance: 'basic' }
-    );
-
-    const user = getUserMessage(messages);
-    expect(user).not.toContain('CHOICE REQUIREMENTS:');
   });
 
   it('should include numbered REQUIREMENTS in user message', () => {

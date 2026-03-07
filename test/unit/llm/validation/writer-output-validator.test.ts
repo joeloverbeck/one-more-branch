@@ -9,33 +9,6 @@ function buildWriterResult(overrides?: Partial<PageWriterResult>): PageWriterRes
   return {
     narrative:
       'You move through the rain-dark alley and hear the patrol bells close in as the rooftops rattle above.',
-    choices: [
-      {
-        text: 'Move toward the bell tower',
-        choiceType: 'TACTICAL_APPROACH',
-        primaryDelta: 'GOAL_SHIFT',
-      },
-      {
-        text: 'Hide under the bridge',
-        choiceType: 'AVOIDANCE_RETREAT',
-        primaryDelta: 'LOCATION_CHANGE',
-      },
-    ],
-    currentLocation: 'Rain-dark alley',
-    threatsAdded: [],
-    threatsRemoved: [],
-    constraintsAdded: [],
-    constraintsRemoved: [],
-    threadsAdded: [],
-    threadsResolved: [],
-    newCanonFacts: [],
-    newCharacterCanonFacts: {},
-    inventoryAdded: [],
-    inventoryRemoved: [],
-    healthAdded: [],
-    healthRemoved: [],
-    characterStateChangesAdded: [],
-    characterStateChangesRemoved: [],
     protagonistAffect: {
       primaryEmotion: 'anxiety',
       primaryIntensity: 'moderate',
@@ -53,17 +26,6 @@ function buildWriterResult(overrides?: Partial<PageWriterResult>): PageWriterRes
 describe('writer-output-validator', () => {
   it('returns no issues for valid deterministic output', () => {
     const issues = validateWriterOutput(buildWriterResult());
-    expect(issues).toEqual([]);
-  });
-
-  it('does not report issues for state mutation compatibility fields', () => {
-    const issues = validateWriterOutput(
-      buildWriterResult({
-        threatsAdded: ['th-7'],
-        constraintsRemoved: ['th-2'],
-      })
-    );
-
     expect(issues).toEqual([]);
   });
 

@@ -2,7 +2,6 @@ import { CHOICE_TYPE_VALUES, PRIMARY_DELTA_VALUES } from '../models/choice-enums
 
 export const WRITER_REQUIRED_FIELDS = [
   'narrative',
-  'choices',
   'protagonistAffect',
   'sceneSummary',
   'isEnding',

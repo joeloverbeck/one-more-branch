@@ -57,6 +57,7 @@ export async function generateWithReconciliationRetry({
 }: ReconciliationRetryGenerationOptions): Promise<{
   writerResult: PageWriterResult;
   reconciliation: StateReconciliationResult;
+  pagePlan: PagePlanGenerationResult;
   metrics: GenerationPipelineMetrics;
 }> {
   const baseLogContext = {
@@ -286,6 +287,7 @@ export async function generateWithReconciliationRetry({
       return {
         writerResult,
         reconciliation,
+        pagePlan,
         metrics,
       };
     }

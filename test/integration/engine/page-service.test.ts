@@ -60,6 +60,13 @@ jest.mock('@/llm', () => ({
   generateStateAccountant: jest.fn(),
   generateAgendaResolver: jest.fn(),
   generateLorekeeperBible: jest.fn(),
+  generateChoices: jest.fn().mockResolvedValue({
+    choices: [
+      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
+    rawResponse: '{}',
+  }),
 
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

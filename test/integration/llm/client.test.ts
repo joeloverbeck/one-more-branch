@@ -92,73 +92,7 @@ describe('llm client integration (mocked fetch)', () => {
     );
 
     expect(result.narrative.length).toBeGreaterThan(100);
-    expect(result.choices.length).toBeGreaterThanOrEqual(2);
-    expect(result.choices.length).toBeLessThanOrEqual(5);
     expect(result.isEnding).toBe(false);
-  });
-
-  it('should enforce choice constraints via Zod validation', async () => {
-    const invalidStructured = {
-      narrative:
-        'You step into the observatory and frozen constellations begin to move as though the sky has noticed your arrival and now waits for your command.',
-      choices: [
-        {
-          text: 'Consult the brass star map',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
-        },
-        {
-          text: 'consult the brass star map',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
-        },
-      ],
-      currentLocation: 'The abandoned observatory',
-      threatsAdded: [],
-      threatsRemoved: [],
-      constraintsAdded: [],
-      constraintsRemoved: [],
-      threadsAdded: [],
-      threadsResolved: [],
-      newCanonFacts: [{ text: 'The observatory responds to bloodline magic', factType: 'LAW' }],
-      newCharacterCanonFacts: [],
-      inventoryAdded: [],
-      inventoryRemoved: [],
-      healthAdded: [],
-      healthRemoved: [],
-      characterStateChangesAdded: [],
-      characterStateChangesRemoved: [],
-      protagonistAffect: {
-        primaryEmotion: 'awe',
-        primaryIntensity: 'strong',
-        primaryCause: 'The sky responds to your presence',
-        secondaryEmotions: [],
-        dominantMotivation: 'Understand the observatory',
-      },
-      sceneSummary: 'Test summary of the scene events and consequences.',
-      delayedConsequencesCreated: [],
-      isEnding: false,
-    };
-
-    fetchMock.mockResolvedValue(openRouterBodyFromContent(JSON.stringify(invalidStructured)));
-
-    const promise = generateOpeningPage(
-      {
-        tone: 'mythic science fantasy',
-        decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist', { rawDescription: 'A disgraced astronomer' })],
-        decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'The night sky has stopped moving', scope: 'global' }], rawWorldbuilding: 'A city where the night sky has stopped moving' },
-      },
-      { apiKey: 'test-key' }
-    );
-
-    // Attach rejection handler early to prevent unhandled rejection detection
-    const expectation = expect(promise).rejects.toMatchObject({ code: 'VALIDATION_ERROR' });
-
-    // Advance through retry delays: 1000ms then 2000ms
-    await jest.advanceTimersByTimeAsync(1000);
-    await jest.advanceTimersByTimeAsync(2000);
-
-    await expectation;
   });
 
   it('should generate continuation writer output when plan is passed as separate argument', async () => {
@@ -272,7 +206,6 @@ describe('llm client integration (mocked fetch)', () => {
     );
 
     expect(result.narrative.length).toBeGreaterThan(80);
-    expect(result.choices).toHaveLength(2);
     expect(result.isEnding).toBe(false);
   });
 });

@@ -1,4 +1,5 @@
 import { mergePageWriterAndReconciledStateWithAnalystResults } from '../../../src/llm/result-merger.js';
+import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums.js';
 import { ThreatType } from '../../../src/models/index.js';
 import {
   createMockPageWriterResult,
@@ -22,15 +23,20 @@ describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
       beatConcluded: true,
       beatResolution: 'The scene stabilizes',
     });
+    const choices = [
+      { text: 'Go left', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT },
+      { text: 'Go right', choiceType: ChoiceType.INVESTIGATION, primaryDelta: PrimaryDelta.INFORMATION_REVEALED },
+    ];
 
     const result = mergePageWriterAndReconciledStateWithAnalystResults(
       writer,
       reconciliation,
-      analyst
+      analyst,
+      choices
     );
 
     expect(result.narrative).toBe(writer.narrative);
-    expect(result.choices).toEqual(writer.choices);
+    expect(result.choices).toEqual(choices);
     expect(result.currentLocation).toBe('Reconciled cave');
     expect(result.threatsAdded).toEqual([
       {

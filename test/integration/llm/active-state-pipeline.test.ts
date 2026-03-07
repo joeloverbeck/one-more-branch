@@ -2,6 +2,7 @@ import { validateWriterResponse } from '../../../src/llm/schemas/writer-response
 import { buildFirstPage, createEmptyStructureContext } from '../../../src/engine/page-builder';
 import { reconcileState } from '../../../src/engine/state-reconciler';
 import { ConstraintType, ThreatType } from '../../../src/models/state/index';
+import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import type { PagePlan } from '../../../src/llm/planner-types';
 
 /**
@@ -13,23 +14,6 @@ describe('Active state pipeline integration', () => {
   const rawLlmResponse = {
     narrative:
       'You step into the burning tavern. Flames lick the wooden beams above as the innkeeper screams for help. The heat is unbearable.',
-    choices: [
-      {
-        text: 'Rush to save the innkeeper',
-        choiceType: 'TACTICAL_APPROACH',
-        primaryDelta: 'GOAL_SHIFT',
-      },
-      {
-        text: 'Flee through the back door',
-        choiceType: 'AVOIDANCE_RETREAT',
-        primaryDelta: 'LOCATION_CHANGE',
-      },
-      {
-        text: 'Search for water',
-        choiceType: 'INVESTIGATION',
-        primaryDelta: 'INFORMATION_REVEALED',
-      },
-    ],
     protagonistAffect: {
       primaryEmotion: 'fear',
       primaryIntensity: 'strong',
@@ -104,9 +88,8 @@ describe('Active state pipeline integration', () => {
     // Step 1: Validate + transform through writer-response-transformer
     const generationResult = validateWriterResponse(rawLlmResponse, JSON.stringify(rawLlmResponse));
 
-    // Writer output should remain creative-only
+    // Writer output should remain creative-only (no choices — those come from choice generator)
     expect(generationResult.narrative.length).toBeGreaterThan(0);
-    expect(generationResult.choices).toHaveLength(3);
 
     // Step 2: Reconcile deterministic state from planner intents
     const reconciliation = reconcileState(pagePlan, generationResult, {
@@ -120,12 +103,18 @@ describe('Active state pipeline integration', () => {
     });
     expect(reconciliation.reconciliationDiagnostics).toEqual([]);
 
-    // Step 3: Build page via page-builder
+    // Step 3: Build page via page-builder (choices come from choice generator, not writer)
+    const choices = [
+      { text: 'Rush to save the innkeeper', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT },
+      { text: 'Flee through the back door', choiceType: ChoiceType.AVOIDANCE_RETREAT, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
+      { text: 'Search for water', choiceType: ChoiceType.INVESTIGATION, primaryDelta: PrimaryDelta.INFORMATION_REVEALED },
+    ];
     const context = createEmptyStructureContext();
     const page = buildFirstPage(
       {
         ...generationResult,
         ...reconciliation,
+        choices,
       },
       context
     );
@@ -178,27 +167,10 @@ describe('Active state pipeline integration', () => {
   });
 
   it('should populate active state through the writer pipeline', () => {
-    // Writer responses don't include beat/deviation fields
+    // Writer responses don't include beat/deviation fields or choices
     const writerLlmResponse = {
       narrative:
         'You step into the burning tavern. Flames lick the wooden beams above as the innkeeper screams for help. The heat is unbearable.',
-      choices: [
-        {
-          text: 'Rush to save the innkeeper',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
-        },
-        {
-          text: 'Flee through the back door',
-          choiceType: 'AVOIDANCE_RETREAT',
-          primaryDelta: 'LOCATION_CHANGE',
-        },
-        {
-          text: 'Search for water',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
-        },
-      ],
       protagonistAffect: {
         primaryEmotion: 'fear',
         primaryIntensity: 'strong',
@@ -217,7 +189,7 @@ describe('Active state pipeline integration', () => {
     );
 
     expect(writerResult.narrative.length).toBeGreaterThan(0);
-    expect(writerResult.choices).toHaveLength(3);
+    expect('choices' in (writerResult as Record<string, unknown>)).toBe(false);
     expect('currentLocation' in (writerResult as Record<string, unknown>)).toBe(false);
   });
 
@@ -252,7 +224,14 @@ describe('Active state pipeline integration', () => {
     });
 
     const context = createEmptyStructureContext();
-    const page = buildFirstPage({ ...generationResult, ...reconciliation }, context);
+    const page = buildFirstPage({
+      ...generationResult,
+      ...reconciliation,
+      choices: [
+        { text: 'Option A', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT },
+        { text: 'Option B', choiceType: ChoiceType.INVESTIGATION, primaryDelta: PrimaryDelta.INFORMATION_REVEALED },
+      ],
+    }, context);
 
     expect(page.activeStateChanges.newLocation).toBeNull();
     expect(page.activeStateChanges.threatsAdded).toEqual([]);

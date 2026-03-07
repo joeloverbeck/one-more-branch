@@ -50,6 +50,7 @@ export async function generatePage(
   const {
     writerResult,
     reconciliation,
+    pagePlan,
     metrics: coreGeneration,
   } = await generateWithReconciliationRetry({
     mode,
@@ -75,6 +76,8 @@ export async function generatePage(
     writerResult,
     reconciliation,
     getLastStoryBible: ctx.writerWithLorekeeper.getLastStoryBible,
+    dramaticQuestion: pagePlan.dramaticQuestion,
+    choiceIntents: pagePlan.choiceIntents,
     maxPageId: ctx.maxPageId,
     choiceIndex: ctx.choiceIndex,
     onGenerationStage,

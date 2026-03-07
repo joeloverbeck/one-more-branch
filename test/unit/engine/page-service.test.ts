@@ -52,6 +52,13 @@ jest.mock('../../../src/llm', () => ({
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
   generateLorekeeperBible: jest.fn(),
+  generateChoices: jest.fn().mockResolvedValue({
+    choices: [
+      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
+    rawResponse: '{}',
+  }),
 
   mergePageWriterAndReconciledStateWithAnalystResults:
     jest.requireActual('../../../src/llm').mergePageWriterAndReconciledStateWithAnalystResults, // eslint-disable-line @typescript-eslint/no-unsafe-member-access
@@ -562,6 +569,8 @@ describe('page-service', () => {
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 2, durationMs: expect.any(Number) }],
+        [{ stage: 'GENERATING_CHOICES', status: 'started', attempt: 1 }],
+        [{ stage: 'GENERATING_CHOICES', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
       ]);
     });
 
@@ -634,8 +643,8 @@ describe('page-service', () => {
       });
       expect(page.structureVersionId).toBe(initialVersion.id);
       expect(page.choices.map((choice) => choice.text)).toEqual([
-        'Hide in the print shop',
-        'Bribe a gate sergeant',
+        'Option A',
+        'Option B',
       ]);
       expect(updatedStory.globalCanon).toContainEqual({ text: 'The city enforces nightly curfew', factType: 'LAW' });
       expect(updatedStory.structure).toEqual(structure);

@@ -46,6 +46,7 @@ describe('Engine types', () => {
         'CURATING_CONTEXT',
         'WRITING_OPENING_PAGE',
         'WRITING_CONTINUING_PAGE',
+        'GENERATING_CHOICES',
         'EVALUATING_STRUCTURE',
         'TRACKING_PROMISES',
         'ASSESSING_PROSE',

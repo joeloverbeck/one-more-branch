@@ -1,4 +1,5 @@
 import type { PageId } from '../models/id.js';
+import type { ChoiceType, PrimaryDelta } from '../models/choice-enums.js';
 import type { DeviationResult } from '../models/story-arc.js';
 import type { StateReconciliationResult } from '../engine/state-reconciler-types.js';
 import type {
@@ -40,6 +41,11 @@ export type NarrativeFocusTrajectory = readonly NarrativeFocusDataPoint[];
 export interface ContinuationGenerationResult
   extends PageWriterResult,
     StateReconciliationResult {
+  readonly choices: Array<{
+    text: string;
+    choiceType: ChoiceType;
+    primaryDelta: PrimaryDelta;
+  }>;
   readonly beatConcluded: boolean;
   readonly beatResolution: string;
   readonly deviation: DeviationResult;
@@ -98,6 +104,7 @@ export interface StageDegradation {
 
 // Metrics for post-generation processing (Phase 3)
 export interface PostGenerationMetrics {
+  readonly choiceGeneratorDurationMs: number | null;
   readonly analystDurationMs: number | null;
   readonly spineRewriteDurationMs: number | null;
   readonly structureRewriteDurationMs: number | null;

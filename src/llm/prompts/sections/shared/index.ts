@@ -27,3 +27,5 @@ export { buildNpcAgendasSection, buildNpcRelationshipsSection } from './npc-stat
 export { buildInventorySection, buildHealthSection } from './resource-state-sections.js';
 
 export { buildGenreConventionsSection } from './genre-conventions-section.js';
+
+export { STRICT_CHOICE_GUIDELINES } from './choice-guidelines.js';

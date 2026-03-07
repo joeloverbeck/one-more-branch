@@ -9,6 +9,7 @@ import {
   generatePagePlan,
   generateStateAccountant,
   generateStoryStructure,
+  generateChoices,
 } from '@/llm';
 import { StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
@@ -44,6 +45,13 @@ jest.mock('@/llm', () => ({
   generateNpcIntelligenceEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
+  generateChoices: jest.fn().mockResolvedValue({
+    choices: [
+      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
+    rawResponse: '{}',
+  }),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -85,6 +93,7 @@ const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunc
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
+const mockedGenerateChoices = generateChoices as jest.MockedFunction<typeof generateChoices>;
 
 function extractStructureResult(
   ar: AnalystResult
@@ -485,6 +494,27 @@ describe('Structured Story E2E', () => {
     mockedGenerateWriterPage.mockImplementation((context) => {
       continuationCount += 1;
       return Promise.resolve(buildWriterResult(context.selectedChoice, continuationCount + 1));
+    });
+    mockedGenerateChoices.mockImplementation((context) => {
+      if (context.narrative.includes('rain-soaked capital')) {
+        return Promise.resolve({ choices: openingResult.choices, rawResponse: '{}' });
+      }
+      if (context.narrative.includes('catch the courier')) {
+        return Promise.resolve({
+          choices: buildWriterResult('Pursue', 0).choices,
+          rawResponse: '{}',
+        });
+      }
+      if (context.narrative.includes('signal chamber')) {
+        return Promise.resolve({
+          choices: buildWriterResult('Press deeper', 0).choices,
+          rawResponse: '{}',
+        });
+      }
+      return Promise.resolve({
+        choices: buildWriterResult('default', 0).choices,
+        rawResponse: '{}',
+      });
     });
     mockedGenerateStructureEvaluation.mockImplementation((context) => {
       const ar = buildAnalystResult(context.narrative, continuationCount + 1);
