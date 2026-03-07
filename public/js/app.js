@@ -4711,7 +4711,7 @@ function createAnalystInsightsController(initialAnalystResult, initialContext) {
   var modal = document.getElementById('insights-modal');
   var modalBody = document.getElementById('insights-modal-body');
   var closeButton = document.getElementById('insights-close-btn');
-  var headerActions = document.getElementById('story-header-actions');
+  var headerActions = document.getElementById('story-actions-strip');
   var button = document.getElementById('insights-btn');
 
   if (!modal || !modalBody || !closeButton || !headerActions) {

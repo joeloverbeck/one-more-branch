@@ -121,10 +121,10 @@ describe('play page template', () => {
       expect(template).toContain('resolvedThreadMeta');
     });
 
-    it('contains insights modal scaffold and header actions slot', () => {
+    it('contains insights modal scaffold and actions strip slot', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 
-      expect(template).toContain('id="story-header-actions"');
+      expect(template).toContain('id="story-actions-strip"');
       expect(template).toContain('id="insights-modal"');
       expect(template).toContain('id="insights-modal-body"');
       expect(template).toContain('id="insights-close-btn"');
@@ -132,10 +132,10 @@ describe('play page template', () => {
   });
 
   describe('story recap wiring', () => {
-    it('contains recap trigger button in story header actions', () => {
+    it('contains recap trigger button in story actions strip', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 
-      expect(template).toContain('id="story-header-actions"');
+      expect(template).toContain('id="story-actions-strip"');
       expect(template).toContain('id="recap-btn"');
       expect(template).toContain('Story So Far');
     });

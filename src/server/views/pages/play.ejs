@@ -225,17 +225,6 @@
               <% } %>
             </div>
             <div class="story-header-actions" id="story-header-actions">
-              <button type="button" class="recap-btn" id="recap-btn"
-                      aria-haspopup="dialog" aria-controls="recap-modal">
-                <span class="recap-btn__icon" aria-hidden="true">&#x1f4dc;</span>
-                <span class="recap-btn__label">Story So Far</span>
-              </button>
-              <% if (page.analystResult) { %>
-              <button type="button" class="insights-btn" id="insights-btn" aria-haspopup="dialog" aria-controls="insights-modal">
-                <span class="insights-btn__icon" aria-hidden="true">🔍</span>
-                <span class="insights-btn__label">Story Insights</span>
-              </button>
-              <% } %>
               <span class="page-indicator">Page <%= page.id %></span>
             </div>
           </div>
@@ -262,6 +251,20 @@
             <% } %>
           </div>
           <% } %>
+
+          <div class="story-actions-strip" id="story-actions-strip">
+            <button type="button" class="recap-btn" id="recap-btn"
+                    aria-haspopup="dialog" aria-controls="recap-modal">
+              <span class="recap-btn__icon" aria-hidden="true">&#x1f4dc;</span>
+              <span class="recap-btn__label">Story So Far</span>
+            </button>
+            <% if (page.analystResult) { %>
+            <button type="button" class="insights-btn" id="insights-btn" aria-haspopup="dialog" aria-controls="insights-modal">
+              <span class="insights-btn__icon" aria-hidden="true">🔍</span>
+              <span class="insights-btn__label">Story Insights</span>
+            </button>
+            <% } %>
+          </div>
 
           <article class="narrative" id="narrative">
             <div class="narrative-text">

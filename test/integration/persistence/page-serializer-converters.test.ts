@@ -13,8 +13,8 @@ import {
 import type { NpcAgenda } from '@/models/state/npc-agenda';
 import type { NpcRelationship } from '@/models/state/npc-relationship';
 import type { AnalystResult } from '@/llm/analyst-types';
-import type { StoryBible } from '@/llm/lorekeeper-types';
 import { loadPage, savePage } from '@/persistence/page-repository';
+import { getPageFilePath, readJsonFile } from '@/persistence/file-utils';
 import { deleteStory, listStories, saveStory } from '@/persistence/story-repository';
 
 const TEST_PREFIX = 'TEST: CNVEXT converter extraction';
@@ -151,33 +151,6 @@ rawResponse: '',
   };
 }
 
-function buildFullStoryBible(): StoryBible {
-  return {
-    sceneWorldContext: 'A dark forest at twilight.',
-    relevantCharacters: [
-      {
-        name: 'Garak',
-        role: 'antagonist',
-        relevantProfile: 'A cunning spy with shifting loyalties.',
-        speechPatterns: 'Formal, evasive.',
-        protagonistRelationship: 'Wary allies of convenience.',
-        interCharacterDynamics: 'Distrusted by the guard captain.',
-        currentState: 'Hiding in the shadows.',
-      },
-      {
-        name: 'Lyra',
-        role: 'companion',
-        relevantProfile: 'A young healer with hidden talents.',
-        speechPatterns: 'Soft-spoken, precise.',
-        protagonistRelationship: 'Trusted friend.',
-        currentState: 'Tending to wounds.',
-      },
-    ],
-    relevantCanonFacts: ['The temple was sealed 500 years ago.', 'Only moonlight can reveal the key.'],
-    relevantHistory: 'The protagonist discovered the map three days ago.',
-  };
-}
-
 describe('page-serializer converter extraction integration', () => {
   const createdStoryIds = new Set<StoryId>();
 
@@ -195,25 +168,41 @@ describe('page-serializer converter extraction integration', () => {
     }
   });
 
-  it('story bible round-trip with characters and canon facts', async () => {
-    const story = buildStory({ characterConcept: `${TEST_PREFIX} story-bible` });
+  it('does not persist storyBible and deserializes it as null', async () => {
+    const story = buildStory({ characterConcept: `${TEST_PREFIX} no-story-bible-persist` });
     createdStoryIds.add(story.id);
     await saveStory(story);
 
-    const storyBible = buildFullStoryBible();
-    const page = buildTestPage({ storyBible });
+    const page = buildTestPage({
+      storyBible: {
+        sceneWorldContext: 'A dark forest at twilight.',
+        relevantCharacters: [
+          {
+            name: 'Garak',
+            role: 'antagonist',
+            relevantProfile: 'A cunning spy with shifting loyalties.',
+            speechPatterns: 'Formal, evasive.',
+            protagonistRelationship: 'Wary allies of convenience.',
+            interCharacterDynamics: 'Distrusted by the guard captain.',
+            currentState: 'Hiding in the shadows.',
+          },
+        ],
+        relevantCanonFacts: ['The temple was sealed 500 years ago.'],
+        relevantHistory: 'The protagonist discovered the map three days ago.',
+      },
+    });
 
     await savePage(story.id, page);
+    const pageFilePath = getPageFilePath(story.id, page.id);
+    const rawPageData = await readJsonFile<Record<string, unknown>>(pageFilePath);
     const loaded = await loadPage(story.id, page.id);
 
+    if (!rawPageData) {
+      throw new Error('Expected page file to exist after savePage');
+    }
+    expect(rawPageData).not.toHaveProperty('storyBible');
     expect(loaded).not.toBeNull();
-    expect(loaded!.storyBible).toEqual(storyBible);
-    expect(loaded!.storyBible!.relevantCharacters).toHaveLength(2);
-    expect(loaded!.storyBible!.relevantCharacters[0].interCharacterDynamics).toBe(
-      'Distrusted by the guard captain.'
-    );
-    // Second character has no interCharacterDynamics — should be absent
-    expect(loaded!.storyBible!.relevantCharacters[1].interCharacterDynamics).toBeUndefined();
+    expect(loaded!.storyBible).toBeNull();
   });
 
   it('null story bible round-trip', async () => {

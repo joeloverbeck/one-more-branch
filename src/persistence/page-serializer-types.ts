@@ -66,23 +66,6 @@ export interface ThreadAdditionFileData {
   urgency: Urgency;
 }
 
-export interface StoryBibleCharacterFileData {
-  name: string;
-  role: string;
-  relevantProfile: string;
-  speechPatterns: string;
-  protagonistRelationship: string;
-  interCharacterDynamics?: string;
-  currentState: string;
-}
-
-export interface StoryBibleFileData {
-  sceneWorldContext: string;
-  relevantCharacters: StoryBibleCharacterFileData[];
-  relevantCanonFacts: string[];
-  relevantHistory: string;
-}
-
 export interface DetectedPromiseFileData {
   description: string;
   promiseType: string;
@@ -249,7 +232,6 @@ export interface PageFileData {
   accumulatedStructureState: AccumulatedStructureStateFileData;
   protagonistAffect: ProtagonistAffectFileData;
   structureVersionId: string | null;
-  storyBible: StoryBibleFileData | null;
   analystResult: AnalystResultFileData | null;
   thematicValence: string;
   threadAges: Record<string, number>;
