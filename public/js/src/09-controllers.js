@@ -433,10 +433,13 @@
         if (!isExplored) {
           setChoicesDisabled(true);
           loading.style.display = 'flex';
+          var ideationProgressId = createProgressId();
+          loadingProgress.start(ideationProgressId);
           try {
             var ideationOptions = await ideationCtrl.fetchSceneOptions(
-              apiKey, 'continuation', currentPageId, choiceIndex, protagonistGuidance
+              apiKey, 'continuation', currentPageId, choiceIndex, protagonistGuidance, ideationProgressId
             );
+            loadingProgress.stop();
             loading.style.display = 'none';
 
             var selectedDirection = await new Promise(function (resolveIdeation) {
@@ -448,9 +451,12 @@
                 },
                 function onRegenerate() {
                   loading.style.display = 'flex';
+                  var regenProgressId = createProgressId();
+                  loadingProgress.start(regenProgressId);
                   ideationCtrl.fetchSceneOptions(
-                    apiKey, 'continuation', currentPageId, choiceIndex, protagonistGuidance
+                    apiKey, 'continuation', currentPageId, choiceIndex, protagonistGuidance, regenProgressId
                   ).then(function (newOptions) {
+                    loadingProgress.stop();
                     loading.style.display = 'none';
                     ideationCtrl.renderIdeationUI(
                       choicesSection, newOptions,
@@ -458,6 +464,7 @@
                       function () { /* nested regenerate handled by UI re-render */ }
                     );
                   }).catch(function (err) {
+                    loadingProgress.stop();
                     loading.style.display = 'none';
                     showPlayError(
                       err instanceof Error ? err.message : 'Regeneration failed',
@@ -476,6 +483,7 @@
             );
             return;
           } catch (ideationErr) {
+            loadingProgress.stop();
             if (!ideationHandled) {
               loading.style.display = 'none';
               setChoicesDisabled(false);

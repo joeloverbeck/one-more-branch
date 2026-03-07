@@ -6262,10 +6262,13 @@ function createRecapModalController(initialData) {
         if (!isExplored) {
           setChoicesDisabled(true);
           loading.style.display = 'flex';
+          var ideationProgressId = createProgressId();
+          loadingProgress.start(ideationProgressId);
           try {
             var ideationOptions = await ideationCtrl.fetchSceneOptions(
-              apiKey, 'continuation', currentPageId, choiceIndex, protagonistGuidance
+              apiKey, 'continuation', currentPageId, choiceIndex, protagonistGuidance, ideationProgressId
             );
+            loadingProgress.stop();
             loading.style.display = 'none';
 
             var selectedDirection = await new Promise(function (resolveIdeation) {
@@ -6277,9 +6280,12 @@ function createRecapModalController(initialData) {
                 },
                 function onRegenerate() {
                   loading.style.display = 'flex';
+                  var regenProgressId = createProgressId();
+                  loadingProgress.start(regenProgressId);
                   ideationCtrl.fetchSceneOptions(
-                    apiKey, 'continuation', currentPageId, choiceIndex, protagonistGuidance
+                    apiKey, 'continuation', currentPageId, choiceIndex, protagonistGuidance, regenProgressId
                   ).then(function (newOptions) {
+                    loadingProgress.stop();
                     loading.style.display = 'none';
                     ideationCtrl.renderIdeationUI(
                       choicesSection, newOptions,
@@ -6287,6 +6293,7 @@ function createRecapModalController(initialData) {
                       function () { /* nested regenerate handled by UI re-render */ }
                     );
                   }).catch(function (err) {
+                    loadingProgress.stop();
                     loading.style.display = 'none';
                     showPlayError(
                       err instanceof Error ? err.message : 'Regeneration failed',
@@ -6305,6 +6312,7 @@ function createRecapModalController(initialData) {
             );
             return;
           } catch (ideationErr) {
+            loadingProgress.stop();
             if (!ideationHandled) {
               loading.style.display = 'none';
               setChoicesDisabled(false);
@@ -8865,8 +8873,11 @@ function createRecapModalController(initialData) {
   // ── Scene Ideation Controller ────────────────────────────────────
 
   function createSceneIdeationController(storyId, loadingEl, loadingProgressCtrl) {
-    function fetchSceneOptions(apiKey, mode, pageId, choiceIndex, protagonistGuidance) {
+    function fetchSceneOptions(apiKey, mode, pageId, choiceIndex, protagonistGuidance, progressId) {
       var body = { apiKey: apiKey, mode: mode || 'opening' };
+      if (progressId) {
+        body.progressId = progressId;
+      }
       if (mode === 'continuation') {
         body.pageId = pageId;
         body.choiceIndex = choiceIndex;

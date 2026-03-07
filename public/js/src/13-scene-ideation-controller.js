@@ -1,8 +1,11 @@
   // ── Scene Ideation Controller ────────────────────────────────────
 
   function createSceneIdeationController(storyId, loadingEl, loadingProgressCtrl) {
-    function fetchSceneOptions(apiKey, mode, pageId, choiceIndex, protagonistGuidance) {
+    function fetchSceneOptions(apiKey, mode, pageId, choiceIndex, protagonistGuidance, progressId) {
       var body = { apiKey: apiKey, mode: mode || 'opening' };
+      if (progressId) {
+        body.progressId = progressId;
+      }
       if (mode === 'continuation') {
         body.pageId = pageId;
         body.choiceIndex = choiceIndex;
