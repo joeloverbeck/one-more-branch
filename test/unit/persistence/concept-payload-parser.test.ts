@@ -45,7 +45,8 @@ describe('parseSavedConcept', () => {
 
   it('upcasts legacy payload missing contentCharge in evaluatedConcept scores', () => {
     const modern = createSavedConceptFixture();
-    const { contentCharge: _, ...scoresWithout } = modern.evaluatedConcept.scores;
+    const scoresWithout: Record<string, unknown> = { ...modern.evaluatedConcept.scores };
+    delete scoresWithout['contentCharge'];
     const legacy = {
       ...modern,
       evaluatedConcept: {
@@ -63,7 +64,8 @@ describe('parseSavedConcept', () => {
     const modern = createSavedConceptFixture({
       preHardenedConcept: createEvaluatedConceptFixture(2),
     });
-    const { contentCharge: _, ...scoresWithout } = modern.preHardenedConcept!.scores;
+    const scoresWithout: Record<string, unknown> = { ...modern.preHardenedConcept!.scores };
+    delete scoresWithout['contentCharge'];
     const legacy = {
       ...modern,
       preHardenedConcept: {

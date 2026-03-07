@@ -293,7 +293,8 @@ describe('saved-concept model guards', () => {
 
   it('rejects SavedConcept when scores missing contentCharge', () => {
     const ec = createEvaluatedConcept();
-    const { contentCharge: _, ...scoresWithout } = ec.scores;
+    const scoresWithout: Record<string, unknown> = { ...ec.scores };
+    delete scoresWithout['contentCharge'];
     const value = {
       id: 'concept-1',
       name: 'Memory Courier',
