@@ -10,6 +10,7 @@ import {
   generateStateAccountant,
   generateStoryStructure,
   generateLorekeeperBible,
+  generateChoices,
 } from '@/llm';
 import { parsePageId, StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
@@ -46,6 +47,13 @@ jest.mock('@/llm', () => ({
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
   generateLorekeeperBible: jest.fn(),
+  generateChoices: jest.fn().mockResolvedValue({
+    choices: [
+      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
+    rawResponse: '{}',
+  }),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -92,6 +100,7 @@ const mockedGenerateLorekeeperBible = generateLorekeeperBible as jest.MockedFunc
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
+const mockedGenerateChoices = generateChoices as jest.MockedFunction<typeof generateChoices>;
 
 function extractStructureResult(
   ar: AnalystResult
@@ -508,6 +517,33 @@ describe('story-engine integration', () => {
     mockedGenerateWriterPage.mockImplementation((context) =>
       Promise.resolve(buildWriterResult(context.selectedChoice))
     );
+    mockedGenerateChoices.mockImplementation((context: { narrative: string }) => {
+      if (context.narrative.includes('harbor lights')) {
+        return Promise.resolve({
+          choices: [
+            { text: 'Investigate the ember trail', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+            { text: 'Question the ferryman', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          ],
+          rawResponse: '{}',
+        });
+      }
+      if (context.narrative.includes('embers down alleys')) {
+        return Promise.resolve({
+          choices: [
+            { text: 'Enter the ash-marked chapel', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+            { text: 'Return to the docks with proof', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          ],
+          rawResponse: '{}',
+        });
+      }
+      return Promise.resolve({
+        choices: [
+          { text: 'Accept passage to the hidden pier', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+          { text: 'Detain the ferryman for answers', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+        ],
+        rawResponse: '{}',
+      });
+    });
     mockedGenerateStructureEvaluation.mockImplementation((context) => {
       const ar = buildAnalystResult(context.narrative);
       return Promise.resolve(extractStructureResult(ar));

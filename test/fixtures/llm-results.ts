@@ -120,10 +120,6 @@ export function createMockPageWriterResult(
 ): PageWriterResult {
   return {
     narrative: 'You step into the corridor.',
-    choices: [
-      { text: 'Go left', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT },
-      { text: 'Go right', choiceType: ChoiceType.INVESTIGATION, primaryDelta: PrimaryDelta.INFORMATION_REVEALED },
-    ],
     sceneSummary: 'Explored the corridor.',
     protagonistAffect: createMockProtagonistAffect(),
     isEnding: false,
@@ -133,7 +129,15 @@ export function createMockPageWriterResult(
 }
 
 /**
- * Creates a mock FinalPageGenerationResult (PageWriterResult & StateReconciliationResult).
+ * Default mock choices for use in test factories.
+ */
+export const DEFAULT_MOCK_CHOICES = [
+  { text: 'Go left', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT },
+  { text: 'Go right', choiceType: ChoiceType.INVESTIGATION, primaryDelta: PrimaryDelta.INFORMATION_REVEALED },
+] as const;
+
+/**
+ * Creates a mock FinalPageGenerationResult (PageWriterResult & StateReconciliationResult + choices).
  */
 export function createMockFinalResult(
   overrides: Partial<FinalPageGenerationResult> = {}
@@ -141,6 +145,7 @@ export function createMockFinalResult(
   return {
     ...createMockPageWriterResult(),
     ...createMockReconciliationResult(),
+    choices: [...DEFAULT_MOCK_CHOICES],
     ...overrides,
   };
 }

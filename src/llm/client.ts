@@ -42,6 +42,12 @@ import type {
 } from './planner-types.js';
 import type { PageWriterResult } from './writer-types.js';
 import { generateWriterWithFallback } from './writer-generation.js';
+import { generateChoiceGeneratorWithFallback } from './choice-generator-generation.js';
+import {
+  buildChoiceGeneratorPrompt,
+  type ChoiceGeneratorContext,
+} from './prompts/choice-generator-prompt.js';
+import type { ChoiceGeneratorResult } from './choice-generator-types.js';
 
 export async function generateOpeningPage(
   context: OpeningContext,
@@ -219,6 +225,24 @@ export async function generateLorekeeperBible(
       (m) => generateLorekeeperWithFallback(messages, { ...lorekeeperOptions, model: m }),
       primaryModel,
       'lorekeeper'
+    )
+  );
+}
+
+export async function generateChoices(
+  context: ChoiceGeneratorContext,
+  options: GenerationOptions
+): Promise<ChoiceGeneratorResult> {
+  const messages = buildChoiceGeneratorPrompt(context);
+
+  logPrompt(logger, 'choiceGenerator', messages);
+
+  const primaryModel = options.model ?? getStageModel('choiceGenerator');
+  return withRetry(() =>
+    withModelFallback(
+      (m) => generateChoiceGeneratorWithFallback(messages, { ...options, model: m }),
+      primaryModel,
+      'choiceGenerator'
     )
   );
 }

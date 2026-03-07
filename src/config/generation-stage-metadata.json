@@ -673,6 +673,20 @@
       ]
     },
     {
+      "id": "GENERATING_CHOICES",
+      "displayName": "FORGING PATHS",
+      "phrases": [
+        "Weighing the roads not yet taken...",
+        "Consulting the butterfly effect department...",
+        "Forking the timeline into parallel possibilities...",
+        "Calculating the dramatic weight of each option...",
+        "Asking the protagonist what they'd never admit considering...",
+        "Splitting reality into equally compelling branches...",
+        "Negotiating with fate over the menu of consequences...",
+        "Auditing each fork for maximum dramatic irony..."
+      ]
+    },
+    {
       "id": "EVALUATING_STRUCTURE",
       "displayName": "EVALUATING",
       "phrases": [

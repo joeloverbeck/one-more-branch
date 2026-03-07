@@ -419,7 +419,6 @@ describe('llm client', () => {
     const result = await generateOpeningPage(openingContext, { apiKey: 'test-key' });
 
     expect(result.narrative).toContain('You descend into the vault');
-    expect(result.choices).toHaveLength(2);
   });
 
   it('should throw clear error when structured output not supported', async () => {
@@ -466,9 +465,6 @@ describe('llm client', () => {
     jest.useFakeTimers();
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
-      choices: [
-        { text: 'Only one choice', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      ],
       currentLocation: 'Invalid location',
       threatsAdded: [],
       threatsRemoved: [],
@@ -486,7 +482,7 @@ describe('llm client', () => {
       characterStateChangesRemoved: [],
       protagonistAffect: {
         primaryEmotion: 'confusion',
-        primaryIntensity: 'mild',
+        primaryIntensity: 'extreme',
         primaryCause: 'Invalid state',
         secondaryEmotions: [],
         dominantMotivation: 'Resolve the error',
@@ -511,8 +507,8 @@ describe('llm client', () => {
     await advanceRetryDelays();
 
     await expectation;
-    // 3 retries × 2 fetches each (1 writer call + 1 supplementary choice repair call)
-    expect(fetchMock).toHaveBeenCalledTimes(6);
+    // 3 retries (no separate choice repair call)
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   it('should log opening prompts before API call', async () => {
@@ -609,9 +605,6 @@ describe('llm client', () => {
     jest.useFakeTimers();
     const invalidStructuredPayload = {
       narrative: validStructuredPayload.narrative,
-      choices: [
-        { text: 'Only one choice', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      ],
       currentLocation: 'Invalid location',
       threatsAdded: [],
       threatsRemoved: [],
@@ -629,7 +622,7 @@ describe('llm client', () => {
       characterStateChangesRemoved: [],
       protagonistAffect: {
         primaryEmotion: 'confusion',
-        primaryIntensity: 'mild',
+        primaryIntensity: 'extreme',
         primaryCause: 'Invalid state',
         secondaryEmotions: [],
         dominantMotivation: 'Resolve the error',
@@ -659,8 +652,8 @@ describe('llm client', () => {
     const errorContext = rejectedError instanceof LLMError ? rejectedError.context : undefined;
     expect(Array.isArray(errorContext?.validationIssues)).toBe(true);
     expect(Array.isArray(errorContext?.ruleKeys)).toBe(true);
-    // 3 retries × 2 fetches each (1 writer call + 1 supplementary choice repair call)
-    expect(fetchMock).toHaveBeenCalledTimes(6);
+    // 3 retries (no separate choice repair call)
+    expect(fetchMock).toHaveBeenCalledTimes(3);
 
     const errorCalls = mockLogger.error.mock.calls as Array<[unknown, unknown?]>;
     const validationErrorCall = errorCalls.find(
@@ -673,7 +666,7 @@ describe('llm client', () => {
       validationErrorCall[1] !== null
         ? (validationErrorCall[1] as { rawResponse?: string })
         : undefined;
-    expect(validationErrorMetadata?.rawResponse).toContain('Only one choice');
+    expect(validationErrorMetadata?.rawResponse).toContain('extreme');
     const validationIssues =
       validationErrorCall &&
       typeof validationErrorCall[1] === 'object' &&
@@ -688,9 +681,10 @@ describe('llm client', () => {
     jest.useFakeTimers();
     const invalidStructuredPayload = {
       ...validStructuredPayload,
-      choices: [
-        { text: 'Only one choice', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      ],
+      protagonistAffect: {
+        ...validStructuredPayload.protagonistAffect,
+        primaryIntensity: 'extreme',
+      },
     };
 
     fetchMock.mockResolvedValue(

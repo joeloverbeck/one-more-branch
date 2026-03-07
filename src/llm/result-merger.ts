@@ -1,4 +1,5 @@
 import { createBeatDeviation, createNoDeviation } from '../models/story-arc.js';
+import type { ChoiceType, PrimaryDelta } from '../models/choice-enums.js';
 import type { StateReconciliationResult } from '../engine/state-reconciler-types.js';
 import type { AnalystResult } from './analyst-types.js';
 import type { ContinuationGenerationResult } from './generation-pipeline-types.js';
@@ -42,7 +43,8 @@ function buildAnalystFields(
 export function mergePageWriterAndReconciledStateWithAnalystResults(
   writer: PageWriterResult,
   reconciliation: StateReconciliationResult,
-  analyst: AnalystResult | null
+  analyst: AnalystResult | null,
+  choices: ReadonlyArray<{ text: string; choiceType: ChoiceType; primaryDelta: PrimaryDelta }> = []
 ): ContinuationGenerationResult {
   const stateDelta = {
     currentLocation: reconciliation.currentLocation,
@@ -67,6 +69,7 @@ export function mergePageWriterAndReconciledStateWithAnalystResults(
     ...writer,
     ...stateDelta,
     ...buildAnalystFields(analyst),
+    choices: [...choices],
     rawResponse: writer.rawResponse,
   };
 }

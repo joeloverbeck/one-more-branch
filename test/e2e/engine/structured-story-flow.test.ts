@@ -9,6 +9,7 @@ import {
   generatePagePlan,
   generateStateAccountant,
   generateStoryStructure,
+  generateChoices,
 } from '@/llm';
 import { StoryId } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
@@ -44,6 +45,13 @@ jest.mock('@/llm', () => ({
   generateNpcIntelligenceEvaluation: jest.fn(),
   generatePagePlan: jest.fn(),
   generateStateAccountant: jest.fn(),
+  generateChoices: jest.fn().mockResolvedValue({
+    choices: [
+      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+    ],
+    rawResponse: '{}',
+  }),
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   mergePageWriterAndReconciledStateWithAnalystResults:
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -85,6 +93,7 @@ const mockedGenerateStateAccountant = generateStateAccountant as jest.MockedFunc
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
+const mockedGenerateChoices = generateChoices as jest.MockedFunction<typeof generateChoices>;
 
 function extractStructureResult(
   ar: AnalystResult
@@ -485,6 +494,42 @@ describe('Structured Story E2E', () => {
     mockedGenerateWriterPage.mockImplementation((context) => {
       continuationCount += 1;
       return Promise.resolve(buildWriterResult(context.selectedChoice, continuationCount + 1));
+    });
+    mockedGenerateChoices.mockImplementation((context: { narrative: string }) => {
+      if (context.narrative.includes('rain-soaked capital')) {
+        return Promise.resolve({
+          choices: [
+            { text: 'Pursue the masked courier through the archive tunnels', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+            { text: 'Hide in the crowd and decode the clock anomaly first', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          ],
+          rawResponse: '{}',
+        });
+      }
+      if (context.narrative.includes('catch the courier')) {
+        return Promise.resolve({
+          choices: [
+            { text: 'Press deeper toward the signal source', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+            { text: 'Retreat and brief your contact', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          ],
+          rawResponse: '{}',
+        });
+      }
+      if (context.narrative.includes('signal chamber')) {
+        return Promise.resolve({
+          choices: [
+            { text: 'Exfiltrate with the logs', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+            { text: 'Trigger a distraction in the chamber', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          ],
+          rawResponse: '{}',
+        });
+      }
+      return Promise.resolve({
+        choices: [
+          { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+          { text: 'Investigate surroundings', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+        ],
+        rawResponse: '{}',
+      });
     });
     mockedGenerateStructureEvaluation.mockImplementation((context) => {
       const ar = buildAnalystResult(context.narrative, continuationCount + 1);

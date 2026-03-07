@@ -30,6 +30,7 @@ export type PromptType =
   | 'agenda-resolver'
   | 'entity-decomposer'
   | 'sceneIdeator'
+  | 'choiceGenerator'
   | 'writer-choice-repair';
 
 const NOOP_PROMPT_SINK: PromptSink = {

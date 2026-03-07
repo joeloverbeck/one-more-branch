@@ -81,7 +81,7 @@ describe('schema pipeline integration', () => {
       };
 
       expect(schemaProps.required).toContain('narrative');
-      expect(schemaProps.required).toContain('choices');
+      expect(schemaProps.required).not.toContain('choices');
       expect(schemaProps.required).toContain('protagonistAffect');
       expect(schemaProps.required).toContain('sceneSummary');
       expect(schemaProps.required).toContain('isEnding');
@@ -92,18 +92,6 @@ describe('schema pipeline integration', () => {
       // Validate a response through the full pipeline
       const rawJson = {
         narrative: VALID_NARRATIVE,
-        choices: [
-          {
-            text: 'Open the iron door',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'GOAL_SHIFT',
-          },
-          {
-            text: 'Climb the collapsed tower',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
-          },
-        ],
         protagonistAffect: {
           primaryEmotion: 'apprehension',
           primaryIntensity: 'moderate',
@@ -112,16 +100,15 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Find the plague archives',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
       const result = validateWriterResponse(rawJson, JSON.stringify(rawJson));
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
-      expect(result.choices).toHaveLength(2);
       expect(result.isEnding).toBe(false);
       expect(result.rawResponse).toBe(JSON.stringify(rawJson));
+      expect('choices' in (result as Record<string, unknown>)).toBe(false);
       expect('currentLocation' in (result as Record<string, unknown>)).toBe(false);
       expect('threatsAdded' in (result as Record<string, unknown>)).toBe(false);
       expect('threadsAdded' in (result as Record<string, unknown>)).toBe(false);
@@ -130,14 +117,6 @@ describe('schema pipeline integration', () => {
     it('should reject payloads with legacy state fields at strict schema boundary', () => {
       const payloadWithLegacyStateField = {
         narrative: VALID_NARRATIVE,
-        choices: [
-          { text: 'Move fast', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          {
-            text: 'Move quietly',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'EXPOSURE_CHANGE',
-          },
-        ],
         protagonistAffect: {
           primaryEmotion: 'focus',
           primaryIntensity: 'strong',
@@ -146,7 +125,6 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Get inside before guards rotate',
         },
         sceneSummary: 'You choose a stealthy route while watching guard patterns at the gate.',
-        delayedConsequencesCreated: [],
         isEnding: false,
         threatsAdded: ['Legacy field should be rejected by strict schema'],
       };
@@ -189,7 +167,7 @@ describe('schema pipeline integration', () => {
       const result = validateWriterResponse(rawJson, 'raw');
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
-      expect(result.choices).toHaveLength(2);
+      expect('choices' in (result as Record<string, unknown>)).toBe(false);
       expect('currentLocation' in (result as Record<string, unknown>)).toBe(false);
       expect('newCanonFacts' in (result as Record<string, unknown>)).toBe(false);
     });
@@ -197,10 +175,6 @@ describe('schema pipeline integration', () => {
     it('should parse writer output even when deterministic legacy fields are provided', async () => {
       const structured = {
         narrative: VALID_NARRATIVE,
-        choices: [
-          { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Turn back', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-        ],
         currentLocation: 'Hidden cache chamber',
         threatsAdded: [],
         constraintsAdded: [],
@@ -216,7 +190,6 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Secure the findings and continue exploring',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -226,27 +199,13 @@ describe('schema pipeline integration', () => {
         apiKey: 'test-key',
       });
 
-      expect(result.choices).toHaveLength(2);
+      expect('choices' in (result as Record<string, unknown>)).toBe(false);
       expect('inventoryAdded' in (result as Record<string, unknown>)).toBe(false);
     });
 
-    it('should validate ending page with zero choices', () => {
+    it('should validate ending page', () => {
       const endingJson = {
         narrative: VALID_NARRATIVE,
-        choices: [],
-        currentLocation: 'The realm of peace',
-        threatsAdded: [],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: ['td-1'],
-        newCanonFacts: [{ text: 'Peace was restored', factType: 'LAW' }],
-        newCharacterCanonFacts: [],
-        inventoryAdded: [],
-        inventoryRemoved: [],
-        healthAdded: [],
-        healthRemoved: [],
         protagonistAffect: {
           primaryEmotion: 'peace',
           primaryIntensity: 'strong',
@@ -255,80 +214,13 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Rest at last',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
         isEnding: true,
       };
 
       const result = validateWriterResponse(endingJson, 'raw');
 
       expect(result.isEnding).toBe(true);
-      expect(result.choices).toHaveLength(0);
-    });
-
-    it('should reject ending page with non-zero choices', () => {
-      const invalidEndingJson = {
-        narrative: VALID_NARRATIVE,
-        choices: [
-          { text: 'Continue anyway', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        ],
-        currentLocation: 'Invalid ending location',
-        threatsAdded: [],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: [],
-        newCanonFacts: [],
-        newCharacterCanonFacts: [],
-        inventoryAdded: [],
-        inventoryRemoved: [],
-        healthAdded: [],
-        healthRemoved: [],
-        protagonistAffect: {
-          primaryEmotion: 'confusion',
-          primaryIntensity: 'mild',
-          primaryCause: 'Invalid state',
-          secondaryEmotions: [],
-          dominantMotivation: 'Resolve the error',
-        },
-        sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
-        isEnding: true,
-      };
-
-      expect(() => validateWriterResponse(invalidEndingJson, 'raw')).toThrow();
-    });
-
-    it('should reject non-ending page with zero choices', () => {
-      const invalidNonEndingJson = {
-        narrative: VALID_NARRATIVE,
-        choices: [],
-        currentLocation: 'Invalid non-ending location',
-        threatsAdded: [],
-        threatsRemoved: [],
-        constraintsAdded: [],
-        constraintsRemoved: [],
-        threadsAdded: [],
-        threadsResolved: [],
-        newCanonFacts: [],
-        newCharacterCanonFacts: [],
-        inventoryAdded: [],
-        inventoryRemoved: [],
-        healthAdded: [],
-        healthRemoved: [],
-        protagonistAffect: {
-          primaryEmotion: 'confusion',
-          primaryIntensity: 'mild',
-          primaryCause: 'Invalid state',
-          secondaryEmotions: [],
-          dominantMotivation: 'Resolve the error',
-        },
-        sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
-        isEnding: false,
-      };
-
-      expect(() => validateWriterResponse(invalidNonEndingJson, 'raw')).toThrow();
+      expect('choices' in (result as Record<string, unknown>)).toBe(false);
     });
   });
 
@@ -381,18 +273,6 @@ describe('schema pipeline integration', () => {
     it('should trim whitespace through full pipeline', () => {
       const rawJson = {
         narrative: `   ${VALID_NARRATIVE}   `,
-        choices: [
-          {
-            text: '  Open the door  ',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'GOAL_SHIFT',
-          },
-          {
-            text: '  Climb the tower  ',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
-          },
-        ],
         protagonistAffect: {
           primaryEmotion: '  determination  ',
           primaryIntensity: 'strong',
@@ -401,21 +281,12 @@ describe('schema pipeline integration', () => {
           dominantMotivation: '  Decode the ledger  ',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
       const result = validateWriterResponse(rawJson, 'raw');
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
-      expect(result.choices).toEqual([
-        { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        {
-          text: 'Climb the tower',
-          choiceType: 'INVESTIGATION',
-          primaryDelta: 'INFORMATION_REVEALED',
-        },
-      ]);
       expect(result.protagonistAffect.primaryEmotion).toBe('determination');
       expect(result.protagonistAffect.primaryCause).toBe('Found valuable clues');
       expect(result.protagonistAffect.dominantMotivation).toBe('Decode the ledger');
@@ -452,7 +323,7 @@ describe('schema pipeline integration', () => {
       const result = validateWriterResponse(rawJson, 'raw');
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
-      expect(result.choices).toHaveLength(2);
+      expect('choices' in (result as Record<string, unknown>)).toBe(false);
       expect(result.protagonistAffect.primaryEmotion).toBe('caution');
       expect('threatsAdded' in (result as Record<string, unknown>)).toBe(false);
     });
@@ -462,12 +333,7 @@ describe('schema pipeline integration', () => {
     it('should parse valid input and apply creative defaults', () => {
       const input = {
         narrative: VALID_NARRATIVE,
-        choices: [
-          { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-        ],
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -486,13 +352,7 @@ describe('schema pipeline integration', () => {
     it('should reject invalid narrative length', () => {
       const input = {
         narrative: 'Too short',
-        choices: [
-          { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-        ],
-        newCanonFacts: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -502,54 +362,18 @@ describe('schema pipeline integration', () => {
     it('should allow narrative longer than 15000 characters', () => {
       const input = {
         narrative: `${'A'.repeat(15001)} This narrative is intentionally long enough to exceed the old cap while still passing minimum-length validation.`,
-        choices: [
-          { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-        ],
-        newCanonFacts: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
       expect(() => WriterResultSchema.parse(input)).not.toThrow();
     });
 
-    it('should reject duplicate choices (case-insensitive)', () => {
-      const input = {
-        narrative: VALID_NARRATIVE,
-        choices: [
-          { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          {
-            text: 'OPEN THE DOOR',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
-          },
-        ],
-        newCanonFacts: [],
-        sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
-        isEnding: false,
-      };
-
-      expect(() => WriterResultSchema.parse(input)).toThrow('Choices must be unique');
-    });
-
     it('should ignore legacy string-array threadsAdded', () => {
       const input = {
         narrative: VALID_NARRATIVE,
-        choices: [
-          { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          {
-            text: 'Climb the tower',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
-          },
-        ],
         threadsAdded: ['legacy-thread-shape'],
-        newCanonFacts: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
         isEnding: false,
       };
 
@@ -561,18 +385,8 @@ describe('schema pipeline integration', () => {
     it('should ignore legacy removal-id fields at writer-schema stage', () => {
       const input = {
         narrative: VALID_NARRATIVE,
-        choices: [
-          { text: 'Open the door', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          {
-            text: 'Climb the tower',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
-          },
-        ],
         constraintsRemoved: ['th-1'],
-        newCanonFacts: [],
         sceneSummary: 'Test summary of the scene events and consequences.',
-        delayedConsequencesCreated: [],
         isEnding: false,
       };
 

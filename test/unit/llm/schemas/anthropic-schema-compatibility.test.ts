@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { AGENDA_RESOLVER_SCHEMA } from '../../../../src/llm/schemas/agenda-resolver-schema';
+import { CHOICE_GENERATOR_SCHEMA } from '../../../../src/llm/schemas/choice-generator-schema';
 import { CONCEPT_ARCHITECT_SCHEMA } from '../../../../src/llm/schemas/concept-architect-schema';
 import { CONCEPT_ENGINEER_SCHEMA } from '../../../../src/llm/schemas/concept-engineer-schema';
 import {
@@ -224,6 +225,7 @@ describe('Anthropic schema compatibility', () => {
     { name: 'STATE_ACCOUNTANT_SCHEMA', schema: STATE_ACCOUNTANT_SCHEMA },
     { name: 'LOREKEEPER_SCHEMA', schema: LOREKEEPER_SCHEMA },
     { name: 'AGENDA_RESOLVER_SCHEMA', schema: AGENDA_RESOLVER_SCHEMA },
+    { name: 'CHOICE_GENERATOR_SCHEMA', schema: CHOICE_GENERATOR_SCHEMA },
     { name: 'SPINE_GENERATION_SCHEMA', schema: SPINE_GENERATION_SCHEMA },
     { name: 'SPINE_REWRITE_SCHEMA', schema: SPINE_REWRITE_SCHEMA },
     { name: 'ENTITY_DECOMPOSITION_SCHEMA', schema: ENTITY_DECOMPOSITION_SCHEMA },

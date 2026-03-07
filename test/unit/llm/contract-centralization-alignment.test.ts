@@ -17,10 +17,7 @@ import { LOREKEEPER_SCHEMA } from '../../../src/llm/schemas/lorekeeper-schema';
 import { PAGE_PLANNER_GENERATION_SCHEMA } from '../../../src/llm/schemas/page-planner-schema';
 import { WRITER_GENERATION_SCHEMA } from '../../../src/llm/schemas/writer-schema';
 import {
-  WRITER_CHOICE_REQUIRED_FIELDS,
-  WRITER_CHOICE_TYPE_ENUM,
   WRITER_EMOTION_INTENSITY_ENUM,
-  WRITER_PRIMARY_DELTA_ENUM,
   WRITER_PROTAGONIST_AFFECT_REQUIRED_FIELDS,
   WRITER_REQUIRED_FIELDS,
   WRITER_SECONDARY_EMOTION_REQUIRED_FIELDS,
@@ -62,9 +59,6 @@ describe('contract centralization alignment', () => {
   it('keeps writer contract aligned with writer schema', () => {
     const schema = WRITER_GENERATION_SCHEMA.json_schema.schema as Record<string, unknown>;
     const props = schema['properties'] as Record<string, unknown>;
-    const choices = props['choices'] as Record<string, unknown>;
-    const choiceItem = choices['items'] as Record<string, unknown>;
-    const choiceProps = choiceItem['properties'] as Record<string, unknown>;
     const protagonistAffect = props['protagonistAffect'] as Record<string, unknown>;
     const affectProps = protagonistAffect['properties'] as Record<string, unknown>;
     const secondaryEmotions = affectProps['secondaryEmotions'] as Record<string, unknown>;
@@ -72,13 +66,7 @@ describe('contract centralization alignment', () => {
     const intensity = affectProps['primaryIntensity'] as Record<string, unknown>;
 
     expect(schema['required']).toEqual([...WRITER_REQUIRED_FIELDS]);
-    expect(choiceItem['required']).toEqual([...WRITER_CHOICE_REQUIRED_FIELDS]);
-    expect((choiceProps['choiceType'] as Record<string, unknown>)['enum']).toEqual(
-      WRITER_CHOICE_TYPE_ENUM
-    );
-    expect((choiceProps['primaryDelta'] as Record<string, unknown>)['enum']).toEqual(
-      WRITER_PRIMARY_DELTA_ENUM
-    );
+    expect(props['choices']).toBeUndefined();
     expect(protagonistAffect['required']).toEqual([...WRITER_PROTAGONIST_AFFECT_REQUIRED_FIELDS]);
     expect(secondaryItem['required']).toEqual([...WRITER_SECONDARY_EMOTION_REQUIRED_FIELDS]);
     expect(intensity['enum']).toEqual([...WRITER_EMOTION_INTENSITY_ENUM]);

@@ -5,3 +5,4 @@ export { buildStateAccountantPrompt } from './state-accountant-prompt.js';
 export { buildStructurePrompt } from './structure-prompt.js';
 export { buildStructureRewritePrompt } from './structure-rewrite-prompt.js';
 export { buildLorekeeperPrompt } from './lorekeeper-prompt.js';
+export { buildChoiceGeneratorPrompt } from './choice-generator-prompt.js';

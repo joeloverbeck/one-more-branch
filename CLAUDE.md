@@ -127,7 +127,8 @@ src/
 │   ├── structure-generator.ts    # Story structure generation
 │   ├── planner-generation.ts     # Page plan generation (reduced plan, no state intents)
 │   ├── accountant-generation.ts  # State accountant generation (state intents)
-│   ├── writer-generation.ts      # Page narrative/choices generation
+│   ├── writer-generation.ts      # Page narrative generation (no choices)
+│   ├── choice-generator-generation.ts # Choice generation from written scene
 │   ├── analyst-generation.ts     # Post-write scene analysis
 │   ├── lorekeeper-generation.ts  # Story bible curation
 │   ├── agenda-resolver-generation.ts # NPC agenda + relationship resolution
@@ -188,15 +189,16 @@ archive/specs/      # Archived completed specifications
 4. **Page Planning** (Planner prompt): LLM creates a reduced PagePlan with scene intent, continuity anchors, writer brief, dramatic question, and choice intents. Continuation planner also receives thread ages, overdue-thread pressure directives, accumulated tracked promises (`accumulatedPromises`, oldest-first opportunities), and payoff quality feedback
 5. **State Accounting** (Accountant prompt): LLM generates state intents (what state changes to target) separately from the planner. The accountant receives the reduced plan and produces structured state mutation intents
 6. **Context Curation** (Lorekeeper prompt): LLM curates a scene-focused Story Bible from full story context, filtering worldbuilding, characters, canon, and history to only what's relevant for the upcoming scene
-7. **Page Writing** (Writer prompt): LLM generates narrative + typed choices (ChoiceType/PrimaryDelta) + scene summary + protagonist affect + raw state mutations
+7. **Page Writing** (Writer prompt): LLM generates narrative + scene summary + protagonist affect + raw state mutations (no choices)
 8. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
-9. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, spine deviation, pacing, structural position, NPC coherence, relationship shifts, promise lifecycle (detect via `promisesDetected`, resolve by ID via `promisesResolved`, quality via `promisePayoffAssessments`), and thread payoff quality (`threadPayoffAssessments`)
-10. **Spine Rewrite** (conditional): If spine-level deviation detected, LLM rewrites the story spine
-11. **Structure Rewrite** (conditional): If beat-level deviation detected (or forced by spine rewrite), LLM rewrites remaining story structure
-12. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + structure progression + computed thread ages + accumulated tracked promises + NPC agenda/relationship updates
-13. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
-14. **State Accumulation**: Each page's state = parent's accumulated state + own changes
-15. **Canon Management**: Global and character-specific canon facts persist across all branches
+9. **Choice Generation** (Choice Generator prompt): LLM generates 2-4 typed choices (ChoiceType/PrimaryDelta) from the written scene, guided by planner's dramaticQuestion and choiceIntents. Skipped when `isEnding === true`.
+10. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, spine deviation, pacing, structural position, NPC coherence, relationship shifts, promise lifecycle (detect via `promisesDetected`, resolve by ID via `promisesResolved`, quality via `promisePayoffAssessments`), and thread payoff quality (`threadPayoffAssessments`)
+11. **Spine Rewrite** (conditional): If spine-level deviation detected, LLM rewrites the story spine
+12. **Structure Rewrite** (conditional): If beat-level deviation detected (or forced by spine rewrite), LLM rewrites remaining story structure
+13. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + choice generator output + structure progression + computed thread ages + accumulated tracked promises + NPC agenda/relationship updates
+14. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
+15. **State Accumulation**: Each page's state = parent's accumulated state + own changes
+16. **Canon Management**: Global and character-specific canon facts persist across all branches
 
 ## Generation Pipeline Stages
 
@@ -213,6 +215,7 @@ Per-page generation stages:
 - `CURATING_CONTEXT` - Lorekeeper story bible generation
 - `WRITING_OPENING_PAGE` - Opening page writer LLM call
 - `WRITING_CONTINUING_PAGE` - Continuation page writer LLM call
+- `GENERATING_CHOICES` - Choice generator LLM call (generates typed choices from written scene; skipped for endings)
 - `ANALYZING_SCENE` - Analyst LLM call (beat conclusion, deviation, spine deviation, pacing, NPC coherence, relationship shifts, payoff quality)
 - `RESOLVING_AGENDAS` - NPC agenda + relationship resolver LLM call (when NPCs exist)
 - `RESTRUCTURING_STORY` - Structure rewrite LLM call (on deviation)
@@ -389,14 +392,15 @@ Completed specs are archived in `archive/specs/`.
   1. **Spine prompt** (`spine-generator.ts`): Generates spine options with tone keywords (separate pre-creation step)
   2. **Entity decomposition prompt** (`entity-decomposer.ts`): Decomposes raw worldbuilding/NPCs into structured profiles and world facts, enriched with spine, conceptSpec, storyKernel, and startingSituation context
   3. **Structure prompt** (`structure-generator.ts`): Generates story arc using spine + decomposed data
-- **Per-page generation** (up to 7 stages: 5 LLM calls + 2 engine-side):
+- **Per-page generation** (up to 8 stages: 6 LLM calls + 2 engine-side):
   1. **Planner prompt** (`planner-generation.ts`): Creates reduced page plan with scene intent, dramatic question, choice intents (no state intents)
   2. **State accountant prompt** (`accountant-generation.ts`): Generates state intents from reduced plan
   3. **Lorekeeper prompt** (`lorekeeper-generation.ts`): Curates a scene-focused Story Bible from full context
-  4. **Writer prompt** (`writer-generation.ts`): Generates narrative, choices, state mutations
+  4. **Writer prompt** (`writer-generation.ts`): Generates narrative, scene summary, protagonist affect, state mutations (no choices)
   5. **Reconciler** (engine-side, not LLM): Validates/fixes writer state output
-  6. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, spine deviation, pacing, NPC coherence, relationship shifts
-  7. **Agenda resolver prompt** (`agenda-resolver-generation.ts`): Updates NPC agendas and relationships based on scene events
+  6. **Choice Generator prompt** (`choice-generator-generation.ts`): Generates 2-4 typed choices from the written scene, using planner's dramaticQuestion and choiceIntents as blueprint. Skipped when `isEnding === true`.
+  7. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, spine deviation, pacing, NPC coherence, relationship shifts
+  8. **Agenda resolver prompt** (`agenda-resolver-generation.ts`): Updates NPC agendas and relationships based on scene events
 - **Conditional**: **Spine rewrite prompt** (`spine-rewriter.ts`): Rewrites spine on spine-level deviation
 - **Conditional**: **Structure rewrite prompt** (`structure-generator.ts`): Rewrites structure on beat-level deviation (or forced by spine rewrite)
 - All prompts use JSON Schema structured output via OpenRouter's `response_format`
@@ -492,13 +496,12 @@ await waitForMock(redirectMock);
 
 ### Mock Object Completeness
 
-When LLM interfaces change, all test mocks must include every required field. The generation pipeline now produces `FinalPageGenerationResult = PageWriterResult & StateReconciliationResult`. Key mock shapes:
+When LLM interfaces change, all test mocks must include every required field. The generation pipeline now produces `FinalPageGenerationResult = PageWriterResult & StateReconciliationResult & { choices }`. Choices come from the dedicated Choice Generator stage, not the writer. Key mock shapes:
 
 ```typescript
-// PageWriterResult fields (from writer generation)
+// PageWriterResult fields (from writer generation — no choices)
 {
   narrative: '...',
-  choices: [{ text: '...', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT }],
   sceneSummary: '...',
   protagonistAffect: {
     primaryEmotion: '...',
@@ -508,6 +511,12 @@ When LLM interfaces change, all test mocks must include every required field. Th
     dominantMotivation: '...',
   },
   isEnding: false,
+  rawResponse: '...',
+}
+
+// ChoiceGeneratorResult fields (from choice generator)
+{
+  choices: [{ text: '...', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT }],
   rawResponse: '...',
 }
 

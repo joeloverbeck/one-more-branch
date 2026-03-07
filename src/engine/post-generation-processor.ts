@@ -1,7 +1,10 @@
-import { mergePageWriterAndReconciledStateWithAnalystResults } from '../llm';
+import { generateChoices, mergePageWriterAndReconciledStateWithAnalystResults } from '../llm';
+import type { ChoiceGeneratorResult } from '../llm/choice-generator-types';
 import type { PostGenerationMetrics, StageDegradation } from '../llm/generation-pipeline-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
+import type { ChoiceIntent } from '../llm/planner-types';
 import type { PageWriterResult } from '../llm/writer-types';
+import { getDefaultPromptOptions } from '../llm/options.js';
 import {
   createBeatDeviation,
   createEmptyAccumulatedStructureState,
@@ -39,6 +42,7 @@ import {
   getTriggerEligibleDelayedConsequences,
   incrementDelayedConsequenceAges,
 } from './consequence-lifecycle';
+import { emitGenerationStage } from './generation-pipeline-helpers';
 import type { DeviationInfo, GenerationStageCallback } from './types';
 
 export interface PostGenerationContext {
@@ -52,6 +56,8 @@ export interface PostGenerationContext {
   readonly writerResult: PageWriterResult;
   readonly reconciliation: StateReconciliationResult;
   readonly getLastStoryBible: () => StoryBible | null;
+  readonly dramaticQuestion?: string;
+  readonly choiceIntents?: readonly ChoiceIntent[];
   readonly maxPageId: number | null;
   readonly choiceIndex: number | undefined;
   readonly onGenerationStage?: GenerationStageCallback;
@@ -102,6 +108,8 @@ export async function processPostGeneration(
     writerResult,
     reconciliation,
     getLastStoryBible,
+    dramaticQuestion,
+    choiceIntents,
     maxPageId,
     choiceIndex,
     onGenerationStage,
@@ -120,6 +128,55 @@ export async function processPostGeneration(
     : parentState!.accumulatedNpcRelationships;
 
   const degradedStages: StageDegradation[] = [];
+
+  // --- Run choice generator (skip for endings) ---
+  let choiceGeneratorDurationMs: number | null = null;
+  let generatedChoices: ChoiceGeneratorResult['choices'] | null = null;
+  if (!writerResult.isEnding && dramaticQuestion) {
+    emitGenerationStage(onGenerationStage, 'GENERATING_CHOICES', 'started', 1);
+    const choiceGenStart = Date.now();
+    const choiceResult = await generateChoices(
+      {
+        narrative: writerResult.narrative,
+        sceneSummary: writerResult.sceneSummary,
+        protagonistAffect: writerResult.protagonistAffect,
+        dramaticQuestion,
+        choiceIntents: choiceIntents ?? [],
+        spine: story.spine,
+        activeState: isOpening
+          ? {
+              currentLocation: '',
+              activeThreats: [],
+              activeConstraints: [],
+              openThreads: [],
+            }
+          : parentState!.accumulatedActiveState,
+        structure: currentStructureVersion?.structure ?? story.structure ?? undefined,
+        accumulatedStructureState: isOpening
+          ? (story.structure
+              ? createInitialStructureState(story.structure)
+              : createEmptyAccumulatedStructureState())
+          : parentState!.structureState,
+        storyBible: getLastStoryBible() ?? undefined,
+        tone: story.tone,
+        toneFeel: story.toneFeel,
+        toneAvoid: story.toneAvoid,
+        genreFrame: story.conceptSpec?.genreFrame,
+        decomposedCharacters: story.decomposedCharacters ?? [],
+        choiceGuidance: getDefaultPromptOptions().choiceGuidance ?? 'strict',
+      },
+      { apiKey }
+    );
+    choiceGeneratorDurationMs = Date.now() - choiceGenStart;
+    generatedChoices = choiceResult.choices;
+    emitGenerationStage(
+      onGenerationStage,
+      'GENERATING_CHOICES',
+      'completed',
+      1,
+      choiceGeneratorDurationMs
+    );
+  }
 
   // --- Run analyst evaluation ---
   const parentStructureState = isOpening
@@ -179,7 +236,8 @@ export async function processPostGeneration(
   let result = mergePageWriterAndReconciledStateWithAnalystResults(
     writerResult,
     reconciliation,
-    analystResult
+    analystResult,
+    generatedChoices ?? []
   );
 
   // --- Handle spine deviation (two-tier: spine then beats) ---
@@ -390,6 +448,7 @@ export async function processPostGeneration(
   );
 
   const postMetrics: PostGenerationMetrics = {
+    choiceGeneratorDurationMs,
     analystDurationMs,
     spineRewriteDurationMs,
     structureRewriteDurationMs,

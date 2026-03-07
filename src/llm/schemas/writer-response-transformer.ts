@@ -6,11 +6,6 @@ export function validateWriterResponse(rawJson: unknown, rawResponse: string): P
 
   return {
     narrative: validated.narrative.trim(),
-    choices: validated.choices.map((choice) => ({
-      text: choice.text.trim(),
-      choiceType: choice.choiceType,
-      primaryDelta: choice.primaryDelta,
-    })),
     protagonistAffect: {
       primaryEmotion: validated.protagonistAffect.primaryEmotion.trim(),
       primaryIntensity: validated.protagonistAffect.primaryIntensity,

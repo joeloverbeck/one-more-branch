@@ -1,9 +1,6 @@
 import type { JsonSchema } from '../llm-client-types.js';
 import {
-  WRITER_CHOICE_REQUIRED_FIELDS,
-  WRITER_CHOICE_TYPE_ENUM,
   WRITER_EMOTION_INTENSITY_ENUM,
-  WRITER_PRIMARY_DELTA_ENUM,
   WRITER_PROTAGONIST_AFFECT_REQUIRED_FIELDS,
   WRITER_REQUIRED_FIELDS,
   WRITER_SECONDARY_EMOTION_REQUIRED_FIELDS,
@@ -21,35 +18,6 @@ export const WRITER_GENERATION_SCHEMA: JsonSchema = {
           type: 'string',
           description:
             'Vivid prose describing scene, action, dialogue, and outcomes. Minimum 100 words. Write in second person.',
-        },
-        choices: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              text: {
-                type: 'string',
-                description:
-                  'The choice text the player sees. Start with a verb. 3-500 characters.',
-              },
-              choiceType: {
-                type: 'string',
-                enum: WRITER_CHOICE_TYPE_ENUM,
-                description:
-                  'What this choice is ABOUT. TACTICAL_APPROACH=method/tactic, MORAL_DILEMMA=value conflict, IDENTITY_EXPRESSION=self-definition, RELATIONSHIP_SHIFT=changing a relationship, RESOURCE_COMMITMENT=spending/risking something scarce, INVESTIGATION=examining/learning/revealing, PATH_DIVERGENCE=fundamentally different direction, CONFRONTATION=engaging/fighting, AVOIDANCE_RETREAT=fleeing/hiding/de-escalating.',
-              },
-              primaryDelta: {
-                type: 'string',
-                enum: WRITER_PRIMARY_DELTA_ENUM,
-                description:
-                  'What this choice primarily CHANGES in the world. LOCATION_CHANGE=protagonist moves, GOAL_SHIFT=objective changes, RELATIONSHIP_CHANGE=NPC stance shifts, URGENCY_CHANGE=time pressure shifts, ITEM_CONTROL=significant object changes hands, EXPOSURE_CHANGE=attention/suspicion changes, CONDITION_CHANGE=physical condition changes, INFORMATION_REVEALED=new knowledge gained, THREAT_SHIFT=danger introduced/neutralized, CONSTRAINT_CHANGE=limitation imposed/lifted.',
-              },
-            },
-            required: [...WRITER_CHOICE_REQUIRED_FIELDS],
-            additionalProperties: false,
-          },
-          description:
-            'Array of 2-4 structured choice objects. Each choice MUST have a different choiceType OR primaryDelta from all other choices. INVARIANT: 2-4 choices if isEnding=false; exactly 0 if isEnding=true. Typically 3 choices; add a 4th only when truly warranted.',
         },
         protagonistAffect: {
           type: 'object',
