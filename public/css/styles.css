@@ -1930,40 +1930,84 @@ main {
   border-radius: 4px;
 }
 
-.choice-text {
+.choice-text-group {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Choice type color coding */
-.choice-btn[data-choice-type="TACTICAL_APPROACH"] { background: #1a5276; color: #ffffff; }
-.choice-btn[data-choice-type="MORAL_DILEMMA"] { background: #7d3c98; color: #ffffff; }
-.choice-btn[data-choice-type="IDENTITY_EXPRESSION"] { background: #b7950b; color: #000000; }
-.choice-btn[data-choice-type="RELATIONSHIP_SHIFT"] { background: #c0392b; color: #ffffff; }
-.choice-btn[data-choice-type="RESOURCE_COMMITMENT"] { background: #d4ac0d; color: #000000; }
-.choice-btn[data-choice-type="INVESTIGATION"] { background: #148f77; color: #ffffff; }
-.choice-btn[data-choice-type="PATH_DIVERGENCE"] { background: #d35400; color: #ffffff; }
-.choice-btn[data-choice-type="CONFRONTATION"] { background: #922b21; color: #ffffff; }
-.choice-btn[data-choice-type="AVOIDANCE_RETREAT"] { background: #1a5253; color: #ffffff; }
+.choice-subtype {
+  display: block;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--color-text-muted);
+  margin-top: 0.2rem;
+  opacity: 0.8;
+}
 
-.choice-btn[data-choice-type="TACTICAL_APPROACH"]:hover:not(:disabled),
-.choice-btn[data-choice-type="TACTICAL_APPROACH"]:focus-visible:not(:disabled) { background: #21679a; }
-.choice-btn[data-choice-type="MORAL_DILEMMA"]:hover:not(:disabled),
-.choice-btn[data-choice-type="MORAL_DILEMMA"]:focus-visible:not(:disabled) { background: #9b4dbe; }
-.choice-btn[data-choice-type="IDENTITY_EXPRESSION"]:hover:not(:disabled),
-.choice-btn[data-choice-type="IDENTITY_EXPRESSION"]:focus-visible:not(:disabled) { background: #d4b10d; }
-.choice-btn[data-choice-type="RELATIONSHIP_SHIFT"]:hover:not(:disabled),
-.choice-btn[data-choice-type="RELATIONSHIP_SHIFT"]:focus-visible:not(:disabled) { background: #e04535; }
-.choice-btn[data-choice-type="RESOURCE_COMMITMENT"]:hover:not(:disabled),
-.choice-btn[data-choice-type="RESOURCE_COMMITMENT"]:focus-visible:not(:disabled) { background: #efc40f; }
-.choice-btn[data-choice-type="INVESTIGATION"]:hover:not(:disabled),
-.choice-btn[data-choice-type="INVESTIGATION"]:focus-visible:not(:disabled) { background: #1ab394; }
-.choice-btn[data-choice-type="PATH_DIVERGENCE"]:hover:not(:disabled),
-.choice-btn[data-choice-type="PATH_DIVERGENCE"]:focus-visible:not(:disabled) { background: #e96a1b; }
-.choice-btn[data-choice-type="CONFRONTATION"]:hover:not(:disabled),
-.choice-btn[data-choice-type="CONFRONTATION"]:focus-visible:not(:disabled) { background: #b83429; }
-.choice-btn[data-choice-type="AVOIDANCE_RETREAT"]:hover:not(:disabled),
-.choice-btn[data-choice-type="AVOIDANCE_RETREAT"]:focus-visible:not(:disabled) { background: #216869; }
+/* ChoiceType background color coding (11 types) */
+.choice-btn[data-choice-type="INVESTIGATE"] { background: #148f77; color: #ffffff; }
+.choice-btn[data-choice-type="REVEAL"] { background: #b7950b; color: #000000; }
+.choice-btn[data-choice-type="PERSUADE"] { background: #2874a6; color: #ffffff; }
+.choice-btn[data-choice-type="CONNECT"] { background: #c0392b; color: #ffffff; }
+.choice-btn[data-choice-type="DECEIVE"] { background: #6c3483; color: #ffffff; }
+.choice-btn[data-choice-type="CONTEST"] { background: #922b21; color: #ffffff; }
+.choice-btn[data-choice-type="COMMIT"] { background: #d4ac0d; color: #000000; }
+.choice-btn[data-choice-type="INTERVENE"] { background: #1a5276; color: #ffffff; }
+.choice-btn[data-choice-type="NAVIGATE"] { background: #d35400; color: #ffffff; }
+.choice-btn[data-choice-type="WITHDRAW"] { background: #1a5253; color: #ffffff; }
+.choice-btn[data-choice-type="SUBMIT"] { background: #5d6d7e; color: #ffffff; }
+
+.choice-btn[data-choice-type="INVESTIGATE"]:hover:not(:disabled),
+.choice-btn[data-choice-type="INVESTIGATE"]:focus-visible:not(:disabled) { background: #1ab394; }
+.choice-btn[data-choice-type="REVEAL"]:hover:not(:disabled),
+.choice-btn[data-choice-type="REVEAL"]:focus-visible:not(:disabled) { background: #d4b10d; }
+.choice-btn[data-choice-type="PERSUADE"]:hover:not(:disabled),
+.choice-btn[data-choice-type="PERSUADE"]:focus-visible:not(:disabled) { background: #3498db; }
+.choice-btn[data-choice-type="CONNECT"]:hover:not(:disabled),
+.choice-btn[data-choice-type="CONNECT"]:focus-visible:not(:disabled) { background: #e04535; }
+.choice-btn[data-choice-type="DECEIVE"]:hover:not(:disabled),
+.choice-btn[data-choice-type="DECEIVE"]:focus-visible:not(:disabled) { background: #8e44ad; }
+.choice-btn[data-choice-type="CONTEST"]:hover:not(:disabled),
+.choice-btn[data-choice-type="CONTEST"]:focus-visible:not(:disabled) { background: #b83429; }
+.choice-btn[data-choice-type="COMMIT"]:hover:not(:disabled),
+.choice-btn[data-choice-type="COMMIT"]:focus-visible:not(:disabled) { background: #efc40f; }
+.choice-btn[data-choice-type="INTERVENE"]:hover:not(:disabled),
+.choice-btn[data-choice-type="INTERVENE"]:focus-visible:not(:disabled) { background: #21679a; }
+.choice-btn[data-choice-type="NAVIGATE"]:hover:not(:disabled),
+.choice-btn[data-choice-type="NAVIGATE"]:focus-visible:not(:disabled) { background: #e96a1b; }
+.choice-btn[data-choice-type="WITHDRAW"]:hover:not(:disabled),
+.choice-btn[data-choice-type="WITHDRAW"]:focus-visible:not(:disabled) { background: #216869; }
+.choice-btn[data-choice-type="SUBMIT"]:hover:not(:disabled),
+.choice-btn[data-choice-type="SUBMIT"]:focus-visible:not(:disabled) { background: #728a9d; }
+
+/* PrimaryDelta left-border accent (12 deltas) */
+.choice-btn[data-primary-delta="LOCATION_ACCESS_CHANGE"] { border-left: 3px solid #3498db; }
+.choice-btn[data-primary-delta="GOAL_PRIORITY_CHANGE"] { border-left: 3px solid #e67e22; }
+.choice-btn[data-primary-delta="RELATIONSHIP_ALIGNMENT_CHANGE"] { border-left: 3px solid #e74c3c; }
+.choice-btn[data-primary-delta="TIME_PRESSURE_CHANGE"] { border-left: 3px solid #f39c12; }
+.choice-btn[data-primary-delta="RESOURCE_CONTROL_CHANGE"] { border-left: 3px solid #27ae60; }
+.choice-btn[data-primary-delta="INFORMATION_STATE_CHANGE"] { border-left: 3px solid #2ecc71; }
+.choice-btn[data-primary-delta="SECRECY_EXPOSURE_CHANGE"] { border-left: 3px solid #9b59b6; }
+.choice-btn[data-primary-delta="CONDITION_STATUS_CHANGE"] { border-left: 3px solid #1abc9c; }
+.choice-btn[data-primary-delta="THREAT_LEVEL_CHANGE"] { border-left: 3px solid #c0392b; }
+.choice-btn[data-primary-delta="OBLIGATION_RULE_CHANGE"] { border-left: 3px solid #7f8c8d; }
+.choice-btn[data-primary-delta="POWER_AUTHORITY_CHANGE"] { border-left: 3px solid #f1c40f; }
+.choice-btn[data-primary-delta="IDENTITY_REPUTATION_CHANGE"] { border-left: 3px solid #8e44ad; }
+
+.choice-btn[data-primary-delta="LOCATION_ACCESS_CHANGE"]:hover:not(:disabled) { border-left-color: #5dade2; }
+.choice-btn[data-primary-delta="GOAL_PRIORITY_CHANGE"]:hover:not(:disabled) { border-left-color: #f0984a; }
+.choice-btn[data-primary-delta="RELATIONSHIP_ALIGNMENT_CHANGE"]:hover:not(:disabled) { border-left-color: #ec7063; }
+.choice-btn[data-primary-delta="TIME_PRESSURE_CHANGE"]:hover:not(:disabled) { border-left-color: #f5b041; }
+.choice-btn[data-primary-delta="RESOURCE_CONTROL_CHANGE"]:hover:not(:disabled) { border-left-color: #52be80; }
+.choice-btn[data-primary-delta="INFORMATION_STATE_CHANGE"]:hover:not(:disabled) { border-left-color: #58d68d; }
+.choice-btn[data-primary-delta="SECRECY_EXPOSURE_CHANGE"]:hover:not(:disabled) { border-left-color: #bb8fce; }
+.choice-btn[data-primary-delta="CONDITION_STATUS_CHANGE"]:hover:not(:disabled) { border-left-color: #48c9b0; }
+.choice-btn[data-primary-delta="THREAT_LEVEL_CHANGE"]:hover:not(:disabled) { border-left-color: #e74c3c; }
+.choice-btn[data-primary-delta="OBLIGATION_RULE_CHANGE"]:hover:not(:disabled) { border-left-color: #95a5a6; }
+.choice-btn[data-primary-delta="POWER_AUTHORITY_CHANGE"]:hover:not(:disabled) { border-left-color: #f4d03f; }
+.choice-btn[data-primary-delta="IDENTITY_REPUTATION_CHANGE"]:hover:not(:disabled) { border-left-color: #a569bd; }
 
 .choice-btn[data-choice-type][data-explored] {
   opacity: 0.75;

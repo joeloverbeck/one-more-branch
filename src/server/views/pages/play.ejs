@@ -322,15 +322,30 @@
                        title="<%= primaryDeltaLabels[choice.primaryDelta] || '' %>"
                        width="32" height="32" loading="lazy"
                        onerror="this.style.display='none'">
+                  <% if (choice.choiceShape) { %>
+                  <img class="choice-icon choice-icon--shape"
+                       src="/images/icons/<%= choice.choiceShape.toLowerCase().replace(/_/g, '-') %>.png"
+                       alt=""
+                       title="<%= choiceShapeLabels[choice.choiceShape] || '' %>"
+                       width="32" height="32" loading="lazy"
+                       onerror="this.style.display='none'">
+                  <% } %>
                 </span>
                 <button
-                  class="choice-btn"
+                  class="choice-btn<%= choice.choiceShape ? ' choice-shape--' + choice.choiceShape.toLowerCase() : '' %>"
                   data-choice-index="<%= index %>"
                   data-choice-type="<%= choice.choiceType %>"
                   data-primary-delta="<%= choice.primaryDelta %>"
+                  <% if (choice.choiceSubtype) { %>data-choice-subtype="<%= choice.choiceSubtype %>"<% } %>
+                  <% if (choice.choiceShape) { %>data-choice-shape="<%= choice.choiceShape %>"<% } %>
                   <% if (choice.nextPageId) { %>data-explored="true"<% } %>
                 >
-                  <span class="choice-text"><%= choice.text %></span>
+                  <span class="choice-text-group">
+                    <span class="choice-text"><%= choice.text %></span>
+                    <% if (choice.choiceSubtype) { %>
+                    <span class="choice-subtype">&#8627; <%= choice.choiceSubtype %></span>
+                    <% } %>
+                  </span>
                 </button>
                 <% if (choice.nextPageId) { %>
                 <span class="explored-marker" title="Previously explored">&#8617;</span>

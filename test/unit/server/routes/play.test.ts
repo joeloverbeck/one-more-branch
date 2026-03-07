@@ -3,6 +3,7 @@ import * as engine from '@/engine';
 import { StateReconciliationError, storyEngine } from '@/engine';
 import { LLMError } from '@/llm';
 import {
+  CHOICE_SHAPE_LABELS,
   CHOICE_TYPE_COLORS,
   createChoice,
   createPage,
@@ -160,6 +161,7 @@ describe('playRoutes', () => {
         insightsPromiseMeta: {},
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
+        choiceShapeLabels: CHOICE_SHAPE_LABELS,
         isLatestStructureVersion: false,
       });
     });

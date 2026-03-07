@@ -10,6 +10,7 @@ import type {
 } from '../../llm/scene-ideator-types.js';
 import { logger } from '../../logging/index.js';
 import {
+  CHOICE_SHAPE_LABELS,
   CHOICE_TYPE_COLORS,
   type Page,
   PageId,
@@ -378,6 +379,7 @@ playRoutes.get(
         insightsPromiseMeta: panels.insightsPromiseMeta,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
+        choiceShapeLabels: CHOICE_SHAPE_LABELS,
         isLatestStructureVersion,
       });
     } catch (error) {

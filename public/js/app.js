@@ -4267,8 +4267,10 @@ function createInlineListEditor(valueEl, currentItems, onCommit) {
       if (shapeLabel) { tooltipParts.push(shapeLabel); }
       var tooltipText = tooltipParts.filter(Boolean).join(' / ');
 
+      var shapeIconPath = choiceShape ? getIconPath(choiceShape) : '';
+
       var pillHtml = '';
-      if (typeIconPath || deltaIconPath) {
+      if (typeIconPath || deltaIconPath || shapeIconPath) {
         pillHtml = '<span class="choice-icon-pill" aria-hidden="true">';
         if (typeIconPath) {
           pillHtml += '<img class="choice-icon choice-icon--type"'
@@ -4281,6 +4283,13 @@ function createInlineListEditor(valueEl, currentItems, onCommit) {
           pillHtml += '<img class="choice-icon choice-icon--delta"'
             + ' src="' + escapeHtml(deltaIconPath) + '"'
             + ' alt="" title="' + escapeHtml(deltaLabel) + '"'
+            + ' width="32" height="32" loading="lazy"'
+            + " onerror=\"this.style.display='none'\">";
+        }
+        if (shapeIconPath) {
+          pillHtml += '<img class="choice-icon choice-icon--shape"'
+            + ' src="' + escapeHtml(shapeIconPath) + '"'
+            + ' alt="" title="' + escapeHtml(shapeLabel) + '"'
             + ' width="32" height="32" loading="lazy"'
             + " onerror=\"this.style.display='none'\">";
         }
@@ -4301,7 +4310,10 @@ function createInlineListEditor(valueEl, currentItems, onCommit) {
         + (isExplored ? ' data-explored="true"' : '')
         + (tooltipText ? ' title="' + escapeHtml(tooltipText) + '"' : '')
         + '>'
+        + '<span class="choice-text-group">'
         + '<span class="choice-text">' + escapeHtml(choiceText) + '</span>'
+        + (choiceSubtype ? '<span class="choice-subtype">\u21b3 ' + escapeHtml(choiceSubtype) + '</span>' : '')
+        + '</span>'
         + '</button>'
         + (isExplored ? '<span class="explored-marker" title="Previously explored">&#8617;</span>' : '')
         + '</div>';
