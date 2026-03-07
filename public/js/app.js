@@ -1496,20 +1496,20 @@ CHOICE_SHAPES.forEach(function (cs) { CHOICE_SHAPE_LABEL_MAP[cs.value] = cs.labe
 // ── Analyst insights tab metadata ────────────────────────────────
 
 var THEMATIC_CHARGE_META = {
-  THESIS_SUPPORTING: { css: 'thematic-badge--thesis', label: 'Thesis Supporting' },
-  ANTITHESIS_SUPPORTING: { css: 'thematic-badge--antithesis', label: 'Antithesis Supporting' },
-  AMBIGUOUS: { css: 'thematic-badge--ambiguous', label: 'Ambiguous' },
+  THESIS_SUPPORTING: { css: 'thematic-badge--thesis', label: '\uD83C\uDFAF Thesis Supporting' },
+  ANTITHESIS_SUPPORTING: { css: 'thematic-badge--antithesis', label: '\u2694\uFE0F Antithesis Supporting' },
+  AMBIGUOUS: { css: 'thematic-badge--ambiguous', label: '\uD83C\uDF00 Ambiguous' },
 };
 
 var NARRATIVE_FOCUS_META = {
-  DEEPENING: { css: 'narrative-focus-badge--deepening', label: 'Deepening' },
-  BROADENING: { css: 'narrative-focus-badge--broadening', label: 'Broadening' },
-  BALANCED: { css: 'narrative-focus-badge--balanced', label: 'Balanced' },
+  DEEPENING: { css: 'narrative-focus-badge--deepening', label: '\uD83D\uDD0D Deepening' },
+  BROADENING: { css: 'narrative-focus-badge--broadening', label: '\uD83C\uDF10 Broadening' },
+  BALANCED: { css: 'narrative-focus-badge--balanced', label: '\u2696\uFE0F Balanced' },
 };
 
 var NPC_COHERENCE_META = {
-  true: { css: 'npc-coherence--ok', label: 'Coherent' },
-  false: { css: 'npc-coherence--issue', label: 'Issues Detected' },
+  true: { css: 'npc-coherence--ok', label: '\u2705 Coherent' },
+  false: { css: 'npc-coherence--issue', label: '\u26A0\uFE0F Issues Detected' },
 };
 
   // ── Utility functions ──────────────────────────────────────────────
@@ -4525,11 +4525,11 @@ var STRUCTURAL_POSITION_FILL = {
   CLEARLY_IN_NEXT_BEAT: 100,
 };
 var MOMENTUM_META = {
-  STASIS: { css: 'momentum-badge--stasis', label: 'Stasis' },
-  INCREMENTAL_PROGRESS: { css: 'momentum-badge--incremental', label: 'Incremental Progress' },
-  MAJOR_PROGRESS: { css: 'momentum-badge--major', label: 'Major Progress' },
-  REVERSAL_OR_SETBACK: { css: 'momentum-badge--reversal', label: 'Reversal' },
-  SCOPE_SHIFT: { css: 'momentum-badge--scope-shift', label: 'Scope Shift' },
+  STASIS: { css: 'momentum-badge--stasis', label: '\u23F8 Stasis' },
+  INCREMENTAL_PROGRESS: { css: 'momentum-badge--incremental', label: '\uD83D\uDCC8 Incremental Progress' },
+  MAJOR_PROGRESS: { css: 'momentum-badge--major', label: '\uD83D\uDE80 Major Progress' },
+  REVERSAL_OR_SETBACK: { css: 'momentum-badge--reversal', label: '\u21A9\uFE0F Reversal' },
+  SCOPE_SHIFT: { css: 'momentum-badge--scope-shift', label: '\uD83D\uDD00 Scope Shift' },
 };
 var COMPLETION_GATE_FILL = { PENDING: 0, SATISFIED: 100 };
 var URGENCY_CLASS = { LOW: 'urgency-low', MEDIUM: 'urgency-medium', HIGH: 'urgency-high' };
@@ -4537,6 +4537,36 @@ var PAYOFF_CLASS = {
   RUSHED: 'payoff-rushed',
   ADEQUATE: 'payoff-adequate',
   WELL_EARNED: 'payoff-well-earned',
+};
+
+var HUMANIZED_LABELS = {
+  NONE: 'None',
+  WEAK_IMPLICIT: 'Weak Implicit',
+  CLEAR_EXPLICIT: 'Clear Explicit',
+  TENTATIVE: 'Tentative',
+  EXPLICIT_REVERSIBLE: 'Explicit Reversible',
+  EXPLICIT_IRREVERSIBLE: 'Explicit Irreversible',
+  NOT_READY: 'Not Ready',
+  PARTIAL: 'Partial',
+  READY: 'Ready',
+  WITHIN_ACTIVE_BEAT: 'Within Active Beat',
+  BRIDGING_TO_NEXT_BEAT: 'Bridging',
+  CLEARLY_IN_NEXT_BEAT: 'Next Beat',
+  PENDING: 'Pending',
+  SATISFIED: 'Satisfied',
+  STRUCTURAL_SUPERSESSION: 'Structure Evolved',
+  NATURAL_CONCLUSION: 'Natural Conclusion',
+  DRAMATIC_INTERRUPTION: 'Dramatic Interruption',
+  FORCED_TRANSITION: 'Forced Transition',
+  RUSHED: 'Rushed',
+  ADEQUATE: 'Adequate',
+  WELL_EARNED: 'Well Earned',
+};
+
+var SATISFACTION_ICONS = {
+  RUSHED: '\u26A1',
+  ADEQUATE: '\u2713',
+  WELL_EARNED: '\u2728',
 };
 
 function parseAnalystDataFromDom() {
@@ -4572,6 +4602,9 @@ function parseInsightsContextFromDom() {
 function formatAnalystEnum(value) {
   if (typeof value !== 'string' || value.length === 0) {
     return 'Unknown';
+  }
+  if (HUMANIZED_LABELS[value]) {
+    return HUMANIZED_LABELS[value];
   }
   return value.toLowerCase().split('_').map(function(part) {
     return part.charAt(0).toUpperCase() + part.slice(1);
@@ -4631,7 +4664,7 @@ function renderStructureTab(ar) {
   if (typeof ar.beatResolution === 'string' && ar.beatResolution.length > 0) {
     html += '<details class="insights-section">'
       + '<summary><h4>Beat Resolution</h4></summary>'
-      + '<p class="insights-copy">' + escapeHtml(ar.beatResolution) + '</p>'
+      + '<p class="insights-copy">' + escapeHtml(formatAnalystEnum(ar.beatResolution)) + '</p>'
       + '</details>';
   }
 
@@ -4808,12 +4841,15 @@ function renderPromisePayoffs(assessments, resolvedPromiseMeta) {
         + '</span>';
     }
 
+    var satIcon = SATISFACTION_ICONS[satisfaction] || '';
+    var satLabel = HUMANIZED_LABELS[satisfaction] || formatAnalystEnum(satisfaction);
+
     return '<li class="promise-payoff-item">'
       + badgeHtml
-      + '<p class="payoff-thread-label">Promise</p>'
+      + '<p class="payoff-thread-label">\uD83D\uDD2E Promise</p>'
       + '<p class="payoff-thread-text" title="' + escapeHtml(description) + '">' + escapeHtml(description) + '</p>'
       + '<span class="payoff-satisfaction-badge payoff-satisfaction-badge--centered ' + payoffClass + '">'
-      + escapeHtml(satisfaction)
+      + (satIcon ? satIcon + ' ' : '') + escapeHtml(satLabel)
       + '</span>'
       + '<p class="insights-copy payoff-reasoning">' + escapeHtml(reasoning) + '</p>'
       + '</li>';
@@ -4851,12 +4887,15 @@ function renderThreadPayoffs(assessments, resolvedThreadMeta) {
         + '</span>';
     }
 
+    var satIcon = SATISFACTION_ICONS[satisfaction] || '';
+    var satLabel = HUMANIZED_LABELS[satisfaction] || formatAnalystEnum(satisfaction);
+
     return '<li class="payoff-item">'
       + badgeHtml
-      + '<p class="payoff-thread-label">Thread</p>'
+      + '<p class="payoff-thread-label">\uD83E\uDDF5 Thread</p>'
       + '<p class="payoff-thread-text" title="' + escapeHtml(threadText) + '">' + escapeHtml(threadText) + '</p>'
       + '<span class="payoff-satisfaction-badge payoff-satisfaction-badge--centered ' + payoffClass + '">'
-      + escapeHtml(satisfaction)
+      + (satIcon ? satIcon + ' ' : '') + escapeHtml(satLabel)
       + '</span>'
       + '<p class="insights-copy payoff-reasoning">' + escapeHtml(reasoning) + '</p>'
       + '</li>';
@@ -6171,6 +6210,11 @@ function createRecapModalController(initialData) {
     var initialAgendaPanel = document.getElementById('npc-agendas-panel');
     if (initialAgendaPanel) {
       bindNpcAgendaCardToggles(initialAgendaPanel);
+    }
+
+    var initialKnowledgePanel = document.getElementById('knowledge-state-panel');
+    if (initialKnowledgePanel) {
+      bindKnowledgeStateCardToggles(initialKnowledgePanel);
     }
 
     var previousActNumber = null;

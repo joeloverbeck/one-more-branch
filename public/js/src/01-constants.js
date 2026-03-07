@@ -65,18 +65,18 @@ CHOICE_SHAPES.forEach(function (cs) { CHOICE_SHAPE_LABEL_MAP[cs.value] = cs.labe
 // ── Analyst insights tab metadata ────────────────────────────────
 
 var THEMATIC_CHARGE_META = {
-  THESIS_SUPPORTING: { css: 'thematic-badge--thesis', label: 'Thesis Supporting' },
-  ANTITHESIS_SUPPORTING: { css: 'thematic-badge--antithesis', label: 'Antithesis Supporting' },
-  AMBIGUOUS: { css: 'thematic-badge--ambiguous', label: 'Ambiguous' },
+  THESIS_SUPPORTING: { css: 'thematic-badge--thesis', label: '\uD83C\uDFAF Thesis Supporting' },
+  ANTITHESIS_SUPPORTING: { css: 'thematic-badge--antithesis', label: '\u2694\uFE0F Antithesis Supporting' },
+  AMBIGUOUS: { css: 'thematic-badge--ambiguous', label: '\uD83C\uDF00 Ambiguous' },
 };
 
 var NARRATIVE_FOCUS_META = {
-  DEEPENING: { css: 'narrative-focus-badge--deepening', label: 'Deepening' },
-  BROADENING: { css: 'narrative-focus-badge--broadening', label: 'Broadening' },
-  BALANCED: { css: 'narrative-focus-badge--balanced', label: 'Balanced' },
+  DEEPENING: { css: 'narrative-focus-badge--deepening', label: '\uD83D\uDD0D Deepening' },
+  BROADENING: { css: 'narrative-focus-badge--broadening', label: '\uD83C\uDF10 Broadening' },
+  BALANCED: { css: 'narrative-focus-badge--balanced', label: '\u2696\uFE0F Balanced' },
 };
 
 var NPC_COHERENCE_META = {
-  true: { css: 'npc-coherence--ok', label: 'Coherent' },
-  false: { css: 'npc-coherence--issue', label: 'Issues Detected' },
+  true: { css: 'npc-coherence--ok', label: '\u2705 Coherent' },
+  false: { css: 'npc-coherence--issue', label: '\u26A0\uFE0F Issues Detected' },
 };

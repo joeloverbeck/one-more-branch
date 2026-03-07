@@ -36,6 +36,11 @@
       bindNpcAgendaCardToggles(initialAgendaPanel);
     }
 
+    var initialKnowledgePanel = document.getElementById('knowledge-state-panel');
+    if (initialKnowledgePanel) {
+      bindKnowledgeStateCardToggles(initialKnowledgePanel);
+    }
+
     var previousActNumber = null;
     var initialActIndicator = document.getElementById('act-indicator');
     if (initialActIndicator) {

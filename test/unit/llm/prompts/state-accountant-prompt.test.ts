@@ -4,6 +4,7 @@ import type {
   OpeningPagePlanContext,
 } from '../../../../src/llm/context-types';
 import type { ReducedPagePlanResult } from '../../../../src/llm/planner-types';
+import { PromiseScope, PromiseType, ThreadType, Urgency } from '../../../../src/models/state/index.js';
 import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../../fixtures/decomposed';
 
 function getUserMessage(messages: { role: string; content: string }[]): string {
@@ -80,8 +81,76 @@ describe('buildStateAccountantPrompt', () => {
     const messages = buildStateAccountantPrompt(continuationContext, reducedPlan);
     const user = getUserMessage(messages);
 
-    expect(user).toContain('=== PLANNER CONTEXT: CONTINUATION ===');
+    expect(user).toContain('=== ACCOUNTANT CONTEXT: CONTINUATION ===');
     expect(user).toContain("PLAYER'S CHOICE:");
+  });
+
+  it('excludes planner-only continuation sections and avoids duplicate pacing blocks', () => {
+    const contextWithPlannerArtifacts: ContinuationPagePlanContext = {
+      ...continuationContext,
+      grandparentNarrative: 'Old scene text that should stay planner-only.',
+      parentPacingDirective: 'Escalate pressure now.',
+      thematicValenceTrajectory: [
+        { pageId: 11, thematicValence: 'THESIS_SUPPORTING' },
+        { pageId: 12, thematicValence: 'THESIS_SUPPORTING' },
+        { pageId: 13, thematicValence: 'THESIS_SUPPORTING' },
+      ],
+      narrativeFocusTrajectory: [
+        { pageId: 11, narrativeFocus: 'BROADENING' },
+        { pageId: 12, narrativeFocus: 'BROADENING' },
+        { pageId: 13, narrativeFocus: 'BROADENING' },
+      ],
+      parentToneDriftDescription: 'Too whimsical for the intended tone.',
+      activeState: {
+        ...continuationContext.activeState,
+        openThreads: [
+          {
+            id: 'td-9',
+            text: 'The encrypted failsafe code remains unresolved.',
+            threadType: ThreadType.MYSTERY,
+            urgency: Urgency.HIGH,
+          },
+        ],
+      },
+      threadAges: { 'td-9': 99 },
+      accumulatedPromises: [
+        {
+          id: 'pr-2',
+          description: 'Pay off the failed extraction signal.',
+          promiseType: PromiseType.FORESHADOWING,
+          scope: PromiseScope.STORY,
+          resolutionHint: 'Reveal why the signal was spoofed.',
+          suggestedUrgency: Urgency.HIGH,
+          age: 8,
+        },
+      ],
+      parentThreadPayoffAssessments: [
+        {
+          threadId: 'td-9',
+          threadText: 'The encrypted failsafe code remains unresolved.',
+          satisfactionLevel: 'RUSHED',
+          reasoning: 'Previous payoff skipped causal steps.',
+        },
+      ],
+    };
+
+    const messages = buildStateAccountantPrompt(contextWithPlannerArtifacts, reducedPlan);
+    const user = getUserMessage(messages);
+
+    expect(user).not.toContain('=== PACING BRIEFING (from story analyst) ===');
+    expect(user).not.toContain('=== THEMATIC TRAJECTORY ===');
+    expect(user).not.toContain('=== DEPTH VS BREADTH TRAJECTORY ===');
+    expect(user).not.toContain('=== ESCALATION DIRECTIVE ===');
+    expect(user).not.toContain('=== PREMISE PROMISE WARNING (LATE ACT) ===');
+    expect(user).not.toContain('=== VALUE SPECTRUM TRACKING (McKee) ===');
+    expect(user).not.toContain('=== DRAMATIC IRONY OPPORTUNITIES ===');
+    expect(user).not.toContain('SCENE BEFORE LAST (full text for style continuity):');
+    expect(user).not.toContain('TONE DRIFT WARNING (from analyst):');
+    expect(user).not.toContain('TONE/GENRE:');
+
+    expect(user.match(/=== THREAD PACING PRESSURE ===/g)).toHaveLength(1);
+    expect(user.match(/=== TRACKED PROMISES ===/g)).toHaveLength(1);
+    expect(user.match(/=== PAYOFF QUALITY FEEDBACK ===/g)).toHaveLength(1);
   });
 
   it('excludes protagonist directive and guidance in continuation mode', () => {

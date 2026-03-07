@@ -1,7 +1,7 @@
 # State Accountant Prompt (Production Template)
 
 - Source: `src/llm/prompts/state-accountant-prompt.ts`
-- Planner context section sources: `src/llm/prompts/sections/planner/opening-context.ts`, `src/llm/prompts/sections/planner/continuation-context.ts`
+- Context section sources: `src/llm/prompts/sections/planner/opening-context.ts`, `src/llm/prompts/sections/planner/continuation-context.ts` (`buildAccountantContinuationContextSection` for continuation mode)
 - State intent rules source: `src/llm/prompts/sections/planner/state-intent-rules.ts`
 - Continuation quality criteria source: `src/llm/prompts/sections/continuation/continuation-quality-criteria.ts`
 - Output schema source: `src/llm/schemas/state-accountant-schema.ts`
@@ -54,8 +54,8 @@ Story Pattern: {{spine.storySpineType}}
 ...
 {{/if}}
 
-=== PLANNER CONTEXT: OPENING|CONTINUATION ===
-{{opening or continuation context block from planner context section builder}}
+=== PLANNER CONTEXT: OPENING | ACCOUNTANT CONTEXT: CONTINUATION ===
+{{opening context from planner section builder OR continuation context from accountant section builder}}
 
 {{#if reconciliationFailureReasons.length}}
 === RECONCILIATION FAILURE REASONS (RETRY) ===

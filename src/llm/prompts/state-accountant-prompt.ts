@@ -7,7 +7,7 @@ import {
   CONTINUATION_CANON_QUALITY,
 } from './sections/continuation/index.js';
 import {
-  buildPlannerContinuationContextSection,
+  buildAccountantContinuationContextSection,
   buildPlannerOpeningContextSection,
   ACCOUNTANT_STATE_INTENT_RULES,
   buildTrackedPromisesSection,
@@ -83,7 +83,7 @@ export function buildStateAccountantPrompt(
   const contextSection =
     context.mode === 'opening'
       ? buildPlannerOpeningContextSection(context, noProtagonist)
-      : buildPlannerContinuationContextSection(context, noProtagonist);
+      : buildAccountantContinuationContextSection(context, noProtagonist);
 
   const reconciliationRetrySection =
     context.reconciliationFailureReasons && context.reconciliationFailureReasons.length > 0

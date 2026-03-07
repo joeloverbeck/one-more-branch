@@ -11,12 +11,53 @@ import type {
 } from '../../../../../../src/models/story-arc.js';
 import type { ContinuationPagePlanContext } from '../../../../../../src/llm/context-types.js';
 import {
+  buildAccountantContinuationContextSection,
   buildPlannerContinuationContextSection,
   buildEscalationDirective,
 } from '../../../../../../src/llm/prompts/sections/planner/continuation-context.js';
 import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../../../../fixtures/decomposed';
 
 describe('planner continuation context section', () => {
+  it('builds accountant continuation context without planner-only sections', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: ['Emergency shutters lock by district'],
+      globalCharacterCanon: {},
+      previousNarrative: 'The alarm shifts from amber to red.',
+      selectedChoice: 'Cut power to the lock grid',
+      accumulatedInventory: [{ id: 'inv-1', text: 'Thermal keycard' }],
+      accumulatedHealth: [{ id: 'hp-1', text: 'Fractured wrist' }],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: 'South lock corridor',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: 'A previous scene body that should not be present for accountant.',
+      ancestorSummaries: [{ pageId: 5, summary: 'Bypassed two checkpoints.' }],
+      parentPacingDirective: 'Escalate aggressively.',
+      thematicValenceTrajectory: [
+        { pageId: 6, thematicValence: 'THESIS_SUPPORTING' },
+        { pageId: 7, thematicValence: 'THESIS_SUPPORTING' },
+        { pageId: 8, thematicValence: 'THESIS_SUPPORTING' },
+      ],
+    };
+
+    const result = buildAccountantContinuationContextSection(context);
+
+    expect(result).toContain('=== ACCOUNTANT CONTEXT: CONTINUATION ===');
+    expect(result).toContain('ESTABLISHED WORLD FACTS:');
+    expect(result).toContain("PLAYER'S CHOICE:");
+    expect(result).not.toContain('=== PACING BRIEFING (from story analyst) ===');
+    expect(result).not.toContain('=== THEMATIC TRAJECTORY ===');
+    expect(result).not.toContain('SCENE BEFORE LAST (full text for style continuity):');
+    expect(result).not.toContain('TONE/GENRE:');
+  });
+
   it('includes continuation state and previous scene context', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
