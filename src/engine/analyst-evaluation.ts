@@ -101,7 +101,6 @@ function mergeEvaluatorResults(
     pacingIssueReason: '',
     recommendedAction: 'none',
     pacingDirective: '',
-    narrativeSummary: '',
   };
 
   const defaultPromise: PromiseTrackerResult = {

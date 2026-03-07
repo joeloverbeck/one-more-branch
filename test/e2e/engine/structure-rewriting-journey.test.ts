@@ -123,7 +123,6 @@ function extractStructureResult(
     pacingIssueReason: ar.pacingIssueReason,
     recommendedAction: ar.recommendedAction,
     pacingDirective: ar.pacingDirective ?? '',
-    narrativeSummary: ar.narrativeSummary,
     rawResponse: ar.rawResponse,
   };
 }
@@ -514,7 +513,7 @@ function buildAnalystResult(narrative: string): AnalystResult {
       deviationReason:
         'The protagonist is publicly framed as regime-aligned, invalidating infiltration beats.',
       invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
-      narrativeSummary: 'Public perception now places the protagonist inside alliance leadership.',
+      sceneSummary: 'Public perception now places the protagonist inside alliance leadership.',
       sceneMomentum: 'REVERSAL_OR_SETBACK',
       objectiveEvidenceStrength: 'NONE',
       commitmentStrength: 'NONE',

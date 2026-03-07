@@ -63,7 +63,6 @@ export function validateStructureEvaluatorResponse(
     pacingIssueReason: validated.pacingIssueReason.trim(),
     recommendedAction: validated.recommendedAction,
     pacingDirective: validated.pacingDirective.trim(),
-    narrativeSummary: validated.narrativeSummary.trim(),
     rawResponse,
   };
 }

@@ -130,7 +130,6 @@ function extractStructureResult(
     pacingIssueReason: ar.pacingIssueReason,
     recommendedAction: ar.recommendedAction,
     pacingDirective: ar.pacingDirective ?? '',
-    narrativeSummary: ar.narrativeSummary,
     rawResponse: ar.rawResponse,
   };
 }
@@ -652,7 +651,7 @@ describe('story-engine integration', () => {
     const analystResult1 = createMockAnalystResult({
       beatConcluded: true,
       beatResolution: 'The first clue clearly ties the fires to the harbor cartel.',
-      narrativeSummary: 'The protagonist continues the current scene.',
+      sceneSummary: 'The protagonist continues the current scene.',
       sceneMomentum: 'STASIS',
       objectiveEvidenceStrength: 'NONE',
       commitmentStrength: 'NONE',
@@ -661,7 +660,7 @@ describe('story-engine integration', () => {
     const analystResult2 = createMockAnalystResult({
       beatConcluded: true,
       beatResolution: 'Local allies joined and the setup arc closed.',
-      narrativeSummary: 'The protagonist continues the current scene.',
+      sceneSummary: 'The protagonist continues the current scene.',
       sceneMomentum: 'STASIS',
       objectiveEvidenceStrength: 'NONE',
       commitmentStrength: 'NONE',
@@ -808,7 +807,7 @@ describe('story-engine integration', () => {
       });
     const rewriteAnalyst1 = createMockAnalystResult({
       // Opening page analyst - no beat conclusion, no deviation
-      narrativeSummary: 'The protagonist arrives on the scene.',
+      sceneSummary: 'The protagonist arrives on the scene.',
       sceneMomentum: 'STASIS',
       objectiveEvidenceStrength: 'NONE',
       commitmentStrength: 'NONE',
@@ -817,7 +816,7 @@ describe('story-engine integration', () => {
     const rewriteAnalyst2 = createMockAnalystResult({
       beatConcluded: true,
       beatResolution: 'The harbor cartel link is proven beyond doubt.',
-      narrativeSummary: 'The protagonist continues the current scene.',
+      sceneSummary: 'The protagonist continues the current scene.',
       sceneMomentum: 'STASIS',
       objectiveEvidenceStrength: 'NONE',
       commitmentStrength: 'NONE',
@@ -827,7 +826,7 @@ describe('story-engine integration', () => {
       deviationDetected: true,
       deviationReason: 'The protagonist publicly defects, invalidating infiltration beats.',
       invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
-      narrativeSummary: 'The city now sees the protagonist as aligned with the regime on paper.',
+      sceneSummary: 'The city now sees the protagonist as aligned with the regime on paper.',
       sceneMomentum: 'STASIS',
       objectiveEvidenceStrength: 'NONE',
       commitmentStrength: 'NONE',

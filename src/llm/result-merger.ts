@@ -6,6 +6,7 @@ import type { ContinuationGenerationResult } from './generation-pipeline-types.j
 import type { PageWriterResult } from './writer-types.js';
 
 function buildAnalystFields(
+  sceneSummary: string,
   analyst: AnalystResult | null
 ): Pick<
   ContinuationGenerationResult,
@@ -19,15 +20,15 @@ function buildAnalystFields(
   const beatConcluded = analyst?.beatConcluded ?? false;
   const beatResolution = analyst?.beatResolution ?? '';
   const deviationReason = analyst?.deviationReason?.trim() ?? '';
-  const narrativeSummary = analyst?.narrativeSummary?.trim() ?? '';
+  const canonicalSceneSummary = sceneSummary.trim();
   const invalidatedBeatIds = analyst?.invalidatedBeatIds ?? [];
 
   const deviation =
     analyst?.deviationDetected &&
     deviationReason &&
-    narrativeSummary &&
+    canonicalSceneSummary &&
     invalidatedBeatIds.length > 0
-      ? createBeatDeviation(deviationReason, invalidatedBeatIds, narrativeSummary)
+      ? createBeatDeviation(deviationReason, invalidatedBeatIds, canonicalSceneSummary)
       : createNoDeviation();
 
   return {
@@ -69,7 +70,7 @@ export function mergePageWriterAndReconciledStateWithAnalystResults(
   return {
     ...writer,
     ...stateDelta,
-    ...buildAnalystFields(analyst),
+    ...buildAnalystFields(writer.sceneSummary, analyst),
     isEnding,
     choices: [...choices],
     rawResponse: writer.rawResponse,

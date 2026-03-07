@@ -42,7 +42,6 @@ export function createMockAnalystResult(overrides: Partial<AnalystResult> = {}):
     deviationDetected: false,
     deviationReason: '',
     invalidatedBeatIds: [],
-    narrativeSummary: 'The protagonist explored the area.',
     pacingIssueDetected: false,
     pacingIssueReason: '',
     recommendedAction: 'none',

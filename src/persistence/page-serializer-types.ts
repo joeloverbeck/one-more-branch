@@ -141,7 +141,6 @@ export interface AnalystResultFileData {
   deviationDetected: boolean;
   deviationReason: string;
   invalidatedBeatIds: string[];
-  narrativeSummary: string;
   pacingIssueDetected: boolean;
   pacingIssueReason: string;
   recommendedAction: string;

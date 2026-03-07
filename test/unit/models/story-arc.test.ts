@@ -436,7 +436,7 @@ describe('story-arc model utilities', () => {
           detected: true,
           reason: 'Narrative shifted to alliance with antagonist',
           invalidatedBeatIds: ['2.2', '3.1'],
-          narrativeSummary: 'The team split after a betrayal',
+          sceneSummary: 'The team split after a betrayal',
         });
       });
 

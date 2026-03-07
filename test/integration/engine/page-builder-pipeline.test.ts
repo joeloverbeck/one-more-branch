@@ -312,7 +312,7 @@ describe('page-builder pipeline integration', () => {
       };
 
       const analystResult: AnalystResult = createMockAnalystResult({
-        narrativeSummary: 'The protagonist confronted the bartender about the locked room.',
+        sceneSummary: 'The protagonist confronted the bartender about the locked room.',
         beatConcluded: true,
         beatResolution: 'Trust established',
       });
@@ -327,7 +327,7 @@ describe('page-builder pipeline integration', () => {
 
       expect(page.storyBible).toEqual(storyBible);
       expect(page.analystResult).toEqual(analystResult);
-      expect(page.analystResult!.narrativeSummary).toBe(
+      expect(page.analystResult!.sceneSummary).toBe(
         'The protagonist confronted the bartender about the locked room.'
       );
       expect(page.analystResult!.beatConcluded).toBe(true);

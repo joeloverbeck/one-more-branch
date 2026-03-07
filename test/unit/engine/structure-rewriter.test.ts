@@ -61,7 +61,7 @@ function createRewriteContext(
       },
     ],
     plannedBeats: [],
-    narrativeSummary: 'The captain publicly allied with a former enemy admiral.',
+    sceneSummary: 'The captain publicly allied with a former enemy admiral.',
     currentActIndex: 0,
     currentBeatIndex: 1,
     deviationReason: 'Prior rebellion beats are no longer viable after alliance reversal.',

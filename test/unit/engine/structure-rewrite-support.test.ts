@@ -410,7 +410,7 @@ describe('structure-rewrite-support', () => {
       expect(context.decomposedWorld).toEqual(MINIMAL_DECOMPOSED_WORLD);
       expect(context.tone).toBe('grim fantasy');
       expect(context.originalTheme).toBe('Restore the broken kingdom');
-      expect(context.narrativeSummary).toBe('Now aligned with the rival faction.');
+      expect(context.sceneSummary).toBe('Now aligned with the rival faction.');
       expect(context.deviationReason).toBe('The protagonist switched allegiance.');
       expect(context.currentActIndex).toBe(0);
       expect(context.currentBeatIndex).toBe(1);
@@ -807,7 +807,7 @@ describe('structure-rewrite-support', () => {
       );
 
       expect(context.deviationReason).toBe('Pacing issue: Beat is stalling after 5 pages');
-      expect(context.narrativeSummary).toBe('The hero hesitates at the gate.');
+      expect(context.sceneSummary).toBe('The hero hesitates at the gate.');
       expect(context.tone).toBe('introspective');
       expect(context.currentActIndex).toBe(0);
       expect(context.currentBeatIndex).toBe(1);

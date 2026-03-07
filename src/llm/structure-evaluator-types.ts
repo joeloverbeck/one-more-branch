@@ -47,7 +47,6 @@ export interface StructureEvaluatorResult {
   pacingIssueReason: string;
   recommendedAction: PacingRecommendedAction;
   pacingDirective: string;
-  narrativeSummary: string;
 }
 
 export interface StructureEvaluatorContext {

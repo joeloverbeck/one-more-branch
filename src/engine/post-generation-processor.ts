@@ -242,6 +242,7 @@ export async function processPostGeneration(
   // --- Handle spine deviation (two-tier: spine then beats) ---
   const spineDeviationResult = await handleSpineDeviationIfDetected({
     analystResult,
+    sceneSummary: writerResult.sceneSummary,
     story,
     apiKey,
     logContext,
@@ -271,7 +272,7 @@ export async function processPostGeneration(
         deviation: createBeatDeviation(
           `Spine rewritten (${spineDeviationResult.spineInvalidatedElement ?? 'unknown'} invalidated) — all remaining beats need restructuring`,
           remainingBeatIds,
-          analystResult?.narrativeSummary ?? ''
+          writerResult.sceneSummary
         ),
       };
     }

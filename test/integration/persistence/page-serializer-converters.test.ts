@@ -80,7 +80,6 @@ function buildFullAnalystResult(): AnalystResult {
     deviationDetected: false,
     deviationReason: '',
     invalidatedBeatIds: ['1.2'],
-    narrativeSummary: 'A tense scene unfolded.',
     pacingIssueDetected: false,
     pacingIssueReason: '',
     recommendedAction: 'none',

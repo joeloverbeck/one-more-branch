@@ -61,5 +61,4 @@ export const StructureEvaluatorResultSchema = z.object({
   pacingIssueReason: z.string().default(''),
   recommendedAction: z.enum(['none', 'nudge', 'rewrite']).catch('none').default('none'),
   pacingDirective: z.string().catch('').default(''),
-  narrativeSummary: z.string().default(''),
 });

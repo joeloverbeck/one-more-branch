@@ -210,7 +210,7 @@ Deviation occurred at: Act ${context.currentActIndex + 1}, Beat ${context.curren
 Reason for deviation: ${context.deviationReason}
 
 Current narrative state:
-${context.narrativeSummary}
+${context.sceneSummary}
 
 ## YOUR TASK
 Generate NEW beats to replace invalidated ones. You are regenerating: ${getActsToRegenerate(context.currentActIndex, context.totalActCount)}.

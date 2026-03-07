@@ -46,7 +46,7 @@ export async function rewriteStructureForPacing(
     currentVersion,
     structureState,
     analystResult.pacingIssueReason,
-    analystResult.narrativeSummary
+    page.sceneSummary
   );
 
   const rewriter = createStructureRewriter();

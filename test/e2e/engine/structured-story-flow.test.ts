@@ -123,7 +123,6 @@ function extractStructureResult(
     pacingIssueReason: ar.pacingIssueReason,
     recommendedAction: ar.recommendedAction,
     pacingDirective: ar.pacingDirective ?? '',
-    narrativeSummary: ar.narrativeSummary,
     rawResponse: ar.rawResponse,
   };
 }

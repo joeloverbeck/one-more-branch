@@ -1335,7 +1335,7 @@ describe('playRoutes', () => {
         deviationDetected: false,
         deviationReason: '',
         invalidatedBeatIds: [],
-        narrativeSummary: 'Summary.',
+        sceneSummary: 'Summary.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none',
