@@ -34,5 +34,6 @@ export {
 export {
   buildPlannerOpeningContextSection,
   buildPlannerContinuationContextSection,
+  buildAccountantContinuationContextSection,
   ACCOUNTANT_STATE_INTENT_RULES,
 } from './planner/index.js';

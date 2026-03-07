@@ -580,9 +580,22 @@ export interface PlannerContextOptions {
   readonly includeProtagonistDirective?: boolean;
 }
 
-export function buildPlannerContinuationContextSection(
+interface ContinuationContextRenderOptions extends PlannerContextOptions {
+  readonly includeToneSection: boolean;
+  readonly includeToneDriftWarning: boolean;
+  readonly includePlannerTrajectorySections: boolean;
+  readonly includeEscalationDirective: boolean;
+  readonly includePremisePromiseWarning: boolean;
+  readonly includeValueSpectrumGuidance: boolean;
+  readonly includeThreadPacingSections: boolean;
+  readonly includeDramaticIrony: boolean;
+  readonly includeGrandparentNarrative: boolean;
+  readonly sectionTitle: string;
+}
+
+function buildContinuationContextSection(
   context: ContinuationPagePlanContext,
-  options?: PlannerContextOptions
+  options: ContinuationContextRenderOptions
 ): string {
   const worldSection = context.decomposedWorld.facts.length > 0
     ? `${formatDecomposedWorldForPrompt(context.decomposedWorld)}
@@ -643,7 +656,7 @@ ${context.decomposedCharacters.map((c, i) => formatDecomposedCharacterForPrompt(
           .join('\n')
       : '(none)';
 
-  const grandparentSection = context.grandparentNarrative
+  const grandparentSection = options.includeGrandparentNarrative && context.grandparentNarrative
     ? `SCENE BEFORE LAST (full text for style continuity):
 ${context.grandparentNarrative}
 
@@ -658,46 +671,58 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
 `
       : '';
 
-  const pacingSection = buildPacingBriefingSection(context);
-  const thematicTrajectorySection = buildThematicTrajectoryWarningSection(
-    context.thematicValenceTrajectory
-  );
-  const narrativeFocusWarningSection = buildNarrativeFocusWarningSection(
-    context.narrativeFocusTrajectory
-  );
+  const pacingSection = options.includePlannerTrajectorySections
+    ? buildPacingBriefingSection(context)
+    : '';
+  const thematicTrajectorySection = options.includePlannerTrajectorySections
+    ? buildThematicTrajectoryWarningSection(context.thematicValenceTrajectory)
+    : '';
+  const narrativeFocusWarningSection = options.includePlannerTrajectorySections
+    ? buildNarrativeFocusWarningSection(context.narrativeFocusTrajectory)
+    : '';
 
-  const escalationDirective = buildEscalationDirective(
-    context.structure,
-    context.accumulatedStructureState
-  );
-  const premisePromiseWarningSection = buildPremisePromiseWarningSection(context);
+  const escalationDirective = options.includeEscalationDirective
+    ? buildEscalationDirective(context.structure, context.accumulatedStructureState)
+    : '';
+  const premisePromiseWarningSection = options.includePremisePromiseWarning
+    ? buildPremisePromiseWarningSection(context)
+    : '';
 
-  const threadAgingSection = buildThreadAgingSection(context.activeState.openThreads, threadAges);
+  const threadAgingSection = options.includeThreadPacingSections
+    ? buildThreadAgingSection(context.activeState.openThreads, threadAges)
+    : '';
 
-  const trackedPromisesSection = buildTrackedPromisesSection(
-    context.accumulatedPromises ?? []
-  );
+  const trackedPromisesSection = options.includeThreadPacingSections
+    ? buildTrackedPromisesSection(context.accumulatedPromises ?? [])
+    : '';
 
-  const payoffFeedbackSection = buildPayoffFeedbackSection(
-    context.parentThreadPayoffAssessments ?? []
-  );
+  const payoffFeedbackSection = options.includeThreadPacingSections
+    ? buildPayoffFeedbackSection(context.parentThreadPayoffAssessments ?? [])
+    : '';
   const pendingConsequencesSection = buildPendingConsequencesSection(context);
-  const dramaticIronyOpportunitiesSection = buildDramaticIronyOpportunitiesSection(context);
+  const dramaticIronyOpportunitiesSection = options.includeDramaticIrony
+    ? buildDramaticIronyOpportunitiesSection(context)
+    : '';
 
   const toneFeelLine =
-    context.toneFeel && context.toneFeel.length > 0
+    options.includeToneSection && context.toneFeel && context.toneFeel.length > 0
       ? `\nTone target feel: ${context.toneFeel.join(', ')}`
       : '';
   const toneAvoidLine =
-    context.toneAvoid && context.toneAvoid.length > 0
+    options.includeToneSection && context.toneAvoid && context.toneAvoid.length > 0
       ? `\nTone avoid: ${context.toneAvoid.join(', ')}`
       : '';
   const toneDriftLine =
-    context.parentToneDriftDescription && context.parentToneDriftDescription.length > 0
+    options.includeToneDriftWarning &&
+    context.parentToneDriftDescription &&
+    context.parentToneDriftDescription.length > 0
       ? `\nTONE DRIFT WARNING (from analyst): ${context.parentToneDriftDescription}. Correct course in this plan.`
       : '';
+  const toneSection = options.includeToneSection
+    ? `TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}${toneDriftLine}\n\n`
+    : '';
 
-  const includeProtagonist = options?.includeProtagonistDirective ?? true;
+  const includeProtagonist = options.includeProtagonistDirective ?? true;
 
   const protagonistName = context.decomposedCharacters.length > 0 ? context.decomposedCharacters[0]!.name : null;
   const protagonistDirective = includeProtagonist && protagonistName
@@ -708,10 +733,10 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
     ? buildProtagonistGuidanceSection(context.protagonistGuidance)
     : '';
 
-  return `=== PLANNER CONTEXT: CONTINUATION ===
-${worldSection}${npcsSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}${toneDriftLine}
+  return `=== ${options.sectionTitle} ===
+${worldSection}${npcsSection}${toneSection}
 
-${structureSection}${pacingSection}${thematicTrajectorySection}${narrativeFocusWarningSection}${escalationDirective}${premisePromiseWarningSection}${buildValueSpectrumGuidanceSection(context.storyKernel)}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
+${structureSection}${pacingSection}${thematicTrajectorySection}${narrativeFocusWarningSection}${escalationDirective}${premisePromiseWarningSection}${options.includeValueSpectrumGuidance ? buildValueSpectrumGuidanceSection(context.storyKernel) : ''}${threadAgingSection}${payoffFeedbackSection}ESTABLISHED WORLD FACTS:
 ${globalCanonSection}
 
 CHARACTER INFORMATION (permanent traits):
@@ -743,4 +768,42 @@ ${context.previousNarrative}
 
 ${protagonistDirective}${guidanceSection}PLAYER'S CHOICE:
 ${context.selectedChoice}`;
+}
+
+export function buildPlannerContinuationContextSection(
+  context: ContinuationPagePlanContext,
+  options?: PlannerContextOptions
+): string {
+  return buildContinuationContextSection(context, {
+    includeProtagonistDirective: options?.includeProtagonistDirective,
+    includeToneSection: true,
+    includeToneDriftWarning: true,
+    includePlannerTrajectorySections: true,
+    includeEscalationDirective: true,
+    includePremisePromiseWarning: true,
+    includeValueSpectrumGuidance: true,
+    includeThreadPacingSections: true,
+    includeDramaticIrony: true,
+    includeGrandparentNarrative: true,
+    sectionTitle: 'PLANNER CONTEXT: CONTINUATION',
+  });
+}
+
+export function buildAccountantContinuationContextSection(
+  context: ContinuationPagePlanContext,
+  options?: PlannerContextOptions
+): string {
+  return buildContinuationContextSection(context, {
+    includeProtagonistDirective: options?.includeProtagonistDirective,
+    includeToneSection: false,
+    includeToneDriftWarning: false,
+    includePlannerTrajectorySections: false,
+    includeEscalationDirective: false,
+    includePremisePromiseWarning: false,
+    includeValueSpectrumGuidance: false,
+    includeThreadPacingSections: false,
+    includeDramaticIrony: false,
+    includeGrandparentNarrative: false,
+    sectionTitle: 'ACCOUNTANT CONTEXT: CONTINUATION',
+  });
 }
