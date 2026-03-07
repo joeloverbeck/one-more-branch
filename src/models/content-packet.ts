@@ -111,6 +111,19 @@ export interface TasteDistillerResult {
   readonly rawResponse: string;
 }
 
+// --- Sparkstormer types ---
+
+export interface SparkstormerContext {
+  readonly tasteProfile: TasteProfile;
+  readonly kernelBlock?: string;
+  readonly contentPreferences?: string;
+}
+
+export interface SparkstormerResult {
+  readonly sparks: readonly ContentSpark[];
+  readonly rawResponse: string;
+}
+
 // --- One-shot content generation types ---
 
 export interface ContentOneShotContext {

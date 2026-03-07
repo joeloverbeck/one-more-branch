@@ -1,3 +1,5 @@
+**Status**: COMPLETED
+
 # WILCONPIP-05: Sparkstormer Prompt (Stage 0b)
 
 **Effort**: M
@@ -41,4 +43,18 @@ Implement the Sparkstormer LLM stage. Given a taste profile, it generates 30-40 
 - [ ] `npm run typecheck` passes
 - [ ] `npm run lint` passes
 - [ ] All existing tests pass unchanged
-- [ ] Uses `runLlmStage` for LLM call
+- [x] Uses `runLlmStage` for LLM call
+
+## Outcome
+
+- **Completion date**: 2026-03-07
+- **What was changed**:
+  - Created `src/llm/prompts/content-sparkstormer-prompt.ts` with `buildSparkstormerPrompt`
+  - Created `src/llm/schemas/content-sparkstormer-schema.ts` with JSON Schema for sparks array
+  - Created `src/llm/content-sparkstormer-generation.ts` with `generateSparks()` and `parseSparkstormerResponse()`
+  - Added `SparkstormerContext` and `SparkstormerResult` to `src/models/content-packet.ts`
+  - Registered `contentSparkstormer` in `llm-stage-registry.ts` and `prompt-formatter.ts`
+  - Exported new types from `models/index.ts`
+  - Created 18 unit tests in `test/unit/llm/content-sparkstormer.test.ts`
+- **Deviations**: Also registered the stage in `llm-stage-registry.ts` and `prompt-formatter.ts` (not mentioned in ticket but required by codebase pattern)
+- **Verification**: typecheck passes, lint passes, 267 test suites / 3171 tests pass
