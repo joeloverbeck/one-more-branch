@@ -358,3 +358,25 @@ export {
 } from './scene-direction-taxonomy';
 
 export type { SceneDirectionOption, SelectedSceneDirection } from './scene-direction';
+
+export type {
+  ContentKind,
+  ContentPacketRole,
+  RiskAppetite,
+  TasteProfile,
+  ContentSpark,
+  ContentPacket,
+  ContentEvaluationScores,
+  ContentEvaluation,
+} from './content-packet';
+export {
+  CONTENT_KIND_VALUES,
+  CONTENT_PACKET_ROLE_VALUES,
+  RISK_APPETITE_VALUES,
+  isContentKind,
+  isContentPacketRole,
+  isRiskAppetite,
+} from './content-packet';
+
+export type { SavedContentPacket, SavedTasteProfile } from './saved-content-packet';
+export { isSavedContentPacket, isSavedTasteProfile } from './saved-content-packet';
