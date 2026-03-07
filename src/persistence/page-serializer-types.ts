@@ -239,8 +239,6 @@ export interface PageFileData {
   accumulatedDelayedConsequences: DelayedConsequenceFileData[];
   accumulatedKnowledgeState: KnowledgeAsymmetryFileData[];
   accumulatedFulfilledPremisePromises?: string[];
-  resolvedThreadMeta: Record<string, { threadType: string; urgency: string }>;
-  resolvedPromiseMeta: Record<string, { promiseType: string; scope: string; urgency: string }>;
   npcAgendaUpdates: NpcAgendaFileData[];
   accumulatedNpcAgendas: Record<string, NpcAgendaFileData>;
   npcRelationshipUpdates: NpcRelationshipFileData[];

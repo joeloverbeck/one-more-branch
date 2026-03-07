@@ -62,30 +62,3 @@ export function getMaxPromiseIdNumber(promises: readonly TrackedPromise[]): numb
   }
   return max;
 }
-
-/**
- * Builds a lookup of metadata for promises resolved on this page.
- * Cross-references resolved promise IDs with the parent page's accumulated promises
- * to preserve promiseType and suggestedUrgency for display purposes (e.g. payoff card badges).
- */
-export function buildResolvedPromiseMeta(
-  resolvedIds: readonly string[],
-  parentPromises: readonly TrackedPromise[]
-): Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>> {
-  if (resolvedIds.length === 0) {
-    return {};
-  }
-  const meta: Record<string, { promiseType: string; scope: string; urgency: string }> = {};
-  const promiseMap = new Map(parentPromises.map((p) => [p.id, p]));
-  for (const id of resolvedIds) {
-    const promise = promiseMap.get(id);
-    if (promise) {
-      meta[id] = {
-        promiseType: promise.promiseType,
-        scope: promise.scope,
-        urgency: promise.suggestedUrgency,
-      };
-    }
-  }
-  return meta;
-}

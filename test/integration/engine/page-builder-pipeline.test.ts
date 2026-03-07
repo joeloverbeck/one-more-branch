@@ -159,13 +159,6 @@ describe('page-builder pipeline integration', () => {
       // pr-1 resolved (removed), pr-2 aged to 2
       expect(page3.accumulatedPromises).toHaveLength(1);
       expect(page3.accumulatedPromises[0]).toMatchObject({ id: 'pr-2', age: 2 });
-      expect(page3.resolvedPromiseMeta).toEqual({
-        'pr-1': {
-          promiseType: PromiseType.CHEKHOV_GUN,
-          scope: PromiseScope.SCENE,
-          urgency: Urgency.MEDIUM,
-        },
-      });
 
       // --- Verify SCENE scope expiry: create a chain where SCENE promise ages past threshold ---
       // SCENE expiry threshold is 4 (from THREAD_PACING.PROMISE_SCOPE_EXPIRY.SCENE)
@@ -258,7 +251,7 @@ describe('page-builder pipeline integration', () => {
   });
 
   describe('analyst thread resolution augmentation', () => {
-    it('augments empty threadsResolved from analyst threadPayoffAssessments and flows to resolvedThreadMeta and threadAges', () => {
+    it('augments empty threadsResolved from analyst threadPayoffAssessments and updates threadAges', () => {
       // Build page 1 with an open thread
       const page1Result = createMockFinalResult({
         threadsAdded: [
@@ -289,10 +282,8 @@ describe('page-builder pipeline integration', () => {
         makeContinuationContext(2, page1, { analystResult })
       );
 
-      // Analyst augmentation should have resolved td-1
-      expect(page2.resolvedThreadMeta).toEqual({
-        'td-1': { threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
-      });
+      // Analyst augmentation should mark td-1 as resolved on this page
+      expect(page2.activeStateChanges.threadsResolved).toEqual(['td-1']);
 
       // td-1 should NOT appear in threadAges (it was resolved)
       expect(page2.threadAges).toEqual({});
@@ -420,10 +411,6 @@ describe('page-builder pipeline integration', () => {
       // Thread ages: td-1 gone (resolved), td-2 aged from 0→1
       expect(page3.threadAges).toEqual({ 'td-2': 1 });
 
-      // Resolved thread meta
-      expect(page3.resolvedThreadMeta).toEqual({
-        'td-1': { threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
-      });
     });
   });
 

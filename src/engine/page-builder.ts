@@ -171,8 +171,6 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     ],
     accumulatedKnowledgeState,
     accumulatedFulfilledPremisePromises: lifecycle.accumulatedFulfilledPremisePromises,
-    resolvedThreadMeta: lifecycle.resolvedThreadMeta,
-    resolvedPromiseMeta: lifecycle.resolvedPromiseMeta,
     npcAgendaUpdates: context.npcAgendaUpdates,
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas,
     npcRelationshipUpdates: context.npcRelationshipUpdates,

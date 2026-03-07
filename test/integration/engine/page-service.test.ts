@@ -2646,14 +2646,8 @@ describe('page-service integration', () => {
         })
       );
 
-      // Resolved promise metadata should be recorded
-      expect(page.resolvedPromiseMeta).toHaveProperty('pr-1');
-      expect(page.resolvedPromiseMeta?.['pr-1']).toEqual(
-        expect.objectContaining({
-          promiseType: 'CHEKHOV_GUN',
-          scope: 'ACT',
-        })
-      );
+      // Resolved promise metadata is no longer persisted on Page
+      expect((page as { resolvedPromiseMeta?: unknown }).resolvedPromiseMeta).toBeUndefined();
     });
   });
 });
