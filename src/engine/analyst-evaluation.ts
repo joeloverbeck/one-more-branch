@@ -48,6 +48,7 @@ export interface AnalystEvaluationContext {
   readonly fulfilledPremisePromises: readonly string[];
   readonly spine?: StorySpine;
   readonly genreFrame?: GenreFrame;
+  readonly protagonistName: string;
   readonly apiKey: string;
   readonly logContext: Record<string, unknown>;
   readonly onGenerationStage?: GenerationStageCallback;
@@ -210,6 +211,7 @@ export async function runAnalystEvaluation(
 
   const npcCtx = {
     narrative: context.writerNarrative,
+    protagonistName: context.protagonistName,
     accumulatedNpcAgendas: context.accumulatedNpcAgendas,
     accumulatedNpcRelationships: context.accumulatedNpcRelationships,
     spine: context.spine,

@@ -21,6 +21,7 @@ export interface NpcIntelligenceResult {
 
 export interface NpcIntelligenceContext {
   readonly narrative: string;
+  readonly protagonistName: string;
   readonly accumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly accumulatedNpcRelationships?: AccumulatedNpcRelationships;
   readonly spine?: StorySpine;
