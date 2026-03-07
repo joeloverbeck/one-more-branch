@@ -33,10 +33,6 @@ function formatReducedPlanForAccountant(plan: ReducedPagePlanResult): string {
       ? plan.writerBrief.forbiddenRecaps.map((r) => `  - ${r}`).join('\n')
       : '  - (none)';
 
-  const choices = plan.choiceIntents
-    .map((intent, i) => `${i + 1}. [${intent.choiceType} / ${intent.primaryDelta}] ${intent.hook}`)
-    .join('\n');
-
   return `Scene Intent: ${plan.sceneIntent}
 
 Continuity Anchors:
@@ -49,10 +45,7 @@ ${beats}
 - Forbidden recaps:
 ${recaps}
 
-Dramatic Question: ${plan.dramaticQuestion}
-
-Choice Intents:
-${choices}`;
+Dramatic Question: ${plan.dramaticQuestion}`;
 }
 
 const ACCOUNTANT_ROLE_INTRO = `You are a state accountant for interactive fiction.`;

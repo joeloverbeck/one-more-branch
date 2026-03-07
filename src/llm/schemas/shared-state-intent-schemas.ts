@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { ChoiceType, PrimaryDelta } from '../../models/choice-enums.js';
 import { ConstraintType, ThreatType, ThreadType, Urgency } from '../../models/state/index.js';
 import {
   STATE_ID_PREFIXES,
@@ -106,12 +105,6 @@ export function addNoIdLikeAdditionIssues(
     });
   });
 }
-
-export const ChoiceIntentSchema = z.object({
-  hook: z.string(),
-  choiceType: z.nativeEnum(ChoiceType),
-  primaryDelta: z.nativeEnum(PrimaryDelta),
-});
 
 const ThreadIntentAddSchema = z.object({
   text: z.string(),

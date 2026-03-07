@@ -27,7 +27,6 @@ import type {
   FinalPageGenerationResult,
   PageWriterResult,
 } from '../../../src/llm/index';
-import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { ThreadType, Urgency } from '../../../src/models/state/index';
 
 describe('llm barrel exports', () => {
@@ -158,18 +157,7 @@ describe('llm barrel exports', () => {
         forbiddenRecaps: [],
       },
       dramaticQuestion: 'Will you cross the bridge before it collapses?',
-      choiceIntents: [
-        {
-          hook: 'Sprint across the swaying bridge',
-          choiceType: ChoiceType.CONFRONTATION,
-          primaryDelta: PrimaryDelta.THREAT_SHIFT,
-        },
-        {
-          hook: 'Search for a safer crossing',
-          choiceType: ChoiceType.TACTICAL_APPROACH,
-          primaryDelta: PrimaryDelta.LOCATION_CHANGE,
-        },
-      ],
+      isEnding: false,
     };
     const plannerOpeningContext: OpeningPagePlanContext = {
       mode: 'opening',

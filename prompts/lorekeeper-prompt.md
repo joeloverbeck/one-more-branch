@@ -50,10 +50,6 @@ Scene Intent: {{pagePlan.sceneIntent}}
 Dramatic Question: {{pagePlan.dramaticQuestion}}
 Continuity Anchors:
 {{pagePlan.continuityAnchors as bullet list}}
-{{#if pagePlan.choiceIntents.length}}
-Choice Intents:
-{{pagePlan.choiceIntents as numbered list: "N. [choiceType / primaryDelta] hook"}}
-{{/if}}
 
 {{#if mentionedCharacters detected in planner text}}
 CHARACTERS REFERENCED IN THIS PLAN (must appear in relevantCharacters):
@@ -245,7 +241,7 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 
 ## Engine-Side Character Detection
 
-Before building the prompt, `detectMentionedCharacters(context)` scans all planner guidance fields (`sceneIntent`, `dramaticQuestion`, `continuityAnchors`, `choiceIntents[].hook`, `writerBrief.openingLineDirective`, `writerBrief.mustIncludeBeats`, `writerBrief.forbiddenRecaps`) for canonical character name tokens from `decomposedCharacters`. Parenthetical suffixes are stripped (e.g., `"Bobby Western (1972)"` -> `"Bobby Western"`), tokens shorter than 3 characters are filtered, and matching is case-insensitive via `String.includes()`. Matched character names are injected as a `CHARACTERS REFERENCED IN THIS PLAN` directive between the planner guidance and full story context sections. This ensures the Lorekeeper cannot omit characters that the planner explicitly referenced.
+Before building the prompt, `detectMentionedCharacters(context)` scans all planner guidance fields (`sceneIntent`, `dramaticQuestion`, `continuityAnchors`, `writerBrief.openingLineDirective`, `writerBrief.mustIncludeBeats`, `writerBrief.forbiddenRecaps`) for canonical character name tokens from `decomposedCharacters`. Parenthetical suffixes are stripped (e.g., `"Bobby Western (1972)"` -> `"Bobby Western"`), tokens shorter than 3 characters are filtered, and matching is case-insensitive via `String.includes()`. Matched character names are injected as a `CHARACTERS REFERENCED IN THIS PLAN` directive between the planner guidance and full story context sections. This ensures the Lorekeeper cannot omit characters that the planner explicitly referenced.
 
 ## Two-Source Synthesis
 

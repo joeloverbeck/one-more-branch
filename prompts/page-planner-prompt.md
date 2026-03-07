@@ -38,14 +38,12 @@ Your primary directive is authentic character portrayal and storytelling within 
 Plan the next page before prose generation.
 - You output machine-readable planning intents only.
 - You do not narrate the scene.
-- You propose a dramaticQuestion that the scene raises and choiceIntents as a blueprint for the writer's choices.
-- choiceIntents are suggestions, not final text. The writer may adjust wording and tags if the narrative warrants it.
-- Set isEnding to true ONLY when this scene should be the story's conclusion — the final resolution beat completing the story arc, a character death that ends the journey, or a natural story conclusion. When isEnding is true, choiceIntents must be an empty array. Default to false.
+- You propose a dramaticQuestion that the scene raises for the choice generator to answer.
+- Set isEnding to true ONLY when this scene should be the story's conclusion — the final resolution beat completing the story arc, a character death that ends the journey, or a natural story conclusion. Default to false.
 - Keep output deterministic and concise.
 - Consider NPC agendas and relationships when planning scenes. NPCs with active goals may initiate encounters, block the protagonist, or create complications based on their off-screen behavior. NPC-protagonist relationship dynamics (valence, tension, leverage) should inform how NPCs approach the protagonist.
 - When planning dialogue-heavy scenes, note which characters will speak and consider their distinct voices. The writer will receive full speech fingerprints for scene characters — your writerBrief.mustIncludeBeats can reference specific voice moments.
-- choiceIntents hooks must describe available actions from the PROTAGONIST's perspective. Never frame a choice as what another character does — always as what the protagonist can do, decide, or pursue.
-- When planning scenes, ensure the sceneIntent and at least one choiceIntent serve the protagonist's Need vs Want conflict from the spine. Choices that force the protagonist to choose between pursuing their Want and addressing their true Need create the most compelling dramatic tension.
+- When planning scenes, ensure the sceneIntent serves the protagonist's Need vs Want conflict from the spine.
 
 TONE RULE: Write your sceneIntent, writerBrief.openingLineDirective, mustIncludeBeats, and dramaticQuestion in a voice that reflects the TONE/GENRE. If the tone is comedic, your plan should read as witty and playful. If noir, terse and cynical. The writer will absorb your voice.
 ```
@@ -96,14 +94,7 @@ Return JSON only.
     "forbiddenRecaps": ["{{things writer must not recap}}"]
   },
   "dramaticQuestion": "{{single sentence framing the core tension the choices answer}}",
-  "isEnding": false,
-  "choiceIntents": [
-    {
-      "hook": "{{1-sentence description of what the PROTAGONIST can do or decide}}",
-      "choiceType": "{{TACTICAL_APPROACH|MORAL_DILEMMA|IDENTITY_EXPRESSION|RELATIONSHIP_SHIFT|RESOURCE_COMMITMENT|INVESTIGATION|PATH_DIVERGENCE|CONFRONTATION|AVOIDANCE_RETREAT}}",
-      "primaryDelta": "{{LOCATION_CHANGE|GOAL_SHIFT|RELATIONSHIP_CHANGE|URGENCY_CHANGE|ITEM_CONTROL|EXPOSURE_CHANGE|CONDITION_CHANGE|INFORMATION_REVEALED|THREAT_SHIFT|CONSTRAINT_CHANGE}}"
-    }
-  ]
+  "isEnding": false
 }
 ```
 
@@ -112,10 +103,10 @@ Return JSON only.
 A `PROTAGONIST IDENTITY` directive is always injected into the user message (both opening and continuation contexts), since decomposed characters are required on planner context types:
 
 ```text
-PROTAGONIST IDENTITY: {{protagonistName}} is the protagonist. All choiceIntents hooks must describe what {{protagonistName}} can do or decide — never what other characters do.
+PROTAGONIST IDENTITY: {{protagonistName}} is the protagonist.
 ```
 
-This prevents the planner from framing choice hooks from non-protagonist characters' perspectives (e.g., "Alicia offers to help" instead of "Accept Alicia's offer to help").
+This establishes who the protagonist is for scene planning purposes.
 
 Source: `buildPlannerOpeningContextSection()` and `buildPlannerContinuationContextSection()` in `src/llm/prompts/sections/planner/`
 
@@ -133,13 +124,13 @@ Incorporate this into your plan:
 - Shape the sceneIntent so the scene creates a natural moment for this speech
 - Include a must-include beat in writerBrief that reflects the protagonist voicing this intent
 - Consider how NPCs and the situation would react to this kind of statement
-- Let the speech intent influence at least one choiceIntent's consequences
+- Let the speech intent influence the scene's dramatic direction
 
 This is meaningful player input - plan around it, do not treat it as optional.
 {{/if}}
 ```
 
-This section is placed immediately before `PLAYER'S CHOICE:` in the planner context. The writer does **not** receive the suggested speech directly - instead, the planner shapes `sceneIntent`, `writerBrief.mustIncludeBeats`, and `choiceIntents` to incorporate the speech intent, and the writer follows those instructions.
+This section is placed immediately before `PLAYER'S CHOICE:` in the planner context. The writer does **not** receive the suggested speech directly - instead, the planner shapes `sceneIntent` and `writerBrief.mustIncludeBeats` to incorporate the speech intent, and the writer follows those instructions.
 
 ## Pacing Briefing
 
@@ -227,9 +218,9 @@ The active beat role is "escalation". This scene MUST raise stakes beyond the pr
 {{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
 {{#if activeBeat.escalationType}}Escalation mechanism: {{activeBeat.escalationType}} — plan a scene that delivers this specific type of escalation.{{/if}}
 {{#if activeBeat.secondaryEscalationType}}Secondary escalation mechanism: {{activeBeat.secondaryEscalationType}} — layer this as an additional pressure axis in the same scene.{{/if}}
-{{#if activeBeat.crisisType}}Crisis type: {{activeBeat.crisisType}} — shape choiceIntents so the dilemma matches this crisis form.{{/if}}
+{{#if activeBeat.crisisType}}Crisis type: {{activeBeat.crisisType}} — shape the scene so the dilemma matches this crisis form.{{/if}}
 {{#if activeBeat.uniqueScenarioHook}}Unique scenario hook: {{activeBeat.uniqueScenarioHook}}{{/if}}
-{{#if activeBeat.approachVectors}}Approach vectors: {{activeBeat.approachVectors joined by ', '}} — consider these when designing choiceIntents. Each choice should lean toward a different approach vector where possible.{{/if}}
+{{#if activeBeat.approachVectors}}Approach vectors: {{activeBeat.approachVectors joined by ', '}} — consider these when designing the scene's dramatic question.{{/if}}
 Requirements:
 - Introduce a new consequence, threat, or irreversible change not present before
 - The protagonist's situation must be measurably worse, more constrained, or more costly than before
@@ -242,9 +233,9 @@ The active beat role is "turning_point". This scene MUST deliver an irreversible
 {{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
 {{#if activeBeat.escalationType}}Turning point mechanism: {{activeBeat.escalationType}} — plan a scene that delivers this specific type of shift.{{/if}}
 {{#if activeBeat.secondaryEscalationType}}Secondary turning point mechanism: {{activeBeat.secondaryEscalationType}} — ensure the irreversible shift lands across both escalation axes.{{/if}}
-{{#if activeBeat.crisisType}}Crisis type: {{activeBeat.crisisType}} — shape choiceIntents so the pivotal decision matches this crisis form.{{/if}}
+{{#if activeBeat.crisisType}}Crisis type: {{activeBeat.crisisType}} — shape the scene so the pivotal decision matches this crisis form.{{/if}}
 {{#if activeBeat.uniqueScenarioHook}}Unique scenario hook: {{activeBeat.uniqueScenarioHook}}{{/if}}
-{{#if activeBeat.approachVectors}}Approach vectors: {{activeBeat.approachVectors joined by ', '}} — consider these when designing choiceIntents. Each choice should lean toward a different approach vector where possible.{{/if}}
+{{#if activeBeat.approachVectors}}Approach vectors: {{activeBeat.approachVectors joined by ', '}} — consider these when designing the scene's dramatic question.{{/if}}
 Requirements:
 - Create a point of no return — a decision, revelation, or consequence that cannot be undone
 - The protagonist's available options must fundamentally change after this scene
@@ -267,14 +258,14 @@ This beat is the structural midpoint. The scene should deliver a central reversa
 Midpoint type: {{activeBeat.midpointType}}
 - FALSE_VICTORY: apparent success that conceals cost, instability, or strategic error
 - FALSE_DEFEAT: apparent failure that plants leverage or insight for later recovery
-- Choice intents should force the protagonist to commit under the new understanding created by the midpoint turn
+- The scene should force the protagonist to commit under the new understanding created by the midpoint turn
 {{/if}}
 
 {{#if activeBeat.role === 'resolution' && isFinalBeatInFinalAct}}
 === FINAL RESOLUTION IMAGE DIRECTIVE ===
 This is the final resolution beat. Plan the scene so its climactic visual lands on or clearly sets up this closing image: "{{structure.closingImage}}"
 Ensure the closing image meaningfully mirrors or contrasts the opening image: "{{structure.openingImage}}".
-- The final choice intents should create pathways that can all credibly converge to this ending visual.
+- The scene should create pathways that can all credibly converge to this ending visual.
 {{/if}}
 ```
 
@@ -329,5 +320,5 @@ Source: `buildPendingConsequencesSection()` in `src/llm/prompts/sections/planner
 - Planner output no longer includes `stateIntents`; state mutation planning is handled by the state accountant stage.
 - Planner continuation context still includes active state, canon (with epistemic type tags when available, rendered via `formatCanonForPrompt()` as `• [TYPE] text`), thread aging, pacing briefing (natural-language directive from analyst, not raw enums), thematic trajectory warnings, NPC agendas, NPC relationships, and payoff feedback to inform scene and choice planning.
 - The planner and accountant share the same context builders (`buildPlannerOpeningContextSection`, `buildPlannerContinuationContextSection`) but with different options. The planner uses default options (protagonist directive and guidance included). The accountant passes `{ includeProtagonistDirective: false }` to exclude protagonist-specific sections. The `PlannerContextOptions` interface in `continuation-context.ts` controls this behavior.
-- Planner system-rule bullets, required output fields, and choice enum contracts are centralized in `src/llm/page-planner-contract.ts` and consumed by both prompt + schema layers.
+- Planner system-rule bullets and required output fields are centralized in `src/llm/page-planner-contract.ts` and consumed by both prompt + schema layers.
 - Decomposed character and world data are required on both opening and continuation planner contexts. Raw `characterConcept`, `worldbuilding`, and `npcs` fallbacks have been removed from planner context builders.

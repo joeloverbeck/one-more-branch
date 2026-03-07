@@ -2,7 +2,6 @@ import { generateChoices, mergePageWriterAndReconciledStateWithAnalystResults } 
 import type { ChoiceGeneratorResult } from '../llm/choice-generator-types';
 import type { PostGenerationMetrics, StageDegradation } from '../llm/generation-pipeline-types';
 import type { StoryBible } from '../llm/lorekeeper-types';
-import type { ChoiceIntent } from '../llm/planner-types';
 import type { PageWriterResult } from '../llm/writer-types';
 import { getDefaultPromptOptions } from '../llm/options.js';
 import {
@@ -58,7 +57,6 @@ export interface PostGenerationContext {
   readonly getLastStoryBible: () => StoryBible | null;
   readonly isEnding: boolean;
   readonly dramaticQuestion?: string;
-  readonly choiceIntents?: readonly ChoiceIntent[];
   readonly maxPageId: number | null;
   readonly choiceIndex: number | undefined;
   readonly onGenerationStage?: GenerationStageCallback;
@@ -110,7 +108,6 @@ export async function processPostGeneration(
     reconciliation,
     getLastStoryBible,
     dramaticQuestion,
-    choiceIntents,
     maxPageId,
     choiceIndex,
     onGenerationStage,
@@ -142,7 +139,6 @@ export async function processPostGeneration(
         sceneSummary: writerResult.sceneSummary,
         protagonistAffect: writerResult.protagonistAffect,
         dramaticQuestion,
-        choiceIntents: choiceIntents ?? [],
         spine: story.spine,
         activeState: isOpening
           ? {

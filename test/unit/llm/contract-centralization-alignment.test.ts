@@ -4,9 +4,6 @@ import {
   LOREKEEPER_REQUIRED_FIELDS,
 } from '../../../src/llm/lorekeeper-contract';
 import {
-  PAGE_PLANNER_CHOICE_INTENT_REQUIRED_FIELDS,
-  PAGE_PLANNER_CHOICE_TYPE_ENUM,
-  PAGE_PLANNER_PRIMARY_DELTA_ENUM,
   PAGE_PLANNER_PROMPT_RULES,
   PAGE_PLANNER_REQUIRED_FIELDS,
   PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS,
@@ -30,19 +27,10 @@ describe('contract centralization alignment', () => {
     const schema = PAGE_PLANNER_GENERATION_SCHEMA.json_schema.schema as Record<string, unknown>;
     const props = schema['properties'] as Record<string, unknown>;
     const writerBrief = props['writerBrief'] as Record<string, unknown>;
-    const choiceIntents = props['choiceIntents'] as Record<string, unknown>;
-    const choiceItem = choiceIntents['items'] as Record<string, unknown>;
-    const choiceProps = choiceItem['properties'] as Record<string, unknown>;
 
     expect(schema['required']).toEqual([...PAGE_PLANNER_REQUIRED_FIELDS]);
     expect(writerBrief['required']).toEqual([...PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS]);
-    expect(choiceItem['required']).toEqual([...PAGE_PLANNER_CHOICE_INTENT_REQUIRED_FIELDS]);
-    expect((choiceProps['choiceType'] as Record<string, unknown>)['enum']).toEqual(
-      PAGE_PLANNER_CHOICE_TYPE_ENUM
-    );
-    expect((choiceProps['primaryDelta'] as Record<string, unknown>)['enum']).toEqual(
-      PAGE_PLANNER_PRIMARY_DELTA_ENUM
-    );
+    expect(props).not.toHaveProperty('choiceIntents');
 
     const messages = buildPagePlannerPrompt({
       mode: 'opening',
@@ -96,6 +84,7 @@ describe('contract centralization alignment', () => {
         sceneIntent: 'Interrogate the dock clerk.',
         continuityAnchors: [],
         dramaticQuestion: 'Will the clerk reveal the shipment route?',
+        isEnding: false,
         writerBrief: {
           openingLineDirective: 'Start with flickering lights.',
           mustIncludeBeats: [],
@@ -111,7 +100,6 @@ describe('contract centralization alignment', () => {
           characterState: { add: [], removeIds: [] },
           canon: { worldAdd: [], characterAdd: [] },
         },
-        choiceIntents: [],
       },
     });
     const system = messages[0]?.content ?? '';

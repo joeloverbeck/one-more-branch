@@ -1,8 +1,4 @@
 import { z } from 'zod';
-import {
-  PAGE_PLANNER_REQUIRED_FIELDS,
-  PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS,
-} from '../page-planner-contract.js';
 import type { ReducedPagePlanGenerationResult } from '../planner-types.js';
 import { LLMError } from '../llm-client-types.js';
 import { PagePlannerResultSchema } from './page-planner-validation-schema.js';
@@ -91,29 +87,19 @@ export function validatePagePlannerResponse(
   }
 
   try {
-    const [sceneIntentField, continuityAnchorsField, writerBriefField, dramaticQuestionField] =
-      PAGE_PLANNER_REQUIRED_FIELDS;
-    const [openingLineDirectiveField, mustIncludeBeatsField, forbiddenRecapsField] =
-      PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS;
-
     return {
-      sceneIntent: trimRequiredField(validated, sceneIntentField),
-      continuityAnchors: normalizeStringArray(validated[continuityAnchorsField]),
+      sceneIntent: trimRequiredField(validated, 'sceneIntent'),
+      continuityAnchors: normalizeStringArray(validated.continuityAnchors),
       writerBrief: {
         openingLineDirective: trimRequiredField(
-          validated[writerBriefField],
-          openingLineDirectiveField
+          validated.writerBrief,
+          'openingLineDirective'
         ),
-        mustIncludeBeats: normalizeStringArray(validated[writerBriefField][mustIncludeBeatsField]),
-        forbiddenRecaps: normalizeStringArray(validated[writerBriefField][forbiddenRecapsField]),
+        mustIncludeBeats: normalizeStringArray(validated.writerBrief.mustIncludeBeats),
+        forbiddenRecaps: normalizeStringArray(validated.writerBrief.forbiddenRecaps),
       },
-      dramaticQuestion: trimRequiredField(validated, dramaticQuestionField),
+      dramaticQuestion: trimRequiredField(validated, 'dramaticQuestion'),
       isEnding: validated.isEnding,
-      choiceIntents: validated.choiceIntents.map((intent) => ({
-        hook: intent.hook.trim(),
-        choiceType: intent.choiceType,
-        primaryDelta: intent.primaryDelta,
-      })),
       rawResponse,
     };
   } catch (error) {

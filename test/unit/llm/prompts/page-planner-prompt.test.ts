@@ -115,14 +115,6 @@ describe('buildPagePlannerPrompt', () => {
     expect(user).toContain('Return JSON only.');
   });
 
-  it('includes protagonist perspective rule in system prompt', () => {
-    const messages = buildPagePlannerPrompt(openingContext);
-    const system = getSystemMessage(messages);
-
-    expect(system).toContain('PROTAGONIST');
-    expect(system).toContain('Never frame a choice as what another character does');
-  });
-
   it('includes PROTAGONIST IDENTITY directive in opening context with decomposed characters', () => {
     const contextWithDecomposed: OpeningPagePlanContext = {
       ...openingContext,
@@ -134,8 +126,7 @@ describe('buildPagePlannerPrompt', () => {
     const messages = buildPagePlannerPrompt(contextWithDecomposed);
     const user = getUserMessage(messages);
 
-    expect(user).toContain('PROTAGONIST IDENTITY: Jon Ureña');
-    expect(user).toContain('what Jon Ureña can do or decide');
+    expect(user).toContain('PROTAGONIST IDENTITY: Jon Ureña is the protagonist.');
   });
 
   it('omits PROTAGONIST IDENTITY directive in opening context with empty decomposed characters', () => {
@@ -160,8 +151,7 @@ describe('buildPagePlannerPrompt', () => {
     const messages = buildPagePlannerPrompt(contextWithDecomposed);
     const user = getUserMessage(messages);
 
-    expect(user).toContain('PROTAGONIST IDENTITY: Jon Ureña');
-    expect(user).toContain('what Jon Ureña can do or decide');
+    expect(user).toContain('PROTAGONIST IDENTITY: Jon Ureña is the protagonist.');
   });
 
   it('omits PROTAGONIST IDENTITY directive in continuation context with empty decomposed characters', () => {

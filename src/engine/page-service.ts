@@ -78,7 +78,6 @@ export async function generatePage(
     getLastStoryBible: ctx.writerWithLorekeeper.getLastStoryBible,
     isEnding: pagePlan.isEnding,
     dramaticQuestion: pagePlan.dramaticQuestion,
-    choiceIntents: pagePlan.choiceIntents,
     maxPageId: ctx.maxPageId,
     choiceIndex: ctx.choiceIndex,
     onGenerationStage,

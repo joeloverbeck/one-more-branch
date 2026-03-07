@@ -1318,7 +1318,7 @@ describe('buildEscalationDirective', () => {
 
     expect(result).toContain('Turning point mechanism: REVELATION_SHIFT');
     expect(result).toContain(
-      'Crisis type: IRRECONCILABLE_GOODS — shape choiceIntents so the pivotal decision matches this crisis form.'
+      'Crisis type: IRRECONCILABLE_GOODS — shape the scene so the pivotal decision matches this crisis form.'
     );
   });
 

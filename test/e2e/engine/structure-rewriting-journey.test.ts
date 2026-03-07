@@ -555,20 +555,6 @@ describe('Structure Rewriting Journey E2E', () => {
         },
         dramaticQuestion: 'Will you confront the danger or seek another path?',
         isEnding: isEndingPage,
-        choiceIntents: isEndingPage
-          ? []
-          : [
-              {
-                hook: 'Face the threat directly',
-                choiceType: 'CONFRONTATION',
-                primaryDelta: 'THREAT_SHIFT',
-              },
-              {
-                hook: 'Find an alternative route',
-                choiceType: 'TACTICAL_APPROACH',
-                primaryDelta: 'LOCATION_CHANGE',
-              },
-            ],
         rawResponse: 'page-plan',
       });
     });
