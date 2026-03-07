@@ -1924,9 +1924,8 @@ main {
 
 .choice-icon {
   display: block;
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
+  width: 45px;
+  height: 45px;
   border-radius: 4px;
 }
 
