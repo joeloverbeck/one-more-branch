@@ -27,6 +27,7 @@ export const LLM_STAGE_KEYS = [
   'structureRewrite',
   'spineRewrite',
   'contentOneShot',
+  'contentTasteDistiller',
 ] as const;
 
 export type LlmStage = (typeof LLM_STAGE_KEYS)[number];

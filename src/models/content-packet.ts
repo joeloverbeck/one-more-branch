@@ -98,6 +98,19 @@ export interface ContentEvaluation {
   readonly recommendedRole: ContentPacketRole;
 }
 
+// --- Taste distiller types ---
+
+export interface TasteDistillerContext {
+  readonly exemplarIdeas: readonly string[];
+  readonly moodOrGenre?: string;
+  readonly contentPreferences?: string;
+}
+
+export interface TasteDistillerResult {
+  readonly tasteProfile: TasteProfile;
+  readonly rawResponse: string;
+}
+
 // --- One-shot content generation types ---
 
 export interface ContentOneShotContext {

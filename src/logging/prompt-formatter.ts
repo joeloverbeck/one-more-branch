@@ -32,7 +32,8 @@ export type PromptType =
   | 'sceneIdeator'
   | 'choiceGenerator'
   | 'writer-choice-repair'
-  | 'contentOneShot';
+  | 'contentOneShot'
+  | 'contentTasteDistiller';
 
 const NOOP_PROMPT_SINK: PromptSink = {
   appendPrompt: () => Promise.resolve(),
