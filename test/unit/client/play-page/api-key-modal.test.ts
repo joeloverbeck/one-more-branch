@@ -40,7 +40,7 @@ describe('API key modal', () => {
         id: 2,
         narrativeText: 'Next page.',
         choices: [
-          { text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Continue', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
         ],
         isEnding: false,
         openThreads: [],
@@ -149,8 +149,8 @@ describe('API key modal', () => {
       choices: [
         {
           text: 'Explored path',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
           nextPageId: 5,
         },
       ],

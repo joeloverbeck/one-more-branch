@@ -8,7 +8,11 @@ import {
   extractResponseContent,
   parseMessageJsonContent,
 } from '../http-client.js';
-import { WRITER_CHOICE_TYPE_ENUM, WRITER_PRIMARY_DELTA_ENUM } from '../writer-contract.js';
+import {
+  WRITER_CHOICE_TYPE_ENUM,
+  WRITER_PRIMARY_DELTA_ENUM,
+  WRITER_CHOICE_SHAPE_ENUM,
+} from '../writer-contract.js';
 import type { GenerationObservabilityContext } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 
@@ -28,6 +32,8 @@ interface SupplementaryChoice {
   readonly text: string;
   readonly choiceType: string;
   readonly primaryDelta: string;
+  readonly choiceSubtype?: string;
+  readonly choiceShape?: string;
 }
 
 const SUPPLEMENTARY_CHOICES_SCHEMA = {
@@ -46,8 +52,21 @@ const SUPPLEMENTARY_CHOICES_SCHEMA = {
               text: { type: 'string' },
               choiceType: { type: 'string', enum: WRITER_CHOICE_TYPE_ENUM },
               primaryDelta: { type: 'string', enum: WRITER_PRIMARY_DELTA_ENUM },
+              choiceSubtype: { anyOf: [{ type: 'string' }, { type: 'null' }] },
+              choiceShape: {
+                anyOf: [
+                  { type: 'string', enum: WRITER_CHOICE_SHAPE_ENUM },
+                  { type: 'null' },
+                ],
+              },
             },
-            required: ['text', 'choiceType', 'primaryDelta'],
+            required: [
+              'text',
+              'choiceType',
+              'primaryDelta',
+              'choiceSubtype',
+              'choiceShape',
+            ],
             additionalProperties: false,
           },
         },
@@ -120,13 +139,17 @@ function isValidSupplementaryChoice(candidate: unknown): candidate is Supplement
   const text = obj['text'];
   const choiceType = obj['choiceType'];
   const primaryDelta = obj['primaryDelta'];
+  const choiceSubtype = obj['choiceSubtype'];
+  const choiceShape = obj['choiceShape'];
   return (
     typeof text === 'string' &&
     text.trim().length >= 3 &&
     typeof choiceType === 'string' &&
     CHOICE_TYPE_SET.has(choiceType) &&
     typeof primaryDelta === 'string' &&
-    PRIMARY_DELTA_SET.has(primaryDelta)
+    PRIMARY_DELTA_SET.has(primaryDelta) &&
+    (choiceSubtype === undefined || choiceSubtype === null || typeof choiceSubtype === 'string') &&
+    (choiceShape === undefined || choiceShape === null || typeof choiceShape === 'string')
   );
 }
 
@@ -147,6 +170,8 @@ export function validateSupplementaryResponse(
         text: candidate.text.trim(),
         choiceType: candidate.choiceType,
         primaryDelta: candidate.primaryDelta,
+        ...(candidate.choiceSubtype != null ? { choiceSubtype: candidate.choiceSubtype } : {}),
+        ...(candidate.choiceShape != null ? { choiceShape: candidate.choiceShape } : {}),
       });
     }
   }

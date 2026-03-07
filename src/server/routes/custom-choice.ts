@@ -43,12 +43,12 @@ export async function customChoiceHandler(req: Request, res: Response): Promise<
   const choiceType =
     rawChoiceType && CHOICE_TYPE_VALUES.includes(rawChoiceType as ChoiceType)
       ? (rawChoiceType as ChoiceType)
-      : ChoiceType.TACTICAL_APPROACH;
+      : ChoiceType.INTERVENE;
 
   const primaryDelta =
     rawPrimaryDelta && PRIMARY_DELTA_VALUES.includes(rawPrimaryDelta as PrimaryDelta)
       ? (rawPrimaryDelta as PrimaryDelta)
-      : PrimaryDelta.GOAL_SHIFT;
+      : PrimaryDelta.GOAL_PRIORITY_CHANGE;
 
   try {
     const updatedPage = await addChoice(

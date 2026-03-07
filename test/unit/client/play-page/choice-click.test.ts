@@ -54,8 +54,8 @@ describe('play page choice click handler', () => {
         id: 2,
         narrativeText: 'You went left and found a cave.',
         choices: [
-          { text: 'Enter the cave', choiceType: 'INVESTIGATION', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Walk away', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Enter the cave', choiceType: 'INVESTIGATE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+          { text: 'Walk away', choiceType: 'WITHDRAW', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
         ],
         isEnding: false,
         openThreads: [],
@@ -88,8 +88,8 @@ describe('play page choice click handler', () => {
       storyId: 'story-abc',
       pageId: 3,
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -117,8 +117,8 @@ describe('play page choice click handler', () => {
   it('updates narrative DOM on successful choice', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -131,7 +131,7 @@ describe('play page choice click handler', () => {
               id: 2,
               narrativeText: 'New story text here.',
               choices: [
-                { text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+                { text: 'Continue', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
               ],
               isEnding: false,
               openThreads: [],
@@ -154,8 +154,8 @@ describe('play page choice click handler', () => {
       storyId: 'story-xyz',
       pageId: 1,
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -175,8 +175,8 @@ describe('play page choice click handler', () => {
   it('updates act indicator on successful choice with actDisplayInfo', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -200,8 +200,8 @@ describe('play page choice click handler', () => {
   it('hides loading overlay after fetch completes', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -219,8 +219,8 @@ describe('play page choice click handler', () => {
   it('shows error message on failed response', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -245,8 +245,8 @@ describe('play page choice click handler', () => {
   it('renders ending banner when isEnding is true', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -282,11 +282,11 @@ describe('play page choice click handler', () => {
       choices: [
         {
           text: 'Explored path',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'GOAL_SHIFT',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
           nextPageId: 5,
         },
-        { text: 'New path', choiceType: 'MORAL_DILEMMA', primaryDelta: 'LOCATION_CHANGE' },
+        { text: 'New path', choiceType: 'COMMIT', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
       ],
     });
 
@@ -304,8 +304,8 @@ describe('play page choice click handler', () => {
   it('includes protagonistGuidance in body when provided', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -334,8 +334,8 @@ describe('play page choice click handler', () => {
   it('does not include protagonistGuidance when all fields are empty', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -356,8 +356,8 @@ describe('play page choice click handler', () => {
   it('clears protagonist guidance after generated response', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -385,8 +385,8 @@ describe('play page choice click handler', () => {
   it('renders state changes section on successful choice', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -399,7 +399,7 @@ describe('play page choice click handler', () => {
               id: 2,
               narrativeText: 'Story text.',
               choices: [
-                { text: 'Go on', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+                { text: 'Go on', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
               ],
               isEnding: false,
               openThreads: [],
@@ -422,8 +422,8 @@ describe('play page choice click handler', () => {
   it('renders deviation banner when deviation info is present', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 
@@ -454,8 +454,8 @@ describe('play page choice click handler', () => {
   it('does not stop loading prematurely when ideation path is taken', async () => {
     setupAndInit({
       choices: [
-        { text: 'Unexplored path', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-        { text: 'Another path', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Unexplored path', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+        { text: 'Another path', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
       ],
     });
 
@@ -527,8 +527,8 @@ describe('play page choice click handler', () => {
   it('removes scene-ideation-wrapper after full ideation-to-choice flow', async () => {
     setupAndInit({
       choices: [
-        { text: 'Unexplored path', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-        { text: 'Another path', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Unexplored path', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+        { text: 'Another path', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
       ],
     });
 
@@ -599,8 +599,8 @@ describe('play page choice click handler', () => {
   it('choice click works after #choices has been detached and restored', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
 

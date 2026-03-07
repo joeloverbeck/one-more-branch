@@ -35,7 +35,7 @@ describe('sidebar widgets container', () => {
       page: {
         id: 2,
         narrativeText: 'Story continues.',
-        choices: [{ text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 }],
+        choices: [{ text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 }],
         isEnding: false,
         openThreads: [],
         openThreadOverflowSummary: null,
@@ -79,8 +79,8 @@ describe('sidebar widgets container', () => {
   it('creates sidebar container when any widget has data', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
     loadAppAndInit();
@@ -100,7 +100,7 @@ describe('sidebar widgets container', () => {
     document.body.innerHTML = buildPlayPageHtml({
       activeThreats: [{ id: 'at-1', text: 'Existing threat' }],
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
       ],
     });
     loadAppAndInit();
@@ -120,8 +120,8 @@ describe('sidebar widgets container', () => {
   it('stacks all three widgets in correct order', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
     loadAppAndInit();
@@ -151,8 +151,8 @@ describe('sidebar widgets container', () => {
   it('handles mixed visibility (threads + constraints but no threats)', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
     loadAppAndInit();
@@ -180,8 +180,8 @@ describe('sidebar widgets container', () => {
   it('handles only threats visible', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
     loadAppAndInit();
@@ -203,8 +203,8 @@ describe('sidebar widgets container', () => {
   it('renders tracked promises panel with icon, type badge, and age', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
     loadAppAndInit();
@@ -236,7 +236,7 @@ describe('sidebar widgets container', () => {
     document.body.innerHTML = buildPlayPageHtml({
       trackedPromises: [{ id: 'pr-1', text: 'Old promise', promiseType: 'FORESHADOWING', scope: 'BEAT', age: 1, suggestedUrgency: 'LOW' }],
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
       ],
     });
     loadAppAndInit();

@@ -74,14 +74,14 @@ function buildTestFileData(overrides?: Partial<PageFileData>): PageFileData {
     choices: [
       {
         text: 'Choice A',
-        choiceType: ChoiceType.TACTICAL_APPROACH,
-        primaryDelta: PrimaryDelta.GOAL_SHIFT,
+        choiceType: ChoiceType.INTERVENE,
+        primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE,
         nextPageId: null,
       },
       {
         text: 'Choice B',
-        choiceType: ChoiceType.TACTICAL_APPROACH,
-        primaryDelta: PrimaryDelta.GOAL_SHIFT,
+        choiceType: ChoiceType.INTERVENE,
+        primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE,
         nextPageId: null,
       },
     ],
@@ -536,14 +536,14 @@ describe('page-serializer', () => {
         choices: [
           {
             text: 'First choice',
-            choiceType: ChoiceType.TACTICAL_APPROACH,
-            primaryDelta: PrimaryDelta.GOAL_SHIFT,
+            choiceType: ChoiceType.INTERVENE,
+            primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE,
             nextPageId: parsePageId(6),
           },
           {
             text: 'Second choice',
-            choiceType: ChoiceType.MORAL_DILEMMA,
-            primaryDelta: PrimaryDelta.RELATIONSHIP_CHANGE,
+            choiceType: ChoiceType.COMMIT,
+            primaryDelta: PrimaryDelta.RELATIONSHIP_ALIGNMENT_CHANGE,
             nextPageId: null,
           },
         ],

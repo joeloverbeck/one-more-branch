@@ -65,11 +65,11 @@ describe('custom choice input', () => {
 
     mockCustomChoiceResponse({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
         {
           text: 'Run away screaming',
-          choiceType: 'AVOIDANCE_RETREAT',
-          primaryDelta: 'LOCATION_CHANGE',
+          choiceType: 'WITHDRAW',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
         },
       ],
     });
@@ -85,8 +85,8 @@ describe('custom choice input', () => {
     const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
     expect(body.pageId).toBe(3);
     expect(body.choiceText).toBe('Run away screaming');
-    expect(body.choiceType).toBe('TACTICAL_APPROACH');
-    expect(body.primaryDelta).toBe('LOCATION_CHANGE');
+    expect(body.choiceType).toBe('INTERVENE');
+    expect(body.primaryDelta).toBe('LOCATION_ACCESS_CHANGE');
   });
 
   it('POSTs custom choice on Enter key', async () => {
@@ -97,11 +97,11 @@ describe('custom choice input', () => {
 
     mockCustomChoiceResponse({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
         {
           text: 'Negotiate peacefully',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'RELATIONSHIP_CHANGE',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'RELATIONSHIP_ALIGNMENT_CHANGE',
         },
       ],
     });
@@ -125,9 +125,9 @@ describe('custom choice input', () => {
 
     mockCustomChoiceResponse({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
-        { text: 'New choice', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+        { text: 'New choice', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
       ],
     });
 
@@ -197,11 +197,11 @@ describe('custom choice input', () => {
     // Change the select values
     const typeSelect = document.querySelector('.custom-choice-type') as HTMLSelectElement;
     const deltaSelect = document.querySelector('.custom-choice-delta') as HTMLSelectElement;
-    typeSelect.value = 'MORAL_DILEMMA';
-    deltaSelect.value = 'GOAL_SHIFT';
+    typeSelect.value = 'COMMIT';
+    deltaSelect.value = 'GOAL_PRIORITY_CHANGE';
 
     mockCustomChoiceResponse({
-      choices: [{ text: 'Custom action', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' }],
+      choices: [{ text: 'Custom action', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE' }],
     });
 
     getAddButton().click();
@@ -211,7 +211,7 @@ describe('custom choice input', () => {
       (call) => typeof call[0] === 'string' && call[0].includes('custom-choice')
     );
     const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
-    expect(body.choiceType).toBe('MORAL_DILEMMA');
-    expect(body.primaryDelta).toBe('GOAL_SHIFT');
+    expect(body.choiceType).toBe('COMMIT');
+    expect(body.primaryDelta).toBe('GOAL_PRIORITY_CHANGE');
   });
 });

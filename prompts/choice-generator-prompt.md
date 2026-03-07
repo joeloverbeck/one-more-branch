@@ -103,13 +103,15 @@ RELEVANT HISTORY:
 
 REQUIREMENTS:
 1. Generate 2-4 structured choice objects (typically 3; add a 4th only when the situation truly warrants another distinct path)
-2. Each choice MUST have a different choiceType OR primaryDelta from all other choices
+2. No two choices may share both the same choiceType AND the same primaryDelta. For 3-choice sets: at least 2 unique action families and 3 unique primary deltas. For 4-choice sets: at least 3 unique action families and 3 unique primary deltas
 3. Choices must flow from the scene's final dramatic beat - reference specific moments from the narrative
 4. Start each choice text with a clear action verb (e.g., "Demand", "Flee", "Accept")
 5. Do NOT offer a choice that repeats what already happened in the scene
 6. Do NOT offer choices that prematurely close off open narrative threads unless dramatically appropriate
 7. Each choice should present a meaningfully different path that changes the story's direction
 8. Choices must be in-character for the protagonist given their personality and emotional state
+9. Optionally provide choiceSubtype (free-text like "CONFESSION", "BARGAIN") for nuance
+10. Optionally provide choiceShape (RELAXED|OBVIOUS|TRADEOFF|DILEMMA|GAMBLE|TEMPTATION|SACRIFICE|FLAVOR) for pressure type
 
 WHEN IN CONFLICT, PRIORITIZE:
 1. Choices answer the dramatic question with divergent tags
@@ -124,8 +126,10 @@ WHEN IN CONFLICT, PRIORITIZE:
   "choices": [
     {
       "text": "{{verb-first player choice text, 3-500 chars}}",
-      "choiceType": "{{TACTICAL_APPROACH|MORAL_DILEMMA|IDENTITY_EXPRESSION|RELATIONSHIP_SHIFT|RESOURCE_COMMITMENT|INVESTIGATION|PATH_DIVERGENCE|CONFRONTATION|AVOIDANCE_RETREAT}}",
-      "primaryDelta": "{{LOCATION_CHANGE|GOAL_SHIFT|RELATIONSHIP_CHANGE|URGENCY_CHANGE|ITEM_CONTROL|EXPOSURE_CHANGE|CONDITION_CHANGE|INFORMATION_REVEALED|THREAT_SHIFT|CONSTRAINT_CHANGE}}"
+      "choiceType": "{{INVESTIGATE|REVEAL|PERSUADE|CONNECT|DECEIVE|CONTEST|COMMIT|INTERVENE|NAVIGATE|WITHDRAW|SUBMIT}}",
+      "primaryDelta": "{{LOCATION_ACCESS_CHANGE|GOAL_PRIORITY_CHANGE|RELATIONSHIP_ALIGNMENT_CHANGE|TIME_PRESSURE_CHANGE|RESOURCE_CONTROL_CHANGE|INFORMATION_STATE_CHANGE|SECRECY_EXPOSURE_CHANGE|CONDITION_STATUS_CHANGE|THREAT_LEVEL_CHANGE|OBLIGATION_RULE_CHANGE|POWER_AUTHORITY_CHANGE|IDENTITY_REPUTATION_CHANGE}}",
+      "choiceSubtype": "{{optional free-text subtype or null}}",
+      "choiceShape": "{{RELAXED|OBVIOUS|TRADEOFF|DILEMMA|GAMBLE|TEMPTATION|SACRIFICE|FLAVOR or null}}"
     }
   ]
 }
@@ -134,13 +138,17 @@ WHEN IN CONFLICT, PRIORITIZE:
 - `choices` array: 2-4 items, validated by Zod schema
 - Each choice text: 3-500 characters, trimmed, must be unique (case-insensitive)
 - Each choice must have a valid `choiceType` and `primaryDelta` enum value
+- `choiceSubtype` is optional (free-text string or null)
+- `choiceShape` is optional (one of 8 `ChoiceShape` enum values or null)
 
 ## Validation
 
 The Zod validation schema enforces:
 - 2-5 choices in the array
 - Text length 3-500 characters per choice
-- Valid `ChoiceType` and `PrimaryDelta` enum values
+- Valid `ChoiceType` (11 values) and `PrimaryDelta` (12 values) enum values
+- Optional `choiceSubtype` (string, nullable)
+- Optional `choiceShape` (ChoiceShape enum, nullable)
 - Unique choice text (case-insensitive deduplication)
 
 ## Repair Pipelines

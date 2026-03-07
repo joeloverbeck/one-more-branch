@@ -194,6 +194,8 @@ export interface PageFileData {
     choiceType: string;
     primaryDelta: string;
     nextPageId: number | null;
+    choiceSubtype?: string;
+    choiceShape?: string;
   }>;
   activeStateChanges: {
     newLocation: string | null;

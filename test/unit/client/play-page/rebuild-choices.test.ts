@@ -54,8 +54,8 @@ describe('rebuildChoicesSection', () => {
     expect(document.querySelector('.custom-choice-enums')).not.toBeNull();
 
     const newChoices = [
-      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Option B', choiceType: 'MORAL_DILEMMA', primaryDelta: 'LOCATION_CHANGE' },
+      { text: 'Option A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Option B', choiceType: 'COMMIT', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
     ];
     mockCustomChoiceSuccess(newChoices);
 
@@ -73,7 +73,7 @@ describe('rebuildChoicesSection', () => {
   it('replaces choice buttons with new choices', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Original A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+        { text: 'Original A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
       ],
     });
     loadAppAndInit();
@@ -83,9 +83,9 @@ describe('rebuildChoicesSection', () => {
     expect(originalButtons[0].querySelector('.choice-text')?.textContent).toBe('Original A');
 
     mockCustomChoiceSuccess([
-      { text: 'Replaced A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Replaced B', choiceType: 'MORAL_DILEMMA', primaryDelta: 'LOCATION_CHANGE' },
-      { text: 'Replaced C', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Replaced A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Replaced B', choiceType: 'COMMIT', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+      { text: 'Replaced C', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ]);
 
     const input = document.querySelector('.custom-choice-input') as HTMLInputElement;
@@ -113,7 +113,7 @@ describe('rebuildChoicesSection', () => {
     speechInput.value = 'I shall speak!';
 
     mockCustomChoiceSuccess([
-      { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
     ]);
 
     const input = document.querySelector('.custom-choice-input') as HTMLInputElement;
@@ -144,8 +144,8 @@ describe('rebuildChoicesSection', () => {
     expect(choicesSection.querySelector('#choices')).toBeNull();
 
     const newChoices = [
-      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Option B', choiceType: 'MORAL_DILEMMA', primaryDelta: 'LOCATION_CHANGE' },
+      { text: 'Option A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Option B', choiceType: 'COMMIT', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
     ];
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('custom-choice')) {
@@ -181,8 +181,8 @@ describe('rebuildChoicesSection', () => {
     expect(choicesSection.querySelector('.scene-ideation-wrapper')).not.toBeNull();
 
     const newChoices = [
-      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Option B', choiceType: 'MORAL_DILEMMA', primaryDelta: 'LOCATION_CHANGE' },
+      { text: 'Option A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Option B', choiceType: 'COMMIT', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
     ];
     mockCustomChoiceSuccess(newChoices);
 
@@ -205,7 +205,7 @@ describe('rebuildChoicesSection', () => {
 
     // First rebuild
     mockCustomChoiceSuccess([
-      { text: 'First', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'First', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
     ]);
 
     const input1 = document.querySelector('.custom-choice-input') as HTMLInputElement;
@@ -219,8 +219,8 @@ describe('rebuildChoicesSection', () => {
 
     // After rebuild, the new input+button should be functional
     mockCustomChoiceSuccess([
-      { text: 'First', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Second', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
+      { text: 'First', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Second', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
     ]);
 
     const input2 = document.querySelector('.custom-choice-input') as HTMLInputElement;

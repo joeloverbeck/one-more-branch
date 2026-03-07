@@ -6,11 +6,19 @@
       var choiceText = typeof choice.text === 'string' ? choice.text : '';
       var choiceType = typeof choice.choiceType === 'string' ? choice.choiceType : '';
       var primaryDelta = typeof choice.primaryDelta === 'string' ? choice.primaryDelta : '';
+      var choiceSubtype = typeof choice.choiceSubtype === 'string' ? choice.choiceSubtype : '';
+      var choiceShape = typeof choice.choiceShape === 'string' ? choice.choiceShape : '';
 
       var typeIconPath = getIconPath(choiceType);
       var deltaIconPath = getIconPath(primaryDelta);
       var typeLabel = CHOICE_TYPE_LABEL_MAP[choiceType] || '';
       var deltaLabel = PRIMARY_DELTA_LABEL_MAP[primaryDelta] || '';
+      var shapeLabel = CHOICE_SHAPE_LABEL_MAP[choiceShape] || '';
+
+      var tooltipParts = [typeLabel, deltaLabel];
+      if (choiceSubtype) { tooltipParts.push(choiceSubtype); }
+      if (shapeLabel) { tooltipParts.push(shapeLabel); }
+      var tooltipText = tooltipParts.filter(Boolean).join(' / ');
 
       var pillHtml = '';
       if (typeIconPath || deltaIconPath) {
@@ -32,14 +40,19 @@
         pillHtml += '</span>';
       }
 
+      var shapeCssClass = choiceShape ? ' choice-shape--' + escapeHtml(choiceShape.toLowerCase()) : '';
+
       return '<div class="choice-row">'
         + pillHtml
         + '<button'
-        + ' class="choice-btn"'
+        + ' class="choice-btn' + shapeCssClass + '"'
         + ' data-choice-index="' + index + '"'
         + ' data-choice-type="' + escapeHtml(choiceType) + '"'
         + ' data-primary-delta="' + escapeHtml(primaryDelta) + '"'
+        + (choiceSubtype ? ' data-choice-subtype="' + escapeHtml(choiceSubtype) + '"' : '')
+        + (choiceShape ? ' data-choice-shape="' + escapeHtml(choiceShape) + '"' : '')
         + (isExplored ? ' data-explored="true"' : '')
+        + (tooltipText ? ' title="' + escapeHtml(tooltipText) + '"' : '')
         + '>'
         + '<span class="choice-text">' + escapeHtml(choiceText) + '</span>'
         + '</button>'

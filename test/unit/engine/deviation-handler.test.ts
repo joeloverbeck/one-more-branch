@@ -55,8 +55,8 @@ function createMockResult(hasDeviation: boolean): ContinuationGenerationResult {
   return {
     narrative: 'Test narrative',
     choices: [
-      { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Choice A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Choice B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ],
     stateChangesAdded: [],
     stateChangesRemoved: [],

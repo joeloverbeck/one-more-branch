@@ -134,7 +134,7 @@ describe('story lore modal', () => {
 
   it('renders tagged CanonFact objects received via AJAX choice response', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      choices: [{ text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT', nextPageId: 2 }],
+      choices: [{ text: 'Continue', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 2 }],
     });
     loadAppAndInit();
 
@@ -147,7 +147,7 @@ describe('story lore modal', () => {
             id: 2,
             narrativeText: 'A new scene.',
             sceneSummary: 'Summary',
-            choices: [{ text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
+            choices: [{ text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' }],
             isEnding: false,
             analystResult: null,
             openThreads: [],
@@ -212,7 +212,7 @@ describe('story lore modal', () => {
 
   it('updates lore count/content from choice response and keeps trigger at sidebar bottom', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      choices: [{ text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT', nextPageId: 2 }],
+      choices: [{ text: 'Continue', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 2 }],
     });
     loadAppAndInit();
 
@@ -225,7 +225,7 @@ describe('story lore modal', () => {
             id: 2,
             narrativeText: 'A new branch unfolds.',
             sceneSummary: 'Summary',
-            choices: [{ text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' }],
+            choices: [{ text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' }],
             isEnding: false,
             analystResult: null,
             openThreads: [],

@@ -96,9 +96,9 @@ describe('Active state pipeline integration', () => {
 
     // Step 3: Build page via page-builder (choices come from choice generator, not writer)
     const choices = [
-      { text: 'Rush to save the innkeeper', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT },
-      { text: 'Flee through the back door', choiceType: ChoiceType.AVOIDANCE_RETREAT, primaryDelta: PrimaryDelta.LOCATION_CHANGE },
-      { text: 'Search for water', choiceType: ChoiceType.INVESTIGATION, primaryDelta: PrimaryDelta.INFORMATION_REVEALED },
+      { text: 'Rush to save the innkeeper', choiceType: ChoiceType.INTERVENE, primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE },
+      { text: 'Flee through the back door', choiceType: ChoiceType.WITHDRAW, primaryDelta: PrimaryDelta.LOCATION_ACCESS_CHANGE },
+      { text: 'Search for water', choiceType: ChoiceType.INVESTIGATE, primaryDelta: PrimaryDelta.INFORMATION_STATE_CHANGE },
     ];
     const context = createEmptyStructureContext();
     const page = buildFirstPage(
@@ -219,8 +219,8 @@ describe('Active state pipeline integration', () => {
       ...generationResult,
       ...reconciliation,
       choices: [
-        { text: 'Option A', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT },
-        { text: 'Option B', choiceType: ChoiceType.INVESTIGATION, primaryDelta: PrimaryDelta.INFORMATION_REVEALED },
+        { text: 'Option A', choiceType: ChoiceType.INTERVENE, primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE },
+        { text: 'Option B', choiceType: ChoiceType.INVESTIGATE, primaryDelta: PrimaryDelta.INFORMATION_STATE_CHANGE },
       ],
     }, context);
 

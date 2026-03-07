@@ -25,8 +25,8 @@ jest.mock('@/llm', () => ({
   generateStateAccountant: jest.fn(),
   generateChoices: jest.fn().mockResolvedValue({
     choices: [
-      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Option A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Option B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ],
     rawResponse: '{}',
   }),
@@ -315,13 +315,13 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       createMockPageWriterResult({
         narrative: 'You find yourself in a dark forest...',
         choices: [
-          { text: 'Enter the cave', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Enter the cave', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
           {
             text: 'Follow the path',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
           },
-          { text: 'Climb a tree', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Climb a tree', choiceType: 'NAVIGATE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
         ],
         protagonistAffect: createMockProtagonistAffect({
           primaryEmotion: 'curious',
@@ -369,8 +369,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       createMockPageWriterResult({
         narrative: 'Initial narrative...',
         choices: [
-          { text: 'Choice A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Choice B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          { text: 'Choice A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+          { text: 'Choice B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
         ],
         protagonistAffect: createMockProtagonistAffect({
           primaryEmotion: 'neutral',
@@ -417,11 +417,11 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       createMockPageWriterResult({
         narrative: 'You chose wisely...',
         choices: [
-          { text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Continue', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
           {
             text: 'Inspect surroundings',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
           },
         ],
         protagonistAffect: createMockProtagonistAffect({
@@ -493,8 +493,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       createMockPageWriterResult({
         narrative: 'Start...',
         choices: [
-          { text: 'Go', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Wait', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          { text: 'Go', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+          { text: 'Wait', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
         ],
         protagonistAffect: createMockProtagonistAffect({
           primaryEmotion: 'ready',
@@ -541,8 +541,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       createMockPageWriterResult({
         narrative: 'Page 2 content...',
         choices: [
-          { text: 'Next', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Turn back', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          { text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+          { text: 'Turn back', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
         ],
         protagonistAffect: createMockProtagonistAffect({
           primaryEmotion: 'determined',
@@ -658,8 +658,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       createMockPageWriterResult({
         narrative: 'Opening scene with multiple active threads.',
         choices: [
-          { text: 'Advance', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Investigate', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          { text: 'Advance', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+          { text: 'Investigate', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
         ],
         protagonistAffect: createMockProtagonistAffect({
           primaryEmotion: 'concerned',
@@ -745,8 +745,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       createMockPageWriterResult({
         narrative: 'Continuation updates open threads.',
         choices: [
-          { text: 'Press on', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'Reassess', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+          { text: 'Press on', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+          { text: 'Reassess', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
         ],
         protagonistAffect: createMockProtagonistAffect({
           primaryEmotion: 'focused',

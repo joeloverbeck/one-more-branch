@@ -29,8 +29,8 @@ function buildMockGenerationResult(
   return {
     narrative: 'You step into the shadowed corridor.',
     choices: [
-      { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Go right', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Go right', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ],
     currentLocation: 'Shadowed corridor',
     threatsAdded: [],

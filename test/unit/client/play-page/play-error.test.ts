@@ -65,8 +65,8 @@ describe('showPlayError and clearPlayError', () => {
     document.body.innerHTML = buildPlayPageHtml({
       hasCustomChoiceInput: false,
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
     loadAppAndInit();
@@ -118,7 +118,7 @@ describe('showPlayError and clearPlayError', () => {
         return Promise.resolve(
           mockJsonResponse({
             choices: [
-              { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+              { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
             ],
           })
         );
@@ -139,8 +139,8 @@ describe('showPlayError and clearPlayError', () => {
   it('clears error before choice click', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
     loadAppAndInit();
@@ -171,7 +171,7 @@ describe('showPlayError and clearPlayError', () => {
             id: 2,
             narrativeText: 'Next page.',
             choices: [
-              { text: 'Continue', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+              { text: 'Continue', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
             ],
             isEnding: false,
             openThreads: [],

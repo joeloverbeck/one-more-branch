@@ -25,8 +25,8 @@ jest.mock('@/llm', () => ({
   generateStateAccountant: jest.fn(),
   generateChoices: jest.fn().mockResolvedValue({
     choices: [
-      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Option A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Option B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ],
     rawResponse: '{}',
   }),
@@ -183,13 +183,13 @@ const openingResult = createMockFinalResult({
   choices: [
     {
       text: 'Follow the mirrored stars',
-      choiceType: 'TACTICAL_APPROACH',
-      primaryDelta: 'GOAL_SHIFT',
+      choiceType: 'INTERVENE',
+      primaryDelta: 'GOAL_PRIORITY_CHANGE',
     },
     {
       text: 'Consult the archivist',
-      choiceType: 'INVESTIGATION',
-      primaryDelta: 'INFORMATION_REVEALED',
+      choiceType: 'INVESTIGATE',
+      primaryDelta: 'INFORMATION_STATE_CHANGE',
     },
   ],
   protagonistAffect: createMockProtagonistAffect({
@@ -216,11 +216,11 @@ const writerResult = createMockFinalResult({
   narrative:
     'You pursue the mirrored stars along the embankment until engraved mile markers begin counting backward and a hidden gate rises from the riverbank.',
   choices: [
-    { text: 'Open the hidden gate', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+    { text: 'Open the hidden gate', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
     {
       text: 'Mark the location and retreat',
-      choiceType: 'INVESTIGATION',
-      primaryDelta: 'INFORMATION_REVEALED',
+      choiceType: 'INVESTIGATE',
+      primaryDelta: 'INFORMATION_STATE_CHANGE',
     },
   ],
   protagonistAffect: createMockProtagonistAffect({

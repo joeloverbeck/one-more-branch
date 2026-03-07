@@ -53,8 +53,8 @@ jest.mock('../../../src/llm', () => ({
   generateLorekeeperBible: jest.fn(),
   generateChoices: jest.fn().mockResolvedValue({
     choices: [
-      { text: 'Option A', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Option B', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'Option A', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Option B', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ],
     rawResponse: '{}',
   }),
@@ -357,13 +357,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Circle around the patrol',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Hold position and observe',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
           },
         ],
         currentLocation: 'Collapsed archway',
@@ -570,13 +570,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Hide in the print shop',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Bribe a gate sergeant',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'EXPOSURE_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'SECRECY_EXPOSURE_CHANGE',
           },
         ],
         currentLocation: 'The capital square at dusk',
@@ -646,13 +646,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Shadow the patrol',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'THREAT_SHIFT',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'THREAT_LEVEL_CHANGE',
           },
           {
             text: 'Slip into the market crowd',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
         ],
         currentLocation: 'Occupied district',
@@ -753,13 +753,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Duck into a cellar',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Blend with the crowd',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'EXPOSURE_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'SECRECY_EXPOSURE_CHANGE',
           },
         ],
         currentLocation: 'Shadowed alleyway',
@@ -888,13 +888,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Hide in the print shop',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Bribe a gate sergeant',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'EXPOSURE_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'SECRECY_EXPOSURE_CHANGE',
           },
         ],
         currentLocation: 'The capital square at dusk',
@@ -961,13 +961,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Head to the safe house',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Scout the perimeter',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
           },
         ],
         currentLocation: 'Inside the city walls',
@@ -1009,8 +1009,8 @@ describe('page-service', () => {
       mockedGenerateOpeningPage.mockResolvedValue({
         narrative: 'You begin your journey.',
         choices: [
-          { text: 'Go north', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Go south', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Go north', choiceType: 'NAVIGATE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+          { text: 'Go south', choiceType: 'NAVIGATE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
         ],
         currentLocation: 'The starting point',
         threatsAdded: [],
@@ -1065,13 +1065,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Cut through the foundry',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Blend into the queue',
             choiceType: 'SOCIAL_MANIPULATION',
-            primaryDelta: 'EXPOSURE_CHANGE',
+            primaryDelta: 'SECRECY_EXPOSURE_CHANGE',
           },
         ],
         currentLocation: 'Checkpoint approach',
@@ -1202,13 +1202,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Cut through the market',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Climb to the roofs',
-            choiceType: 'PATH_DIVERGENCE',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'NAVIGATE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
         ],
         currentLocation: 'Crowded market lane',
@@ -1331,8 +1331,8 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'Dust rises as you open the ledger.',
         choices: [
-          { text: 'Copy names', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-          { text: 'Hide evidence', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Copy names', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
+          { text: 'Hide evidence', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
         ],
         currentLocation: 'Archive office',
         threatsAdded: [],
@@ -1470,13 +1470,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Leap to the clocktower',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Drop into the market canopy',
-            choiceType: 'PATH_DIVERGENCE',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'NAVIGATE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
         ],
         currentLocation: 'Rooftops above the market district',
@@ -1628,13 +1628,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Enter the archive corridor',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Detour to the guard locker',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
           },
         ],
         currentLocation: 'Inside the censors bureau',
@@ -1743,11 +1743,11 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'The chamber erupts, but your accusation remains ambiguous and contestable.',
         choices: [
-          { text: 'Name names now', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Name names now', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
           {
             text: 'Retreat and regroup',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
         ],
         currentLocation: 'Council chamber',
@@ -1857,13 +1857,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Proceed to archive wing',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Hold position',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
           },
         ],
         currentLocation: 'Archive threshold',
@@ -1963,13 +1963,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Face retaliation head-on',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'THREAT_SHIFT',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'THREAT_LEVEL_CHANGE',
           },
           {
             text: 'Seek immediate sanctuary',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
         ],
         currentLocation: 'Council chamber',
@@ -2070,13 +2070,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Keep watching',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
           },
           {
             text: 'Create a distraction',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'THREAT_SHIFT',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'THREAT_LEVEL_CHANGE',
           },
         ],
         currentLocation: 'Hidden near the archive gate',
@@ -2181,13 +2181,13 @@ describe('page-service', () => {
           choices: [
             {
               text: 'Head for ledger room',
-              choiceType: 'TACTICAL_APPROACH',
-              primaryDelta: 'LOCATION_CHANGE',
+              choiceType: 'INTERVENE',
+              primaryDelta: 'LOCATION_ACCESS_CHANGE',
             },
             {
               text: 'Plant false records',
-              choiceType: 'TACTICAL_APPROACH',
-              primaryDelta: 'EXPOSURE_CHANGE',
+              choiceType: 'INTERVENE',
+              primaryDelta: 'SECRECY_EXPOSURE_CHANGE',
             },
           ],
           currentLocation: 'Inside the bureau',
@@ -2221,10 +2221,10 @@ describe('page-service', () => {
           choices: [
             {
               text: 'Create diversion',
-              choiceType: 'TACTICAL_APPROACH',
-              primaryDelta: 'THREAT_SHIFT',
+              choiceType: 'INTERVENE',
+              primaryDelta: 'THREAT_LEVEL_CHANGE',
             },
-            { text: 'Withdraw', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+            { text: 'Withdraw', choiceType: 'WITHDRAW', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
           ],
           currentLocation: 'Hidden observation post',
           threatsAdded: [],
@@ -2369,13 +2369,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Continue forward',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Take alternate route',
-            choiceType: 'PATH_DIVERGENCE',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'NAVIGATE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
         ],
         currentLocation: 'Shadow corridor',
@@ -2519,13 +2519,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Take command posting',
-            choiceType: 'IDENTITY_EXPRESSION',
-            primaryDelta: 'GOAL_SHIFT',
+            choiceType: 'REVEAL',
+            primaryDelta: 'GOAL_PRIORITY_CHANGE',
           },
           {
             text: 'Return as double agent',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'EXPOSURE_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'SECRECY_EXPOSURE_CHANGE',
           },
         ],
         currentLocation: 'Imperial command hall',
@@ -2734,10 +2734,10 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Continue forward',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
-          { text: 'Turn back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Turn back', choiceType: 'WITHDRAW', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
         ],
         currentLocation: 'Left passage in the archive',
         threatsAdded: [],
@@ -2885,13 +2885,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Take command posting',
-            choiceType: 'IDENTITY_EXPRESSION',
-            primaryDelta: 'GOAL_SHIFT',
+            choiceType: 'REVEAL',
+            primaryDelta: 'GOAL_PRIORITY_CHANGE',
           },
           {
             text: 'Return as double agent',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'EXPOSURE_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'SECRECY_EXPOSURE_CHANGE',
           },
         ],
         currentLocation: 'Imperial command hall',
@@ -2992,10 +2992,10 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Embrace new life',
-            choiceType: 'IDENTITY_EXPRESSION',
-            primaryDelta: 'GOAL_SHIFT',
+            choiceType: 'REVEAL',
+            primaryDelta: 'GOAL_PRIORITY_CHANGE',
           },
-          { text: 'Second thoughts', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT' },
+          { text: 'Second thoughts', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
         ],
         currentLocation: 'The aftermath of betrayal',
         threatsAdded: [
@@ -3098,8 +3098,8 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You continue on your path.',
         choices: [
-          { text: 'Keep going', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Rest', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'CONDITION_CHANGE' },
+          { text: 'Keep going', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+          { text: 'Rest', choiceType: 'WITHDRAW', primaryDelta: 'CONDITION_STATUS_CHANGE' },
         ],
         currentLocation: 'The road ahead',
         threatsAdded: [],
@@ -3205,8 +3205,8 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You slip through the gap in the fence.',
         choices: [
-          { text: 'Head left', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
-          { text: 'Head right', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'Head left', choiceType: 'NAVIGATE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+          { text: 'Head right', choiceType: 'NAVIGATE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
         ],
         currentLocation: 'Inside the compound',
         threatsAdded: [],
@@ -3314,13 +3314,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Approach the gate',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
           {
             text: 'Camp outside',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
         ],
         currentLocation: 'Village outskirts',
@@ -3381,10 +3381,10 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Search the desk',
-            choiceType: 'INVESTIGATION',
-            primaryDelta: 'INFORMATION_REVEALED',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
           },
-          { text: 'Check the safe', choiceType: 'INVESTIGATION', primaryDelta: 'ITEM_CONTROL' },
+          { text: 'Check the safe', choiceType: 'INVESTIGATE', primaryDelta: 'RESOURCE_CONTROL_CHANGE' },
         ],
         currentLocation: 'Inside the warehouse office',
         threatsAdded: [],
@@ -3466,10 +3466,10 @@ describe('page-service', () => {
           choices: [
             {
               text: 'Open the door',
-              choiceType: 'TACTICAL_APPROACH',
-              primaryDelta: 'LOCATION_CHANGE',
+              choiceType: 'INTERVENE',
+              primaryDelta: 'LOCATION_ACCESS_CHANGE',
             },
-            { text: 'Turn back', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },
+            { text: 'Turn back', choiceType: 'WITHDRAW', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
           ],
           currentLocation: 'A dim corridor',
           threatsAdded: [],
@@ -3700,13 +3700,13 @@ describe('page-service', () => {
           choices: [
             {
               text: 'Accept posting',
-              choiceType: 'IDENTITY_EXPRESSION',
-              primaryDelta: 'GOAL_SHIFT',
+              choiceType: 'REVEAL',
+              primaryDelta: 'GOAL_PRIORITY_CHANGE',
             },
             {
               text: 'Go underground',
-              choiceType: 'AVOIDANCE_RETREAT',
-              primaryDelta: 'LOCATION_CHANGE',
+              choiceType: 'WITHDRAW',
+              primaryDelta: 'LOCATION_ACCESS_CHANGE',
             },
           ],
           currentLocation: 'The defection point',
@@ -3862,13 +3862,13 @@ describe('page-service', () => {
         choices: [
           {
             text: 'Signal the contact',
-            choiceType: 'TACTICAL_APPROACH',
-            primaryDelta: 'RELATIONSHIP_CHANGE',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'RELATIONSHIP_ALIGNMENT_CHANGE',
           },
           {
             text: 'Circle back to the docks',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'LOCATION_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
           },
         ],
         currentLocation: 'The tavern cellar entrance',
@@ -3973,11 +3973,11 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You wait in silence until the patrol passes.',
         choices: [
-          { text: 'Move now', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'URGENCY_CHANGE' },
+          { text: 'Move now', choiceType: 'INTERVENE', primaryDelta: 'TIME_PRESSURE_CHANGE' },
           {
             text: 'Wait longer',
-            choiceType: 'AVOIDANCE_RETREAT',
-            primaryDelta: 'CONDITION_CHANGE',
+            choiceType: 'WITHDRAW',
+            primaryDelta: 'CONDITION_STATUS_CHANGE',
           },
         ],
         currentLocation: 'Hidden in the shadows',
@@ -4174,8 +4174,8 @@ describe('page-service', () => {
       mockedGenerateWriterPage.mockResolvedValue({
         narrative: 'You deviate from the plan.',
         choices: [
-          { text: 'New choice 1', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-          { text: 'New choice 2', choiceType: 'PATH_DIVERGENCE', primaryDelta: 'LOCATION_CHANGE' },
+          { text: 'New choice 1', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+          { text: 'New choice 2', choiceType: 'NAVIGATE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
         ],
         currentLocation: 'An unexpected path',
         threatsAdded: [{ text: 'Unknown consequences', threatType: ThreatType.ENVIRONMENTAL }],

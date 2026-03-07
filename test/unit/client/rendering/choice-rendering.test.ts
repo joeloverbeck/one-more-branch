@@ -33,8 +33,8 @@ describe('choice rendering', () => {
   function setupAndClick(responseChoices: Array<Record<string, unknown>>): Promise<void> {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'LOCATION_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'MORAL_DILEMMA', primaryDelta: 'GOAL_SHIFT', nextPageId: 3 },
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
       ],
     });
     loadAppAndInit();
@@ -67,8 +67,8 @@ describe('choice rendering', () => {
     await setupAndClick([
       {
         text: '<script>alert("xss")</script>',
-        choiceType: 'TACTICAL_APPROACH',
-        primaryDelta: 'GOAL_SHIFT',
+        choiceType: 'INTERVENE',
+        primaryDelta: 'GOAL_PRIORITY_CHANGE',
       },
     ]);
 
@@ -82,30 +82,30 @@ describe('choice rendering', () => {
     await setupAndClick([
       {
         text: 'A choice',
-        choiceType: 'MORAL_DILEMMA',
-        primaryDelta: 'RELATIONSHIP_CHANGE',
+        choiceType: 'COMMIT',
+        primaryDelta: 'RELATIONSHIP_ALIGNMENT_CHANGE',
       },
     ]);
 
     const typeIcon = document.querySelector('.choice-icon--type') as HTMLImageElement;
-    expect(typeIcon?.src).toContain('/images/icons/moral-dilemma.png');
+    expect(typeIcon?.src).toContain('/images/icons/commit.png');
 
     const deltaIcon = document.querySelector('.choice-icon--delta') as HTMLImageElement;
-    expect(deltaIcon?.src).toContain('/images/icons/relationship-change.png');
+    expect(deltaIcon?.src).toContain('/images/icons/relationship-alignment-change.png');
   });
 
   it('marks explored choices with data-explored and marker', async () => {
     await setupAndClick([
       {
         text: 'Already explored',
-        choiceType: 'TACTICAL_APPROACH',
-        primaryDelta: 'GOAL_SHIFT',
+        choiceType: 'INTERVENE',
+        primaryDelta: 'GOAL_PRIORITY_CHANGE',
         nextPageId: 10,
       },
       {
         text: 'Not explored',
-        choiceType: 'MORAL_DILEMMA',
-        primaryDelta: 'LOCATION_CHANGE',
+        choiceType: 'COMMIT',
+        primaryDelta: 'LOCATION_ACCESS_CHANGE',
       },
     ]);
 
@@ -119,9 +119,9 @@ describe('choice rendering', () => {
 
   it('sets data-choice-index on each button', async () => {
     await setupAndClick([
-      { text: 'First', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      { text: 'Second', choiceType: 'MORAL_DILEMMA', primaryDelta: 'LOCATION_CHANGE' },
-      { text: 'Third', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
+      { text: 'First', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      { text: 'Second', choiceType: 'COMMIT', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+      { text: 'Third', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
     ]);
 
     const buttons = document.querySelectorAll('.choice-btn');
@@ -135,13 +135,13 @@ describe('choice rendering', () => {
     await setupAndClick([
       {
         text: 'Test',
-        choiceType: 'CONFRONTATION',
-        primaryDelta: 'THREAT_SHIFT',
+        choiceType: 'CONTEST',
+        primaryDelta: 'THREAT_LEVEL_CHANGE',
       },
     ]);
 
     const button = document.querySelector('.choice-btn') as HTMLElement;
-    expect(button.dataset.choiceType).toBe('CONFRONTATION');
-    expect(button.dataset.primaryDelta).toBe('THREAT_SHIFT');
+    expect(button.dataset.choiceType).toBe('CONTEST');
+    expect(button.dataset.primaryDelta).toBe('THREAT_LEVEL_CHANGE');
   });
 });

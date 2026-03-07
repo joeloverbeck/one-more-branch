@@ -1445,28 +1445,43 @@ const LEFT_PANEL_LIMIT = 10;
 // ── Choice / Delta enums and label maps ──────────────────────────
 
 var CHOICE_TYPES = [
-  { value: 'TACTICAL_APPROACH', label: 'Method/Tactic' },
-  { value: 'MORAL_DILEMMA', label: 'Moral Choice' },
-  { value: 'IDENTITY_EXPRESSION', label: 'Define Yourself' },
-  { value: 'RELATIONSHIP_SHIFT', label: 'Relationship' },
-  { value: 'RESOURCE_COMMITMENT', label: 'Spend/Risk' },
-  { value: 'INVESTIGATION', label: 'Investigate' },
-  { value: 'PATH_DIVERGENCE', label: 'Change Direction' },
-  { value: 'CONFRONTATION', label: 'Confront/Fight' },
-  { value: 'AVOIDANCE_RETREAT', label: 'Avoid/Flee' },
+  { value: 'INVESTIGATE', label: 'Investigate' },
+  { value: 'REVEAL', label: 'Reveal' },
+  { value: 'PERSUADE', label: 'Persuade' },
+  { value: 'CONNECT', label: 'Connect' },
+  { value: 'DECEIVE', label: 'Deceive' },
+  { value: 'CONTEST', label: 'Contest' },
+  { value: 'COMMIT', label: 'Commit' },
+  { value: 'INTERVENE', label: 'Intervene' },
+  { value: 'NAVIGATE', label: 'Navigate' },
+  { value: 'WITHDRAW', label: 'Withdraw' },
+  { value: 'SUBMIT', label: 'Submit' },
 ];
 
 var PRIMARY_DELTAS = [
-  { value: 'LOCATION_CHANGE', label: 'Location' },
-  { value: 'GOAL_SHIFT', label: 'Goal' },
-  { value: 'RELATIONSHIP_CHANGE', label: 'Relationship' },
-  { value: 'URGENCY_CHANGE', label: 'Time Pressure' },
-  { value: 'ITEM_CONTROL', label: 'Item' },
-  { value: 'EXPOSURE_CHANGE', label: 'Attention' },
-  { value: 'CONDITION_CHANGE', label: 'Condition' },
-  { value: 'INFORMATION_REVEALED', label: 'Information' },
-  { value: 'THREAT_SHIFT', label: 'Danger' },
-  { value: 'CONSTRAINT_CHANGE', label: 'Limitation' },
+  { value: 'LOCATION_ACCESS_CHANGE', label: 'Location' },
+  { value: 'GOAL_PRIORITY_CHANGE', label: 'Goal' },
+  { value: 'RELATIONSHIP_ALIGNMENT_CHANGE', label: 'Relationship' },
+  { value: 'TIME_PRESSURE_CHANGE', label: 'Time Pressure' },
+  { value: 'RESOURCE_CONTROL_CHANGE', label: 'Resource' },
+  { value: 'INFORMATION_STATE_CHANGE', label: 'Information' },
+  { value: 'SECRECY_EXPOSURE_CHANGE', label: 'Exposure' },
+  { value: 'CONDITION_STATUS_CHANGE', label: 'Condition' },
+  { value: 'THREAT_LEVEL_CHANGE', label: 'Danger' },
+  { value: 'OBLIGATION_RULE_CHANGE', label: 'Obligation' },
+  { value: 'POWER_AUTHORITY_CHANGE', label: 'Power' },
+  { value: 'IDENTITY_REPUTATION_CHANGE', label: 'Identity' },
+];
+
+var CHOICE_SHAPES = [
+  { value: 'RELAXED', label: 'Relaxed' },
+  { value: 'OBVIOUS', label: 'Obvious' },
+  { value: 'TRADEOFF', label: 'Tradeoff' },
+  { value: 'DILEMMA', label: 'Dilemma' },
+  { value: 'GAMBLE', label: 'Gamble' },
+  { value: 'TEMPTATION', label: 'Temptation' },
+  { value: 'SACRIFICE', label: 'Sacrifice' },
+  { value: 'FLAVOR', label: 'Flavor' },
 ];
 
 var CHOICE_TYPE_LABEL_MAP = {};
@@ -1474,6 +1489,9 @@ CHOICE_TYPES.forEach(function (ct) { CHOICE_TYPE_LABEL_MAP[ct.value] = ct.label;
 
 var PRIMARY_DELTA_LABEL_MAP = {};
 PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.label; });
+
+var CHOICE_SHAPE_LABEL_MAP = {};
+CHOICE_SHAPES.forEach(function (cs) { CHOICE_SHAPE_LABEL_MAP[cs.value] = cs.label; });
 
 // ── Analyst insights tab metadata ────────────────────────────────
 
@@ -4235,11 +4253,19 @@ function createInlineListEditor(valueEl, currentItems, onCommit) {
       var choiceText = typeof choice.text === 'string' ? choice.text : '';
       var choiceType = typeof choice.choiceType === 'string' ? choice.choiceType : '';
       var primaryDelta = typeof choice.primaryDelta === 'string' ? choice.primaryDelta : '';
+      var choiceSubtype = typeof choice.choiceSubtype === 'string' ? choice.choiceSubtype : '';
+      var choiceShape = typeof choice.choiceShape === 'string' ? choice.choiceShape : '';
 
       var typeIconPath = getIconPath(choiceType);
       var deltaIconPath = getIconPath(primaryDelta);
       var typeLabel = CHOICE_TYPE_LABEL_MAP[choiceType] || '';
       var deltaLabel = PRIMARY_DELTA_LABEL_MAP[primaryDelta] || '';
+      var shapeLabel = CHOICE_SHAPE_LABEL_MAP[choiceShape] || '';
+
+      var tooltipParts = [typeLabel, deltaLabel];
+      if (choiceSubtype) { tooltipParts.push(choiceSubtype); }
+      if (shapeLabel) { tooltipParts.push(shapeLabel); }
+      var tooltipText = tooltipParts.filter(Boolean).join(' / ');
 
       var pillHtml = '';
       if (typeIconPath || deltaIconPath) {
@@ -4261,14 +4287,19 @@ function createInlineListEditor(valueEl, currentItems, onCommit) {
         pillHtml += '</span>';
       }
 
+      var shapeCssClass = choiceShape ? ' choice-shape--' + escapeHtml(choiceShape.toLowerCase()) : '';
+
       return '<div class="choice-row">'
         + pillHtml
         + '<button'
-        + ' class="choice-btn"'
+        + ' class="choice-btn' + shapeCssClass + '"'
         + ' data-choice-index="' + index + '"'
         + ' data-choice-type="' + escapeHtml(choiceType) + '"'
         + ' data-primary-delta="' + escapeHtml(primaryDelta) + '"'
+        + (choiceSubtype ? ' data-choice-subtype="' + escapeHtml(choiceSubtype) + '"' : '')
+        + (choiceShape ? ' data-choice-shape="' + escapeHtml(choiceShape) + '"' : '')
         + (isExplored ? ' data-explored="true"' : '')
+        + (tooltipText ? ' title="' + escapeHtml(tooltipText) + '"' : '')
         + '>'
         + '<span class="choice-text">' + escapeHtml(choiceText) + '</span>'
         + '</button>'

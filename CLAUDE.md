@@ -234,7 +234,7 @@ Tracks current truths: `currentLocation`, `activeThreats`, `activeConstraints`, 
 `TrackedPromise` represents a server-owned narrative promise with lifecycle state: `id`, `description`, `promiseType` (CHEKHOV_GUN, FORESHADOWING, UNRESOLVED_TENSION, DRAMATIC_QUESTION, MYSTERY_HOOK, TICKING_CLOCK), `scope` (SCENE, BEAT, ACT, STORY), `resolutionHint`, `suggestedUrgency` (LOW, MEDIUM, HIGH), `age` (pages since detection). `ThreadPayoffAssessment` evaluates resolved thread quality: `threadId`, `threadText`, `satisfactionLevel` (RUSHED, ADEQUATE, WELL_EARNED), `reasoning`. `PromisePayoffAssessment` evaluates resolved promise quality: `promiseId`, `description`, `satisfactionLevel`, `reasoning`. Promises are explicitly resolved by analyst-provided IDs (no heuristic conversion and no hard cap).
 
 ### Choice
-Each choice has `text`, `choiceType` (9 types: TACTICAL_APPROACH, MORAL_DILEMMA, etc.), `primaryDelta` (10 types: LOCATION_CHANGE, GOAL_SHIFT, etc.), and `nextPageId`.
+Each choice has `text`, `choiceType` (11 types: INVESTIGATE, REVEAL, PERSUADE, CONNECT, DECEIVE, CONTEST, COMMIT, INTERVENE, NAVIGATE, WITHDRAW, SUBMIT), `primaryDelta` (12 types: LOCATION_ACCESS_CHANGE, GOAL_PRIORITY_CHANGE, etc.), optional `choiceSubtype` (free-text string), optional `choiceShape` (ChoiceShape enum: RELAXED, OBVIOUS, TRADEOFF, DILEMMA, GAMBLE, TEMPTATION, SACRIFICE, FLAVOR), and `nextPageId`.
 
 ### ProtagonistAffect
 Per-page emotional snapshot (not accumulated): `primaryEmotion`, `primaryIntensity` (mild/moderate/strong/overwhelming), `primaryCause`, `secondaryEmotions`, `dominantMotivation`.
@@ -515,7 +515,7 @@ When LLM interfaces change, all test mocks must include every required field. Th
 
 // ChoiceGeneratorResult fields (from choice generator)
 {
-  choices: [{ text: '...', choiceType: ChoiceType.TACTICAL_APPROACH, primaryDelta: PrimaryDelta.GOAL_SHIFT }],
+  choices: [{ text: '...', choiceType: ChoiceType.INTERVENE, primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE }],
   rawResponse: '...',
 }
 

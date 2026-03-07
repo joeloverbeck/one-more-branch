@@ -138,13 +138,15 @@ ${spineSection}${beatSection}${dramaticQuestionSection}${protagonistSection}${af
 
 REQUIREMENTS:
 1. Generate 2-4 structured choice objects (typically 3; add a 4th only when the situation truly warrants another distinct path)
-2. Each choice MUST have a different choiceType OR primaryDelta from all other choices
+2. No two choices may share both the same choiceType AND the same primaryDelta
 3. Choices must flow from the scene's final dramatic beat - reference specific moments from the narrative
 4. Start each choice text with a clear action verb (e.g., "Demand", "Flee", "Accept")
 5. Do NOT offer a choice that repeats what already happened in the scene
 6. Do NOT offer choices that prematurely close off open narrative threads unless dramatically appropriate
 7. Each choice should present a meaningfully different path that changes the story's direction
 8. Choices must be in-character for the protagonist given their personality and emotional state
+9. Provide choiceSubtype when it adds useful nuance (e.g., BARGAIN, AMBUSH, CONFESSION). Set to null otherwise.
+10. Provide choiceShape when the choice clearly fits a pressure category (TRADEOFF, DILEMMA, GAMBLE, etc.). Set to null otherwise.
 
 WHEN IN CONFLICT, PRIORITIZE:
 1. Choices answer the dramatic question with divergent tags
