@@ -39,6 +39,7 @@ export interface PlayPageOptions {
   resolvedPromiseMeta?: Record<string, { promiseType: string; scope?: string; urgency: string }>;
   worldFacts?: Array<string | { text: string; factType: string }>;
   characterCanon?: Record<string, string[]>;
+  knowledgeState?: Array<{ characterName: string; knownFacts?: string[]; falseBeliefs?: string[]; secrets?: string[] }>;
 }
 
 export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
@@ -62,6 +63,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   const recapSummaries = options.recapSummaries ?? [];
   const worldFacts = options.worldFacts ?? [];
   const characterCanon = options.characterCanon ?? {};
+  const knowledgeState = options.knowledgeState ?? [];
   const loreFactCount =
     worldFacts.length +
     Object.values(characterCanon).reduce((sum, facts) => sum + (Array.isArray(facts) ? facts.length : 0), 0);
@@ -117,6 +119,27 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
         </ul>
         ${options.trackedPromisesOverflowSummary ? `<div class="keyed-entry-overflow-summary" id="tracked-promises-overflow">${options.trackedPromisesOverflowSummary}</div>` : ''}
       </aside>`
+      : '';
+
+  const knowledgeStateHtml =
+    knowledgeState.length > 0
+      ? `<aside class="knowledge-state-panel" id="knowledge-state-panel" aria-labelledby="knowledge-state-title">
+          <h3 class="knowledge-state-title" id="knowledge-state-title">Character Knowledge</h3>
+          <div class="knowledge-state-content" id="knowledge-state-content">
+            ${knowledgeState.map((entry) => {
+              const factsHtml = (entry.knownFacts ?? []).length > 0
+                ? `<div class="knowledge-state-field"><div class="knowledge-state-field-header"><span class="knowledge-state-icon" aria-hidden="true">📚</span><span class="knowledge-state-label">Known Facts</span></div><ul class="knowledge-state-list">${(entry.knownFacts ?? []).map((f) => `<li>${f}</li>`).join('')}</ul></div>`
+                : '';
+              const beliefsHtml = (entry.falseBeliefs ?? []).length > 0
+                ? `<div class="knowledge-state-field"><div class="knowledge-state-field-header"><span class="knowledge-state-icon" aria-hidden="true">❌</span><span class="knowledge-state-label">False Beliefs</span></div><ul class="knowledge-state-list">${(entry.falseBeliefs ?? []).map((b) => `<li>${b}</li>`).join('')}</ul></div>`
+                : '';
+              const secretsHtml = (entry.secrets ?? []).length > 0
+                ? `<div class="knowledge-state-field"><div class="knowledge-state-field-header"><span class="knowledge-state-icon" aria-hidden="true">🔒</span><span class="knowledge-state-label">Secrets</span></div><ul class="knowledge-state-list">${(entry.secrets ?? []).map((s) => `<li>${s}</li>`).join('')}</ul></div>`
+                : '';
+              return `<div class="knowledge-state-card" data-character="${entry.characterName}"><div class="knowledge-state-header"><span class="knowledge-state-name">${entry.characterName}</span></div><div class="knowledge-state-details" style="display: none;"><div class="knowledge-state-fields">${factsHtml}${beliefsHtml}${secretsHtml}</div></div></div>`;
+            }).join('')}
+          </div>
+        </aside>`
       : '';
 
   const sidebarHtml = `<div class="sidebar-widgets" id="sidebar-widgets">${threadsHtml}${threatsHtml}${constraintsHtml}${trackedPromisesHtml}</div>`;
@@ -247,6 +270,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
               Story Lore
               <span class="lore-count-badge" id="lore-count-badge">(${loreFactCount})</span>
             </button>
+            ${knowledgeStateHtml}
           </div>
           <div class="play-content">
             <div class="story-header" id="story-header">

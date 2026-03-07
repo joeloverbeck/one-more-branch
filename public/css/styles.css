@@ -17,6 +17,17 @@
   --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   --container-width: 900px;
   --transition: 0.2s ease;
+
+  /* Insights modal – frosted glass theme */
+  --insights-glass-bg: rgba(255, 255, 255, 0.04);
+  --insights-glass-border: rgba(255, 255, 255, 0.08);
+  --insights-glass-bg-hover: rgba(255, 255, 255, 0.07);
+  --insights-card-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  --insights-glow-low: rgba(185, 28, 28, 0.3);
+  --insights-glow-mid: rgba(245, 158, 11, 0.3);
+  --insights-glow-high: rgba(16, 185, 129, 0.3);
+  --insights-tab-active-bg: rgba(100, 149, 237, 0.18);
+  --insights-tab-active-color: #d7e8ff;
 }
 
 *,
@@ -1122,10 +1133,16 @@ main {
 
 .promise-payoff-item {
   position: relative;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--insights-glass-border);
   border-radius: var(--radius);
   padding: 0.52rem 0.62rem;
-  background: rgba(6, 10, 24, 0.35);
+  background: var(--insights-glass-bg);
+  backdrop-filter: blur(6px);
+  transition: border-color 0.15s;
+}
+
+.promise-payoff-item:hover {
+  border-color: var(--insights-glass-bg-hover);
 }
 
 .promise-payoff-badge {
@@ -2273,10 +2290,11 @@ main {
 }
 
 .insights-modal-content {
-  width: min(92vw, 600px);
+  width: min(94vw, 640px);
   max-height: 88vh;
   display: flex;
   flex-direction: column;
+  backdrop-filter: blur(2px);
 }
 
 .insights-header {
@@ -2285,6 +2303,8 @@ main {
   justify-content: space-between;
   gap: 0.7rem;
   margin-bottom: 0.8rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--insights-glass-border);
 }
 
 .insights-close-btn {
@@ -2307,7 +2327,7 @@ main {
 .insights-body {
   overflow-y: auto;
   display: grid;
-  gap: 0.9rem;
+  gap: 1.1rem;
   padding-right: 0.2rem;
   scrollbar-width: thin;
   scrollbar-color: rgba(39, 64, 111, 0.5) transparent;
@@ -2546,7 +2566,7 @@ main {
 
 .beat-gauge {
   display: grid;
-  gap: 0.55rem;
+  gap: 0.7rem;
 }
 
 .beat-gauge__row {
@@ -2562,7 +2582,7 @@ main {
 
 .beat-gauge__track {
   position: relative;
-  height: 0.55rem;
+  height: 0.7rem;
   border-radius: 999px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.12);
@@ -2572,18 +2592,22 @@ main {
   display: block;
   height: 100%;
   border-radius: inherit;
+  transition: width 0.4s ease;
 }
 
 .beat-gauge__fill--low {
   background: linear-gradient(90deg, #b91c1c, #ef4444);
+  box-shadow: 0 0 6px var(--insights-glow-low);
 }
 
 .beat-gauge__fill--mid {
   background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  box-shadow: 0 0 6px var(--insights-glow-mid);
 }
 
 .beat-gauge__fill--high {
   background: linear-gradient(90deg, #10b981, #2dd4bf);
+  box-shadow: 0 0 6px var(--insights-glow-high);
 }
 
 .beat-gauge__level {
@@ -2603,10 +2627,12 @@ main {
 .momentum-badge {
   display: inline-flex;
   align-items: center;
+  gap: 0.3rem;
   padding: 0.28rem 0.58rem;
   border-radius: 999px;
   font-size: 0.8rem;
   font-weight: 600;
+  backdrop-filter: blur(4px);
 }
 
 .momentum-badge--stasis {
@@ -2636,10 +2662,11 @@ main {
 
 .pacing-alert,
 .tone-warning {
-  border: 1px solid rgba(245, 158, 11, 0.55);
+  border: 1px solid rgba(245, 158, 11, 0.4);
   border-radius: var(--radius);
   padding: 0.62rem 0.75rem;
-  background: rgba(245, 158, 11, 0.1);
+  background: rgba(245, 158, 11, 0.08);
+  backdrop-filter: blur(4px);
 }
 
 .pacing-alert h4,
@@ -2670,10 +2697,17 @@ main {
 .promise-item,
 .payoff-item {
   position: relative;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--insights-glass-border);
   border-radius: var(--radius);
   padding: 0.52rem 0.62rem;
-  background: rgba(6, 10, 24, 0.35);
+  background: var(--insights-glass-bg);
+  backdrop-filter: blur(6px);
+  transition: border-color 0.15s;
+}
+
+.promise-item:hover,
+.payoff-item:hover {
+  border-color: var(--insights-glass-bg-hover);
 }
 
 .payoff-thread-badge {
@@ -2736,6 +2770,10 @@ main {
   color: #b8f0dd;
 }
 
+.payoff-satisfaction-badge {
+  gap: 0.25rem;
+}
+
 .payoff-satisfaction-badge--centered {
   display: flex;
   width: fit-content;
@@ -2766,8 +2804,18 @@ main {
 /* ── Insights modal collapsible sections ──────────────────────── */
 
 .insights-body details {
-  border: none;
   margin: 0;
+  background: var(--insights-glass-bg);
+  border: 1px solid var(--insights-glass-border);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.75rem;
+  backdrop-filter: blur(6px);
+  box-shadow: var(--insights-card-shadow);
+  transition: border-color 0.15s;
+}
+
+.insights-body details:hover {
+  border-color: var(--insights-glass-bg-hover);
 }
 
 .insights-body details > summary {
@@ -2784,15 +2832,19 @@ main {
 }
 
 .insights-body details > summary::before {
-  content: '▸';
+  content: '';
   display: inline-block;
-  font-size: 0.75rem;
-  transition: transform 0.15s ease;
-  color: var(--color-text-muted);
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 2px solid var(--color-text-muted);
+  border-bottom: 2px solid var(--color-text-muted);
+  transform: rotate(-45deg);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
 }
 
 .insights-body details[open] > summary::before {
-  transform: rotate(90deg);
+  transform: rotate(45deg);
 }
 
 .insights-body details > summary:hover {
@@ -2804,6 +2856,10 @@ main {
   display: inline;
 }
 
+.insights-body details[open] > summary {
+  margin-bottom: 0.5rem;
+}
+
 /* ── Insights modal subtitle & scene summary ──────────────────── */
 
 .insights-beat-subtitle {
@@ -2811,6 +2867,8 @@ main {
   font-size: 0.78rem;
   color: var(--color-text-muted);
   line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .insights-scene-summary {
@@ -2819,18 +2877,26 @@ main {
   color: var(--color-text-muted);
   line-height: 1.45;
   font-size: 0.88rem;
+  background: var(--insights-glass-bg);
+  border: 1px solid var(--insights-glass-border);
+  border-radius: var(--radius);
+  padding: 0.6rem 0.75rem;
+  backdrop-filter: blur(6px);
 }
 
 /* ── Insights tabs ─────────────────────────────────────────────── */
 
 .insights-tabs {
   display: flex;
-  gap: 0.3rem;
-  border-bottom: 1px solid var(--border-color);
+  gap: 0.25rem;
   margin-bottom: 0.7rem;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  background: var(--insights-glass-bg);
+  border: 1px solid var(--insights-glass-border);
+  border-radius: 999px;
+  padding: 0.2rem;
 }
 
 .insights-tabs::-webkit-scrollbar {
@@ -2841,22 +2907,23 @@ main {
   border: 0;
   background: transparent;
   color: var(--color-text-muted);
-  padding: 0.45rem 0.7rem;
+  padding: 0.4rem 0.75rem;
   cursor: pointer;
   font-weight: 600;
   font-size: 0.84rem;
-  border-bottom: 2px solid transparent;
+  border-radius: 999px;
   white-space: nowrap;
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s, background 0.15s;
 }
 
 .insights-tab:hover {
   color: var(--color-text);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .insights-tab--active {
-  color: var(--color-text);
-  border-bottom-color: #e94560;
+  color: var(--insights-tab-active-color);
+  background: var(--insights-tab-active-bg);
 }
 
 .insights-tab-panel {
@@ -2998,10 +3065,11 @@ main {
 /* ── Deviation alert ───────────────────────────────────────────── */
 
 .deviation-alert {
-  border: 1px solid rgba(239, 68, 68, 0.45);
+  border: 1px solid rgba(239, 68, 68, 0.35);
   border-radius: var(--radius);
   padding: 0.62rem 0.75rem;
-  background: rgba(239, 68, 68, 0.08);
+  background: rgba(239, 68, 68, 0.06);
+  backdrop-filter: blur(4px);
 }
 
 .deviation-alert h4 {

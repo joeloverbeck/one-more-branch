@@ -339,7 +339,7 @@ describe('analyst insights modal', () => {
     expect(img.src).toContain('promise-chekhov-gun-high.png');
     expect(img.getAttribute('onerror')).toContain("this.style.display='none'");
 
-    expect(payoffItem?.querySelector('.payoff-satisfaction-badge')?.textContent).toBe('WELL_EARNED');
+    expect(payoffItem?.querySelector('.payoff-satisfaction-badge')?.textContent).toBe('\u2728 Well Earned');
     expect(payoffItem?.querySelector('.payoff-reasoning')?.textContent).toBe('Built up over 5 pages.');
   });
 
@@ -381,7 +381,7 @@ describe('analyst insights modal', () => {
     expect(endingButton).not.toBeNull();
     endingButton.click();
     await jest.advanceTimersByTimeAsync(0);
-    expect(document.getElementById('insights-modal-body')?.textContent).toContain('Stasis');
+    expect(document.getElementById('insights-modal-body')?.textContent).toContain('\u23F8 Stasis');
 
     document.body.innerHTML = buildPlayPageHtml({
       analystResult: createMockAnalystResult({ sceneMomentum: 'STASIS' }),
@@ -439,14 +439,14 @@ describe('analyst insights modal', () => {
     const button = document.getElementById('insights-btn') as HTMLButtonElement;
     button.click();
     await jest.advanceTimersByTimeAsync(0);
-    expect(document.getElementById('insights-modal-body')?.textContent).toContain('Stasis');
+    expect(document.getElementById('insights-modal-body')?.textContent).toContain('\u23F8 Stasis');
 
     const choice = document.querySelector('.choice-btn') as HTMLButtonElement;
     choice.click();
     await jest.runAllTimersAsync();
 
     const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
-    expect(modalBody.textContent).toContain('Major Progress');
+    expect(modalBody.textContent).toContain('\uD83D\uDE80 Major Progress');
     expect(modalBody.textContent).toContain('Act 2: Rising Action - Beat 2.1: Confrontation');
     expect(modalBody.textContent).toContain('The scene unfolded dramatically.');
   });
