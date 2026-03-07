@@ -64,11 +64,6 @@ export function needsChoiceRepair(rawJson: unknown): boolean {
   }
 
   const source = rawJson as Record<string, unknown>;
-  const isEnding = source['isEnding'] === true;
-  if (isEnding) {
-    return false;
-  }
-
   const choices = source['choices'];
   if (!Array.isArray(choices)) {
     return false;

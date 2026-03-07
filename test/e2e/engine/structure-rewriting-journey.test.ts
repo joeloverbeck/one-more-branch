@@ -543,28 +543,34 @@ describe('Structure Rewriting Journey E2E', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedGeneratePagePlan.mockResolvedValue({
-      sceneIntent: 'Advance the rewritten branch with concrete outcomes.',
-      continuityAnchors: [],
-      writerBrief: {
-        openingLineDirective: 'Start with decisive action.',
-        mustIncludeBeats: [],
-        forbiddenRecaps: [],
-      },
-      dramaticQuestion: 'Will you confront the danger or seek another path?',
-      choiceIntents: [
-        {
-          hook: 'Face the threat directly',
-          choiceType: 'CONFRONTATION',
-          primaryDelta: 'THREAT_SHIFT',
+    mockedGeneratePagePlan.mockImplementation((context: { selectedChoice?: string }) => {
+      const isEndingPage = context.selectedChoice === 'Rebuild trust with dockworkers';
+      return Promise.resolve({
+        sceneIntent: 'Advance the rewritten branch with concrete outcomes.',
+        continuityAnchors: [],
+        writerBrief: {
+          openingLineDirective: 'Start with decisive action.',
+          mustIncludeBeats: [],
+          forbiddenRecaps: [],
         },
-        {
-          hook: 'Find an alternative route',
-          choiceType: 'TACTICAL_APPROACH',
-          primaryDelta: 'LOCATION_CHANGE',
-        },
-      ],
-      rawResponse: 'page-plan',
+        dramaticQuestion: 'Will you confront the danger or seek another path?',
+        isEnding: isEndingPage,
+        choiceIntents: isEndingPage
+          ? []
+          : [
+              {
+                hook: 'Face the threat directly',
+                choiceType: 'CONFRONTATION',
+                primaryDelta: 'THREAT_SHIFT',
+              },
+              {
+                hook: 'Find an alternative route',
+                choiceType: 'TACTICAL_APPROACH',
+                primaryDelta: 'LOCATION_CHANGE',
+              },
+            ],
+        rawResponse: 'page-plan',
+      });
     });
     mockedGenerateStateAccountant.mockResolvedValue({
       stateIntents: {

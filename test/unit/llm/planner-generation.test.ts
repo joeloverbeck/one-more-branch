@@ -37,6 +37,7 @@ const validPlannerPayload = {
     forbiddenRecaps: ['Do not recap the entire infiltration route.'],
   },
   dramaticQuestion: 'Will you slip past the patrol or confront them before lockout?',
+  isEnding: false,
   choiceIntents: [
     {
       hook: 'Ghost past the patrol in shadow',

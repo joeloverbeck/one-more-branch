@@ -10,6 +10,7 @@ export const PAGE_PLANNER_PROMPT_RULES: ReadonlyArray<string> = [
   'When planning dialogue-heavy scenes, note which characters will speak and consider their distinct voices. The writer will receive full speech fingerprints for scene characters — your writerBrief.mustIncludeBeats can reference specific voice moments.',
   'choiceIntents hooks must describe available actions from the PROTAGONIST\'s perspective. Never frame a choice as what another character does — always as what the protagonist can do, decide, or pursue.',
   'When planning scenes, ensure the sceneIntent and at least one choiceIntent serve the protagonist\'s Need vs Want conflict from the spine. Choices that force the protagonist to choose between pursuing their Want and addressing their true Need create the most compelling dramatic tension.',
+  'Set isEnding to true ONLY when this scene should be the story\'s conclusion — the final resolution beat completing the story arc, a character death that ends the journey, or a natural story conclusion. When isEnding is true, choiceIntents must be an empty array. Default to false.',
 ];
 
 export const PAGE_PLANNER_TONE_RULE =
@@ -21,6 +22,7 @@ export const PAGE_PLANNER_REQUIRED_FIELDS = [
   'writerBrief',
   'dramaticQuestion',
   'choiceIntents',
+  'isEnding',
 ] as const;
 
 export const PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS = [

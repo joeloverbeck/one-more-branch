@@ -4,11 +4,11 @@ import type { GenerationOptions } from '../../../src/llm/generation-pipeline-typ
 import type { ChatMessage } from '../../../src/llm/llm-client-types';
 
 jest.mock('../../../src/config/stage-model', () => ({
-  getStageModel: () => 'anthropic/claude-sonnet-4.5',
+  getStageModel: (): string => 'anthropic/claude-sonnet-4.5',
 }));
 
 jest.mock('../../../src/config/index', () => ({
-  getConfig: () => ({
+  getConfig: (): { llm: { temperature: number; maxTokens: number } } => ({
     llm: { temperature: 0.7, maxTokens: 4000 },
   }),
 }));
@@ -33,7 +33,7 @@ const TEST_OPTIONS: GenerationOptions = {
   apiKey: 'test-key',
 };
 
-function makeValidResponse() {
+function makeValidResponse(): { choices: { text: string; choiceType: string; primaryDelta: string }[] } {
   return {
     choices: [
       { text: 'Demand an explanation', choiceType: 'CONFRONTATION', primaryDelta: 'INFORMATION_REVEALED' },
@@ -43,7 +43,7 @@ function makeValidResponse() {
   };
 }
 
-function mockSuccessResponse(body: unknown) {
+function mockSuccessResponse(body: unknown): void {
   mockFetch.mockResolvedValueOnce({
     ok: true,
     json: () =>

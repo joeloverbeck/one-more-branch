@@ -132,7 +132,6 @@ FIELD SEPARATION:
   - narrative
   - sceneSummary
   - protagonistAffect
-  - isEnding
 - READ-ONLY CONTEXT:
   - inventory, health, location, threats, constraints, threads, canon, and NPC state sections in the prompt.
 
@@ -260,8 +259,7 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
     ],
     "dominantMotivation": "{{what protagonist wants now}}"
   },
-  "sceneSummary": "{{2-3 sentence factual summary}}",
-  "isEnding": {{true|false}}
+  "sceneSummary": "{{2-3 sentence factual summary}}"
 }
 ```
 

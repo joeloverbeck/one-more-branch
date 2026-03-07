@@ -87,7 +87,6 @@ const BASE_WRITER_OUTPUT = {
     secondaryEmotions: [],
     dominantMotivation: 'Get past the obstacle',
   },
-  isEnding: false,
 };
 
 describe('needsChoiceRepair', () => {
@@ -109,9 +108,9 @@ describe('needsChoiceRepair', () => {
     expect(needsChoiceRepair(input)).toBe(false);
   });
 
-  it('returns false when isEnding is true', () => {
-    const input = { ...BASE_WRITER_OUTPUT, isEnding: true, choices: [VALID_CHOICE_A] };
-    expect(needsChoiceRepair(input)).toBe(false);
+  it('returns true when 1 choice regardless of isEnding field', () => {
+    const input = { ...BASE_WRITER_OUTPUT, choices: [VALID_CHOICE_A] };
+    expect(needsChoiceRepair(input)).toBe(true);
   });
 
   it('returns false when 0 choices (deeper confusion)', () => {
@@ -261,8 +260,8 @@ describe('repairInsufficientChoices', () => {
       expect(result.repairedJson).toBe(input);
     });
 
-    it('returns unchanged when isEnding is true', async () => {
-      const input = { ...BASE_WRITER_OUTPUT, isEnding: true, choices: [] };
+    it('returns unchanged when 0 choices (no isEnding check)', async () => {
+      const input = { ...BASE_WRITER_OUTPUT, choices: [] };
       const result = await repairInsufficientChoices(input, 'test-key', undefined, undefined);
       expect(result.repaired).toBe(false);
       expect(result.repairedJson).toBe(input);
@@ -281,13 +280,13 @@ describe('repairInsufficientChoices', () => {
     });
 
     it('returns unchanged when narrative is missing', async () => {
-      const input = { choices: [VALID_CHOICE_A], isEnding: false, sceneSummary: 'summary' };
+      const input = { choices: [VALID_CHOICE_A], sceneSummary: 'summary' };
       const result = await repairInsufficientChoices(input, 'test-key', undefined, undefined);
       expect(result.repaired).toBe(false);
     });
 
     it('returns unchanged when sceneSummary is missing', async () => {
-      const input = { choices: [VALID_CHOICE_A], isEnding: false, narrative: 'some text' };
+      const input = { choices: [VALID_CHOICE_A], narrative: 'some text' };
       const result = await repairInsufficientChoices(input, 'test-key', undefined, undefined);
       expect(result.repaired).toBe(false);
     });
@@ -329,7 +328,7 @@ describe('repairInsufficientChoices', () => {
       const repaired = result.repairedJson as Record<string, unknown>;
       expect(repaired['narrative']).toBe(input.narrative);
       expect(repaired['sceneSummary']).toBe(input.sceneSummary);
-      expect(repaired['isEnding']).toBe(false);
+      expect(repaired['sceneSummary']).toBe(input.sceneSummary);
       expect(repaired['protagonistAffect']).toBe(input.protagonistAffect);
     });
   });

@@ -44,7 +44,8 @@ export function mergePageWriterAndReconciledStateWithAnalystResults(
   writer: PageWriterResult,
   reconciliation: StateReconciliationResult,
   analyst: AnalystResult | null,
-  choices: ReadonlyArray<{ text: string; choiceType: ChoiceType; primaryDelta: PrimaryDelta }> = []
+  choices: ReadonlyArray<{ text: string; choiceType: ChoiceType; primaryDelta: PrimaryDelta }> = [],
+  isEnding: boolean = false
 ): ContinuationGenerationResult {
   const stateDelta = {
     currentLocation: reconciliation.currentLocation,
@@ -69,6 +70,7 @@ export function mergePageWriterAndReconciledStateWithAnalystResults(
     ...writer,
     ...stateDelta,
     ...buildAnalystFields(analyst),
+    isEnding,
     choices: [...choices],
     rawResponse: writer.rawResponse,
   };

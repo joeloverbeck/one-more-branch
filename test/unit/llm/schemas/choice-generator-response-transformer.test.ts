@@ -1,7 +1,7 @@
 import { validateChoiceGeneratorResponse } from '../../../../src/llm/schemas/choice-generator-response-transformer';
 import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 
-function makeRawChoices() {
+function makeRawChoices(): { text: string; choiceType: string; primaryDelta: string }[] {
   return [
     { text: '  Demand an explanation  ', choiceType: 'CONFRONTATION', primaryDelta: 'INFORMATION_REVEALED' },
     { text: '  Flee the scene  ', choiceType: 'AVOIDANCE_RETREAT', primaryDelta: 'LOCATION_CHANGE' },

@@ -56,6 +56,7 @@ export interface PostGenerationContext {
   readonly writerResult: PageWriterResult;
   readonly reconciliation: StateReconciliationResult;
   readonly getLastStoryBible: () => StoryBible | null;
+  readonly isEnding: boolean;
   readonly dramaticQuestion?: string;
   readonly choiceIntents?: readonly ChoiceIntent[];
   readonly maxPageId: number | null;
@@ -132,7 +133,7 @@ export async function processPostGeneration(
   // --- Run choice generator (skip for endings) ---
   let choiceGeneratorDurationMs: number | null = null;
   let generatedChoices: ChoiceGeneratorResult['choices'] | null = null;
-  if (!writerResult.isEnding && dramaticQuestion) {
+  if (!context.isEnding && dramaticQuestion) {
     emitGenerationStage(onGenerationStage, 'GENERATING_CHOICES', 'started', 1);
     const choiceGenStart = Date.now();
     const choiceResult = await generateChoices(
@@ -237,7 +238,8 @@ export async function processPostGeneration(
     writerResult,
     reconciliation,
     analystResult,
-    generatedChoices ?? []
+    generatedChoices ?? [],
+    context.isEnding
   );
 
   // --- Handle spine deviation (two-tier: spine then beats) ---

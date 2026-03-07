@@ -11,6 +11,7 @@ function createValidPlannerPayload(): Record<string, unknown> {
       forbiddenRecaps: ['Do not restate the full ambush setup'],
     },
     dramaticQuestion: 'Will you hold the parapet or fall back to the stairwell?',
+    isEnding: false,
     choiceIntents: [
       {
         hook: 'Stand and return fire from cover',

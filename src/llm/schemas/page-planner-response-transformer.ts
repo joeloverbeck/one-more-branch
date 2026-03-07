@@ -108,6 +108,7 @@ export function validatePagePlannerResponse(
         forbiddenRecaps: normalizeStringArray(validated[writerBriefField][forbiddenRecapsField]),
       },
       dramaticQuestion: trimRequiredField(validated, dramaticQuestionField),
+      isEnding: validated.isEnding,
       choiceIntents: validated.choiceIntents.map((intent) => ({
         hook: intent.hook.trim(),
         choiceType: intent.choiceType,

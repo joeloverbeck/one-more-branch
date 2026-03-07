@@ -1,7 +1,7 @@
 import { ChoiceGeneratorResultSchema } from '../../../../src/llm/schemas/choice-generator-validation-schema';
 import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 
-function makeChoice(overrides: Record<string, unknown> = {}) {
+function makeChoice(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     text: 'Demand an explanation',
     choiceType: ChoiceType.CONFRONTATION,

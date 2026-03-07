@@ -15,9 +15,25 @@ export const PagePlannerResultSchema = z
       forbiddenRecaps: z.array(z.string()),
     }),
     dramaticQuestion: z.string(),
-    choiceIntents: z.array(ChoiceIntentSchema).min(2).max(4),
+    isEnding: z.boolean(),
+    choiceIntents: z.array(ChoiceIntentSchema).max(4),
   })
   .superRefine((data, ctx) => {
+    if (!data.isEnding && data.choiceIntents.length < 2) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['choiceIntents'],
+        message: 'Non-ending scenes require at least 2 choice intents',
+      });
+    }
+    if (data.isEnding && data.choiceIntents.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['choiceIntents'],
+        message: 'Ending scenes must have an empty choiceIntents array',
+      });
+    }
+
     addRequiredTrimmedTextIssue(data.sceneIntent, ['sceneIntent'], ctx);
     addRequiredTrimmedTextIssue(
       data.writerBrief.openingLineDirective,

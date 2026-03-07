@@ -122,7 +122,6 @@ export function createMockPageWriterResult(
     narrative: 'You step into the corridor.',
     sceneSummary: 'Explored the corridor.',
     protagonistAffect: createMockProtagonistAffect(),
-    isEnding: false,
     rawResponse: '{}',
     ...overrides,
   };
@@ -145,6 +144,7 @@ export function createMockFinalResult(
   return {
     ...createMockPageWriterResult(),
     ...createMockReconciliationResult(),
+    isEnding: false,
     choices: [...DEFAULT_MOCK_CHOICES],
     ...overrides,
   };

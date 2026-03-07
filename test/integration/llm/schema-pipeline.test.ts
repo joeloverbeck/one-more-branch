@@ -84,7 +84,7 @@ describe('schema pipeline integration', () => {
       expect(schemaProps.required).not.toContain('choices');
       expect(schemaProps.required).toContain('protagonistAffect');
       expect(schemaProps.required).toContain('sceneSummary');
-      expect(schemaProps.required).toContain('isEnding');
+      expect(schemaProps.required).not.toContain('isEnding');
       expect(schemaProps.required).not.toContain('newCanonFacts');
       expect(schemaProps.required).not.toContain('currentLocation');
       expect(schemaProps.required).not.toContain('threatsAdded');
@@ -106,7 +106,6 @@ describe('schema pipeline integration', () => {
       const result = validateWriterResponse(rawJson, JSON.stringify(rawJson));
 
       expect(result.narrative).toBe(VALID_NARRATIVE);
-      expect(result.isEnding).toBe(false);
       expect(result.rawResponse).toBe(JSON.stringify(rawJson));
       expect('choices' in (result as Record<string, unknown>)).toBe(false);
       expect('currentLocation' in (result as Record<string, unknown>)).toBe(false);
@@ -203,7 +202,7 @@ describe('schema pipeline integration', () => {
       expect('inventoryAdded' in (result as Record<string, unknown>)).toBe(false);
     });
 
-    it('should validate ending page', () => {
+    it('should validate ending page (isEnding no longer in writer output)', () => {
       const endingJson = {
         narrative: VALID_NARRATIVE,
         protagonistAffect: {
@@ -214,13 +213,12 @@ describe('schema pipeline integration', () => {
           dominantMotivation: 'Rest at last',
         },
         sceneSummary: 'Test summary of the scene events and consequences.',
-        isEnding: true,
       };
 
       const result = validateWriterResponse(endingJson, 'raw');
 
-      expect(result.isEnding).toBe(true);
-      expect('choices' in (result as Record<string, unknown>)).toBe(false);
+      expect('isEnding' in (result as unknown as Record<string, unknown>)).toBe(false);
+      expect('choices' in (result as unknown as Record<string, unknown>)).toBe(false);
     });
   });
 

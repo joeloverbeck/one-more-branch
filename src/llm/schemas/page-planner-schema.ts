@@ -35,6 +35,11 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
           description:
             'The single dramatic question this scene must raise and leave the choices to answer. Example: "Will you risk exposure to save the contact, or protect your cover?"',
         },
+        isEnding: {
+          type: 'boolean',
+          description:
+            'True only when this scene is the story\'s final conclusion. When true, choiceIntents must be empty.',
+        },
         choiceIntents: {
           type: 'array',
           items: {

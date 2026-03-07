@@ -20,12 +20,12 @@ export interface PageWriterResult {
   narrative: string;
   sceneSummary: string;
   protagonistAffect: ProtagonistAffect;
-  isEnding: boolean;
   rawResponse: string;
 }
 
 export type FinalPageGenerationResult = PageWriterResult &
   StateReconciliationResult & {
+    readonly isEnding: boolean;
     readonly choices: Array<{
       text: string;
       choiceType: ChoiceType;

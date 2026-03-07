@@ -76,6 +76,7 @@ export async function generatePage(
     writerResult,
     reconciliation,
     getLastStoryBible: ctx.writerWithLorekeeper.getLastStoryBible,
+    isEnding: pagePlan.isEnding,
     dramaticQuestion: pagePlan.dramaticQuestion,
     choiceIntents: pagePlan.choiceIntents,
     maxPageId: ctx.maxPageId,

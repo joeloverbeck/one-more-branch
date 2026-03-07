@@ -67,6 +67,7 @@ export interface ReducedPagePlanResult {
   };
   dramaticQuestion: string;
   choiceIntents: ChoiceIntent[];
+  isEnding: boolean;
 }
 
 export interface ReducedPagePlanGenerationResult extends ReducedPagePlanResult {
@@ -93,6 +94,7 @@ export interface PagePlan {
   };
   dramaticQuestion: string;
   choiceIntents: ChoiceIntent[];
+  isEnding: boolean;
 }
 
 export interface PagePlanGenerationResult extends PagePlan {

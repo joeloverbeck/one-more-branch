@@ -16,7 +16,7 @@ The Choice Generator runs **after** the Writer and Reconciler, **before** the An
 Planner → Accountant → Lorekeeper → Writer → Reconciler → **Choice Generator** → Analyst → AgendaResolver
 ```
 
-- If `isEnding === true` on the writer output, the Choice Generator is **skipped** (endings have no choices).
+- If `isEnding === true` on the planner output, the Choice Generator is **skipped** (endings have no choices).
 - The Choice Generator receives the written narrative as input, so choices can reference specific moments from the scene.
 
 ## Relationship to Planner

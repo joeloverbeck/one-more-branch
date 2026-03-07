@@ -20,6 +20,7 @@ describe('PAGE_PLANNER_GENERATION_SCHEMA', () => {
       'writerBrief',
       'dramaticQuestion',
       'choiceIntents',
+      'isEnding',
     ]);
     expect(schema.additionalProperties).toBe(false);
     expect(schema.properties).not.toHaveProperty('stateIntents');
