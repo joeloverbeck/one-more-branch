@@ -517,7 +517,7 @@ describe('story-engine integration', () => {
     mockedGenerateWriterPage.mockImplementation((context) =>
       Promise.resolve(buildWriterResult(context.selectedChoice))
     );
-    mockedGenerateChoices.mockImplementation((context) => {
+    mockedGenerateChoices.mockImplementation((context: { narrative: string }) => {
       if (context.narrative.includes('harbor lights')) {
         return Promise.resolve({ choices: openingResult.choices, rawResponse: '{}' });
       }

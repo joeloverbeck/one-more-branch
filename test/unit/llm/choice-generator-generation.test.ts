@@ -138,9 +138,12 @@ describe('generateChoiceGeneratorWithFallback', () => {
     await generateChoiceGeneratorWithFallback(TEST_MESSAGES, TEST_OPTIONS);
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
-    const [url, fetchOptions] = mockFetch.mock.calls[0];
+    const [url, fetchOptions] = mockFetch.mock.calls[0] as [string, { body: string }];
     expect(url).toContain('openrouter');
-    const requestBody = JSON.parse(fetchOptions.body as string);
+    const requestBody = JSON.parse(fetchOptions.body) as {
+      model: string;
+      response_format: { type: string; json_schema: { name: string } };
+    };
     expect(requestBody.model).toBe('anthropic/claude-sonnet-4.5');
     expect(requestBody.response_format.type).toBe('json_schema');
     expect(requestBody.response_format.json_schema.name).toBe('choice_generation');

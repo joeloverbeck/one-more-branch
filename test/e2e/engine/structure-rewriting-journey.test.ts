@@ -585,7 +585,7 @@ describe('Structure Rewriting Journey E2E', () => {
     mockedGenerateWriterPage.mockImplementation((context) =>
       Promise.resolve(buildWriterResult(context.selectedChoice))
     );
-    mockedGenerateChoices.mockImplementation((context) => {
+    mockedGenerateChoices.mockImplementation((context: { narrative: string }) => {
       if (context.narrative.includes('parliament steps')) {
         return Promise.resolve({ choices: openingResult.choices, rawResponse: '{}' });
       }

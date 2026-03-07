@@ -495,7 +495,7 @@ describe('Structured Story E2E', () => {
       continuationCount += 1;
       return Promise.resolve(buildWriterResult(context.selectedChoice, continuationCount + 1));
     });
-    mockedGenerateChoices.mockImplementation((context) => {
+    mockedGenerateChoices.mockImplementation((context: { narrative: string }) => {
       if (context.narrative.includes('rain-soaked capital')) {
         return Promise.resolve({ choices: openingResult.choices, rawResponse: '{}' });
       }
