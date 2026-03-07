@@ -151,3 +151,16 @@ export interface ContentOneShotResult {
   readonly packets: readonly ContentOneShotPacket[];
   readonly rawResponse: string;
 }
+
+// --- Content packeter types ---
+
+export interface ContentPacketerContext {
+  readonly tasteProfile: TasteProfile;
+  readonly sparks: readonly ContentSpark[];
+  readonly kernelBlock?: string;
+}
+
+export interface ContentPacketerResult {
+  readonly packets: readonly ContentPacket[];
+  readonly rawResponse: string;
+}

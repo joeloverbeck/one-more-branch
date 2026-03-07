@@ -29,6 +29,7 @@ export const LLM_STAGE_KEYS = [
   'contentOneShot',
   'contentTasteDistiller',
   'contentSparkstormer',
+  'contentPacketer',
 ] as const;
 
 export type LlmStage = (typeof LLM_STAGE_KEYS)[number];

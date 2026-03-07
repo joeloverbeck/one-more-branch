@@ -34,7 +34,8 @@ export type PromptType =
   | 'writer-choice-repair'
   | 'contentOneShot'
   | 'contentTasteDistiller'
-  | 'contentSparkstormer';
+  | 'contentSparkstormer'
+  | 'contentPacketer';
 
 const NOOP_PROMPT_SINK: PromptSink = {
   appendPrompt: () => Promise.resolve(),

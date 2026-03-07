@@ -373,6 +373,8 @@ export type {
   ContentOneShotResult,
   SparkstormerContext,
   SparkstormerResult,
+  ContentPacketerContext,
+  ContentPacketerResult,
 } from './content-packet';
 export {
   CONTENT_KIND_VALUES,
