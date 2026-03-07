@@ -3,8 +3,6 @@ import {
   detectMentionedCharacters,
 } from '../../../../src/llm/prompts/lorekeeper-prompt';
 import {
-  ChoiceType,
-  PrimaryDelta,
   createEmptyActiveState,
   parsePageId,
 } from '../../../../src/models';
@@ -18,6 +16,7 @@ function buildMinimalPagePlan(overrides?: Partial<PagePlan>): PagePlan {
     sceneIntent: 'Protagonist confronts the merchant',
     continuityAnchors: ['The merchant holds the key'],
     dramaticQuestion: 'Will the protagonist get the key peacefully?',
+    isEnding: false,
     writerBrief: {
       openingLineDirective: 'Start with the merchant counting coins',
       mustIncludeBeats: ['Negotiate for the key'],
@@ -33,7 +32,6 @@ function buildMinimalPagePlan(overrides?: Partial<PagePlan>): PagePlan {
       characterState: { add: [], removeIds: [] },
       canon: { worldAdd: [], characterAdd: [] },
     },
-    choiceIntents: [],
     ...overrides,
   };
 }
@@ -273,31 +271,6 @@ describe('buildLorekeeperPrompt', () => {
     expect(userPrompt).toContain('The protagonist entered the market square.');
   });
 
-  it('includes choice intents when present', () => {
-    const context = buildMinimalContext({
-      pagePlan: buildMinimalPagePlan({
-        choiceIntents: [
-          {
-            choiceType: ChoiceType.TACTICAL_APPROACH,
-            primaryDelta: PrimaryDelta.GOAL_SHIFT,
-            hook: 'Try to negotiate',
-          },
-          {
-            choiceType: ChoiceType.MORAL_DILEMMA,
-            primaryDelta: PrimaryDelta.RELATIONSHIP_CHANGE,
-            hook: 'Threaten the merchant',
-          },
-        ],
-      }),
-    });
-    const messages = buildLorekeeperPrompt(context);
-    const userPrompt = messages[1]?.content ?? '';
-
-    expect(userPrompt).toContain('Choice Intents');
-    expect(userPrompt).toContain('[TACTICAL_APPROACH / GOAL_SHIFT] Try to negotiate');
-    expect(userPrompt).toContain('[MORAL_DILEMMA / RELATIONSHIP_CHANGE] Threaten the merchant');
-  });
-
   it('includes NPC agendas when present', () => {
     const context = buildMinimalContext({
       accumulatedNpcAgendas: {
@@ -530,25 +503,6 @@ describe('detectMentionedCharacters', () => {
     const result = detectMentionedCharacters(context);
 
     expect(result).toEqual(['Alicia Western']);
-  });
-
-  it('detects characters mentioned in choiceIntents hooks', () => {
-    const context = buildMinimalContext({
-      decomposedCharacters: [buildMinimalDecomposedCharacter('Marcus Reed')],
-      pagePlan: buildMinimalPagePlan({
-        choiceIntents: [
-          {
-            hook: 'Confront Marcus about the theft',
-            choiceType: ChoiceType.MORAL_DILEMMA,
-            primaryDelta: PrimaryDelta.RELATIONSHIP_CHANGE,
-          },
-        ],
-      }),
-    });
-
-    const result = detectMentionedCharacters(context);
-
-    expect(result).toContain('Marcus Reed');
   });
 
   it('detects characters mentioned in writerBrief fields', () => {

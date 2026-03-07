@@ -2,7 +2,6 @@ import {
   buildChoiceGeneratorPrompt,
   type ChoiceGeneratorContext,
 } from '../../../../src/llm/prompts/choice-generator-prompt';
-import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 import { ThreatType, ThreadType, Urgency } from '../../../../src/models/state/keyed-entry';
 import type { ProtagonistAffect } from '../../../../src/models/protagonist-affect';
 import type { ActiveState } from '../../../../src/models/state';
@@ -58,18 +57,6 @@ function makeContext(overrides: Partial<ChoiceGeneratorContext> = {}): ChoiceGen
     sceneSummary: 'The protagonist found a hidden passage.',
     protagonistAffect: makeAffect(),
     dramaticQuestion: 'Will Kael enter the unknown?',
-    choiceIntents: [
-      {
-        hook: 'Step into the darkness',
-        choiceType: ChoiceType.PATH_DIVERGENCE,
-        primaryDelta: PrimaryDelta.LOCATION_CHANGE,
-      },
-      {
-        hook: 'Search for another way',
-        choiceType: ChoiceType.INVESTIGATION,
-        primaryDelta: PrimaryDelta.INFORMATION_REVEALED,
-      },
-    ],
     activeState: makeActiveState(),
     tone: 'dark fantasy',
     decomposedCharacters: [
@@ -108,14 +95,13 @@ describe('buildChoiceGeneratorPrompt', () => {
     expect(messages[1].content).toContain('hidden passage');
   });
 
-  it('user message includes dramatic question and choice intents', () => {
+  it('user message includes dramatic question and need vs want rule', () => {
     const messages = buildChoiceGeneratorPrompt(makeContext());
     const content = messages[1].content;
 
+    expect(content).toContain('DRAMATIC QUESTION');
     expect(content).toContain('Will Kael enter the unknown?');
-    expect(content).toContain('Step into the darkness');
-    expect(content).toContain('PATH_DIVERGENCE');
-    expect(content).toContain('LOCATION_CHANGE');
+    expect(content).toContain('NEED VS WANT RULE');
   });
 
   it('user message includes protagonist info', () => {
@@ -226,12 +212,12 @@ describe('buildChoiceGeneratorPrompt', () => {
     expect(messages[1].content).toContain('Introduce the mystery');
   });
 
-  it('handles empty choice intents gracefully', () => {
-    const context = makeContext({ choiceIntents: [] });
-    const messages = buildChoiceGeneratorPrompt(context);
+  it('user message does not contain PLANNER CHOICE INTENTS section', () => {
+    const messages = buildChoiceGeneratorPrompt(makeContext());
 
     expect(messages[1].content).toContain('DRAMATIC QUESTION');
     expect(messages[1].content).not.toContain('PLANNER CHOICE INTENTS');
+    expect(messages[1].content).toContain('NEED VS WANT RULE');
   });
 
   it('system message does not include storytelling guidelines', () => {

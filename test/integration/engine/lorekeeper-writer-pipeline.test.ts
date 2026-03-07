@@ -71,7 +71,6 @@ const mockPagePlan: PagePlanGenerationResult = {
     locationChange: null,
   },
   dramaticQuestion: 'Will the knight survive?',
-  choiceIntents: [],
   rawResponse: '{}',
 };
 

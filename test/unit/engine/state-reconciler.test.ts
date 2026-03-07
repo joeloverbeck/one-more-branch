@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { ConstraintType, ThreatType, ThreadType, Urgency } from '../../../src/models/state';
 import type { PageWriterResult } from '../../../src/llm/writer-types';
 import type { PagePlan } from '../../../src/llm/planner-types';
@@ -27,18 +26,6 @@ function buildPlan(overrides?: Partial<PagePlan>): PagePlan {
       forbiddenRecaps: ['Do not restate the prior page ending'],
     },
     dramaticQuestion: 'Will you confront the danger or seek another path?',
-    choiceIntents: [
-      {
-        hook: 'Face the threat directly',
-        choiceType: ChoiceType.CONFRONTATION,
-        primaryDelta: PrimaryDelta.THREAT_SHIFT,
-      },
-      {
-        hook: 'Find an alternative route',
-        choiceType: ChoiceType.TACTICAL_APPROACH,
-        primaryDelta: PrimaryDelta.LOCATION_CHANGE,
-      },
-    ],
     ...overrides,
   };
 }

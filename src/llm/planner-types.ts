@@ -1,4 +1,3 @@
-import { ChoiceType, PrimaryDelta } from '../models/choice-enums.js';
 import type { ThreadAdd } from './writer-types.js';
 
 export interface TextIntentMutations {
@@ -51,12 +50,6 @@ export interface CanonIntents {
   characterAdd: Array<{ characterName: string; facts: string[] }>;
 }
 
-export interface ChoiceIntent {
-  hook: string;
-  choiceType: ChoiceType;
-  primaryDelta: PrimaryDelta;
-}
-
 export interface ReducedPagePlanResult {
   sceneIntent: string;
   continuityAnchors: string[];
@@ -66,7 +59,6 @@ export interface ReducedPagePlanResult {
     forbiddenRecaps: string[];
   };
   dramaticQuestion: string;
-  choiceIntents: ChoiceIntent[];
   isEnding: boolean;
 }
 
@@ -93,7 +85,6 @@ export interface PagePlan {
     forbiddenRecaps: string[];
   };
   dramaticQuestion: string;
-  choiceIntents: ChoiceIntent[];
   isEnding: boolean;
 }
 

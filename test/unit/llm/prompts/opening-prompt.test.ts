@@ -1,4 +1,3 @@
-import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 import { buildOpeningPrompt } from '../../../../src/llm/prompts/opening-prompt.js';
 import type { OpeningContext } from '../../../../src/llm/context-types.js';
 import {
@@ -60,18 +59,7 @@ describe('buildOpeningPrompt with active state', () => {
           forbiddenRecaps: ['No mention of previous chapters'],
         },
         dramaticQuestion: 'Will you pay the debt or confront the collector?',
-        choiceIntents: [
-          {
-            hook: 'Pay what you owe',
-            choiceType: ChoiceType.RESOURCE_COMMITMENT,
-            primaryDelta: PrimaryDelta.ITEM_CONTROL,
-          },
-          {
-            hook: 'Confront the collector',
-            choiceType: ChoiceType.CONFRONTATION,
-            primaryDelta: PrimaryDelta.THREAT_SHIFT,
-          },
-        ],
+        isEnding: false,
       },
     };
 

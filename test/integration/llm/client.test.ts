@@ -1,6 +1,5 @@
 import { generateOpeningPage, generatePageWriterOutput } from '../../../src/llm/client';
 import { ThreadType, Urgency } from '../../../src/models/state/index';
-import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { buildMinimalDecomposedCharacter } from '../../fixtures/decomposed';
 
 function createJsonResponse(status: number, body: unknown): Response {
@@ -186,18 +185,6 @@ describe('llm client integration (mocked fetch)', () => {
           forbiddenRecaps: ['Do not restate the entire previous scene'],
         },
         dramaticQuestion: 'Can you escape the observatory before the dome seals?',
-        choiceIntents: [
-          {
-            hook: 'Jam the nearest gear with your wrench',
-            choiceType: ChoiceType.TACTICAL_APPROACH,
-            primaryDelta: PrimaryDelta.CONSTRAINT_CHANGE,
-          },
-          {
-            hook: 'Follow the moving starlight pattern',
-            choiceType: ChoiceType.INVESTIGATION,
-            primaryDelta: PrimaryDelta.INFORMATION_REVEALED,
-          },
-        ],
       },
       { apiKey: 'test-key' }
     );

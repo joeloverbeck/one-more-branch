@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import {
-  ChoiceIntentSchema,
   addDuplicateIssues,
   addRequiredTrimmedTextIssue,
 } from './shared-state-intent-schemas.js';
@@ -16,24 +15,8 @@ export const PagePlannerResultSchema = z
     }),
     dramaticQuestion: z.string(),
     isEnding: z.boolean(),
-    choiceIntents: z.array(ChoiceIntentSchema).max(4),
   })
   .superRefine((data, ctx) => {
-    if (!data.isEnding && data.choiceIntents.length < 2) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['choiceIntents'],
-        message: 'Non-ending scenes require at least 2 choice intents',
-      });
-    }
-    if (data.isEnding && data.choiceIntents.length > 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['choiceIntents'],
-        message: 'Ending scenes must have an empty choiceIntents array',
-      });
-    }
-
     addRequiredTrimmedTextIssue(data.sceneIntent, ['sceneIntent'], ctx);
     addRequiredTrimmedTextIssue(
       data.writerBrief.openingLineDirective,
@@ -46,11 +29,6 @@ export const PagePlannerResultSchema = z
     addDuplicateIssues(data.writerBrief.forbiddenRecaps, ['writerBrief', 'forbiddenRecaps'], ctx);
 
     addRequiredTrimmedTextIssue(data.dramaticQuestion, ['dramaticQuestion'], ctx);
-
-    data.choiceIntents.forEach((intent, index) => {
-      addRequiredTrimmedTextIssue(intent.hook, ['choiceIntents', index, 'hook'], ctx);
-    });
-
   });
 
 export type ValidatedPagePlannerResult = z.infer<typeof PagePlannerResultSchema>;

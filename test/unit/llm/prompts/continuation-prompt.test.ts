@@ -2,7 +2,6 @@ import type { AccumulatedStructureState, StoryStructure } from '../../../../src/
 import type { ContinuationContext } from '../../../../src/llm/context-types';
 import type { ActiveState } from '../../../../src/models/state/active-state';
 import { buildContinuationPrompt } from '../../../../src/llm/prompts/continuation-prompt';
-import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 import {
   buildMinimalDecomposedCharacter as makeMinimalDecomposedCharacter,
   MINIMAL_DECOMPOSED_WORLD,
@@ -206,18 +205,7 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
             forbiddenRecaps: ['No replay of the prior rooftop chase'],
           },
           dramaticQuestion: 'Will you evade the checkpoint or confront the patrol?',
-          choiceIntents: [
-            {
-              hook: 'Slip through the shadows',
-              choiceType: ChoiceType.TACTICAL_APPROACH,
-              primaryDelta: PrimaryDelta.LOCATION_CHANGE,
-            },
-            {
-              hook: 'Confront the patrol head-on',
-              choiceType: ChoiceType.CONFRONTATION,
-              primaryDelta: PrimaryDelta.THREAT_SHIFT,
-            },
-          ],
+          isEnding: false,
         },
       })
     );

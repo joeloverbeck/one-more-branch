@@ -1,8 +1,5 @@
 import type { JsonSchema } from '../llm-client-types.js';
 import {
-  PAGE_PLANNER_CHOICE_INTENT_REQUIRED_FIELDS,
-  PAGE_PLANNER_CHOICE_TYPE_ENUM,
-  PAGE_PLANNER_PRIMARY_DELTA_ENUM,
   PAGE_PLANNER_REQUIRED_FIELDS,
   PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS,
 } from '../page-planner-contract.js';
@@ -38,34 +35,7 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
         isEnding: {
           type: 'boolean',
           description:
-            'True only when this scene is the story\'s final conclusion. When true, choiceIntents must be empty.',
-        },
-        choiceIntents: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              hook: {
-                type: 'string',
-                description:
-                  'A 1-sentence description of what the PROTAGONIST can do or decide. Frame as the protagonist\'s available action, never as another character\'s action.',
-              },
-              choiceType: {
-                type: 'string',
-                enum: PAGE_PLANNER_CHOICE_TYPE_ENUM,
-                description: 'The intended ChoiceType for this choice.',
-              },
-              primaryDelta: {
-                type: 'string',
-                enum: PAGE_PLANNER_PRIMARY_DELTA_ENUM,
-                description: 'The intended PrimaryDelta for this choice.',
-              },
-            },
-            required: [...PAGE_PLANNER_CHOICE_INTENT_REQUIRED_FIELDS],
-            additionalProperties: false,
-          },
-          description:
-            'Array of 2-4 proposed choice intents for the writer. Each intent suggests a hook, choiceType, and primaryDelta. The writer may adjust these if the narrative takes an unexpected turn.',
+            'True only when this scene is the story\'s final conclusion. Default to false.',
         },
       },
       required: [...PAGE_PLANNER_REQUIRED_FIELDS],

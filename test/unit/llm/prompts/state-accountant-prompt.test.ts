@@ -24,18 +24,7 @@ describe('buildStateAccountantPrompt', () => {
       forbiddenRecaps: ['Avoid long recap'],
     },
     dramaticQuestion: 'Will you stand your ground or retreat?',
-    choiceIntents: [
-      {
-        hook: 'Stand and fight',
-        choiceType: 'CONFRONTATION',
-        primaryDelta: 'THREAT_SHIFT',
-      },
-      {
-        hook: 'Retreat through side passage',
-        choiceType: 'AVOIDANCE_RETREAT',
-        primaryDelta: 'LOCATION_CHANGE',
-      },
-    ],
+    isEnding: false,
   };
 
   const openingContext: OpeningPagePlanContext = {

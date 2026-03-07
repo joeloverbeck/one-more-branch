@@ -23,7 +23,6 @@ import type {
 } from '../../../src/llm/writer-types';
 import type { PagePlan, PagePlanGenerationResult } from '../../../src/llm/planner-types';
 import { LLMError } from '../../../src/llm/llm-client-types';
-import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import {
   createBeatDeviation,
   createNoDeviation,
@@ -239,18 +238,7 @@ describe('LLM types', () => {
           forbiddenRecaps: ['Do not restate full prior scene chronology'],
         },
         dramaticQuestion: 'Will you cross the bridge before it collapses or find another way?',
-        choiceIntents: [
-          {
-            hook: 'Sprint across the swaying bridge',
-            choiceType: ChoiceType.CONFRONTATION,
-            primaryDelta: PrimaryDelta.THREAT_SHIFT,
-          },
-          {
-            hook: 'Search for a safer crossing downstream',
-            choiceType: ChoiceType.TACTICAL_APPROACH,
-            primaryDelta: PrimaryDelta.LOCATION_CHANGE,
-          },
-        ],
+        isEnding: false,
       };
 
       expect(plan.stateIntents.threads.add[0].threadType).toBe(ThreadType.DANGER);
@@ -314,18 +302,7 @@ describe('LLM types', () => {
           forbiddenRecaps: [],
         },
         dramaticQuestion: 'Will you escalate the danger or retreat?',
-        choiceIntents: [
-          {
-            hook: 'Push forward into danger',
-            choiceType: ChoiceType.CONFRONTATION,
-            primaryDelta: PrimaryDelta.THREAT_SHIFT,
-          },
-          {
-            hook: 'Fall back to safety',
-            choiceType: ChoiceType.AVOIDANCE_RETREAT,
-            primaryDelta: PrimaryDelta.LOCATION_CHANGE,
-          },
-        ],
+        isEnding: false,
         rawResponse: '{"sceneIntent":"Escalate danger and force a commitment."}',
       };
 

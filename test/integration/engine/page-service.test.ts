@@ -28,7 +28,6 @@ import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import { createInitialStructureState } from '@/models/story-arc';
 import type { StoryStructure } from '@/models/story-arc';
-import { ChoiceType, PrimaryDelta } from '@/models/choice-enums';
 import { LLMError } from '@/llm/llm-client-types';
 import type { CanonFact } from '@/models/state/canon';
 import type { AnalystResult } from '@/llm/analyst-types';
@@ -403,18 +402,6 @@ function buildPagePlanResult(
       forbiddenRecaps: ['Do not summarize prior page'],
     },
     dramaticQuestion: 'Will you confront the danger or seek another path?',
-    choiceIntents: [
-      {
-        hook: 'Face the threat directly',
-        choiceType: ChoiceType.CONFRONTATION,
-        primaryDelta: PrimaryDelta.THREAT_SHIFT,
-      },
-      {
-        hook: 'Find an alternative route',
-        choiceType: ChoiceType.TACTICAL_APPROACH,
-        primaryDelta: PrimaryDelta.LOCATION_CHANGE,
-      },
-    ],
     rawResponse: '{"ok":true}',
     ...overrides,
   };
@@ -429,7 +416,6 @@ function buildReducedPagePlanResult(
     continuityAnchors: base.continuityAnchors,
     writerBrief: base.writerBrief,
     dramaticQuestion: base.dramaticQuestion,
-    choiceIntents: base.choiceIntents,
     rawResponse: base.rawResponse,
     ...overrides,
   };
@@ -770,7 +756,7 @@ describe('page-service integration', () => {
           continuityAnchors: pagePlan.continuityAnchors,
           writerBrief: pagePlan.writerBrief,
           dramaticQuestion: pagePlan.dramaticQuestion,
-          choiceIntents: pagePlan.choiceIntents,
+
           rawResponse: pagePlan.rawResponse,
         })
       );
@@ -799,7 +785,7 @@ describe('page-service integration', () => {
             stateIntents: pagePlan.stateIntents,
             writerBrief: pagePlan.writerBrief,
             dramaticQuestion: pagePlan.dramaticQuestion,
-            choiceIntents: pagePlan.choiceIntents,
+  
           }),
         }),
         expect.any(Object)
@@ -811,7 +797,7 @@ describe('page-service integration', () => {
           stateIntents: pagePlan.stateIntents,
           writerBrief: pagePlan.writerBrief,
           dramaticQuestion: pagePlan.dramaticQuestion,
-          choiceIntents: pagePlan.choiceIntents,
+
         }),
         expect.objectContaining({
           narrative: expect.any(String),
@@ -1184,7 +1170,7 @@ describe('page-service integration', () => {
           continuityAnchors: pagePlan.continuityAnchors,
           writerBrief: pagePlan.writerBrief,
           dramaticQuestion: pagePlan.dramaticQuestion,
-          choiceIntents: pagePlan.choiceIntents,
+
           rawResponse: pagePlan.rawResponse,
         })
       );
@@ -1214,7 +1200,7 @@ describe('page-service integration', () => {
           stateIntents: pagePlan.stateIntents,
           writerBrief: pagePlan.writerBrief,
           dramaticQuestion: pagePlan.dramaticQuestion,
-          choiceIntents: pagePlan.choiceIntents,
+
         }),
         expect.any(Object)
       );
@@ -1225,7 +1211,7 @@ describe('page-service integration', () => {
           stateIntents: pagePlan.stateIntents,
           writerBrief: pagePlan.writerBrief,
           dramaticQuestion: pagePlan.dramaticQuestion,
-          choiceIntents: pagePlan.choiceIntents,
+
         }),
         expect.objectContaining({
           narrative: expect.any(String),

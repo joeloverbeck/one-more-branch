@@ -34,7 +34,6 @@ export function detectMentionedCharacters(context: LorekeeperContext): string[] 
     plan.sceneIntent,
     plan.dramaticQuestion,
     ...plan.continuityAnchors,
-    ...plan.choiceIntents.map((ci) => ci.hook),
     plan.writerBrief.openingLineDirective,
     ...plan.writerBrief.mustIncludeBeats,
     ...plan.writerBrief.forbiddenRecaps,
@@ -207,14 +206,6 @@ ${context.previousNarrative}
 
 `;
 
-  const choiceIntentSection =
-    plan.choiceIntents.length > 0
-      ? `Choice Intents:
-${plan.choiceIntents.map((intent, i) => `${i + 1}. [${intent.choiceType} / ${intent.primaryDelta}] ${intent.hook}`).join('\n')}
-
-`
-      : '';
-
   const mentionedCharacters = detectMentionedCharacters(context);
   const mentionedCharacterDirective =
     mentionedCharacters.length > 0
@@ -230,7 +221,7 @@ Scene Intent: ${plan.sceneIntent}
 Dramatic Question: ${plan.dramaticQuestion}
 Continuity Anchors:
 ${plan.continuityAnchors.map((anchor) => `- ${anchor}`).join('\n') || '- (none)'}
-${choiceIntentSection}${mentionedCharacterDirective}
+${mentionedCharacterDirective}
 === FULL STORY CONTEXT ===
 
 ${context.decomposedWorld.facts.length > 0 ? formatDecomposedWorldForPrompt(context.decomposedWorld) : 'WORLDBUILDING:\n(none provided)'}

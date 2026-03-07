@@ -19,39 +19,16 @@ describe('PAGE_PLANNER_GENERATION_SCHEMA', () => {
       'continuityAnchors',
       'writerBrief',
       'dramaticQuestion',
-      'choiceIntents',
       'isEnding',
     ]);
     expect(schema.additionalProperties).toBe(false);
     expect(schema.properties).not.toHaveProperty('stateIntents');
+    expect(schema.properties).not.toHaveProperty('choiceIntents');
   });
 
   it('should not use minItems > 1 or maxItems (unsupported by Anthropic)', () => {
     const schemaStr = JSON.stringify(PAGE_PLANNER_GENERATION_SCHEMA);
     expect(schemaStr).not.toMatch(/"minItems":\s*[2-9]/);
     expect(schemaStr).not.toMatch(/"maxItems"/);
-  });
-
-  it('defines choice intent enum values', () => {
-    const schema = PAGE_PLANNER_GENERATION_SCHEMA.json_schema.schema as {
-      properties: Record<string, unknown>;
-    };
-    const choiceIntents = schema.properties.choiceIntents as {
-      items: { properties: Record<string, { enum?: string[]; description?: string }> };
-    };
-
-    expect(choiceIntents.items.properties.choiceType?.enum).toContain('CONFRONTATION');
-    expect(choiceIntents.items.properties.primaryDelta?.enum).toContain('THREAT_SHIFT');
-  });
-
-  it('hook description mentions PROTAGONIST perspective', () => {
-    const schema = PAGE_PLANNER_GENERATION_SCHEMA.json_schema.schema as {
-      properties: Record<string, unknown>;
-    };
-    const choiceIntents = schema.properties.choiceIntents as {
-      items: { properties: Record<string, { description?: string }> };
-    };
-
-    expect(choiceIntents.items.properties.hook?.description).toContain('PROTAGONIST');
   });
 });

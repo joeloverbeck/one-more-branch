@@ -334,7 +334,7 @@ function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefin
     lines.push(
       '- Create circumstances that naturally trigger this emotional state - environment, NPC actions, or consequences of the previous choice.'
     );
-    lines.push("- Let the emotion color the protagonist's decision-making in the choiceIntents.");
+    lines.push("- Let the emotion color the protagonist's decision-making in the scene plan.");
     lines.push('');
   }
 
@@ -365,7 +365,7 @@ function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefin
       '- Include a must-include beat in writerBrief that reflects the protagonist voicing this intent.'
     );
     lines.push('- Consider how NPCs and the situation would react to this kind of statement.');
-    lines.push("- Let the speech intent influence at least one choiceIntent's consequences.");
+    lines.push("- Let the speech intent influence the scene's dramatic direction.");
     lines.push('');
   }
 
@@ -425,13 +425,13 @@ export function buildEscalationDirective(
       lines.push(`Secondary escalation mechanism: ${activeBeat.secondaryEscalationType} — layer this as an additional pressure axis in the same scene.`);
     }
     if (activeBeat.crisisType) {
-      lines.push(`Crisis type: ${activeBeat.crisisType} — shape choiceIntents so the dilemma matches this crisis form.`);
+      lines.push(`Crisis type: ${activeBeat.crisisType} — shape the scene so the dilemma matches this crisis form.`);
     }
     if (activeBeat.uniqueScenarioHook) {
       lines.push(`Unique scenario hook: ${activeBeat.uniqueScenarioHook}`);
     }
     if (activeBeat.approachVectors && activeBeat.approachVectors.length > 0) {
-      lines.push(`Approach vectors: ${activeBeat.approachVectors.join(', ')} — consider these when designing choiceIntents. Each choice should lean toward a different approach vector where possible.`);
+      lines.push(`Approach vectors: ${activeBeat.approachVectors.join(', ')} — consider these when designing the scene's dramatic question.`);
     }
     lines.push('Requirements:');
     lines.push(
@@ -458,13 +458,13 @@ export function buildEscalationDirective(
       lines.push(`Secondary turning point mechanism: ${activeBeat.secondaryEscalationType} — ensure the irreversible shift lands across both escalation axes.`);
     }
     if (activeBeat.crisisType) {
-      lines.push(`Crisis type: ${activeBeat.crisisType} — shape choiceIntents so the pivotal decision matches this crisis form.`);
+      lines.push(`Crisis type: ${activeBeat.crisisType} — shape the scene so the pivotal decision matches this crisis form.`);
     }
     if (activeBeat.uniqueScenarioHook) {
       lines.push(`Unique scenario hook: ${activeBeat.uniqueScenarioHook}`);
     }
     if (activeBeat.approachVectors && activeBeat.approachVectors.length > 0) {
-      lines.push(`Approach vectors: ${activeBeat.approachVectors.join(', ')} — consider these when designing choiceIntents. Each choice should lean toward a different approach vector where possible.`);
+      lines.push(`Approach vectors: ${activeBeat.approachVectors.join(', ')} — consider these when designing the scene's dramatic question.`);
     }
     lines.push('Requirements:');
     lines.push(
@@ -509,7 +509,7 @@ export function buildEscalationDirective(
       '- FALSE_DEFEAT: apparent failure that plants leverage or insight for later recovery'
     );
     lines.push(
-      '- Choice intents should force the protagonist to commit under the new understanding created by the midpoint turn'
+      '- The scene should force the protagonist to commit under the new understanding created by the midpoint turn'
     );
   }
 
@@ -522,7 +522,7 @@ export function buildEscalationDirective(
       `Ensure the closing image meaningfully mirrors or contrasts the opening image: "${structure.openingImage}".`
     );
     lines.push(
-      '- The final choice intents should create pathways that can all credibly converge to this ending visual.'
+      '- The scene should create pathways that can credibly converge to this ending visual.'
     );
     lines.push(
       'Consider setting isEnding to true if this resolution beat completes the story arc and no further scenes are needed.'
@@ -571,7 +571,7 @@ Value spectrum for this story:
 - Contradictory: ${vs.contradictory}
 - Negation of negation: ${vs.negationOfNegation}
 
-Plan this scene so the protagonist's situation moves along the value spectrum. Each scene should test the moral argument through action and consequence — not exposition. The dramatic question and choice intents should force the protagonist to confront different points on the spectrum.
+Plan this scene so the protagonist's situation moves along the value spectrum. Each scene should test the moral argument through action and consequence — not exposition. The dramatic question should force the protagonist to confront different points on the spectrum.
 
 `;
 }
@@ -701,7 +701,7 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
 
   const protagonistName = context.decomposedCharacters.length > 0 ? context.decomposedCharacters[0]!.name : null;
   const protagonistDirective = includeProtagonist && protagonistName
-    ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist. All choiceIntents hooks must describe what ${protagonistName} can do or decide — never what other characters do.\n\n`
+    ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist.\n\n`
     : '';
 
   const guidanceSection = includeProtagonist

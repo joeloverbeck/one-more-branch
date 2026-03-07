@@ -12,18 +12,6 @@ function createValidPlannerPayload(): Record<string, unknown> {
     },
     dramaticQuestion: 'Will you hold the parapet or fall back to the stairwell?',
     isEnding: false,
-    choiceIntents: [
-      {
-        hook: 'Stand and return fire from cover',
-        choiceType: 'CONFRONTATION',
-        primaryDelta: 'THREAT_SHIFT',
-      },
-      {
-        hook: 'Fall back to the lower stair',
-        choiceType: 'AVOIDANCE_RETREAT',
-        primaryDelta: 'LOCATION_CHANGE',
-      },
-    ],
   };
 }
 
@@ -48,16 +36,13 @@ describe('validatePagePlannerResponse', () => {
     expect(() => validatePagePlannerResponse(rawJson, '{"raw":"planner"}')).toThrow(LLMError);
   });
 
-  it('trims and includes dramaticQuestion and choiceIntents in result', () => {
+  it('trims dramaticQuestion in result', () => {
     const rawJson = createValidPlannerPayload();
     rawJson.dramaticQuestion = '  Will you hold the parapet or fall back?  ';
-    (rawJson.choiceIntents as Array<{ hook: string }>)[0].hook = '  Stand and return fire  ';
 
     const result = validatePagePlannerResponse(rawJson, '{"raw":"planner"}');
 
     expect(result.dramaticQuestion).toBe('Will you hold the parapet or fall back?');
-    expect(result.choiceIntents).toHaveLength(2);
-    expect(result.choiceIntents[0].hook).toBe('Stand and return fire');
   });
 
   it('throws when dramaticQuestion is missing', () => {
@@ -74,37 +59,4 @@ describe('validatePagePlannerResponse', () => {
     expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
   });
 
-  it('throws when choiceIntents is missing', () => {
-    const rawJson = createValidPlannerPayload();
-    delete rawJson.choiceIntents;
-
-    expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
-  });
-
-  it('throws when choiceIntents has fewer than 2 entries', () => {
-    const rawJson = createValidPlannerPayload();
-    rawJson.choiceIntents = [
-      { hook: 'Only one intent', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-    ];
-
-    expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
-  });
-
-  it('throws when choiceIntents has invalid choiceType enum', () => {
-    const rawJson = createValidPlannerPayload();
-    (rawJson.choiceIntents as Array<{ choiceType: string }>)[0].choiceType = 'INVALID_TYPE';
-
-    expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
-  });
-
-  it('accepts choiceIntents with duplicate (choiceType, primaryDelta) pair', () => {
-    const rawJson = createValidPlannerPayload();
-    rawJson.choiceIntents = [
-      { hook: 'Stand and fight', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-      { hook: 'Attack from the flank', choiceType: 'CONFRONTATION', primaryDelta: 'THREAT_SHIFT' },
-    ];
-
-    const result = validatePagePlannerResponse(rawJson, '{"raw":"planner"}');
-    expect(result.choiceIntents).toHaveLength(2);
-  });
 });

@@ -21,7 +21,7 @@ Planner → Accountant → Lorekeeper → Writer → Reconciler → **Choice Gen
 
 ## Relationship to Planner
 
-The Planner produces `dramaticQuestion` and `choiceIntents` as a blueprint for choices. These are passed to the Choice Generator (not the writer). The Choice Generator uses them as guidance but may adapt if the narrative took an unexpected turn.
+The Planner produces `dramaticQuestion` as the thematic anchor for choices. This is passed to the Choice Generator (not the writer). The Choice Generator uses it as guidance along with the full scene context to autonomously ideate compelling choices.
 
 ## Input Context
 
@@ -33,7 +33,6 @@ The Planner produces `dramaticQuestion` and `choiceIntents` as a blueprint for c
 | `sceneSummary` | Writer output | Scene summary from writer |
 | `protagonistAffect` | Writer output | Protagonist emotional state at scene end |
 | `dramaticQuestion` | Planner output | The dramatic question choices should answer |
-| `choiceIntents` | Planner output | Blueprint choice intents with hooks |
 | `spine` | Story data | Story spine for thematic grounding |
 | `activeState` | Engine state | Current location, threats, constraints, threads |
 | `structure` | Story data | Story structure (acts/beats) |
@@ -82,11 +81,7 @@ Act Objective: {{act.objective}}
 
 DRAMATIC QUESTION: {{dramaticQuestion}}
 
-{{#if choiceIntents.length}}
-PLANNER CHOICE INTENTS (blueprint - adapt to the written scene):
-1. [choiceType / primaryDelta] hook
-2. [choiceType / primaryDelta] hook
-{{/if}}
+NEED VS WANT RULE: At least one choice should force the protagonist to choose between pursuing their Want and addressing their true Need from the spine.
 
 PROTAGONIST: {{protagonist.name}}
 Core Traits: {{protagonist.coreTraits}}

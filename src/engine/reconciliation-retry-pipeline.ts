@@ -39,7 +39,6 @@ function mergeReducedPlanAndAccountant(
     stateIntents: accountant.stateIntents,
     writerBrief: reducedPlan.writerBrief,
     dramaticQuestion: reducedPlan.dramaticQuestion,
-    choiceIntents: reducedPlan.choiceIntents,
     isEnding: reducedPlan.isEnding,
     rawResponse: `planner:${reducedPlan.rawResponse}\naccountant:${accountant.rawResponse}`,
   };

@@ -38,18 +38,6 @@ const validPlannerPayload = {
   },
   dramaticQuestion: 'Will you slip past the patrol or confront them before lockout?',
   isEnding: false,
-  choiceIntents: [
-    {
-      hook: 'Ghost past the patrol in shadow',
-      choiceType: 'TACTICAL_APPROACH',
-      primaryDelta: 'EXPOSURE_CHANGE',
-    },
-    {
-      hook: 'Confront the nearest sentry directly',
-      choiceType: 'CONFRONTATION',
-      primaryDelta: 'THREAT_SHIFT',
-    },
-  ],
 };
 
 function createJsonResponse(status: number, body: unknown): Response {
@@ -179,18 +167,7 @@ describe('planner-generation', () => {
       responseWithStructuredContent(
         JSON.stringify({
           ...validPlannerPayload,
-          choiceIntents: [
-            {
-              hook: '   ',
-              choiceType: 'CONFRONTATION',
-              primaryDelta: 'THREAT_SHIFT',
-            },
-            {
-              hook: 'Valid intent',
-              choiceType: 'AVOIDANCE_RETREAT',
-              primaryDelta: 'LOCATION_CHANGE',
-            },
-          ],
+          sceneIntent: '   ',
         })
       )
     );

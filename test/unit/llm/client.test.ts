@@ -27,7 +27,6 @@ import {
   validateApiKey,
 } from '../../../src/llm/client';
 import { LLMError } from '../../../src/llm/llm-client-types';
-import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums';
 import { ThreadType, Urgency } from '../../../src/models/state/index';
 import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
 
@@ -144,18 +143,7 @@ const validPlannerPayload = {
     forbiddenRecaps: ['Do not restate the full descent sequence.'],
   },
   dramaticQuestion: 'Will you push deeper or seal the vault behind you?',
-  choiceIntents: [
-    {
-      hook: 'Press forward toward the chanting',
-      choiceType: ChoiceType.CONFRONTATION,
-      primaryDelta: PrimaryDelta.THREAT_SHIFT,
-    },
-    {
-      hook: 'Seal the entrance and find another route',
-      choiceType: ChoiceType.TACTICAL_APPROACH,
-      primaryDelta: PrimaryDelta.LOCATION_CHANGE,
-    },
-  ],
+  isEnding: false,
 };
 
 const validReducedPlannerPayload = {
@@ -164,7 +152,6 @@ const validReducedPlannerPayload = {
   writerBrief: validPlannerPayload.writerBrief,
   dramaticQuestion: validPlannerPayload.dramaticQuestion,
   isEnding: false,
-  choiceIntents: validPlannerPayload.choiceIntents,
 };
 
 const validAccountantPayload = {

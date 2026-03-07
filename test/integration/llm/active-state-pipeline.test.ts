@@ -73,15 +73,6 @@ describe('Active state pipeline integration', () => {
       forbiddenRecaps: ['Do not recap previous pages'],
     },
     dramaticQuestion: 'Can you save the innkeeper before the roof caves in?',
-    choiceIntents: [
-      { hook: 'Rescue the innkeeper', choiceType: 'TACTICAL_APPROACH', primaryDelta: 'GOAL_SHIFT' },
-      {
-        hook: 'Retreat through the back door',
-        choiceType: 'AVOIDANCE_RETREAT',
-        primaryDelta: 'LOCATION_CHANGE',
-      },
-      { hook: 'Find water to fight the fire', choiceType: 'INVESTIGATION', primaryDelta: 'INFORMATION_REVEALED' },
-    ],
   };
 
   it('should populate activeStateChanges and accumulatedActiveState through the full pipeline', () => {

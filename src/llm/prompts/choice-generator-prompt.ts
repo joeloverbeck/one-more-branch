@@ -6,7 +6,6 @@ import type { AccumulatedStructureState, StoryStructure } from '../../models/sto
 import type { StorySpine } from '../../models/story-spine.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { StoryBible } from '../lorekeeper-types.js';
-import type { ChoiceIntent } from '../planner-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { STRICT_CHOICE_GUIDELINES } from './sections/shared/choice-guidelines.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
@@ -22,7 +21,6 @@ export interface ChoiceGeneratorContext {
   readonly sceneSummary: string;
   readonly protagonistAffect: ProtagonistAffect;
   readonly dramaticQuestion: string;
-  readonly choiceIntents: readonly ChoiceIntent[];
   readonly spine?: StorySpine;
   readonly activeState: ActiveState;
   readonly structure?: StoryStructure;
@@ -84,20 +82,8 @@ Motivation: ${affect.dominantMotivation}
 `;
 }
 
-function buildChoiceIntentsSection(
-  dramaticQuestion: string,
-  choiceIntents: readonly ChoiceIntent[]
-): string {
-  if (choiceIntents.length === 0) {
-    return `DRAMATIC QUESTION: ${dramaticQuestion}
-
-`;
-  }
-
+function buildDramaticQuestionSection(dramaticQuestion: string): string {
   return `DRAMATIC QUESTION: ${dramaticQuestion}
-
-PLANNER CHOICE INTENTS (blueprint - adapt to the written scene):
-${choiceIntents.map((intent, i) => `${i + 1}. [${intent.choiceType} / ${intent.primaryDelta}] ${intent.hook}`).join('\n')}
 
 `;
 }
@@ -130,9 +116,8 @@ export function buildChoiceGeneratorPrompt(
   );
   const protagonistSection = buildProtagonistSection(context.decomposedCharacters);
   const affectSection = buildAffectSection(context.protagonistAffect);
-  const choiceIntentsSection = buildChoiceIntentsSection(
-    context.dramaticQuestion,
-    context.choiceIntents
+  const dramaticQuestionSection = buildDramaticQuestionSection(
+    context.dramaticQuestion
   );
   const bibleSection = context.storyBible
     ? buildStoryBibleContextSection(context.storyBible)
@@ -149,7 +134,9 @@ ${context.narrative}
 === SCENE SUMMARY ===
 ${context.sceneSummary}
 
-${spineSection}${beatSection}${choiceIntentsSection}${protagonistSection}${affectSection}${bibleSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${guidelinesSection}REQUIREMENTS:
+${spineSection}${beatSection}${dramaticQuestionSection}${protagonistSection}${affectSection}${bibleSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${guidelinesSection}NEED VS WANT RULE: At least one choice should force the protagonist to choose between pursuing their Want and addressing their true Need from the spine. This tension creates the most compelling dramatic choices.
+
+REQUIREMENTS:
 1. Generate 2-4 structured choice objects (typically 3; add a 4th only when the situation truly warrants another distinct path)
 2. Each choice MUST have a different choiceType OR primaryDelta from all other choices
 3. Choices must flow from the scene's final dramatic beat - reference specific moments from the narrative

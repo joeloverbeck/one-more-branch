@@ -86,7 +86,7 @@ ${initialAgendas
 
   const protagonistName = context.decomposedCharacters.length > 0 ? context.decomposedCharacters[0]!.name : null;
   const protagonistDirective = includeProtagonist && protagonistName
-    ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist. All choiceIntents hooks must describe what ${protagonistName} can do or decide — never what other characters do.\n\n`
+    ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist.\n\n`
     : '';
 
   const valueSpectrumSection = buildOpeningValueSpectrumSection(context.storyKernel);
@@ -94,5 +94,5 @@ ${initialAgendas
   return `=== PLANNER CONTEXT: OPENING ===
 ${worldSection}${npcsSection}${agendasSection}${startingSituationSection}TONE/GENRE: ${context.tone}${toneFeelLine}${toneAvoidLine}
 
-${structureSection}${valueSpectrumSection}${protagonistDirective}Plan the first page scene intent, continuity anchors, writer brief, dramatic question, and choice intents using this opening setup.`;
+${structureSection}${valueSpectrumSection}${protagonistDirective}Plan the first page scene intent, continuity anchors, writer brief, and dramatic question using this opening setup.`;
 }
