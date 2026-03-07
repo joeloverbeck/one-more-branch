@@ -799,7 +799,7 @@ describe('LLM types', () => {
         deviationDetected: false,
         deviationReason: '',
         invalidatedBeatIds: [],
-        narrativeSummary: 'The protagonist continues the current scene.',
+        sceneSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none',
@@ -851,7 +851,7 @@ rawResponse: '{"beatConcluded":true}',
         deviationDetected: true,
         deviationReason: 'Protagonist allied with the antagonist',
         invalidatedBeatIds: ['2.2', '2.3'],
-        narrativeSummary: 'The hero joined forces with the villain',
+        sceneSummary: 'The hero joined forces with the villain',
         pacingIssueDetected: false,
         pacingIssueReason: '',
         recommendedAction: 'none',
@@ -893,7 +893,7 @@ rawResponse: '{"deviationDetected":true}',
 
       expect(result.deviationDetected).toBe(true);
       expect(result.invalidatedBeatIds).toEqual(['2.2', '2.3']);
-      expect(result.narrativeSummary).toContain('villain');
+      expect(result.sceneSummary).toContain('villain');
     });
   });
 
@@ -1070,7 +1070,7 @@ rawResponse: '{"deviationDetected":true}',
         },
         completedBeats: [],
         plannedBeats: [],
-        narrativeSummary: 'The protagonist now controls a key evacuation route.',
+        sceneSummary: 'The protagonist now controls a key evacuation route.',
         currentActIndex: 1,
         currentBeatIndex: 0,
         deviationReason: 'Player allied with former rivals',

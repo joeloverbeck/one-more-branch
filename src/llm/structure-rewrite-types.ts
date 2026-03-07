@@ -57,7 +57,7 @@ export interface StructureRewriteContext {
   readonly decomposedWorld: DecomposedWorld;
   readonly completedBeats: readonly CompletedBeat[];
   readonly plannedBeats: readonly PlannedBeat[];
-  readonly narrativeSummary: string;
+  readonly sceneSummary: string;
   readonly currentActIndex: number;
   readonly currentBeatIndex: number;
   readonly deviationReason: string;

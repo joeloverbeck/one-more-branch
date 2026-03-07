@@ -19,6 +19,12 @@ export interface NpcIntelligenceResult {
   dramaticIronyOpportunities: string[];
 }
 
+export interface AgendaResolverAnalystSignals {
+  readonly npcCoherenceIssues?: string;
+  readonly relationshipShiftsDetected?: readonly DetectedRelationshipShift[];
+  readonly knowledgeAsymmetryDetected?: readonly KnowledgeAsymmetry[];
+}
+
 export interface NpcIntelligenceContext {
   readonly narrative: string;
   readonly protagonistName: string;

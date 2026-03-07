@@ -10,6 +10,7 @@ import { rewriteSpine } from './spine-rewriter';
 
 export interface SpineDeviationContext {
   readonly analystResult: AnalystResult | null;
+  readonly sceneSummary: string;
   readonly story: Story;
   readonly apiKey: string;
   readonly logContext: Record<string, unknown>;
@@ -31,7 +32,7 @@ export interface SpineDeviationResult {
 export async function handleSpineDeviationIfDetected(
   context: SpineDeviationContext
 ): Promise<SpineDeviationResult> {
-  const { analystResult, story } = context;
+  const { analystResult, story, sceneSummary } = context;
 
   if (
     !analystResult?.spineDeviationDetected ||
@@ -61,7 +62,7 @@ export async function handleSpineDeviationIfDetected(
         currentSpine: story.spine,
         invalidatedElement: analystResult.spineInvalidatedElement,
         deviationReason: analystResult.spineDeviationReason,
-        narrativeSummary: analystResult.narrativeSummary,
+        sceneSummary,
         decomposedCharacters: story.decomposedCharacters!,
         decomposedWorld: story.decomposedWorld!,
       },

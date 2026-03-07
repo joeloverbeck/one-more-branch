@@ -344,7 +344,7 @@ function buildAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
     deviationDetected: false,
     deviationReason: '',
     invalidatedBeatIds: [],
-    narrativeSummary: 'The protagonist continues the current scene.',
+    sceneSummary: 'The protagonist continues the current scene.',
     pacingIssueDetected: false,
     pacingIssueReason: '',
     recommendedAction: 'none',
@@ -1371,7 +1371,7 @@ describe('page-service integration', () => {
           deviationDetected: true,
           deviationReason: 'Betrayal invalidates trust-based beats.',
           invalidatedBeatIds: ['1.2', '2.1'],
-          narrativeSummary: 'The protagonist chose betrayal.',
+          sceneSummary: 'The protagonist chose betrayal.',
         })
       );
 
@@ -1864,7 +1864,7 @@ describe('page-service integration', () => {
           deviationDetected: true,
           deviationReason: 'Betrayal breaks trust arc.',
           invalidatedBeatIds: ['1.2'],
-          narrativeSummary: 'The protagonist betrayed the group.',
+          sceneSummary: 'The protagonist betrayed the group.',
           recommendedAction: 'nudge',
           pacingIssueDetected: true,
           pacingIssueReason: 'scene moving too slowly',
@@ -2246,7 +2246,7 @@ describe('page-service integration', () => {
           deviationDetected: true,
           deviationReason: 'Beat-level deviation also detected.',
           invalidatedBeatIds: ['1.2'],
-          narrativeSummary: 'Major story pivot.',
+          sceneSummary: 'Major story pivot.',
         })
       );
 
@@ -2646,14 +2646,8 @@ describe('page-service integration', () => {
         })
       );
 
-      // Resolved promise metadata should be recorded
-      expect(page.resolvedPromiseMeta).toHaveProperty('pr-1');
-      expect(page.resolvedPromiseMeta?.['pr-1']).toEqual(
-        expect.objectContaining({
-          promiseType: 'CHEKHOV_GUN',
-          scope: 'ACT',
-        })
-      );
+      // Resolved promise metadata is no longer persisted on Page
+      expect((page as { resolvedPromiseMeta?: unknown }).resolvedPromiseMeta).toBeUndefined();
     });
   });
 });

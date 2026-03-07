@@ -17,7 +17,11 @@ export {
   normalizeProtagonistGuidance,
   normalizeSelectedSceneDirection,
 } from './request-normalizers.js';
-export { buildPagePanelData, buildInsightsThreadMeta } from './page-panel-data.js';
+export {
+  buildPagePanelData,
+  buildInsightsThreadMeta,
+  buildInsightsPromiseMeta,
+} from './page-panel-data.js';
 export { buildBeginErrorResponse, buildChoiceErrorResponse } from './play-error-handler.js';
 export type { ErrorResponsePayload } from './play-error-handler.js';
 export type { PagePanelData } from './page-panel-data.js';

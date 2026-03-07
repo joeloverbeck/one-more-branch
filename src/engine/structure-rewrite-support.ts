@@ -171,7 +171,7 @@ export function buildRewriteContext(
     decomposedWorld: story.decomposedWorld!,
     completedBeats,
     plannedBeats,
-    narrativeSummary: deviation.narrativeSummary,
+    sceneSummary: deviation.sceneSummary,
     currentActIndex: structureState.currentActIndex,
     currentBeatIndex: structureState.currentBeatIndex,
     deviationReason: deviation.reason,
@@ -240,7 +240,7 @@ export function buildPacingRewriteContext(
   structureVersion: VersionedStoryStructure,
   structureState: AccumulatedStructureState,
   pacingIssueReason: string,
-  narrativeSummary: string
+  sceneSummary: string
 ): StructureRewriteContext {
   const structure = structureVersion.structure;
   const completedBeats = extractCompletedBeats(structure, structureState);
@@ -256,7 +256,7 @@ export function buildPacingRewriteContext(
     decomposedWorld: story.decomposedWorld!,
     completedBeats,
     plannedBeats,
-    narrativeSummary,
+    sceneSummary,
     currentActIndex: structureState.currentActIndex,
     currentBeatIndex: structureState.currentBeatIndex,
     deviationReason: `Pacing issue: ${pacingIssueReason}`,

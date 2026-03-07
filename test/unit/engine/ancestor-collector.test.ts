@@ -14,7 +14,7 @@ function buildAnalystResult(
     deviationDetected: false,
     deviationReason: '',
     invalidatedBeatIds: [],
-    narrativeSummary: '',
+    sceneSummary: '',
     pacingIssueDetected: false,
     pacingIssueReason: '',
     recommendedAction: 'none',

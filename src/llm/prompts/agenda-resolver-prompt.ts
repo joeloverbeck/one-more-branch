@@ -8,7 +8,7 @@ import type {
 import type { ActiveState } from '../../models/state/active-state.js';
 import type { StoryStructure } from '../../models/story-arc.js';
 import type { StorySpine } from '../../models/story-spine.js';
-import type { DetectedRelationshipShift } from '../analyst-types.js';
+import type { AgendaResolverAnalystSignals } from '../npc-intelligence-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
@@ -41,9 +41,8 @@ export interface AgendaResolverPromptContext {
   readonly structure?: StoryStructure;
   readonly spine?: StorySpine;
   readonly activeState: ActiveState;
-  readonly analystNpcCoherenceIssues?: string;
+  readonly analystSignals?: AgendaResolverAnalystSignals;
   readonly currentRelationships?: AccumulatedNpcRelationships;
-  readonly analystRelationshipShifts?: readonly DetectedRelationshipShift[];
   readonly deviationContext?: {
     readonly reason: string;
     readonly newBeats: readonly {
@@ -109,11 +108,12 @@ ${formatCurrentRelationships(context.currentRelationships)}
 }
 
 function buildAnalystRelationshipShiftsSection(context: AgendaResolverPromptContext): string {
-  if (!context.analystRelationshipShifts || context.analystRelationshipShifts.length === 0) {
+  const shifts = context.analystSignals?.relationshipShiftsDetected;
+  if (!shifts || shifts.length === 0) {
     return '';
   }
 
-  const lines = context.analystRelationshipShifts.map(
+  const lines = shifts.map(
     (s) =>
       `- ${s.npcName}: ${s.shiftDescription} (suggested valence change: ${s.suggestedValenceChange > 0 ? '+' : ''}${s.suggestedValenceChange}${s.suggestedNewDynamic ? `, suggested new dynamic: ${s.suggestedNewDynamic}` : ''})`
   );
@@ -121,6 +121,26 @@ function buildAnalystRelationshipShiftsSection(context: AgendaResolverPromptCont
   return `ANALYST RELATIONSHIP SHIFT SIGNALS:
 ${lines.join('\n')}
 Use these as guidance but make your own judgment on final relationship values.
+
+`;
+}
+
+function buildAnalystKnowledgeAsymmetrySection(context: AgendaResolverPromptContext): string {
+  const asymmetry = context.analystSignals?.knowledgeAsymmetryDetected;
+  if (!asymmetry || asymmetry.length === 0) {
+    return '';
+  }
+
+  const lines = asymmetry.map((entry) => {
+    const knownFacts = entry.knownFacts.length > 0 ? entry.knownFacts.join('; ') : '(none)';
+    const falseBeliefs = entry.falseBeliefs.length > 0 ? entry.falseBeliefs.join('; ') : '(none)';
+    const secrets = entry.secrets.length > 0 ? entry.secrets.join('; ') : '(none)';
+    return `- ${entry.characterName}: known facts=${knownFacts}; false beliefs=${falseBeliefs}; secrets=${secrets}`;
+  });
+
+  return `ANALYST KNOWLEDGE ASYMMETRY SIGNALS:
+${lines.join('\n')}
+Use these signals to update NPC agendas and relationship tension/leverage when information access changed.
 
 `;
 }
@@ -177,6 +197,7 @@ Overall Theme: ${context.structure.overallTheme}
 
   const relationshipsSection = buildRelationshipsSection(context);
   const analystShiftsSection = buildAnalystRelationshipShiftsSection(context);
+  const analystKnowledgeAsymmetrySection = buildAnalystKnowledgeAsymmetrySection(context);
 
   const spineSection = buildSpineSection(context.spine);
 
@@ -193,7 +214,7 @@ ${context.sceneSummary}
 NARRATIVE:
 ${context.narrative}
 
-${analystShiftsSection}${context.analystNpcCoherenceIssues ? `ANALYST COHERENCE NOTE:\nThe scene analyst flagged the following NPC behavior inconsistency: ${context.analystNpcCoherenceIssues}\nConsider whether this represents intentional NPC evolution (update the agenda accordingly) or a writer error (maintain the original agenda direction).\n\n` : ''}Return only agendas and relationships that changed. If nothing material changed, return empty arrays for both updatedAgendas and updatedRelationships.`;
+${analystShiftsSection}${analystKnowledgeAsymmetrySection}${context.analystSignals?.npcCoherenceIssues ? `ANALYST COHERENCE NOTE:\nThe scene analyst flagged the following NPC behavior inconsistency: ${context.analystSignals.npcCoherenceIssues}\nConsider whether this represents intentional NPC evolution (update the agenda accordingly) or a writer error (maintain the original agenda direction).\n\n` : ''}Return only agendas and relationships that changed. If nothing material changed, return empty arrays for both updatedAgendas and updatedRelationships.`;
 
   return [
     { role: 'system', content: buildAgendaResolverSystemPrompt(context) },

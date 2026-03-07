@@ -189,7 +189,7 @@ export interface BeatDeviation {
   readonly detected: true;
   readonly reason: string;
   readonly invalidatedBeatIds: readonly string[];
-  readonly narrativeSummary: string;
+  readonly sceneSummary: string;
 }
 
 export interface NoDeviation {
@@ -209,7 +209,7 @@ export function isNoDeviation(result: DeviationResult): result is NoDeviation {
 export function createBeatDeviation(
   reason: string,
   invalidatedBeatIds: readonly string[],
-  narrativeSummary: string
+  sceneSummary: string
 ): BeatDeviation {
   if (invalidatedBeatIds.length === 0) {
     throw new Error('BeatDeviation must have at least one invalidated beat ID');
@@ -219,7 +219,7 @@ export function createBeatDeviation(
     detected: true,
     reason,
     invalidatedBeatIds,
-    narrativeSummary,
+    sceneSummary,
   };
 }
 

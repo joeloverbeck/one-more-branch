@@ -1,4 +1,5 @@
 import { mergePageWriterAndReconciledStateWithAnalystResults } from '../../../src/llm/result-merger.js';
+import type { AnalystResult } from '../../../src/llm/analyst-types.js';
 import { ChoiceType, PrimaryDelta } from '../../../src/models/choice-enums.js';
 import { ThreatType } from '../../../src/models/index.js';
 import {
@@ -64,5 +65,33 @@ describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
     expect(result.reconciliationDiagnostics).toEqual([
       { code: 'WARN', message: 'diagnostic detail' },
     ]);
+  });
+
+  it('uses writer sceneSummary as the canonical deviation summary', () => {
+    const writer = createMockPageWriterResult({
+      sceneSummary: 'Writer summary is canonical.',
+    });
+    const reconciliation = createMockReconciliationResult();
+    const analyst = {
+      ...createMockAnalystResult({
+        deviationDetected: true,
+        deviationReason: 'Plan no longer matches events.',
+        invalidatedBeatIds: ['1.2'],
+      }),
+      sceneSummary: 'Analyst summary should be ignored.',
+    } as unknown as AnalystResult;
+
+    const result = mergePageWriterAndReconciledStateWithAnalystResults(
+      writer,
+      reconciliation,
+      analyst
+    );
+
+    expect(result.deviation).toEqual({
+      detected: true,
+      reason: 'Plan no longer matches events.',
+      invalidatedBeatIds: ['1.2'],
+      sceneSummary: 'Writer summary is canonical.',
+    });
   });
 });

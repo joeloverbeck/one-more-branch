@@ -31,20 +31,61 @@ export interface PagePanelData {
   readonly npcAgendaPanelData: NpcAgendaPanelData;
   readonly knowledgeStatePanelData: KnowledgeStatePanelData;
   readonly insightsThreadMeta: Record<string, { threadType: string; urgency: string }>;
+  readonly insightsPromiseMeta: Record<string, { promiseType: string; scope: string; urgency: string }>;
 }
 
 export function buildInsightsThreadMeta(
-  resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>,
-  openThreads: readonly { id: string; threadType: string; urgency: string }[]
+  page: Page,
+  parentPage: Page | null
 ): Record<string, { threadType: string; urgency: string }> {
-  const meta: Record<string, { threadType: string; urgency: string }> = { ...resolvedThreadMeta };
-  for (const thread of openThreads) {
+  const meta: Record<string, { threadType: string; urgency: string }> = {};
+  if (parentPage) {
+    const parentThreadById = new Map(
+      parentPage.accumulatedActiveState.openThreads.map((thread) => [thread.id, thread])
+    );
+    for (const threadId of page.activeStateChanges.threadsResolved) {
+      const resolvedThread = parentThreadById.get(threadId);
+      if (resolvedThread) {
+        meta[threadId] = {
+          threadType: resolvedThread.threadType,
+          urgency: resolvedThread.urgency,
+        };
+      }
+    }
+  }
+
+  for (const thread of page.accumulatedActiveState.openThreads) {
     meta[thread.id] ??= { threadType: thread.threadType, urgency: thread.urgency };
   }
   return meta;
 }
 
-export function buildPagePanelData(page: Page): PagePanelData {
+export function buildInsightsPromiseMeta(
+  page: Page,
+  parentPage: Page | null
+): Record<string, { promiseType: string; scope: string; urgency: string }> {
+  if (!parentPage || !page.analystResult) {
+    return {};
+  }
+
+  const parentPromiseById = new Map(
+    parentPage.accumulatedPromises.map((promise) => [promise.id, promise])
+  );
+  const meta: Record<string, { promiseType: string; scope: string; urgency: string }> = {};
+  for (const promiseId of page.analystResult.promisesResolved) {
+    const resolvedPromise = parentPromiseById.get(promiseId);
+    if (resolvedPromise) {
+      meta[promiseId] = {
+        promiseType: resolvedPromise.promiseType,
+        scope: resolvedPromise.scope,
+        urgency: resolvedPromise.suggestedUrgency,
+      };
+    }
+  }
+  return meta;
+}
+
+export function buildPagePanelData(page: Page, parentPage: Page | null = null): PagePanelData {
   return {
     openThreadPanelData: getOpenThreadPanelData(page.accumulatedActiveState.openThreads),
     threatsPanelData: getThreatPanelData(page.accumulatedActiveState.activeThreats),
@@ -55,9 +96,7 @@ export function buildPagePanelData(page: Page): PagePanelData {
     npcRelationshipPanelData: getNpcRelationshipPanelData(page.accumulatedNpcRelationships),
     npcAgendaPanelData: getNpcAgendaPanelData(page.accumulatedNpcAgendas),
     knowledgeStatePanelData: getKnowledgeStatePanelData(page.accumulatedKnowledgeState),
-    insightsThreadMeta: buildInsightsThreadMeta(
-      page.resolvedThreadMeta ?? {},
-      page.accumulatedActiveState.openThreads
-    ),
+    insightsThreadMeta: buildInsightsThreadMeta(page, parentPage),
+    insightsPromiseMeta: buildInsightsPromiseMeta(page, parentPage),
   };
 }

@@ -7,7 +7,7 @@
 
 ## Purpose
 
-The Agenda Resolver is a dedicated LLM call that runs after the analyst on both opening and continuation pages. It evaluates how scene events affected each NPC's agenda and updates their goals, leverage, fears, and off-screen behavior accordingly. It also evaluates and updates NPC-protagonist relationships based on scene events and analyst-detected relationship shifts. This transforms NPCs from reactive stage furniture into autonomous story drivers with their own evolving arcs and tracked relationship dynamics.
+The Agenda Resolver is a dedicated LLM call that runs after the analyst on both opening and continuation pages. It evaluates how scene events affected each NPC's agenda and updates their goals, leverage, fears, and off-screen behavior accordingly. It also evaluates and updates NPC-protagonist relationships based on scene events plus analyst-detected relationship-shift and knowledge-asymmetry signals. This transforms NPCs from reactive stage furniture into autonomous story drivers with their own evolving arcs and tracked relationship dynamics.
 
 **Pipeline position**: Planner -> Lorekeeper -> Writer -> Analyst -> **Agenda Resolver**
 
@@ -110,16 +110,23 @@ SCENE SUMMARY:
 NARRATIVE:
 {{narrative}}
 
-{{#if analystRelationshipShifts.length > 0}}
+{{#if analystSignals.relationshipShiftsDetected.length > 0}}
 ANALYST RELATIONSHIP SHIFT SIGNALS:
-{{#each analystRelationshipShifts}}- {{npcName}}: {{shiftDescription}} (suggested valence change: {{suggestedValenceChange}}{{#if suggestedNewDynamic}}, suggested new dynamic: {{suggestedNewDynamic}}{{/if}})
+{{#each analystSignals.relationshipShiftsDetected}}- {{npcName}}: {{shiftDescription}} (suggested valence change: {{suggestedValenceChange}}{{#if suggestedNewDynamic}}, suggested new dynamic: {{suggestedNewDynamic}}{{/if}})
 {{/each}}
 Use these as guidance but make your own judgment on final relationship values.
 {{/if}}
 
-{{#if analystNpcCoherenceIssues}}
+{{#if analystSignals.knowledgeAsymmetryDetected.length > 0}}
+ANALYST KNOWLEDGE ASYMMETRY SIGNALS:
+{{#each analystSignals.knowledgeAsymmetryDetected}}- {{characterName}}: known facts={{knownFacts joined by '; ' or '(none)'}}; false beliefs={{falseBeliefs joined by '; ' or '(none)'}}; secrets={{secrets joined by '; ' or '(none)'}}
+{{/each}}
+Use these signals to update NPC agendas and relationship tension/leverage when information access changed.
+{{/if}}
+
+{{#if analystSignals.npcCoherenceIssues}}
 ANALYST COHERENCE NOTE:
-The scene analyst flagged the following NPC behavior inconsistency: {{analystNpcCoherenceIssues}}
+The scene analyst flagged the following NPC behavior inconsistency: {{analystSignals.npcCoherenceIssues}}
 Consider whether this represents intentional NPC evolution (update the agenda accordingly) or a writer error (maintain the original agenda direction).
 {{/if}}
 
@@ -181,11 +188,13 @@ The response transformer (`agenda-resolver-response-transformer.ts`) applies the
 | `decomposedCharacters` | Structured character profiles with speech fingerprints (required) |
 | `currentAgendas` | Accumulated NPC agendas from the parent page |
 | `currentRelationships` | Accumulated NPC-protagonist relationships from the parent page (optional) |
-| `analystRelationshipShifts` | Relationship shifts detected by the analyst (optional, present when analyst flagged meaningful NPC-protagonist relationship changes) |
+| `analystSignals` | Consolidated analyst-to-resolver signal envelope (optional) containing coherence, relationship shifts, and knowledge asymmetry diagnostics |
 | `structure` | Current story structure (optional) |
 | `spine` | Story spine with need/want conflict, dramatic question, antagonistic force (optional) |
 | `activeState` | Current location and active threats |
-| `analystNpcCoherenceIssues` | NPC behavior inconsistency flagged by the analyst (optional, non-empty when analyst detected incoherent NPC behavior) |
+| `analystSignals.npcCoherenceIssues` | NPC behavior inconsistency flagged by the analyst (optional, non-empty when analyst detected incoherent NPC behavior) |
+| `analystSignals.relationshipShiftsDetected` | Relationship shifts detected by the analyst (optional, present when analyst flagged meaningful NPC-protagonist relationship changes) |
+| `analystSignals.knowledgeAsymmetryDetected` | Knowledge asymmetry observations detected by the analyst (optional, present when character information access changed materially) |
 | `deviationContext` | Structural deviation context (optional, present only when a story structure rewrite just occurred). Contains the deviation reason and the new beats from the rewritten structure |
 | `tone` | Tone/genre string (optional) |
 | `toneFeel` | Target feel keywords (optional, from spine) |
@@ -204,8 +213,10 @@ Agendas and relationships are stored per-page and inherit from the parent page, 
 
 The Agenda Resolver receives feedback from the analyst:
 
-- **Analyst NPC coherence assessment**: When the analyst flags NPC behavior inconsistency (`npcCoherenceIssues`), this is forwarded as `analystNpcCoherenceIssues`. The resolver uses this to decide whether the inconsistency represents intentional NPC evolution (update agenda accordingly) or a writer error (maintain original agenda direction).
-- **Analyst relationship shift signals**: When the analyst flags NPC-protagonist relationship changes (`relationshipShiftsDetected`), these are forwarded as `analystRelationshipShifts`. Each shift includes the NPC name, shift description, suggested valence change (-3 to +3), and optional new dynamic label. The resolver uses these as guidance but makes independent judgment on final relationship values. Zero token cost when no shifts detected.
+- **Analyst signal envelope**: The analyst forwards a consolidated `analystSignals` object to the resolver.
+- **Coherence signal**: `analystSignals.npcCoherenceIssues` carries NPC behavior inconsistency notes. The resolver uses this to decide whether observed behavior reflects intentional evolution or writer error.
+- **Relationship-shift signal**: `analystSignals.relationshipShiftsDetected` carries NPC-protagonist relationship deltas (shift description, suggested valence change, optional new dynamic). The resolver uses these as guidance while retaining final judgment.
+- **Knowledge-asymmetry signal**: `analystSignals.knowledgeAsymmetryDetected` carries per-character knowledge updates (`knownFacts`, `falseBeliefs`, `secrets`) to inform agenda pressure and relationship tension/leverage updates.
 - **Structural deviation context**: When the analyst detects a story deviation and a structure rewrite occurs, the resolver receives `deviationContext` containing the deviation reason and the new beats from the rewritten structure. This allows NPCs to proactively realign their agendas with the new story direction. Zero token cost when no deviation occurs.
 
 ## Downstream Consumers

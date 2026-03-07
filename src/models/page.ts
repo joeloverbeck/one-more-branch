@@ -67,8 +67,6 @@ export interface Page {
   readonly accumulatedDelayedConsequences: readonly DelayedConsequence[];
   readonly accumulatedKnowledgeState: readonly KnowledgeAsymmetry[];
   readonly accumulatedFulfilledPremisePromises?: readonly string[];
-  readonly resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>;
-  readonly resolvedPromiseMeta: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
   readonly npcAgendaUpdates: readonly NpcAgenda[];
   readonly accumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly npcRelationshipUpdates: readonly NpcRelationship[];
@@ -106,8 +104,6 @@ export interface CreatePageData {
   accumulatedDelayedConsequences?: readonly DelayedConsequence[];
   accumulatedKnowledgeState?: readonly KnowledgeAsymmetry[];
   accumulatedFulfilledPremisePromises?: readonly string[];
-  resolvedThreadMeta?: Readonly<Record<string, { threadType: string; urgency: string }>>;
-  resolvedPromiseMeta?: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
   npcAgendaUpdates?: readonly NpcAgenda[];
   parentAccumulatedNpcAgendas?: AccumulatedNpcAgendas;
   npcRelationshipUpdates?: readonly NpcRelationship[];
@@ -172,8 +168,6 @@ export function createPage(data: CreatePageData): Page {
     accumulatedDelayedConsequences: data.accumulatedDelayedConsequences ?? [],
     accumulatedKnowledgeState: data.accumulatedKnowledgeState ?? [],
     accumulatedFulfilledPremisePromises: data.accumulatedFulfilledPremisePromises ?? [],
-    resolvedThreadMeta: data.resolvedThreadMeta ?? {},
-    resolvedPromiseMeta: data.resolvedPromiseMeta ?? {},
     npcAgendaUpdates: data.npcAgendaUpdates ?? [],
     accumulatedNpcAgendas: applyAgendaUpdates(
       data.parentAccumulatedNpcAgendas ?? createEmptyAccumulatedNpcAgendas(),

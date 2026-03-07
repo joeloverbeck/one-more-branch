@@ -4,15 +4,10 @@ import type { TrackedPromise, ThreadEntry } from '../models/state/index.js';
 import { getMaxIdNumber } from '../models/index.js';
 import {
   augmentThreadsResolvedFromAnalyst,
-  buildResolvedThreadMeta,
   computeContinuationThreadAges,
   computeFirstPageThreadAges,
 } from './thread-lifecycle.js';
-import {
-  buildResolvedPromiseMeta,
-  computeAccumulatedPromises,
-  getMaxPromiseIdNumber,
-} from './promise-lifecycle.js';
+import { computeAccumulatedPromises, getMaxPromiseIdNumber } from './promise-lifecycle.js';
 
 export interface NarrativeStateLifecycleInput {
   readonly isOpening: boolean;
@@ -33,8 +28,6 @@ export interface NarrativeStateLifecycleOutput {
   readonly threadAges: Readonly<Record<string, number>>;
   readonly accumulatedPromises: readonly TrackedPromise[];
   readonly accumulatedFulfilledPremisePromises: readonly string[];
-  readonly resolvedThreadMeta: Readonly<Record<string, { threadType: string; urgency: string }>>;
-  readonly resolvedPromiseMeta: Readonly<Record<string, { promiseType: string; scope: string; urgency: string }>>;
 }
 
 export interface KnowledgeStateLifecycleInput {
@@ -84,23 +77,11 @@ export function computeNarrativeStateLifecycle(
     return [...inherited, fulfilledNow];
   })();
 
-  const resolvedThreadMeta = buildResolvedThreadMeta(
-    effectiveThreadsResolved,
-    input.parentOpenThreads
-  );
-
-  const resolvedPromiseMeta = buildResolvedPromiseMeta(
-    input.isOpening ? [] : input.analystPromisesResolved,
-    parentPromises
-  );
-
   return {
     effectiveThreadsResolved,
     threadAges,
     accumulatedPromises,
     accumulatedFulfilledPremisePromises,
-    resolvedThreadMeta,
-    resolvedPromiseMeta,
   };
 }
 

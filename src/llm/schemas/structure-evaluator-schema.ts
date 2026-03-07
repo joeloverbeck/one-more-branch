@@ -130,11 +130,6 @@ export const STRUCTURE_EVALUATOR_SCHEMA: JsonSchema = {
           description:
             'A holistic 1-3 sentence natural-language pacing directive for the page planner. Synthesize sceneMomentum, objectiveEvidenceStrength, commitmentStrength, structuralPositionSignal, entryConditionReadiness, and the pacing budget context into a single actionable instruction. Address rhythm (breathe or accelerate?), structural position (how close is beat conclusion?), and what narrative movement the next page should deliver. Write as if briefing a writer, not classifying signals.',
         },
-        narrativeSummary: {
-          type: 'string',
-          description:
-            'Short summary of current narrative state. Always populate — used for planner context compression and rewrite context.',
-        },
       },
       required: [
         'beatConcluded',
@@ -161,7 +156,6 @@ export const STRUCTURE_EVALUATOR_SCHEMA: JsonSchema = {
         'pacingIssueReason',
         'recommendedAction',
         'pacingDirective',
-        'narrativeSummary',
       ],
       additionalProperties: false,
     },

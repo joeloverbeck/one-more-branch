@@ -202,9 +202,11 @@ describe('buildAgendaResolverPrompt', () => {
   });
 
   describe('analyst coherence note', () => {
-    it('includes coherence note when analystNpcCoherenceIssues is non-empty', () => {
+    it('includes coherence note when analystSignals.npcCoherenceIssues is non-empty', () => {
       const context = buildMinimalContext({
-        analystNpcCoherenceIssues: 'Azra acted boldly despite fearing capture.',
+        analystSignals: {
+          npcCoherenceIssues: 'Azra acted boldly despite fearing capture.',
+        },
       });
       const messages = buildAgendaResolverPrompt(context);
       const user = messages[1]?.content ?? '';
@@ -215,21 +217,54 @@ describe('buildAgendaResolverPrompt', () => {
       expect(user).toContain('writer error');
     });
 
-    it('omits coherence note when analystNpcCoherenceIssues is undefined', () => {
+    it('omits coherence note when analystSignals.npcCoherenceIssues is undefined', () => {
       const messages = buildAgendaResolverPrompt(buildMinimalContext());
       const user = messages[1]?.content ?? '';
 
       expect(user).not.toContain('ANALYST COHERENCE NOTE:');
     });
 
-    it('omits coherence note when analystNpcCoherenceIssues is empty string', () => {
+    it('omits coherence note when analystSignals.npcCoherenceIssues is empty string', () => {
       const context = buildMinimalContext({
-        analystNpcCoherenceIssues: '',
+        analystSignals: {
+          npcCoherenceIssues: '',
+        },
       });
       const messages = buildAgendaResolverPrompt(context);
       const user = messages[1]?.content ?? '';
 
       expect(user).not.toContain('ANALYST COHERENCE NOTE:');
+    });
+  });
+
+  describe('analyst knowledge asymmetry signals', () => {
+    it('includes knowledge asymmetry section when analystSignals.knowledgeAsymmetryDetected has entries', () => {
+      const context = buildMinimalContext({
+        analystSignals: {
+          knowledgeAsymmetryDetected: [
+            {
+              characterName: 'Azra',
+              knownFacts: ['The guard rota changed at dusk'],
+              falseBeliefs: ['The protagonist sold her out'],
+              secrets: ['Hidden tunnel under the archive'],
+            },
+          ],
+        },
+      });
+      const messages = buildAgendaResolverPrompt(context);
+      const user = messages[1]?.content ?? '';
+
+      expect(user).toContain('ANALYST KNOWLEDGE ASYMMETRY SIGNALS:');
+      expect(user).toContain('Azra: known facts=The guard rota changed at dusk');
+      expect(user).toContain('false beliefs=The protagonist sold her out');
+      expect(user).toContain('secrets=Hidden tunnel under the archive');
+    });
+
+    it('omits knowledge asymmetry section when analystSignals.knowledgeAsymmetryDetected is undefined', () => {
+      const messages = buildAgendaResolverPrompt(buildMinimalContext());
+      const user = messages[1]?.content ?? '';
+
+      expect(user).not.toContain('ANALYST KNOWLEDGE ASYMMETRY SIGNALS:');
     });
   });
 

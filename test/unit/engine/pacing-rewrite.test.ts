@@ -72,7 +72,7 @@ function createMinimalAnalystResult(overrides: Partial<AnalystResult> = {}): Ana
   return {
     beatConcluded: false,
     beatResolution: '',
-    deviation: { detected: false, reason: '', invalidatedBeatIds: [], narrativeSummary: '' },
+    deviation: { detected: false, reason: '', invalidatedBeatIds: [], sceneSummary: '' },
     spineDeviation: {
       detected: false,
       reason: '',
@@ -83,7 +83,7 @@ function createMinimalAnalystResult(overrides: Partial<AnalystResult> = {}): Ana
     pacingIssueReason: 'Beat stalling after many pages',
     recommendedAction: 'rewrite' as const,
     sceneMomentum: 'dragging' as const,
-    narrativeSummary: 'The hero is stuck.',
+    sceneSummary: 'The hero is stuck.',
     beatAlignmentConfidence: 'high' as const,
     objectiveEvidenceStrength: 'moderate' as const,
     commitmentStrength: 'moderate' as const,

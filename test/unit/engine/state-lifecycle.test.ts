@@ -13,7 +13,7 @@ function makeAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResul
     deviationDetected: false,
     deviationReason: '',
     invalidatedBeatIds: [],
-    narrativeSummary: '',
+    sceneSummary: '',
     pacingIssueDetected: false,
     pacingIssueReason: '',
     recommendedAction: 'none',
@@ -116,8 +116,6 @@ describe('computeNarrativeStateLifecycle', () => {
       },
     ]);
     expect(result.accumulatedFulfilledPremisePromises).toEqual([]);
-    expect(result.resolvedThreadMeta).toEqual({});
-    expect(result.resolvedPromiseMeta).toEqual({});
   });
 
   it('computes continuation lifecycle and augments resolved threads from analyst payoff assessments', () => {
@@ -160,13 +158,6 @@ describe('computeNarrativeStateLifecycle', () => {
     expect(result.accumulatedPromises.map((promise) => promise.id)).toEqual(['pr-3']);
     expect(result.accumulatedPromises[0]?.description).toBe('New unresolved vow');
     expect(result.accumulatedFulfilledPremisePromises).toEqual(['Promise A', 'Promise B']);
-    expect(result.resolvedThreadMeta).toEqual({
-      'td-1': { threadType: ThreadType.MYSTERY, urgency: Urgency.LOW },
-      'td-2': { threadType: ThreadType.DANGER, urgency: Urgency.HIGH },
-    });
-    expect(result.resolvedPromiseMeta).toEqual({
-      'pr-1': { promiseType: PromiseType.CHEKHOV_GUN, scope: PromiseScope.BEAT, urgency: Urgency.HIGH },
-    });
   });
 
   it('does not duplicate already-fulfilled premise promises', () => {

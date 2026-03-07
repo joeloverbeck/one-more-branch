@@ -225,6 +225,13 @@ export async function processPostGeneration(
         })
       : null;
   const analystResult = analystEval?.result ?? null;
+  const agendaResolverAnalystSignals = analystResult
+    ? {
+        npcCoherenceIssues: analystResult.npcCoherenceIssues,
+        relationshipShiftsDetected: analystResult.relationshipShiftsDetected,
+        knowledgeAsymmetryDetected: analystResult.knowledgeAsymmetryDetected,
+      }
+    : undefined;
   const analystDurationMs = analystEval?.durationMs ?? null;
   if (analystEval?.degradation) {
     degradedStages.push(analystEval.degradation);
@@ -242,6 +249,7 @@ export async function processPostGeneration(
   // --- Handle spine deviation (two-tier: spine then beats) ---
   const spineDeviationResult = await handleSpineDeviationIfDetected({
     analystResult,
+    sceneSummary: writerResult.sceneSummary,
     story,
     apiKey,
     logContext,
@@ -271,7 +279,7 @@ export async function processPostGeneration(
         deviation: createBeatDeviation(
           `Spine rewritten (${spineDeviationResult.spineInvalidatedElement ?? 'unknown'} invalidated) — all remaining beats need restructuring`,
           remainingBeatIds,
-          analystResult?.narrativeSummary ?? ''
+          writerResult.sceneSummary
         ),
       };
     }
@@ -369,9 +377,8 @@ export async function processPostGeneration(
           openThreads: [],
         }
       : parentState!.accumulatedActiveState,
-    analystNpcCoherenceIssues: analystResult?.npcCoherenceIssues,
+    analystSignals: agendaResolverAnalystSignals,
     parentAccumulatedNpcRelationships,
-    analystRelationshipShifts: analystResult?.relationshipShiftsDetected,
     deviationContext:
       deviationInfo?.detected && activeStructureVersion
         ? {

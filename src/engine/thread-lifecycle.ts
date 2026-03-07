@@ -1,4 +1,3 @@
-import type { ThreadEntry } from '../models';
 import type { AnalystResult } from '../llm/analyst-types';
 
 /**
@@ -70,27 +69,4 @@ export function augmentThreadsResolvedFromAnalyst(
     return reconcilerThreadsResolved;
   }
   return [...reconcilerThreadsResolved, ...additional];
-}
-
-/**
- * Builds a lookup of metadata for threads resolved on this page.
- * Cross-references resolved thread IDs with the parent page's open threads
- * to preserve threadType and urgency for display purposes (e.g. payoff card badges).
- */
-export function buildResolvedThreadMeta(
-  threadsResolved: readonly string[],
-  parentOpenThreads: readonly ThreadEntry[]
-): Readonly<Record<string, { threadType: string; urgency: string }>> {
-  if (threadsResolved.length === 0) {
-    return {};
-  }
-  const meta: Record<string, { threadType: string; urgency: string }> = {};
-  const threadMap = new Map(parentOpenThreads.map((t) => [t.id, t]));
-  for (const id of threadsResolved) {
-    const thread = threadMap.get(id);
-    if (thread) {
-      meta[id] = { threadType: thread.threadType, urgency: thread.urgency };
-    }
-  }
-  return meta;
 }

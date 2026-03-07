@@ -74,7 +74,7 @@ function createSpineRewriteContext(
     },
     invalidatedElement: 'dramatic_question',
     deviationReason: 'Player allied with the antagonist, invalidating the dramatic question.',
-    narrativeSummary: 'The hero joined forces with the dark lord.',
+    sceneSummary: 'The hero joined forces with the dark lord.',
     decomposedCharacters: [buildMinimalDecomposedCharacter('A fallen knight')],
     decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     ...overrides,

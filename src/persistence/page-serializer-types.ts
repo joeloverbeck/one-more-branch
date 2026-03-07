@@ -141,7 +141,6 @@ export interface AnalystResultFileData {
   deviationDetected: boolean;
   deviationReason: string;
   invalidatedBeatIds: string[];
-  narrativeSummary: string;
   pacingIssueDetected: boolean;
   pacingIssueReason: string;
   recommendedAction: string;
@@ -239,8 +238,6 @@ export interface PageFileData {
   accumulatedDelayedConsequences: DelayedConsequenceFileData[];
   accumulatedKnowledgeState: KnowledgeAsymmetryFileData[];
   accumulatedFulfilledPremisePromises?: string[];
-  resolvedThreadMeta: Record<string, { threadType: string; urgency: string }>;
-  resolvedPromiseMeta: Record<string, { promiseType: string; scope: string; urgency: string }>;
   npcAgendaUpdates: NpcAgendaFileData[];
   accumulatedNpcAgendas: Record<string, NpcAgendaFileData>;
   npcRelationshipUpdates: NpcRelationshipFileData[];

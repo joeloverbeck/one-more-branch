@@ -139,7 +139,7 @@ describe('runAnalystEvaluation', () => {
       pacingIssueReason: '',
       recommendedAction: 'none',
       pacingDirective: '',
-      narrativeSummary: 'Hero progressed.',
+      sceneSummary: 'Hero progressed.',
       rawResponse: '{"structure":"ok"}',
     });
     mockedGeneratePromiseTracking.mockResolvedValue({
@@ -173,7 +173,7 @@ describe('runAnalystEvaluation', () => {
     const evalResult = await runAnalystEvaluation(baseContext);
 
     expect(evalResult.result).not.toBeNull();
-    expect(evalResult.result!.narrativeSummary).toBe('Hero progressed.');
+    expect(evalResult.result!.sceneSummary).toBe('Hero progressed.');
     expect(evalResult.durationMs).toBeGreaterThanOrEqual(0);
     expect(evalResult.degradation).toBeUndefined();
   });
@@ -207,7 +207,7 @@ describe('handleDeviationIfDetected', () => {
   };
 
   const baseResult = {
-    deviation: { detected: true, reason: 'test', invalidatedBeatIds: ['1.1'], narrativeSummary: '' },
+    deviation: { detected: true, reason: 'test', invalidatedBeatIds: ['1.1'], sceneSummary: '' },
     beatConcluded: false,
     beatResolution: '',
   } as unknown as ContinuationGenerationResult;
@@ -305,7 +305,7 @@ describe('handleSpineDeviationIfDetected', () => {
         spineDeviationDetected: true,
         spineInvalidatedElement: 'dramatic_question',
         spineDeviationReason: 'Conflict shifted',
-        narrativeSummary: 'Story changed direction',
+        sceneSummary: 'Story changed direction',
       }),
       story: storyWithSpine,
       apiKey: 'test-key',
@@ -326,7 +326,7 @@ describe('handleSpineDeviationIfDetected', () => {
         spineDeviationDetected: true,
         spineInvalidatedElement: 'dramatic_question',
         spineDeviationReason: 'Conflict shifted',
-        narrativeSummary: 'Story changed',
+        sceneSummary: 'Story changed',
       }),
       story: storyWithSpine,
       apiKey: 'test-key',

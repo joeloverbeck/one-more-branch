@@ -1,3 +1,5 @@
+**Status**: NOT IMPLEMENTED
+
 # REDUND-03: Strip Analyst Diagnostic Fields from Page Persistence
 
 **Priority**: Quick Win
@@ -55,3 +57,8 @@ These fields serve as LLM "thinking" — they help the analyst reason better. Th
 - [ ] LLM schemas unchanged (analyst still produces these fields)
 - [ ] Old page files with these fields still deserialize without error
 - [ ] All existing tests pass
+
+## Outcome
+
+**Decision date**: 2026-03-07
+**Disposition**: NOT IMPLEMENTED — Instead of stripping these fields, they were surfaced in the Story Insights modal as part of the "Director's Commentary" redesign. The modal now has 4 tabs (Structure, Narrative, NPCs, Payoffs) that display all analyst data including beatResolution, objectiveAnchors, anchorEvidence, completionGate fields, npcCoherence fields, relationshipShifts, dramaticIronyOpportunities, thematicCharge, narrativeFocus, and deviation data. Keeping all fields in persistence supports this enriched UI.

@@ -108,8 +108,6 @@ export function serializePage(page: Page): PageFileData {
     ...(page.accumulatedFulfilledPremisePromises !== undefined
       ? { accumulatedFulfilledPremisePromises: [...page.accumulatedFulfilledPremisePromises] }
       : {}),
-    resolvedThreadMeta: { ...page.resolvedThreadMeta },
-    resolvedPromiseMeta: { ...page.resolvedPromiseMeta },
     npcAgendaUpdates: npcAgendaArrayToFileData(page.npcAgendaUpdates),
     accumulatedNpcAgendas: accumulatedNpcAgendasToFileData(page.accumulatedNpcAgendas),
     npcRelationshipUpdates: npcRelationshipArrayToFileData(page.npcRelationshipUpdates),
@@ -220,13 +218,6 @@ export function deserializePage(data: PageFileData): Page {
     ...(data.accumulatedFulfilledPremisePromises !== undefined
       ? { accumulatedFulfilledPremisePromises: [...data.accumulatedFulfilledPremisePromises] }
       : {}),
-    resolvedThreadMeta: data.resolvedThreadMeta,
-    resolvedPromiseMeta: Object.fromEntries(
-      Object.entries(data.resolvedPromiseMeta).map(([id, meta]) => [
-        id,
-        { promiseType: meta.promiseType, scope: meta.scope ?? 'BEAT', urgency: meta.urgency },
-      ])
-    ),
     npcAgendaUpdates: fileDataToNpcAgendaArray(data.npcAgendaUpdates),
     accumulatedNpcAgendas: fileDataToAccumulatedNpcAgendas(data.accumulatedNpcAgendas),
     npcRelationshipUpdates: fileDataToNpcRelationshipArray(data.npcRelationshipUpdates),

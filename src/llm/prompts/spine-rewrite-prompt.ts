@@ -16,7 +16,7 @@ export interface SpineRewriteContext {
   readonly currentSpine: StorySpine;
   readonly invalidatedElement: 'dramatic_question' | 'antagonistic_force' | 'need_want';
   readonly deviationReason: string;
-  readonly narrativeSummary: string;
+  readonly sceneSummary: string;
   readonly decomposedCharacters: readonly DecomposedCharacter[];
   readonly decomposedWorld: DecomposedWorld;
 }
@@ -76,8 +76,8 @@ ${currentSpineSection}
 INVALIDATED ELEMENT: ${invalidatedLabel}
 REASON: ${context.deviationReason}
 
-NARRATIVE SUMMARY (what has happened so far):
-${context.narrativeSummary}
+SCENE SUMMARY (latest narrative state):
+${context.sceneSummary}
 
 Generate a single new spine that evolves naturally from this narrative state. The ${invalidatedLabel.toLowerCase()} MUST change meaningfully. Other fields may remain if they still serve the story.`;
 

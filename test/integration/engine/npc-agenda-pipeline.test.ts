@@ -186,6 +186,43 @@ describe('resolveNpcAgendas', () => {
     expect(promptContext?.deviationContext).toBeUndefined();
   });
 
+  it('forwards analystSignals envelope to generateAgendaResolver', async () => {
+    mockedGenerateAgendaResolver.mockResolvedValue(mockAgendaResult);
+    const analystSignals = {
+      npcCoherenceIssues: 'Bartender suddenly trusted the hero without trigger.',
+      relationshipShiftsDetected: [
+        {
+          npcName: 'Bartender',
+          shiftDescription: 'Now views the hero as a useful ally.',
+          suggestedValenceChange: 2,
+          suggestedNewDynamic: 'ally',
+        },
+      ],
+      knowledgeAsymmetryDetected: [
+        {
+          characterName: 'Bartender',
+          knownFacts: ['The hero carries forged papers'],
+          falseBeliefs: [],
+          secrets: ['Knows who alerted the guard captain'],
+        },
+      ],
+    };
+    const context = createBaseContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist'), ...testDecomposedCharacters],
+      analystSignals,
+    });
+
+    await resolveNpcAgendas(context);
+
+    expect(mockedGenerateAgendaResolver).toHaveBeenCalledWith(
+      expect.objectContaining({
+        analystSignals,
+      }),
+      expect.any(Array),
+      expect.objectContaining({ apiKey: 'test-key' })
+    );
+  });
+
   it('does not emit completed stage on failure', async () => {
     mockedGenerateAgendaResolver.mockRejectedValue(new Error('LLM timeout'));
     const stageCallback: GenerationStageCallback = jest.fn();

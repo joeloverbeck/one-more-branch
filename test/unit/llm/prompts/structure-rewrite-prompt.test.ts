@@ -41,7 +41,7 @@ describe('buildStructureRewritePrompt', () => {
       },
     ],
     plannedBeats: [],
-    narrativeSummary: 'The protagonist has publicly aligned with a rival flotilla.',
+    sceneSummary: 'The protagonist has publicly aligned with a rival flotilla.',
     currentActIndex: 1,
     currentBeatIndex: 0,
     deviationReason: 'The prior allies now treat the protagonist as a traitor.',
@@ -72,7 +72,7 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain(baseContext.tone);
     expect(user).toContain(baseContext.originalTheme);
     expect(user).toContain(baseContext.deviationReason);
-    expect(user).toContain(baseContext.narrativeSummary);
+    expect(user).toContain(baseContext.sceneSummary);
   });
 
   it('lists completed beats as canon with act/beat numbering, beat id, role, and resolution', () => {
@@ -346,7 +346,7 @@ describe('buildStructureRewritePrompt - minimal system prompt', () => {
     decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
     completedBeats: [],
     plannedBeats: [],
-    narrativeSummary: 'The protagonist has publicly aligned with a rival flotilla.',
+    sceneSummary: 'The protagonist has publicly aligned with a rival flotilla.',
     currentActIndex: 1,
     currentBeatIndex: 0,
     deviationReason: 'The prior allies now treat the protagonist as a traitor.',

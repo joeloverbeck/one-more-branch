@@ -43,3 +43,22 @@ CHOICE_TYPES.forEach(function (ct) { CHOICE_TYPE_LABEL_MAP[ct.value] = ct.label;
 
 var PRIMARY_DELTA_LABEL_MAP = {};
 PRIMARY_DELTAS.forEach(function (pd) { PRIMARY_DELTA_LABEL_MAP[pd.value] = pd.label; });
+
+// ── Analyst insights tab metadata ────────────────────────────────
+
+var THEMATIC_CHARGE_META = {
+  THESIS_SUPPORTING: { css: 'thematic-badge--thesis', label: 'Thesis Supporting' },
+  ANTITHESIS_SUPPORTING: { css: 'thematic-badge--antithesis', label: 'Antithesis Supporting' },
+  AMBIGUOUS: { css: 'thematic-badge--ambiguous', label: 'Ambiguous' },
+};
+
+var NARRATIVE_FOCUS_META = {
+  DEEPENING: { css: 'narrative-focus-badge--deepening', label: 'Deepening' },
+  BROADENING: { css: 'narrative-focus-badge--broadening', label: 'Broadening' },
+  BALANCED: { css: 'narrative-focus-badge--balanced', label: 'Balanced' },
+};
+
+var NPC_COHERENCE_META = {
+  true: { css: 'npc-coherence--ok', label: 'Coherent' },
+  false: { css: 'npc-coherence--issue', label: 'Issues Detected' },
+};

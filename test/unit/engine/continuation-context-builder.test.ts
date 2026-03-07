@@ -445,7 +445,7 @@ describe('continuation-context-builder', () => {
         pacingIssueReason: '',
         recommendedAction: 'none',
         pacingDirective: '',
-        narrativeSummary: '',
+        sceneSummary: '',
         promisesDetected: [],
         promisesResolved: [],
         promisePayoffAssessments: [],

@@ -11,6 +11,7 @@ import type {
 import { logger } from '../../logging/index.js';
 import {
   CHOICE_TYPE_COLORS,
+  type Page,
   PageId,
   PRIMARY_DELTA_LABELS,
   StoryId,
@@ -41,6 +42,26 @@ type ChoiceBody = {
   protagonistGuidance?: unknown;
   selectedSceneDirection?: unknown;
 };
+
+async function loadParentPageForInsights(
+  storyId: StoryId,
+  pageId: PageId | null
+): Promise<Page | null> {
+  if (pageId === null) {
+    return null;
+  }
+  try {
+    return await storyEngine.getPage(storyId, pageId);
+  } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.warn('Failed to load parent page for insights metadata; continuing without badges', {
+      storyId,
+      pageId,
+      error: err.message,
+    });
+    return null;
+  }
+}
 
 export const playRoutes = Router();
 
@@ -321,7 +342,8 @@ playRoutes.get(
 
       const actDisplayInfo = getActDisplayInfo(story, page);
       const milestoneInfo = getMilestoneInfo(story, page);
-      const panels = buildPagePanelData(page);
+      const parentPage = await loadParentPageForInsights(storyId as StoryId, page.parentPageId);
+      const panels = buildPagePanelData(page, parentPage);
 
       const latestVersionId = story.structureVersions?.length
         ? story.structureVersions[story.structureVersions.length - 1]!.id
@@ -353,6 +375,7 @@ playRoutes.get(
         npcAgendaRows: panels.npcAgendaPanelData.rows,
         knowledgeStateRows: panels.knowledgeStatePanelData.rows,
         insightsThreadMeta: panels.insightsThreadMeta,
+        insightsPromiseMeta: panels.insightsPromiseMeta,
         choiceTypeLabels: CHOICE_TYPE_COLORS,
         primaryDeltaLabels: PRIMARY_DELTA_LABELS,
         isLatestStructureVersion,
@@ -404,7 +427,11 @@ playRoutes.post(
       const actDisplayInfo = story ? getActDisplayInfo(story, result.page) : null;
       const milestoneInfo = story ? getMilestoneInfo(story, result.page) : null;
       const recapSummaries = await collectRecapSummaries(storyId as StoryId, result.page);
-      const panels = buildPagePanelData(result.page);
+      const parentPage = await loadParentPageForInsights(
+        storyId as StoryId,
+        result.page.parentPageId
+      );
+      const panels = buildPagePanelData(result.page, parentPage);
       progress.complete();
 
       return res.json({
@@ -417,7 +444,7 @@ playRoutes.post(
           isEnding: result.page.isEnding,
           analystResult: result.page.analystResult,
           resolvedThreadMeta: panels.insightsThreadMeta,
-          resolvedPromiseMeta: result.page.resolvedPromiseMeta ?? {},
+          resolvedPromiseMeta: panels.insightsPromiseMeta,
           openThreads: panels.openThreadPanelData.rows,
           openThreadOverflowSummary: panels.openThreadPanelData.overflowSummary,
           activeThreats: panels.threatsPanelData.rows,
