@@ -13,6 +13,8 @@ export interface NarrativeStateLifecycleInput {
   readonly isOpening: boolean;
   readonly parentOpenThreads: readonly ThreadEntry[];
   readonly parentThreadAges: Readonly<Record<string, number>>;
+  readonly parentPromiseAgeEpoch: number;
+  readonly currentPromiseAgeEpoch: number;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
   readonly parentAccumulatedFulfilledPremisePromises: readonly string[];
   readonly threadsAdded: readonly { text: string }[];
@@ -42,6 +44,9 @@ export interface KnowledgeStateLifecycleInput {
 export function computeNarrativeStateLifecycle(
   input: NarrativeStateLifecycleInput
 ): NarrativeStateLifecycleOutput {
+  const currentPromiseAgeEpoch =
+    input.currentPromiseAgeEpoch ??
+    (input.isOpening ? 0 : (input.parentPromiseAgeEpoch ?? 0) + 1);
   const effectiveThreadsResolved = input.isOpening
     ? input.threadsResolved
     : augmentThreadsResolvedFromAnalyst(
@@ -65,7 +70,8 @@ export function computeNarrativeStateLifecycle(
     parentPromises,
     input.isOpening ? [] : input.analystPromisesResolved,
     input.analystPromisesDetected,
-    getMaxPromiseIdNumber(parentPromises)
+    getMaxPromiseIdNumber(parentPromises),
+    currentPromiseAgeEpoch
   );
 
   const accumulatedFulfilledPremisePromises = (() : readonly string[] => {

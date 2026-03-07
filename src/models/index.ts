@@ -63,7 +63,9 @@ export {
   getMaxIdNumber,
   nextId,
   assignIds,
+  computePromiseAge,
   removeByIds,
+  withPromiseAge,
   ActiveState,
   ActiveStateChanges,
   ThreatAddition,
@@ -90,6 +92,7 @@ export {
 
 export type {
   TrackedPromise,
+  AgedTrackedPromise,
   PromisePayoffAssessment,
   DelayedConsequence,
   KnowledgeAsymmetry,

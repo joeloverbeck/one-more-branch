@@ -63,6 +63,7 @@ export interface Page {
   readonly analystResult: AnalystResult | null;
   readonly thematicValence: ThematicCharge;
   readonly threadAges: Readonly<Record<string, number>>;
+  readonly promiseAgeEpoch: number;
   readonly accumulatedPromises: readonly TrackedPromise[];
   readonly accumulatedDelayedConsequences: readonly DelayedConsequence[];
   readonly accumulatedKnowledgeState: readonly KnowledgeAsymmetry[];
@@ -100,6 +101,8 @@ export interface CreatePageData {
   storyBible?: StoryBible | null;
   analystResult?: AnalystResult | null;
   threadAges?: Readonly<Record<string, number>>;
+  promiseAgeEpoch?: number;
+  parentPromiseAgeEpoch?: number;
   accumulatedPromises?: readonly TrackedPromise[];
   accumulatedDelayedConsequences?: readonly DelayedConsequence[];
   accumulatedKnowledgeState?: readonly KnowledgeAsymmetry[];
@@ -140,6 +143,9 @@ export function createPage(data: CreatePageData): Page {
   const inventoryChanges = data.inventoryChanges ?? createEmptyInventoryChanges();
   const healthChanges = data.healthChanges ?? createEmptyHealthChanges();
   const characterStateChanges = data.characterStateChanges ?? createEmptyCharacterStateChanges();
+  const promiseAgeEpoch =
+    data.promiseAgeEpoch ??
+    (data.parentPageId === null ? 0 : (data.parentPromiseAgeEpoch ?? 0) + 1);
 
   return {
     id: data.id,
@@ -164,6 +170,7 @@ export function createPage(data: CreatePageData): Page {
     analystResult: data.analystResult ?? null,
     thematicValence: data.analystResult?.thematicCharge ?? 'AMBIGUOUS',
     threadAges: data.threadAges ?? {},
+    promiseAgeEpoch,
     accumulatedPromises: data.accumulatedPromises ?? [],
     accumulatedDelayedConsequences: data.accumulatedDelayedConsequences ?? [],
     accumulatedKnowledgeState: data.accumulatedKnowledgeState ?? [],
@@ -249,6 +256,9 @@ export function isPage(value: unknown): value is Page {
     activeStateChangesValid &&
     accumulatedActiveStateValid &&
     isAccumulatedStructureState(obj['accumulatedStructureState']) &&
+    typeof obj['promiseAgeEpoch'] === 'number' &&
+    Number.isInteger(obj['promiseAgeEpoch']) &&
+    obj['promiseAgeEpoch'] >= 0 &&
     accumulatedPromisesValid &&
     accumulatedDelayedConsequencesValid &&
     accumulatedKnowledgeStateValid &&

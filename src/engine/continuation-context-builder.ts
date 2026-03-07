@@ -1,5 +1,6 @@
 import type { Story, Page, VersionedStoryStructure } from '../models';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
+import { withPromiseAge } from '../models/state/index.js';
 import type { ContinuationContext } from '../llm/context-types';
 import type { WriterValidationContext } from '../llm/generation-pipeline-types';
 import type { AncestorContext } from './ancestor-collector';
@@ -62,7 +63,10 @@ export function buildContinuationContext(
     accumulatedNpcRelationships: parentState.accumulatedNpcRelationships,
 
     threadAges: parentPage.threadAges,
-    accumulatedPromises: parentPage.accumulatedPromises,
+    accumulatedPromises: withPromiseAge(
+      parentPage.accumulatedPromises,
+      parentPage.promiseAgeEpoch ?? 0
+    ),
     accumulatedDelayedConsequences: agedDelayedConsequences,
     accumulatedKnowledgeState: parentState.accumulatedKnowledgeState,
     parentDramaticIronyOpportunities:

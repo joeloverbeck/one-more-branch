@@ -66,6 +66,7 @@ function makeThread(overrides: Partial<ThreadEntry> = {}): ThreadEntry {
 }
 
 function makePromise(overrides: Partial<TrackedPromise> = {}): TrackedPromise {
+  const age = (overrides as { age?: number }).age ?? 2;
   return {
     id: 'pr-1',
     description: 'A suspicious key was emphasized.',
@@ -73,7 +74,7 @@ function makePromise(overrides: Partial<TrackedPromise> = {}): TrackedPromise {
     scope: PromiseScope.BEAT,
     resolutionHint: 'Will the key matter later?',
     suggestedUrgency: Urgency.HIGH,
-    age: 2,
+    detectedAtPromiseEpoch: 10 - age,
     ...overrides,
   };
 }
@@ -84,6 +85,8 @@ describe('computeNarrativeStateLifecycle', () => {
       isOpening: true,
       parentOpenThreads: [],
       parentThreadAges: {},
+      parentPromiseAgeEpoch: 0,
+      currentPromiseAgeEpoch: 0,
       parentAccumulatedPromises: [],
       parentAccumulatedFulfilledPremisePromises: ['Ignored'],
       threadsAdded: [{ text: 'Open question' }],
@@ -112,7 +115,7 @@ describe('computeNarrativeStateLifecycle', () => {
         scope: PromiseScope.BEAT,
         resolutionHint: 'Will the storm arrive?',
         suggestedUrgency: Urgency.MEDIUM,
-        age: 0,
+        detectedAtPromiseEpoch: 0,
       },
     ]);
     expect(result.accumulatedFulfilledPremisePromises).toEqual([]);
@@ -126,7 +129,12 @@ describe('computeNarrativeStateLifecycle', () => {
         makeThread({ id: 'td-2', text: 'Another old thread', threadType: ThreadType.DANGER, urgency: Urgency.HIGH }),
       ],
       parentThreadAges: { 'td-1': 0, 'td-2': 3 },
-      parentAccumulatedPromises: [makePromise({ id: 'pr-1', age: 1 }), makePromise({ id: 'pr-2', age: 4, scope: PromiseScope.SCENE })],
+      parentPromiseAgeEpoch: 10,
+      currentPromiseAgeEpoch: 11,
+      parentAccumulatedPromises: [
+        makePromise({ id: 'pr-1', detectedAtPromiseEpoch: 9 }),
+        makePromise({ id: 'pr-2', detectedAtPromiseEpoch: 6, scope: PromiseScope.SCENE }),
+      ],
       parentAccumulatedFulfilledPremisePromises: ['Promise A'],
       threadsAdded: [{ text: 'New thread' }],
       threadsResolved: ['td-1'],
@@ -165,6 +173,8 @@ describe('computeNarrativeStateLifecycle', () => {
       isOpening: false,
       parentOpenThreads: [makeThread()],
       parentThreadAges: { 'td-1': 0 },
+      parentPromiseAgeEpoch: 10,
+      currentPromiseAgeEpoch: 11,
       parentAccumulatedPromises: [makePromise()],
       parentAccumulatedFulfilledPremisePromises: ['Promise A'],
       threadsAdded: [],

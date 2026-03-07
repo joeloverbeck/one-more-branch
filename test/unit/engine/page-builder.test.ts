@@ -433,6 +433,7 @@ describe('page-builder', () => {
   });
 
   describe('computeAccumulatedPromises', () => {
+    const CURRENT_EPOCH = 10;
     const makeTrackedPromise = (
       id: string,
       desc: string,
@@ -442,7 +443,7 @@ describe('page-builder', () => {
       resolutionHint: string = `Will ${desc.toLowerCase()} resolve?`
     ): TrackedPromise => ({
       id,
-      age,
+      detectedAtPromiseEpoch: CURRENT_EPOCH - age,
       description: desc,
       promiseType: type,
       scope,
@@ -466,13 +467,19 @@ describe('page-builder', () => {
     it('ages survivors and adds analyst-detected promises with new IDs', () => {
       const tracked = [makeTrackedPromise('pr-1', 'Old promise', 2)];
       const detected = [makeDetectedPromise('New foreshadowing')];
-      const result = computeAccumulatedPromises(tracked, [], detected, getMaxPromiseIdNumber(tracked));
+      const result = computeAccumulatedPromises(
+        tracked,
+        [],
+        detected,
+        getMaxPromiseIdNumber(tracked),
+        CURRENT_EPOCH + 1
+      );
       expect(result).toHaveLength(2);
       expect(result[0]!.description).toBe('Old promise');
-      expect(result[0]!.age).toBe(3);
+      expect(result[0]!.detectedAtPromiseEpoch).toBe(CURRENT_EPOCH - 2);
       expect(result[1]!.description).toBe('New foreshadowing');
       expect(result[1]!.id).toBe('pr-2');
-      expect(result[1]!.age).toBe(0);
+      expect(result[1]!.detectedAtPromiseEpoch).toBe(CURRENT_EPOCH + 1);
     });
 
     it('does not cap inherited promises', () => {
@@ -480,7 +487,13 @@ describe('page-builder', () => {
         makeTrackedPromise(`pr-${i + 1}`, `Tracked ${i}`, i)
       );
       const detected = Array.from({ length: 3 }, (_, i) => makeDetectedPromise(`Detected ${i}`));
-      const result = computeAccumulatedPromises(tracked, [], detected, getMaxPromiseIdNumber(tracked));
+      const result = computeAccumulatedPromises(
+        tracked,
+        [],
+        detected,
+        getMaxPromiseIdNumber(tracked),
+        CURRENT_EPOCH + 1
+      );
       expect(result).toHaveLength(7);
       expect(result[0]!.description).toBe('Tracked 0');
       expect(result[6]!.description).toBe('Detected 2');
@@ -495,12 +508,13 @@ describe('page-builder', () => {
         tracked,
         ['pr-1'],
         [],
-        getMaxPromiseIdNumber(tracked)
+        getMaxPromiseIdNumber(tracked),
+        CURRENT_EPOCH + 1
       );
       expect(result).toHaveLength(1);
       expect(result[0]!.id).toBe('pr-2');
       expect(result[0]!.description).toBe('Unusual silence from northern watchtower');
-      expect(result[0]!.age).toBe(1);
+      expect(result[0]!.detectedAtPromiseEpoch).toBe(CURRENT_EPOCH);
     });
 
     it('handles resolve + detect in the same page', () => {
@@ -510,7 +524,8 @@ describe('page-builder', () => {
         tracked,
         ['pr-7'],
         detected,
-        getMaxPromiseIdNumber(tracked)
+        getMaxPromiseIdNumber(tracked),
+        CURRENT_EPOCH + 1
       );
       expect(result).toEqual([
         {
@@ -520,7 +535,7 @@ describe('page-builder', () => {
           scope: PromiseScope.BEAT,
           resolutionHint: 'Will fresh setup resolve?',
           suggestedUrgency: Urgency.MEDIUM,
-          age: 0,
+          detectedAtPromiseEpoch: CURRENT_EPOCH + 1,
         },
       ]);
     });
@@ -530,7 +545,7 @@ describe('page-builder', () => {
         makeDetectedPromise('   '),
         makeDetectedPromise('  valid promise  ', PromiseType.TICKING_CLOCK),
       ];
-      const result = computeAccumulatedPromises([], [], detected, 0);
+      const result = computeAccumulatedPromises([], [], detected, 0, CURRENT_EPOCH + 1);
       expect(result).toEqual([
         {
           id: 'pr-1',
@@ -539,7 +554,7 @@ describe('page-builder', () => {
           scope: PromiseScope.BEAT,
           resolutionHint: 'Will   valid promise   resolve?',
           suggestedUrgency: Urgency.MEDIUM,
-          age: 0,
+          detectedAtPromiseEpoch: CURRENT_EPOCH + 1,
         },
       ]);
     });
@@ -556,12 +571,18 @@ describe('page-builder', () => {
         makeTrackedPromise('pr-1', 'Scene promise expiring', 4, PromiseType.FORESHADOWING, PromiseScope.SCENE),
         makeTrackedPromise('pr-2', 'Beat promise same age', 4, PromiseType.FORESHADOWING, PromiseScope.BEAT),
       ];
-      const result = computeAccumulatedPromises(trackedExpiring, [], [], getMaxPromiseIdNumber(trackedExpiring));
+      const result = computeAccumulatedPromises(
+        trackedExpiring,
+        [],
+        [],
+        getMaxPromiseIdNumber(trackedExpiring),
+        CURRENT_EPOCH + 1
+      );
       // pr-1 aged to 5 > 4 (SCENE threshold) -> expired
       // pr-2 aged to 5 but BEAT has no expiry -> survives
       expect(result).toHaveLength(1);
       expect(result[0]!.id).toBe('pr-2');
-      expect(result[0]!.age).toBe(5);
+      expect(result[0]!.detectedAtPromiseEpoch).toBe(CURRENT_EPOCH - 4);
     });
   });
 
@@ -622,7 +643,7 @@ describe('page-builder', () => {
         scope: PromiseScope.BEAT,
         resolutionHint: 'Will the key unlock something?',
         suggestedUrgency: Urgency.MEDIUM,
-        age: 0,
+        detectedAtPromiseEpoch: 0,
       });
       expect(page.accumulatedPromises[1]).toEqual({
         id: 'pr-2',
@@ -631,7 +652,7 @@ describe('page-builder', () => {
         scope: PromiseScope.ACT,
         resolutionHint: 'Will the alliance be revealed?',
         suggestedUrgency: Urgency.HIGH,
-        age: 0,
+        detectedAtPromiseEpoch: 0,
       });
     });
   });

@@ -4,6 +4,7 @@ import type { TrackedPromise } from '../../models/state/index.js';
 import type { AccumulatedNpcAgendas } from '../../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../../models/state/npc-relationship.js';
 import {
+  computePromiseAge,
   ConstraintType,
   getStructureVersion,
   ThreatType,
@@ -280,6 +281,7 @@ export interface TrackedPromisePanelData {
 
 export function getTrackedPromisesPanelData(
   promises: readonly TrackedPromise[],
+  currentPromiseEpoch: number,
   limit: number = KEYED_ENTRY_PANEL_LIMIT
 ): TrackedPromisePanelData {
   const sorted = [...promises]
@@ -304,7 +306,7 @@ export function getTrackedPromisesPanelData(
     promiseType: p.promiseType,
     scope: p.scope,
     suggestedUrgency: p.suggestedUrgency,
-    age: p.age,
+    age: computePromiseAge(p, currentPromiseEpoch),
     displayLabel: `(${p.promiseType}/${p.scope}/${p.suggestedUrgency}) ${p.description}`,
   }));
 

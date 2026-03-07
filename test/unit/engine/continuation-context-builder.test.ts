@@ -307,7 +307,7 @@ describe('continuation-context-builder', () => {
             scope: PromiseScope.BEAT,
             resolutionHint: 'Will the locket be opened?',
             suggestedUrgency: Urgency.MEDIUM,
-            age: 2,
+            detectedAtPromiseEpoch: 0,
           },
         ],
       });
@@ -321,9 +321,9 @@ describe('continuation-context-builder', () => {
         null
       );
 
-      expect(result.accumulatedPromises).toEqual(parentPage.accumulatedPromises);
       expect(result.accumulatedPromises).toHaveLength(1);
       expect(result.accumulatedPromises[0]?.id).toBe('pr-1');
+      expect(result.accumulatedPromises[0]?.age).toBe(1);
     });
 
     it('threads and ages parent delayed consequences for continuation planning context', () => {

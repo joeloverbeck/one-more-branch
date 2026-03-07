@@ -16,7 +16,7 @@ import type {
   AccumulatedStructureState,
   ActiveState,
   StoryStructure,
-  TrackedPromise,
+  AgedTrackedPromise,
 } from '../models';
 import { getCurrentBeat } from '../models';
 import type { GenreFrame } from '../models/concept-generator';
@@ -35,7 +35,7 @@ export interface AnalystEvaluationContext {
   readonly parentActiveState: ActiveState;
   readonly threadsResolved: readonly string[];
   readonly threadAges: Readonly<Record<string, number>>;
-  readonly activeTrackedPromises: readonly TrackedPromise[];
+  readonly activeTrackedPromises: readonly AgedTrackedPromise[];
   readonly delayedConsequencesEligible: readonly DelayedConsequence[];
   readonly accumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly accumulatedNpcRelationships?: AccumulatedNpcRelationships;

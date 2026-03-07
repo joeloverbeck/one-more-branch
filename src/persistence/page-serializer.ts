@@ -83,6 +83,7 @@ export function serializePage(page: Page): PageFileData {
     analystResult: analystResultToFileData(page.analystResult),
     thematicValence: page.thematicValence,
     threadAges: { ...page.threadAges },
+    promiseAgeEpoch: page.promiseAgeEpoch,
     accumulatedPromises: page.accumulatedPromises.map((p) => ({
       id: p.id,
       description: p.description,
@@ -90,7 +91,7 @@ export function serializePage(page: Page): PageFileData {
       scope: p.scope,
       resolutionHint: p.resolutionHint,
       suggestedUrgency: p.suggestedUrgency,
-      age: p.age,
+      detectedAtPromiseEpoch: p.detectedAtPromiseEpoch,
     })),
     accumulatedDelayedConsequences: page.accumulatedDelayedConsequences.map((consequence) => ({
       id: consequence.id,
@@ -195,6 +196,7 @@ export function deserializePage(data: PageFileData): Page {
     analystResult: fileDataToAnalystResult(data.analystResult),
     thematicValence: data.thematicValence as Page['thematicValence'],
     threadAges: data.threadAges,
+    promiseAgeEpoch: data.promiseAgeEpoch,
     accumulatedPromises: data.accumulatedPromises.map((p) => ({
       id: p.id,
       description: p.description,
@@ -202,7 +204,7 @@ export function deserializePage(data: PageFileData): Page {
       scope: (p.scope ?? 'BEAT') as TrackedPromise['scope'],
       resolutionHint: p.resolutionHint ?? '',
       suggestedUrgency: p.suggestedUrgency as TrackedPromise['suggestedUrgency'],
-      age: p.age,
+      detectedAtPromiseEpoch: p.detectedAtPromiseEpoch,
     })),
     accumulatedDelayedConsequences: data.accumulatedDelayedConsequences.map((consequence) => ({
       id: consequence.id,

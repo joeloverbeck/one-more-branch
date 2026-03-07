@@ -8,7 +8,7 @@ import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
 import type {
   ActiveState,
   KeyedEntry,
-  TrackedPromise,
+  AgedTrackedPromise,
   ThreadPayoffAssessment,
 } from '../models/state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
@@ -85,7 +85,7 @@ export interface ContinuationContext {
   narrativeFocusTrajectory?: NarrativeFocusTrajectory;
 
   threadAges?: Readonly<Record<string, number>>;
-  accumulatedPromises: readonly TrackedPromise[];
+  accumulatedPromises: readonly AgedTrackedPromise[];
   accumulatedDelayedConsequences?: readonly DelayedConsequence[];
   accumulatedKnowledgeState: readonly KnowledgeAsymmetry[];
   parentDramaticIronyOpportunities?: readonly string[];

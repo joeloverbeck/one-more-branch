@@ -58,7 +58,9 @@ export {
   getMaxIdNumber,
   nextId,
   assignIds,
+  computePromiseAge,
   removeByIds,
+  withPromiseAge,
 } from './keyed-entry.js';
 
 // Narrative promise types
@@ -73,6 +75,7 @@ export {
 
 export type {
   TrackedPromise,
+  AgedTrackedPromise,
   SatisfactionLevel,
   ThreadPayoffAssessment,
   PromisePayoffAssessment,

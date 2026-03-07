@@ -154,7 +154,28 @@ export interface TrackedPromise {
   readonly scope: PromiseScope;
   readonly resolutionHint: string;
   readonly suggestedUrgency: Urgency;
+  readonly detectedAtPromiseEpoch: number;
+}
+
+export interface AgedTrackedPromise extends TrackedPromise {
   readonly age: number;
+}
+
+export function computePromiseAge(
+  promise: TrackedPromise,
+  currentPromiseEpoch: number
+): number {
+  return Math.max(0, currentPromiseEpoch - promise.detectedAtPromiseEpoch);
+}
+
+export function withPromiseAge(
+  promises: readonly TrackedPromise[],
+  currentPromiseEpoch: number
+): readonly AgedTrackedPromise[] {
+  return promises.map((promise) => ({
+    ...promise,
+    age: computePromiseAge(promise, currentPromiseEpoch),
+  }));
 }
 
 export function isTrackedPromise(value: unknown): value is TrackedPromise {
@@ -173,9 +194,9 @@ export function isTrackedPromise(value: unknown): value is TrackedPromise {
     isPromiseScope(obj['scope']) &&
     typeof obj['resolutionHint'] === 'string' &&
     isUrgency(obj['suggestedUrgency']) &&
-    typeof obj['age'] === 'number' &&
-    Number.isInteger(obj['age']) &&
-    obj['age'] >= 0
+    typeof obj['detectedAtPromiseEpoch'] === 'number' &&
+    Number.isInteger(obj['detectedAtPromiseEpoch']) &&
+    obj['detectedAtPromiseEpoch'] >= 0
   );
 }
 

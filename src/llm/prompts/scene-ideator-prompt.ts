@@ -8,7 +8,7 @@ import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildNpcAgendasSection, buildNpcRelationshipsSection } from './sections/shared/npc-state-sections.js';
 import { buildInventorySection, buildHealthSection } from './sections/shared/resource-state-sections.js';
-import type { ThreadEntry, TrackedPromise } from '../../models/state/keyed-entry.js';
+import type { ThreadEntry, AgedTrackedPromise } from '../../models/state/keyed-entry.js';
 import { Urgency } from '../../models/state/keyed-entry.js';
 import { getOverdueThreads } from './sections/planner/index.js';
 import type {
@@ -114,7 +114,7 @@ export function formatOverdueThreadsSection(
 }
 
 export function formatPendingPromisesSection(
-  accumulatedPromises: readonly TrackedPromise[]
+  accumulatedPromises: readonly AgedTrackedPromise[]
 ): string {
   const filtered = accumulatedPromises.filter(
     (p) => p.suggestedUrgency === Urgency.HIGH || p.age >= 5
