@@ -147,7 +147,7 @@ describe('thread metadata enums', () => {
         scope: PromiseScope.BEAT,
         resolutionHint: 'Will the storm arrive?',
         suggestedUrgency: Urgency.MEDIUM,
-        age: 2,
+        detectedAtPromiseEpoch: 2,
       })
     ).toBe(true);
     expect(
@@ -158,7 +158,7 @@ describe('thread metadata enums', () => {
         scope: PromiseScope.BEAT,
         resolutionHint: 'Will this resolve?',
         suggestedUrgency: Urgency.MEDIUM,
-        age: -1,
+        detectedAtPromiseEpoch: -1,
       })
     ).toBe(false);
     expect(
@@ -169,7 +169,7 @@ describe('thread metadata enums', () => {
         scope: PromiseScope.BEAT,
         resolutionHint: 'Will this resolve?',
         suggestedUrgency: 'CRITICAL',
-        age: 1,
+        detectedAtPromiseEpoch: 1,
       })
     ).toBe(false);
     expect(
@@ -179,7 +179,7 @@ describe('thread metadata enums', () => {
         promiseType: PromiseType.FORESHADOWING,
         resolutionHint: 'Will this resolve?',
         suggestedUrgency: Urgency.MEDIUM,
-        age: 1,
+        detectedAtPromiseEpoch: 1,
       })
     ).toBe(false);
     expect(
@@ -189,7 +189,7 @@ describe('thread metadata enums', () => {
         promiseType: PromiseType.FORESHADOWING,
         scope: PromiseScope.BEAT,
         suggestedUrgency: Urgency.MEDIUM,
-        age: 1,
+        detectedAtPromiseEpoch: 1,
       })
     ).toBe(false);
   });

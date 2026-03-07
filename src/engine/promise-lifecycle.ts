@@ -1,5 +1,5 @@
 import type { TrackedPromise } from '../models/state/index.js';
-import { PromiseScope } from '../models/state/index.js';
+import { PromiseScope, computePromiseAge } from '../models/state/index.js';
 import { THREAD_PACING } from '../config/thread-pacing-config.js';
 import type { DetectedPromise } from '../llm/analyst-types';
 
@@ -11,18 +11,19 @@ export function computeAccumulatedPromises(
   parentPromises: readonly TrackedPromise[],
   resolvedIds: readonly string[],
   detected: readonly DetectedPromise[],
-  maxExistingId: number
+  maxExistingId: number,
+  currentPromiseEpoch: number = 0
 ): readonly TrackedPromise[] {
   const resolvedSet = new Set(resolvedIds);
   const sceneExpiryThreshold = THREAD_PACING.PROMISE_SCOPE_EXPIRY.SCENE;
   const survivingAgedPromises = parentPromises
     .filter((promise) => !resolvedSet.has(promise.id))
-    .map((promise) => ({ ...promise, age: promise.age + 1 }))
     .filter((promise) => {
+      const age = computePromiseAge(promise, currentPromiseEpoch);
       if (
         promise.scope === PromiseScope.SCENE &&
         sceneExpiryThreshold !== null &&
-        promise.age > sceneExpiryThreshold
+        age > sceneExpiryThreshold
       ) {
         return false;
       }
@@ -41,7 +42,7 @@ export function computeAccumulatedPromises(
         scope: promise.scope,
         resolutionHint: promise.resolutionHint,
         suggestedUrgency: promise.suggestedUrgency,
-        age: 0,
+        detectedAtPromiseEpoch: currentPromiseEpoch,
       };
     });
 

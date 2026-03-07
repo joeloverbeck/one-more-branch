@@ -3,7 +3,7 @@ import type {
   PromiseScope,
   PromiseType,
   ThreadPayoffAssessment,
-  TrackedPromise,
+  AgedTrackedPromise,
   Urgency,
 } from '../models/state/index.js';
 import type { DelayedConsequence } from '../models/state/delayed-consequence.js';
@@ -31,7 +31,7 @@ export interface PromiseTrackerResult {
 export interface PromiseTrackerContext {
   readonly narrative: string;
   readonly sceneSummary: string;
-  readonly activeTrackedPromises: readonly TrackedPromise[];
+  readonly activeTrackedPromises: readonly AgedTrackedPromise[];
   readonly threadsResolved: readonly string[];
   readonly threadAges: Readonly<Record<string, number>>;
   readonly openThreads: readonly { readonly id: string; readonly text: string }[];

@@ -53,9 +53,11 @@ function makeOpeningContext(overrides: Partial<PageBuildContext> = {}): PageBuil
     storyBible: null,
     analystResult: null,
     parentThreadAges: {},
+    parentPromiseAgeEpoch: 0,
     parentAccumulatedPromises: [],
     analystPromisesDetected: [],
     analystPromisesResolved: [],
+    storyPremisePromises: ['Promise A', 'Promise B'],
     parentAccumulatedNpcAgendas: {},
     parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
     pageActIndex: 0,
@@ -82,9 +84,11 @@ function makeContinuationContext(
     storyBible: null,
     analystResult: null,
     parentThreadAges: parentPage.threadAges,
+    parentPromiseAgeEpoch: parentPage.promiseAgeEpoch,
     parentAccumulatedPromises: parentPage.accumulatedPromises,
     analystPromisesDetected: [],
     analystPromisesResolved: [],
+    storyPremisePromises: ['Promise A', 'Promise B'],
     parentAccumulatedNpcAgendas: parentPage.accumulatedNpcAgendas,
     parentAccumulatedNpcRelationships: parentPage.accumulatedNpcRelationships,
     pageActIndex: 0,
@@ -123,19 +127,19 @@ describe('page-builder pipeline integration', () => {
         makeOpeningContext({ analystPromisesDetected: detected })
       );
 
-      // Both promises detected with age 0
+      // Both promises detected at opening epoch.
       expect(page1.accumulatedPromises).toHaveLength(2);
       expect(page1.accumulatedPromises[0]).toMatchObject({
         id: 'pr-1',
         description: 'The locked door hides something valuable',
         scope: PromiseScope.SCENE,
-        age: 0,
+        detectedAtPromiseEpoch: 0,
       });
       expect(page1.accumulatedPromises[1]).toMatchObject({
         id: 'pr-2',
         description: 'The villain will return',
         scope: PromiseScope.ACT,
-        age: 0,
+        detectedAtPromiseEpoch: 0,
       });
 
       // --- Page 2: continuation, no new detections, promises age ---
@@ -145,8 +149,8 @@ describe('page-builder pipeline integration', () => {
       );
 
       expect(page2.accumulatedPromises).toHaveLength(2);
-      expect(page2.accumulatedPromises[0]).toMatchObject({ id: 'pr-1', age: 1 });
-      expect(page2.accumulatedPromises[1]).toMatchObject({ id: 'pr-2', age: 1 });
+      expect(page2.accumulatedPromises[0]).toMatchObject({ id: 'pr-1', detectedAtPromiseEpoch: 0 });
+      expect(page2.accumulatedPromises[1]).toMatchObject({ id: 'pr-2', detectedAtPromiseEpoch: 0 });
 
       // --- Page 3: resolve pr-1, pr-2 ages again ---
       const page3 = buildPage(
@@ -156,9 +160,9 @@ describe('page-builder pipeline integration', () => {
         })
       );
 
-      // pr-1 resolved (removed), pr-2 aged to 2
+      // pr-1 resolved (removed), pr-2 carries original detection epoch.
       expect(page3.accumulatedPromises).toHaveLength(1);
-      expect(page3.accumulatedPromises[0]).toMatchObject({ id: 'pr-2', age: 2 });
+      expect(page3.accumulatedPromises[0]).toMatchObject({ id: 'pr-2', detectedAtPromiseEpoch: 0 });
 
       // --- Verify SCENE scope expiry: create a chain where SCENE promise ages past threshold ---
       // SCENE expiry threshold is 4 (from THREAD_PACING.PROMISE_SCOPE_EXPIRY.SCENE)
@@ -247,6 +251,40 @@ describe('page-builder pipeline integration', () => {
       // Relationship stored
       expect(page2.npcRelationshipUpdates).toEqual([relationship]);
       expect(page2.accumulatedNpcRelationships['Bartender']).toEqual(relationship);
+    });
+  });
+
+  describe('delayed consequence lifecycle pruning', () => {
+    it('removes triggered delayed consequences from accumulated state', () => {
+      const page1 = buildPage(
+        createMockFinalResult(),
+        makeOpeningContext({
+          analystResult: createMockAnalystResult({
+            delayedConsequencesCreated: [
+              {
+                description: 'A patrol starts checking passes.',
+                triggerCondition: 'The protagonist reaches a checkpoint.',
+                minPagesDelay: 1,
+                maxPagesDelay: 3,
+              },
+            ],
+          }),
+        })
+      );
+
+      expect(page1.accumulatedDelayedConsequences).toHaveLength(1);
+      expect(page1.accumulatedDelayedConsequences[0]?.id).toBe('dc-1');
+
+      const page2 = buildPage(
+        createMockFinalResult(),
+        makeContinuationContext(2, page1, {
+          analystResult: createMockAnalystResult({
+            delayedConsequencesTriggered: ['dc-1'],
+          }),
+        })
+      );
+
+      expect(page2.accumulatedDelayedConsequences).toEqual([]);
     });
   });
 

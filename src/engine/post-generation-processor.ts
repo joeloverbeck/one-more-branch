@@ -21,6 +21,7 @@ import { createInitialStructureState } from '../models/story-arc';
 import type { NpcAgenda } from '../models/state/npc-agenda';
 import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import { createEmptyAccumulatedNpcRelationships } from '../models/state/npc-relationship';
+import { withPromiseAge } from '../models/state/index.js';
 import type { StateReconciliationResult } from './state-reconciler-types';
 import { updateStoryWithAllCanon } from './canon-manager';
 import { runAnalystEvaluation } from './analyst-evaluation';
@@ -205,7 +206,10 @@ export async function processPostGeneration(
             : parentState!.accumulatedActiveState,
           threadsResolved: reconciliation.threadsResolved,
           threadAges: parentPage?.threadAges ?? {},
-          activeTrackedPromises: parentPage?.accumulatedPromises ?? [],
+          activeTrackedPromises: withPromiseAge(
+            parentPage?.accumulatedPromises ?? [],
+            parentPage?.promiseAgeEpoch ?? 0
+          ),
           delayedConsequencesEligible,
           accumulatedNpcAgendas: parentAccumulatedNpcAgendas,
           accumulatedNpcRelationships: parentAccumulatedNpcRelationships,
@@ -428,6 +432,7 @@ export async function processPostGeneration(
     storyBible: getLastStoryBible(),
     analystResult,
     parentThreadAges: parentPage?.threadAges ?? {},
+    parentPromiseAgeEpoch: parentPage?.promiseAgeEpoch ?? 0,
     parentAccumulatedPromises: parentPage?.accumulatedPromises ?? [],
     parentAccumulatedDelayedConsequences: parentPage?.accumulatedDelayedConsequences ?? [],
     parentAccumulatedKnowledgeState: parentPage?.accumulatedKnowledgeState ?? [],
@@ -436,6 +441,7 @@ export async function processPostGeneration(
     analystPromisesDetected: analystResult?.promisesDetected ?? [],
     analystPromisesResolved: analystResult?.promisesResolved ?? [],
     analystPremisePromiseFulfilled: analystResult?.premisePromiseFulfilled ?? null,
+    storyPremisePromises: story.premisePromises ?? [],
     parentAccumulatedNpcAgendas,
     npcAgendaUpdates: agendaResolverResult?.updatedAgendas,
     parentAccumulatedNpcRelationships,

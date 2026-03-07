@@ -19,6 +19,7 @@ import {
   StructureVersionId,
   ThreatType,
   VersionedStoryStructure,
+  withPromiseAge,
 } from '../../../src/models';
 import type { CanonFact } from '../../../src/models/state/canon';
 import { createStructureRewriter } from '../../../src/engine/structure-rewriter';
@@ -3182,8 +3183,10 @@ describe('page-service', () => {
           id: 'pr-4',
           description: 'A map corner marked with black ink',
           promiseType: 'FORESHADOWING' as const,
+          scope: 'BEAT' as const,
+          resolutionHint: 'Will the marked location matter?',
           suggestedUrgency: 'MEDIUM' as const,
-          age: 2,
+          detectedAtPromiseEpoch: 0,
         },
       ];
       const story = buildStory({ structure, structureVersions: [initialVersion] });
@@ -3291,7 +3294,9 @@ describe('page-service', () => {
       expect(analystInput.parentStructureState.pagesInCurrentBeat).toBe(
         parentStructureState.pagesInCurrentBeat
       );
-      expect(analystInput.activeTrackedPromises).toEqual(parentAccumulatedPromises);
+      expect(analystInput.activeTrackedPromises).toEqual(
+        withPromiseAge(parentAccumulatedPromises, parentPage.promiseAgeEpoch)
+      );
       expect(analystInput.apiKey).toBe('test-key');
     });
 

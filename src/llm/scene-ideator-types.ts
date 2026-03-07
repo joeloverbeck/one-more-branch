@@ -1,7 +1,7 @@
 import type { DecomposedCharacter } from '../models/decomposed-character.js';
 import type { DecomposedWorld } from '../models/decomposed-world.js';
 import type { ProtagonistGuidance } from '../models/protagonist-guidance.js';
-import type { ActiveState, TrackedPromise } from '../models/state/index.js';
+import type { ActiveState, AgedTrackedPromise } from '../models/state/index.js';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../models/state/npc-relationship.js';
 import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc.js';
@@ -37,7 +37,7 @@ export interface SceneIdeatorContinuationContext {
   readonly activeState: ActiveState;
   readonly ancestorSummaries: readonly AncestorSummary[];
   readonly threadAges?: Readonly<Record<string, number>>;
-  readonly accumulatedPromises: readonly TrackedPromise[];
+  readonly accumulatedPromises: readonly AgedTrackedPromise[];
   readonly accumulatedNpcAgendas?: AccumulatedNpcAgendas;
   readonly accumulatedNpcRelationships?: AccumulatedNpcRelationships;
   readonly accumulatedInventory: readonly KeyedEntry[];

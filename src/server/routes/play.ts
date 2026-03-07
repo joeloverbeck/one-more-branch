@@ -17,6 +17,7 @@ import {
   PRIMARY_DELTA_LABELS,
   StoryId,
 } from '../../models/index.js';
+import { withPromiseAge } from '../../models/state/index.js';
 import {
   buildBeginErrorResponse,
   buildChoiceErrorResponse,
@@ -210,7 +211,10 @@ playRoutes.post(
           activeState: parentState.accumulatedActiveState,
           ancestorSummaries: ancestorContext.ancestorSummaries,
           threadAges: parentPage.threadAges,
-          accumulatedPromises: parentPage.accumulatedPromises ?? [],
+          accumulatedPromises: withPromiseAge(
+            parentPage.accumulatedPromises ?? [],
+            parentPage.promiseAgeEpoch
+          ),
           accumulatedNpcAgendas: parentState.accumulatedNpcAgendas,
           accumulatedNpcRelationships: parentState.accumulatedNpcRelationships,
           accumulatedInventory: [...parentState.accumulatedInventory],

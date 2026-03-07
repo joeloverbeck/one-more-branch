@@ -51,6 +51,7 @@ export interface PageBuildContext {
   readonly storyBible: StoryBible | null;
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
+  readonly parentPromiseAgeEpoch: number;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
   readonly parentAccumulatedDelayedConsequences: readonly DelayedConsequence[];
   readonly parentAccumulatedKnowledgeState: readonly KnowledgeAsymmetry[];
@@ -58,6 +59,7 @@ export interface PageBuildContext {
   readonly analystPromisesDetected: readonly DetectedPromise[];
   readonly analystPromisesResolved: readonly string[];
   readonly analystPremisePromiseFulfilled: string | null;
+  readonly storyPremisePromises?: readonly string[];
   readonly parentAccumulatedNpcAgendas: AccumulatedNpcAgendas;
   readonly npcAgendaUpdates?: readonly NpcAgenda[];
   readonly parentAccumulatedNpcRelationships: AccumulatedNpcRelationships;
@@ -91,6 +93,7 @@ export interface ContinuationPageBuildContext {
   readonly storyBible: StoryBible | null;
   readonly analystResult: AnalystResult | null;
   readonly parentThreadAges: Readonly<Record<string, number>>;
+  readonly parentPromiseAgeEpoch?: number;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
   readonly parentAccumulatedDelayedConsequences?: readonly DelayedConsequence[];
   readonly parentAccumulatedKnowledgeState?: readonly KnowledgeAsymmetry[];
@@ -107,10 +110,13 @@ export interface ContinuationPageBuildContext {
  */
 export function buildPage(result: PageBuildResult, context: PageBuildContext): Page {
   const isOpening = context.parentPageId === null;
+  const currentPromiseAgeEpoch = isOpening ? 0 : (context.parentPromiseAgeEpoch ?? 0) + 1;
   const lifecycle = computeNarrativeStateLifecycle({
     isOpening,
     parentOpenThreads: context.parentAccumulatedActiveState.openThreads,
     parentThreadAges: context.parentThreadAges,
+    parentPromiseAgeEpoch: context.parentPromiseAgeEpoch,
+    currentPromiseAgeEpoch,
     parentAccumulatedPromises: context.parentAccumulatedPromises,
     parentAccumulatedFulfilledPremisePromises: context.parentAccumulatedFulfilledPremisePromises,
     threadsAdded: result.threadsAdded,
@@ -119,6 +125,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     analystPromisesDetected: context.analystPromisesDetected,
     analystPromisesResolved: context.analystPromisesResolved,
     analystPremisePromiseFulfilled: context.analystPremisePromiseFulfilled,
+    canonicalPremisePromises: context.storyPremisePromises ?? [],
   });
   const agedDelayedConsequences = incrementDelayedConsequenceAges(
     context.parentAccumulatedDelayedConsequences ?? []
@@ -130,6 +137,9 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
   const triggeredDelayedConsequences = applyTriggeredDelayedConsequences(
     agedDelayedConsequences,
     context.analystResult?.delayedConsequencesTriggered ?? []
+  );
+  const pendingDelayedConsequences = triggeredDelayedConsequences.filter(
+    (consequence) => !consequence.triggered
   );
   const createdDelayedConsequences = materializeDelayedConsequenceDrafts(
     context.analystResult?.delayedConsequencesCreated ?? [],
@@ -166,11 +176,10 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     storyBible: context.storyBible,
     analystResult: context.analystResult,
     threadAges: lifecycle.threadAges,
+    promiseAgeEpoch: currentPromiseAgeEpoch,
+    parentPromiseAgeEpoch: isOpening ? undefined : context.parentPromiseAgeEpoch,
     accumulatedPromises: lifecycle.accumulatedPromises,
-    accumulatedDelayedConsequences: [
-      ...triggeredDelayedConsequences,
-      ...createdDelayedConsequences,
-    ],
+    accumulatedDelayedConsequences: [...pendingDelayedConsequences, ...createdDelayedConsequences],
     accumulatedKnowledgeState,
     accumulatedFulfilledPremisePromises: lifecycle.accumulatedFulfilledPremisePromises,
     npcAgendaUpdates: context.npcAgendaUpdates,
@@ -210,6 +219,7 @@ export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildC
     storyBible: null,
     analystResult: null,
     parentThreadAges: {},
+    parentPromiseAgeEpoch: 0,
     parentAccumulatedPromises: [],
     parentAccumulatedDelayedConsequences: [],
     parentAccumulatedKnowledgeState: [],
@@ -217,6 +227,7 @@ export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildC
     analystPromisesDetected: [],
     analystPromisesResolved: [],
     analystPremisePromiseFulfilled: null,
+    storyPremisePromises: [],
     parentAccumulatedNpcAgendas: agendaRecord,
     parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
     pageActIndex: 0,
@@ -244,6 +255,7 @@ export function buildContinuationPage(
     storyBible: context.storyBible,
     analystResult: context.analystResult,
     parentThreadAges: context.parentThreadAges,
+    parentPromiseAgeEpoch: context.parentPromiseAgeEpoch ?? 0,
     parentAccumulatedPromises: context.parentAccumulatedPromises,
     parentAccumulatedDelayedConsequences: context.parentAccumulatedDelayedConsequences ?? [],
     parentAccumulatedKnowledgeState: context.parentAccumulatedKnowledgeState ?? [],
@@ -252,6 +264,7 @@ export function buildContinuationPage(
     analystPromisesDetected: context.analystPromisesDetected,
     analystPromisesResolved: context.analystPromisesResolved,
     analystPremisePromiseFulfilled: context.analystPremisePromiseFulfilled ?? null,
+    storyPremisePromises: [],
     parentAccumulatedNpcAgendas: context.parentAccumulatedNpcAgendas ?? {},
     npcAgendaUpdates: context.npcAgendaUpdates,
     parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),

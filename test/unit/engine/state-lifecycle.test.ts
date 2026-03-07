@@ -66,6 +66,7 @@ function makeThread(overrides: Partial<ThreadEntry> = {}): ThreadEntry {
 }
 
 function makePromise(overrides: Partial<TrackedPromise> = {}): TrackedPromise {
+  const age = (overrides as { age?: number }).age ?? 2;
   return {
     id: 'pr-1',
     description: 'A suspicious key was emphasized.',
@@ -73,7 +74,7 @@ function makePromise(overrides: Partial<TrackedPromise> = {}): TrackedPromise {
     scope: PromiseScope.BEAT,
     resolutionHint: 'Will the key matter later?',
     suggestedUrgency: Urgency.HIGH,
-    age: 2,
+    detectedAtPromiseEpoch: 10 - age,
     ...overrides,
   };
 }
@@ -84,6 +85,8 @@ describe('computeNarrativeStateLifecycle', () => {
       isOpening: true,
       parentOpenThreads: [],
       parentThreadAges: {},
+      parentPromiseAgeEpoch: 0,
+      currentPromiseAgeEpoch: 0,
       parentAccumulatedPromises: [],
       parentAccumulatedFulfilledPremisePromises: ['Ignored'],
       threadsAdded: [{ text: 'Open question' }],
@@ -100,6 +103,7 @@ describe('computeNarrativeStateLifecycle', () => {
       ],
       analystPromisesResolved: ['pr-999'],
       analystPremisePromiseFulfilled: 'Ignored on opening',
+      canonicalPremisePromises: ['Promise A', 'Promise B'],
     });
 
     expect(result.effectiveThreadsResolved).toEqual([]);
@@ -112,7 +116,7 @@ describe('computeNarrativeStateLifecycle', () => {
         scope: PromiseScope.BEAT,
         resolutionHint: 'Will the storm arrive?',
         suggestedUrgency: Urgency.MEDIUM,
-        age: 0,
+        detectedAtPromiseEpoch: 0,
       },
     ]);
     expect(result.accumulatedFulfilledPremisePromises).toEqual([]);
@@ -126,7 +130,12 @@ describe('computeNarrativeStateLifecycle', () => {
         makeThread({ id: 'td-2', text: 'Another old thread', threadType: ThreadType.DANGER, urgency: Urgency.HIGH }),
       ],
       parentThreadAges: { 'td-1': 0, 'td-2': 3 },
-      parentAccumulatedPromises: [makePromise({ id: 'pr-1', age: 1 }), makePromise({ id: 'pr-2', age: 4, scope: PromiseScope.SCENE })],
+      parentPromiseAgeEpoch: 10,
+      currentPromiseAgeEpoch: 11,
+      parentAccumulatedPromises: [
+        makePromise({ id: 'pr-1', detectedAtPromiseEpoch: 9 }),
+        makePromise({ id: 'pr-2', detectedAtPromiseEpoch: 6, scope: PromiseScope.SCENE }),
+      ],
       parentAccumulatedFulfilledPremisePromises: ['Promise A'],
       threadsAdded: [{ text: 'New thread' }],
       threadsResolved: ['td-1'],
@@ -151,6 +160,7 @@ describe('computeNarrativeStateLifecycle', () => {
       ],
       analystPromisesResolved: ['pr-1'],
       analystPremisePromiseFulfilled: 'Promise B',
+      canonicalPremisePromises: ['Promise A', 'Promise B'],
     });
 
     expect(result.effectiveThreadsResolved).toEqual(['td-1', 'td-2']);
@@ -165,6 +175,8 @@ describe('computeNarrativeStateLifecycle', () => {
       isOpening: false,
       parentOpenThreads: [makeThread()],
       parentThreadAges: { 'td-1': 0 },
+      parentPromiseAgeEpoch: 10,
+      currentPromiseAgeEpoch: 11,
       parentAccumulatedPromises: [makePromise()],
       parentAccumulatedFulfilledPremisePromises: ['Promise A'],
       threadsAdded: [],
@@ -173,6 +185,28 @@ describe('computeNarrativeStateLifecycle', () => {
       analystPromisesDetected: [],
       analystPromisesResolved: [],
       analystPremisePromiseFulfilled: 'Promise A',
+      canonicalPremisePromises: ['Promise A', 'Promise B'],
+    });
+
+    expect(result.accumulatedFulfilledPremisePromises).toEqual(['Promise A']);
+  });
+
+  it('ignores non-canonical fulfilled premise promises', () => {
+    const result = computeNarrativeStateLifecycle({
+      isOpening: false,
+      parentOpenThreads: [makeThread()],
+      parentThreadAges: { 'td-1': 0 },
+      parentPromiseAgeEpoch: 10,
+      currentPromiseAgeEpoch: 11,
+      parentAccumulatedPromises: [makePromise()],
+      parentAccumulatedFulfilledPremisePromises: ['Promise A', 'Not In Canon'],
+      threadsAdded: [],
+      threadsResolved: [],
+      analystResult: null,
+      analystPromisesDetected: [],
+      analystPromisesResolved: [],
+      analystPremisePromiseFulfilled: 'Another unknown promise',
+      canonicalPremisePromises: ['Promise A', 'Promise B'],
     });
 
     expect(result.accumulatedFulfilledPremisePromises).toEqual(['Promise A']);
@@ -243,5 +277,28 @@ describe('computeAccumulatedKnowledgeState', () => {
         secrets: ['Old secret'],
       },
     ]);
+  });
+
+  it('prunes entries without unresolved asymmetry', () => {
+    const result = computeAccumulatedKnowledgeState({
+      parentAccumulatedKnowledgeState: [
+        {
+          characterName: 'Captain Voss',
+          knownFacts: ['Old fact'],
+          falseBeliefs: ['Old false belief'],
+          secrets: ['Old secret'],
+        },
+      ],
+      detectedKnowledgeAsymmetry: [
+        {
+          characterName: 'Captain Voss',
+          knownFacts: ['Updated fact'],
+          falseBeliefs: [],
+          secrets: [],
+        },
+      ],
+    });
+
+    expect(result).toEqual([]);
   });
 });

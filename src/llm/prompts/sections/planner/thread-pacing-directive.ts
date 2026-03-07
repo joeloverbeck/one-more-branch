@@ -1,6 +1,6 @@
 import type {
   ThreadEntry,
-  TrackedPromise,
+  AgedTrackedPromise,
   ThreadPayoffAssessment,
   PromisePayoffAssessment,
 } from '../../../../models/state/index.js';
@@ -59,7 +59,7 @@ export function buildThreadAgingSection(
   return lines.join('\n') + '\n';
 }
 
-function formatPromiseLine(promise: TrackedPromise, includeId: boolean = true): string {
+function formatPromiseLine(promise: AgedTrackedPromise, includeId: boolean = true): string {
   const prefix = includeId ? `[${promise.id}] ` : '';
   return `- ${prefix}(${promise.promiseType}/${promise.scope}/${promise.suggestedUrgency}, ${promise.age} pages) ${promise.description}\n  Question: ${promise.resolutionHint}`;
 }
@@ -67,7 +67,7 @@ function formatPromiseLine(promise: TrackedPromise, includeId: boolean = true): 
 const SCOPE_ORDER: Record<string, number> = { STORY: 0, ACT: 1, BEAT: 2, SCENE: 3 };
 
 export function buildTrackedPromisesSection(
-  accumulatedPromises: readonly TrackedPromise[],
+  accumulatedPromises: readonly AgedTrackedPromise[],
   options: { includePromiseIds?: boolean } = {}
 ): string {
   if (accumulatedPromises.length === 0) {

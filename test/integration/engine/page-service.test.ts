@@ -2597,7 +2597,7 @@ describe('page-service integration', () => {
         scope: 'ACT',
         resolutionHint: 'The chest will be opened in a critical moment',
         suggestedUrgency: 'HIGH',
-        age: 2,
+        detectedAtPromiseEpoch: 0,
       };
 
       const parentPage = createPage({
@@ -2642,7 +2642,7 @@ describe('page-service integration', () => {
           description: 'A new foreshadowing of betrayal',
           promiseType: 'FORESHADOWING',
           scope: 'BEAT',
-          age: 0,
+          detectedAtPromiseEpoch: 1,
         })
       );
 

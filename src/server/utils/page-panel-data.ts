@@ -92,7 +92,10 @@ export function buildPagePanelData(page: Page, parentPage: Page | null = null): 
     constraintsPanelData: getConstraintPanelData(page.accumulatedActiveState.activeConstraints),
     inventoryPanelData: getKeyedEntryPanelData(page.accumulatedInventory, 10),
     healthPanelData: getKeyedEntryPanelData(page.accumulatedHealth, 10),
-    trackedPromisesPanelData: getTrackedPromisesPanelData(page.accumulatedPromises),
+    trackedPromisesPanelData: getTrackedPromisesPanelData(
+      page.accumulatedPromises,
+      page.promiseAgeEpoch
+    ),
     npcRelationshipPanelData: getNpcRelationshipPanelData(page.accumulatedNpcRelationships),
     npcAgendaPanelData: getNpcAgendaPanelData(page.accumulatedNpcAgendas),
     knowledgeStatePanelData: getKnowledgeStatePanelData(page.accumulatedKnowledgeState),

@@ -76,7 +76,7 @@ export interface DetectedPromiseFileData {
 
 export interface TrackedPromiseFileData extends DetectedPromiseFileData {
   id: string;
-  age: number;
+  detectedAtPromiseEpoch: number;
 }
 
 export interface DelayedConsequenceFileData {
@@ -236,6 +236,7 @@ export interface PageFileData {
   analystResult: AnalystResultFileData | null;
   thematicValence: string;
   threadAges: Record<string, number>;
+  promiseAgeEpoch: number;
   accumulatedPromises: TrackedPromiseFileData[];
   accumulatedDelayedConsequences: DelayedConsequenceFileData[];
   accumulatedKnowledgeState: KnowledgeAsymmetryFileData[];

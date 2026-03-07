@@ -13,6 +13,8 @@ export interface NarrativeStateLifecycleInput {
   readonly isOpening: boolean;
   readonly parentOpenThreads: readonly ThreadEntry[];
   readonly parentThreadAges: Readonly<Record<string, number>>;
+  readonly parentPromiseAgeEpoch: number;
+  readonly currentPromiseAgeEpoch: number;
   readonly parentAccumulatedPromises: readonly TrackedPromise[];
   readonly parentAccumulatedFulfilledPremisePromises: readonly string[];
   readonly threadsAdded: readonly { text: string }[];
@@ -21,6 +23,7 @@ export interface NarrativeStateLifecycleInput {
   readonly analystPromisesDetected: readonly DetectedPromise[];
   readonly analystPromisesResolved: readonly string[];
   readonly analystPremisePromiseFulfilled: string | null;
+  readonly canonicalPremisePromises?: readonly string[];
 }
 
 export interface NarrativeStateLifecycleOutput {
@@ -42,6 +45,9 @@ export interface KnowledgeStateLifecycleInput {
 export function computeNarrativeStateLifecycle(
   input: NarrativeStateLifecycleInput
 ): NarrativeStateLifecycleOutput {
+  const currentPromiseAgeEpoch =
+    input.currentPromiseAgeEpoch ??
+    (input.isOpening ? 0 : (input.parentPromiseAgeEpoch ?? 0) + 1);
   const effectiveThreadsResolved = input.isOpening
     ? input.threadsResolved
     : augmentThreadsResolvedFromAnalyst(
@@ -65,16 +71,44 @@ export function computeNarrativeStateLifecycle(
     parentPromises,
     input.isOpening ? [] : input.analystPromisesResolved,
     input.analystPromisesDetected,
-    getMaxPromiseIdNumber(parentPromises)
+    getMaxPromiseIdNumber(parentPromises),
+    currentPromiseAgeEpoch
   );
 
   const accumulatedFulfilledPremisePromises = (() : readonly string[] => {
-    const inherited = input.isOpening ? [] : input.parentAccumulatedFulfilledPremisePromises;
-    const fulfilledNow = (input.isOpening ? null : input.analystPremisePromiseFulfilled)?.trim() ?? '';
-    if (fulfilledNow.length === 0 || inherited.includes(fulfilledNow)) {
-      return inherited;
+    const canonicalByTrimmed = new Map<string, string>();
+    for (const promise of input.canonicalPremisePromises ?? []) {
+      const trimmed = promise.trim();
+      if (trimmed.length > 0 && !canonicalByTrimmed.has(trimmed)) {
+        canonicalByTrimmed.set(trimmed, promise);
+      }
     }
-    return [...inherited, fulfilledNow];
+
+    const inherited = input.isOpening ? [] : (input.parentAccumulatedFulfilledPremisePromises ?? []);
+    const inheritedCanonical: string[] = [];
+    const inheritedSeen = new Set<string>();
+    for (const fulfilled of inherited) {
+      const trimmed = fulfilled.trim();
+      if (trimmed.length === 0) {
+        continue;
+      }
+      const canonical = canonicalByTrimmed.get(trimmed);
+      if (!canonical || inheritedSeen.has(trimmed)) {
+        continue;
+      }
+      inheritedCanonical.push(canonical);
+      inheritedSeen.add(trimmed);
+    }
+
+    const fulfilledNow = (input.isOpening ? null : input.analystPremisePromiseFulfilled)?.trim() ?? '';
+    if (fulfilledNow.length === 0 || inheritedSeen.has(fulfilledNow)) {
+      return inheritedCanonical;
+    }
+    const canonicalFulfilledNow = canonicalByTrimmed.get(fulfilledNow);
+    if (!canonicalFulfilledNow) {
+      return inheritedCanonical;
+    }
+    return [...inheritedCanonical, canonicalFulfilledNow];
   })();
 
   return {
@@ -99,5 +133,7 @@ export function computeAccumulatedKnowledgeState(
   for (const entry of input.detectedKnowledgeAsymmetry) {
     byCharacter.set(entry.characterName, entry);
   }
-  return Array.from(byCharacter.values());
+  return Array.from(byCharacter.values()).filter(
+    (entry) => entry.falseBeliefs.length > 0 || entry.secrets.length > 0
+  );
 }
