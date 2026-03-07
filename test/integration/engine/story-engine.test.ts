@@ -519,16 +519,28 @@ describe('story-engine integration', () => {
     );
     mockedGenerateChoices.mockImplementation((context: { narrative: string }) => {
       if (context.narrative.includes('harbor lights')) {
-        return Promise.resolve({ choices: openingResult.choices, rawResponse: '{}' });
+        return Promise.resolve({
+          choices: [
+            { text: 'Investigate the ember trail', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+            { text: 'Question the ferryman', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          ],
+          rawResponse: '{}',
+        });
       }
       if (context.narrative.includes('embers down alleys')) {
         return Promise.resolve({
-          choices: buildWriterResult('Investigate the ember trail').choices,
+          choices: [
+            { text: 'Enter the ash-marked chapel', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+            { text: 'Return to the docks with proof', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          ],
           rawResponse: '{}',
         });
       }
       return Promise.resolve({
-        choices: buildWriterResult('default').choices,
+        choices: [
+          { text: 'Accept passage to the hidden pier', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+          { text: 'Detain the ferryman for answers', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+        ],
         rawResponse: '{}',
       });
     });

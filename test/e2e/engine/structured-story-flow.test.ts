@@ -497,22 +497,37 @@ describe('Structured Story E2E', () => {
     });
     mockedGenerateChoices.mockImplementation((context: { narrative: string }) => {
       if (context.narrative.includes('rain-soaked capital')) {
-        return Promise.resolve({ choices: openingResult.choices, rawResponse: '{}' });
+        return Promise.resolve({
+          choices: [
+            { text: 'Pursue the masked courier through the archive tunnels', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+            { text: 'Hide in the crowd and decode the clock anomaly first', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          ],
+          rawResponse: '{}',
+        });
       }
       if (context.narrative.includes('catch the courier')) {
         return Promise.resolve({
-          choices: buildWriterResult('Pursue', 0).choices,
+          choices: [
+            { text: 'Press deeper toward the signal source', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+            { text: 'Retreat and brief your contact', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          ],
           rawResponse: '{}',
         });
       }
       if (context.narrative.includes('signal chamber')) {
         return Promise.resolve({
-          choices: buildWriterResult('Press deeper', 0).choices,
+          choices: [
+            { text: 'Exfiltrate with the logs', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+            { text: 'Trigger a distraction in the chamber', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+          ],
           rawResponse: '{}',
         });
       }
       return Promise.resolve({
-        choices: buildWriterResult('default', 0).choices,
+        choices: [
+          { text: 'Continue forward', choiceType: 'TACTICAL_APPROACH' as const, primaryDelta: 'GOAL_SHIFT' as const },
+          { text: 'Investigate surroundings', choiceType: 'INVESTIGATION' as const, primaryDelta: 'INFORMATION_REVEALED' as const },
+        ],
         rawResponse: '{}',
       });
     });
