@@ -1915,9 +1915,9 @@ main {
 .choice-icon-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
   flex-shrink: 0;
-  padding: 5px 8px;
+  padding: 4px 4px;
   border-radius: 14px;
   background: rgba(0, 0, 0, 0.35);
 }
