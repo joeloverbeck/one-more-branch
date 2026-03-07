@@ -255,13 +255,15 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
                 ${actDisplayInfo ? `<div class="act-indicator-wrapper" id="act-indicator-wrapper" data-act-number="${actDisplayInfo.actNumber ?? 0}"><span class="act-indicator act-indicator--clickable" id="act-indicator" role="button" tabindex="0" aria-expanded="false" aria-controls="act-structure-details"><span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>${actDisplayInfo.displayString}</span></div>` : ''}
               </div>
               <div class="story-header-actions" id="story-header-actions">
-                <button type="button" class="recap-btn" id="recap-btn" aria-haspopup="dialog" aria-controls="recap-modal">
-                  <span class="recap-btn__icon" aria-hidden="true">&#x1f4dc;</span>
-                  <span class="recap-btn__label">Story So Far</span>
-                </button>
-                ${insightsButtonHtml}
                 <span class="page-indicator">Page ${pageId}</span>
               </div>
+            </div>
+            <div class="story-actions-strip" id="story-actions-strip">
+              <button type="button" class="recap-btn" id="recap-btn" aria-haspopup="dialog" aria-controls="recap-modal">
+                <span class="recap-btn__icon" aria-hidden="true">&#x1f4dc;</span>
+                <span class="recap-btn__label">Story So Far</span>
+              </button>
+              ${insightsButtonHtml}
             </div>
             <article class="narrative" id="narrative">
               <div class="narrative-text">${narrativeText}</div>
