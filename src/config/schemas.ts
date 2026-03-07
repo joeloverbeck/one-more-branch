@@ -16,6 +16,8 @@ const StorageConfigSchema = z.object({
   conceptsDir: z.string().min(1).default('concepts'),
   kernelsDir: z.string().min(1).default('kernels'),
   castsDir: z.string().min(1).default('casts'),
+  contentPacketsDir: z.string().min(1).default('content-packets'),
+  tasteProfilesDir: z.string().min(1).default('taste-profiles'),
 });
 
 /**
