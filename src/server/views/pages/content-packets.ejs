@@ -80,44 +80,54 @@
         <% if (packets.length === 0) { %>
           <p class="empty-state">No saved content packets yet. Generate some above.</p>
         <% } else { %>
-          <div class="packets-grid" id="saved-packets-grid">
-            <% packets.forEach(packet => { %>
-              <article class="story-card" data-packet-id="<%= packet.id %>">
-                <div class="story-card-content">
-                  <h3 class="story-title">
-                    <%= packet.name %>
-                    <% if (packet.pinned) { %>
-                      <span class="pin-badge" title="Pinned">&#128204;</span>
-                    <% } %>
-                  </h3>
-                  <dl class="story-details">
-                    <div class="story-detail-row">
-                      <dt>Kind</dt>
-                      <dd><%= packet.contentKind %></dd>
-                    </div>
-                    <div class="story-detail-row">
-                      <dt>Core Anomaly</dt>
-                      <dd><%= packet.coreAnomaly %></dd>
-                    </div>
-                    <div class="story-detail-row">
-                      <dt>Wildness Invariant</dt>
-                      <dd><%= packet.wildnessInvariant %></dd>
-                    </div>
-                    <div class="story-detail-row">
-                      <dt>Role</dt>
-                      <dd><%= packet.recommendedRole %></dd>
-                    </div>
-                  </dl>
-                  <div class="story-card-actions">
-                    <button class="btn btn-sm pin-packet-btn" data-id="<%= packet.id %>">
-                      <%= packet.pinned ? 'Unpin' : 'Pin' %>
-                    </button>
-                    <button class="btn btn-sm btn-danger delete-packet-btn" data-id="<%= packet.id %>">
-                      Delete
-                    </button>
-                  </div>
+          <div id="saved-packets-grid">
+            <% contentKindGroups.forEach(group => { %>
+              <details class="genre-group" data-genre="<%= group.kind %>">
+                <summary class="genre-group__header">
+                  <span class="genre-group__label"><%= group.displayLabel %></span>
+                  <span class="genre-group__count">(<%= group.packets.length %>)</span>
+                </summary>
+                <div class="genre-group__body packets-grid">
+                  <% group.packets.forEach(packet => { %>
+                    <article class="story-card" data-packet-id="<%= packet.id %>">
+                      <div class="story-card-content">
+                        <h3 class="story-title">
+                          <%= packet.name %>
+                          <% if (packet.pinned) { %>
+                            <span class="pin-badge" title="Pinned">&#128204;</span>
+                          <% } %>
+                        </h3>
+                        <dl class="story-details">
+                          <div class="story-detail-row">
+                            <dt>Kind</dt>
+                            <dd><%= packet.contentKind %></dd>
+                          </div>
+                          <div class="story-detail-row">
+                            <dt>Core Anomaly</dt>
+                            <dd><%= packet.coreAnomaly %></dd>
+                          </div>
+                          <div class="story-detail-row">
+                            <dt>Wildness Invariant</dt>
+                            <dd><%= packet.wildnessInvariant %></dd>
+                          </div>
+                          <div class="story-detail-row">
+                            <dt>Role</dt>
+                            <dd><%= packet.recommendedRole %></dd>
+                          </div>
+                        </dl>
+                        <div class="story-card-actions">
+                          <button class="btn btn-sm pin-packet-btn" data-id="<%= packet.id %>">
+                            <%= packet.pinned ? 'Unpin' : 'Pin' %>
+                          </button>
+                          <button class="btn btn-sm btn-danger delete-packet-btn" data-id="<%= packet.id %>">
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  <% }); %>
                 </div>
-              </article>
+              </details>
             <% }); %>
           </div>
         <% } %>
