@@ -42,6 +42,7 @@ SPECIFICITY DIRECTIVES:
 - premise promises are audience expectations: list 3-5 specific scenarios this premise promises the reader will experience. These are not structure beats.
 - The inevitability statement captures what kind of story MUST happen given this premise — not what could happen, but what is forced by internal logic.
 - The load-bearing check is a negative test: remove the conflict engine (genreSubversion + coreFlaw + coreConflictLoop) and determine whether the story collapses into generic genre.
+- Wildness Invariant Removal Test (ADDITIVE — runs in addition to conflict-engine removal): Remove the primary content packet's wildnessInvariant from the concept entirely. Does the story collapse into the same generic genre as the conflict-engine removal test? Compare the result against the packet's dullCollapse field — if the concept matches dullCollapse, the invariant was genuinely load-bearing. Record BOTH tests in the same loadBearingCheck.reasoning and genericCollapse fields.
 
 KERNEL FIDELITY DIRECTIVE:
 - For each concept, determine whether the kernel's valueAtStake and opposingForce are STRUCTURALLY embedded in the concept's conflict engine, or merely cosmetically referenced.
@@ -148,6 +149,7 @@ OUTPUT REQUIREMENTS:
 |---|---|
 | `evaluatedConcepts` | Array of evaluated concepts from the evaluator stage |
 | `kernel` | StoryKernel with `dramaticThesis`, `valueAtStake`, `opposingForce`, `directionOfChange`, `thematicQuestion` — always required |
+| `contentPackets` | ContentPacket[] with `contentId`, `wildnessInvariant`, `dullCollapse` |
 
 ## Downstream Integration
 
@@ -157,6 +159,17 @@ The `signatureScenario` from this stage is passed to the Concept Scenario Genera
 When a saved concept has a `verificationResult`, spine generation receives:
 - `signatureScenario` — the spine's `centralDramaticQuestion` should make this moment inevitable
 - `inevitabilityStatement` — grounds the dramatic question in narrative necessity
+
+## Content Packet Integration (WILCONPIP)
+
+WILCONPIP-13 added an additive invariant-removal negative test to the load-bearing check. When `contentPackets` are provided:
+
+- The prompt injects content packet context with `contentId`, `wildnessInvariant`, and `dullCollapse`
+- The load-bearing check now runs TWO negative tests:
+  1. **Conflict engine removal** (original): Remove genreSubversion + coreFlaw + coreConflictLoop
+  2. **Wildness invariant removal** (WILCONPIP): Remove the primary content packet's wildnessInvariant entirely
+- Compare the invariant-removal collapse against the packet's `dullCollapse` field — if they describe substantially the same generic story, the invariant was genuinely load-bearing
+- Both test results are recorded in the same `loadBearingCheck.reasoning` and `genericCollapse` fields
 
 ## Notes
 

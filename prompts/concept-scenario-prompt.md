@@ -37,6 +37,7 @@ SCENARIO DIRECTIVES:
 - setpiece causal chain test: analyze whether each setpiece outcome CAUSES the next setpiece setup. If links are weak or missing, set setpieceCausalChainBroken=true and still provide the strongest possible 5 causal links (between setpieces 1->2 through 5->6).
 - The conceptIntegrityScore measures how many of the 6 setpieces are truly concept-unique (100 = all 6 are impossible in any other story).
 - Anchor each setpiece to the signature scenario already identified in the specificity analysis. The setpieces should feel like they belong in the same story as that signature moment.
+- When content packets are provided: at least 2 of 6 setpieces must directly exploit a content packet's signatureImage or escalationPath. At least 1 setpiece must show a packet's socialEngine in action (institution/market/ritual operating in the scene). Setpieces that merely reference packet cosmetically do not count.
 ```
 
 ### 2) User Message
@@ -134,6 +135,7 @@ OUTPUT REQUIREMENTS:
 | `evaluatedConcepts` | Array of evaluated concepts from the evaluator stage |
 | `kernel` | StoryKernel with `dramaticThesis`, `valueAtStake`, `opposingForce`, `directionOfChange`, `thematicQuestion` |
 | `specificityAnalyses` | Array of `ConceptSpecificityAnalysis` from stage 1, providing `signatureScenario` for each concept |
+| `contentPackets` | ContentPacket[] with `signatureImage`, `escalationPath`, `socialEngine` |
 
 ## Downstream Integration
 
@@ -141,6 +143,14 @@ OUTPUT REQUIREMENTS:
 When verification data is available, structure generation receives the **setpiece bank**:
 - 6 escalating setpieces as beat seeds
 - Constraint: at least 3 `uniqueScenarioHook` fields should trace back to verified setpieces
+
+## Content Packet Integration (WILCONPIP)
+
+When `contentPackets` are provided, the prompt injects a `CONTENT PACKETS` block containing `signatureImage`, `escalationPath`, and `socialEngine` for each packet. The scenario generator must:
+
+- Directly exploit packet `signatureImage` or `escalationPath` in at least 2 of 6 setpieces
+- Show at least 1 packet's `socialEngine` in action (institution/market/ritual operating in the scene)
+- Cosmetic references to packet material do not count toward these requirements
 
 ## Notes
 
