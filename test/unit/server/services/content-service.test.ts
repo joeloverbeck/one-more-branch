@@ -91,6 +91,7 @@ function createOneShotPacket(): ContentOneShotPacket {
 const VALID_API_KEY = 'sk-test-key-1234567890';
 const EXEMPLAR_IDEAS = ['A city where gravity reverses at midnight'];
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function createMockDeps() {
   const tasteProfile = createTasteProfile();
   const sparks = [createSpark()];

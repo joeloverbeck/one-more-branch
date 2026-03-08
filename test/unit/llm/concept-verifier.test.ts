@@ -697,14 +697,14 @@ describe('concept-verifier', () => {
 
       const firstCallBody = JSON.parse(
         (fetchMock.mock.calls[0][1] as { body: string }).body,
-      );
+      ) as { messages: Array<{ content: string }> };
       const firstSystemMessage = firstCallBody.messages[0].content;
       expect(firstSystemMessage).toContain('CONTENT PACKET INVARIANT-REMOVAL TEST');
       expect(firstSystemMessage).toContain('Wildness invariant 1');
 
       const secondCallBody = JSON.parse(
         (fetchMock.mock.calls[1][1] as { body: string }).body,
-      );
+      ) as { messages: Array<{ content: string }> };
       const secondSystemMessage = secondCallBody.messages[0].content;
       expect(secondSystemMessage).toContain('CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS');
       expect(secondSystemMessage).toContain('Signature image 1');
@@ -729,13 +729,13 @@ describe('concept-verifier', () => {
 
       const firstCallBody = JSON.parse(
         (fetchMock.mock.calls[0][1] as { body: string }).body,
-      );
+      ) as { messages: Array<{ content: string }> };
       const firstSystemMessage = firstCallBody.messages[0].content;
       expect(firstSystemMessage).not.toContain('CONTENT PACKET INVARIANT-REMOVAL TEST');
 
       const secondCallBody = JSON.parse(
         (fetchMock.mock.calls[1][1] as { body: string }).body,
-      );
+      ) as { messages: Array<{ content: string }> };
       const secondSystemMessage = secondCallBody.messages[0].content;
       expect(secondSystemMessage).not.toContain('CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS');
     });
