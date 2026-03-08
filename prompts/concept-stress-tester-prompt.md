@@ -32,6 +32,13 @@ ADVERSARIAL DIRECTIVES:
 - For every identified weakness, tighten existing concept fields with concrete and enforceable changes.
 - Keep hardenedConcept in the exact ConceptSpec shape.
 
+WILDNESS INVARIANT EROSION CHECK:
+- Compare pre-hardened vs. hardened concept's relationship to each wildnessInvariant.
+- Flag if hardened concept has normalized, genericized, or removed invariant's concrete specificity.
+- If erosion detected, emit drift risk with mitigationType WILDNESS_INVARIANT describing what was diluted and how to restore.
+- Compare each packet's dullCollapse against verification's genericCollapse — if they describe substantially the same generic story, flag as CRITICAL drift risk with mitigationType WILDNESS_INVARIANT.
+- Wildness invariant erosion is MORE serious than other drift risks. A concept that passes all other checks but loses its wildness invariant has failed.
+
 WEAK DIMENSION FOCUS:
 - Prioritize reinforcement for: {{dimensions below pass thresholds (hookStrength, conflictEngine, agencyBreadth, noveltyLeverage, llmFeasibility, ironicPremise, sceneGenerativePower), comma-separated, or "none below threshold"}}
 - If no dimensions are below threshold, still harden against drift and hostile player strategies.
@@ -76,7 +83,7 @@ DIRECTIVES:
 OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "hardenedConcept": ConceptSpec, "driftRisks": DriftRisk[], "playerBreaks": PlayerBreak[] }.
 - driftRisks and playerBreaks must both be non-empty arrays.
-- mitigationType must be one of: STATE_CONSTRAINT, WORLD_AXIOM, SCENE_RULE, RETRIEVAL_SCOPE.
+- mitigationType must be one of: STATE_CONSTRAINT, WORLD_AXIOM, SCENE_RULE, RETRIEVAL_SCOPE, WILDNESS_INVARIANT.
 - All text fields must be concrete and non-empty.
 ```
 
@@ -91,7 +98,7 @@ OUTPUT REQUIREMENTS:
     {
       "risk": "{{how concept can drift over turns}}",
       "mitigation": "{{enforceable hardening step}}",
-      "mitigationType": "{{STATE_CONSTRAINT|WORLD_AXIOM|SCENE_RULE|RETRIEVAL_SCOPE}}"
+      "mitigationType": "{{STATE_CONSTRAINT|WORLD_AXIOM|SCENE_RULE|RETRIEVAL_SCOPE|WILDNESS_INVARIANT}}"
     }
   ],
   "playerBreaks": [
@@ -117,6 +124,20 @@ OUTPUT REQUIREMENTS:
 | `scores` | Dimension scores for that concept |
 | `weaknesses` | Evaluator-provided weak points/tradeoffs |
 | `verification` | (Optional) Verifier output: signature scenario, setpiece bank, load-bearing check. When present, injects a VERIFICATION INTELLIGENCE section into the user prompt to make hardening premise-protective. |
+| `contentPackets` | ContentPacket[] with `contentId`, `wildnessInvariant`, `dullCollapse` |
+
+## Content Packet Integration (WILCONPIP)
+
+WILCONPIP-15 added a wildness invariant erosion check. When `contentPackets` are provided:
+
+- The prompt injects content packet context with `contentId`, `wildnessInvariant`, and `dullCollapse`
+- A new `WILDNESS INVARIANT EROSION CHECK` section in the system message directs the stress tester to:
+  - Compare pre-hardened vs. hardened concept's relationship to each `wildnessInvariant`
+  - Flag if hardening normalized, genericized, or removed the invariant's specificity
+  - Emit drift risks with `mitigationType: WILDNESS_INVARIANT` when erosion is detected
+  - Cross-reference `dullCollapse` against verification's `genericCollapse` for critical drift
+- `WILDNESS_INVARIANT` was added as a new `mitigationType` enum value
+- Wildness invariant erosion is treated as MORE serious than other drift risks — a concept passing all other checks but losing its wildness invariant is considered failed
 
 ## Notes
 
