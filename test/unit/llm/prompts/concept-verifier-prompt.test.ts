@@ -1,6 +1,7 @@
 import { buildConceptSpecificityPrompt } from '../../../../src/llm/prompts/concept-specificity-prompt';
 import { buildConceptScenarioPrompt } from '../../../../src/llm/prompts/concept-scenario-prompt';
 import type { ConceptVerifierContext } from '../../../../src/models';
+import type { ContentPacket } from '../../../../src/models/content-packet';
 import type { StoryKernel } from '../../../../src/models/story-kernel';
 import type { ConceptSpecificityAnalysis } from '../../../../src/llm/concept-specificity-types';
 import { createEvaluatedConceptFixture } from '../../../fixtures/concept-generator';
@@ -25,12 +26,44 @@ function createStoryKernel(): StoryKernel {
   };
 }
 
+function createContentPacketFixture(index = 1): ContentPacket {
+  return {
+    contentId: `content_${index}`,
+    sourceSparkIds: [`spark_${index}`],
+    contentKind: 'ENTITY',
+    coreAnomaly: `Anomaly ${index}`,
+    humanAnchor: `Anchor ${index}`,
+    socialEngine: `Social engine ${index}`,
+    choicePressure: `Choice pressure ${index}`,
+    signatureImage: `Signature image ${index}`,
+    escalationPath: `Escalation path ${index}`,
+    wildnessInvariant: `Wildness invariant ${index}`,
+    dullCollapse: `Dull collapse ${index}`,
+    interactionVerbs: ['explore', 'resist', 'exploit', 'subvert'],
+  };
+}
+
 function createContext(count = 2): ConceptVerifierContext {
   return {
     evaluatedConcepts: Array.from({ length: count }, (_, i) =>
       createEvaluatedConceptFixture(i + 1),
     ),
     kernel: createStoryKernel(),
+  };
+}
+
+function createContextWithContentPackets(
+  conceptCount = 2,
+  packetCount = 1,
+): ConceptVerifierContext {
+  return {
+    evaluatedConcepts: Array.from({ length: conceptCount }, (_, i) =>
+      createEvaluatedConceptFixture(i + 1),
+    ),
+    kernel: createStoryKernel(),
+    contentPackets: Array.from({ length: packetCount }, (_, i) =>
+      createContentPacketFixture(i + 1),
+    ),
   };
 }
 
@@ -145,6 +178,47 @@ describe('buildConceptSpecificityPrompt', () => {
     expect(user).toContain('escapeValve');
     expect(user).toContain('incitingDisruption');
   });
+
+  it('includes invariant-removal test when content packets provided', () => {
+    const messages = buildConceptSpecificityPrompt(createContextWithContentPackets(2, 1));
+    const system = messages[0].content;
+
+    expect(system).toContain('CONTENT PACKET INVARIANT-REMOVAL TEST');
+    expect(system).toContain('wildnessInvariant');
+    expect(system).toContain('dullCollapse');
+    expect(system).toContain('Wildness invariant 1');
+    expect(system).toContain('Dull collapse 1');
+    expect(system).toContain('ADDITIVE');
+    expect(system).toContain('content_1');
+  });
+
+  it('preserves existing load-bearing check when content packets provided', () => {
+    const messages = buildConceptSpecificityPrompt(createContextWithContentPackets(2, 1));
+    const system = messages[0].content;
+
+    expect(system).toContain('SPECIFICITY DIRECTIVES');
+    expect(system).toContain('load-bearing check');
+    expect(system).toContain('genreSubversion + coreFlaw + coreConflictLoop');
+  });
+
+  it('omits invariant-removal test when content packets undefined', () => {
+    const messages = buildConceptSpecificityPrompt(createContext());
+    const system = messages[0].content;
+
+    expect(system).not.toContain('CONTENT PACKET INVARIANT-REMOVAL TEST');
+    expect(system).not.toContain('CONTENT PACKETS IN CONTEXT');
+  });
+
+  it('omits invariant-removal test when content packets is empty array', () => {
+    const context: ConceptVerifierContext = {
+      ...createContext(),
+      contentPackets: [],
+    };
+    const messages = buildConceptSpecificityPrompt(context);
+    const system = messages[0].content;
+
+    expect(system).not.toContain('CONTENT PACKET INVARIANT-REMOVAL TEST');
+  });
 });
 
 describe('buildConceptScenarioPrompt', () => {
@@ -209,5 +283,41 @@ describe('buildConceptScenarioPrompt', () => {
 
     expect(user).toContain('STORY KERNEL');
     expect(user).toContain('dramaticThesis: Control destroys trust');
+  });
+
+  it('includes setpiece exploitation requirements when content packets provided', () => {
+    const context = createContextWithContentPackets(2, 1);
+    const messages = buildConceptScenarioPrompt(context, createSpecificityAnalyses());
+    const system = messages[0].content;
+
+    expect(system).toContain('CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS');
+    expect(system).toContain('signatureImage');
+    expect(system).toContain('escalationPath');
+    expect(system).toContain('socialEngine');
+    expect(system).toContain('Signature image 1');
+    expect(system).toContain('Escalation path 1');
+    expect(system).toContain('Social engine 1');
+    expect(system).toContain('at least 2');
+    expect(system).toContain('At least 1 setpiece must show');
+  });
+
+  it('omits setpiece requirements when content packets undefined', () => {
+    const context = createContext();
+    const messages = buildConceptScenarioPrompt(context, createSpecificityAnalyses());
+    const system = messages[0].content;
+
+    expect(system).not.toContain('CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS');
+    expect(system).not.toContain('CONTENT PACKETS IN CONTEXT');
+  });
+
+  it('omits setpiece requirements when content packets is empty array', () => {
+    const context: ConceptVerifierContext = {
+      ...createContext(),
+      contentPackets: [],
+    };
+    const messages = buildConceptScenarioPrompt(context, createSpecificityAnalyses());
+    const system = messages[0].content;
+
+    expect(system).not.toContain('CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS');
   });
 });

@@ -1,4 +1,5 @@
 import type { ConceptVerifierContext } from '../../models/concept-generator.js';
+import type { ContentPacket } from '../../models/content-packet.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { ConceptSpecificityAnalysis } from '../concept-specificity-types.js';
 
@@ -11,6 +12,23 @@ const SCENARIO_DIRECTIVES = `SCENARIO DIRECTIVES:
 - setpiece causal chain test: analyze whether each setpiece outcome CAUSES the next setpiece setup. If links are weak or missing, set setpieceCausalChainBroken=true and still provide the strongest possible 5 causal links (between setpieces 1->2 through 5->6).
 - The conceptIntegrityScore measures how many of the 6 setpieces are truly concept-unique (100 = all 6 are impossible in any other story).
 - Anchor each setpiece to the signature scenario already identified in the specificity analysis. The setpieces should feel like they belong in the same story as that signature moment.`;
+
+function buildContentPacketSetpieceDirective(packets: readonly ContentPacket[]): string {
+  const packetSummaries = packets
+    .map(
+      (p) =>
+        `- ${p.contentId}: signatureImage="${p.signatureImage}", escalationPath="${p.escalationPath}", socialEngine="${p.socialEngine}"`,
+    )
+    .join('\n');
+
+  return `CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS:
+- When content packets are present, at least 2 of the escalating setpieces must directly exploit the content packet's signatureImage or escalationPath. These setpieces must be impossible without the packet's concrete imagery or escalation logic.
+- At least 1 setpiece must show the packet's socialEngine in action — the institution, market, ritual, or social structure that grows around the anomaly must be visibly operating in the scene.
+- Setpieces that merely reference the packet cosmetically without exploiting its mechanics do not count.
+
+CONTENT PACKETS IN CONTEXT:
+${packetSummaries}`;
+}
 
 function buildUserPayload(
   context: ConceptVerifierContext,
@@ -48,6 +66,10 @@ export function buildConceptScenarioPrompt(
   specificityAnalyses: readonly ConceptSpecificityAnalysis[],
 ): ChatMessage[] {
   const systemSections: string[] = [ROLE_INTRO, SCENARIO_DIRECTIVES];
+
+  if (context.contentPackets && context.contentPackets.length > 0) {
+    systemSections.push(buildContentPacketSetpieceDirective(context.contentPackets));
+  }
 
   const kernelSection = `STORY KERNEL (shared by all concepts):
 - dramaticThesis: ${context.kernel.dramaticThesis}

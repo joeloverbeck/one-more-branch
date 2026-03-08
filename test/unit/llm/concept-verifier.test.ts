@@ -26,6 +26,7 @@ import { CONCEPT_SPECIFICITY_SCHEMA } from '../../../src/llm/schemas/concept-spe
 import { CONCEPT_SCENARIO_SCHEMA } from '../../../src/llm/schemas/concept-scenario-schema';
 import type { ConceptVerifierContext } from '../../../src/models';
 import type { StoryKernel } from '../../../src/models/story-kernel';
+import type { ContentPacket } from '../../../src/models/content-packet';
 import {
   createEvaluatedConceptFixture,
   createConceptVerificationFixture,
@@ -48,6 +49,23 @@ function createStoryKernel(): StoryKernel {
       contradictory: 'Hate',
       negationOfNegation: 'Self-destruction through love',
     },
+  };
+}
+
+function createContentPacketFixture(index = 1): ContentPacket {
+  return {
+    contentId: `content_${index}`,
+    sourceSparkIds: [`spark_${index}`],
+    contentKind: 'ENTITY',
+    coreAnomaly: `Anomaly ${index}`,
+    humanAnchor: `Anchor ${index}`,
+    socialEngine: `Social engine ${index}`,
+    choicePressure: `Choice pressure ${index}`,
+    signatureImage: `Signature image ${index}`,
+    escalationPath: `Escalation path ${index}`,
+    wildnessInvariant: `Wildness invariant ${index}`,
+    dullCollapse: `Dull collapse ${index}`,
+    interactionVerbs: ['explore', 'resist', 'exploit', 'subvert'],
   };
 }
 
@@ -653,6 +671,73 @@ describe('concept-verifier', () => {
         expect.any(Array),
       );
       expect(mockLogPrompt).toHaveBeenCalledTimes(2);
+    });
+
+    it('passes content packets through to both prompt builders', async () => {
+      const specificityPayload = createValidSpecificityPayload(2);
+      const scenarioPayload = createValidScenarioPayload(2);
+
+      fetchMock
+        .mockResolvedValueOnce(
+          responseWithMessageContent(JSON.stringify(specificityPayload)),
+        )
+        .mockResolvedValueOnce(
+          responseWithMessageContent(JSON.stringify(scenarioPayload)),
+        );
+
+      const context: ConceptVerifierContext = {
+        ...createContext(2),
+        contentPackets: [createContentPacketFixture(1)],
+      };
+
+      const result = await verifyConcepts(context, 'test-api-key');
+
+      expect(result.verifications).toHaveLength(2);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+
+      const firstCallBody = JSON.parse(
+        (fetchMock.mock.calls[0][1] as { body: string }).body,
+      );
+      const firstSystemMessage = firstCallBody.messages[0].content;
+      expect(firstSystemMessage).toContain('CONTENT PACKET INVARIANT-REMOVAL TEST');
+      expect(firstSystemMessage).toContain('Wildness invariant 1');
+
+      const secondCallBody = JSON.parse(
+        (fetchMock.mock.calls[1][1] as { body: string }).body,
+      );
+      const secondSystemMessage = secondCallBody.messages[0].content;
+      expect(secondSystemMessage).toContain('CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS');
+      expect(secondSystemMessage).toContain('Signature image 1');
+    });
+
+    it('existing verifier calls without contentPackets produce identical results', async () => {
+      const specificityPayload = createValidSpecificityPayload(2);
+      const scenarioPayload = createValidScenarioPayload(2);
+
+      fetchMock
+        .mockResolvedValueOnce(
+          responseWithMessageContent(JSON.stringify(specificityPayload)),
+        )
+        .mockResolvedValueOnce(
+          responseWithMessageContent(JSON.stringify(scenarioPayload)),
+        );
+
+      const result = await verifyConcepts(createContext(2), 'test-api-key');
+
+      expect(result.verifications).toHaveLength(2);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+
+      const firstCallBody = JSON.parse(
+        (fetchMock.mock.calls[0][1] as { body: string }).body,
+      );
+      const firstSystemMessage = firstCallBody.messages[0].content;
+      expect(firstSystemMessage).not.toContain('CONTENT PACKET INVARIANT-REMOVAL TEST');
+
+      const secondCallBody = JSON.parse(
+        (fetchMock.mock.calls[1][1] as { body: string }).body,
+      );
+      const secondSystemMessage = secondCallBody.messages[0].content;
+      expect(secondSystemMessage).not.toContain('CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS');
     });
   });
 

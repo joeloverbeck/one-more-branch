@@ -461,6 +461,7 @@ export interface ConceptVerification {
 export interface ConceptVerifierContext {
   readonly evaluatedConcepts: readonly EvaluatedConcept[];
   readonly kernel: StoryKernel;
+  readonly contentPackets?: readonly ContentPacket[];
 }
 
 export interface ConceptVerificationResult {
