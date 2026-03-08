@@ -31,6 +31,12 @@ export const LLM_STAGE_KEYS = [
   'contentSparkstormer',
   'contentPacketer',
   'contentEvaluator',
+  'characterWeb',
+  'charKernel',
+  'charTridimensional',
+  'charAgency',
+  'charRelationships',
+  'charPresentation',
 ] as const;
 
 export type LlmStage = (typeof LLM_STAGE_KEYS)[number];
