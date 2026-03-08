@@ -106,6 +106,7 @@ describe('content-packets routes', () => {
       expect(res.render).toHaveBeenCalledWith('pages/content-packets', {
         title: 'Content Packets - One More Branch',
         packets,
+        contentKindGroups: expect.any(Array),
       });
     });
   });
