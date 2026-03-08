@@ -17,15 +17,14 @@
         <h2>Generate Content Packets</h2>
         <form id="content-generate-form">
           <div class="form-group">
-            <label for="exemplarIdeas">Exemplar Ideas *</label>
-            <textarea
-              id="exemplarIdeas"
-              required
-              rows="5"
-              placeholder="Enter your exemplar ideas, one per line..."
-            ></textarea>
+            <label>Exemplar Ideas *</label>
+            <div id="exemplar-entries"></div>
+            <div class="exemplar-add-form">
+              <input type="text" id="exemplar-idea-input" placeholder="Describe an imaginative idea...">
+              <button type="button" id="exemplar-add-btn" class="btn btn-secondary btn-small">Add</button>
+            </div>
             <p class="form-help">
-              Describe imaginative ideas that represent your creative taste. One idea per line.
+              Add imaginative ideas that represent your creative taste.
             </p>
           </div>
 
@@ -48,7 +47,7 @@
           </div>
 
           <div class="form-group">
-            <label>
+            <label class="checkbox-label">
               <input type="checkbox" id="usePipeline">
               Use full pipeline (taste distiller + sparkstormer + packeter + evaluator)
             </label>
@@ -56,7 +55,7 @@
 
           <div class="form-group">
             <label for="contentApiKey">OpenRouter API Key *</label>
-            <input type="password" id="contentApiKey" required placeholder="sk-or-...">
+            <input type="password" id="contentApiKey" required placeholder="sk-or-..." autocomplete="off">
           </div>
 
           <button type="submit" class="btn btn-primary" id="content-generate-btn">
