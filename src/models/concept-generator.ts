@@ -65,6 +65,7 @@ export const DRIFT_RISK_MITIGATION_TYPES = [
   'WORLD_AXIOM',
   'SCENE_RULE',
   'RETRIEVAL_SCOPE',
+  'WILDNESS_INVARIANT',
 ] as const;
 
 export type DriftRiskMitigationType = (typeof DRIFT_RISK_MITIGATION_TYPES)[number];

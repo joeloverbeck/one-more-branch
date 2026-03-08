@@ -130,6 +130,25 @@ describe('concept-stress-tester', () => {
     expect(() => parseConceptStressTestResponse(payload)).toThrow('invalid mitigationType');
   });
 
+  it('stress tester schema mitigationType enum includes WILDNESS_INVARIANT', () => {
+    const schema = CONCEPT_STRESS_TEST_SCHEMA.json_schema.schema as Record<string, unknown>;
+    const properties = schema['properties'] as Record<string, unknown>;
+    const driftRisks = properties['driftRisks'] as Record<string, unknown>;
+    const items = driftRisks['items'] as Record<string, unknown>;
+    const itemProps = items['properties'] as Record<string, unknown>;
+    const mitigationType = itemProps['mitigationType'] as Record<string, unknown>;
+    const enumValues = mitigationType['enum'] as string[];
+
+    expect(enumValues).toContain('WILDNESS_INVARIANT');
+  });
+
+  it('parseConceptStressTestResponse accepts WILDNESS_INVARIANT mitigationType', () => {
+    const payload = createValidPayload();
+    (payload.driftRisks[0] as Record<string, unknown>)['mitigationType'] = 'WILDNESS_INVARIANT';
+    const result = parseConceptStressTestResponse(payload);
+    expect(result.driftRisks[0].mitigationType).toBe('WILDNESS_INVARIANT');
+  });
+
   it('parseConceptStressTestResponse rejects empty driftRisks', () => {
     const payload = createValidPayload();
     payload.driftRisks = [];
