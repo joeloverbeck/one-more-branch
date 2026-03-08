@@ -63,9 +63,10 @@
           </button>
         </form>
 
-        <div id="content-generation-progress" style="display: none;">
-          <div class="spinner"></div>
-          <p id="content-generation-status">Generating...</p>
+        <div class="loading-overlay" id="content-generation-progress" style="display: none;">
+          <div class="loading-stage" aria-live="polite"></div>
+          <div class="loading-spinner"></div>
+          <p class="loading-status">Generating content packets...</p>
         </div>
 
         <div id="content-generation-results" style="display: none;">

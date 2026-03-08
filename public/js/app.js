@@ -8346,10 +8346,10 @@ function initContentPacketsPage() {
 
   var form = document.getElementById('content-generate-form');
   var progressEl = document.getElementById('content-generation-progress');
-  var statusEl = document.getElementById('content-generation-status');
   var resultsEl = document.getElementById('content-generation-results');
   var generatedList = document.getElementById('generated-packets-list');
   var generateBtn = document.getElementById('content-generate-btn');
+  var loadingProgress = progressEl ? createLoadingProgressController(progressEl) : null;
 
   initExemplarControls();
 
@@ -8469,10 +8469,12 @@ function initContentPacketsPage() {
       payload.contentPreferences = prefInput.value.trim();
     }
 
+    var progressId = createProgressId();
+    payload.progressId = progressId;
+
     if (generateBtn) generateBtn.disabled = true;
-    if (progressEl) progressEl.style.display = 'block';
     if (resultsEl) resultsEl.style.display = 'none';
-    if (statusEl) statusEl.textContent = 'Generating content packets...';
+    if (loadingProgress) loadingProgress.start(progressId);
 
     fetch('/content-packets/api/generate', {
       method: 'POST',
@@ -8481,7 +8483,7 @@ function initContentPacketsPage() {
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {
-        if (progressEl) progressEl.style.display = 'none';
+        if (loadingProgress) loadingProgress.stop();
         if (generateBtn) generateBtn.disabled = false;
 
         if (!data.success) {
@@ -8492,7 +8494,7 @@ function initContentPacketsPage() {
         renderGeneratedPackets(data.packets || []);
       })
       .catch(function (err) {
-        if (progressEl) progressEl.style.display = 'none';
+        if (loadingProgress) loadingProgress.stop();
         if (generateBtn) generateBtn.disabled = false;
         alert('Generation failed: ' + err.message);
       });
