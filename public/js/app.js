@@ -8351,6 +8351,8 @@ function initContentPacketsPage() {
   var generatedList = document.getElementById('generated-packets-list');
   var generateBtn = document.getElementById('content-generate-btn');
 
+  initExemplarControls();
+
   if (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -8375,13 +8377,60 @@ function initContentPacketsPage() {
     return input ? input.value.trim() : '';
   }
 
-  function parseExemplarIdeas() {
-    var textarea = document.getElementById('exemplarIdeas');
-    if (!textarea) return [];
-    return textarea.value
-      .split('\n')
-      .map(function (line) { return line.trim(); })
-      .filter(function (line) { return line.length > 0; });
+  function collectExemplarIdeas() {
+    var entries = document.querySelectorAll('#exemplar-entries .exemplar-entry');
+    var ideas = [];
+    entries.forEach(function (entry) {
+      var span = entry.querySelector('.exemplar-entry-text');
+      if (span) ideas.push(span.textContent);
+    });
+    return ideas;
+  }
+
+  function addExemplarEntry(text) {
+    var container = document.getElementById('exemplar-entries');
+    if (!container) return;
+
+    var entry = document.createElement('div');
+    entry.className = 'exemplar-entry';
+
+    var span = document.createElement('span');
+    span.className = 'exemplar-entry-text';
+    span.textContent = text;
+
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-small btn-danger exemplar-remove-btn';
+    removeBtn.textContent = '\u00D7';
+    removeBtn.addEventListener('click', function () {
+      entry.remove();
+    });
+
+    entry.appendChild(span);
+    entry.appendChild(removeBtn);
+    container.appendChild(entry);
+  }
+
+  function initExemplarControls() {
+    var addBtn = document.getElementById('exemplar-add-btn');
+    var input = document.getElementById('exemplar-idea-input');
+
+    if (!addBtn || !input) return;
+
+    addBtn.addEventListener('click', function () {
+      var text = input.value.trim();
+      if (!text) return;
+      addExemplarEntry(text);
+      input.value = '';
+      input.focus();
+    });
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addBtn.click();
+      }
+    });
   }
 
   function handleContentGenerate() {
@@ -8391,7 +8440,7 @@ function initContentPacketsPage() {
       return;
     }
 
-    var ideas = parseExemplarIdeas();
+    var ideas = collectExemplarIdeas();
     if (ideas.length === 0) {
       alert('Please enter at least one exemplar idea.');
       return;
