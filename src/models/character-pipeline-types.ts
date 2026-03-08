@@ -104,19 +104,6 @@ export interface TextualPresentation {
   readonly conflictPriority: string;
 }
 
-// --- Pipeline stage numbering ---
-
-export type CastPipelineStage = 1 | 2 | 3 | 4 | 5 | 6;
-
-export const CAST_PIPELINE_STAGE_NAMES: Record<CastPipelineStage, string> = {
-  1: 'Cast Roles',
-  2: 'Character Kernels',
-  3: 'Tridimensional Profiles',
-  4: 'Agency Models',
-  5: 'Social Web',
-  6: 'Textual Presentation',
-};
-
 // --- Shared pipeline inputs ---
 
 export interface CastPipelineInputs {

@@ -1,6 +1,6 @@
 # CHABUIPIP-04: Retire SavedCast and Rename castsDir
 
-**Status**: NOT STARTED
+**Status**: COMPLETED
 **Dependencies**: CHABUIPIP-01, CHABUIPIP-02, CHABUIPIP-03
 **Estimated diff size**: ~80 lines (deletions + renames)
 
@@ -13,9 +13,9 @@ Delete `saved-cast.ts`, remove `CastPipelineStage` and `CAST_PIPELINE_STAGE_NAME
 - `src/models/saved-cast.ts` (DELETE)
 - `src/models/character-pipeline-types.ts` (MODIFY — remove `CastPipelineStage`, `CAST_PIPELINE_STAGE_NAMES`)
 - `src/config/schemas.ts` (MODIFY — rename `castsDir` to `characterWebsDir`)
-- `src/persistence/file-utils.ts` (MODIFY — rename `getCastsDir`/`ensureCastsDir`/`getCastFilePath` to `getCharacterWebsDir`/`ensureCharacterWebsDir`/`getCharacterWebFilePath`)
+- ~~`src/persistence/file-utils.ts`~~ (SKIPPED — `getCastsDir`/`ensureCastsDir`/`getCastFilePath` do not exist in the codebase)
 - Any files importing from `saved-cast.ts` (UPDATE imports)
-- `test/unit/models/saved-cast.test.ts` (DELETE if exists)
+- ~~`test/unit/models/saved-cast.test.ts`~~ (SKIPPED — file does not exist)
 
 ## Out of Scope
 
@@ -37,10 +37,7 @@ Delete `saved-cast.ts`, remove `CastPipelineStage` and `CAST_PIPELINE_STAGE_NAME
 3. **In `schemas.ts`**:
    - Rename `castsDir` to `characterWebsDir` in the Zod schema and defaults
 
-4. **In `file-utils.ts`**:
-   - Rename `getCastsDir()` → `getCharacterWebsDir()`
-   - Rename `ensureCastsDir()` → `ensureCharacterWebsDir()`
-   - Rename `getCastFilePath(id)` → `getCharacterWebFilePath(id)`
+4. ~~**In `file-utils.ts`**~~: SKIPPED — these functions do not exist in the codebase.
 
 5. **Update all imports**: grep for `saved-cast`, `CastPipelineStage`, `CAST_PIPELINE_STAGE_NAMES`, `castsDir`, `getCastsDir`, `ensureCastsDir`, `getCastFilePath` and update references.
 
@@ -66,4 +63,14 @@ Update ALL references found.
 - All other types in `character-pipeline-types.ts` remain unchanged
 - No runtime code references `SavedCast`, `CastPipelineStage`, or `CAST_PIPELINE_STAGE_NAMES`
 - `schemas.ts` uses `characterWebsDir` with default value `'character-webs'`
-- File-utils functions use the new `characterWebs` naming
+- ~~File-utils functions use the new `characterWebs` naming~~ (N/A — functions don't exist)
+
+## Outcome
+
+- **Completed**: 2026-03-08
+- **Changes**:
+  - Deleted `src/models/saved-cast.ts` (SavedCast, isSavedCast, helpers)
+  - Removed `CastPipelineStage` and `CAST_PIPELINE_STAGE_NAMES` from `character-pipeline-types.ts`
+  - Renamed `castsDir` → `characterWebsDir` (default `'character-webs'`) in `schemas.ts`
+- **Deviations**: file-utils renames and test file deletion were skipped (artifacts didn't exist)
+- **Verification**: typecheck ✅, lint ✅, 276 test suites (3332 tests) ✅
