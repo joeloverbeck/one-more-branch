@@ -61,30 +61,15 @@ git branch -d <branch-name>              # Error: branch used by worktree
 
 ## ESLint in Git Worktrees
 
-When running ESLint in a git worktree, you may encounter a **duplicate plugin error**:
-
-```
-ESLint couldn't determine the plugin "@typescript-eslint" uniquely.
-- /path/to/project/.worktrees/feature/node_modules/@typescript-eslint/...
-- /path/to/project/node_modules/@typescript-eslint/...
-```
-
-**Why**: ESLint config inheritance walks up the directory tree, loading `.eslintrc.js` from both the worktree AND the parent repository. Both configs register the same plugins, causing the conflict.
-
-**Solution**: Use `--no-eslintrc` to prevent config inheritance, then explicitly specify parser and plugins:
+This project uses **ESLint v10** with flat config (`eslint.config.js`). Flat config does not walk up the directory tree like the old `.eslintrc.js` inheritance, so `npm run lint` works correctly in worktrees.
 
 ```bash
-# WRONG - fails in worktrees (even with NODE_PATH):
+# Works in both main repo and worktrees:
 npm run lint
-NODE_PATH="$(pwd)/node_modules" npx eslint src/ test/ --quiet
-
-# CORRECT - works in worktrees:
-NODE_PATH="$(pwd)/node_modules" npx eslint --no-eslintrc \
-  --parser @typescript-eslint/parser \
-  --plugin @typescript-eslint \
-  src/ test/ --quiet
 ```
 
-**Why `--no-eslintrc` is required**: The worktree's `.eslintrc.js` extends or references the parent's config via relative paths (e.g., `../../.eslintrc.js`). Simply setting `NODE_PATH` doesn't prevent ESLint from loading both configs - you must disable config inheritance entirely.
+If you ever encounter config resolution issues in a worktree, use `--no-config-lookup` (the ESLint v10 equivalent of the old `--no-eslintrc`):
 
-**When to use**: Always use the `--no-eslintrc` approach when running ESLint inside a git worktree. The standard `npm run lint` works fine in the main repository.
+```bash
+npx eslint --no-config-lookup -c eslint.config.js src/ test/ --quiet
+```
