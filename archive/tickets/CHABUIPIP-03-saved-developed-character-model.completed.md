@@ -1,6 +1,6 @@
 # CHABUIPIP-03: Create SavedDevelopedCharacter Data Model
 
-**Status**: NOT STARTED
+**Status**: COMPLETED
 **Dependencies**: CHABUIPIP-01
 **Estimated diff size**: ~120 lines
 
@@ -83,3 +83,12 @@ Export:
 - No existing tests are modified
 - All fields use `readonly` (immutability pattern)
 - Stage nullable fields are `| null`, not optional (explicit presence)
+
+## Outcome
+
+- **Completion date**: 2026-03-08
+- **Files created**:
+  - `src/models/saved-developed-character.ts` — `CharacterWebContext`, `SavedDevelopedCharacter` interfaces, `isSavedDevelopedCharacter` type guard, `isCharacterStageComplete`, `canGenerateCharacterStage`, `isCharacterFullyComplete` helpers
+  - `test/unit/models/saved-developed-character.test.ts` — 12 tests covering all acceptance criteria
+- **Deviations**: None. Implemented exactly as specified.
+- **Verification**: All 12 tests pass, typecheck passes, lint passes, no existing tests modified.
