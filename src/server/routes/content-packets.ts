@@ -19,6 +19,7 @@ import {
 import type { SavedTasteProfile } from '../../models/saved-content-packet.js';
 import { contentService } from '../services/index.js';
 import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
+import { groupContentPacketsByKind } from '../utils/group-content-packets-by-kind.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
 
 export const contentPacketRoutes = Router();
@@ -28,9 +29,11 @@ contentPacketRoutes.get(
   '/',
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const packets = await listContentPackets();
+    const contentKindGroups = groupContentPacketsByKind(packets);
     return res.render('pages/content-packets', {
       title: 'Content Packets - One More Branch',
       packets,
+      contentKindGroups,
     });
   }),
 );
