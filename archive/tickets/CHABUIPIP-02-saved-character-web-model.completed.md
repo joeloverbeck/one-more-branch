@@ -1,6 +1,6 @@
 # CHABUIPIP-02: Create SavedCharacterWeb Data Model
 
-**Status**: NOT STARTED
+**Status**: COMPLETED
 **Dependencies**: CHABUIPIP-01
 **Estimated diff size**: ~80 lines
 
@@ -69,3 +69,12 @@ The type guard must validate:
 - `npm run lint` passes
 - No existing tests are modified
 - Interface uses `readonly` on all fields (immutability pattern)
+
+## Outcome
+
+- **Completed**: 2026-03-08
+- **Files created**:
+  - `src/models/saved-character-web.ts` — `SavedCharacterWeb` interface + `isSavedCharacterWeb` type guard
+  - `test/unit/models/saved-character-web.test.ts` — 9 tests (all passing)
+- **Deviations**: None. Implementation matches ticket exactly.
+- **Verification**: typecheck clean, lint clean, 9/9 tests passing, no existing tests modified
