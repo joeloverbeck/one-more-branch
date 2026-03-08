@@ -65,6 +65,7 @@ export const DRIFT_RISK_MITIGATION_TYPES = [
   'WORLD_AXIOM',
   'SCENE_RULE',
   'RETRIEVAL_SCOPE',
+  'WILDNESS_INVARIANT',
 ] as const;
 
 export type DriftRiskMitigationType = (typeof DRIFT_RISK_MITIGATION_TYPES)[number];
@@ -408,6 +409,7 @@ export interface ConceptStressTesterContext {
   readonly scores: ConceptDimensionScores;
   readonly weaknesses: readonly string[];
   readonly verification?: ConceptVerification;
+  readonly contentPackets?: readonly ContentPacket[];
 }
 
 export interface ConceptStressTestResult {
@@ -461,6 +463,7 @@ export interface ConceptVerification {
 export interface ConceptVerifierContext {
   readonly evaluatedConcepts: readonly EvaluatedConcept[];
   readonly kernel: StoryKernel;
+  readonly contentPackets?: readonly ContentPacket[];
 }
 
 export interface ConceptVerificationResult {

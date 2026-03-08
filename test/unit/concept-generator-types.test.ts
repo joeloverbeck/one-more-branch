@@ -47,7 +47,15 @@ describe('concept-generator types', () => {
     expect(GENRE_FRAMES).toHaveLength(45);
     expect(CONFLICT_AXES).toHaveLength(10);
     expect(SETTING_SCALES).toHaveLength(4);
-    expect(DRIFT_RISK_MITIGATION_TYPES).toHaveLength(4);
+    expect(DRIFT_RISK_MITIGATION_TYPES).toHaveLength(5);
+  });
+
+  it('includes WILDNESS_INVARIANT in DRIFT_RISK_MITIGATION_TYPES', () => {
+    expect(DRIFT_RISK_MITIGATION_TYPES).toContain('WILDNESS_INVARIANT');
+  });
+
+  it('isDriftRiskMitigationType accepts WILDNESS_INVARIANT', () => {
+    expect(isDriftRiskMitigationType('WILDNESS_INVARIANT')).toBe(true);
   });
 
   it('computes overall score as 100 when all dimensions are 5', () => {

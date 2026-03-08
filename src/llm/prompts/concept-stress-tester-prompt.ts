@@ -1,9 +1,11 @@
 import {
   CONCEPT_PASS_THRESHOLDS,
+  DRIFT_RISK_MITIGATION_TYPES,
   type ConceptDimensionScores,
   type ConceptStressTesterContext,
   type ConceptVerification,
 } from '../../models/concept-generator.js';
+import type { ContentPacket } from '../../models/content-packet.js';
 import type { ChatMessage } from '../llm-client-types.js';
 
 const ROLE_INTRO =
@@ -43,6 +45,9 @@ function buildWeakDimensionList(scores: ConceptDimensionScores): readonly string
   }
   if (scores.sceneGenerativePower < CONCEPT_PASS_THRESHOLDS.sceneGenerativePower) {
     weak.push('sceneGenerativePower');
+  }
+  if (scores.contentCharge < CONCEPT_PASS_THRESHOLDS.contentCharge) {
+    weak.push('contentCharge');
   }
 
   return weak;
@@ -84,6 +89,32 @@ DIRECTIVES:
 - If load-bearing check identified generic collapse into "${verification.loadBearingCheck.genericCollapse}", your hardening must WIDEN the distance from that generic form, not narrow it.`;
 }
 
+function buildWildnessInvariantSection(packets: readonly ContentPacket[]): string {
+  const invariants = packets
+    .map((p) => `- [${p.contentId}] wildnessInvariant: "${p.wildnessInvariant}"`)
+    .join('\n');
+
+  const collapses = packets
+    .map((p) => `- [${p.contentId}] dullCollapse: "${p.dullCollapse}"`)
+    .join('\n');
+
+  return `## WILDNESS INVARIANT EROSION CHECK
+
+This concept was seeded from content packets with wildness invariants that downstream stages are forbidden to sand off.
+
+### Invariants (MUST BE PRESERVED)
+${invariants}
+
+### Dull Collapse Descriptions (WHAT GENERIC STORY THIS BECOMES IF INVARIANT IS REMOVED)
+${collapses}
+
+DIRECTIVES:
+- Compare the pre-hardened concept's relationship to each wildnessInvariant against the hardened concept's. Flag if the hardened concept has normalized, genericized, or removed the invariant's concrete specificity.
+- If invariant erosion is detected, emit a drift risk with mitigationType "WILDNESS_INVARIANT" describing specifically what was diluted and how to restore it.
+- Compare each packet's dullCollapse against the verification's genericCollapse (from the Load-Bearing Check). If they describe substantially the same generic story, the concept has collapsed despite nominally passing — flag this as a critical drift risk with mitigationType "WILDNESS_INVARIANT".
+- Wildness invariant erosion is MORE serious than other drift risks. A concept that passes all other checks but loses its wildness invariant has failed.`;
+}
+
 export function buildConceptStressTesterPrompt(context: ConceptStressTesterContext): ChatMessage[] {
   const weakDimensions = buildWeakDimensionList(context.scores);
   const weakDimensionsLine =
@@ -106,10 +137,15 @@ export function buildConceptStressTesterPrompt(context: ConceptStressTesterConte
     userSections.push(buildVerificationIntelligenceSection(context.verification));
   }
 
+  if (context.contentPackets && context.contentPackets.length > 0) {
+    userSections.push(buildWildnessInvariantSection(context.contentPackets));
+  }
+
+  const mitigationTypeList = DRIFT_RISK_MITIGATION_TYPES.join(', ');
   userSections.push(`OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "hardenedConcept": ConceptSpec, "driftRisks": DriftRisk[], "playerBreaks": PlayerBreak[] }.
 - driftRisks and playerBreaks must both be non-empty arrays.
-- mitigationType must be one of: STATE_CONSTRAINT, WORLD_AXIOM, SCENE_RULE, RETRIEVAL_SCOPE.
+- mitigationType must be one of: ${mitigationTypeList}.
 - All text fields must be concrete and non-empty.`);
 
   return [
