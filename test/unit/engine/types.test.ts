@@ -71,6 +71,12 @@ describe('Engine types', () => {
         'PACKAGING_CONTENT',
         'EVALUATING_CONTENT',
         'GENERATING_CONTENT',
+        'GENERATING_CHARACTER_WEB',
+        'GENERATING_CHAR_KERNEL',
+        'GENERATING_CHAR_TRIDIMENSIONAL',
+        'GENERATING_CHAR_AGENCY',
+        'GENERATING_CHAR_RELATIONSHIPS',
+        'GENERATING_CHAR_PRESENTATION',
       ];
 
       expect(GENERATION_STAGES).toEqual(expectedStages);
