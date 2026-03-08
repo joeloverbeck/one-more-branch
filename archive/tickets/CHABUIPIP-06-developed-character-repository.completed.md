@@ -1,6 +1,6 @@
 # CHABUIPIP-06: Developed Character Repository
 
-**Status**: NOT STARTED
+**Status**: COMPLETED
 **Dependencies**: CHABUIPIP-03, CHABUIPIP-04
 **Estimated diff size**: ~100 lines
 
@@ -76,3 +76,12 @@ Storage path: `character-webs/characters/{id}.json`.
 - Repository validates loaded data with `isSavedDevelopedCharacter` type guard
 - Developed characters are stored under the character-webs directory (nested)
 - No existing tests are modified
+
+## Outcome
+
+- **Completed**: 2026-03-08
+- **Files created**: `src/persistence/developed-character-repository.ts`, `test/unit/persistence/developed-character-repository.test.ts`
+- **Files modified**: `src/persistence/file-utils.ts` (added `getDevelopedCharactersDir`, `ensureDevelopedCharactersDir`, `getDevelopedCharacterFilePath`)
+- **Design note**: `loadDevelopedCharacter` throws on not-found (wrapping the null-returning internal repo), unlike `loadCharacterWeb` which returns null
+- **Deviations**: None
+- **Verification**: 8/8 tests pass, typecheck clean, lint clean, no regressions

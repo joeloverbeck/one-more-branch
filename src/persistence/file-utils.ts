@@ -238,6 +238,21 @@ export function getCharacterWebFilePath(webId: string): string {
   return path.join(getCharacterWebsDir(), `${webId}.json`);
 }
 
+export function getDevelopedCharactersDir(): string {
+  return path.join(getCharacterWebsDir(), 'characters');
+}
+
+export function ensureDevelopedCharactersDir(): void {
+  const dir = getDevelopedCharactersDir();
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+}
+
+export function getDevelopedCharacterFilePath(charId: string): string {
+  return path.join(getDevelopedCharactersDir(), `${charId}.json`);
+}
+
 export async function deleteFile(filePath: string): Promise<void> {
   try {
     await fs.unlink(filePath);
