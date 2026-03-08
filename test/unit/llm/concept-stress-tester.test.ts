@@ -21,7 +21,25 @@ import { parseConceptStressTestResponse, stressTestConcept } from '../../../src/
 import { buildConceptStressTesterPrompt } from '../../../src/llm/prompts/concept-stress-tester-prompt';
 import { CONCEPT_STRESS_TEST_SCHEMA } from '../../../src/llm/schemas/concept-stress-tester-schema';
 import type { ConceptSpec, ConceptStressTesterContext } from '../../../src/models';
+import type { ContentPacket } from '../../../src/models/content-packet';
 import { createConceptSpecFixture } from '../../fixtures/concept-generator';
+
+function createContentPacket(id: string): ContentPacket {
+  return {
+    contentId: id,
+    sourceSparkIds: ['spark_1'],
+    contentKind: 'ENTITY',
+    coreAnomaly: `Test anomaly ${id}`,
+    humanAnchor: `Test anchor ${id}`,
+    socialEngine: `Test engine ${id}`,
+    choicePressure: `Test pressure ${id}`,
+    signatureImage: `Test image ${id}`,
+    escalationPath: `Test escalation ${id}`,
+    wildnessInvariant: `The ${id} invariant must never be sanded off`,
+    dullCollapse: `Without the invariant, this becomes a generic ${id} story`,
+    interactionVerbs: ['examine', 'exploit', 'resist'],
+  };
+}
 
 function createValidConcept(index: number): ConceptSpec {
   return createConceptSpecFixture(index);
@@ -38,6 +56,7 @@ function createContext(): ConceptStressTesterContext {
       llmFeasibility: 2,
       ironicPremise: 3,
       sceneGenerativePower: 3,
+      contentCharge: 2,
     },
     weaknesses: ['Weak pressure loop enforcement', 'State drift likely in long scenes'],
   };
@@ -197,5 +216,126 @@ describe('concept-stress-tester', () => {
     expect(requestBody['response_format']).toEqual(CONCEPT_STRESS_TEST_SCHEMA);
     expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'conceptStressTester', expect.any(Array));
     expect(mockLogPrompt).toHaveBeenCalledTimes(1);
+  });
+
+  it('ConceptStressTesterContext accepts contentPackets field', () => {
+    const context: ConceptStressTesterContext = {
+      ...createContext(),
+      contentPackets: [createContentPacket('cp_1')],
+    };
+    expect(context.contentPackets).toHaveLength(1);
+    expect(context.contentPackets![0].wildnessInvariant).toContain('cp_1');
+  });
+
+  it('buildConceptStressTesterPrompt includes WILDNESS INVARIANT section when content packets provided', () => {
+    const context: ConceptStressTesterContext = {
+      ...createContext(),
+      contentPackets: [createContentPacket('cp_1'), createContentPacket('cp_2')],
+    };
+    const messages = buildConceptStressTesterPrompt(context);
+    const userMessage = messages[1]?.content ?? '';
+
+    expect(userMessage).toContain('WILDNESS INVARIANT EROSION CHECK');
+    expect(userMessage).toContain('cp_1');
+    expect(userMessage).toContain('cp_2');
+  });
+
+  it('buildConceptStressTesterPrompt includes dull-collapse comparison instructions when content packets provided', () => {
+    const context: ConceptStressTesterContext = {
+      ...createContext(),
+      contentPackets: [createContentPacket('cp_1')],
+    };
+    const messages = buildConceptStressTesterPrompt(context);
+    const userMessage = messages[1]?.content ?? '';
+
+    expect(userMessage).toContain('dullCollapse');
+    expect(userMessage).toContain('genericCollapse');
+    expect(userMessage).toContain('Without the invariant');
+  });
+
+  it('buildConceptStressTesterPrompt omits both sections when content packets undefined', () => {
+    const messages = buildConceptStressTesterPrompt(createContext());
+    const userMessage = messages[1]?.content ?? '';
+
+    expect(userMessage).not.toContain('WILDNESS INVARIANT');
+    expect(userMessage).not.toContain('dullCollapse');
+  });
+
+  it('prompt instructs LLM to flag invariant erosion as a drift risk with WILDNESS_INVARIANT mitigation type', () => {
+    const context: ConceptStressTesterContext = {
+      ...createContext(),
+      contentPackets: [createContentPacket('cp_1')],
+    };
+    const messages = buildConceptStressTesterPrompt(context);
+    const userMessage = messages[1]?.content ?? '';
+
+    expect(userMessage).toContain('mitigationType "WILDNESS_INVARIANT"');
+  });
+
+  it('prompt instructs LLM to compare dullCollapse against genericCollapse', () => {
+    const context: ConceptStressTesterContext = {
+      ...createContext(),
+      contentPackets: [createContentPacket('cp_1')],
+    };
+    const messages = buildConceptStressTesterPrompt(context);
+    const userMessage = messages[1]?.content ?? '';
+
+    expect(userMessage).toContain("Compare each packet's dullCollapse against the verification's genericCollapse");
+  });
+
+  it('stressTestConcept passes content packets through to prompt builder', async () => {
+    const payload = createValidPayload();
+    const rawContent = JSON.stringify(payload);
+    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
+
+    const context: ConceptStressTesterContext = {
+      ...createContext(),
+      contentPackets: [createContentPacket('cp_1')],
+    };
+    await stressTestConcept(context, 'test-api-key');
+
+    const requestBody = getRequestBody();
+    const messages = requestBody['messages'] as Array<{ role: string; content: string }>;
+    const userMessage = messages.find((m) => m.role === 'user')?.content ?? '';
+
+    expect(userMessage).toContain('WILDNESS INVARIANT EROSION CHECK');
+    expect(userMessage).toContain('cp_1');
+  });
+
+  it('existing stress tester calls without contentPackets produce identical results', async () => {
+    const payload = createValidPayload();
+    const rawContent = JSON.stringify(payload);
+    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
+
+    const result = await stressTestConcept(createContext(), 'test-api-key');
+
+    expect(result.hardenedConcept).toBeDefined();
+    expect(result.driftRisks).toHaveLength(1);
+    expect(result.playerBreaks).toHaveLength(1);
+
+    const requestBody = getRequestBody();
+    const messages = requestBody['messages'] as Array<{ role: string; content: string }>;
+    const userMessage = messages.find((m) => m.role === 'user')?.content ?? '';
+
+    expect(userMessage).not.toContain('WILDNESS INVARIANT');
+  });
+
+  it('prompt OUTPUT REQUIREMENTS includes WILDNESS_INVARIANT in valid mitigationType list', () => {
+    const messages = buildConceptStressTesterPrompt(createContext());
+    const userMessage = messages[1]?.content ?? '';
+
+    expect(userMessage).toContain('WILDNESS_INVARIANT');
+    expect(userMessage).toContain('mitigationType must be one of');
+  });
+
+  it('buildConceptStressTesterPrompt omits wildness section for empty content packets array', () => {
+    const context: ConceptStressTesterContext = {
+      ...createContext(),
+      contentPackets: [],
+    };
+    const messages = buildConceptStressTesterPrompt(context);
+    const userMessage = messages[1]?.content ?? '';
+
+    expect(userMessage).not.toContain('WILDNESS INVARIANT EROSION CHECK');
   });
 });
