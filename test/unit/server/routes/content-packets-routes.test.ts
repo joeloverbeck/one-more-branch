@@ -106,6 +106,7 @@ describe('content-packets routes', () => {
       expect(res.render).toHaveBeenCalledWith('pages/content-packets', {
         title: 'Content Packets - One More Branch',
         packets,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         contentKindGroups: expect.any(Array),
       });
     });
