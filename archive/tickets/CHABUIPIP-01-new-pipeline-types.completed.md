@@ -1,6 +1,6 @@
 # CHABUIPIP-01: Add New Types to character-pipeline-types.ts
 
-**Status**: NOT STARTED
+**Status**: COMPLETED
 **Dependencies**: None
 **Estimated diff size**: ~60 lines
 
@@ -86,3 +86,13 @@ Add `RelationshipArchetype`, `DeepRelationshipResult`, `CharacterDevStage`, and 
 - `npm run typecheck` passes
 - `npm run lint` passes
 - All existing tests pass unchanged
+
+## Outcome
+
+- **Completed**: 2026-03-08
+- **Changes**:
+  - `src/models/character-pipeline-types.ts`: Added `CastPipelineInputs`, `RelationshipArchetype`, `isRelationshipArchetype()`, `DeepRelationshipResult`, `CharacterDevStage`, `CHARACTER_DEV_STAGE_NAMES`
+  - `src/models/saved-cast.ts`: Replaced local `CastPipelineInputs` with re-export from `character-pipeline-types.ts`
+  - `test/unit/models/character-pipeline-types.test.ts`: Created with 10 tests
+- **Deviations**: None
+- **Verification**: Typecheck pass, 274 suites / 3311 tests pass, lint pass

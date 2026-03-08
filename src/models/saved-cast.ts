@@ -12,13 +12,10 @@ import type {
   SocialWebResult,
   TextualPresentation,
   CastPipelineStage,
+  CastPipelineInputs,
 } from './character-pipeline-types.js';
 
-export interface CastPipelineInputs {
-  readonly kernelSummary?: string;
-  readonly conceptSummary?: string;
-  readonly userNotes?: string;
-}
+export type { CastPipelineInputs } from './character-pipeline-types.js';
 
 export interface SavedCast {
   readonly id: string;
