@@ -1,23 +1,12 @@
-import { getStageModel } from '../config/stage-model.js';
-import { getConfig } from '../config/index.js';
-import { logger, logPrompt } from '../logging/index.js';
-import {
-  OPENROUTER_API_URL,
-  extractResponseContent,
-  parseMessageJsonContent,
-  readErrorDetails,
-  readJsonResponse,
-} from './http-client.js';
 import {
   buildCharTridimensionalPrompt,
   type CharTridimensionalPromptContext,
 } from './prompts/char-tridimensional-prompt.js';
-import { withModelFallback } from './model-fallback.js';
-import { withRetry } from './retry.js';
 import { CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA } from './schemas/char-tridimensional-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import type { TridimensionalProfile } from '../models/character-pipeline-types.js';
+import { runLlmStage } from './llm-stage-runner.js';
 
 export interface CharTridimensionalGenerationResult {
   readonly tridimensionalProfile: TridimensionalProfile;
@@ -98,77 +87,24 @@ function parseCharTridimensionalResponse(parsed: unknown): TridimensionalProfile
   };
 }
 
-async function fetchCharTridimensional(
-  apiKey: string,
-  model: string,
-  messages: ReturnType<typeof buildCharTridimensionalPrompt>,
-  temperature: number,
-  maxTokens: number
-): Promise<CharTridimensionalGenerationResult> {
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'http://localhost:3000',
-      'X-Title': 'One More Branch',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      max_tokens: maxTokens,
-      response_format: CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await readErrorDetails(response);
-    const retryable = response.status === 429 || response.status >= 500;
-    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-      httpStatus: response.status,
-      model,
-      rawErrorBody: errorDetails.rawBody,
-      parsedError: errorDetails.parsedError,
-    });
-  }
-
-  const data = await readJsonResponse(response);
-  const content = extractResponseContent(data, 'char-tridimensional', model, maxTokens);
-
-  const parsedMessage = parseMessageJsonContent(content);
-  const responseText = parsedMessage.rawText;
-  try {
-    const tridimensionalProfile = parseCharTridimensionalResponse(parsedMessage.parsed);
-    return { tridimensionalProfile, rawResponse: responseText };
-  } catch (error) {
-    if (error instanceof LLMError) {
-      throw new LLMError(error.message, error.code, error.retryable, {
-        rawContent: responseText,
-      });
-    }
-    throw error;
-  }
-}
-
 export async function generateCharTridimensional(
   context: CharTridimensionalPromptContext,
   apiKey: string,
   options?: Partial<GenerationOptions>
 ): Promise<CharTridimensionalGenerationResult> {
-  const config = getConfig().llm;
-  const primaryModel = options?.model ?? getStageModel('charTridimensional');
-  const temperature = options?.temperature ?? config.temperature;
-  const maxTokens = options?.maxTokens ?? config.maxTokens;
-
   const messages = buildCharTridimensionalPrompt(context);
-  logPrompt(logger, 'charTridimensional', messages);
+  const result = await runLlmStage({
+    stageModel: 'charTridimensional',
+    promptType: 'charTridimensional',
+    apiKey,
+    options,
+    schema: CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA,
+    messages,
+    parseResponse: parseCharTridimensionalResponse,
+  });
 
-  return withRetry(() =>
-    withModelFallback(
-      (m) => fetchCharTridimensional(apiKey, m, messages, temperature, maxTokens),
-      primaryModel,
-      'charTridimensional'
-    )
-  );
+  return {
+    tridimensionalProfile: result.parsed,
+    rawResponse: result.rawResponse,
+  };
 }

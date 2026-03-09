@@ -1,19 +1,7 @@
-import { getStageModel } from '../config/stage-model.js';
-import { getConfig } from '../config/index.js';
-import { logger, logPrompt } from '../logging/index.js';
-import {
-  OPENROUTER_API_URL,
-  extractResponseContent,
-  parseMessageJsonContent,
-  readErrorDetails,
-  readJsonResponse,
-} from './http-client.js';
 import {
   buildCharacterWebPrompt,
   type CharacterWebPromptContext,
 } from './prompts/character-web-prompt.js';
-import { withModelFallback } from './model-fallback.js';
-import { withRetry } from './retry.js';
 import { CHARACTER_WEB_GENERATION_SCHEMA } from './schemas/character-web-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
@@ -23,6 +11,7 @@ import {
   isCharacterDepth,
 } from '../models/character-enums.js';
 import { isRelationshipArchetype } from '../models/character-pipeline-types.js';
+import { runLlmStage } from './llm-stage-runner.js';
 
 export interface CharacterWebGenerationResult {
   readonly assignments: readonly CastRoleAssignment[];
@@ -165,77 +154,24 @@ function parseCharacterWebResponse(
   };
 }
 
-async function fetchCharacterWeb(
-  apiKey: string,
-  model: string,
-  messages: ReturnType<typeof buildCharacterWebPrompt>,
-  temperature: number,
-  maxTokens: number
-): Promise<CharacterWebGenerationResult> {
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'http://localhost:3000',
-      'X-Title': 'One More Branch',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      max_tokens: maxTokens,
-      response_format: CHARACTER_WEB_GENERATION_SCHEMA,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await readErrorDetails(response);
-    const retryable = response.status === 429 || response.status >= 500;
-    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-      httpStatus: response.status,
-      model,
-      rawErrorBody: errorDetails.rawBody,
-      parsedError: errorDetails.parsedError,
-    });
-  }
-
-  const data = await readJsonResponse(response);
-  const content = extractResponseContent(data, 'character-web', model, maxTokens);
-
-  const parsedMessage = parseMessageJsonContent(content);
-  const responseText = parsedMessage.rawText;
-  try {
-    const result = parseCharacterWebResponse(parsedMessage.parsed);
-    return { ...result, rawResponse: responseText };
-  } catch (error) {
-    if (error instanceof LLMError) {
-      throw new LLMError(error.message, error.code, error.retryable, {
-        rawContent: responseText,
-      });
-    }
-    throw error;
-  }
-}
-
 export async function generateCharacterWeb(
   context: CharacterWebPromptContext,
   apiKey: string,
   options?: Partial<GenerationOptions>
 ): Promise<CharacterWebGenerationResult> {
-  const config = getConfig().llm;
-  const primaryModel = options?.model ?? getStageModel('characterWeb');
-  const temperature = options?.temperature ?? config.temperature;
-  const maxTokens = options?.maxTokens ?? config.maxTokens;
-
   const messages = buildCharacterWebPrompt(context);
-  logPrompt(logger, 'characterWeb', messages);
+  const result = await runLlmStage({
+    stageModel: 'characterWeb',
+    promptType: 'characterWeb',
+    apiKey,
+    options,
+    schema: CHARACTER_WEB_GENERATION_SCHEMA,
+    messages,
+    parseResponse: parseCharacterWebResponse,
+  });
 
-  return withRetry(() =>
-    withModelFallback(
-      (m) => fetchCharacterWeb(apiKey, m, messages, temperature, maxTokens),
-      primaryModel,
-      'characterWeb'
-    )
-  );
+  return {
+    ...result.parsed,
+    rawResponse: result.rawResponse,
+  };
 }
