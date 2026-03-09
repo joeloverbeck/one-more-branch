@@ -498,16 +498,13 @@ export function buildCharacterWebsPageHtml(): string {
     <main class="container" id="character-webs-page">
       <div id="character-webs-error" class="alert alert-error" style="display: none;"></div>
       <section class="form-section">
-        <input type="password" id="character-webs-api-key" />
+        <form id="character-webs-api-key-form">
+          <input type="password" id="character-webs-api-key" />
+        </form>
         <input type="text" id="character-web-name" />
-        <select id="character-web-kernel-selector">
-          <option value="">None</option>
-        </select>
         <select id="character-web-concept-selector">
-          <option value="">None</option>
+          <option value="">Select a concept...</option>
         </select>
-        <textarea id="character-web-kernel-summary"></textarea>
-        <textarea id="character-web-concept-summary"></textarea>
         <textarea id="character-web-user-notes"></textarea>
         <button type="button" id="character-web-create-btn">Create</button>
         <div id="character-web-list"></div>

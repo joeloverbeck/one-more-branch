@@ -14,7 +14,6 @@ function makeValidWeb(): Record<string, unknown> {
     name: 'Test Web',
     createdAt: '2026-03-08T00:00:00Z',
     updatedAt: '2026-03-08T00:00:00Z',
-    sourceKernelId: 'k-1',
     sourceConceptId: 'c-1',
     protagonistName: 'Alice',
     inputs: { kernelSummary: 'A dark tale' },
@@ -46,11 +45,16 @@ describe('isSavedCharacterWeb', () => {
     expect(isSavedCharacterWeb(makeValidWeb())).toBe(true);
   });
 
-  it('returns true when optional sourceKernelId and sourceConceptId are absent', () => {
+  it('returns false when sourceConceptId is missing', () => {
     const web = makeValidWeb();
-    delete web['sourceKernelId'];
     delete web['sourceConceptId'];
-    expect(isSavedCharacterWeb(web)).toBe(true);
+    expect(isSavedCharacterWeb(web)).toBe(false);
+  });
+
+  it('returns false when sourceConceptId is empty', () => {
+    const web = makeValidWeb();
+    web['sourceConceptId'] = '';
+    expect(isSavedCharacterWeb(web)).toBe(false);
   });
 
   it('returns false when id is missing', () => {

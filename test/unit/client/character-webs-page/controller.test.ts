@@ -105,11 +105,13 @@ describe('character webs page controller', () => {
       if (url.includes('/character-webs/api/create')) {
         const body = JSON.parse(init?.body as string) as {
           name: string;
-          inputs: { kernelSummary?: string; conceptSummary?: string; userNotes?: string };
+          sourceConceptId: string;
+          userNotes?: string;
         };
         createBody = {
           name: body.name,
-          inputs: body.inputs,
+          sourceConceptId: body.sourceConceptId,
+          userNotes: body.userNotes,
         };
 
         const web = {
@@ -117,11 +119,12 @@ describe('character webs page controller', () => {
           name: body.name,
           createdAt: '2026-03-09T12:00:00.000Z',
           updatedAt: '2026-03-09T12:00:00.000Z',
+          sourceConceptId: body.sourceConceptId,
           protagonistName: '',
           assignments: [],
           relationshipArchetypes: [],
           castDynamicsSummary: '',
-          inputs: body.inputs,
+          inputs: { userNotes: body.userNotes },
         };
         webs.splice(0, webs.length, web);
         return Promise.resolve(mockJsonResponse({ success: true, web }, 201));
@@ -157,10 +160,12 @@ describe('character webs page controller', () => {
     await flushClientWork();
 
     (document.getElementById('character-web-name') as HTMLInputElement).value = '  Court of Ash  ';
-    (document.getElementById('character-web-kernel-summary') as HTMLTextAreaElement).value =
-      '  Kernel summary  ';
-    (document.getElementById('character-web-concept-summary') as HTMLTextAreaElement).value =
-      '  Concept summary  ';
+    const conceptSelector = document.getElementById('character-web-concept-selector') as HTMLSelectElement;
+    const option = document.createElement('option');
+    option.value = 'concept-1';
+    option.textContent = 'Test Concept';
+    conceptSelector.appendChild(option);
+    conceptSelector.value = 'concept-1';
     (document.getElementById('character-web-user-notes') as HTMLTextAreaElement).value =
       '  Keep the alliances venomous.  ';
 
@@ -169,11 +174,8 @@ describe('character webs page controller', () => {
 
     expect(createBody).toEqual({
       name: 'Court of Ash',
-      inputs: {
-        kernelSummary: 'Kernel summary',
-        conceptSummary: 'Concept summary',
-        userNotes: 'Keep the alliances venomous.',
-      },
+      sourceConceptId: 'concept-1',
+      userNotes: 'Keep the alliances venomous.',
     });
     expect(document.getElementById('selected-character-web-name')?.textContent).toBe(
       'Court of Ash'

@@ -5,8 +5,7 @@ export interface SavedCharacterWeb {
   readonly name: string;
   readonly createdAt: string;
   readonly updatedAt: string;
-  readonly sourceKernelId?: string;
-  readonly sourceConceptId?: string;
+  readonly sourceConceptId: string;
   readonly protagonistName: string;
   readonly inputs: CastPipelineInputs;
   readonly assignments: readonly CastRoleAssignment[];
@@ -28,6 +27,8 @@ export function isSavedCharacterWeb(value: unknown): value is SavedCharacterWeb 
     typeof value['name'] === 'string' &&
     typeof value['createdAt'] === 'string' &&
     typeof value['updatedAt'] === 'string' &&
+    typeof value['sourceConceptId'] === 'string' &&
+    value['sourceConceptId'].length > 0 &&
     typeof value['protagonistName'] === 'string' &&
     isObjectRecord(value['inputs']) &&
     Array.isArray(value['assignments']) &&

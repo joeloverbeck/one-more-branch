@@ -13,9 +13,6 @@
     <section class="hero">
       <h1>Character Webs</h1>
       <p class="tagline">Design reusable casts, develop characters stage by stage, and feed them into story creation.</p>
-      <div class="form-actions">
-        <a href="/stories/new" class="btn btn-secondary">New Adventure</a>
-      </div>
     </section>
 
     <div class="alert alert-error" id="character-webs-error" style="display: none;" role="alert"></div>
@@ -23,16 +20,18 @@
     <section class="form-section">
       <h2>Workspace</h2>
 
-      <div class="form-group">
-        <label for="character-webs-api-key">OpenRouter API Key</label>
-        <input
-          type="password"
-          id="character-webs-api-key"
-          placeholder="sk-or-..."
-          autocomplete="off"
-        >
-        <p class="form-help">Stored only in this browser session. Required for generation and regeneration actions.</p>
-      </div>
+      <form id="character-webs-api-key-form">
+        <div class="form-group">
+          <label for="character-webs-api-key">OpenRouter API Key</label>
+          <input
+            type="password"
+            id="character-webs-api-key"
+            placeholder="sk-or-..."
+            autocomplete="off"
+          >
+          <p class="form-help">Stored only in this browser session. Required for generation and regeneration actions.</p>
+        </div>
+      </form>
 
       <div class="stories-grid">
         <article class="story-card">
@@ -45,27 +44,10 @@
             </div>
 
             <div class="form-group">
-              <label for="character-web-kernel-selector">Saved Kernel</label>
-              <select id="character-web-kernel-selector">
-                <option value="">None</option>
+              <label for="character-web-concept-selector">Saved Concept *</label>
+              <select id="character-web-concept-selector" required>
+                <option value="">Select a concept...</option>
               </select>
-            </div>
-
-            <div class="form-group">
-              <label for="character-web-concept-selector">Saved Concept</label>
-              <select id="character-web-concept-selector">
-                <option value="">None</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="character-web-kernel-summary">Kernel Summary</label>
-              <textarea id="character-web-kernel-summary" rows="3" placeholder="Optional thematic kernel summary"></textarea>
-            </div>
-
-            <div class="form-group">
-              <label for="character-web-concept-summary">Concept Summary</label>
-              <textarea id="character-web-concept-summary" rows="3" placeholder="Optional concept summary"></textarea>
             </div>
 
             <div class="form-group">

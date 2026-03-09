@@ -164,6 +164,11 @@ conceptRoutes.post(
       return res.status(400).json({ success: false, error: 'Evaluated concept is required' });
     }
 
+    const trimmedKernelId = body.sourceKernelId?.trim();
+    if (!trimmedKernelId || trimmedKernelId.length === 0) {
+      return res.status(400).json({ success: false, error: 'sourceKernelId is required' });
+    }
+
     const now = new Date().toISOString();
     const id = randomUUID();
     const trimmedName = body.name?.trim();
@@ -172,7 +177,6 @@ conceptRoutes.post(
         ? trimmedName
         : body.evaluatedConcept.concept.oneLineHook ?? 'Untitled Concept';
 
-    const trimmedKernelId = body.sourceKernelId?.trim();
     const savedConcept: SavedConcept = {
       id,
       name: defaultName,
@@ -180,7 +184,7 @@ conceptRoutes.post(
       updatedAt: now,
       seeds: body.seeds ?? {},
       evaluatedConcept: body.evaluatedConcept,
-      ...(trimmedKernelId && trimmedKernelId.length > 0 ? { sourceKernelId: trimmedKernelId } : {}),
+      sourceKernelId: trimmedKernelId,
       ...(body.verificationResult ? { verificationResult: body.verificationResult } : {}),
     };
 

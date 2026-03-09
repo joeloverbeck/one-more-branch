@@ -19,6 +19,7 @@ function createSavedCharacterWeb(id: string, updatedAt?: string): SavedCharacter
     name: `${TEST_PREFIX} web`,
     createdAt: now,
     updatedAt: updatedAt ?? now,
+    sourceConceptId: 'concept-1',
     protagonistName: 'Alice',
     inputs: {
       kernelSummary: 'A test kernel summary',

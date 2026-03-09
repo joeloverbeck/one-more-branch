@@ -15,5 +15,6 @@ describe('character-webs page template', () => {
     expect(template).toContain('id="character-web-details"');
     expect(template).toContain('id="character-development-section"');
     expect(template).toContain('id="loading"');
+    expect(template).toContain('id="character-webs-api-key-form"');
   });
 });

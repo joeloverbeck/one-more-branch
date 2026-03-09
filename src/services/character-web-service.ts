@@ -13,7 +13,9 @@ import {
 } from '../models/character-web-converter.js';
 import type { DecomposedCharacter } from '../models/decomposed-character.js';
 import { normalizeForComparison } from '../models/normalize.js';
+import type { SavedConcept } from '../models/saved-concept.js';
 import { getProtagonistAssignment, type SavedCharacterWeb } from '../models/saved-character-web.js';
+import type { SavedKernel } from '../models/saved-kernel.js';
 import {
   isCharacterFullyComplete,
   type SavedDevelopedCharacter,
@@ -24,15 +26,17 @@ import {
   loadCharacterWeb,
   saveCharacterWeb,
 } from '../persistence/character-web-repository.js';
+import { loadConcept } from '../persistence/concept-repository.js';
 import {
   deleteDevelopedCharacter,
   listDevelopedCharactersByWebId,
   loadDevelopedCharacter,
   saveDevelopedCharacter,
 } from '../persistence/developed-character-repository.js';
+import { loadKernel } from '../persistence/kernel-repository.js';
 
 export interface CharacterWebService {
-  createWeb(name: string, inputs: CastPipelineInputs): Promise<SavedCharacterWeb>;
+  createWeb(name: string, sourceConceptId: string, userNotes?: string): Promise<SavedCharacterWeb>;
   generateWeb(
     webId: string,
     apiKey: string,
@@ -80,6 +84,8 @@ interface CharacterWebServiceDeps {
   readonly runCharacterStage: typeof runCharacterStage;
   readonly toDecomposedCharacter: typeof toDecomposedCharacter;
   readonly toDecomposedCharacterFromWeb: typeof toDecomposedCharacterFromWeb;
+  readonly loadConcept: (conceptId: string) => Promise<SavedConcept | null>;
+  readonly loadKernel: (kernelId: string) => Promise<SavedKernel | null>;
 }
 
 const defaultDeps: CharacterWebServiceDeps = {
@@ -97,6 +103,8 @@ const defaultDeps: CharacterWebServiceDeps = {
   runCharacterStage,
   toDecomposedCharacter,
   toDecomposedCharacterFromWeb,
+  loadConcept,
+  loadKernel,
 };
 
 function trimRequired(label: string, value: string): string {
@@ -178,6 +186,42 @@ function resetCharacterFromStage(
   };
 }
 
+async function deriveInputsFromConcept(
+  deps: CharacterWebServiceDeps,
+  sourceConceptId: string,
+  userNotes?: string,
+): Promise<CastPipelineInputs> {
+  const concept = await deps.loadConcept(sourceConceptId);
+  if (concept === null) {
+    throw new EngineError(`Concept not found: ${sourceConceptId}`, 'RESOURCE_NOT_FOUND');
+  }
+
+  const kernel = await deps.loadKernel(concept.sourceKernelId);
+  if (kernel === null) {
+    throw new EngineError(
+      `Kernel not found: ${concept.sourceKernelId}`,
+      'RESOURCE_NOT_FOUND',
+    );
+  }
+
+  const k = kernel.evaluatedKernel.kernel;
+  const kernelSummary =
+    k.dramaticThesis +
+    (k.opposingForce ? `\nOpposition: ${k.opposingForce}` : '') +
+    (k.thematicQuestion ? `\nQuestion: ${k.thematicQuestion}` : '');
+
+  const c = concept.evaluatedConcept.concept;
+  const conceptSummary =
+    (c.oneLineHook ?? '') +
+    (c.elevatorParagraph ? `\n${c.elevatorParagraph}` : '');
+
+  return {
+    kernelSummary: kernelSummary.trim() || undefined,
+    conceptSummary: conceptSummary.trim() || undefined,
+    userNotes: userNotes?.trim() ?? undefined,
+  };
+}
+
 function sortAssignmentsForStoryPrep(web: SavedCharacterWeb): SavedCharacterWeb['assignments'] {
   return [...web.assignments].sort((left, right) => {
     const leftIsProtagonist = normalizeName(left.characterName) === normalizeName(web.protagonistName);
@@ -204,8 +248,14 @@ export function createCharacterWebService(
     const trimmedApiKey = trimApiKey(apiKey);
     const attempt = 1;
 
+    const derivedInputs = await deriveInputsFromConcept(
+      deps,
+      web.sourceConceptId,
+      web.inputs.userNotes,
+    );
+
     emitGenerationStage(onStage, 'GENERATING_CHARACTER_WEB', 'started', attempt);
-    const generation = await deps.generateCharacterWeb(web.inputs, trimmedApiKey);
+    const generation = await deps.generateCharacterWeb(derivedInputs, trimmedApiKey);
     const protagonistAssignment = getProtagonistAssignment(generation.assignments);
 
     const updatedWeb: SavedCharacterWeb = {
@@ -223,18 +273,22 @@ export function createCharacterWebService(
   };
 
   return {
-    async createWeb(name: string, inputs: CastPipelineInputs): Promise<SavedCharacterWeb> {
+    async createWeb(
+      name: string,
+      sourceConceptId: string,
+      userNotes?: string,
+    ): Promise<SavedCharacterWeb> {
+      const trimmedConceptId = trimRequired('Source concept id', sourceConceptId);
       const now = deps.now();
       const web: SavedCharacterWeb = {
         id: deps.createId(),
         name: trimRequired('Character web name', name),
         createdAt: now,
         updatedAt: now,
+        sourceConceptId: trimmedConceptId,
         protagonistName: '',
         inputs: {
-          kernelSummary: trimOptional(inputs.kernelSummary),
-          conceptSummary: trimOptional(inputs.conceptSummary),
-          userNotes: trimOptional(inputs.userNotes),
+          userNotes: trimOptional(userNotes),
         },
         assignments: [],
         relationshipArchetypes: [],
@@ -351,6 +405,12 @@ export function createCharacterWebService(
         await deps.loadCharacterWeb(character.sourceWebId),
       );
 
+      const derivedInputs = await deriveInputsFromConcept(
+        deps,
+        web.sourceConceptId,
+        web.inputs.userNotes,
+      );
+
       const otherDevelopedCharacters =
         stage === 4
           ? (await deps.listDevelopedCharactersByWebId(character.sourceWebId)).filter(
@@ -362,7 +422,7 @@ export function createCharacterWebService(
         character,
         stage,
         apiKey: trimApiKey(apiKey),
-        inputs: web.inputs,
+        inputs: derivedInputs,
         otherDevelopedCharacters,
         onGenerationStage: onStage,
       });
@@ -383,6 +443,13 @@ export function createCharacterWebService(
         character.sourceWebId,
         await deps.loadCharacterWeb(character.sourceWebId),
       );
+
+      const derivedInputs = await deriveInputsFromConcept(
+        deps,
+        web.sourceConceptId,
+        web.inputs.userNotes,
+      );
+
       const resetCharacter = resetCharacterFromStage(character, stage, deps.now());
       const otherDevelopedCharacters =
         stage === 4
@@ -395,7 +462,7 @@ export function createCharacterWebService(
         character: resetCharacter,
         stage,
         apiKey: trimApiKey(apiKey),
-        inputs: web.inputs,
+        inputs: derivedInputs,
         otherDevelopedCharacters,
         onGenerationStage: onStage,
       });
