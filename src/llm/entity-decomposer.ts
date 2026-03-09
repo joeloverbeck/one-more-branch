@@ -7,6 +7,7 @@ import type {
 } from '../models/decomposed-character.js';
 import type { DecomposedWorld, WorldFact, WorldFactDomain, WorldFactType } from '../models/decomposed-world.js';
 import { logger, logPrompt } from '../logging/index.js';
+import type { JsonSchema, ChatMessage } from './llm-client-types.js';
 import {
   OPENROUTER_API_URL,
   extractResponseContent,
@@ -23,12 +24,16 @@ import {
 import type {
   EntityDecomposerContext,
   EntityDecompositionResult,
+  WorldDecompositionContext,
+  WorldDecompositionResult,
 } from './entity-decomposer-types.js';
 import { LLMError } from './llm-client-types.js';
 import { withModelFallback } from './model-fallback.js';
 import { buildEntityDecomposerPrompt } from './prompts/entity-decomposer-prompt.js';
+import { buildWorldDecomposerPrompt } from './prompts/world-decomposer-prompt.js';
 import { withRetry } from './retry.js';
 import { ENTITY_DECOMPOSITION_SCHEMA } from './schemas/entity-decomposer-schema.js';
+import { WORLD_DECOMPOSITION_SCHEMA } from './schemas/world-decomposition-schema.js';
 
 const VALID_DOMAINS: readonly WorldFactDomain[] = [
   'geography',
@@ -242,13 +247,46 @@ function parseDecompositionResponse(
   return { decomposedCharacters, decomposedWorld };
 }
 
-async function fetchEntityDecomposition(
-  context: EntityDecomposerContext,
+function parseWorldDecompositionResponse(
+  parsed: unknown,
+  worldbuilding: string
+): Omit<WorldDecompositionResult, 'rawResponse'> {
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    throw new LLMError(
+      'World decomposition response must be an object',
+      'DECOMPOSITION_PARSE_ERROR',
+      true
+    );
+  }
+
+  const data = parsed as Record<string, unknown>;
+  const rawFacts = Array.isArray(data['worldFacts']) ? (data['worldFacts'] as unknown[]) : [];
+  const worldFacts: WorldFact[] = rawFacts
+    .map((raw) => parseWorldFact(raw))
+    .filter((fact): fact is WorldFact => fact !== null);
+
+  return {
+    decomposedWorld: {
+      facts: worldFacts,
+      rawWorldbuilding: worldbuilding,
+    },
+  };
+}
+
+interface DecompositionRequest<TParsed> {
+  readonly model: string;
+  readonly temperature: number;
+  readonly maxTokens: number;
+  readonly responseLabel: string;
+  readonly messages: ChatMessage[];
+  readonly schema: JsonSchema;
+  readonly parseResponse: (parsed: unknown) => TParsed;
+}
+
+async function fetchDecomposition<TParsed>(
   apiKey: string,
-  model: string,
-  temperature: number,
-  maxTokens: number,
-): Promise<EntityDecompositionResult> {
+  request: DecompositionRequest<TParsed>,
+): Promise<TParsed & { rawResponse: string }> {
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
     headers: {
@@ -258,11 +296,11 @@ async function fetchEntityDecomposition(
       'X-Title': 'One More Branch',
     },
     body: JSON.stringify({
-      model,
-      messages: buildEntityDecomposerPrompt(context),
-      temperature,
-      max_tokens: maxTokens,
-      response_format: ENTITY_DECOMPOSITION_SCHEMA,
+      model: request.model,
+      messages: request.messages,
+      temperature: request.temperature,
+      max_tokens: request.maxTokens,
+      response_format: request.schema,
     }),
   });
 
@@ -271,19 +309,24 @@ async function fetchEntityDecomposition(
     const retryable = response.status === 429 || response.status >= 500;
     throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
       httpStatus: response.status,
-      model,
+      model: request.model,
       rawErrorBody: errorDetails.rawBody,
       parsedError: errorDetails.parsedError,
     });
   }
 
   const responseData = await readJsonResponse(response);
-  const content = extractResponseContent(responseData, 'entity-decomposer', model, maxTokens);
+  const content = extractResponseContent(
+    responseData,
+    request.responseLabel,
+    request.model,
+    request.maxTokens
+  );
 
   const parsedMessage = parseMessageJsonContent(content);
   const responseText = parsedMessage.rawText;
   try {
-    const result = parseDecompositionResponse(parsedMessage.parsed, context);
+    const result = request.parseResponse(parsedMessage.parsed);
     return { ...result, rawResponse: responseText };
   } catch (error) {
     if (error instanceof LLMError) {
@@ -309,7 +352,46 @@ export async function decomposeEntities(
 
   return withRetry(() =>
     withModelFallback(
-      (m) => fetchEntityDecomposition(context, apiKey, m, temperature, maxTokens),
+      (model) =>
+        fetchDecomposition(apiKey, {
+          model,
+          temperature,
+          maxTokens,
+          responseLabel: 'entity-decomposer',
+          messages,
+          schema: ENTITY_DECOMPOSITION_SCHEMA,
+          parseResponse: (parsed) => parseDecompositionResponse(parsed, context),
+        }),
+      primaryModel,
+      'entityDecomposer',
+    )
+  );
+}
+
+export async function decomposeWorldbuildingOnly(
+  context: WorldDecompositionContext,
+  apiKey: string
+): Promise<WorldDecompositionResult> {
+  const config = getConfig().llm;
+  const primaryModel = getStageModel('entityDecomposer');
+  const temperature = config.temperature;
+  const maxTokens = config.maxTokens;
+
+  const messages = buildWorldDecomposerPrompt(context);
+  logPrompt(logger, 'worldDecomposer', messages);
+
+  return withRetry(() =>
+    withModelFallback(
+      (model) =>
+        fetchDecomposition(apiKey, {
+          model,
+          temperature,
+          maxTokens,
+          responseLabel: 'world-decomposer',
+          messages,
+          schema: WORLD_DECOMPOSITION_SCHEMA,
+          parseResponse: (parsed) => parseWorldDecompositionResponse(parsed, context.worldbuilding),
+        }),
       primaryModel,
       'entityDecomposer',
     )

@@ -23,3 +23,19 @@ export interface EntityDecompositionResult {
   readonly decomposedWorld: DecomposedWorld;
   readonly rawResponse: string;
 }
+
+export interface WorldDecompositionContext {
+  readonly worldbuilding: string;
+  readonly tone: string;
+  readonly toneFeel?: readonly string[];
+  readonly toneAvoid?: readonly string[];
+  readonly spine?: StorySpine;
+  readonly conceptSpec?: ConceptSpec;
+  readonly storyKernel?: StoryKernel;
+  readonly startingSituation?: string;
+}
+
+export interface WorldDecompositionResult {
+  readonly decomposedWorld: DecomposedWorld;
+  readonly rawResponse: string;
+}
