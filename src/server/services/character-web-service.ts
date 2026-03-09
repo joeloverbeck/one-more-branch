@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { emitGenerationStage } from '../../engine/generation-pipeline-helpers.js';
-import type { GenerationStageCallback } from '../../engine/types.js';
+import { EngineError, type GenerationStageCallback } from '../../engine/types.js';
 import { runCharacterStage } from '../../llm/character-stage-runner.js';
 import { generateCharacterWeb } from '../../llm/character-web-generation.js';
 import type {
@@ -102,7 +102,7 @@ const defaultDeps: CharacterWebServiceDeps = {
 function trimRequired(label: string, value: string): string {
   const trimmed = value.trim();
   if (trimmed.length === 0) {
-    throw new Error(`${label} is required`);
+    throw new EngineError(`${label} is required`, 'VALIDATION_FAILED');
   }
 
   return trimmed;
@@ -111,7 +111,7 @@ function trimRequired(label: string, value: string): string {
 function trimApiKey(apiKey: string): string {
   const trimmed = apiKey.trim();
   if (trimmed.length < 10) {
-    throw new Error('OpenRouter API key is required');
+    throw new EngineError('OpenRouter API key is required', 'VALIDATION_FAILED');
   }
 
   return trimmed;
@@ -131,14 +131,32 @@ function requireWeb(
   web: SavedCharacterWeb | null,
 ): SavedCharacterWeb {
   if (web === null) {
-    throw new Error(`Character web not found: ${webId}`);
+    throw new EngineError(`Character web not found: ${webId}`, 'RESOURCE_NOT_FOUND');
   }
 
   return web;
 }
 
 function isMissingCharacterError(error: unknown, charId: string): boolean {
-  return error instanceof Error && error.message === `Developed character not found: ${charId}`;
+  return (
+    error instanceof Error &&
+    error.message === `Developed character not found: ${charId}`
+  );
+}
+
+async function loadRequiredCharacter(
+  deps: CharacterWebServiceDeps,
+  charId: string,
+): Promise<SavedDevelopedCharacter> {
+  try {
+    return await deps.loadDevelopedCharacter(charId);
+  } catch (error) {
+    if (isMissingCharacterError(error, charId)) {
+      throw new EngineError(`Developed character not found: ${charId}`, 'RESOURCE_NOT_FOUND');
+    }
+
+    throw error;
+  }
 }
 
 function resetCharacterFromStage(
@@ -254,6 +272,7 @@ export function createCharacterWebService(
 
     async deleteWeb(webId: string): Promise<void> {
       const trimmedWebId = trimRequired('Character web id', webId);
+      requireWeb(trimmedWebId, await deps.loadCharacterWeb(trimmedWebId));
       const characters = await deps.listDevelopedCharactersByWebId(trimmedWebId);
       for (const character of characters) {
         await deps.deleteDevelopedCharacter(character.id);
@@ -274,8 +293,9 @@ export function createCharacterWebService(
       );
 
       if (assignment === undefined) {
-        throw new Error(
+        throw new EngineError(
           `Character ${trimmedCharacterName} is not assigned in character web ${trimmedWebId}`,
+          'VALIDATION_FAILED',
         );
       }
 
@@ -286,8 +306,9 @@ export function createCharacterWebService(
       );
 
       if (duplicate !== undefined) {
-        throw new Error(
+        throw new EngineError(
           `Developed character already exists for ${assignment.characterName} in character web ${trimmedWebId}`,
+          'RESOURCE_CONFLICT',
         );
       }
 
@@ -324,7 +345,7 @@ export function createCharacterWebService(
       onStage?: GenerationStageCallback,
     ): Promise<SavedDevelopedCharacter> {
       const trimmedCharId = trimRequired('Character id', charId);
-      const character = await deps.loadDevelopedCharacter(trimmedCharId);
+      const character = await loadRequiredCharacter(deps, trimmedCharId);
       const web = requireWeb(
         character.sourceWebId,
         await deps.loadCharacterWeb(character.sourceWebId),
@@ -357,7 +378,7 @@ export function createCharacterWebService(
       onStage?: GenerationStageCallback,
     ): Promise<SavedDevelopedCharacter> {
       const trimmedCharId = trimRequired('Character id', charId);
-      const character = await deps.loadDevelopedCharacter(trimmedCharId);
+      const character = await loadRequiredCharacter(deps, trimmedCharId);
       const web = requireWeb(
         character.sourceWebId,
         await deps.loadCharacterWeb(character.sourceWebId),
@@ -387,9 +408,9 @@ export function createCharacterWebService(
       const trimmedCharId = trimRequired('Character id', charId);
 
       try {
-        return await deps.loadDevelopedCharacter(trimmedCharId);
+        return await loadRequiredCharacter(deps, trimmedCharId);
       } catch (error) {
-        if (isMissingCharacterError(error, trimmedCharId)) {
+        if (error instanceof EngineError && error.code === 'RESOURCE_NOT_FOUND') {
           return null;
         }
 

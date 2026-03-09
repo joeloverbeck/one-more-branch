@@ -1,3 +1,4 @@
+import { EngineError } from '@/engine/types';
 import type { RunCharacterStageResult } from '@/llm/character-stage-runner';
 import {
   CharacterDepth,
@@ -337,9 +338,11 @@ describe('character-web-service', () => {
   it('initializeCharacter rejects names not present in the web assignments', async () => {
     deps.loadCharacterWeb.mockResolvedValue(createWeb());
 
-    await expect(service.initializeCharacter('web-1', 'Unknown')).rejects.toThrow(
-      'Character Unknown is not assigned in character web web-1',
-    );
+    await expect(service.initializeCharacter('web-1', 'Unknown')).rejects.toMatchObject({
+      name: 'EngineError',
+      code: 'VALIDATION_FAILED',
+      message: 'Character Unknown is not assigned in character web web-1',
+    } satisfies Partial<EngineError>);
   });
 
   it('initializeCharacter rejects duplicate developed entries for the same web character', async () => {
@@ -348,9 +351,11 @@ describe('character-web-service', () => {
       createCharacter({ characterName: 'Mara Voss' }),
     ]);
 
-    await expect(service.initializeCharacter('web-1', 'Mara Voss')).rejects.toThrow(
-      'Developed character already exists for Mara Voss in character web web-1',
-    );
+    await expect(service.initializeCharacter('web-1', 'Mara Voss')).rejects.toMatchObject({
+      name: 'EngineError',
+      code: 'RESOURCE_CONFLICT',
+      message: 'Developed character already exists for Mara Voss in character web web-1',
+    } satisfies Partial<EngineError>);
   });
 
   it('generateCharacterStage loads current web inputs, runs the stage runner, and persists', async () => {
@@ -434,6 +439,7 @@ describe('character-web-service', () => {
   });
 
   it('deleteWeb removes the web and all associated developed characters', async () => {
+    deps.loadCharacterWeb.mockResolvedValue(createWeb());
     deps.listDevelopedCharactersByWebId.mockResolvedValue([
       createCharacter({ id: 'char-1' }),
       createCharacter({ id: 'char-2', characterName: 'Mara Voss' }),
@@ -489,5 +495,31 @@ describe('character-web-service', () => {
     );
 
     await expect(service.loadCharacter('char-missing')).resolves.toBeNull();
+  });
+
+  it('generateCharacterStage normalizes missing developed characters into RESOURCE_NOT_FOUND', async () => {
+    deps.loadDevelopedCharacter.mockRejectedValue(
+      new Error('Developed character not found: char-missing'),
+    );
+
+    await expect(
+      service.generateCharacterStage('char-missing', 1, 'valid-api-key-12345'),
+    ).rejects.toMatchObject({
+      name: 'EngineError',
+      code: 'RESOURCE_NOT_FOUND',
+      message: 'Developed character not found: char-missing',
+    } satisfies Partial<EngineError>);
+  });
+
+  it('deleteWeb rejects missing webs with RESOURCE_NOT_FOUND before deleting children', async () => {
+    deps.loadCharacterWeb.mockResolvedValue(null);
+
+    await expect(service.deleteWeb('web-missing')).rejects.toMatchObject({
+      name: 'EngineError',
+      code: 'RESOURCE_NOT_FOUND',
+      message: 'Character web not found: web-missing',
+    } satisfies Partial<EngineError>);
+    expect(deps.deleteCharacterWeb).not.toHaveBeenCalled();
+    expect(deps.deleteDevelopedCharacter).not.toHaveBeenCalled();
   });
 });

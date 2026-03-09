@@ -11,6 +11,8 @@ export const GENERATION_FLOW_TYPES = [
   'scene-ideation',
   'structure-rewrite',
   'content-generation',
+  'character-web-generation',
+  'character-stage-generation',
 ] as const;
 
 export type GenerationFlowType = (typeof GENERATION_FLOW_TYPES)[number];
