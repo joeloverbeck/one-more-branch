@@ -28,7 +28,7 @@ export interface SavedConcept {
   readonly evaluatedConcept: EvaluatedConcept;
   readonly preHardenedConcept?: EvaluatedConcept;
   readonly hardenedAt?: string;
-  readonly sourceKernelId?: string;
+  readonly sourceKernelId: string;
   readonly stressTestResult?: {
     readonly driftRisks: readonly DriftRisk[];
     readonly playerBreaks: readonly PlayerBreak[];
@@ -256,7 +256,7 @@ export function isSavedConcept(value: unknown): value is SavedConcept {
     isEvaluatedConcept(value['evaluatedConcept']) &&
     (value['preHardenedConcept'] === undefined || isEvaluatedConcept(value['preHardenedConcept'])) &&
     (value['hardenedAt'] === undefined || isIsoDateString(value['hardenedAt'])) &&
-    (value['sourceKernelId'] === undefined || isNonEmptyString(value['sourceKernelId'])) &&
+    isNonEmptyString(value['sourceKernelId']) &&
     (value['stressTestResult'] === undefined || isStressTestResult(value['stressTestResult'])) &&
     (value['verificationResult'] === undefined || isConceptVerification(value['verificationResult']))
   );

@@ -8,13 +8,11 @@ function initCharacterWebsPage() {
 
   var loading = document.getElementById('loading');
   var errorBlock = document.getElementById('character-webs-error');
+  var apiKeyForm = document.getElementById('character-webs-api-key-form');
   var apiKeyInput = document.getElementById('character-webs-api-key');
   var createBtn = document.getElementById('character-web-create-btn');
   var webNameInput = document.getElementById('character-web-name');
-  var kernelSelector = document.getElementById('character-web-kernel-selector');
   var conceptSelector = document.getElementById('character-web-concept-selector');
-  var kernelSummaryInput = document.getElementById('character-web-kernel-summary');
-  var conceptSummaryInput = document.getElementById('character-web-concept-summary');
   var userNotesInput = document.getElementById('character-web-user-notes');
   var webList = document.getElementById('character-web-list');
   var webDetailsSection = document.getElementById('character-web-details');
@@ -37,8 +35,6 @@ function initCharacterWebsPage() {
     !loading ||
     !createBtn ||
     !webNameInput ||
-    !kernelSummaryInput ||
-    !conceptSummaryInput ||
     !userNotesInput ||
     !webList ||
     !webDetailsSection ||
@@ -49,6 +45,12 @@ function initCharacterWebsPage() {
     !stageList
   ) {
     return;
+  }
+
+  if (apiKeyForm) {
+    apiKeyForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+    });
   }
 
   var loadingProgress = createLoadingProgressController(loading);
@@ -547,6 +549,13 @@ function initCharacterWebsPage() {
       return;
     }
 
+    var conceptId =
+      conceptSelector instanceof HTMLSelectElement ? (conceptSelector.value || '').trim() : '';
+    if (!conceptId) {
+      setError('A saved concept must be selected');
+      return;
+    }
+
     try {
       var data = await fetchJson(
         '/character-webs/api/create',
@@ -555,27 +564,15 @@ function initCharacterWebsPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             name: name,
-            inputs: {
-              kernelSummary:
-                typeof kernelSummaryInput.value === 'string' ? kernelSummaryInput.value.trim() : '',
-              conceptSummary:
-                typeof conceptSummaryInput.value === 'string'
-                  ? conceptSummaryInput.value.trim()
-                  : '',
-              userNotes:
-                typeof userNotesInput.value === 'string' ? userNotesInput.value.trim() : '',
-            },
+            sourceConceptId: conceptId,
+            userNotes:
+              typeof userNotesInput.value === 'string' ? userNotesInput.value.trim() : '',
           }),
         },
         'Failed to create character web'
       );
       webNameInput.value = '';
-      kernelSummaryInput.value = '';
-      conceptSummaryInput.value = '';
       userNotesInput.value = '';
-      if (kernelSelector instanceof HTMLSelectElement) {
-        kernelSelector.value = '';
-      }
       if (conceptSelector instanceof HTMLSelectElement) {
         conceptSelector.value = '';
       }
@@ -700,78 +697,7 @@ function initCharacterWebsPage() {
     }
   }
 
-  async function hydrateKernelSummary() {
-    if (!(kernelSelector instanceof HTMLSelectElement) || !kernelSummaryInput) {
-      return;
-    }
-
-    var kernelId = (kernelSelector.value || '').trim();
-    if (!kernelId) {
-      return;
-    }
-
-    try {
-      var data = await fetchJson(
-        '/kernels/api/' + encodeURIComponent(kernelId),
-        { method: 'GET' },
-        'Failed to load kernel'
-      );
-      var kernel =
-        data && data.kernel && data.kernel.evaluatedKernel
-          ? data.kernel.evaluatedKernel.kernel
-          : null;
-      if (!kernel) {
-        return;
-      }
-      kernelSummaryInput.value =
-        (kernel.dramaticThesis || '') +
-        (kernel.opposingForce ? '\nOpposition: ' + kernel.opposingForce : '') +
-        (kernel.thematicQuestion ? '\nQuestion: ' + kernel.thematicQuestion : '');
-    } catch (_error) {
-      // Non-fatal
-    }
-  }
-
-  async function hydrateConceptSummary() {
-    if (!(conceptSelector instanceof HTMLSelectElement) || !conceptSummaryInput) {
-      return;
-    }
-
-    var conceptId = (conceptSelector.value || '').trim();
-    if (!conceptId) {
-      return;
-    }
-
-    try {
-      var data = await fetchJson(
-        '/concepts/api/' + encodeURIComponent(conceptId),
-        { method: 'GET' },
-        'Failed to load concept'
-      );
-      var concept =
-        data && data.concept && data.concept.evaluatedConcept
-          ? data.concept.evaluatedConcept.concept
-          : null;
-      if (!concept) {
-        return;
-      }
-      conceptSummaryInput.value =
-        (concept.oneLineHook || '') +
-        (concept.elevatorParagraph ? '\n' + concept.elevatorParagraph : '');
-    } catch (_error) {
-      // Non-fatal
-    }
-  }
-
   async function loadSelectorOptions() {
-    if (kernelSelector instanceof HTMLSelectElement) {
-      try {
-        await loadKernelOptionsIntoSelect(kernelSelector);
-      } catch (_error) {
-        // Non-fatal
-      }
-    }
-
     if (conceptSelector instanceof HTMLSelectElement) {
       try {
         var response = await fetch('/concepts/api/list');
@@ -809,18 +735,6 @@ function initCharacterWebsPage() {
   if (deleteWebBtn) {
     deleteWebBtn.addEventListener('click', function () {
       void deleteCurrentWeb();
-    });
-  }
-
-  if (kernelSelector instanceof HTMLSelectElement) {
-    kernelSelector.addEventListener('change', function () {
-      void hydrateKernelSummary();
-    });
-  }
-
-  if (conceptSelector instanceof HTMLSelectElement) {
-    conceptSelector.addEventListener('change', function () {
-      void hydrateConceptSummary();
     });
   }
 

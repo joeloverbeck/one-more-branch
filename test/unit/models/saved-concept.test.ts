@@ -62,6 +62,7 @@ describe('saved-concept model guards', () => {
       name: 'Memory Courier',
       createdAt: '2026-02-19T00:00:00.000Z',
       updatedAt: '2026-02-19T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
       seeds: {
         genreVibes: 'noir, urban decay',
       },
@@ -95,6 +96,7 @@ describe('saved-concept model guards', () => {
       name: 'Memory Courier',
       createdAt: '2026-02-19T00:00:00.000Z',
       updatedAt: '2026-02-19T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
       seeds: {},
       evaluatedConcept: createEvaluatedConcept(),
       preHardenedConcept: { concept: { oneLineHook: 'Incomplete' } },
@@ -109,6 +111,7 @@ describe('saved-concept model guards', () => {
       name: 'Memory Courier',
       createdAt: '2026-02-19T00:00:00.000Z',
       updatedAt: '2026-02-19T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
       seeds: {},
       evaluatedConcept: {
         ...createEvaluatedConcept(),
@@ -127,6 +130,7 @@ describe('saved-concept model guards', () => {
       name: 'Memory Courier',
       createdAt: '2026-02-19T00:00:00.000Z',
       updatedAt: '2026-02-19T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
       seeds: {},
       evaluatedConcept: createEvaluatedConcept(),
       verificationResult: {
@@ -162,6 +166,7 @@ describe('saved-concept model guards', () => {
       name: 'Memory Courier',
       createdAt: '2026-02-19T00:00:00.000Z',
       updatedAt: '2026-02-19T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
       seeds: {},
       evaluatedConcept: createEvaluatedConcept(),
       verificationResult: {
@@ -192,6 +197,7 @@ describe('saved-concept model guards', () => {
       name: 'Memory Courier',
       createdAt: '2026-02-19T00:00:00.000Z',
       updatedAt: '2026-02-19T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
       seeds: {},
       evaluatedConcept: createEvaluatedConcept(),
       verificationResult: {
@@ -227,6 +233,7 @@ describe('saved-concept model guards', () => {
       name: 'Memory Courier',
       createdAt: '2026-02-19T00:00:00.000Z',
       updatedAt: '2026-02-19T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
       seeds: {},
       evaluatedConcept: createEvaluatedConcept(),
       verificationResult: {
@@ -261,6 +268,7 @@ describe('saved-concept model guards', () => {
       name: 'Memory Courier',
       createdAt: '2026-02-19T00:00:00.000Z',
       updatedAt: '2026-02-19T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
       seeds: {},
       evaluatedConcept: createEvaluatedConcept(),
       verificationResult: {
@@ -300,6 +308,7 @@ describe('saved-concept model guards', () => {
       name: 'Memory Courier',
       createdAt: '2026-02-19T00:00:00.000Z',
       updatedAt: '2026-02-19T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
       seeds: {},
       evaluatedConcept: { ...ec, scores: scoresWithout },
     };
@@ -313,6 +322,7 @@ describe('saved-concept model guards', () => {
       name: 'Memory Courier',
       createdAt: '2026-02-19T00:00:00.000Z',
       updatedAt: '2026-02-19T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
       seeds: {},
       evaluatedConcept: createEvaluatedConcept(),
       stressTestResult: {

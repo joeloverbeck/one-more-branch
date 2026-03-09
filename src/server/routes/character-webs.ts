@@ -11,11 +11,8 @@ export const characterWebRoutes = Router();
 
 interface CharacterWebCreateBody {
   readonly name?: unknown;
-  readonly inputs?: {
-    readonly kernelSummary?: unknown;
-    readonly conceptSummary?: unknown;
-    readonly userNotes?: unknown;
-  };
+  readonly sourceConceptId?: unknown;
+  readonly userNotes?: unknown;
 }
 
 interface CharacterWebGenerateBody {
@@ -171,11 +168,16 @@ characterWebRoutes.post(
       return res.status(400).json({ success: false, error: 'Character web name is required' });
     }
 
-    const web = await characterWebService.createWeb(name, {
-      kernelSummary: trimOptionalString(body.inputs?.kernelSummary),
-      conceptSummary: trimOptionalString(body.inputs?.conceptSummary),
-      userNotes: trimOptionalString(body.inputs?.userNotes),
-    });
+    const sourceConceptId = parseRequiredString('Source concept', body.sourceConceptId);
+    if (!sourceConceptId) {
+      return res.status(400).json({ success: false, error: 'sourceConceptId is required' });
+    }
+
+    const web = await characterWebService.createWeb(
+      name,
+      sourceConceptId,
+      trimOptionalString(body.userNotes),
+    );
 
     return res.status(201).json({ success: true, web });
   })

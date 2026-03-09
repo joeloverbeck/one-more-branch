@@ -373,6 +373,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
       {
         body: {
           evaluatedConcept: developPayload.evaluatedConcept,
+          sourceKernelId: 'kernel-1',
           seeds: { genreVibes: 'dark fantasy', moodKeywords: 'tense' },
           verificationResult: developPayload.verification,
         },
@@ -395,6 +396,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
       name: developPayload.evaluatedConcept?.concept.oneLineHook ?? 'Test',
       createdAt: '2025-01-01T00:00:00.000Z',
       updatedAt: '2025-01-01T00:00:00.000Z',
+      sourceKernelId: 'kernel-1',
       seeds: { genreVibes: 'dark fantasy' },
       evaluatedConcept: developPayload.evaluatedConcept,
     };

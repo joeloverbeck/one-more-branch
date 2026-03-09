@@ -129,6 +129,7 @@ function createWeb(overrides: Partial<SavedCharacterWeb> = {}): SavedCharacterWe
     name: 'Shattered Compass',
     createdAt: '2026-03-09T12:00:00.000Z',
     updatedAt: '2026-03-09T12:00:00.000Z',
+    sourceConceptId: 'concept-1',
     protagonistName: 'Iria Vale',
     inputs: createInputs(),
     assignments: [createAssignment()],
@@ -232,7 +233,7 @@ describe('character-web routes', () => {
     });
   });
 
-  it('POST /api/create creates a metadata-only web and trims optional inputs', async () => {
+  it('POST /api/create creates a metadata-only web with sourceConceptId', async () => {
     const web = createWeb();
     (characterWebService.createWeb as jest.Mock).mockResolvedValue(web);
 
@@ -240,11 +241,8 @@ describe('character-web routes', () => {
     const req = mockReq({
       body: {
         name: '  Shattered Compass  ',
-        inputs: {
-          kernelSummary: '  A revenge story about inherited guilt.  ',
-          conceptSummary: ' ',
-          userNotes: '  Keep everyone dangerous.  ',
-        },
+        sourceConceptId: '  concept-1  ',
+        userNotes: '  Keep everyone dangerous.  ',
       },
     });
     const res = mockRes();
@@ -252,13 +250,31 @@ describe('character-web routes', () => {
     void handler(req, res);
     await flushPromises();
 
-    expect(characterWebService.createWeb).toHaveBeenCalledWith('Shattered Compass', {
-      kernelSummary: 'A revenge story about inherited guilt.',
-      conceptSummary: undefined,
-      userNotes: 'Keep everyone dangerous.',
-    });
+    expect(characterWebService.createWeb).toHaveBeenCalledWith(
+      'Shattered Compass',
+      'concept-1',
+      'Keep everyone dangerous.',
+    );
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({ success: true, web });
+  });
+
+  it('POST /api/create returns 400 when sourceConceptId is missing', async () => {
+    const handler = getRouteHandler('post', '/api/create');
+    const req = mockReq({
+      body: { name: 'Test Web' },
+    });
+    const res = mockRes();
+
+    void handler(req, res);
+    await flushPromises();
+
+    expect(characterWebService.createWeb).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: 'sourceConceptId is required',
+    });
   });
 
   it('POST /api/:webId/generate rejects missing API keys before touching progress tracking', async () => {

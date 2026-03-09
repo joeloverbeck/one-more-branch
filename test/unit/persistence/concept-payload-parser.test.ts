@@ -8,6 +8,7 @@ function createSavedConceptFixture(overrides?: Partial<SavedConcept>): SavedConc
     name: 'Test Concept',
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-01T00:00:00.000Z',
+    sourceKernelId: 'kernel-1',
     seeds: { genreVibes: 'dark fantasy' },
     evaluatedConcept: createEvaluatedConceptFixture(),
     ...overrides,

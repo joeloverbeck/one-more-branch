@@ -149,6 +149,7 @@ describe('Concept Route Integration', () => {
         name: 'Concept 1',
         createdAt: '2025-01-01T00:00:00.000Z',
         updatedAt: '2025-01-01T00:00:00.000Z',
+        sourceKernelId: 'kernel-1',
         seeds: {},
         evaluatedConcept: {
           ...evaluatedConceptA,
@@ -160,6 +161,7 @@ describe('Concept Route Integration', () => {
         name: 'Concept 2',
         createdAt: '2025-01-02T00:00:00.000Z',
         updatedAt: '2025-01-02T00:00:00.000Z',
+        sourceKernelId: 'kernel-1',
         seeds: {},
         evaluatedConcept: {
           ...evaluatedConceptB,
@@ -171,6 +173,7 @@ describe('Concept Route Integration', () => {
         name: 'Concept 3',
         createdAt: '2025-01-03T00:00:00.000Z',
         updatedAt: '2025-01-03T00:00:00.000Z',
+        sourceKernelId: 'kernel-1',
         seeds: {},
         evaluatedConcept: {
           ...evaluatedConceptC,
@@ -359,6 +362,7 @@ describe('Concept Route Integration', () => {
               oneLineHook: longHook,
             },
           },
+          sourceKernelId: 'kernel-1',
           seeds: {},
         },
       } as Request,

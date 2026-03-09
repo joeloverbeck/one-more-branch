@@ -7,6 +7,7 @@ function makeConcept(id: string, genreFrame: string | undefined): SavedConcept {
     name: `Concept ${id}`,
     createdAt: '2025-01-01',
     updatedAt: '2025-01-01',
+    sourceKernelId: 'kernel-1',
     seeds: {},
     evaluatedConcept: {
       concept: { genreFrame },

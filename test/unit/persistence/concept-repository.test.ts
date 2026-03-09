@@ -23,6 +23,7 @@ function createSavedConcept(id: string): SavedConcept {
     name: `${TEST_PREFIX} concept`,
     createdAt: now,
     updatedAt: now,
+    sourceKernelId: 'kernel-1',
     seeds: {
       genreVibes: 'noir',
     },

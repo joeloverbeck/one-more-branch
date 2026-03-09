@@ -64,6 +64,7 @@ function createWeb(overrides: Partial<SavedCharacterWeb> = {}): SavedCharacterWe
     name: 'Shattered Compass',
     createdAt: '2026-03-09T12:00:00.000Z',
     updatedAt: '2026-03-09T12:00:00.000Z',
+    sourceConceptId: 'concept-1',
     protagonistName: 'Iria Vale',
     inputs: createInputs(),
     assignments: [
@@ -194,6 +195,79 @@ function createDecomposedCharacter(name: string): DecomposedCharacter {
   };
 }
 
+function createMockConcept(): Record<string, unknown> {
+  return {
+    id: 'concept-1',
+    name: 'Test Concept',
+    createdAt: '2026-03-09T12:00:00.000Z',
+    updatedAt: '2026-03-09T12:00:00.000Z',
+    sourceKernelId: 'kernel-1',
+    seeds: {},
+    evaluatedConcept: {
+      concept: {
+        oneLineHook: 'A fugitive captain leads an impossible expedition.',
+        elevatorParagraph: 'She must navigate betrayal and storm to reach the lost island.',
+        protagonistSeed: 'Iria Vale',
+        genreFrame: 'ADVENTURE',
+        conflictLever: 'Trust vs survival',
+        settingSeed: 'Storm-wracked seas',
+        toneInstruction: 'Dark adventure',
+        incitingDisruption: 'A vanished map resurfaces',
+        escapeValve: 'Abandon the expedition',
+      },
+      scores: {
+        hookStrength: 4,
+        conflictEngine: 4,
+        agencyBreadth: 3,
+        noveltyLeverage: 3,
+        llmFeasibility: 4,
+        ironicPremise: 3,
+        sceneGenerativePower: 4,
+        contentCharge: 3,
+      },
+      overallScore: 3.5,
+      passes: true,
+      strengths: ['Strong hook'],
+      weaknesses: ['Needs more tension'],
+      tradeoffSummary: 'Good balance.',
+    },
+  };
+}
+
+function createMockKernel(): Record<string, unknown> {
+  return {
+    id: 'kernel-1',
+    name: 'Test Kernel',
+    createdAt: '2026-03-09T12:00:00.000Z',
+    updatedAt: '2026-03-09T12:00:00.000Z',
+    seeds: {},
+    evaluatedKernel: {
+      kernel: {
+        dramaticThesis: 'A revenge story about inherited guilt.',
+        antithesis: 'Guilt is inescapable.',
+        valueAtStake: 'Freedom',
+        opposingForce: 'The admiralty',
+        directionOfChange: 'NEGATIVE',
+        conflictAxis: 'DUTY_VS_DESIRE',
+        dramaticStance: 'TRAGIC',
+        thematicQuestion: 'Can guilt be inherited?',
+      },
+      scores: {
+        tensionPolarity: 4,
+        thematicWeight: 4,
+        narrativeGenerativity: 3,
+        playerAgencyFit: 3,
+        emotionalResonance: 4,
+      },
+      overallScore: 3.6,
+      passes: true,
+      strengths: ['Strong thesis'],
+      weaknesses: ['Narrow scope'],
+      tradeoffSummary: 'Deep but focused.',
+    },
+  };
+}
+
 function createDeps(): jest.Mocked<CharacterWebServiceDeps> {
   return {
     now: jest.fn().mockReturnValue('2026-03-09T12:00:00.000Z'),
@@ -224,6 +298,8 @@ function createDeps(): jest.Mocked<CharacterWebServiceDeps> {
     toDecomposedCharacterFromWeb: jest
       .fn<DecomposedCharacter, [CastRoleAssignment, readonly RelationshipArchetype[], string]>()
       .mockImplementation((assignment) => createDecomposedCharacter(assignment.characterName)),
+    loadConcept: jest.fn().mockResolvedValue(createMockConcept()),
+    loadKernel: jest.fn().mockResolvedValue(createMockKernel()),
   };
 }
 
@@ -236,22 +312,21 @@ describe('character-web-service', () => {
     service = createCharacterWebService(deps);
   });
 
-  it('createWeb persists a new metadata-only web with trimmed inputs', async () => {
-    const result = await service.createWeb('  Shattered Compass  ', {
-      kernelSummary: '  A revenge story.  ',
-      conceptSummary: ' ',
-      userNotes: '  Keep everyone dangerous. ',
-    });
+  it('createWeb persists a new metadata-only web with sourceConceptId', async () => {
+    const result = await service.createWeb(
+      '  Shattered Compass  ',
+      '  concept-1  ',
+      '  Keep everyone dangerous. ',
+    );
 
     expect(deps.saveCharacterWeb).toHaveBeenCalledWith({
       id: 'generated-id',
       name: 'Shattered Compass',
       createdAt: '2026-03-09T12:00:00.000Z',
       updatedAt: '2026-03-09T12:00:00.000Z',
+      sourceConceptId: 'concept-1',
       protagonistName: '',
       inputs: {
-        kernelSummary: 'A revenge story.',
-        conceptSummary: undefined,
         userNotes: 'Keep everyone dangerous.',
       },
       assignments: [],
@@ -261,13 +336,23 @@ describe('character-web-service', () => {
     expect(result.protagonistName).toBe('');
   });
 
-  it('generateWeb calls generation, persists protagonist identity, and emits progress', async () => {
+  it('generateWeb derives inputs from concept+kernel, persists protagonist identity, and emits progress', async () => {
     deps.loadCharacterWeb.mockResolvedValue(createWeb({ protagonistName: '', assignments: [] }));
     const onStage = jest.fn();
 
     const result = await service.generateWeb(' web-1 ', ' valid-api-key-12345 ', onStage);
 
-    expect(deps.generateCharacterWeb).toHaveBeenCalledWith(createInputs(), 'valid-api-key-12345');
+    expect(deps.loadConcept).toHaveBeenCalledWith('concept-1');
+    expect(deps.loadKernel).toHaveBeenCalledWith('kernel-1');
+    expect(deps.generateCharacterWeb).toHaveBeenCalledWith(
+      expect.objectContaining({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        kernelSummary: expect.stringContaining('A revenge story about inherited guilt.'),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        conceptSummary: expect.stringContaining('A fugitive captain leads an impossible expedition.'),
+      }),
+      'valid-api-key-12345',
+    );
     expect(deps.saveCharacterWeb).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 'web-1',
@@ -358,7 +443,7 @@ describe('character-web-service', () => {
     } satisfies Partial<EngineError>);
   });
 
-  it('generateCharacterStage loads current web inputs, runs the stage runner, and persists', async () => {
+  it('generateCharacterStage derives inputs from concept+kernel, runs the stage runner, and persists', async () => {
     const character = createCharacter({ id: 'char-1' });
     const updatedCharacter = createCharacter({
       id: 'char-1',
@@ -374,11 +459,19 @@ describe('character-web-service', () => {
 
     const result = await service.generateCharacterStage('char-1', 1, 'valid-api-key-12345');
 
+    expect(deps.loadConcept).toHaveBeenCalledWith('concept-1');
+    expect(deps.loadKernel).toHaveBeenCalledWith('kernel-1');
     expect(deps.runCharacterStage).toHaveBeenCalledWith({
       character,
       stage: 1,
       apiKey: 'valid-api-key-12345',
-      inputs: createInputs(),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      inputs: expect.objectContaining({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        kernelSummary: expect.stringContaining('A revenge story about inherited guilt.'),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        conceptSummary: expect.stringContaining('A fugitive captain leads an impossible expedition.'),
+      }),
       otherDevelopedCharacters: undefined,
       onGenerationStage: undefined,
     });
