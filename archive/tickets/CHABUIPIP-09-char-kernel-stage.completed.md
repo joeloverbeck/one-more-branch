@@ -50,10 +50,10 @@ JSON Schema matching `CharacterKernel` interface fields:
 - `characterName` (string)
 - `superObjective` (string)
 - `immediateObjectives` (string array)
-- `opposition` (string)
-- `stakes` (string)
+- `primaryOpposition` (string)
+- `stakes` (string array)
 - `constraints` (string array)
-- `pressure` (string)
+- `pressurePoint` (string)
 
 ### `src/llm/char-kernel-generation.ts`:
 
