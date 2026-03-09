@@ -94,7 +94,7 @@ function handleLlmRouteError(
   res: Response,
   progress: ReturnType<typeof createRouteGenerationProgress>,
   error: LLMError,
-  operation: string,
+  operation: string
 ): Response {
   logger.error(`LLM error during ${operation}`, {
     message: error.message,
@@ -114,7 +114,7 @@ function handleUnknownRouteError(
   res: Response,
   progress: ReturnType<typeof createRouteGenerationProgress>,
   error: unknown,
-  operation: string,
+  operation: string
 ): Response {
   const knownError = mapKnownError(error);
   if (knownError) {
@@ -129,11 +129,21 @@ function handleUnknownRouteError(
 }
 
 characterWebRoutes.get(
+  '/',
+  (_req: Request, res: Response) => {
+    return res.render('pages/character-webs', {
+      title: 'Character Webs - One More Branch',
+      currentPath: '/character-webs',
+    });
+  }
+);
+
+characterWebRoutes.get(
   '/api/list',
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const webs = await characterWebService.listWebs();
     return res.json({ success: true, webs });
-  }),
+  })
 );
 
 characterWebRoutes.get(
@@ -148,7 +158,7 @@ characterWebRoutes.get(
 
     const characters = await characterWebService.listCharactersForWeb(web.id);
     return res.json({ success: true, web, characters });
-  }),
+  })
 );
 
 characterWebRoutes.post(
@@ -168,7 +178,7 @@ characterWebRoutes.post(
     });
 
     return res.status(201).json({ success: true, web });
-  }),
+  })
 );
 
 characterWebRoutes.post(
@@ -187,7 +197,7 @@ characterWebRoutes.post(
       const web = await characterWebService.generateWeb(
         readRouteParam(req.params['webId']),
         apiKey,
-        progress.onGenerationStage,
+        progress.onGenerationStage
       );
       progress.complete();
       return res.json({ success: true, web });
@@ -198,7 +208,7 @@ characterWebRoutes.post(
 
       return handleUnknownRouteError(res, progress, error, 'character web generation');
     }
-  }),
+  })
 );
 
 characterWebRoutes.post(
@@ -217,7 +227,7 @@ characterWebRoutes.post(
       const web = await characterWebService.regenerateWeb(
         readRouteParam(req.params['webId']),
         apiKey,
-        progress.onGenerationStage,
+        progress.onGenerationStage
       );
       progress.complete();
       return res.json({ success: true, web });
@@ -228,7 +238,7 @@ characterWebRoutes.post(
 
       return handleUnknownRouteError(res, progress, error, 'character web regeneration');
     }
-  }),
+  })
 );
 
 characterWebRoutes.delete(
@@ -236,7 +246,7 @@ characterWebRoutes.delete(
   wrapAsyncRoute(async (req: Request, res: Response) => {
     await characterWebService.deleteWeb(readRouteParam(req.params['webId']));
     return res.status(204).end();
-  }),
+  })
 );
 
 characterWebRoutes.get(
@@ -251,7 +261,7 @@ characterWebRoutes.get(
 
     const characters = await characterWebService.listCharactersForWeb(webId);
     return res.json({ success: true, characters });
-  }),
+  })
 );
 
 characterWebRoutes.post(
@@ -267,7 +277,7 @@ characterWebRoutes.post(
     try {
       const character = await characterWebService.initializeCharacter(
         readRouteParam(req.params['webId']),
-        characterName,
+        characterName
       );
       return res.status(201).json({ success: true, character });
     } catch (error) {
@@ -278,7 +288,7 @@ characterWebRoutes.post(
 
       throw error;
     }
-  }),
+  })
 );
 
 characterWebRoutes.post(
@@ -288,7 +298,9 @@ characterWebRoutes.post(
     const stage = parseStage(body.stage);
 
     if (stage === null) {
-      return res.status(400).json({ success: false, error: 'Character stage must be an integer from 1 to 5' });
+      return res
+        .status(400)
+        .json({ success: false, error: 'Character stage must be an integer from 1 to 5' });
     }
 
     const apiKey = parseRequiredString('OpenRouter API key', body.apiKey);
@@ -303,7 +315,7 @@ characterWebRoutes.post(
         readRouteParam(req.params['charId']),
         stage,
         apiKey,
-        progress.onGenerationStage,
+        progress.onGenerationStage
       );
       progress.complete();
       return res.json({ success: true, character });
@@ -314,7 +326,7 @@ characterWebRoutes.post(
 
       return handleUnknownRouteError(res, progress, error, 'character stage generation');
     }
-  }),
+  })
 );
 
 characterWebRoutes.post(
@@ -324,7 +336,9 @@ characterWebRoutes.post(
     const stage = parseStage(body.stage);
 
     if (stage === null) {
-      return res.status(400).json({ success: false, error: 'Character stage must be an integer from 1 to 5' });
+      return res
+        .status(400)
+        .json({ success: false, error: 'Character stage must be an integer from 1 to 5' });
     }
 
     const apiKey = parseRequiredString('OpenRouter API key', body.apiKey);
@@ -339,7 +353,7 @@ characterWebRoutes.post(
         readRouteParam(req.params['charId']),
         stage,
         apiKey,
-        progress.onGenerationStage,
+        progress.onGenerationStage
       );
       progress.complete();
       return res.json({ success: true, character });
@@ -350,7 +364,7 @@ characterWebRoutes.post(
 
       return handleUnknownRouteError(res, progress, error, 'character stage regeneration');
     }
-  }),
+  })
 );
 
 characterWebRoutes.get(
@@ -366,7 +380,7 @@ characterWebRoutes.get(
     }
 
     return res.json({ success: true, character });
-  }),
+  })
 );
 
 characterWebRoutes.delete(
@@ -374,5 +388,5 @@ characterWebRoutes.delete(
   wrapAsyncRoute(async (req: Request, res: Response) => {
     await characterWebService.deleteCharacter(readRouteParam(req.params['charId']));
     return res.status(204).end();
-  }),
+  })
 );

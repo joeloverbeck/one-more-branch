@@ -52,10 +52,10 @@ type RouteLayer = {
 
 function getRouteHandler(
   method: 'get' | 'post' | 'delete',
-  path: string,
+  path: string
 ): (req: Request, res: Response) => Promise<void> | void {
   const layer = (characterWebRoutes.stack as unknown as RouteLayer[]).find(
-    (item) => item.route?.path === path && item.route?.methods?.[method],
+    (item) => item.route?.path === path && item.route?.methods?.[method]
   );
   const handler = layer?.route?.stack?.[0]?.handle;
   if (!handler) {
@@ -81,6 +81,7 @@ function mockReq(overrides: Partial<Request> = {}): Request {
 function mockRes(): Response {
   return {
     status: jest.fn().mockReturnThis(),
+    render: jest.fn().mockReturnThis(),
     json: jest.fn().mockReturnThis(),
     end: jest.fn().mockReturnThis(),
   } as unknown as Response;
@@ -107,7 +108,9 @@ function createAssignment(overrides: Partial<CastRoleAssignment> = {}): CastRole
   } as CastRoleAssignment;
 }
 
-function createArchetypes(overrides: Partial<RelationshipArchetype> = {}): readonly RelationshipArchetype[] {
+function createArchetypes(
+  overrides: Partial<RelationshipArchetype> = {}
+): readonly RelationshipArchetype[] {
   return [
     {
       fromCharacter: 'Iria Vale',
@@ -135,7 +138,9 @@ function createWeb(overrides: Partial<SavedCharacterWeb> = {}): SavedCharacterWe
   };
 }
 
-function createCharacter(overrides: Partial<SavedDevelopedCharacter> = {}): SavedDevelopedCharacter {
+function createCharacter(
+  overrides: Partial<SavedDevelopedCharacter> = {}
+): SavedDevelopedCharacter {
   return {
     id: 'char-1',
     characterName: 'Iria Vale',
@@ -162,6 +167,20 @@ function createCharacter(overrides: Partial<SavedDevelopedCharacter> = {}): Save
 describe('character-web routes', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it('GET / renders the character-webs page shell', async () => {
+    const handler = getRouteHandler('get', '/');
+    const req = mockReq();
+    const res = mockRes();
+
+    void handler(req, res);
+    await flushPromises();
+
+    expect(res.render).toHaveBeenCalledWith('pages/character-webs', {
+      title: 'Character Webs - One More Branch',
+      currentPath: '/character-webs',
+    });
   });
 
   it('GET /api/list returns saved webs', async () => {
@@ -278,7 +297,7 @@ describe('character-web routes', () => {
           durationMs: 250,
         });
         return Promise.resolve(web);
-      },
+      }
     );
 
     const handler = getRouteHandler('post', '/api/:webId/generate');
@@ -293,24 +312,24 @@ describe('character-web routes', () => {
 
     expect(generationProgressService.start).toHaveBeenCalledWith(
       'progress-1',
-      'character-web-generation',
+      'character-web-generation'
     );
     expect(generationProgressService.markStageStarted).toHaveBeenCalledWith(
       'progress-1',
       'GENERATING_CHARACTER_WEB',
-      1,
+      1
     );
     expect(generationProgressService.markStageCompleted).toHaveBeenCalledWith(
       'progress-1',
       'GENERATING_CHARACTER_WEB',
       1,
-      250,
+      250
     );
     expect(generationProgressService.complete).toHaveBeenCalledWith('progress-1');
     expect(characterWebService.generateWeb).toHaveBeenCalledWith(
       'web-1',
       'valid-api-key-12345',
-      expect.any(Function),
+      expect.any(Function)
     );
     expect(res.json).toHaveBeenCalledWith({ success: true, web });
   });
@@ -335,11 +354,11 @@ describe('character-web routes', () => {
 
     expect(generationProgressService.start).toHaveBeenCalledWith(
       'progress-llm',
-      'character-web-generation',
+      'character-web-generation'
     );
     expect(generationProgressService.fail).toHaveBeenCalledWith(
       'progress-llm',
-      'OpenRouter service is temporarily unavailable. Please try again later.',
+      'OpenRouter service is temporarily unavailable. Please try again later.'
     );
     expect(res.status).toHaveBeenCalledWith(500);
     const jsonCalls = (res.json as jest.Mock).mock.calls as Array<[unknown]>;
@@ -362,14 +381,14 @@ describe('character-web routes', () => {
         error: 'OpenRouter service is temporarily unavailable. Please try again later.',
         code: 'HTTP_503',
         retryable: true,
-      }),
+      })
     );
     expect(jsonCall?.debug).toEqual(
       expect.objectContaining({
         httpStatus: 503,
         model: 'openrouter/test-model',
         rawError: '{"error":"timeout"}',
-      }),
+      })
     );
   });
 
@@ -377,8 +396,8 @@ describe('character-web routes', () => {
     (characterWebService.initializeCharacter as jest.Mock).mockRejectedValue(
       new EngineError(
         'Developed character already exists for Iria Vale in character web web-1',
-        'RESOURCE_CONFLICT',
-      ),
+        'RESOURCE_CONFLICT'
+      )
     );
 
     const handler = getRouteHandler('post', '/api/:webId/characters/init');
@@ -400,7 +419,7 @@ describe('character-web routes', () => {
 
   it('POST /api/characters/:charId/generate maps EngineError RESOURCE_NOT_FOUND to 404', async () => {
     (characterWebService.generateCharacterStage as jest.Mock).mockRejectedValue(
-      new EngineError('Developed character not found: missing-char', 'RESOURCE_NOT_FOUND'),
+      new EngineError('Developed character not found: missing-char', 'RESOURCE_NOT_FOUND')
     );
 
     const handler = getRouteHandler('post', '/api/characters/:charId/generate');
@@ -419,7 +438,7 @@ describe('character-web routes', () => {
 
     expect(generationProgressService.fail).toHaveBeenCalledWith(
       'missing-stage-progress',
-      'Developed character not found: missing-char',
+      'Developed character not found: missing-char'
     );
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
@@ -448,13 +467,13 @@ describe('character-web routes', () => {
 
     expect(generationProgressService.start).toHaveBeenCalledWith(
       'stage-progress-1',
-      'character-stage-generation',
+      'character-stage-generation'
     );
     expect(characterWebService.generateCharacterStage).toHaveBeenCalledWith(
       'char-1',
       2,
       'valid-api-key-12345',
-      expect.any(Function),
+      expect.any(Function)
     );
     expect(generationProgressService.complete).toHaveBeenCalledWith('stage-progress-1');
     expect(res.json).toHaveBeenCalledWith({ success: true, character });
@@ -520,9 +539,9 @@ describe('character-web routes', () => {
 
   it('registers the full character-web API surface through wrapAsyncRoute handlers', () => {
     const routeLayers = (characterWebRoutes.stack as unknown as RouteLayer[]).filter(
-      (layer) => layer.route,
+      (layer) => layer.route
     );
 
-    expect(routeLayers.length).toBe(12);
+    expect(routeLayers.length).toBe(13);
   });
 });

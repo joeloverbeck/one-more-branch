@@ -1,6 +1,6 @@
 # Character-Building Pipeline (Redesigned)
 
-**Status**: IN PROGRESS (redesign — supersedes original batch pipeline)
+**Status**: COMPLETED
 
 ## Redesign Summary
 
@@ -34,7 +34,7 @@ The original spec proposed a 6-stage batch pipeline processing ALL characters si
 
 | Step | Description | Status |
 |------|-------------|--------|
-| 1 | Update spec file | This file |
+| 1 | Update spec file | DONE |
 | 2 | New data models (SavedCharacterWeb, SavedDevelopedCharacter) | DONE |
 | 3 | Persistence layer (two repositories + file-utils) | DONE |
 | 4 | LLM pipeline — Web generation (1 prompt + schema + orchestrator) | DONE |
@@ -42,7 +42,7 @@ The original spec proposed a 6-stage batch pipeline processing ALL characters si
 | 6 | Converters (full + lightweight DecomposedCharacter conversion) | DONE |
 | 7 | Service layer (CharacterWebService) | DONE |
 | 8 | Express routes | DONE |
-| 9 | EJS view + client JS | NOT STARTED |
+| 9 | EJS view + client JS | DONE |
 | 10 | Entity decomposer adaptation (worldbuilding-only mode) | DONE |
 | 11 | Story creation integration | DONE |
 | 12 | Progress tracking | DONE |
@@ -563,3 +563,9 @@ GENERATING_CHAR_PRESENTATION: "Crafting Presentation"
    - Create story with partially developed web -> verify mixed conversion (full + lightweight)
    - Create story without web -> verify unchanged flow (backwards compatibility)
 4. **Worldbuilding-only decomposition**: Verify entity decomposer only produces worldFacts when webId is present
+
+---
+
+## Completion Note
+
+Completed on 2026-03-09. The redesigned character-building pipeline now ships end to end: persisted character webs, per-character staged development, UI management/development flows, and story-creation `webId` integration are all implemented and verified.
