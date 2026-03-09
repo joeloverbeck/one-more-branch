@@ -42,6 +42,7 @@ import { STRUCTURE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/structu
 import { WRITER_GENERATION_SCHEMA } from '../../../../src/llm/schemas/writer-schema';
 import { CHARACTER_WEB_GENERATION_SCHEMA } from '../../../../src/llm/schemas/character-web-schema';
 import { CHAR_KERNEL_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-kernel-schema';
+import { CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-tridimensional-schema';
 import type { JsonSchema } from '../../../../src/llm/llm-client-types';
 
 type SchemaIssue = {
@@ -257,6 +258,7 @@ describe('Anthropic schema compatibility', () => {
     { name: 'STRUCTURE_EVALUATOR_SCHEMA', schema: STRUCTURE_EVALUATOR_SCHEMA },
     { name: 'CHARACTER_WEB_GENERATION_SCHEMA', schema: CHARACTER_WEB_GENERATION_SCHEMA },
     { name: 'CHAR_KERNEL_GENERATION_SCHEMA', schema: CHAR_KERNEL_GENERATION_SCHEMA },
+    { name: 'CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA', schema: CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA },
   ];
 
   it.each(llmResponseSchemas)('%s should satisfy Anthropic schema compatibility checks', ({ schema }) => {
