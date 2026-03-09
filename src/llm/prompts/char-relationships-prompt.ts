@@ -1,12 +1,18 @@
-import type { ChatMessage } from '../llm-client-types.js';
+import type { ConceptSpec } from '../../models/concept-generator.js';
 import type {
   AgencyModel,
   CharacterKernel,
   TridimensionalProfile,
 } from '../../models/character-pipeline-types.js';
 import type { SavedDevelopedCharacter } from '../../models/saved-developed-character.js';
+import type { StoryKernel } from '../../models/story-kernel.js';
+import type { ChatMessage } from '../llm-client-types.js';
 import type { CharacterDevPromptContext } from './char-kernel-prompt.js';
 import { CONTENT_POLICY } from '../content-policy.js';
+import {
+  buildConceptAnalysisSection,
+  buildKernelGroundingSection,
+} from './sections/shared/concept-kernel-sections.js';
 
 export interface CharRelationshipsPromptContext extends CharacterDevPromptContext {
   readonly characterKernel: CharacterKernel;
@@ -59,6 +65,32 @@ function formatOtherDevelopedCharacters(
       return sections.join('\n');
     })
     .join('\n');
+}
+
+function buildRelationshipsConceptSection(conceptSpec?: ConceptSpec): string {
+  const baseSection = buildConceptAnalysisSection(conceptSpec);
+  if (baseSection.length === 0) {
+    return '';
+  }
+
+  return (
+    baseSection +
+    '\n\n' +
+    'CONSTRAINT: Use conflict axis and protagonist arc to ensure every relationship carries thematic weight. Use protagonist ghost to inform what the focal character projects onto others. Use want-need collision to shape leverage dynamics.'
+  );
+}
+
+function buildRelationshipsKernelSection(storyKernel?: StoryKernel): string {
+  const baseSection = buildKernelGroundingSection(storyKernel);
+  if (baseSection.length === 0) {
+    return '';
+  }
+
+  return (
+    baseSection +
+    '\n\n' +
+    'CONSTRAINT: Use the value spectrum to position each relationship at a distinct point of moral tension. Use the thematic question to seed secrets and dilemmas that force the character to confront the story\'s central argument.'
+  );
 }
 
 export function buildCharRelationshipsPrompt(
@@ -124,12 +156,19 @@ export function buildCharRelationshipsPrompt(
     userSections.push(`OTHER DEVELOPED CHARACTERS:\n${counterpartSection}`);
   }
 
-  if (context.kernelSummary) {
-    userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
+  const conceptSection = buildRelationshipsConceptSection(context.conceptSpec);
+  const kernelSection = buildRelationshipsKernelSection(context.storyKernel);
+
+  if (conceptSection.length > 0) {
+    userSections.push(conceptSection.trim());
+  } else if (context.conceptSummary) {
+    userSections.push(`CONCEPT:\n${context.conceptSummary}`);
   }
 
-  if (context.conceptSummary) {
-    userSections.push(`CONCEPT:\n${context.conceptSummary}`);
+  if (kernelSection.length > 0) {
+    userSections.push(kernelSection.trim());
+  } else if (context.kernelSummary) {
+    userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
   if (context.userNotes) {

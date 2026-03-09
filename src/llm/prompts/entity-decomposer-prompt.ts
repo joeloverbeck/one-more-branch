@@ -1,6 +1,4 @@
-import type { ConceptSpec } from '../../models/concept-generator.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
-import type { StoryKernel } from '../../models/story-kernel.js';
 import type { StorySpine } from '../../models/story-spine.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { AGENCY_PRINCIPLES, SPEECH_EXTRACTION_BULLETS } from '../entity-decomposition-contract.js';
@@ -10,6 +8,10 @@ import {
 } from '../entity-decomposer-prompt-contract.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { EntityDecomposerContext } from '../entity-decomposer-types.js';
+import {
+  buildConceptAnalysisSection,
+  buildKernelGroundingSection,
+} from './sections/shared/concept-kernel-sections.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 
 function formatBullets(lines: readonly string[], indent = '   - '): string {
@@ -66,85 +68,30 @@ function buildSpineContextSection(spine?: StorySpine): string {
   return '\n\n' + lines.join('\n');
 }
 
-function buildConceptAnalysisSection(conceptSpec?: ConceptSpec): string {
-  if (!conceptSpec) {
+function buildEntityDecomposerConceptSection(context: EntityDecomposerContext): string {
+  const baseSection = buildConceptAnalysisSection(context.conceptSpec);
+  if (baseSection.length === 0) {
     return '';
   }
 
-  const lines: string[] = [
-    'CONCEPT ANALYSIS (use to ground character decomposition):',
-    '',
-    'NARRATIVE IDENTITY:',
-    `One-line hook: ${conceptSpec.oneLineHook}`,
-    `Elevator pitch: ${conceptSpec.elevatorParagraph}`,
-    `Player fantasy: ${conceptSpec.playerFantasy}`,
-    `What-if question: ${conceptSpec.whatIfQuestion}`,
-    `Ironic twist: ${conceptSpec.ironicTwist}`,
-    '',
-    'GENRE FRAME:',
-    `Genre: ${conceptSpec.genreFrame} (Subversion: ${conceptSpec.genreSubversion})`,
-    '',
-    'PROTAGONIST:',
-    `Role: ${conceptSpec.protagonistRole}`,
-    `Core competence: ${conceptSpec.coreCompetence}`,
-    `Core flaw: ${conceptSpec.coreFlaw}`,
-    `Action verbs: ${conceptSpec.actionVerbs.join(', ')}`,
-    '',
-    'PROTAGONIST ARC (Weiland):',
-    `Protagonist Lie: ${conceptSpec.protagonistLie}`,
-    `Protagonist Truth: ${conceptSpec.protagonistTruth}`,
-    `Protagonist Ghost: ${conceptSpec.protagonistGhost}`,
-    `Want–Need Collision Sketch: ${conceptSpec.wantNeedCollisionSketch}`,
-    '',
-    'CONFLICT ENGINE:',
-    `Core conflict loop: ${conceptSpec.coreConflictLoop}`,
-    `Thematic tension axis: ${conceptSpec.conflictAxis}`,
-    `Structural opposition: ${conceptSpec.conflictType}`,
-    `Pressure source: ${conceptSpec.pressureSource}`,
-    `Personal stakes: ${conceptSpec.stakesPersonal}`,
-    `Systemic stakes: ${conceptSpec.stakesSystemic}`,
-    `Deadline mechanism: ${conceptSpec.deadlineMechanism}`,
-    `Inciting disruption: ${conceptSpec.incitingDisruption}`,
-    `Escape valve: ${conceptSpec.escapeValve}`,
-    '',
-    'WORLD ARCHITECTURE:',
-    `Setting axioms: ${conceptSpec.settingAxioms.join('; ')}`,
-    `Constraints: ${conceptSpec.constraintSet.join('; ')}`,
-    `Key institutions: ${conceptSpec.keyInstitutions.join('; ')}`,
-    `Setting scale: ${conceptSpec.settingScale}`,
-    '',
-    'CONSTRAINT: Use genre frame to calibrate character vocabulary and world fact tone. Use conflict engine to inform NPC motivations and relationships. Use inciting disruption to define protagonist\'s initial knowledge boundaries and emotional state. Use escape valve to embed alternative engagement hooks in NPCs and world facts. Use protagonist fields to shape speech fingerprint and decision patterns. Use world architecture to scope worldbuilding atomization — facts should align with the setting axioms, constraints, and scale. Use protagonistGhost to inform the protagonist\'s deepest speech patterns and defensive behaviors. Use protagonistLie to shape the protagonist\'s core false beliefs and decision biases.',
-  ];
-
-  return '\n\n' + lines.join('\n');
+  return (
+    baseSection +
+    '\n\n' +
+    "CONSTRAINT: Use genre frame to calibrate character vocabulary and world fact tone. Use conflict engine to inform NPC motivations and relationships. Use inciting disruption to define protagonist's initial knowledge boundaries and emotional state. Use escape valve to embed alternative engagement hooks in NPCs and world facts. Use protagonist fields to shape speech fingerprint and decision patterns. Use world architecture to scope worldbuilding atomization — facts should align with the setting axioms, constraints, and scale. Use protagonistGhost to inform the protagonist's deepest speech patterns and defensive behaviors. Use protagonistLie to shape the protagonist's core false beliefs and decision biases."
+  );
 }
 
-function buildKernelGroundingSection(storyKernel?: StoryKernel): string {
-  if (!storyKernel) {
+function buildEntityDecomposerKernelSection(context: EntityDecomposerContext): string {
+  const baseSection = buildKernelGroundingSection(context.storyKernel);
+  if (baseSection.length === 0) {
     return '';
   }
 
-  const lines: string[] = [
-    'THEMATIC KERNEL (philosophical foundation — let it shape character depth):',
-    `Dramatic thesis: ${storyKernel.dramaticThesis}`,
-    `Value at stake: ${storyKernel.valueAtStake}`,
-    `Opposing force: ${storyKernel.opposingForce}`,
-    `Direction of change: ${storyKernel.directionOfChange}`,
-    `Conflict axis: ${storyKernel.conflictAxis}`,
-    `Dramatic stance: ${storyKernel.dramaticStance}`,
-    `Thematic question: ${storyKernel.thematicQuestion}`,
-    `Moral argument: ${storyKernel.moralArgument}`,
-    '',
-    'VALUE SPECTRUM (McKee):',
-    `Positive: ${storyKernel.valueSpectrum.positive}`,
-    `Contrary: ${storyKernel.valueSpectrum.contrary}`,
-    `Contradictory: ${storyKernel.valueSpectrum.contradictory}`,
-    `Negation of negation: ${storyKernel.valueSpectrum.negationOfNegation}`,
-    '',
-    'CONSTRAINT: Protagonist core beliefs should reflect the value at stake. NPC false beliefs and secrets should tension with the thematic question. Use the value spectrum to calibrate NPC moral positions — different NPCs should embody different points on the spectrum.',
-  ];
-
-  return '\n\n' + lines.join('\n');
+  return (
+    baseSection +
+    '\n\n' +
+    'CONSTRAINT: Protagonist core beliefs should reflect the value at stake. NPC false beliefs and secrets should tension with the thematic question. Use the value spectrum to calibrate NPC moral positions — different NPCs should embody different points on the spectrum.'
+  );
 }
 
 function buildStartingSituationSection(startingSituation?: string): string {
@@ -177,8 +124,8 @@ export function buildEntityDecomposerPrompt(context: EntityDecomposerContext): C
     : '';
 
   const spineSection = buildSpineContextSection(context.spine);
-  const conceptSection = buildConceptAnalysisSection(context.conceptSpec);
-  const kernelSection = buildKernelGroundingSection(context.storyKernel);
+  const conceptSection = buildEntityDecomposerConceptSection(context);
+  const kernelSection = buildEntityDecomposerKernelSection(context);
   const situationSection = buildStartingSituationSection(context.startingSituation);
 
   const userPrompt = `Decompose the following character descriptions and worldbuilding into structured attribute objects.

@@ -15,7 +15,9 @@ import {
   isPipelineRelationshipType,
   isRelationshipValence,
 } from './character-enums.js';
+import type { ConceptSpec } from './concept-generator.js';
 import type { SpeechFingerprint } from './decomposed-character.js';
+import type { StoryKernel } from './story-kernel.js';
 
 // --- Stage 1: Cast Roles ---
 
@@ -110,6 +112,8 @@ export interface CastPipelineInputs {
   readonly kernelSummary?: string;
   readonly conceptSummary?: string;
   readonly userNotes?: string;
+  readonly storyKernel?: StoryKernel;
+  readonly conceptSpec?: ConceptSpec;
 }
 
 // --- Character Web: lightweight relationship archetype ---

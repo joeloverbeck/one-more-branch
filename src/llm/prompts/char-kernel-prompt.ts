@@ -1,12 +1,20 @@
+import type { ConceptSpec } from '../../models/concept-generator.js';
+import type { StoryKernel } from '../../models/story-kernel.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { CharacterWebContext } from '../../models/saved-developed-character.js';
 import { CONTENT_POLICY } from '../content-policy.js';
+import {
+  buildConceptAnalysisSection,
+  buildKernelGroundingSection,
+} from './sections/shared/concept-kernel-sections.js';
 
 export interface CharacterDevPromptContext {
   readonly kernelSummary?: string;
   readonly conceptSummary?: string;
   readonly userNotes?: string;
   readonly webContext: CharacterWebContext;
+  readonly storyKernel?: StoryKernel;
+  readonly conceptSpec?: ConceptSpec;
 }
 
 const ROLE_INTRO = `You are a character psychologist for interactive branching fiction. Your job is to analyze a character's role within their cast and generate their dramatic kernel: the super-objective that drives them, the opposition they face, the stakes that make it matter, the constraints that limit them, and the pressure point that could break them.`;
@@ -19,6 +27,32 @@ const DESIGN_GUIDELINES = `CHARACTER KERNEL DESIGN GUIDELINES:
 - Constraints are the rules the character plays by — moral codes, physical limits, social obligations, secrets they must keep. These create dramatic friction.
 - The pressure point is the specific vulnerability that, when exploited, forces the character to act against their own interests or reveal their true nature. Every interesting character has one.
 - Consider how this character's kernel creates dramatic tension with other cast members based on their roles and relationships.`;
+
+function buildCharKernelConceptSection(conceptSpec?: ConceptSpec): string {
+  const baseSection = buildConceptAnalysisSection(conceptSpec);
+  if (baseSection.length === 0) {
+    return '';
+  }
+
+  return (
+    baseSection +
+    '\n\n' +
+    "CONSTRAINT: Use conflict engine and protagonist arc to ground the super-objective in the story's central tension. Use protagonist lie/truth/ghost to shape the character's deepest wants and blind spots. Use pressure source to calibrate opposition."
+  );
+}
+
+function buildCharKernelKernelSection(storyKernel?: StoryKernel): string {
+  const baseSection = buildKernelGroundingSection(storyKernel);
+  if (baseSection.length === 0) {
+    return '';
+  }
+
+  return (
+    baseSection +
+    '\n\n' +
+    'CONSTRAINT: Align the super-objective with the value at stake. Use the value spectrum to position the character morally. Use the thematic question to shape the character\'s core internal conflict.'
+  );
+}
 
 export function buildCharKernelPrompt(context: CharacterDevPromptContext): ChatMessage[] {
   const { webContext } = context;
@@ -50,12 +84,19 @@ export function buildCharKernelPrompt(context: CharacterDevPromptContext): ChatM
     userSections.push(`RELATIONSHIP ARCHETYPES:\n${relLines}`);
   }
 
-  if (context.kernelSummary) {
-    userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
+  const conceptSection = buildCharKernelConceptSection(context.conceptSpec);
+  const kernelSection = buildCharKernelKernelSection(context.storyKernel);
+
+  if (conceptSection.length > 0) {
+    userSections.push(conceptSection.trim());
+  } else if (context.conceptSummary) {
+    userSections.push(`CONCEPT:\n${context.conceptSummary}`);
   }
 
-  if (context.conceptSummary) {
-    userSections.push(`CONCEPT:\n${context.conceptSummary}`);
+  if (kernelSection.length > 0) {
+    userSections.push(kernelSection.trim());
+  } else if (context.kernelSummary) {
+    userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
   if (context.userNotes) {

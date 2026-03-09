@@ -219,6 +219,8 @@ async function deriveInputsFromConcept(
     kernelSummary: kernelSummary.trim() || undefined,
     conceptSummary: conceptSummary.trim() || undefined,
     userNotes: userNotes?.trim() ?? undefined,
+    storyKernel: kernel.evaluatedKernel.kernel,
+    conceptSpec: concept.evaluatedConcept.concept,
   };
 }
 

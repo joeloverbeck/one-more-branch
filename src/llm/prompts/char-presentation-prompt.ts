@@ -1,12 +1,18 @@
-import type { ChatMessage } from '../llm-client-types.js';
+import type { ConceptSpec } from '../../models/concept-generator.js';
 import type {
   AgencyModel,
   CharacterKernel,
   DeepRelationshipResult,
   TridimensionalProfile,
 } from '../../models/character-pipeline-types.js';
+import type { StoryKernel } from '../../models/story-kernel.js';
+import type { ChatMessage } from '../llm-client-types.js';
 import type { CharacterDevPromptContext } from './char-kernel-prompt.js';
 import { CONTENT_POLICY } from '../content-policy.js';
+import {
+  buildConceptAnalysisSection,
+  buildKernelGroundingSection,
+} from './sections/shared/concept-kernel-sections.js';
 
 export interface CharPresentationPromptContext extends CharacterDevPromptContext {
   readonly characterKernel: CharacterKernel;
@@ -38,6 +44,32 @@ function formatRelationships(relationships: DeepRelationshipResult['relationship
         `- ${relationship.fromCharacter} -> ${relationship.toCharacter}: ${relationship.relationshipType} (${relationship.valence}, ${relationship.numericValence})\n  History: ${relationship.history}\n  Current Tension: ${relationship.currentTension}\n  Leverage: ${relationship.leverage}`
     )
     .join('\n');
+}
+
+function buildPresentationConceptSection(conceptSpec?: ConceptSpec): string {
+  const baseSection = buildConceptAnalysisSection(conceptSpec);
+  if (baseSection.length === 0) {
+    return '';
+  }
+
+  return (
+    baseSection +
+    '\n\n' +
+    'CONSTRAINT: Use genre frame and tone to calibrate voice register and vocabulary profile. Use protagonist ghost to shape speech patterns that reveal or conceal trauma. Use setting axioms to ground appearance and knowledge boundaries in the world.'
+  );
+}
+
+function buildPresentationKernelSection(storyKernel?: StoryKernel): string {
+  const baseSection = buildKernelGroundingSection(storyKernel);
+  if (baseSection.length === 0) {
+    return '';
+  }
+
+  return (
+    baseSection +
+    '\n\n' +
+    'CONSTRAINT: Use the dramatic stance to set the overall voice tone (comic, romantic, tragic, ironic). Use the value spectrum to inform what the character argues for in dialogue.'
+  );
 }
 
 export function buildCharPresentationPrompt(
@@ -102,12 +134,19 @@ ${formatRelationships(deepRelationships.relationships)}
 Secrets: ${formatStringList(deepRelationships.secrets)}
 Personal Dilemmas: ${formatStringList(deepRelationships.personalDilemmas)}`);
 
-  if (context.kernelSummary) {
-    userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
+  const conceptSection = buildPresentationConceptSection(context.conceptSpec);
+  const kernelSection = buildPresentationKernelSection(context.storyKernel);
+
+  if (conceptSection.length > 0) {
+    userSections.push(conceptSection.trim());
+  } else if (context.conceptSummary) {
+    userSections.push(`CONCEPT:\n${context.conceptSummary}`);
   }
 
-  if (context.conceptSummary) {
-    userSections.push(`CONCEPT:\n${context.conceptSummary}`);
+  if (kernelSection.length > 0) {
+    userSections.push(kernelSection.trim());
+  } else if (context.kernelSummary) {
+    userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
   if (context.userNotes) {
