@@ -26,7 +26,14 @@ export interface PlayPageOptions {
   threatsOverflowSummary?: string;
   activeConstraints?: Array<{ id: string; text: string }>;
   constraintsOverflowSummary?: string;
-  trackedPromises?: Array<{ id: string; text: string; promiseType: string; scope?: string; age: number; suggestedUrgency?: string }>;
+  trackedPromises?: Array<{
+    id: string;
+    text: string;
+    promiseType: string;
+    scope?: string;
+    age: number;
+    suggestedUrgency?: string;
+  }>;
   trackedPromisesOverflowSummary?: string;
   actDisplayInfo?: { displayString: string; actNumber?: number } | null;
   stateChanges?: string[];
@@ -39,7 +46,12 @@ export interface PlayPageOptions {
   resolvedPromiseMeta?: Record<string, { promiseType: string; scope?: string; urgency: string }>;
   worldFacts?: Array<string | { text: string; factType: string }>;
   characterCanon?: Record<string, string[]>;
-  knowledgeState?: Array<{ characterName: string; knownFacts?: string[]; falseBeliefs?: string[]; secrets?: string[] }>;
+  knowledgeState?: Array<{
+    characterName: string;
+    knownFacts?: string[];
+    falseBeliefs?: string[];
+    secrets?: string[];
+  }>;
 }
 
 export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
@@ -66,7 +78,10 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   const knowledgeState = options.knowledgeState ?? [];
   const loreFactCount =
     worldFacts.length +
-    Object.values(characterCanon).reduce((sum, facts) => sum + (Array.isArray(facts) ? facts.length : 0), 0);
+    Object.values(characterCanon).reduce(
+      (sum, facts) => sum + (Array.isArray(facts) ? facts.length : 0),
+      0
+    );
 
   const threadsHtml =
     openThreads.length > 0
@@ -126,18 +141,23 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
       ? `<aside class="knowledge-state-panel" id="knowledge-state-panel" aria-labelledby="knowledge-state-title">
           <h3 class="knowledge-state-title" id="knowledge-state-title">Character Knowledge</h3>
           <div class="knowledge-state-content" id="knowledge-state-content">
-            ${knowledgeState.map((entry) => {
-              const factsHtml = (entry.knownFacts ?? []).length > 0
-                ? `<div class="knowledge-state-field"><div class="knowledge-state-field-header"><span class="knowledge-state-icon" aria-hidden="true">📚</span><span class="knowledge-state-label">Known Facts</span></div><ul class="knowledge-state-list">${(entry.knownFacts ?? []).map((f) => `<li>${f}</li>`).join('')}</ul></div>`
-                : '';
-              const beliefsHtml = (entry.falseBeliefs ?? []).length > 0
-                ? `<div class="knowledge-state-field"><div class="knowledge-state-field-header"><span class="knowledge-state-icon" aria-hidden="true">❌</span><span class="knowledge-state-label">False Beliefs</span></div><ul class="knowledge-state-list">${(entry.falseBeliefs ?? []).map((b) => `<li>${b}</li>`).join('')}</ul></div>`
-                : '';
-              const secretsHtml = (entry.secrets ?? []).length > 0
-                ? `<div class="knowledge-state-field"><div class="knowledge-state-field-header"><span class="knowledge-state-icon" aria-hidden="true">🔒</span><span class="knowledge-state-label">Secrets</span></div><ul class="knowledge-state-list">${(entry.secrets ?? []).map((s) => `<li>${s}</li>`).join('')}</ul></div>`
-                : '';
-              return `<div class="knowledge-state-card" data-character="${entry.characterName}"><div class="knowledge-state-header"><span class="knowledge-state-name">${entry.characterName}</span></div><div class="knowledge-state-details" style="display: none;"><div class="knowledge-state-fields">${factsHtml}${beliefsHtml}${secretsHtml}</div></div></div>`;
-            }).join('')}
+            ${knowledgeState
+              .map((entry) => {
+                const factsHtml =
+                  (entry.knownFacts ?? []).length > 0
+                    ? `<div class="knowledge-state-field"><div class="knowledge-state-field-header"><span class="knowledge-state-icon" aria-hidden="true">📚</span><span class="knowledge-state-label">Known Facts</span></div><ul class="knowledge-state-list">${(entry.knownFacts ?? []).map((f) => `<li>${f}</li>`).join('')}</ul></div>`
+                    : '';
+                const beliefsHtml =
+                  (entry.falseBeliefs ?? []).length > 0
+                    ? `<div class="knowledge-state-field"><div class="knowledge-state-field-header"><span class="knowledge-state-icon" aria-hidden="true">❌</span><span class="knowledge-state-label">False Beliefs</span></div><ul class="knowledge-state-list">${(entry.falseBeliefs ?? []).map((b) => `<li>${b}</li>`).join('')}</ul></div>`
+                    : '';
+                const secretsHtml =
+                  (entry.secrets ?? []).length > 0
+                    ? `<div class="knowledge-state-field"><div class="knowledge-state-field-header"><span class="knowledge-state-icon" aria-hidden="true">🔒</span><span class="knowledge-state-label">Secrets</span></div><ul class="knowledge-state-list">${(entry.secrets ?? []).map((s) => `<li>${s}</li>`).join('')}</ul></div>`
+                    : '';
+                return `<div class="knowledge-state-card" data-character="${entry.characterName}"><div class="knowledge-state-header"><span class="knowledge-state-name">${entry.characterName}</span></div><div class="knowledge-state-details" style="display: none;"><div class="knowledge-state-fields">${factsHtml}${beliefsHtml}${secretsHtml}</div></div></div>`;
+              })
+              .join('')}
           </div>
         </aside>`
       : '';
@@ -408,6 +428,14 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
           <section id="manual-story-section" style="display: none;">
             <div id="concept-context-panel" class="form-group" style="display: none;"></div>
             <div class="form-group">
+              <label for="character-web-selector">Load Character Web</label>
+              <select id="character-web-selector">
+                <option value="">None</option>
+              </select>
+              <div id="character-web-selector-summary" class="form-help" style="display: none;"></div>
+              <input type="hidden" id="selected-web-id" name="webId" value="">
+            </div>
+            <div class="form-group">
               <label for="title">Story Title *</label>
               <input type="text" id="title" name="title" required value="">
             </div>
@@ -460,6 +488,51 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
         <div class="loading-stage" aria-live="polite"></div>
         <div class="loading-spinner"></div>
         <p class="loading-status">Creating your adventure...</p>
+      </div>
+    </main>
+  `;
+}
+
+export function buildCharacterWebsPageHtml(): string {
+  return `
+    <main class="container" id="character-webs-page">
+      <div id="character-webs-error" class="alert alert-error" style="display: none;"></div>
+      <section class="form-section">
+        <input type="password" id="character-webs-api-key" />
+        <input type="text" id="character-web-name" />
+        <select id="character-web-kernel-selector">
+          <option value="">None</option>
+        </select>
+        <select id="character-web-concept-selector">
+          <option value="">None</option>
+        </select>
+        <textarea id="character-web-kernel-summary"></textarea>
+        <textarea id="character-web-concept-summary"></textarea>
+        <textarea id="character-web-user-notes"></textarea>
+        <button type="button" id="character-web-create-btn">Create</button>
+        <div id="character-web-list"></div>
+      </section>
+      <section id="character-web-details" style="display: none;">
+        <h2 id="selected-character-web-name"></h2>
+        <div id="selected-character-web-meta"></div>
+        <div id="selected-character-web-summary"></div>
+        <button type="button" id="character-web-generate-btn">Generate Web</button>
+        <button type="button" id="character-web-regenerate-btn">Regenerate Web</button>
+        <button type="button" id="character-web-delete-btn">Delete Web</button>
+        <div id="character-web-assignments"></div>
+        <div id="character-web-relationships"></div>
+        <div id="character-web-characters"></div>
+      </section>
+      <section id="character-development-section" style="display: none;">
+        <h2 id="selected-character-name"></h2>
+        <div id="selected-character-meta"></div>
+        <div id="selected-character-status"></div>
+        <div id="character-stage-list"></div>
+      </section>
+      <div class="loading-overlay" id="loading" style="display: none;">
+        <div class="loading-stage" aria-live="polite"></div>
+        <div class="loading-spinner"></div>
+        <p class="loading-status">Working...</p>
       </div>
     </main>
   `;

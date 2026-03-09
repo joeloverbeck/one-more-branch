@@ -80,6 +80,75 @@ const PROTAGONIST_RELATIONSHIP_SCHEMA: SchemaProperty = {
     'For NPCs, describe the structured relationship with valence, dynamic, history, tension, and leverage.',
 };
 
+const WORLD_FACT_SCHEMA: SchemaProperty = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['domain', 'fact', 'scope', 'factType'],
+  properties: {
+    domain: {
+      type: 'string',
+      enum: [
+        'geography',
+        'ecology',
+        'history',
+        'society',
+        'culture',
+        'religion',
+        'governance',
+        'economy',
+        'faction',
+        'technology',
+        'magic',
+        'language',
+      ],
+      description:
+        'Category of this worldbuilding fact. ' +
+        'geography: physical terrain, locations, climate, weather, natural resources. ' +
+        'ecology: flora, fauna, ecosystems, wildlife, agriculture. ' +
+        'history: past events, chronology, origins, wars, eras. ' +
+        'society: social structure, class, family, kinship, demographics, norms. ' +
+        'culture: customs, traditions, arts, entertainment, food, clothing, daily life, education. ' +
+        'religion: faiths, deities, spirituality, mythology, cosmology, afterlife. ' +
+        'governance: government, law, politics, justice, military, power structures. ' +
+        'economy: commerce, trade, currency, professions, labor, wealth. ' +
+        'faction: organizations, guilds, secret societies, alliances. ' +
+        'technology: inventions, engineering, infrastructure, transportation, medicine. ' +
+        'magic: supernatural systems, spells, enchantments, magical creatures. ' +
+        'language: languages, dialects, scripts, communication, naming conventions.',
+    },
+    fact: {
+      type: 'string',
+      description: 'A single atomic worldbuilding proposition.',
+    },
+    scope: {
+      type: 'string',
+      description:
+        'Where/when this fact applies. ' +
+        'E.g. "Entire realm", "Northern provinces only", "During the Blood Moon".',
+    },
+    factType: {
+      type: 'string',
+      enum: ['LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY'],
+      description:
+        'Epistemic status of this fact. ' +
+        'LAW: fundamental world truth (magic rules, physics, cosmology). ' +
+        'NORM: cultural/regional standard practice. ' +
+        'BELIEF: held as true by specific groups (embed who believes it in the fact text). ' +
+        'DISPUTED: multiple contradictory versions exist. ' +
+        'RUMOR: unverified hearsay. ' +
+        'MYSTERY: intentionally unresolved.',
+    },
+  },
+};
+
+export const WORLD_FACTS_ARRAY_SCHEMA: SchemaProperty = {
+  type: 'array',
+  description:
+    'Atomic worldbuilding facts decomposed from the raw worldbuilding text. ' +
+    'Each fact should be a single proposition. Empty array if no worldbuilding provided.',
+  items: WORLD_FACT_SCHEMA,
+};
+
 const SPEECH_PROPERTIES = buildSchemaProperties(SPEECH_SCHEMA_FIELDS);
 const CHARACTER_PROPERTIES = buildSchemaProperties(CHARACTER_SCHEMA_FIELDS);
 
@@ -114,72 +183,7 @@ export const ENTITY_DECOMPOSITION_SCHEMA: JsonSchema = {
             required: [...CHARACTER_REQUIRED_FIELDS, 'speechFingerprint'],
           },
         },
-        worldFacts: {
-          type: 'array',
-          description:
-            'Atomic worldbuilding facts decomposed from the raw worldbuilding text. ' +
-            'Each fact should be a single proposition. Empty array if no worldbuilding provided.',
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['domain', 'fact', 'scope', 'factType'],
-            properties: {
-              domain: {
-                type: 'string',
-                enum: [
-                  'geography',
-                  'ecology',
-                  'history',
-                  'society',
-                  'culture',
-                  'religion',
-                  'governance',
-                  'economy',
-                  'faction',
-                  'technology',
-                  'magic',
-                  'language',
-                ],
-                description:
-                  'Category of this worldbuilding fact. ' +
-                  'geography: physical terrain, locations, climate, weather, natural resources. ' +
-                  'ecology: flora, fauna, ecosystems, wildlife, agriculture. ' +
-                  'history: past events, chronology, origins, wars, eras. ' +
-                  'society: social structure, class, family, kinship, demographics, norms. ' +
-                  'culture: customs, traditions, arts, entertainment, food, clothing, daily life, education. ' +
-                  'religion: faiths, deities, spirituality, mythology, cosmology, afterlife. ' +
-                  'governance: government, law, politics, justice, military, power structures. ' +
-                  'economy: commerce, trade, currency, professions, labor, wealth. ' +
-                  'faction: organizations, guilds, secret societies, alliances. ' +
-                  'technology: inventions, engineering, infrastructure, transportation, medicine. ' +
-                  'magic: supernatural systems, spells, enchantments, magical creatures. ' +
-                  'language: languages, dialects, scripts, communication, naming conventions.',
-              },
-              fact: {
-                type: 'string',
-                description: 'A single atomic worldbuilding proposition.',
-              },
-              scope: {
-                type: 'string',
-                description:
-                  'Where/when this fact applies. ' +
-                  'E.g. "Entire realm", "Northern provinces only", "During the Blood Moon".',
-              },
-              factType: {
-                type: 'string',
-                enum: ['LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY'],
-                description:
-                  'Epistemic status of this fact. ' +
-                  'LAW: fundamental world truth (magic rules, physics, cosmology). ' +
-                  'NORM: cultural/regional standard practice. ' +
-                  'BELIEF: held as true by specific groups (embed who believes it in the fact text). ' +
-                  'DISPUTED: multiple contradictory versions exist. ' +
-                  'RUMOR: unverified hearsay. ' +
-                  'MYSTERY: intentionally unresolved.',
-              },
-            },
-          },
-        },
+        worldFacts: WORLD_FACTS_ARRAY_SCHEMA,
       },
     },
   },

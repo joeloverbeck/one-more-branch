@@ -51,6 +51,11 @@ export {
   type KernelEvolutionService,
 } from './kernel-evolution-service.js';
 export {
+  createCharacterWebService,
+  characterWebService,
+  type CharacterWebService,
+} from '../../services/character-web-service.js';
+export {
   createContentService,
   contentService,
   type ContentService,

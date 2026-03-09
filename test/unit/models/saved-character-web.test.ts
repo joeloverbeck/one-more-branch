@@ -1,4 +1,12 @@
-import { isSavedCharacterWeb } from '../../../src/models/saved-character-web.js';
+import {
+  CharacterDepth,
+  StoryFunction,
+} from '../../../src/models/character-enums.js';
+import type { CastRoleAssignment } from '../../../src/models/character-pipeline-types.js';
+import {
+  getProtagonistAssignment,
+  isSavedCharacterWeb,
+} from '../../../src/models/saved-character-web.js';
 
 function makeValidWeb(): Record<string, unknown> {
   return {
@@ -8,6 +16,7 @@ function makeValidWeb(): Record<string, unknown> {
     updatedAt: '2026-03-08T00:00:00Z',
     sourceKernelId: 'k-1',
     sourceConceptId: 'c-1',
+    protagonistName: 'Alice',
     inputs: { kernelSummary: 'A dark tale' },
     assignments: [
       {
@@ -80,5 +89,62 @@ describe('isSavedCharacterWeb', () => {
     expect(isSavedCharacterWeb('string')).toBe(false);
     expect(isSavedCharacterWeb(42)).toBe(false);
     expect(isSavedCharacterWeb(true)).toBe(false);
+  });
+});
+
+describe('getProtagonistAssignment', () => {
+  it('returns the sole protagonist assignment', () => {
+    const protagonist = getProtagonistAssignment(
+      [
+        {
+          characterName: 'Alice',
+          isProtagonist: true,
+          storyFunction: StoryFunction.ALLY,
+          characterDepth: CharacterDepth.ROUND,
+          narrativeRole: 'hero',
+          conflictRelationship: 'internal',
+        },
+      ] satisfies readonly CastRoleAssignment[],
+    );
+
+    expect(protagonist.characterName).toBe('Alice');
+  });
+
+  it('throws when there is no protagonist assignment', () => {
+    expect(() =>
+      getProtagonistAssignment([
+        {
+          characterName: 'Alice',
+          isProtagonist: false,
+          storyFunction: StoryFunction.ALLY,
+          characterDepth: CharacterDepth.ROUND,
+          narrativeRole: 'hero',
+          conflictRelationship: 'internal',
+        },
+      ] satisfies readonly CastRoleAssignment[]),
+    ).toThrow('Character web requires exactly one protagonist assignment; found 0');
+  });
+
+  it('throws when there are multiple protagonist assignments', () => {
+    expect(() =>
+      getProtagonistAssignment([
+        {
+          characterName: 'Alice',
+          isProtagonist: true,
+          storyFunction: StoryFunction.ALLY,
+          characterDepth: CharacterDepth.ROUND,
+          narrativeRole: 'hero',
+          conflictRelationship: 'internal',
+        },
+        {
+          characterName: 'Bob',
+          isProtagonist: true,
+          storyFunction: StoryFunction.ALLY,
+          characterDepth: CharacterDepth.ROUND,
+          narrativeRole: 'hero',
+          conflictRelationship: 'internal',
+        },
+      ] satisfies readonly CastRoleAssignment[]),
+    ).toThrow('Character web requires exactly one protagonist assignment; found 2');
   });
 });

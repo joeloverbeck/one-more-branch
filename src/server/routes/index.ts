@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { characterWebRoutes } from './character-webs';
 import { conceptSeedRoutes } from './concept-seeds';
 import { conceptRoutes } from './concepts';
 import { contentPacketRoutes } from './content-packets';
@@ -19,6 +20,7 @@ router.use((_req, res, next) => {
 });
 
 router.use('/', homeRoutes);
+router.use('/character-webs', characterWebRoutes);
 router.use('/concept-seeds', conceptSeedRoutes);
 router.use('/concepts', conceptRoutes);
 router.use('/evolve', evolutionRoutes);

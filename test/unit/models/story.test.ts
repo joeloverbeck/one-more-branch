@@ -133,12 +133,14 @@ describe('Story', () => {
         characterConcept: 'A cunning rogue',
         worldbuilding: 'A world of endless dungeons',
         tone: 'dark and mysterious',
+        webId: '  web-1  ',
       });
 
       expect(story.title).toBe('Dungeon Crawl');
       expect(story.characterConcept).toBe('A cunning rogue');
       expect(story.worldbuilding).toBe('A world of endless dungeons');
       expect(story.tone).toBe('dark and mysterious');
+      expect(story.webId).toBe('web-1');
     });
 
     it('creates story with npcs when provided', () => {

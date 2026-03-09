@@ -1,15 +1,24 @@
 # Entity Decomposer Prompt (Production Template)
 
 - Source: `src/llm/prompts/entity-decomposer-prompt.ts`
+- World-only source: `src/llm/prompts/world-decomposer-prompt.ts`
 - Orchestration: `src/llm/entity-decomposer.ts`
 - Types: `src/llm/entity-decomposer-types.ts`
 - Output schema source: `src/llm/schemas/entity-decomposer-schema.ts`
+- World-only schema source: `src/llm/schemas/world-decomposition-schema.ts`
 - Shared field/guidance contract: `src/llm/entity-decomposition-contract.ts`
 - Model types: `src/models/decomposed-character.ts`, `src/models/decomposed-world.ts`
 
 ## Purpose
 
 The Entity Decomposer is a one-time LLM call at story creation (after spine selection, before structure generation) that converts raw character descriptions and worldbuilding prose into structured, machine-friendly attribute objects. The structured output is persisted in `story.json` and used by downstream prompts (structure, planner, lorekeeper, writer) instead of raw prose dumps.
+
+`src/llm/entity-decomposer.ts` now exposes two public modes:
+
+- `decomposeEntities(context, apiKey)`: full decomposition of protagonist + NPCs + world facts
+- `decomposeWorldbuildingOnly(context, apiKey)`: world-only decomposition when characters are already supplied by another artifact pipeline
+
+Both modes share the same world-fact parsing semantics. The world-only mode is not a separate subsystem; it reuses the same orchestration/fallback/parsing path and only swaps prompt/schema/output shape.
 
 **Pipeline position**: Kernel Generation -> Concept Generation -> Spine Selection -> **Entity Decomposer** -> Structure Generator -> First Page Generation
 
@@ -182,6 +191,8 @@ INSTRUCTIONS:
 
 ## JSON Response Shape
 
+### Full Mode
+
 ```json
 {
   "characters": [
@@ -237,6 +248,23 @@ INSTRUCTIONS:
 - World facts with empty `fact` text are filtered out by the response transformer.
 - `falseBeliefs` and `secretsKept` are optional on the TypeScript interface. Required in the JSON schema for LLM output (empty arrays when none). Missing/malformed values default to `[]` by the parser.
 - For malformed payloads, parser normalization defaults missing/invalid arrays to `[]` and missing/invalid strings to `''` for speech and agency fields.
+
+### World-Only Mode
+
+```json
+{
+  "worldFacts": [
+    {
+      "domain": "{{geography|ecology|history|society|culture|religion|governance|economy|faction|technology|magic|language}}",
+      "fact": "{{single atomic worldbuilding proposition}}",
+      "scope": "{{where/when this fact applies}}",
+      "factType": "{{LAW|NORM|BELIEF|DISPUTED|RUMOR|MYSTERY}}"
+    }
+  ]
+}
+```
+
+`decomposeWorldbuildingOnly()` uses the same world-fact validation and filtering rules as full mode; it simply omits the `characters` payload entirely.
 
 ## Response Transformation
 

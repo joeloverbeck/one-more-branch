@@ -1,23 +1,12 @@
-import { getStageModel } from '../config/stage-model.js';
-import { getConfig } from '../config/index.js';
-import { logger, logPrompt } from '../logging/index.js';
-import {
-  OPENROUTER_API_URL,
-  extractResponseContent,
-  parseMessageJsonContent,
-  readErrorDetails,
-  readJsonResponse,
-} from './http-client.js';
 import {
   buildCharKernelPrompt,
   type CharacterDevPromptContext,
 } from './prompts/char-kernel-prompt.js';
-import { withModelFallback } from './model-fallback.js';
-import { withRetry } from './retry.js';
 import { CHAR_KERNEL_GENERATION_SCHEMA } from './schemas/char-kernel-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import type { CharacterKernel } from '../models/character-pipeline-types.js';
+import { runLlmStage } from './llm-stage-runner.js';
 
 export interface CharKernelGenerationResult {
   readonly characterKernel: CharacterKernel;
@@ -119,77 +108,24 @@ function parseCharKernelResponse(parsed: unknown): CharacterKernel {
   };
 }
 
-async function fetchCharKernel(
-  apiKey: string,
-  model: string,
-  messages: ReturnType<typeof buildCharKernelPrompt>,
-  temperature: number,
-  maxTokens: number
-): Promise<CharKernelGenerationResult> {
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'http://localhost:3000',
-      'X-Title': 'One More Branch',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      max_tokens: maxTokens,
-      response_format: CHAR_KERNEL_GENERATION_SCHEMA,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await readErrorDetails(response);
-    const retryable = response.status === 429 || response.status >= 500;
-    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-      httpStatus: response.status,
-      model,
-      rawErrorBody: errorDetails.rawBody,
-      parsedError: errorDetails.parsedError,
-    });
-  }
-
-  const data = await readJsonResponse(response);
-  const content = extractResponseContent(data, 'char-kernel', model, maxTokens);
-
-  const parsedMessage = parseMessageJsonContent(content);
-  const responseText = parsedMessage.rawText;
-  try {
-    const characterKernel = parseCharKernelResponse(parsedMessage.parsed);
-    return { characterKernel, rawResponse: responseText };
-  } catch (error) {
-    if (error instanceof LLMError) {
-      throw new LLMError(error.message, error.code, error.retryable, {
-        rawContent: responseText,
-      });
-    }
-    throw error;
-  }
-}
-
 export async function generateCharKernel(
   context: CharacterDevPromptContext,
   apiKey: string,
   options?: Partial<GenerationOptions>
 ): Promise<CharKernelGenerationResult> {
-  const config = getConfig().llm;
-  const primaryModel = options?.model ?? getStageModel('charKernel');
-  const temperature = options?.temperature ?? config.temperature;
-  const maxTokens = options?.maxTokens ?? config.maxTokens;
-
   const messages = buildCharKernelPrompt(context);
-  logPrompt(logger, 'charKernel', messages);
+  const result = await runLlmStage({
+    stageModel: 'charKernel',
+    promptType: 'charKernel',
+    apiKey,
+    options,
+    schema: CHAR_KERNEL_GENERATION_SCHEMA,
+    messages,
+    parseResponse: parseCharKernelResponse,
+  });
 
-  return withRetry(() =>
-    withModelFallback(
-      (m) => fetchCharKernel(apiKey, m, messages, temperature, maxTokens),
-      primaryModel,
-      'charKernel'
-    )
-  );
+  return {
+    characterKernel: result.parsed,
+    rawResponse: result.rawResponse,
+  };
 }

@@ -7,6 +7,7 @@ export interface SavedCharacterWeb {
   readonly updatedAt: string;
   readonly sourceKernelId?: string;
   readonly sourceConceptId?: string;
+  readonly protagonistName: string;
   readonly inputs: CastPipelineInputs;
   readonly assignments: readonly CastRoleAssignment[];
   readonly relationshipArchetypes: readonly RelationshipArchetype[];
@@ -27,9 +28,24 @@ export function isSavedCharacterWeb(value: unknown): value is SavedCharacterWeb 
     typeof value['name'] === 'string' &&
     typeof value['createdAt'] === 'string' &&
     typeof value['updatedAt'] === 'string' &&
+    typeof value['protagonistName'] === 'string' &&
     isObjectRecord(value['inputs']) &&
     Array.isArray(value['assignments']) &&
     Array.isArray(value['relationshipArchetypes']) &&
     typeof value['castDynamicsSummary'] === 'string'
   );
+}
+
+export function getProtagonistAssignment(
+  assignments: readonly CastRoleAssignment[],
+): CastRoleAssignment {
+  const protagonists = assignments.filter((assignment) => assignment.isProtagonist);
+
+  if (protagonists.length !== 1) {
+    throw new Error(
+      `Character web requires exactly one protagonist assignment; found ${protagonists.length}`,
+    );
+  }
+
+  return protagonists[0]!;
 }

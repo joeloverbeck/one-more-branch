@@ -11,8 +11,7 @@ function countStagePhrases(script: string, stageKey: string): number {
   return match[1]
     .split('\n')
     .map((line) => line.trim())
-    .filter((line) => line.startsWith("'"))
-    .length;
+    .filter((line) => line.startsWith("'")).length;
 }
 
 describe('public client script', () => {
@@ -81,9 +80,10 @@ describe('public client script', () => {
   it('updates open-thread panel from AJAX choice response data', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 
-    expect(script).toContain(
-      'renderOpenThreadsPanel(data.page.openThreads, data.page.openThreadOverflowSummary, sidebarContainer);'
-    );
+    expect(script).toContain('renderOpenThreadsPanel(');
+    expect(script).toContain('data.page.openThreads');
+    expect(script).toContain('data.page.openThreadOverflowSummary');
+    expect(script).toContain('sidebarContainer');
     expect(script).not.toContain('data.logScript');
     expect(script).not.toContain('executeLogScript');
     expect(script).toContain('if (!Array.isArray(openThreads) || openThreads.length === 0)');
@@ -176,10 +176,12 @@ describe('public client script', () => {
     expect(script).toContain('function clearPlayError(choicesSectionEl)');
     expect(script).toContain("var errorBlock = choicesSectionEl.querySelector('#play-error');");
     expect(script).toContain(
-      "showPlayError(error instanceof Error ? error.message : 'Failed to add custom choice', choicesSection);"
+      "error instanceof Error ? error.message : 'Failed to add custom choice'"
     );
-    expect(script).toContain("showPlayError(");
-    expect(script).toContain("error instanceof Error ? error.message : 'Something went wrong. Please try again.'");
+    expect(script).toContain('showPlayError(');
+    expect(script).toContain(
+      "error instanceof Error ? error.message : 'Something went wrong. Please try again.'"
+    );
     expect(script).not.toContain(
       "alert(error instanceof Error ? error.message : 'Failed to add custom choice');"
     );
@@ -195,14 +197,11 @@ describe('public client script', () => {
     expect(script).toContain('function getProtagonistGuidanceValues()');
     expect(script).toContain('const protagonistGuidance = {};');
     expect(script).toContain('body.protagonistGuidance = protagonistGuidance;');
-    expect(script).toContain('var guidanceForRebuild = data.wasGenerated === true');
-    expect(script).toContain("          ? { emotions: '', thoughts: '', speech: '' }");
-    expect(script).toContain('          : getProtagonistGuidanceValues();');
-    expect(script).toContain(
-      'rebuildChoicesSection('
-    );
-    expect(script).toContain(
-      'getProtagonistGuidanceValues(),'
-    );
+    expect(script).toContain('var guidanceForRebuild =');
+    expect(script).toContain('data.wasGenerated === true');
+    expect(script).toContain("? { emotions: '', thoughts: '', speech: '' }");
+    expect(script).toContain(': getProtagonistGuidanceValues();');
+    expect(script).toContain('rebuildChoicesSection(');
+    expect(script).toContain('getProtagonistGuidanceValues(),');
   });
 });

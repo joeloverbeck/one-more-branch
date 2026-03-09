@@ -53,6 +53,7 @@ export interface PlaySession {
 export interface StartStoryOptions {
   readonly title: string;
   readonly characterConcept: string;
+  readonly webId?: string;
   readonly worldbuilding?: string;
   readonly tone?: string;
   readonly npcs?: readonly Npc[];
@@ -79,6 +80,8 @@ export type EngineErrorCode =
   | 'STORY_NOT_FOUND'
   | 'STORY_NOT_PREPARED'
   | 'PAGE_NOT_FOUND'
+  | 'RESOURCE_NOT_FOUND'
+  | 'RESOURCE_CONFLICT'
   | 'INVALID_CHOICE'
   | 'GENERATION_FAILED'
   | 'GENERATION_RECONCILIATION_FAILED'

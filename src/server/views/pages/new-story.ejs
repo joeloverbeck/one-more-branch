@@ -59,6 +59,18 @@
           <h2>Step 2: Build Story Details</h2>
 
           <div class="form-group">
+            <label for="character-web-selector">Load Character Web</label>
+            <select id="character-web-selector">
+              <option value="">None</option>
+            </select>
+            <p class="form-help">
+              Optionally pull character decomposition from a saved character web while keeping the rest of story creation manual.
+            </p>
+            <div id="character-web-selector-summary" class="form-help" style="display: none;"></div>
+            <input type="hidden" id="selected-web-id" name="webId" value="">
+          </div>
+
+          <div class="form-group">
             <label for="title">Story Title *</label>
             <input
               type="text"

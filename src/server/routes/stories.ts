@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { storyEngine } from '../../engine';
-import type { GenerationStageEvent } from '../../engine';
+import { EngineError, type GenerationStageEvent } from '../../engine';
 import { generateStorySpines } from '../../llm/spine-generator.js';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
@@ -20,6 +20,21 @@ import {
 } from '../utils/index.js';
 
 export const storyRoutes = Router();
+
+function mapKnownError(error: unknown): { status: number; message: string } | null {
+  if (!(error instanceof EngineError)) {
+    return null;
+  }
+
+  switch (error.code) {
+    case 'VALIDATION_FAILED':
+      return { status: 400, message: error.message };
+    case 'RESOURCE_NOT_FOUND':
+      return { status: 404, message: error.message };
+    default:
+      return null;
+  }
+}
 
 storyRoutes.get('/new', (_req: Request, res: Response) => {
   res.render('pages/new-story', {
@@ -68,6 +83,15 @@ storyRoutes.post(
         return res.status(500).render('pages/new-story', {
           title: 'New Adventure - One More Branch',
           error: formatLLMError(error),
+          values: formValues,
+        });
+      }
+
+      const knownError = mapKnownError(error);
+      if (knownError) {
+        return res.status(knownError.status).render('pages/new-story', {
+          title: 'New Adventure - One More Branch',
+          error: knownError.message,
           values: formValues,
         });
       }
@@ -274,6 +298,17 @@ storyRoutes.post(
           generationProgressService.fail(progressId, publicMessage);
         }
         return res.status(500).json(response);
+      }
+
+      const knownError = mapKnownError(error);
+      if (knownError) {
+        if (progressId) {
+          generationProgressService.fail(progressId, knownError.message);
+        }
+        return res.status(knownError.status).json({
+          success: false,
+          error: knownError.message,
+        });
       }
 
       const err = error instanceof Error ? error : new Error(String(error));

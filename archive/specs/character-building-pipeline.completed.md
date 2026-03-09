@@ -1,6 +1,6 @@
 # Character-Building Pipeline (Redesigned)
 
-**Status**: IN PROGRESS (redesign — supersedes original batch pipeline)
+**Status**: COMPLETED
 
 ## Redesign Summary
 
@@ -13,31 +13,48 @@ The original spec proposed a 6-stage batch pipeline processing ALL characters si
 
 ## Implementation Progress
 
-### Already Implemented (from original spec)
+### Implemented
 
 | File | Status | Notes |
 |------|--------|-------|
-| `src/models/character-enums.ts` | DONE | 7 enums + value arrays + type guards (all reused) |
-| `src/models/character-pipeline-types.ts` | DONE | Stage output interfaces (all reused, new types to add) |
-| `src/models/saved-cast.ts` | TO RETIRE | Replaced by `SavedCharacterWeb` + `SavedDevelopedCharacter` |
-| `src/config/schemas.ts` | DONE | `castsDir` present — rename to `characterWebsDir` |
+| `src/models/character-enums.ts` | DONE | Shared enums and guards reused by web + stage pipelines |
+| `src/models/character-pipeline-types.ts` | DONE | Includes `CastPipelineInputs`, `RelationshipArchetype`, `DeepRelationshipResult`, and `CharacterDevStage` |
+| `src/models/saved-character-web.ts` | DONE | Web artifact model with persisted `protagonistName` contract |
+| `src/models/saved-developed-character.ts` | DONE | Per-character artifact model plus completion/prerequisite helpers |
+| `src/persistence/character-web-repository.ts` | DONE | JSON repository for saved webs |
+| `src/persistence/developed-character-repository.ts` | DONE | JSON repository for developed characters |
+| `src/llm/character-web-generation.ts` | DONE | Web generation orchestrator over prompt + schema |
+| `src/llm/character-stage-runner.ts` | DONE | Pure in-memory stage orchestrator; no repository access |
+| `src/models/character-web-converter.ts` | DONE | Full + lightweight `DecomposedCharacter` conversion |
+| `src/services/character-web-service.ts` | DONE | Thin coordination layer over repositories, runner, and converter |
+| `src/config/schemas.ts` | DONE | `characterWebsDir` is the active storage config |
+| `src/config/generation-stage-metadata.json` | DONE | Character-web and character-stage progress events registered |
 
 ### Remaining Steps
 
 | Step | Description | Status |
 |------|-------------|--------|
-| 1 | Update spec file | This file |
-| 2 | New data models (SavedCharacterWeb, SavedDevelopedCharacter) | NOT STARTED |
-| 3 | Persistence layer (two repositories + file-utils) | NOT STARTED |
-| 4 | LLM pipeline — Web generation (1 prompt + schema + orchestrator) | NOT STARTED |
-| 5 | LLM pipeline — Individual character development (5 prompts + 5 schemas + stage runner) | NOT STARTED |
-| 6 | Converters (full + lightweight DecomposedCharacter conversion) | NOT STARTED |
-| 7 | Service layer (CharacterWebService) | NOT STARTED |
-| 8 | Express routes | NOT STARTED |
-| 9 | EJS view + client JS | NOT STARTED |
-| 10 | Entity decomposer adaptation (worldbuilding-only mode) | NOT STARTED |
-| 11 | Story creation integration | NOT STARTED |
-| 12 | Progress tracking | NOT STARTED |
+| 1 | Update spec file | DONE |
+| 2 | New data models (SavedCharacterWeb, SavedDevelopedCharacter) | DONE |
+| 3 | Persistence layer (two repositories + file-utils) | DONE |
+| 4 | LLM pipeline — Web generation (1 prompt + schema + orchestrator) | DONE |
+| 5 | LLM pipeline — Individual character development (5 prompts + 5 schemas + stage runner) | DONE |
+| 6 | Converters (full + lightweight DecomposedCharacter conversion) | DONE |
+| 7 | Service layer (CharacterWebService) | DONE |
+| 8 | Express routes | DONE |
+| 9 | EJS view + client JS | DONE |
+| 10 | Entity decomposer adaptation (worldbuilding-only mode) | DONE |
+| 11 | Story creation integration | DONE |
+| 12 | Progress tracking | DONE |
+
+### Boundary Corrections
+
+- `runCharacterStage()` is intentionally pure. It validates prerequisites, builds stage context from the in-memory character, dispatches to the correct generation module, emits progress events, and returns an updated character payload. It does **not** load from or save to repositories.
+- Repository coordination belongs in `CharacterWebService`, not in the runner. That service loads webs/characters, handles stage-reset rules, supplies Stage 4 sibling context, persists updated artifacts, and assembles mixed full/lightweight decomposition output.
+- Protagonist identity is now a persisted data contract:
+  - `SavedCharacterWeb.protagonistName`
+  - `SavedDevelopedCharacter.webContext.protagonistName`
+- `toDecomposedCharacter()` reads protagonist identity from the saved character snapshot. Only the lightweight conversion still takes `protagonistName` explicitly because it converts from web-level assignment data rather than a developed snapshot.
 
 ---
 
@@ -76,6 +93,7 @@ interface SavedCharacterWeb {
   readonly updatedAt: string;
   readonly sourceKernelId?: string;
   readonly sourceConceptId?: string;
+  readonly protagonistName: string;
   readonly inputs: CastPipelineInputs; // reuse from saved-cast.ts (extract to shared location)
   readonly assignments: readonly CastRoleAssignment[];
   readonly relationshipArchetypes: readonly RelationshipArchetype[];
@@ -83,7 +101,7 @@ interface SavedCharacterWeb {
 }
 ```
 
-Includes `isSavedCharacterWeb` type guard.
+Includes `isSavedCharacterWeb` type guard and a helper that enforces exactly one protagonist assignment when a generated web is persisted.
 
 ### 2b: `SavedDevelopedCharacter` (new file: `src/models/saved-developed-character.ts`)
 
@@ -114,6 +132,7 @@ Includes `isSavedDevelopedCharacter` type guard, `isCharacterStageComplete`, `ca
 ```typescript
 interface CharacterWebContext {
   readonly assignment: CastRoleAssignment;
+  readonly protagonistName: string;
   readonly relationshipArchetypes: readonly RelationshipArchetype[];
   readonly castDynamicsSummary: string;
 }
@@ -232,9 +251,9 @@ Orchestrator: build messages -> logPrompt -> call OpenRouter -> parse -> validat
 
 ### Stage runner: `src/llm/character-stage-runner.ts`
 
-Loads character, validates prerequisites, runs appropriate prompt, saves result.
+Pure orchestration unit over the five stage generators. It validates prerequisites, builds the prompt context from the provided in-memory character plus shared inputs, emits the existing `GENERATING_CHAR_*` progress events, and returns an updated character payload without persistence.
 
-**Stage 4 special**: loads all other developed characters from the same web to provide counterpart context.
+**Stage 4 special**: sibling developed characters are caller-provided. The runner does not query repositories.
 
 ### Context type:
 
@@ -269,6 +288,8 @@ Each prompt receives ALL prior stage outputs as context. The prompt builder accu
 
 ## Step 6: Converters
 
+Status: DONE
+
 ### `src/models/character-web-converter.ts`
 
 Two conversion modes:
@@ -293,7 +314,7 @@ Two conversion modes:
 | rawDescription | Synthesized from kernel + tridimensional profile |
 
 **Lightweight conversion** (for undeveloped characters):
-`toDecomposedCharacterFromWeb(assignment: CastRoleAssignment, archetypes: RelationshipArchetype[]): DecomposedCharacter`
+`toDecomposedCharacterFromWeb(assignment: CastRoleAssignment, archetypes: RelationshipArchetype[], protagonistName: string): DecomposedCharacter`
 
 Maps role + archetype data to a minimal DecomposedCharacter (similar quality to current entity decomposer output).
 
@@ -308,13 +329,17 @@ CastRelationship -> DecomposedRelationship:
   leverage: leverage
 ```
 
-Only maps relationships where `toCharacter` is the protagonist (for NPC->protagonist relationships).
+Full conversion reads protagonist identity from `char.webContext.protagonistName`, not from a caller-supplied parameter.
+
+Only maps relationships where the protagonist is involved.
 
 ---
 
 ## Step 7: Service Layer
 
-### `src/server/services/character-web-service.ts`
+Status: DONE
+
+### `src/services/character-web-service.ts`
 
 ```typescript
 interface CharacterWebService {
@@ -339,11 +364,20 @@ interface CharacterWebService {
 }
 ```
 
-**`regenerateWeb`**: Clears web data, re-generates. Does NOT delete existing developed characters (they keep their webContext snapshot).
+**`regenerateWeb`**: Re-generates the saved web and does NOT delete existing developed characters (they keep their webContext snapshot).
 
 **`regenerateCharacterStage`**: Clears stage + all downstream stages, then generates.
 
-**`toDecomposedCharacters`**: Loads web + all developed characters. Developed -> full conversion. Undeveloped -> lightweight conversion.
+**`toDecomposedCharacters`**: Loads web + all developed characters. Developed -> full conversion from each saved character snapshot. Undeveloped -> lightweight conversion using `web.protagonistName`.
+**`toDecomposedCharacters`**: Returns characters with the protagonist first because downstream story prep still relies on index `0` as the protagonist.
+
+Implemented service-level invariants:
+
+- Input strings are trimmed at the service boundary.
+- `initializeCharacter()` rejects names not present in the saved web assignments.
+- `initializeCharacter()` rejects duplicate developed artifacts for the same `(webId, characterName)` pair.
+- Missing character-web lookups are normalized into explicit service errors; missing developed-character lookups are normalized to `null` on `loadCharacter()`.
+- Stage 4 sibling context is loaded by the service and excludes the target character itself.
 
 ---
 
@@ -449,21 +483,24 @@ Unchanged — full entity decomposition (characters + world) as before.
 
 ## Step 12: Progress Tracking
 
-### Modify `src/engine/types.ts`
+Status: DONE
 
-New GenerationStage values:
-- `GENERATING_CHARACTER_WEB`
-- `GENERATING_CHAR_KERNEL`
-- `GENERATING_CHAR_TRIDIMENSIONAL`
-- `GENERATING_CHAR_AGENCY`
-- `GENERATING_CHAR_RELATIONSHIPS`
-- `GENERATING_CHAR_PRESENTATION`
+Implemented:
 
-### Modify `src/config/stage-model.ts`
+- `src/engine/generated-generation-stages.ts` includes:
+  - `GENERATING_CHARACTER_WEB`
+  - `GENERATING_CHAR_KERNEL`
+  - `GENERATING_CHAR_TRIDIMENSIONAL`
+  - `GENERATING_CHAR_AGENCY`
+  - `GENERATING_CHAR_RELATIONSHIPS`
+  - `GENERATING_CHAR_PRESENTATION`
+- `src/config/generation-stage-metadata.json` registers the same stages for generated stage metadata.
 
-Add LlmStage entries for each new stage.
+Still pending:
 
-### Modify `public/js/src/01-constants.js`
+- Any client-facing progress UI wiring required by future character-web routes and pages.
+
+### Future UI work: `public/js/src/01-constants.js`
 
 Add STAGE_DISPLAY_NAMES and STAGE_PHRASE_POOLS:
 
@@ -526,3 +563,9 @@ GENERATING_CHAR_PRESENTATION: "Crafting Presentation"
    - Create story with partially developed web -> verify mixed conversion (full + lightweight)
    - Create story without web -> verify unchanged flow (backwards compatibility)
 4. **Worldbuilding-only decomposition**: Verify entity decomposer only produces worldFacts when webId is present
+
+---
+
+## Completion Note
+
+Completed on 2026-03-09. The redesigned character-building pipeline now ships end to end: persisted character webs, per-character staged development, UI management/development flows, and story-creation `webId` integration are all implemented and verified.

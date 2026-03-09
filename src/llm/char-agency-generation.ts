@@ -1,21 +1,10 @@
-import { getStageModel } from '../config/stage-model.js';
-import { getConfig } from '../config/index.js';
-import { logger, logPrompt } from '../logging/index.js';
-import {
-  OPENROUTER_API_URL,
-  extractResponseContent,
-  parseMessageJsonContent,
-  readErrorDetails,
-  readJsonResponse,
-} from './http-client.js';
 import { buildCharAgencyPrompt, type CharAgencyPromptContext } from './prompts/char-agency-prompt.js';
-import { withModelFallback } from './model-fallback.js';
-import { withRetry } from './retry.js';
 import { CHAR_AGENCY_GENERATION_SCHEMA } from './schemas/char-agency-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import type { AgencyModel } from '../models/character-pipeline-types.js';
 import { isEmotionSalience, isReplanningPolicy } from '../models/character-enums.js';
+import { runLlmStage } from './llm-stage-runner.js';
 
 export interface CharAgencyGenerationResult {
   readonly agencyModel: AgencyModel;
@@ -107,77 +96,24 @@ function parseCharAgencyResponse(parsed: unknown): AgencyModel {
   };
 }
 
-async function fetchCharAgency(
-  apiKey: string,
-  model: string,
-  messages: ReturnType<typeof buildCharAgencyPrompt>,
-  temperature: number,
-  maxTokens: number
-): Promise<CharAgencyGenerationResult> {
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'http://localhost:3000',
-      'X-Title': 'One More Branch',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      max_tokens: maxTokens,
-      response_format: CHAR_AGENCY_GENERATION_SCHEMA,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await readErrorDetails(response);
-    const retryable = response.status === 429 || response.status >= 500;
-    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-      httpStatus: response.status,
-      model,
-      rawErrorBody: errorDetails.rawBody,
-      parsedError: errorDetails.parsedError,
-    });
-  }
-
-  const data = await readJsonResponse(response);
-  const content = extractResponseContent(data, 'char-agency', model, maxTokens);
-
-  const parsedMessage = parseMessageJsonContent(content);
-  const responseText = parsedMessage.rawText;
-  try {
-    const agencyModel = parseCharAgencyResponse(parsedMessage.parsed);
-    return { agencyModel, rawResponse: responseText };
-  } catch (error) {
-    if (error instanceof LLMError) {
-      throw new LLMError(error.message, error.code, error.retryable, {
-        rawContent: responseText,
-      });
-    }
-    throw error;
-  }
-}
-
 export async function generateCharAgency(
   context: CharAgencyPromptContext,
   apiKey: string,
   options?: Partial<GenerationOptions>
 ): Promise<CharAgencyGenerationResult> {
-  const config = getConfig().llm;
-  const primaryModel = options?.model ?? getStageModel('charAgency');
-  const temperature = options?.temperature ?? config.temperature;
-  const maxTokens = options?.maxTokens ?? config.maxTokens;
-
   const messages = buildCharAgencyPrompt(context);
-  logPrompt(logger, 'charAgency', messages);
+  const result = await runLlmStage({
+    stageModel: 'charAgency',
+    promptType: 'charAgency',
+    apiKey,
+    options,
+    schema: CHAR_AGENCY_GENERATION_SCHEMA,
+    messages,
+    parseResponse: parseCharAgencyResponse,
+  });
 
-  return withRetry(() =>
-    withModelFallback(
-      (m) => fetchCharAgency(apiKey, m, messages, temperature, maxTokens),
-      primaryModel,
-      'charAgency'
-    )
-  );
+  return {
+    agencyModel: result.parsed,
+    rawResponse: result.rawResponse,
+  };
 }

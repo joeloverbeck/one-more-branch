@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container" id="character-webs-page">
+    <section class="hero">
+      <h1>Character Webs</h1>
+      <p class="tagline">Design reusable casts, develop characters stage by stage, and feed them into story creation.</p>
+      <div class="form-actions">
+        <a href="/stories/new" class="btn btn-secondary">New Adventure</a>
+      </div>
+    </section>
+
+    <div class="alert alert-error" id="character-webs-error" style="display: none;" role="alert"></div>
+
+    <section class="form-section">
+      <h2>Workspace</h2>
+
+      <div class="form-group">
+        <label for="character-webs-api-key">OpenRouter API Key</label>
+        <input
+          type="password"
+          id="character-webs-api-key"
+          placeholder="sk-or-..."
+          autocomplete="off"
+        >
+        <p class="form-help">Stored only in this browser session. Required for generation and regeneration actions.</p>
+      </div>
+
+      <div class="stories-grid">
+        <article class="story-card">
+          <div class="story-card-content">
+            <h3>Create Character Web</h3>
+
+            <div class="form-group">
+              <label for="character-web-name">Web Name</label>
+              <input type="text" id="character-web-name" maxlength="100" placeholder="e.g. Shattered Compass">
+            </div>
+
+            <div class="form-group">
+              <label for="character-web-kernel-selector">Saved Kernel</label>
+              <select id="character-web-kernel-selector">
+                <option value="">None</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="character-web-concept-selector">Saved Concept</label>
+              <select id="character-web-concept-selector">
+                <option value="">None</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="character-web-kernel-summary">Kernel Summary</label>
+              <textarea id="character-web-kernel-summary" rows="3" placeholder="Optional thematic kernel summary"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="character-web-concept-summary">Concept Summary</label>
+              <textarea id="character-web-concept-summary" rows="3" placeholder="Optional concept summary"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="character-web-user-notes">Notes</label>
+              <textarea id="character-web-user-notes" rows="4" placeholder="Optional guidance for cast shape, tensions, genre pressure, or forbidden clichés"></textarea>
+            </div>
+          </div>
+          <div class="story-card-actions">
+            <button type="button" class="btn btn-primary" id="character-web-create-btn">Create New Web</button>
+          </div>
+        </article>
+
+        <article class="story-card">
+          <div class="story-card-content">
+            <h3>Saved Webs</h3>
+            <p class="form-help">Select a saved web to inspect its cast and continue character development.</p>
+            <div id="character-web-list"></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="form-section" id="character-web-details" style="display: none;">
+      <div class="story-card">
+        <div class="story-card-content">
+          <h2 id="selected-character-web-name"></h2>
+          <p class="form-help" id="selected-character-web-meta"></p>
+          <p id="selected-character-web-summary"></p>
+        </div>
+        <div class="story-card-actions">
+          <button type="button" class="btn btn-primary" id="character-web-generate-btn">Generate Web</button>
+          <button type="button" class="btn btn-secondary" id="character-web-regenerate-btn">Regenerate Web</button>
+          <button type="button" class="btn btn-danger" id="character-web-delete-btn">Delete Web</button>
+        </div>
+      </div>
+
+      <div class="stories-grid">
+        <article class="story-card">
+          <div class="story-card-content">
+            <h3>Cast Roles</h3>
+            <div id="character-web-assignments"></div>
+          </div>
+        </article>
+
+        <article class="story-card">
+          <div class="story-card-content">
+            <h3>Relationship Archetypes</h3>
+            <div id="character-web-relationships"></div>
+          </div>
+        </article>
+      </div>
+
+      <article class="story-card">
+        <div class="story-card-content">
+          <h3>Characters</h3>
+          <p class="form-help">Initialize a character to start the five-stage development pipeline.</p>
+          <div id="character-web-characters"></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="form-section" id="character-development-section" style="display: none;">
+      <div class="story-card">
+        <div class="story-card-content">
+          <h2 id="selected-character-name"></h2>
+          <p class="form-help" id="selected-character-meta"></p>
+          <div id="selected-character-status"></div>
+        </div>
+      </div>
+
+      <div id="character-stage-list"></div>
+    </section>
+
+    <div class="loading-overlay" id="loading" style="display: none;">
+      <div class="loading-stage" aria-live="polite"></div>
+      <div class="loading-spinner"></div>
+      <p class="loading-status">Working through the character-building pipeline...</p>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

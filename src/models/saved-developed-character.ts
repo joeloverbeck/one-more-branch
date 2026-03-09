@@ -11,6 +11,7 @@ import type {
 
 export interface CharacterWebContext {
   readonly assignment: CastRoleAssignment;
+  readonly protagonistName: string;
   readonly relationshipArchetypes: readonly RelationshipArchetype[];
   readonly castDynamicsSummary: string;
 }
