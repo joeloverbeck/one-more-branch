@@ -1,6 +1,6 @@
 # CHABUIPIP-13: LLM Pipeline — Textual Presentation (Stage 5)
 
-**Status**: NOT STARTED
+**Status**: COMPLETED
 **Dependencies**: CHABUIPIP-01, CHABUIPIP-03, CHABUIPIP-07
 **Estimated diff size**: ~250 lines across 3 files
 
@@ -86,3 +86,10 @@ interface CharPresentationGenerationResult {
 - `VoiceRegister` enum validation uses existing type guard from `character-enums.ts`
 - SpeechFingerprint schema matches the interface in `decomposed-character.ts`
 - No existing code modified
+
+## Outcome
+
+- Completion date: March 9, 2026
+- What changed: Implemented Stage 5 prompt assembly in `src/llm/prompts/char-presentation-prompt.ts`, Stage 5 JSON schema in `src/llm/schemas/char-presentation-schema.ts`, and Stage 5 orchestration/parsing in `src/llm/char-presentation-generation.ts`. Added unit coverage in `test/unit/llm/char-presentation-generation.test.ts`.
+- Deviations from original plan: Updated `test/unit/llm/schemas/anthropic-schema-compatibility.test.ts` to register the new schema export so the repo's schema coverage and compatibility checks continue to pass.
+- Verification results: `npm run test:unit -- --runTestsByPath test/unit/llm/char-presentation-generation.test.ts test/unit/llm/schemas/anthropic-schema-compatibility.test.ts`, `npm run typecheck`, and `npm run lint` all passed.
