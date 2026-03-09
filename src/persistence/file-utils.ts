@@ -7,7 +7,7 @@ import { getConfig } from '../config/index.js';
  * Returns the stories directory path from configuration.
  */
 export function getStoriesDir(): string {
-  return path.join(process.cwd(), getConfig().storage.storiesDir);
+  return path.resolve(process.cwd(), getConfig().storage.storiesDir);
 }
 
 export function ensureStoriesDir(): void {
@@ -119,7 +119,7 @@ export async function deleteDirectory(dirPath: string): Promise<void> {
 }
 
 export function getConceptsDir(): string {
-  return path.join(process.cwd(), getConfig().storage.conceptsDir);
+  return path.resolve(process.cwd(), getConfig().storage.conceptsDir);
 }
 
 export function ensureConceptsDir(): void {
@@ -164,7 +164,7 @@ export function getConceptSeedFilePath(seedId: string): string {
 }
 
 export function getKernelsDir(): string {
-  return path.join(process.cwd(), getConfig().storage.kernelsDir);
+  return path.resolve(process.cwd(), getConfig().storage.kernelsDir);
 }
 
 export function ensureKernelsDir(): void {
@@ -194,7 +194,7 @@ export function getKernelGenerationFilePath(generationId: string): string {
 }
 
 export function getContentPacketsDir(): string {
-  return path.join(process.cwd(), getConfig().storage.contentPacketsDir);
+  return path.resolve(process.cwd(), getConfig().storage.contentPacketsDir);
 }
 
 export function ensureContentPacketsDir(): void {
@@ -209,7 +209,7 @@ export function getContentPacketFilePath(contentPacketId: string): string {
 }
 
 export function getTasteProfilesDir(): string {
-  return path.join(process.cwd(), getConfig().storage.tasteProfilesDir);
+  return path.resolve(process.cwd(), getConfig().storage.tasteProfilesDir);
 }
 
 export function ensureTasteProfilesDir(): void {
@@ -224,7 +224,7 @@ export function getTasteProfileFilePath(tasteProfileId: string): string {
 }
 
 export function getCharacterWebsDir(): string {
-  return path.join(process.cwd(), getConfig().storage.characterWebsDir);
+  return path.resolve(process.cwd(), getConfig().storage.characterWebsDir);
 }
 
 export function ensureCharacterWebsDir(): void {
