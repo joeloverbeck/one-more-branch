@@ -1,10 +1,18 @@
+import type { ConceptSpec } from '../../models/concept-generator.js';
+import type { StoryKernel } from '../../models/story-kernel.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
+import {
+  buildConceptAnalysisSection,
+  buildKernelGroundingSection,
+} from './sections/shared/concept-kernel-sections.js';
 
 export interface CharacterWebPromptContext {
   readonly kernelSummary?: string;
   readonly conceptSummary?: string;
   readonly userNotes?: string;
+  readonly storyKernel?: StoryKernel;
+  readonly conceptSpec?: ConceptSpec;
 }
 
 const ROLE_INTRO = `You are a cast architect for interactive branching fiction. Your job is to analyze the story's thematic foundation and design a character web: assigning cast roles with dramatic functions, sketching lightweight relationship archetypes between characters, and summarizing the cast dynamics that will drive the story.`;
@@ -20,6 +28,31 @@ const DESIGN_GUIDELINES = `CHARACTER WEB DESIGN GUIDELINES:
 - Aim for 3-8 characters total depending on story complexity.
 - Every pair of characters with a meaningful dramatic relationship should have a relationship archetype entry.`;
 
+const CAST_DESIGN_CONSTRAINT =
+  'CONSTRAINT: Use conflict engine to assign cast roles that create maximum dramatic friction. Use protagonist arc to design foils and mirrors. Use genre frame to calibrate character archetypes. Use value spectrum to distribute moral positions across the cast.';
+
+function buildCastConceptSection(conceptSpec?: ConceptSpec): string {
+  const baseSection = buildConceptAnalysisSection(conceptSpec);
+  if (baseSection.length === 0) {
+    return '';
+  }
+
+  return baseSection + '\n\n' + CAST_DESIGN_CONSTRAINT;
+}
+
+function buildCastKernelSection(storyKernel?: StoryKernel): string {
+  const baseSection = buildKernelGroundingSection(storyKernel);
+  if (baseSection.length === 0) {
+    return '';
+  }
+
+  return (
+    baseSection +
+    '\n\n' +
+    'CONSTRAINT: Use value spectrum to position each cast member at a distinct moral coordinate. Use conflict axis to ensure every character relationship creates or amplifies thematic tension.'
+  );
+}
+
 export function buildCharacterWebPrompt(context: CharacterWebPromptContext): ChatMessage[] {
   const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, DESIGN_GUIDELINES];
 
@@ -27,12 +60,19 @@ export function buildCharacterWebPrompt(context: CharacterWebPromptContext): Cha
     'Generate a character web for the following story setup.',
   ];
 
-  if (context.kernelSummary) {
-    userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
+  const conceptSection = buildCastConceptSection(context.conceptSpec);
+  const kernelSection = buildCastKernelSection(context.storyKernel);
+
+  if (conceptSection.length > 0) {
+    userSections.push(conceptSection.trim());
+  } else if (context.conceptSummary) {
+    userSections.push(`CONCEPT:\n${context.conceptSummary}`);
   }
 
-  if (context.conceptSummary) {
-    userSections.push(`CONCEPT:\n${context.conceptSummary}`);
+  if (kernelSection.length > 0) {
+    userSections.push(kernelSection.trim());
+  } else if (context.kernelSummary) {
+    userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
   if (context.userNotes) {

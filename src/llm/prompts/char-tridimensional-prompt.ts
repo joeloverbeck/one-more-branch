@@ -1,7 +1,13 @@
+import type { ConceptSpec } from '../../models/concept-generator.js';
+import type { CharacterKernel } from '../../models/character-pipeline-types.js';
+import type { StoryKernel } from '../../models/story-kernel.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { CharacterDevPromptContext } from './char-kernel-prompt.js';
-import type { CharacterKernel } from '../../models/character-pipeline-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
+import {
+  buildConceptAnalysisSection,
+  buildKernelGroundingSection,
+} from './sections/shared/concept-kernel-sections.js';
 
 export interface CharTridimensionalPromptContext extends CharacterDevPromptContext {
   readonly characterKernel: CharacterKernel;
@@ -16,6 +22,32 @@ const DESIGN_GUIDELINES = `TRIDIMENSIONAL PROFILE DESIGN GUIDELINES:
 - DERIVATION CHAIN: Explicitly show HOW you derived each dimension from the kernel. For example: "Super-objective (reclaim throne) + constraint (must hide identity) → sociology (adopted common tradesman persona) → psychology (deep shame about deception contradicting noble upbringing)."
 - CORE TRAITS: 5-8 defining traits that emerge from the three dimensions. These are the behavioral tendencies a writer would need to portray this character consistently.
 - Every detail must serve the drama. No arbitrary traits — each physical, social, and psychological detail should create tension, reveal character, or enable/constrain action.`;
+
+function buildTridimensionalConceptSection(conceptSpec?: ConceptSpec): string {
+  const baseSection = buildConceptAnalysisSection(conceptSpec);
+  if (baseSection.length === 0) {
+    return '';
+  }
+
+  return (
+    baseSection +
+    '\n\n' +
+    'CONSTRAINT: Use genre frame and world architecture to ground physiology and sociology in the setting. Use setting axioms to determine what physical and social traits are possible. Use setting scale to calibrate the character\'s social reach.'
+  );
+}
+
+function buildTridimensionalKernelSection(storyKernel?: StoryKernel): string {
+  const baseSection = buildKernelGroundingSection(storyKernel);
+  if (baseSection.length === 0) {
+    return '';
+  }
+
+  return (
+    baseSection +
+    '\n\n' +
+    'CONSTRAINT: Use the dramatic stance to calibrate the character\'s psychological tone. Use the value spectrum to inform their moral standards and personal premise.'
+  );
+}
 
 export function buildCharTridimensionalPrompt(
   context: CharTridimensionalPromptContext
@@ -57,12 +89,19 @@ export function buildCharTridimensionalPrompt(
 - Constraints: ${characterKernel.constraints.join('; ')}
 - Pressure Point: ${characterKernel.pressurePoint}`);
 
-  if (context.kernelSummary) {
-    userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
+  const conceptSection = buildTridimensionalConceptSection(context.conceptSpec);
+  const kernelSection = buildTridimensionalKernelSection(context.storyKernel);
+
+  if (conceptSection.length > 0) {
+    userSections.push(conceptSection.trim());
+  } else if (context.conceptSummary) {
+    userSections.push(`CONCEPT:\n${context.conceptSummary}`);
   }
 
-  if (context.conceptSummary) {
-    userSections.push(`CONCEPT:\n${context.conceptSummary}`);
+  if (kernelSection.length > 0) {
+    userSections.push(kernelSection.trim());
+  } else if (context.kernelSummary) {
+    userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
   if (context.userNotes) {
