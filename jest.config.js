@@ -15,6 +15,15 @@ module.exports = {
       statements: 70,
     },
   },
+  globalSetup: '<rootDir>/test/fixtures/global-setup.ts',
+  transform: {
+    '^.+\\.ts$': [
+      'ts-jest',
+      {
+        tsconfig: 'tsconfig.test.json',
+      },
+    ],
+  },
   testTimeout: 10000,
   verbose: true,
   projects: [

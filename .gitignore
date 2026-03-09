@@ -28,6 +28,9 @@ configs/local.json
 # Git worktrees
 .worktrees/
 
+# Test temp directories
+tmp/
+
 # IDE
 .vscode/
 .idea/
