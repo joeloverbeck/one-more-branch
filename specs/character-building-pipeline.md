@@ -26,7 +26,7 @@ The original spec proposed a 6-stage batch pipeline processing ALL characters si
 | `src/llm/character-web-generation.ts` | DONE | Web generation orchestrator over prompt + schema |
 | `src/llm/character-stage-runner.ts` | DONE | Pure in-memory stage orchestrator; no repository access |
 | `src/models/character-web-converter.ts` | DONE | Full + lightweight `DecomposedCharacter` conversion |
-| `src/server/services/character-web-service.ts` | DONE | Thin coordination layer over repositories, runner, and converter |
+| `src/services/character-web-service.ts` | DONE | Thin coordination layer over repositories, runner, and converter |
 | `src/config/schemas.ts` | DONE | `characterWebsDir` is the active storage config |
 | `src/config/generation-stage-metadata.json` | DONE | Character-web and character-stage progress events registered |
 
@@ -41,10 +41,10 @@ The original spec proposed a 6-stage batch pipeline processing ALL characters si
 | 5 | LLM pipeline — Individual character development (5 prompts + 5 schemas + stage runner) | DONE |
 | 6 | Converters (full + lightweight DecomposedCharacter conversion) | DONE |
 | 7 | Service layer (CharacterWebService) | DONE |
-| 8 | Express routes | NOT STARTED |
+| 8 | Express routes | DONE |
 | 9 | EJS view + client JS | NOT STARTED |
-| 10 | Entity decomposer adaptation (worldbuilding-only mode) | NOT STARTED |
-| 11 | Story creation integration | NOT STARTED |
+| 10 | Entity decomposer adaptation (worldbuilding-only mode) | DONE |
+| 11 | Story creation integration | DONE |
 | 12 | Progress tracking | DONE |
 
 ### Boundary Corrections
@@ -339,7 +339,7 @@ Only maps relationships where the protagonist is involved.
 
 Status: DONE
 
-### `src/server/services/character-web-service.ts`
+### `src/services/character-web-service.ts`
 
 ```typescript
 interface CharacterWebService {

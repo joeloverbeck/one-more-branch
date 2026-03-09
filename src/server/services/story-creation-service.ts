@@ -9,6 +9,7 @@ import { isStoryKernel } from '../../models/story-kernel.js';
 export type StoryFormInput = {
   title?: string;
   characterConcept?: string;
+  webId?: string;
   worldbuilding?: string;
   tone?: string;
   npcs?: Array<{ name?: string; description?: string }>;
@@ -22,6 +23,7 @@ export type StoryFormInput = {
 export type TrimmedStoryInput = {
   title: string;
   characterConcept: string;
+  webId?: string;
   worldbuilding?: string;
   tone?: string;
   npcs?: Npc[];
@@ -43,6 +45,7 @@ export type ValidationResult =
 export function validateStoryInput(input: StoryFormInput): ValidationResult {
   const trimmedTitle = input.title?.trim();
   const trimmedCharacterConcept = input.characterConcept?.trim();
+  const trimmedWebId = input.webId?.trim();
   const trimmedApiKey = input.apiKey?.trim();
 
   if (!trimmedTitle || trimmedTitle.length === 0) {
@@ -76,6 +79,7 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
     trimmed: {
       title: trimmedTitle,
       characterConcept: trimmedCharacterConcept,
+      ...(trimmedWebId && trimmedWebId.length > 0 ? { webId: trimmedWebId } : {}),
       worldbuilding: input.worldbuilding?.trim(),
       tone: input.tone?.trim(),
       npcs: validNpcs && validNpcs.length > 0 ? validNpcs : undefined,

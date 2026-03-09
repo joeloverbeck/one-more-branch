@@ -1,4 +1,4 @@
-import { decomposeEntities, generateStoryStructure } from '../llm';
+import { decomposeEntities, decomposeWorldbuildingOnly, generateStoryStructure } from '../llm';
 import type { SelectedSceneDirection } from '../models/scene-direction.js';
 import { buildInitialNpcRelationships } from '../models/state/npc-relationship';
 import {
@@ -12,6 +12,7 @@ import {
   updateStoryStructure,
 } from '../models';
 import { storage } from '../persistence';
+import { characterWebService } from '../services/character-web-service.js';
 import { generatePage } from './page-service';
 import { createStoryStructure } from './structure-factory';
 import { EngineError, PrepareStoryResult, StartStoryOptions, StartStoryResult } from './types';
@@ -52,6 +53,7 @@ async function buildPreparedStory(
     ...createStory({
       title: trimmedTitle,
       characterConcept: trimmedCharacterConcept,
+      ...(options.webId ? { webId: options.webId } : {}),
       worldbuilding: options.worldbuilding,
       tone: options.tone,
       ...(options.npcs ? { npcs: options.npcs } : {}),
@@ -75,21 +77,38 @@ async function buildPreparedStory(
     status: 'started',
     attempt: 1,
   });
-  const decompositionResult = await decomposeEntities(
-    {
-      characterConcept: story.characterConcept,
-      worldbuilding: story.worldbuilding,
-      tone: story.tone,
-      toneFeel: story.toneFeel,
-      toneAvoid: story.toneAvoid,
-      npcs: story.npcs,
-      spine: story.spine,
-      conceptSpec: story.conceptSpec,
-      storyKernel: story.storyKernel,
-      startingSituation: story.startingSituation,
-    },
-    options.apiKey
-  );
+  const decompositionContext = {
+    characterConcept: story.characterConcept,
+    worldbuilding: story.worldbuilding,
+    tone: story.tone,
+    toneFeel: story.toneFeel,
+    toneAvoid: story.toneAvoid,
+    npcs: story.npcs,
+    spine: story.spine,
+    conceptSpec: story.conceptSpec,
+    storyKernel: story.storyKernel,
+    startingSituation: story.startingSituation,
+  };
+  const decompositionResult = options.webId
+    ? {
+        decomposedCharacters: await characterWebService.toDecomposedCharacters(options.webId),
+        decomposedWorld: (
+          await decomposeWorldbuildingOnly(
+            {
+              worldbuilding: decompositionContext.worldbuilding,
+              tone: decompositionContext.tone,
+              toneFeel: decompositionContext.toneFeel,
+              toneAvoid: decompositionContext.toneAvoid,
+              spine: decompositionContext.spine,
+              conceptSpec: decompositionContext.conceptSpec,
+              storyKernel: decompositionContext.storyKernel,
+              startingSituation: decompositionContext.startingSituation,
+            },
+            options.apiKey
+          )
+        ).decomposedWorld,
+      }
+    : await decomposeEntities(decompositionContext, options.apiKey);
   options.onGenerationStage?.({
     stage: 'DECOMPOSING_ENTITIES',
     status: 'completed',

@@ -1,35 +1,35 @@
 import { randomUUID } from 'node:crypto';
-import { emitGenerationStage } from '../../engine/generation-pipeline-helpers.js';
-import { EngineError, type GenerationStageCallback } from '../../engine/types.js';
-import { runCharacterStage } from '../../llm/character-stage-runner.js';
-import { generateCharacterWeb } from '../../llm/character-web-generation.js';
+import { emitGenerationStage } from '../engine/generation-pipeline-helpers.js';
+import { EngineError, type GenerationStageCallback } from '../engine/types.js';
+import { runCharacterStage } from '../llm/character-stage-runner.js';
+import { generateCharacterWeb } from '../llm/character-web-generation.js';
 import type {
   CastPipelineInputs,
   CharacterDevStage,
-} from '../../models/character-pipeline-types.js';
+} from '../models/character-pipeline-types.js';
 import {
   toDecomposedCharacter,
   toDecomposedCharacterFromWeb,
-} from '../../models/character-web-converter.js';
-import type { DecomposedCharacter } from '../../models/decomposed-character.js';
-import { normalizeForComparison } from '../../models/normalize.js';
-import { getProtagonistAssignment, type SavedCharacterWeb } from '../../models/saved-character-web.js';
+} from '../models/character-web-converter.js';
+import type { DecomposedCharacter } from '../models/decomposed-character.js';
+import { normalizeForComparison } from '../models/normalize.js';
+import { getProtagonistAssignment, type SavedCharacterWeb } from '../models/saved-character-web.js';
 import {
   isCharacterFullyComplete,
   type SavedDevelopedCharacter,
-} from '../../models/saved-developed-character.js';
+} from '../models/saved-developed-character.js';
 import {
   deleteCharacterWeb,
   listCharacterWebs,
   loadCharacterWeb,
   saveCharacterWeb,
-} from '../../persistence/character-web-repository.js';
+} from '../persistence/character-web-repository.js';
 import {
   deleteDevelopedCharacter,
   listDevelopedCharactersByWebId,
   loadDevelopedCharacter,
   saveDevelopedCharacter,
-} from '../../persistence/developed-character-repository.js';
+} from '../persistence/developed-character-repository.js';
 
 export interface CharacterWebService {
   createWeb(name: string, inputs: CastPipelineInputs): Promise<SavedCharacterWeb>;

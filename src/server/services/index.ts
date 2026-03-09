@@ -54,7 +54,7 @@ export {
   createCharacterWebService,
   characterWebService,
   type CharacterWebService,
-} from './character-web-service.js';
+} from '../../services/character-web-service.js';
 export {
   createContentService,
   contentService,

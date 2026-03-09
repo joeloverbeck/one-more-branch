@@ -19,7 +19,7 @@ import type { SavedDevelopedCharacter } from '@/models/saved-developed-character
 import {
   createCharacterWebService,
   type CharacterWebService,
-} from '@/server/services/character-web-service';
+} from '@/services/character-web-service';
 
 type CharacterWebServiceDeps = NonNullable<Parameters<typeof createCharacterWebService>[0]>;
 
