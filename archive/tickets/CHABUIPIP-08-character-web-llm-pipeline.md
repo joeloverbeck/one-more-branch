@@ -1,6 +1,6 @@
 # CHABUIPIP-08: LLM Pipeline — Character Web Generation
 
-**Status**: NOT STARTED
+**Status**: COMPLETED
 **Dependencies**: CHABUIPIP-01, CHABUIPIP-02, CHABUIPIP-07
 **Estimated diff size**: ~250 lines across 3 files
 
@@ -34,7 +34,7 @@ Prompt builder function that takes:
 
 Builds system + user messages instructing the LLM to:
 1. Analyze the kernel/concept to understand story requirements
-2. Assign cast roles (CastRoleAssignment with characterName, storyFunction, characterDepth, archetype, roleJustification)
+2. Assign cast roles (CastRoleAssignment with characterName, isProtagonist, storyFunction, characterDepth, narrativeRole, conflictRelationship)
 3. Generate lightweight relationship archetypes between characters
 4. Write a cast dynamics summary
 
@@ -75,7 +75,7 @@ Follow the `spine-generator.ts` pattern:
    }
    ```
 7. Wrap with `withRetry()` and `withModelFallback()`
-8. Use `getStageModel('GENERATING_CHARACTER_WEB')`
+8. Use `getStageModel('characterWeb')`
 
 ## Acceptance Criteria
 
@@ -99,3 +99,11 @@ Follow the `spine-generator.ts` pattern:
 - Uses `getStageModel()` for model selection
 - Enum schema uses `anyOf` pattern (not mixed nullable form)
 - All existing tests pass unchanged
+
+## Outcome
+
+- **Completed**: 2025-03-09
+- **Files created**: `src/llm/prompts/character-web-prompt.ts`, `src/llm/schemas/character-web-schema.ts`, `src/llm/character-web-generation.ts`, `test/unit/llm/character-web-generation.test.ts`
+- **Files modified**: `src/logging/prompt-formatter.ts` (added `'characterWeb'` to PromptType), `test/unit/llm/schemas/anthropic-schema-compatibility.test.ts` (registered new schema)
+- **Ticket corrections**: Fixed `CastRoleAssignment` field names (archetype→narrativeRole, roleJustification→conflictRelationship, added isProtagonist), fixed stage key (`'GENERATING_CHARACTER_WEB'`→`'characterWeb'`)
+- **Verification**: typecheck passes, lint passes, 3383/3383 tests pass (16 new)
