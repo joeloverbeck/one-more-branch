@@ -20,6 +20,7 @@ jest.mock('../../../../src/logging/index', () => ({
 
 jest.mock('../../../../src/logging/prompt-formatter', () => ({
   logPrompt: jest.fn(),
+  logResponse: jest.fn(),
 }));
 
 function buildOpenRouterResponse(choices: object[]): object {

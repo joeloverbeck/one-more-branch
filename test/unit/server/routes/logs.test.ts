@@ -123,6 +123,74 @@ describe('loadTodayEntries', () => {
     expect(result).toHaveLength(1);
     expect(result[0].promptType).toBe('structure');
   });
+
+  it('pairs response entries with preceding prompt entries', async () => {
+    const prompt = {
+      timestamp: '2026-02-13T10:00:00.000Z',
+      promptType: 'writer',
+      messageCount: 1,
+      messages: [{ role: 'user', content: 'Write' }],
+    };
+    const response = {
+      timestamp: '2026-02-13T10:00:01.000Z',
+      entryType: 'response' as const,
+      promptType: 'writer',
+      rawResponse: '{"narrative":"Once upon a time"}',
+      responseLength: 32,
+    };
+
+    const jsonl = `${JSON.stringify(prompt)}\n${JSON.stringify(response)}\n`;
+    jest.spyOn(fs, 'readFile').mockResolvedValue(jsonl);
+
+    const result = await loadTodayEntries();
+
+    expect(result).toHaveLength(1);
+    expect(result[0].promptType).toBe('writer');
+    expect(result[0].response).toBe('{"narrative":"Once upon a time"}');
+  });
+
+  it('does not pair response with mismatched promptType', async () => {
+    const prompt = {
+      timestamp: '2026-02-13T10:00:00.000Z',
+      promptType: 'writer',
+      messageCount: 1,
+      messages: [{ role: 'user', content: 'Write' }],
+    };
+    const response = {
+      timestamp: '2026-02-13T10:00:01.000Z',
+      entryType: 'response' as const,
+      promptType: 'planner',
+      rawResponse: '{"plan":"something"}',
+      responseLength: 20,
+    };
+
+    const jsonl = `${JSON.stringify(prompt)}\n${JSON.stringify(response)}\n`;
+    jest.spyOn(fs, 'readFile').mockResolvedValue(jsonl);
+
+    const result = await loadTodayEntries();
+
+    expect(result).toHaveLength(1);
+    expect(result[0].promptType).toBe('writer');
+    expect(result[0].response).toBeUndefined();
+  });
+
+  it('handles old entries without entryType (backward compat)', async () => {
+    const oldEntry = {
+      timestamp: '2026-02-13T10:00:00.000Z',
+      promptType: 'structure',
+      messageCount: 1,
+      messages: [{ role: 'user', content: 'Hello' }],
+    };
+
+    const jsonl = `${JSON.stringify(oldEntry)}\n`;
+    jest.spyOn(fs, 'readFile').mockResolvedValue(jsonl);
+
+    const result = await loadTodayEntries();
+
+    expect(result).toHaveLength(1);
+    expect(result[0].promptType).toBe('structure');
+    expect(result[0].response).toBeUndefined();
+  });
 });
 
 describe('logRoutes GET /', () => {

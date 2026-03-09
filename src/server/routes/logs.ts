@@ -3,7 +3,7 @@ import path from 'path';
 import { Request, Response, Router } from 'express';
 import { getConfig } from '../../config/index.js';
 import { logger } from '../../logging/index.js';
-import type { PromptLogEntry } from '../../logging/prompt-file-sink.js';
+import type { PromptLogEntry, ResponseLogEntry } from '../../logging/prompt-file-sink.js';
 import { wrapAsyncRoute } from '../utils/index.js';
 
 function formatLocalDate(date: Date): string {
@@ -11,6 +11,21 @@ function formatLocalDate(date: Date): string {
   const day = String(date.getDate()).padStart(2, '0');
   const year = String(date.getFullYear());
   return `${month}-${day}-${year}`;
+}
+
+interface RawLogEntry {
+  entryType?: 'prompt' | 'response';
+  promptType?: string;
+  rawResponse?: string;
+  responseLength?: number;
+  timestamp?: string;
+  messageCount?: number;
+  messages?: unknown[];
+  meta?: Record<string, unknown>;
+}
+
+function isResponseEntry(entry: RawLogEntry | undefined): entry is ResponseLogEntry {
+  return entry?.entryType === 'response';
 }
 
 export async function loadTodayEntries(): Promise<PromptLogEntry[]> {
@@ -25,10 +40,27 @@ export async function loadTodayEntries(): Promise<PromptLogEntry[]> {
     return [];
   }
 
-  const entries: PromptLogEntry[] = raw
+  const lines = raw
     .split('\n')
     .filter((line) => line.trim().length > 0)
-    .map((line) => JSON.parse(line) as PromptLogEntry);
+    .map((line) => JSON.parse(line) as RawLogEntry);
+
+  const entries: PromptLogEntry[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (isResponseEntry(line)) {
+      continue;
+    }
+
+    const promptEntry = line as PromptLogEntry;
+    const next = i + 1 < lines.length ? lines[i + 1] : undefined;
+    if (next && isResponseEntry(next) && next.promptType === promptEntry.promptType) {
+      promptEntry.response = next.rawResponse;
+      i += 1;
+    }
+
+    entries.push(promptEntry);
+  }
 
   entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 

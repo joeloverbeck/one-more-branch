@@ -11,14 +11,30 @@ export interface PromptLogPayload {
 
 export interface PromptLogEntry {
   timestamp: string;
+  entryType?: 'prompt';
   promptType: string;
   messageCount: number;
   messages: ChatMessage[];
   meta?: Record<string, unknown>;
+  response?: string;
+}
+
+export interface ResponseLogPayload {
+  promptType: string;
+  rawResponse: string;
+}
+
+export interface ResponseLogEntry {
+  timestamp: string;
+  entryType: 'response';
+  promptType: string;
+  rawResponse: string;
+  responseLength: number;
 }
 
 export interface PromptSink {
   appendPrompt(payload: PromptLogPayload): Promise<void>;
+  appendResponse(payload: ResponseLogPayload): Promise<void>;
 }
 
 export interface PromptFileSinkOptions {
@@ -65,6 +81,34 @@ export class PromptFileSink implements PromptSink {
     const folderPath = path.resolve(this.baseDir, dateFolder);
     const filePath = path.join(folderPath, this.fileName);
     const line = `${JSON.stringify(this.toEntry(payload, timestamp))}\n`;
+
+    const writeOperation = async (): Promise<void> => {
+      await this.mkdirFn(folderPath, { recursive: true });
+      await this.appendFileFn(filePath, line, 'utf8');
+    };
+
+    const writeResult = this.writeQueue.then(writeOperation);
+    this.writeQueue = writeResult.catch(() => undefined);
+    return writeResult;
+  }
+
+  appendResponse(payload: ResponseLogPayload): Promise<void> {
+    if (!this.enabled) {
+      return Promise.resolve();
+    }
+
+    const timestamp = this.now();
+    const dateFolder = formatLocalDate(timestamp);
+    const folderPath = path.resolve(this.baseDir, dateFolder);
+    const filePath = path.join(folderPath, this.fileName);
+    const entry: ResponseLogEntry = {
+      timestamp: timestamp.toISOString(),
+      entryType: 'response',
+      promptType: payload.promptType,
+      rawResponse: payload.rawResponse,
+      responseLength: payload.rawResponse.length,
+    };
+    const line = `${JSON.stringify(entry)}\n`;
 
     const writeOperation = async (): Promise<void> => {
       await this.mkdirFn(folderPath, { recursive: true });

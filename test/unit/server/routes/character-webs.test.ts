@@ -29,6 +29,8 @@ jest.mock('@/server/services', () => ({
 
 jest.mock('@/logging', () => ({
   logger: { error: jest.fn(), info: jest.fn(), warn: jest.fn(), debug: jest.fn() },
+  logPrompt: jest.fn(),
+  logResponse: jest.fn(),
 }));
 
 import { LLMError } from '@/llm/llm-client-types';

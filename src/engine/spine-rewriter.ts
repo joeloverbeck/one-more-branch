@@ -1,6 +1,6 @@
 import { getConfig } from '../config/index.js';
 import { getStageModel, getStageMaxTokens } from '../config/stage-model.js';
-import { logger, logPrompt } from '../logging/index.js';
+import { logger, logPrompt, logResponse } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
   parseMessageJsonContent,
@@ -206,6 +206,7 @@ export async function rewriteSpine(
 
     const parsedMessage = parseMessageJsonContent(content);
     const responseText = parsedMessage.rawText;
+    logResponse(logger, 'spineRewrite', responseText);
     try {
       const spine = parseSpineRewriteResponse(parsedMessage.parsed);
       return { spine, rawResponse: responseText };

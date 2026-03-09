@@ -54,6 +54,7 @@ jest.mock('@/logging/index', () => ({
     clear: jest.fn(),
   },
   logPrompt: jest.fn(),
+  logResponse: jest.fn(),
 }));
 
 jest.mock('@/engine/state-reconciler', () => ({

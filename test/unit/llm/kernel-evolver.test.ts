@@ -15,6 +15,7 @@ jest.mock('../../../src/logging/index.js', () => ({
   get logPrompt(): typeof mockLogPrompt {
     return mockLogPrompt;
   },
+  logResponse: jest.fn(),
 }));
 
 import { CONTENT_POLICY } from '../../../src/llm/content-policy';

@@ -16,6 +16,7 @@ jest.mock('../../../src/logging/index.js', () => ({
   get logPrompt(): typeof mockLogPrompt {
     return mockLogPrompt;
   },
+  logResponse: jest.fn(),
 }));
 
 import {

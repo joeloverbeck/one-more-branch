@@ -6,6 +6,8 @@ import { logger } from '../../../src/logging/index';
 jest.mock('../../../src/config/index');
 jest.mock('../../../src/logging/index', () => ({
   logger: { warn: jest.fn(), error: jest.fn(), info: jest.fn(), debug: jest.fn() },
+  logPrompt: jest.fn(),
+  logResponse: jest.fn(),
 }));
 
 const mockedGetConfig = getConfig as jest.MockedFunction<typeof getConfig>;

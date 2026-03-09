@@ -3428,6 +3428,39 @@ main {
   transform: rotate(90deg);
 }
 
+.log-response {
+  background: rgba(89, 193, 122, 0.08);
+  border: 1px solid rgba(89, 193, 122, 0.25);
+  border-left: 4px solid var(--color-success);
+  border-radius: calc(var(--radius) / 2);
+  margin-bottom: 0.35rem;
+}
+
+.log-response > summary {
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  list-style: none;
+}
+
+.log-response > summary::-webkit-details-marker {
+  display: none;
+}
+
+.log-response > summary::before {
+  content: '\25b6';
+  margin-right: 0.4rem;
+  font-size: 0.6rem;
+  transition: transform var(--transition);
+}
+
+.log-response[open] > summary::before {
+  transform: rotate(90deg);
+}
+
 .log-role {
   font-weight: bold;
   text-transform: uppercase;
