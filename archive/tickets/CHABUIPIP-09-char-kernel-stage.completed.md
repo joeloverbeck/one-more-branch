@@ -1,6 +1,6 @@
 # CHABUIPIP-09: LLM Pipeline — Character Kernel (Stage 1)
 
-**Status**: NOT STARTED
+**Status**: COMPLETED
 **Dependencies**: CHABUIPIP-01, CHABUIPIP-03, CHABUIPIP-07
 **Estimated diff size**: ~200 lines across 3 files
 
@@ -84,3 +84,18 @@ interface CharKernelGenerationResult {
 - `npm run lint` passes
 - `CharacterKernel` type from `character-pipeline-types.ts` is used as-is (not redefined)
 - No existing tests or code modified
+
+## Outcome
+
+- **Completion date**: 2026-03-09
+- **What was changed**:
+  - Created `src/llm/prompts/char-kernel-prompt.ts` with `CharacterDevPromptContext` and `buildCharKernelPrompt`
+  - Created `src/llm/schemas/char-kernel-schema.ts` with `CHAR_KERNEL_GENERATION_SCHEMA`
+  - Created `src/llm/char-kernel-generation.ts` with `generateCharKernel` following character-web-generation pattern
+  - Created `test/unit/llm/char-kernel-generation.test.ts` with 22 tests
+  - Added `'charKernel'` to `PromptType` union in `src/logging/prompt-formatter.ts`
+  - Registered schema in `anthropic-schema-compatibility.test.ts`
+- **Deviations from original plan**:
+  - Ticket schema section had incorrect field names (`opposition`→`primaryOpposition`, `pressure`→`pressurePoint`) and wrong type for `stakes` (string→string array). Corrected before implementation.
+  - Two existing files were minimally modified (PromptType union, schema compatibility test) which is necessary infrastructure for any new LLM stage.
+- **Verification**: typecheck passes, lint passes, 280 test suites / 3387 tests pass
