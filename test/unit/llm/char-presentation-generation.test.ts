@@ -48,6 +48,7 @@ function createWebContext(overrides?: Partial<CharacterWebContext>): CharacterWe
       narrativeRole: 'The rival claimant pressing the protagonist toward civil war.',
       conflictRelationship: 'Directly opposes the protagonist while needing their mercy.',
     },
+    protagonistName: 'Mira',
     relationshipArchetypes: [
       {
         fromCharacter: 'Kael',

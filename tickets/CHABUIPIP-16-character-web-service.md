@@ -20,7 +20,7 @@ Create the `CharacterWebService` that wraps repositories, LLM generation, and co
 - Do NOT modify the entity decomposer (CHABUIPIP-18)
 - Do NOT modify story creation flow (CHABUIPIP-19)
 - Do NOT modify any existing services
-- Do NOT modify any repositories or models
+- Do NOT redesign repositories or models beyond wiring the already-shipped protagonist identity contract
 
 ## Detailed Changes
 
@@ -53,14 +53,15 @@ interface CharacterWebService {
 
 Key behaviors:
 
-- **`createWeb`**: Creates metadata-only web (no LLM call), persists to repository
-- **`generateWeb`**: Loads web, calls character-web-generation LLM, saves result
+- **`createWeb`**: Creates metadata-only web (no LLM call), persists to repository. `protagonistName` starts empty until assignments exist.
+- **`generateWeb`**: Loads web, calls character-web-generation LLM, derives the sole protagonist via `getProtagonistAssignment()`, and saves `protagonistName` alongside assignments/archetypes
 - **`regenerateWeb`**: Clears web assignments/archetypes, re-generates. Does NOT delete existing developed characters
-- **`initializeCharacter`**: Creates a SavedDevelopedCharacter with null stages, snapshots webContext from current web
+- **`initializeCharacter`**: Creates a SavedDevelopedCharacter with null stages, snapshots `webContext` from current web including `protagonistName`
 - **`generateCharacterStage`**: Loads character, loads other chars (for Stage 4), runs stage runner, saves result
 - **`regenerateCharacterStage`**: Clears target stage + all downstream stages, then generates
 - **`deleteWeb`**: Deletes web + all associated developed characters
-- **`toDecomposedCharacters`**: Loads web + all chars. Developed → full conversion. Undeveloped → lightweight conversion.
+- **`toDecomposedCharacters`**: Loads web + all chars. Developed → full conversion via each character snapshot. Undeveloped → lightweight conversion using `web.protagonistName`.
+- **`toDecomposedCharacters`**: Returns characters with the protagonist first because downstream story prep still treats index `0` as the protagonist.
 
 Export singleton: `export const characterWebService = createCharacterWebService()`
 
@@ -70,9 +71,9 @@ Export singleton: `export const characterWebService = createCharacterWebService(
 
 - `test/unit/server/services/character-web-service.test.ts`:
   - `createWeb` persists a new web with metadata and empty assignments
-  - `generateWeb` calls LLM and updates web with assignments + archetypes
+  - `generateWeb` calls LLM and updates web with assignments + archetypes + `protagonistName`
   - `regenerateWeb` clears web data and re-generates without deleting characters
-  - `initializeCharacter` creates character with webContext snapshot and null stages
+  - `initializeCharacter` creates character with webContext snapshot, including `protagonistName`, and null stages
   - `generateCharacterStage` runs stage runner and persists updated character
   - `generateCharacterStage` for Stage 4 loads other developed characters
   - `regenerateCharacterStage` clears downstream stages before regenerating
@@ -80,6 +81,7 @@ Export singleton: `export const characterWebService = createCharacterWebService(
   - `toDecomposedCharacters` returns mix of full and lightweight conversions
   - `toDecomposedCharacters` uses full conversion for completed characters
   - `toDecomposedCharacters` uses lightweight conversion for undeveloped characters
+  - `toDecomposedCharacters` keeps the protagonist first in the returned array
   - `loadWeb` returns null for non-existent web
 
 ### Invariants
@@ -89,4 +91,5 @@ Export singleton: `export const characterWebService = createCharacterWebService(
 - Service uses dependency injection via factory pattern
 - Service delegates to repositories (no direct file I/O)
 - Service delegates to stage runner (no direct LLM calls for character stages)
+- Service treats protagonist identity as persisted web data, not caller-supplied ambient state
 - No existing services are modified

@@ -76,6 +76,7 @@ interface SavedCharacterWeb {
   readonly updatedAt: string;
   readonly sourceKernelId?: string;
   readonly sourceConceptId?: string;
+  readonly protagonistName: string;
   readonly inputs: CastPipelineInputs; // reuse from saved-cast.ts (extract to shared location)
   readonly assignments: readonly CastRoleAssignment[];
   readonly relationshipArchetypes: readonly RelationshipArchetype[];
@@ -83,7 +84,7 @@ interface SavedCharacterWeb {
 }
 ```
 
-Includes `isSavedCharacterWeb` type guard.
+Includes `isSavedCharacterWeb` type guard and a helper that enforces exactly one protagonist assignment when a generated web is persisted.
 
 ### 2b: `SavedDevelopedCharacter` (new file: `src/models/saved-developed-character.ts`)
 
@@ -114,6 +115,7 @@ Includes `isSavedDevelopedCharacter` type guard, `isCharacterStageComplete`, `ca
 ```typescript
 interface CharacterWebContext {
   readonly assignment: CastRoleAssignment;
+  readonly protagonistName: string;
   readonly relationshipArchetypes: readonly RelationshipArchetype[];
   readonly castDynamicsSummary: string;
 }
@@ -293,7 +295,7 @@ Two conversion modes:
 | rawDescription | Synthesized from kernel + tridimensional profile |
 
 **Lightweight conversion** (for undeveloped characters):
-`toDecomposedCharacterFromWeb(assignment: CastRoleAssignment, archetypes: RelationshipArchetype[]): DecomposedCharacter`
+`toDecomposedCharacterFromWeb(assignment: CastRoleAssignment, archetypes: RelationshipArchetype[], protagonistName: string): DecomposedCharacter`
 
 Maps role + archetype data to a minimal DecomposedCharacter (similar quality to current entity decomposer output).
 
@@ -308,7 +310,9 @@ CastRelationship -> DecomposedRelationship:
   leverage: leverage
 ```
 
-Only maps relationships where `toCharacter` is the protagonist (for NPC->protagonist relationships).
+Full conversion reads protagonist identity from `char.webContext.protagonistName`, not from a caller-supplied parameter.
+
+Only maps relationships where the protagonist is involved.
 
 ---
 
@@ -343,7 +347,8 @@ interface CharacterWebService {
 
 **`regenerateCharacterStage`**: Clears stage + all downstream stages, then generates.
 
-**`toDecomposedCharacters`**: Loads web + all developed characters. Developed -> full conversion. Undeveloped -> lightweight conversion.
+**`toDecomposedCharacters`**: Loads web + all developed characters. Developed -> full conversion from each saved character snapshot. Undeveloped -> lightweight conversion using `web.protagonistName`.
+**`toDecomposedCharacters`**: Returns characters with the protagonist first because downstream story prep still relies on index `0` as the protagonist.
 
 ---
 

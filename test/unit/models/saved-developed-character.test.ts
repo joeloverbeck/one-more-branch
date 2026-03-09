@@ -25,6 +25,7 @@ function makeValidCharacter(
         narrativeRole: 'Main antagonist',
         conflictRelationship: 'Direct opposition',
       },
+      protagonistName: 'Protagonist',
       relationshipArchetypes: [],
       castDynamicsSummary: 'A tense cast dynamic.',
     },

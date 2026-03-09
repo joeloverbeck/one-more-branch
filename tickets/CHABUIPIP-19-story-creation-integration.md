@@ -59,6 +59,10 @@ In `buildPreparedStory()`, add branching logic:
 **When `webId` is NOT provided:**
 - Unchanged flow — full entity decomposition (characters + world)
 
+Notes:
+- Story creation should rely on `characterWebService` to honor the persisted protagonist invariant. `story-service` should not reconstruct protagonist identity itself.
+- The returned `DecomposedCharacter[]` must keep the protagonist at index `0` because existing downstream code assumes that ordering.
+
 ### `src/server/routes/stories.ts`:
 
 Accept optional `webId` in story creation POST body. Pass to `StartStoryOptions`.
@@ -71,6 +75,7 @@ Accept optional `webId` in story creation POST body. Pass to `StartStoryOptions`
   - Story creation with `webId` calls `toDecomposedCharacters` instead of `decomposeEntities`
   - Story creation with `webId` calls `decomposeWorldbuildingOnly` instead of full decomposition
   - Story creation with `webId` stores `webId` on the story
+  - Story creation with `webId` preserves protagonist-first character ordering from `characterWebService`
   - Story creation without `webId` follows unchanged flow
   - Story creation with non-existent `webId` returns appropriate error
 

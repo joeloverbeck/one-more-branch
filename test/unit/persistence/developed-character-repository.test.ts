@@ -33,6 +33,7 @@ function createSavedDevelopedCharacter(
         narrativeRole: 'The hero',
         conflictRelationship: 'Faces the antagonist',
       },
+      protagonistName: 'Alice',
       relationshipArchetypes: [],
       castDynamicsSummary: 'A tense rivalry.',
     },

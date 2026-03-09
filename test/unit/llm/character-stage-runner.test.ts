@@ -35,6 +35,7 @@ function createWebContext(): CharacterWebContext {
       narrativeRole: 'Disgraced navigator chasing a vanished map',
       conflictRelationship: 'Needs control but depends on unstable allies',
     },
+    protagonistName: 'Iria Vale',
     relationshipArchetypes: [
       {
         fromCharacter: 'Iria Vale',
