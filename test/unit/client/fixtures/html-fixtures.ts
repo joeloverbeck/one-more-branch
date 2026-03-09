@@ -405,28 +405,40 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
         <h1>Begin a New Adventure</h1>
         ${errorHtml}
         <form action="/stories/create" method="POST" class="story-form">
-          <section id="concept-selector-section">
-            <h2>Step 1: Choose a Concept</h2>
+          <nav class="wizard-stepper" aria-label="Story creation steps">
+            <ol class="wizard-stepper__list">
+              <li class="wizard-stepper__item"><button type="button" class="wizard-stepper__btn wizard-stepper__btn--active" data-step="1">1</button><span class="wizard-stepper__label">Concept</span></li>
+              <li class="wizard-stepper__item"><button type="button" class="wizard-stepper__btn" data-step="2">2</button><span class="wizard-stepper__label">Narrative</span></li>
+              <li class="wizard-stepper__item"><button type="button" class="wizard-stepper__btn" data-step="3">3</button><span class="wizard-stepper__label">Protagonist</span></li>
+              <li class="wizard-stepper__item"><button type="button" class="wizard-stepper__btn" data-step="4">4</button><span class="wizard-stepper__label">Conflict</span></li>
+              <li class="wizard-stepper__item"><button type="button" class="wizard-stepper__btn" data-step="5">5</button><span class="wizard-stepper__label">World</span></li>
+              <li class="wizard-stepper__item"><button type="button" class="wizard-stepper__btn" data-step="6">6</button><span class="wizard-stepper__label">Review</span></li>
+            </ol>
+          </nav>
+          <section class="wizard-step" data-step="1">
             <div class="form-group">
               <label for="concept-selector">Start from a saved concept</label>
-              <select id="concept-selector">
-                <option value="">-- Select a saved concept --</option>
-              </select>
-              <p class="form-help">
-                <a href="/concepts">Manage your concepts</a>
-              </p>
+              <div id="concept-dropdown-mount"></div>
+            </div>
+            <div class="form-actions" style="margin-bottom: 1.2rem;">
+              <button type="button" id="use-concept-btn" class="btn btn-primary" disabled>Use Selected Concept</button>
+              <button type="button" id="skip-concept-btn" class="btn btn-secondary">Skip - Enter manually</button>
             </div>
             <div class="form-group">
               <label for="apiKey">OpenRouter API Key *</label>
               <input type="password" id="apiKey" name="apiKey" required placeholder="sk-or-..." autocomplete="off">
             </div>
-            <div class="form-actions">
-              <button type="button" id="use-concept-btn" class="btn btn-primary btn-large" disabled>Use Selected Concept</button>
-              <button type="button" id="skip-concept-btn" class="btn btn-secondary">Skip - Enter details manually</button>
+            <div class="form-group">
+              <label for="title">Story Title *</label>
+              <input type="text" id="title" name="title" required value="">
             </div>
-          </section>
-          <section id="manual-story-section" style="display: none;">
-            <div id="concept-context-panel" class="form-group" style="display: none;"></div>
+            <div class="form-group">
+              <label for="kernel-selector-story">Story Kernel *</label>
+              <select id="kernel-selector-story">
+                <option value="">-- Select a kernel (required) --</option>
+              </select>
+              <div id="kernel-display-panel" class="kernel-display-panel" style="display: none;"></div>
+            </div>
             <div class="form-group">
               <label for="character-web-selector">Load Character Web</label>
               <select id="character-web-selector">
@@ -435,14 +447,22 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
               <div id="character-web-selector-summary" class="form-help" style="display: none;"></div>
               <input type="hidden" id="selected-web-id" name="webId" value="">
             </div>
+          </section>
+          <section class="wizard-step" data-step="2" style="display:none">
             <div class="form-group">
-              <label for="title">Story Title *</label>
-              <input type="text" id="title" name="title" required value="">
+              <label for="tone">Tone/Genre</label>
+              <textarea id="tone" name="tone" rows="3"></textarea>
             </div>
+          </section>
+          <section class="wizard-step" data-step="3" style="display:none">
             <div class="form-group">
               <label for="characterConcept">Character Concept *</label>
               <textarea id="characterConcept" name="characterConcept" rows="4" required></textarea>
             </div>
+          </section>
+          <section class="wizard-step" data-step="4" style="display:none">
+          </section>
+          <section class="wizard-step" data-step="5" style="display:none">
             <div class="form-group">
               <label for="worldbuilding">Worldbuilding</label>
               <textarea id="worldbuilding" name="worldbuilding" rows="3"></textarea>
@@ -460,21 +480,17 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
               <label for="startingSituation">Starting Situation</label>
               <textarea id="startingSituation" name="startingSituation" rows="3"></textarea>
             </div>
-            <div class="form-group">
-              <label for="tone">Tone/Genre</label>
-              <textarea id="tone" name="tone" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-              <label for="kernel-selector-story">Story Kernel *</label>
-              <select id="kernel-selector-story">
-                <option value="">-- Select a kernel (required) --</option>
-              </select>
-              <div id="kernel-display-panel" class="kernel-display-panel" style="display: none;"></div>
-            </div>
+          </section>
+          <section class="wizard-step" data-step="6" style="display:none">
+            <div id="wizard-review-summary"></div>
             <div class="form-actions">
               <button type="button" id="generate-spine-btn" class="btn btn-primary btn-large">Generate Spine</button>
             </div>
           </section>
+          <div class="wizard-nav">
+            <button type="button" id="wizard-prev" class="btn btn-secondary" style="display:none">Back</button>
+            <button type="button" id="wizard-next" class="btn btn-primary">Next</button>
+          </div>
         </form>
         <div id="spine-section" class="spine-section" style="display: none;">
           <h2 class="spine-section-title">Choose Your Story's Spine</h2>

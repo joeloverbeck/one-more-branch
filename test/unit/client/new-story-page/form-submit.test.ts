@@ -165,14 +165,14 @@ describe('new story form submit', () => {
     expect(body.progressId).toBe('form-progress-uuid');
   });
 
-  it('reveals manual story section when Skip is clicked', () => {
+  it('keeps wizard on step 1 when Skip is clicked', () => {
     setupPage();
-    const manualSection = document.getElementById('manual-story-section') as HTMLElement;
     const skipBtn = document.getElementById('skip-concept-btn') as HTMLButtonElement;
+    const step1 = document.querySelector('.wizard-step[data-step="1"]') as HTMLElement;
 
-    expect(manualSection.style.display).toBe('none');
     skipBtn.click();
-    expect(manualSection.style.display).toBe('block');
+    // Wizard stays on step 1 — user fills in kernel/title manually
+    expect(step1.style.display).not.toBe('none');
   });
 
   it('stores API key via setApiKey on spine generation success', async () => {
@@ -321,23 +321,23 @@ describe('new story form submit', () => {
     await selectKernel();
 
     // Add concept spec fields dynamically to the DOM (they exist in the real EJS template)
-    const manualSection = document.getElementById('manual-story-section') as HTMLElement;
+    const formEl = document.querySelector('.story-form') as HTMLElement;
     const hookInput = document.createElement('input');
     hookInput.id = 'oneLineHook';
     hookInput.value = 'A thrilling hook line';
-    manualSection.appendChild(hookInput);
+    formEl.appendChild(hookInput);
 
     const loopTextarea = document.createElement('textarea');
     loopTextarea.id = 'coreConflictLoop';
     loopTextarea.value = '';
-    manualSection.appendChild(loopTextarea);
+    formEl.appendChild(loopTextarea);
 
     const axisSelect = document.createElement('select');
     axisSelect.id = 'conflictAxis';
     const emptyOption = document.createElement('option');
     emptyOption.value = '';
     axisSelect.appendChild(emptyOption);
-    manualSection.appendChild(axisSelect);
+    formEl.appendChild(axisSelect);
 
     fetchMock.mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('generation-progress')) {
