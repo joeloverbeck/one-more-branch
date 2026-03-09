@@ -167,7 +167,7 @@ export async function rewriteSpine(
   const temperature = getConfig().llm.temperature;
 
   const messages = buildSpineRewritePrompt(context);
-  logPrompt(logger, 'spine-rewrite', messages);
+  logPrompt(logger, 'spineRewrite', messages);
 
   return withRetry(async () => {
     const response = await fetch(OPENROUTER_API_URL, {

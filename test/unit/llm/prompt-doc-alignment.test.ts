@@ -110,7 +110,7 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/structure-prompt.md',
   },
   {
-    promptType: 'structure-rewrite',
+    promptType: 'structureRewrite',
     sourcePath: 'src/llm/prompts/structure-rewrite-prompt.ts',
     docPath: 'prompts/structure-rewrite-prompt.md',
   },
@@ -120,17 +120,17 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/spine-prompt.md',
   },
   {
-    promptType: 'spine-rewrite',
+    promptType: 'spineRewrite',
     sourcePath: 'src/llm/prompts/spine-rewrite-prompt.ts',
     docPath: 'prompts/spine-rewrite-prompt.md',
   },
   {
-    promptType: 'agenda-resolver',
+    promptType: 'agendaResolver',
     sourcePath: 'src/llm/prompts/agenda-resolver-prompt.ts',
     docPath: 'prompts/agenda-resolver-prompt.md',
   },
   {
-    promptType: 'entity-decomposer',
+    promptType: 'entityDecomposer',
     sourcePath: 'src/llm/prompts/entity-decomposer-prompt.ts',
     docPath: 'prompts/entity-decomposer-prompt.md',
   },

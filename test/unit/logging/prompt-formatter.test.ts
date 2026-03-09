@@ -1,8 +1,8 @@
 import {
   logPrompt,
+  PROMPT_TYPE_VALUES,
   resetPromptSinkForTesting,
   setPromptSinkForTesting,
-  type PromptType,
 } from '../../../src/logging/prompt-formatter';
 import type { ChatMessage } from '../../../src/llm/llm-client-types';
 import type { Logger } from '../../../src/logging/types';
@@ -46,27 +46,14 @@ describe('logPrompt', () => {
     setPromptSinkForTesting({ appendPrompt });
     const logger = createMockLogger();
     const messages: ChatMessage[] = [{ role: 'user', content: 'Message' }];
-    const promptTypes: PromptType[] = [
-      'kernelIdeator',
-      'kernelEvaluator',
-      'conceptSeeder',
-      'conceptEvaluator',
-      'conceptStressTester',
-      'opening',
-      'writer',
-      'analyst',
-      'planner',
-      'structure',
-      'structure-rewrite',
-    ];
 
-    for (const promptType of promptTypes) {
+    for (const promptType of PROMPT_TYPE_VALUES) {
       logPrompt(logger, promptType, messages);
     }
     await Promise.resolve();
 
-    expect(appendPrompt).toHaveBeenCalledTimes(promptTypes.length);
-    for (const promptType of promptTypes) {
+    expect(appendPrompt).toHaveBeenCalledTimes(PROMPT_TYPE_VALUES.length);
+    for (const promptType of PROMPT_TYPE_VALUES) {
       expect(appendPrompt).toHaveBeenCalledWith({ promptType, messages });
     }
   });

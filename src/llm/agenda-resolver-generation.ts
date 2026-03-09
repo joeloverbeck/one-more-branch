@@ -33,7 +33,7 @@ export async function generateAgendaResolver(
   const maxTokens = options.maxTokens ?? getStageMaxTokens('agendaResolver');
   const messages = buildAgendaResolverPrompt(context);
 
-  logPrompt(logger, 'agenda-resolver', messages);
+  logPrompt(logger, 'agendaResolver', messages);
 
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',

@@ -168,7 +168,7 @@ describe('spine-rewriter', () => {
       const context = createSpineRewriteContext();
       await rewriteSpine(context, 'test-api-key');
 
-      expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'spine-rewrite', expect.any(Array));
+      expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'spineRewrite', expect.any(Array));
     });
 
     it('uses a custom stage model when configured differently', async () => {

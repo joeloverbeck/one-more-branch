@@ -254,7 +254,7 @@ export async function repairInsufficientChoices(
     choices as readonly Record<string, unknown>[]
   );
 
-  logPrompt(logger, 'writer-choice-repair', messages);
+  logPrompt(logger, 'writerChoiceRepair', messages);
 
   const supplementary = await callSupplementaryChoices(messages, apiKey, resolvedModel);
   if (!supplementary) {

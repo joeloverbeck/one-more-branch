@@ -81,7 +81,7 @@ export function createStructureRewriter(
       apiKey: string
     ): Promise<StructureRewriteResult> {
       const messages = buildStructureRewritePrompt(context);
-      logPrompt(logger, 'structure-rewrite', messages);
+      logPrompt(logger, 'structureRewrite', messages);
       const regenerated = await generator(messages, apiKey);
       const regeneratedStructure = createStoryStructure(regenerated);
       const structure = mergePreservedWithRegenerated(

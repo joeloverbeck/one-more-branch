@@ -305,7 +305,7 @@ export async function decomposeEntities(
   const maxTokens = config.maxTokens;
 
   const messages = buildEntityDecomposerPrompt(context);
-  logPrompt(logger, 'entity-decomposer', messages);
+  logPrompt(logger, 'entityDecomposer', messages);
 
   return withRetry(() =>
     withModelFallback(

@@ -350,7 +350,7 @@ describe('structure-rewriter', () => {
       );
       expect(mockLogPrompt).toHaveBeenCalledWith(
         mockLogger,
-        'structure-rewrite',
+        'structureRewrite',
         expect.any(Array)
       );
       expect(mockLogPrompt).toHaveBeenCalledTimes(1);
