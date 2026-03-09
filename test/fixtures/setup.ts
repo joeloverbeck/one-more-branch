@@ -11,6 +11,7 @@ import { logger, resetPromptSinkForTesting, setPromptSinkForTesting } from '@/lo
 
 const NOOP_PROMPT_SINK = {
   appendPrompt: (): Promise<void> => Promise.resolve(),
+  appendResponse: (): Promise<void> => Promise.resolve(),
 };
 const originalConfigPath = process.env['CONFIG_PATH'];
 let tempConfigDir: string | null = null;

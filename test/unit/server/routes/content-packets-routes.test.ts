@@ -26,6 +26,8 @@ jest.mock('@/server/services/content-service', () => ({
 
 jest.mock('@/logging', () => ({
   logger: { error: jest.fn(), info: jest.fn(), warn: jest.fn(), debug: jest.fn() },
+  logPrompt: jest.fn(),
+  logResponse: jest.fn(),
 }));
 
 import {

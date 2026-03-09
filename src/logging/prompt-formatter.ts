@@ -14,6 +14,7 @@ export const PROMPT_TYPE_VALUES: readonly PromptType[] = [
 
 const NOOP_PROMPT_SINK: PromptSink = {
   appendPrompt: () => Promise.resolve(),
+  appendResponse: () => Promise.resolve(),
 };
 
 let promptSink: PromptSink | undefined;
@@ -60,5 +61,18 @@ export function logPrompt(logger: Logger, promptType: PromptType, messages: Chat
         messageCount: messages.length,
         error: safeErrorMessage,
       });
+    });
+}
+
+/**
+ * Logs an LLM response to the configured prompt sink.
+ * Response payload is never emitted to application logger output.
+ */
+export function logResponse(logger: Logger, promptType: PromptType, rawResponse: string): void {
+  void getPromptSink()
+    .appendResponse({ promptType, rawResponse })
+    .catch((error: unknown) => {
+      const safeErrorMessage = error instanceof Error ? error.message : String(error);
+      logger.warn('Response logging failed', { promptType, error: safeErrorMessage });
     });
 }

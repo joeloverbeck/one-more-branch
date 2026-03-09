@@ -20,6 +20,7 @@ jest.mock('@/logging/index', () => ({
     debug: jest.fn(),
   },
   logPrompt: jest.fn(),
+  logResponse: jest.fn(),
 }));
 
 const mockedGenerateLorekeeperBible = generateLorekeeperBible as jest.MockedFunction<

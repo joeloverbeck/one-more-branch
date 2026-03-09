@@ -72,6 +72,15 @@
             <pre class="log-content"><%= msg.content %></pre>
           </details>
           <% }) %>
+          <% if (entry.response) { %>
+          <details class="log-response">
+            <summary>
+              <span class="log-role">response</span>
+              <span class="log-meta"><%= entry.response.length.toLocaleString() %> chars</span>
+            </summary>
+            <pre class="log-content"><% try { %><%= JSON.stringify(JSON.parse(entry.response), null, 2) %><% } catch(e) { %><%= entry.response %><% } %></pre>
+          </details>
+          <% } %>
         </div>
       </details>
       <% }) %>

@@ -1,6 +1,6 @@
 import { getConfig } from '../config';
 import { getStageModel, getStageMaxTokens } from '../config/stage-model';
-import { logger, logPrompt } from '../logging';
+import { logger, logPrompt, logResponse } from '../logging';
 import {
   OPENROUTER_API_URL,
   parseMessageJsonContent,
@@ -278,6 +278,7 @@ async function generateRewrittenStructure(
 
   const parsedMessage = parseMessageJsonContent(content);
   const responseText = parsedMessage.rawText;
+  logResponse(logger, 'structureRewrite', responseText);
   try {
     const parsed = parseStructureResponseObject(parsedMessage.parsed);
     return { ...parsed, rawResponse: responseText };

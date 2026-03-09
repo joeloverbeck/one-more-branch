@@ -1,5 +1,6 @@
 import {
   logPrompt,
+  logResponse,
   PROMPT_TYPE_VALUES,
   resetPromptSinkForTesting,
   setPromptSinkForTesting,
@@ -18,6 +19,8 @@ function createMockLogger(): jest.Mocked<Logger> {
   };
 }
 
+const noopAppendResponse = jest.fn().mockResolvedValue(undefined);
+
 describe('logPrompt', () => {
   afterEach(() => {
     resetPromptSinkForTesting();
@@ -25,7 +28,7 @@ describe('logPrompt', () => {
 
   it('writes prompt payload to sink and bypasses logger info/debug output', async () => {
     const appendPrompt = jest.fn().mockResolvedValue(undefined);
-    setPromptSinkForTesting({ appendPrompt });
+    setPromptSinkForTesting({ appendPrompt, appendResponse: noopAppendResponse });
     const logger = createMockLogger();
     const messages: ChatMessage[] = [
       { role: 'system', content: 'System instruction' },
@@ -43,7 +46,7 @@ describe('logPrompt', () => {
 
   it('handles all prompt types', async () => {
     const appendPrompt = jest.fn().mockResolvedValue(undefined);
-    setPromptSinkForTesting({ appendPrompt });
+    setPromptSinkForTesting({ appendPrompt, appendResponse: noopAppendResponse });
     const logger = createMockLogger();
     const messages: ChatMessage[] = [{ role: 'user', content: 'Message' }];
 
@@ -60,7 +63,7 @@ describe('logPrompt', () => {
 
   it('handles sink failures without throwing and logs one safe warning', async () => {
     const appendPrompt = jest.fn().mockRejectedValue(new Error('disk full'));
-    setPromptSinkForTesting({ appendPrompt });
+    setPromptSinkForTesting({ appendPrompt, appendResponse: noopAppendResponse });
     const logger = createMockLogger();
     const messages: ChatMessage[] = [{ role: 'user', content: 'Secret message text' }];
 
@@ -81,12 +84,66 @@ describe('logPrompt', () => {
 
   it('handles empty message arrays', async () => {
     const appendPrompt = jest.fn().mockResolvedValue(undefined);
-    setPromptSinkForTesting({ appendPrompt });
+    setPromptSinkForTesting({ appendPrompt, appendResponse: noopAppendResponse });
     const logger = createMockLogger();
 
     logPrompt(logger, 'planner', []);
     await Promise.resolve();
 
     expect(appendPrompt).toHaveBeenCalledWith({ promptType: 'planner', messages: [] });
+  });
+});
+
+describe('logResponse', () => {
+  afterEach(() => {
+    resetPromptSinkForTesting();
+  });
+
+  it('writes response payload to sink', async () => {
+    const appendResponse = jest.fn().mockResolvedValue(undefined);
+    const appendPrompt = jest.fn().mockResolvedValue(undefined);
+    setPromptSinkForTesting({ appendPrompt, appendResponse });
+    const logger = createMockLogger();
+
+    logResponse(logger, 'writer', '{"narrative":"Once upon a time..."}');
+    await Promise.resolve();
+
+    expect(appendResponse).toHaveBeenCalledTimes(1);
+    expect(appendResponse).toHaveBeenCalledWith({
+      promptType: 'writer',
+      rawResponse: '{"narrative":"Once upon a time..."}',
+    });
+  });
+
+  it('handles sink failures without throwing and logs warning', async () => {
+    const appendResponse = jest.fn().mockRejectedValue(new Error('write failed'));
+    const appendPrompt = jest.fn().mockResolvedValue(undefined);
+    setPromptSinkForTesting({ appendPrompt, appendResponse });
+    const logger = createMockLogger();
+
+    expect(() => logResponse(logger, 'writer', '{}')).not.toThrow();
+    await Promise.resolve();
+
+    expect(logger.warn.mock.calls).toHaveLength(1);
+    expect(logger.warn.mock.calls[0]).toEqual([
+      'Response logging failed',
+      {
+        promptType: 'writer',
+        error: 'write failed',
+      },
+    ]);
+  });
+
+  it('does not emit response content to logger output', async () => {
+    const appendResponse = jest.fn().mockResolvedValue(undefined);
+    const appendPrompt = jest.fn().mockResolvedValue(undefined);
+    setPromptSinkForTesting({ appendPrompt, appendResponse });
+    const logger = createMockLogger();
+
+    logResponse(logger, 'writer', '{"secret":"data"}');
+    await Promise.resolve();
+
+    expect(logger.info.mock.calls).toHaveLength(0);
+    expect(logger.debug.mock.calls).toHaveLength(0);
   });
 });

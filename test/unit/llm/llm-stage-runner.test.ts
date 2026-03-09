@@ -15,6 +15,7 @@ jest.mock('../../../src/logging/index.js', () => ({
   get logPrompt(): typeof mockLogPrompt {
     return mockLogPrompt;
   },
+  logResponse: jest.fn(),
 }));
 
 import type { LlmStageRunnerParams } from '../../../src/llm/llm-stage-runner';

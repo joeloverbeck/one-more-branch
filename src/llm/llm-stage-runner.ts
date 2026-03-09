@@ -1,6 +1,6 @@
 import { getStageModel, getStageMaxTokens, type LlmStage } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
-import { logger, logPrompt, type PromptType } from '../logging/index.js';
+import { logger, logPrompt, logResponse, type PromptType } from '../logging/index.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import {
   OPENROUTER_API_URL,
@@ -106,13 +106,15 @@ export async function runLlmStage<TParsed>(
 
   logPrompt(logger, params.promptType, params.messages);
 
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => fetchAndParseLlmStage(params, m, temperature, maxTokens),
       primaryModel,
       params.stageModel,
     )
   );
+  logResponse(logger, params.promptType, result.rawResponse);
+  return result;
 }
 
 export async function runTwoPhaseLlmStage<TFirstParsed, TSecondParsed, TResult>(

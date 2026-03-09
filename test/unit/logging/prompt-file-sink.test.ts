@@ -134,4 +134,80 @@ describe('PromptFileSink', () => {
 
     expect(fs.existsSync(path.join(tmpDir, '02-11-2026'))).toBe(false);
   });
+
+  describe('appendResponse', () => {
+    it('writes response entry with entryType "response"', async () => {
+      const sink = new PromptFileSink({
+        enabled: true,
+        baseDir: tmpDir,
+        fileName: 'prompts.jsonl',
+        now: (): Date => new Date('2026-02-11T10:00:00.000Z'),
+      });
+
+      await sink.appendResponse({
+        promptType: 'writer',
+        rawResponse: '{"narrative":"Once upon a time..."}',
+      });
+
+      const lines = fs.readFileSync(logPathFor('02-11-2026'), 'utf8').trim().split('\n');
+      expect(lines).toHaveLength(1);
+
+      const entry = JSON.parse(lines[0] ?? '') as {
+        entryType: string;
+        promptType: string;
+        rawResponse: string;
+        responseLength: number;
+        timestamp: string;
+      };
+      expect(entry.entryType).toBe('response');
+      expect(entry.promptType).toBe('writer');
+      expect(entry.rawResponse).toBe('{"narrative":"Once upon a time..."}');
+      expect(entry.responseLength).toBe(35);
+      expect(entry.timestamp).toBe('2026-02-11T10:00:00.000Z');
+    });
+
+    it('does nothing when disabled', async () => {
+      const sink = new PromptFileSink({
+        enabled: false,
+        baseDir: tmpDir,
+        fileName: 'prompts.jsonl',
+        now: (): Date => new Date('2026-02-11T10:00:00.000Z'),
+      });
+
+      await sink.appendResponse({
+        promptType: 'writer',
+        rawResponse: '{}',
+      });
+
+      expect(fs.existsSync(path.join(tmpDir, '02-11-2026'))).toBe(false);
+    });
+
+    it('interleaves with prompt entries in correct order', async () => {
+      const sink = new PromptFileSink({
+        enabled: true,
+        baseDir: tmpDir,
+        fileName: 'prompts.jsonl',
+        now: (): Date => new Date('2026-02-11T10:00:00.000Z'),
+      });
+
+      await sink.appendPrompt({
+        promptType: 'writer',
+        messages: [{ role: 'user', content: 'Write' }],
+      });
+      await sink.appendResponse({
+        promptType: 'writer',
+        rawResponse: '{"narrative":"text"}',
+      });
+
+      const lines = fs.readFileSync(logPathFor('02-11-2026'), 'utf8').trim().split('\n');
+      expect(lines).toHaveLength(2);
+
+      const first = JSON.parse(lines[0] ?? '') as { promptType: string; entryType?: string };
+      const second = JSON.parse(lines[1] ?? '') as { entryType: string; promptType: string };
+      expect(first.promptType).toBe('writer');
+      expect(first.entryType).toBeUndefined();
+      expect(second.entryType).toBe('response');
+      expect(second.promptType).toBe('writer');
+    });
+  });
 });

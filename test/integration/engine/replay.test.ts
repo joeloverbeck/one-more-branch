@@ -47,6 +47,7 @@ jest.mock('@/engine/analyst-evaluation');
 jest.mock('@/logging/index', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
   logPrompt: jest.fn(),
+  logResponse: jest.fn(),
 }));
 
 jest.mock('@/engine/state-reconciler', () => ({
