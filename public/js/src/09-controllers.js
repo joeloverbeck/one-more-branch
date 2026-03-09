@@ -641,8 +641,6 @@ function initPlayPage() {
 function initNewStoryPage() {
   const form = document.querySelector('.story-form');
   const loading = document.getElementById('loading');
-  const conceptSelectorSection = document.getElementById('concept-selector-section');
-  const manualStorySection = document.getElementById('manual-story-section');
   const conceptDropdownMount = document.getElementById('concept-dropdown-mount');
   const useConceptBtn = document.getElementById('use-concept-btn');
   const skipConceptBtn = document.getElementById('skip-concept-btn');
@@ -685,14 +683,24 @@ function initNewStoryPage() {
     }
   }
 
-  function revealManualStorySection() {
-    if (conceptSelectorSection) {
-      conceptSelectorSection.style.display = 'none';
-    }
-    if (manualStorySection) {
-      manualStorySection.style.display = 'block';
-    }
-  }
+  // Initialize wizard stepper
+  var wizard = typeof createWizardStepper === 'function'
+    ? createWizardStepper({
+      onStepChange: function (_from, to) {
+        if (to === 6) {
+          var reviewContainer = document.getElementById('wizard-review-summary');
+          if (typeof buildReviewSummary === 'function') {
+            buildReviewSummary(reviewContainer, function (step) {
+              wizard.goToStep(step);
+            });
+          }
+        }
+      },
+    })
+    : null;
+
+  // Field-to-step mapping for validation navigation
+  var FIELD_STEP_MAP = { title: 1, apiKey: 1, characterConcept: 3, 'kernel-selector-story': 1 };
 
   function setValueById(id, value) {
     var field = document.getElementById(id);
@@ -715,10 +723,9 @@ function initNewStoryPage() {
     }
   }
 
-  function openAllCollapsibleSections() {
-    document.querySelectorAll('.form-section-collapsible').forEach(function (details) {
-      details.open = true;
-    });
+  function markWizardStepsComplete(steps) {
+    if (!wizard) return;
+    steps.forEach(function (s) { wizard.markStepComplete(s); });
   }
 
   function prefillFromConceptSpec(conceptSpec) {
@@ -772,7 +779,7 @@ function initNewStoryPage() {
     populateDynamicList('keyInstitutions', conceptSpec.keyInstitutions);
     setSelectedById('settingScale', conceptSpec.settingScale);
 
-    openAllCollapsibleSections();
+    markWizardStepsComplete([2, 3, 4, 5]);
   }
 
   function prefillFromVerification(verification) {
@@ -985,6 +992,11 @@ function initNewStoryPage() {
     };
   }
 
+  function navigateToStepForField(fieldId) {
+    if (!wizard || !FIELD_STEP_MAP[fieldId]) return;
+    wizard.goToStep(FIELD_STEP_MAP[fieldId]);
+  }
+
   function validateBeforeGeneratingSpines() {
     hideExistingError();
 
@@ -997,6 +1009,7 @@ function initNewStoryPage() {
       typeof titleInput.checkValidity === 'function' &&
       !titleInput.checkValidity()
     ) {
+      navigateToStepForField('title');
       titleInput.reportValidity();
       return false;
     }
@@ -1006,6 +1019,7 @@ function initNewStoryPage() {
       typeof characterConceptInput.checkValidity === 'function' &&
       !characterConceptInput.checkValidity()
     ) {
+      navigateToStepForField('characterConcept');
       characterConceptInput.reportValidity();
       return false;
     }
@@ -1013,11 +1027,13 @@ function initNewStoryPage() {
     var apiKeyValue =
       apiKeyInput && typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
     if (!apiKeyValue) {
+      navigateToStepForField('apiKey');
       showFormError('OpenRouter API key is required');
       return false;
     }
 
     if (!selectedKernelForStory) {
+      navigateToStepForField('kernel-selector-story');
       showFormError('A thematic kernel must be selected before generating spine options.');
       return false;
     }
@@ -1183,9 +1199,9 @@ function initNewStoryPage() {
           void handleStoryKernelChange();
         }
 
-        revealManualStorySection();
-        if (manualStorySection && typeof manualStorySection.scrollIntoView === 'function') {
-          manualStorySection.scrollIntoView({ behavior: 'smooth' });
+        if (wizard) {
+          wizard.markStepComplete(1);
+          wizard.goToStep(2);
         }
       }
     });
@@ -1345,7 +1361,7 @@ function initNewStoryPage() {
       selectedConceptSpec = null;
       selectedConceptVerification = null;
       selectedContentPreferences = null;
-      revealManualStorySection();
+      // Stay on step 1 — user fills in kernel/title manually, then uses Next
     });
   }
 
