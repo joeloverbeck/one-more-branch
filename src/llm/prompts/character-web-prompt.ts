@@ -19,6 +19,7 @@ const ROLE_INTRO = `You are a cast architect for interactive branching fiction. 
 
 const DESIGN_GUIDELINES = `CHARACTER WEB DESIGN GUIDELINES:
 - Every character must serve a clear story function relative to the protagonist.
+- Every character must be a being with agency — capable of intention, decision-making, and purposeful action. Locations, environmental features, abstract forces, and inanimate objects are worldbuilding elements, NOT characters. A non-human entity (sentient artifact, supernatural being, AI) qualifies only if it can independently make decisions and act on them.
 - isProtagonist must be true for exactly one character.
 - narrativeRole is a one-sentence description of what this character DOES in the story — their dramatic purpose.
 - conflictRelationship is a one-sentence description of how this character creates, escalates, or resolves conflict for the protagonist.
@@ -81,7 +82,7 @@ export function buildCharacterWebPrompt(context: CharacterWebPromptContext): Cha
 
   userSections.push(`FIELD INSTRUCTIONS:
 - assignments: Array of cast role assignments. Each must have:
-  - characterName: The character's name.
+  - characterName: The name of a being with agency (capable of decisions and purposeful action — never a location, object, or environmental feature).
   - isProtagonist: true for exactly one character, false for all others.
   - storyFunction: One of ANTAGONIST, RIVAL, ALLY, MENTOR, CATALYST, OBSTACLE, FOIL, TRICKSTER, INNOCENT.
   - characterDepth: ROUND for major characters, FLAT for minor ones.

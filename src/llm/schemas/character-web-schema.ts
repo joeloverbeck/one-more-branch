@@ -12,7 +12,8 @@ export const CHARACTER_WEB_GENERATION_SCHEMA: JsonSchema = {
       properties: {
         assignments: {
           type: 'array',
-          description: 'Cast role assignments for each character in the web.',
+          description:
+            'Cast role assignments. Each entry must be a being with agency (capable of intention and decision-making), never a location, object, or environmental feature.',
           items: {
             type: 'object',
             additionalProperties: false,
@@ -27,7 +28,8 @@ export const CHARACTER_WEB_GENERATION_SCHEMA: JsonSchema = {
             properties: {
               characterName: {
                 type: 'string',
-                description: 'The character\'s name.',
+                description:
+                  'Name of a being with agency — capable of decisions and purposeful action. Never a location, environmental feature, or abstract force.',
               },
               isProtagonist: {
                 type: 'boolean',
