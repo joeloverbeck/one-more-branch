@@ -23,20 +23,6 @@ function createSavedDevelopedCharacter(
     createdAt: now,
     updatedAt: overrides?.updatedAt ?? now,
     sourceWebId: overrides?.sourceWebId ?? 'web-default',
-    sourceWebName: 'Test Web',
-    webContext: {
-      assignment: {
-        characterName: 'Alice',
-        isProtagonist: true,
-        storyFunction: 'PROTAGONIST',
-        characterDepth: 'DEEP',
-        narrativeRole: 'The hero',
-        conflictRelationship: 'Faces the antagonist',
-      },
-      protagonistName: 'Alice',
-      relationshipArchetypes: [],
-      castDynamicsSummary: 'A tense rivalry.',
-    },
     characterKernel: null,
     tridimensionalProfile: null,
     agencyModel: null,
@@ -163,7 +149,7 @@ describe('developed-character-repository', () => {
     });
 
     await expect(loadDevelopedCharacter(charId)).rejects.toThrow(
-      `Invalid developed character payload at ${getDevelopedCharacterFilePath(charId)}`,
+      'Invalid developed character after legacy field removal',
     );
   });
 });

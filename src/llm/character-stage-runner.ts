@@ -5,6 +5,7 @@ import type {
   CastPipelineInputs,
   CharacterDevStage,
 } from '../models/character-pipeline-types.js';
+import type { CharacterWebContext } from '../models/saved-developed-character.js';
 import {
   canGenerateCharacterStage,
   type SavedDevelopedCharacter,
@@ -20,6 +21,7 @@ export interface RunCharacterStageInput {
   readonly stage: CharacterDevStage;
   readonly apiKey: string;
   readonly inputs: CastPipelineInputs;
+  readonly webContext: CharacterWebContext;
   readonly otherDevelopedCharacters?: readonly SavedDevelopedCharacter[];
   readonly onGenerationStage?: GenerationStageCallback;
 }
@@ -102,7 +104,7 @@ export async function runCharacterStage(
   deps: CharacterStageRunnerDeps = defaultDeps,
 ): Promise<RunCharacterStageResult> {
   const apiKey = requireApiKey(input.apiKey);
-  const { character, stage, inputs, otherDevelopedCharacters, onGenerationStage } = input;
+  const { character, stage, inputs, webContext, otherDevelopedCharacters, onGenerationStage } = input;
 
   validateStagePreconditions(character, stage);
 
@@ -114,7 +116,7 @@ export async function runCharacterStage(
     case 1: {
       const result = await deps.generateCharKernel(
         {
-          webContext: character.webContext,
+          webContext: webContext,
           ...inputs,
         },
         apiKey,
@@ -141,7 +143,7 @@ export async function runCharacterStage(
 
       const result = await deps.generateCharTridimensional(
         {
-          webContext: character.webContext,
+          webContext: webContext,
           characterKernel,
           ...inputs,
         },
@@ -174,7 +176,7 @@ export async function runCharacterStage(
 
       const result = await deps.generateCharAgency(
         {
-          webContext: character.webContext,
+          webContext: webContext,
           characterKernel,
           tridimensionalProfile,
           ...inputs,
@@ -213,7 +215,7 @@ export async function runCharacterStage(
 
       const result = await deps.generateCharRelationships(
         {
-          webContext: character.webContext,
+          webContext: webContext,
           characterKernel,
           tridimensionalProfile,
           agencyModel,
@@ -259,7 +261,7 @@ export async function runCharacterStage(
 
       const result = await deps.generateCharPresentation(
         {
-          webContext: character.webContext,
+          webContext: webContext,
           characterKernel,
           tridimensionalProfile,
           agencyModel,

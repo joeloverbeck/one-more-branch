@@ -145,19 +145,6 @@ function createOtherDevelopedCharacter(
     createdAt: '2026-03-08T12:00:00.000Z',
     updatedAt: '2026-03-08T12:00:00.000Z',
     sourceWebId: 'web-1',
-    sourceWebName: 'Dynasty of Ash',
-    webContext: {
-      assignment: {
-        characterName: 'Mira',
-        isProtagonist: true,
-        storyFunction: StoryFunction.ALLY,
-        characterDepth: CharacterDepth.ROUND,
-        narrativeRole: 'The claimant who might become Kael\'s only ally or his final obstacle.',
-        conflictRelationship: 'Bound to Kael by a shared enemy and incompatible methods.',
-      },
-      relationshipArchetypes: [],
-      castDynamicsSummary: 'Alliances form under pressure and break under pride.',
-    },
     characterKernel: {
       characterName: 'Mira',
       superObjective: 'To prevent the kingdom from collapsing into a revenge war.',

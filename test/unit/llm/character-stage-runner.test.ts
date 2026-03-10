@@ -134,8 +134,6 @@ function createCharacter(
     createdAt: '2026-03-08T10:00:00.000Z',
     updatedAt: '2026-03-08T10:00:00.000Z',
     sourceWebId: 'web-1',
-    sourceWebName: 'Shattered Compass',
-    webContext: createWebContext(),
     characterKernel: null,
     tridimensionalProfile: null,
     agencyModel: null,
@@ -150,16 +148,6 @@ function createOtherCharacter(): SavedDevelopedCharacter {
   return createCharacter({
     id: 'char-tomas',
     characterName: 'Tomas Wren',
-    webContext: {
-      ...createWebContext(),
-      assignment: {
-        ...createWebContext().assignment,
-        characterName: 'Tomas Wren',
-        isProtagonist: false,
-        storyFunction: StoryFunction.ALLY,
-        narrativeRole: 'Cipher breaker with divided loyalties',
-      },
-    },
     characterKernel: {
       ...createCharacterKernel(),
       characterName: 'Tomas Wren',
@@ -213,6 +201,7 @@ describe('runCharacterStage', () => {
           stage: 2,
           apiKey: 'test-api-key-123',
           inputs,
+          webContext: createWebContext(),
         },
         createDeps(),
       ),
@@ -232,6 +221,7 @@ describe('runCharacterStage', () => {
           stage: 2,
           apiKey: 'test-api-key-123',
           inputs,
+          webContext: createWebContext(),
         },
         createDeps(),
       ),
@@ -253,6 +243,7 @@ describe('runCharacterStage', () => {
         stage: 1,
         apiKey: 'test-api-key-123',
         inputs,
+        webContext: createWebContext(),
         onGenerationStage: (event) => events.push(event),
       },
       deps,
@@ -293,6 +284,7 @@ describe('runCharacterStage', () => {
         stage: 2,
         apiKey: 'test-api-key-123',
         inputs,
+        webContext: createWebContext(),
       },
       deps,
     );
@@ -329,6 +321,7 @@ describe('runCharacterStage', () => {
         stage: 3,
         apiKey: 'test-api-key-123',
         inputs,
+        webContext: createWebContext(),
       },
       deps,
     );
@@ -369,6 +362,7 @@ describe('runCharacterStage', () => {
         stage: 4,
         apiKey: 'test-api-key-123',
         inputs,
+        webContext: createWebContext(),
         otherDevelopedCharacters,
       },
       deps,
@@ -413,6 +407,7 @@ describe('runCharacterStage', () => {
         stage: 5,
         apiKey: 'test-api-key-123',
         inputs,
+        webContext: createWebContext(),
       },
       deps,
     );

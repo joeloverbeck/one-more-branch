@@ -39,14 +39,13 @@ function formatStringList(values: readonly string[]): string {
 
 function formatOtherDevelopedCharacters(
   characters: readonly SavedDevelopedCharacter[],
-  focalCharacterName: string
+  focalCharacterName: string,
 ): string {
   return characters
     .filter((character) => character.characterName !== focalCharacterName)
     .map((character) => {
       const sections = [
         `- ${character.characterName}`,
-        `  Role: ${character.webContext.assignment.storyFunction} / ${character.webContext.assignment.narrativeRole}`,
       ];
 
       if (character.characterKernel) {

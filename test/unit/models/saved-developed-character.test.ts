@@ -15,20 +15,6 @@ function makeValidCharacter(
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-01T00:00:00Z',
     sourceWebId: 'web-1',
-    sourceWebName: 'Test Web',
-    webContext: {
-      assignment: {
-        characterName: 'Test Character',
-        isProtagonist: false,
-        storyFunction: 'ANTAGONIST',
-        characterDepth: 'COMPLEX',
-        narrativeRole: 'Main antagonist',
-        conflictRelationship: 'Direct opposition',
-      },
-      protagonistName: 'Protagonist',
-      relationshipArchetypes: [],
-      castDynamicsSummary: 'A tense cast dynamic.',
-    },
     characterKernel: null,
     tridimensionalProfile: null,
     agencyModel: null,
@@ -112,14 +98,9 @@ describe('isSavedDevelopedCharacter', () => {
     void _2;
     expect(isSavedDevelopedCharacter(noName)).toBe(false);
 
-    // Missing webContext
-    const { webContext: _3, ...noWebContext } = makeValidCharacter();
-    void _3;
-    expect(isSavedDevelopedCharacter(noWebContext)).toBe(false);
-
     // Missing completedStages
-    const { completedStages: _4, ...noStages } = makeValidCharacter();
-    void _4;
+    const { completedStages: _3, ...noStages } = makeValidCharacter();
+    void _3;
     expect(isSavedDevelopedCharacter(noStages)).toBe(false);
   });
 });
