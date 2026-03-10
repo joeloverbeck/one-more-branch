@@ -217,7 +217,6 @@ function createMockConcept(): Record<string, unknown> {
         conflictEngine: 4,
         agencyBreadth: 3,
         noveltyLeverage: 3,
-        llmFeasibility: 4,
         ironicPremise: 3,
         sceneGenerativePower: 4,
         contentCharge: 3,

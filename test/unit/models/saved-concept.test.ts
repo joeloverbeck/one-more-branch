@@ -14,7 +14,7 @@ function createEvaluatedConcept(): EvaluatedConcept {
       conflictEngine: 5,
       agencyBreadth: 4,
       noveltyLeverage: 3,
-      llmFeasibility: 4,
+
       ironicPremise: 3,
       sceneGenerativePower: 3,
       contentCharge: 3,
@@ -35,7 +35,7 @@ function createScoredConcept(): ScoredConcept {
       conflictEngine: 5,
       agencyBreadth: 4,
       noveltyLeverage: 3,
-      llmFeasibility: 4,
+
       ironicPremise: 3,
       sceneGenerativePower: 3,
       contentCharge: 3,
@@ -45,7 +45,6 @@ function createScoredConcept(): ScoredConcept {
       conflictEngine: ['Sustained pressure source'],
       agencyBreadth: ['Multiple strategic options'],
       noveltyLeverage: ['Memory economy angle'],
-      llmFeasibility: ['Clear constraints and institutions'],
       ironicPremise: ['Irony evidence'],
       sceneGenerativePower: ['Scene evidence'],
       contentCharge: ['Concrete impossibility present'],

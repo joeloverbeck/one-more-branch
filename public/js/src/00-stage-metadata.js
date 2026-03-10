@@ -1316,7 +1316,7 @@ const STAGE_PHRASE_POOLS = {
     'Checking agency breadth across strategy space...',
     'Auditing novelty for usefulness, not noise...',
     'Estimating branching fitness under real play...',
-    'Reviewing feasibility against LLM drift risk...',
+
     'Comparing tradeoffs instead of chasing perfection...',
     'Ranking candidates by long-term narrative leverage...',
     'Testing whether the constraints actually constrain...',

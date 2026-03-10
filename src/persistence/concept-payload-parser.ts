@@ -5,18 +5,27 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function upcastScores(scores: Record<string, unknown>): Record<string, unknown> {
-  if (!('contentCharge' in scores)) {
-    return { ...scores, contentCharge: 0 };
+  const patched = { ...scores };
+  if (!('contentCharge' in patched)) {
+    patched['contentCharge'] = 0;
   }
-  return scores;
+  delete patched['llmFeasibility'];
+  return patched;
 }
 
 function upcastEvaluatedConcept(ec: Record<string, unknown>): Record<string, unknown> {
-  const scores = ec['scores'];
+  const patched = { ...ec };
+  const scores = patched['scores'];
   if (isObjectRecord(scores)) {
-    return { ...ec, scores: upcastScores(scores) };
+    patched['scores'] = upcastScores(scores);
   }
-  return ec;
+  const evidence = patched['scoreEvidence'];
+  if (isObjectRecord(evidence)) {
+    const patchedEvidence = { ...evidence };
+    delete patchedEvidence['llmFeasibility'];
+    patched['scoreEvidence'] = patchedEvidence;
+  }
+  return patched;
 }
 
 function upcastSavedConceptPayload(value: unknown): unknown {

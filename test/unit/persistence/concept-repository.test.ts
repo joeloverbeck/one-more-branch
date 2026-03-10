@@ -34,7 +34,6 @@ function createSavedConcept(id: string): SavedConcept {
         conflictEngine: 5,
         agencyBreadth: 4,
         noveltyLeverage: 3,
-        llmFeasibility: 4,
         ironicPremise: 3,
         sceneGenerativePower: 3,
         contentCharge: 3,

@@ -54,7 +54,7 @@ function createContext(): ConceptStressTesterContext {
       conflictEngine: 4,
       agencyBreadth: 2,
       noveltyLeverage: 1,
-      llmFeasibility: 2,
+
       ironicPremise: 3,
       sceneGenerativePower: 3,
       contentCharge: 2,
@@ -188,7 +188,7 @@ describe('concept-stress-tester', () => {
     expect(systemMessage).toContain('hookStrength');
     expect(systemMessage).toContain('agencyBreadth');
     expect(systemMessage).toContain('noveltyLeverage');
-    expect(systemMessage).toContain('llmFeasibility');
+    expect(systemMessage).toContain('contentCharge');
   });
 
   it('buildConceptStressTesterPrompt includes adversarial directives', () => {

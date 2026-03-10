@@ -50,7 +50,6 @@ export function createConceptScoresFixture(): ConceptDimensionScores {
     conflictEngine: 4,
     agencyBreadth: 3,
     noveltyLeverage: 3,
-    llmFeasibility: 4,
     ironicPremise: 3,
     sceneGenerativePower: 4,
     contentCharge: 3,
@@ -78,7 +77,7 @@ export function createScoredConceptFixture(index = 1): ScoredConcept {
       conflictEngine: [`Conflict evidence ${index}`],
       agencyBreadth: [`Agency evidence ${index}`],
       noveltyLeverage: [`Novelty evidence ${index}`],
-      llmFeasibility: [`Feasibility evidence ${index}`],
+
       ironicPremise: [`Irony evidence ${index}`],
       sceneGenerativePower: [`Scene generative evidence ${index}`],
       contentCharge: [`Content charge evidence ${index}`],

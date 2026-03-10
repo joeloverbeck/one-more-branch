@@ -5,7 +5,7 @@
     { key: 'conflictEngine', label: 'Conflict' },
     { key: 'agencyBreadth', label: 'Agency' },
     { key: 'noveltyLeverage', label: 'Novelty' },
-    { key: 'llmFeasibility', label: 'Feasibility' },
+
     { key: 'ironicPremise', label: 'Irony' },
     { key: 'sceneGenerativePower', label: 'Scenes' },
   ];
