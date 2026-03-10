@@ -1,7 +1,7 @@
 import { CHOICE_TYPE_VALUES, PRIMARY_DELTA_VALUES } from '../../models/choice-enums.js';
 import { getStageModel } from '../../config/stage-model.js';
 import { logger } from '../../logging/index.js';
-import { logPrompt } from '../../logging/prompt-formatter.js';
+import { logPrompt, logResponse } from '../../logging/prompt-formatter.js';
 import {
   OPENROUTER_API_URL,
   readJsonResponse,
@@ -212,6 +212,7 @@ async function callSupplementaryChoices(
     const data = await readJsonResponse(response);
     const content = extractResponseContent(data, 'writer-choice-repair', model, SUPPLEMENTARY_MAX_TOKENS);
     const parsedMessage = parseMessageJsonContent(content);
+    logResponse(logger, 'writerChoiceRepair', parsedMessage.rawText);
     const parsed = parsedMessage.parsed;
 
     if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {

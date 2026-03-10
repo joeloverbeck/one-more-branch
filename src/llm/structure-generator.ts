@@ -1,6 +1,6 @@
 import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
-import { logger, logPrompt } from '../logging/index.js';
+import { logger, logPrompt, logResponse } from '../logging/index.js';
 import { getGenreObligationTags } from '../models/genre-obligations.js';
 import {
   OPENROUTER_API_URL,
@@ -144,7 +144,7 @@ export async function generateStoryStructure(
     ? expectedGenreObligationEntries.map((e) => e.tag)
     : null;
 
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) =>
         fetchStructure(
@@ -160,4 +160,6 @@ export async function generateStoryStructure(
       'structure'
     )
   );
+  logResponse(logger, 'structure', result.rawResponse);
+  return result;
 }

@@ -1,6 +1,6 @@
 import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
-import { logger, logPrompt } from '../logging/index.js';
+import { logger, logPrompt, logResponse } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
   extractResponseContent,
@@ -209,13 +209,15 @@ export async function generateSceneDirections(
   const messages = buildSceneIdeatorPrompt(context);
   logPrompt(logger, 'sceneIdeator', messages);
 
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => fetchSceneDirections(apiKey, m, messages, temperature, maxTokens),
       primaryModel,
       'sceneIdeator',
     )
   );
+  logResponse(logger, 'sceneIdeator', result.rawResponse);
+  return result;
 }
 
 export { parseSceneIdeatorResponse, parseSceneDirectionOption, validateDiversity };
