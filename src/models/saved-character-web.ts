@@ -31,6 +31,7 @@ export function isSavedCharacterWeb(value: unknown): value is SavedCharacterWeb 
     value['sourceConceptId'].length > 0 &&
     typeof value['protagonistName'] === 'string' &&
     isObjectRecord(value['inputs']) &&
+    typeof (value['inputs'] as Record<string, unknown>)['worldbuilding'] === 'string' &&
     Array.isArray(value['assignments']) &&
     Array.isArray(value['relationshipArchetypes']) &&
     typeof value['castDynamicsSummary'] === 'string'

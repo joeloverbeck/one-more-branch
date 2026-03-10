@@ -112,6 +112,7 @@ export interface CastPipelineInputs {
   readonly kernelSummary?: string;
   readonly conceptSummary?: string;
   readonly userNotes?: string;
+  readonly worldbuilding: string;
   readonly storyKernel?: StoryKernel;
   readonly conceptSpec?: ConceptSpec;
 }

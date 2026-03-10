@@ -11,6 +11,7 @@ export interface CharacterWebPromptContext {
   readonly kernelSummary?: string;
   readonly conceptSummary?: string;
   readonly userNotes?: string;
+  readonly worldbuilding: string;
   readonly storyKernel?: StoryKernel;
   readonly conceptSpec?: ConceptSpec;
 }
@@ -74,6 +75,10 @@ export function buildCharacterWebPrompt(context: CharacterWebPromptContext): Cha
     userSections.push(kernelSection.trim());
   } else if (context.kernelSummary) {
     userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
+  }
+
+  if (context.worldbuilding.length > 0) {
+    userSections.push(`WORLDBUILDING:\n${context.worldbuilding}\n\nCONSTRAINT: Ground character names, social positions, and occupations in the worldbuilding. Use world facts to determine what kinds of characters are plausible and what roles exist in this setting.`);
   }
 
   if (context.userNotes) {

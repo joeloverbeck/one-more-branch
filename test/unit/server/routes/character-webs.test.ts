@@ -249,6 +249,7 @@ describe('character-web routes', () => {
       'Shattered Compass',
       'concept-1',
       'Keep everyone dangerous.',
+      undefined,
     );
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({ success: true, web });

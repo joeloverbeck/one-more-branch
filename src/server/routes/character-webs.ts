@@ -13,6 +13,7 @@ interface CharacterWebCreateBody {
   readonly name?: unknown;
   readonly sourceConceptId?: unknown;
   readonly userNotes?: unknown;
+  readonly worldbuilding?: unknown;
 }
 
 interface CharacterWebGenerateBody {
@@ -177,6 +178,7 @@ characterWebRoutes.post(
       name,
       sourceConceptId,
       trimOptionalString(body.userNotes),
+      trimOptionalString(body.worldbuilding),
     );
 
     return res.status(201).json({ success: true, web });

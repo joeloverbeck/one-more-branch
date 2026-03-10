@@ -24,6 +24,7 @@ function createSavedCharacterWeb(id: string, updatedAt?: string): SavedCharacter
     inputs: {
       kernelSummary: 'A test kernel summary',
       conceptSummary: 'A test concept summary',
+      worldbuilding: '',
     },
     assignments: [
       {

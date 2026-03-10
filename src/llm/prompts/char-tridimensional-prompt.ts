@@ -104,6 +104,10 @@ export function buildCharTridimensionalPrompt(
     userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
+  if (context.worldbuilding.length > 0) {
+    userSections.push(`WORLDBUILDING:\n${context.worldbuilding}\n\nCONSTRAINT: Ground sociology in the worldbuilding — class systems, occupations, cultural norms, and institutions must reflect the world as described. Use world geography, climate, and resources to inform physiology where relevant.`);
+  }
+
   if (context.userNotes) {
     userSections.push(`USER NOTES:\n${context.userNotes}`);
   }

@@ -129,6 +129,7 @@ describe('buildCharTridimensionalPrompt', () => {
     const context: CharTridimensionalPromptContext = {
       webContext: createWebContext(),
       characterKernel: createCharacterKernel(),
+      worldbuilding: '',
     };
     const messages = buildCharTridimensionalPrompt(context);
 
@@ -144,6 +145,7 @@ describe('buildCharTridimensionalPrompt', () => {
     const context: CharTridimensionalPromptContext = {
       webContext: createWebContext(),
       characterKernel: createCharacterKernel(),
+      worldbuilding: '',
     };
     const messages = buildCharTridimensionalPrompt(context);
 
@@ -160,6 +162,7 @@ describe('buildCharTridimensionalPrompt', () => {
     const context: CharTridimensionalPromptContext = {
       webContext: createWebContext(),
       characterKernel: createCharacterKernel(),
+      worldbuilding: '',
     };
     const messages = buildCharTridimensionalPrompt(context);
 
@@ -172,6 +175,7 @@ describe('buildCharTridimensionalPrompt', () => {
     const context: CharTridimensionalPromptContext = {
       webContext: createWebContext(),
       characterKernel: createCharacterKernel(),
+      worldbuilding: '',
     };
     const messages = buildCharTridimensionalPrompt(context);
 
@@ -184,6 +188,7 @@ describe('buildCharTridimensionalPrompt', () => {
     const context: CharTridimensionalPromptContext = {
       webContext: createWebContext({ relationshipArchetypes: [] }),
       characterKernel: createCharacterKernel(),
+      worldbuilding: '',
     };
     const messages = buildCharTridimensionalPrompt(context);
 
@@ -195,6 +200,7 @@ describe('buildCharTridimensionalPrompt', () => {
       webContext: createWebContext(),
       characterKernel: createCharacterKernel(),
       kernelSummary: 'A story about power and betrayal.',
+      worldbuilding: '',
     };
     const messages = buildCharTridimensionalPrompt(context);
 
@@ -206,6 +212,7 @@ describe('buildCharTridimensionalPrompt', () => {
       webContext: createWebContext(),
       characterKernel: createCharacterKernel(),
       conceptSummary: 'Dark medieval fantasy.',
+      worldbuilding: '',
     };
     const messages = buildCharTridimensionalPrompt(context);
 
@@ -217,6 +224,7 @@ describe('buildCharTridimensionalPrompt', () => {
       webContext: createWebContext(),
       characterKernel: createCharacterKernel(),
       userNotes: 'Make him sympathetic.',
+      worldbuilding: '',
     };
     const messages = buildCharTridimensionalPrompt(context);
 
@@ -227,6 +235,7 @@ describe('buildCharTridimensionalPrompt', () => {
     const context: CharTridimensionalPromptContext = {
       webContext: createWebContext(),
       characterKernel: createCharacterKernel(),
+      worldbuilding: '',
     };
     const messages = buildCharTridimensionalPrompt(context);
 
@@ -303,7 +312,7 @@ describe('generateCharTridimensional', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await generateCharTridimensional(
-      { webContext: createWebContext(), characterKernel: createCharacterKernel() },
+      { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
       'test-api-key'
     );
 
@@ -323,6 +332,7 @@ describe('generateCharTridimensional', () => {
         webContext: createWebContext(),
         characterKernel: createCharacterKernel(),
         kernelSummary: 'A test kernel',
+        worldbuilding: '',
       },
       'test-api-key'
     );
@@ -343,7 +353,7 @@ describe('generateCharTridimensional', () => {
 
     await expect(
       generateCharTridimensional(
-        { webContext: createWebContext(), characterKernel: createCharacterKernel() },
+        { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
         'test-api-key'
       )
     ).rejects.toThrow(/missing characterName/);
@@ -356,7 +366,7 @@ describe('generateCharTridimensional', () => {
 
     await expect(
       generateCharTridimensional(
-        { webContext: createWebContext(), characterKernel: createCharacterKernel() },
+        { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
         'test-api-key'
       )
     ).rejects.toThrow(/missing physiology/);
@@ -369,7 +379,7 @@ describe('generateCharTridimensional', () => {
 
     await expect(
       generateCharTridimensional(
-        { webContext: createWebContext(), characterKernel: createCharacterKernel() },
+        { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
         'test-api-key'
       )
     ).rejects.toThrow(/missing sociology/);
@@ -382,7 +392,7 @@ describe('generateCharTridimensional', () => {
 
     await expect(
       generateCharTridimensional(
-        { webContext: createWebContext(), characterKernel: createCharacterKernel() },
+        { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
         'test-api-key'
       )
     ).rejects.toThrow(/missing psychology/);
@@ -395,7 +405,7 @@ describe('generateCharTridimensional', () => {
 
     await expect(
       generateCharTridimensional(
-        { webContext: createWebContext(), characterKernel: createCharacterKernel() },
+        { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
         'test-api-key'
       )
     ).rejects.toThrow(/missing derivationChain/);
@@ -408,7 +418,7 @@ describe('generateCharTridimensional', () => {
 
     await expect(
       generateCharTridimensional(
-        { webContext: createWebContext(), characterKernel: createCharacterKernel() },
+        { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
         'test-api-key'
       )
     ).rejects.toThrow(/missing or empty coreTraits/);
@@ -419,7 +429,7 @@ describe('generateCharTridimensional', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await generateCharTridimensional(
-      { webContext: createWebContext(), characterKernel: createCharacterKernel(), kernelSummary: 'Test' },
+      { webContext: createWebContext(), characterKernel: createCharacterKernel(), kernelSummary: 'Test', worldbuilding: '' },
       'test-api-key'
     );
 
@@ -435,7 +445,7 @@ describe('generateCharTridimensional', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await generateCharTridimensional(
-      { webContext: createWebContext(), characterKernel: createCharacterKernel() },
+      { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
       'test-api-key'
     );
 

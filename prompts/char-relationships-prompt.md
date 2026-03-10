@@ -24,6 +24,7 @@ Deepen the lightweight relationship archetypes from the character web into drama
 | `kernelSummary` | `string?` | Compact text summary of the story kernel (fallback) |
 | `conceptSummary` | `string?` | Compact text summary of the concept spec (fallback) |
 | `userNotes` | `string?` | Free-text user notes |
+| `worldbuilding` | `string` | Raw worldbuilding prose (geography, cultures, factions, history, magic, technology). Empty string if none provided. |
 | `webContext` | `CharacterWebContext` | Character's role assignment, archetypes, cast dynamics |
 | `storyKernel` | `StoryKernel?` | Full typed kernel (~10 fields + valueSpectrum) |
 | `conceptSpec` | `ConceptSpec?` | Full typed concept spec (~25 fields) |
@@ -138,6 +139,13 @@ CONSTRAINT: Use the value spectrum to position each relationship at a distinct p
 {{else if kernelSummary}}
 STORY KERNEL:
 {{kernelSummary}}
+{{/if}}
+
+{{#if worldbuilding}}
+WORLDBUILDING:
+{{worldbuilding}}
+
+CONSTRAINT: Ground relationship dynamics in the world's social structures, political factions, and cultural norms. Use worldbuilding to determine what alliances, hierarchies, and taboos shape how characters relate.
 {{/if}}
 
 {{#if userNotes}}

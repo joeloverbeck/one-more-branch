@@ -110,6 +110,10 @@ export function buildCharAgencyPrompt(context: CharAgencyPromptContext): ChatMes
     userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
+  if (context.worldbuilding.length > 0) {
+    userSections.push(`WORLDBUILDING:\n${context.worldbuilding}\n\nCONSTRAINT: Calibrate beliefs, knowledge, and false beliefs to world facts. Characters should know and misunderstand things consistent with their position in this specific world.`);
+  }
+
   if (context.userNotes) {
     userSections.push(`USER NOTES:\n${context.userNotes}`);
   }

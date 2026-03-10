@@ -23,6 +23,7 @@ The Character Web prompt is the first LLM call in the character-building pipelin
 | `kernelSummary` | `string?` | Compact text summary of the story kernel (fallback when typed object unavailable) |
 | `conceptSummary` | `string?` | Compact text summary of the concept spec (fallback when typed object unavailable) |
 | `userNotes` | `string?` | Free-text user notes for cast design guidance |
+| `worldbuilding` | `string` | Raw worldbuilding prose (geography, cultures, factions, history, magic, technology). Empty string if none provided. |
 | `storyKernel` | `StoryKernel?` | Full typed kernel object (~10 fields + valueSpectrum) |
 | `conceptSpec` | `ConceptSpec?` | Full typed concept spec (~25 fields) |
 
@@ -91,6 +92,13 @@ CONSTRAINT: Use value spectrum to position each cast member at a distinct moral 
 {{else if kernelSummary}}
 STORY KERNEL:
 {{kernelSummary}}
+{{/if}}
+
+{{#if worldbuilding}}
+WORLDBUILDING:
+{{worldbuilding}}
+
+CONSTRAINT: Ground character names, social positions, and occupations in the worldbuilding. Use world facts to determine what kinds of characters are plausible and what roles exist in this setting.
 {{/if}}
 
 {{#if userNotes}}
@@ -175,6 +183,6 @@ The character web output is persisted as a `SavedCharacterWeb` and feeds into:
 
 ## Contract Notes
 
-- `CastPipelineInputs` carries both string summaries (`kernelSummary`, `conceptSummary`) and typed objects (`storyKernel`, `conceptSpec`). Typed objects take priority; string summaries are fallback.
+- `CastPipelineInputs` carries both string summaries (`kernelSummary`, `conceptSummary`), typed objects (`storyKernel`, `conceptSpec`), and `worldbuilding` (raw prose, empty string if not provided). Typed objects take priority; string summaries are fallback.
 - The service's `deriveInputsFromConcept()` loads the concept and kernel from persistence, populating both string summaries and typed objects.
 - Shared section builders in `concept-kernel-sections.ts` are reused by the entity-decomposer, character web, and all 5 character dev stage prompts.

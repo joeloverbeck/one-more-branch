@@ -24,6 +24,7 @@ Model the character's decision-making agency: replanning policy, emotion salienc
 | `kernelSummary` | `string?` | Compact text summary of the story kernel (fallback) |
 | `conceptSummary` | `string?` | Compact text summary of the concept spec (fallback) |
 | `userNotes` | `string?` | Free-text user notes |
+| `worldbuilding` | `string` | Raw worldbuilding prose (geography, cultures, factions, history, magic, technology). Empty string if none provided. |
 | `webContext` | `CharacterWebContext` | Character's role assignment, archetypes, cast dynamics |
 | `storyKernel` | `StoryKernel?` | Full typed kernel (~10 fields + valueSpectrum) |
 | `conceptSpec` | `ConceptSpec?` | Full typed concept spec (~25 fields) |
@@ -116,6 +117,13 @@ CONSTRAINT: Use the value spectrum to ground core beliefs at a specific moral po
 {{else if kernelSummary}}
 STORY KERNEL:
 {{kernelSummary}}
+{{/if}}
+
+{{#if worldbuilding}}
+WORLDBUILDING:
+{{worldbuilding}}
+
+CONSTRAINT: Calibrate beliefs, knowledge, and false beliefs to world facts. Characters should know and misunderstand things consistent with their position in this specific world.
 {{/if}}
 
 {{#if userNotes}}

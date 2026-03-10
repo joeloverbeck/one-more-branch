@@ -160,6 +160,7 @@ describe('buildCharAgencyPrompt', () => {
       webContext: createWebContext(),
       characterKernel: createCharacterKernel(),
       tridimensionalProfile: createTridimensionalProfile(),
+      worldbuilding: '',
     };
 
     const messages = buildCharAgencyPrompt(context);
@@ -179,6 +180,7 @@ describe('buildCharAgencyPrompt', () => {
       webContext: createWebContext(),
       characterKernel: createCharacterKernel(),
       tridimensionalProfile: createTridimensionalProfile(),
+      worldbuilding: '',
     });
 
     expect(messages[1].content).toContain('RELATIONSHIP ARCHETYPES:');
@@ -195,6 +197,7 @@ describe('buildCharAgencyPrompt', () => {
       kernelSummary: 'A story about power and betrayal.',
       conceptSummary: 'Dark medieval fantasy.',
       userNotes: 'Make him dangerous but sympathetic.',
+      worldbuilding: '',
     });
 
     expect(messages[1].content).toContain('STORY KERNEL:\nA story about power and betrayal.');
@@ -270,6 +273,7 @@ describe('generateCharAgency', () => {
         webContext: createWebContext(),
         characterKernel: createCharacterKernel(),
         tridimensionalProfile: createTridimensionalProfile(),
+        worldbuilding: '',
       },
       'test-api-key'
     );
@@ -303,6 +307,7 @@ describe('generateCharAgency', () => {
           webContext: createWebContext(),
           characterKernel: createCharacterKernel(),
           tridimensionalProfile: createTridimensionalProfile(),
+          worldbuilding: '',
         },
         'test-api-key'
       )
@@ -320,6 +325,7 @@ describe('generateCharAgency', () => {
           webContext: createWebContext(),
           characterKernel: createCharacterKernel(),
           tridimensionalProfile: createTridimensionalProfile(),
+          worldbuilding: '',
         },
         'test-api-key'
       )
@@ -342,6 +348,7 @@ describe('generateCharAgency', () => {
           webContext: createWebContext(),
           characterKernel: createCharacterKernel(),
           tridimensionalProfile: createTridimensionalProfile(),
+          worldbuilding: '',
         },
         'test-api-key'
       )
@@ -359,6 +366,7 @@ describe('generateCharAgency', () => {
           webContext: createWebContext(),
           characterKernel: createCharacterKernel(),
           tridimensionalProfile: createTridimensionalProfile(),
+          worldbuilding: '',
         },
         'test-api-key'
       )
@@ -376,6 +384,7 @@ describe('generateCharAgency', () => {
           webContext: createWebContext(),
           characterKernel: createCharacterKernel(),
           tridimensionalProfile: createTridimensionalProfile(),
+          worldbuilding: '',
         },
         'test-api-key'
       )
@@ -390,6 +399,7 @@ describe('generateCharAgency', () => {
         webContext: createWebContext(),
         characterKernel: createCharacterKernel(),
         tridimensionalProfile: createTridimensionalProfile(),
+        worldbuilding: '',
       },
       'test-api-key'
     );
