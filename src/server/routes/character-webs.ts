@@ -385,6 +385,36 @@ characterWebRoutes.get(
   })
 );
 
+characterWebRoutes.patch(
+  '/api/characters/:charId/stages/:stage',
+  wrapAsyncRoute(async (req: Request, res: Response) => {
+    const charId = readRouteParam(req.params['charId']);
+    const stage = parseStage(req.params['stage']);
+
+    if (stage === null) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'Stage must be an integer from 1 to 5' });
+    }
+
+    try {
+      const character = await characterWebService.patchCharacterStage(
+        charId,
+        stage,
+        req.body,
+      );
+      return res.json({ success: true, character });
+    } catch (error) {
+      const knownError = mapKnownError(error);
+      if (knownError) {
+        return res.status(knownError.status).json({ success: false, error: knownError.message });
+      }
+
+      throw error;
+    }
+  })
+);
+
 characterWebRoutes.delete(
   '/api/characters/:charId',
   wrapAsyncRoute(async (req: Request, res: Response) => {

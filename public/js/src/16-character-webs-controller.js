@@ -151,16 +151,14 @@ function initCharacterWebsPage() {
     }
   }
 
-  function renderStagePayload(value) {
-    if (value === null || value === undefined) {
-      return '<p class="form-help">Not generated yet.</p>';
-    }
+  function getStagePayload(stageNumber) {
+    if (!state.selectedCharacter) return null;
+    var fieldMap = { 1: 'characterKernel', 2: 'tridimensionalProfile', 3: 'agencyModel', 4: 'deepRelationships', 5: 'textualPresentation' };
+    return state.selectedCharacter[fieldMap[stageNumber]] || null;
+  }
 
-    if (typeof value === 'string') {
-      return '<p>' + escapeHtmlWithBreaks(value) + '</p>';
-    }
-
-    return '<pre>' + escapeHtml(JSON.stringify(value, null, 2)) + '</pre>';
+  function onStageSaved(updatedCharacter) {
+    state.selectedCharacter = updatedCharacter;
   }
 
   function renderWebList() {
@@ -406,7 +404,7 @@ function initCharacterWebsPage() {
           '<details class="form-section-collapsible" open>' +
           '<summary>' +
           escapeHtml(definition.label) +
-          ' • ' +
+          ' \u2022 ' +
           escapeHtml(isComplete ? 'Complete' : previousComplete ? 'Ready' : 'Locked') +
           '</summary>' +
           '<div class="form-section-collapsible__body">' +
@@ -425,12 +423,14 @@ function initCharacterWebsPage() {
           (isComplete ? 'Regenerate' : 'Generate') +
           '</button>' +
           '</div>' +
-          renderStagePayload(payload) +
+          renderStageBlock(definition.stage, payload, character.id, character.characterName) +
           '</div>' +
           '</details>'
         );
       })
       .join('');
+
+    attachStageBlockListeners(stageList, getStagePayload, onStageSaved);
 
     stageList.querySelectorAll('.character-stage-btn').forEach(function (button) {
       button.addEventListener('click', function () {
@@ -520,8 +520,11 @@ function initCharacterWebsPage() {
       if (!targetWebId && state.selectedWeb && state.selectedWeb.web) {
         targetWebId = state.selectedWeb.web.id;
       }
+
       if (!targetWebId) {
-        targetWebId = state.webs[0].id;
+        state.selectedWeb = null;
+        renderWebDetails();
+        return;
       }
 
       await fetchJson(
@@ -628,6 +631,7 @@ function initCharacterWebsPage() {
         { method: 'DELETE' },
         'Failed to delete character web'
       );
+      state.selectedWeb = null;
       await refreshWebs();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to delete character web');

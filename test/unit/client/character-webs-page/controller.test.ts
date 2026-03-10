@@ -23,7 +23,7 @@ describe('character webs page controller', () => {
     document.body.innerHTML = '';
   });
 
-  it('loads saved character webs and opens the first web automatically', async () => {
+  it('loads saved character webs without auto-selecting the first web', async () => {
     global.fetch = jest.fn((url: string) => {
       if (url.includes('/character-webs/api/list')) {
         return Promise.resolve(
@@ -41,34 +41,6 @@ describe('character webs page controller', () => {
                 castDynamicsSummary: 'Trust corrodes every alliance.',
               },
             ],
-          })
-        );
-      }
-
-      if (url.includes('/character-webs/api/web-1')) {
-        return Promise.resolve(
-          mockJsonResponse({
-            success: true,
-            web: {
-              id: 'web-1',
-              name: 'Shattered Compass',
-              createdAt: '2026-03-09T12:00:00.000Z',
-              updatedAt: '2026-03-09T12:00:00.000Z',
-              protagonistName: 'Iria Vale',
-              assignments: [
-                {
-                  characterName: 'Iria Vale',
-                  isProtagonist: true,
-                  storyFunction: 'CATALYST',
-                  characterDepth: 'ROUND',
-                  narrativeRole: 'A disgraced navigator.',
-                  conflictRelationship: 'Needs allies but distrusts them.',
-                },
-              ],
-              relationshipArchetypes: [],
-              castDynamicsSummary: 'Trust corrodes every alliance.',
-            },
-            characters: [],
           })
         );
       }
@@ -91,10 +63,7 @@ describe('character webs page controller', () => {
     expect(document.getElementById('character-web-list')?.textContent).toContain(
       'Shattered Compass'
     );
-    expect(document.getElementById('selected-character-web-name')?.textContent).toBe(
-      'Shattered Compass'
-    );
-    expect(document.getElementById('character-web-details')?.style.display).toBe('block');
+    expect(document.getElementById('character-web-details')?.style.display).toBe('none');
   });
 
   it('creates a new character web with trimmed summaries and refreshes the page state', async () => {
@@ -286,6 +255,10 @@ describe('character webs page controller', () => {
 
     document.body.innerHTML = buildCharacterWebsPageHtml();
     loadAppAndInit();
+    await flushClientWork();
+
+    // Explicitly open the web (no auto-select on page load)
+    (document.querySelector('.character-web-select-btn') as HTMLButtonElement).click();
     await flushClientWork();
 
     (document.getElementById('character-webs-api-key') as HTMLInputElement).value =

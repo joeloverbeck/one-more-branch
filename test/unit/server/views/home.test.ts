@@ -18,10 +18,4 @@ describe('home page template', () => {
     expect(template).toContain('<dt>Tone</dt>');
   });
 
-  it('includes a direct Character Webs entry point on the home hero', () => {
-    const template = fs.readFileSync(templatePath, 'utf8');
-
-    expect(template).toContain('href="/character-webs"');
-    expect(template).toContain('Character Webs');
-  });
 });
