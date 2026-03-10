@@ -25,28 +25,25 @@ const ADVERSARIAL_DIRECTIVES = `ADVERSARIAL DIRECTIVES:
 function buildWeakDimensionList(scores: ConceptDimensionScores): readonly string[] {
   const weak: string[] = [];
 
-  if (scores.hookStrength < CONCEPT_PASS_THRESHOLDS.hookStrength) {
+  if (scores.hookStrength <= CONCEPT_PASS_THRESHOLDS.hookStrength) {
     weak.push('hookStrength');
   }
-  if (scores.conflictEngine < CONCEPT_PASS_THRESHOLDS.conflictEngine) {
+  if (scores.conflictEngine <= CONCEPT_PASS_THRESHOLDS.conflictEngine) {
     weak.push('conflictEngine');
   }
-  if (scores.agencyBreadth < CONCEPT_PASS_THRESHOLDS.agencyBreadth) {
+  if (scores.agencyBreadth <= CONCEPT_PASS_THRESHOLDS.agencyBreadth) {
     weak.push('agencyBreadth');
   }
-  if (scores.noveltyLeverage < CONCEPT_PASS_THRESHOLDS.noveltyLeverage) {
+  if (scores.noveltyLeverage <= CONCEPT_PASS_THRESHOLDS.noveltyLeverage) {
     weak.push('noveltyLeverage');
   }
-  if (scores.llmFeasibility < CONCEPT_PASS_THRESHOLDS.llmFeasibility) {
-    weak.push('llmFeasibility');
-  }
-  if (scores.ironicPremise < CONCEPT_PASS_THRESHOLDS.ironicPremise) {
+  if (scores.ironicPremise <= CONCEPT_PASS_THRESHOLDS.ironicPremise) {
     weak.push('ironicPremise');
   }
-  if (scores.sceneGenerativePower < CONCEPT_PASS_THRESHOLDS.sceneGenerativePower) {
+  if (scores.sceneGenerativePower <= CONCEPT_PASS_THRESHOLDS.sceneGenerativePower) {
     weak.push('sceneGenerativePower');
   }
-  if (scores.contentCharge < CONCEPT_PASS_THRESHOLDS.contentCharge) {
+  if (scores.contentCharge <= CONCEPT_PASS_THRESHOLDS.contentCharge) {
     weak.push('contentCharge');
   }
 

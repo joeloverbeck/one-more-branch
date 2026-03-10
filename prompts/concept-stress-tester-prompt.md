@@ -40,7 +40,7 @@ WILDNESS INVARIANT EROSION CHECK:
 - Wildness invariant erosion is MORE serious than other drift risks. A concept that passes all other checks but loses its wildness invariant has failed.
 
 WEAK DIMENSION FOCUS:
-- Prioritize reinforcement for: {{dimensions below pass thresholds (hookStrength, conflictEngine, agencyBreadth, noveltyLeverage, llmFeasibility, ironicPremise, sceneGenerativePower), comma-separated, or "none below threshold"}}
+- Prioritize reinforcement for: {{dimensions below pass thresholds (hookStrength, conflictEngine, agencyBreadth, noveltyLeverage, ironicPremise, sceneGenerativePower, contentCharge), comma-separated, or "none below threshold"}}
 - If no dimensions are below threshold, still harden against drift and hostile player strategies.
 ```
 

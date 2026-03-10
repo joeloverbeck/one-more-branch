@@ -34,7 +34,7 @@ SCORING RUBRIC (0-5):
 - conflictEngine: Stakes depth, pressure mechanism quality, recurring dilemma strength, ironicTwist quality, and conflictType-to-conflictAxis coherence (e.g., INDIVIDUAL_VS_SYSTEM axis + PERSON_VS_SOCIETY type = strong pairing; mismatched pairings need strong justification).
 - agencyBreadth: Action verb diversity, strategy range, and meaningful choice space.
 - noveltyLeverage: Familiar frame plus a load-bearing differentiator.
-- llmFeasibility: Rule enforceability, drift resistance, and implementation tractability.
+
 - ironicPremise: 0-1 premise is straightforward with no built-in contradiction; 2-3 mild irony or subtext present; 4-5 the premise contains a deep structural irony where the protagonist's strength is also their undoing, or the world's rules create inherently paradoxical choices.
 - sceneGenerativePower: 0-1 premise evokes only abstract tensions; 2-3 a few specific scenes come to mind; 4-5 reading the premise immediately triggers 5+ vivid, distinct scenes you can see playing out.
 - contentCharge: 0-1 concept has no recognizable content-packet DNA; 2-3 packet elements are present but cosmetically applied; 4-5 the concept's identity, world rules, and conflict engine are inseparable from the content packet's wildness invariant and social engine.
@@ -44,7 +44,7 @@ DIMENSION WEIGHTS:
 - conflictEngine: weight {{CONCEPT_SCORING_WEIGHTS.conflictEngine}}
 - agencyBreadth: weight {{CONCEPT_SCORING_WEIGHTS.agencyBreadth}}
 - noveltyLeverage: weight {{CONCEPT_SCORING_WEIGHTS.noveltyLeverage}}
-- llmFeasibility: weight {{CONCEPT_SCORING_WEIGHTS.llmFeasibility}}
+
 - ironicPremise: weight {{CONCEPT_SCORING_WEIGHTS.ironicPremise}}
 - sceneGenerativePower: weight {{CONCEPT_SCORING_WEIGHTS.sceneGenerativePower}}
 - contentCharge: weight {{CONCEPT_SCORING_WEIGHTS.contentCharge}}
@@ -105,7 +105,7 @@ OUTPUT REQUIREMENTS:
         "conflictEngine": 0,
         "agencyBreadth": 0,
         "noveltyLeverage": 0,
-        "llmFeasibility": 0,
+
         "ironicPremise": 0,
         "sceneGenerativePower": 0,
         "contentCharge": 0
@@ -115,7 +115,7 @@ OUTPUT REQUIREMENTS:
         "conflictEngine": ["..."],
         "agencyBreadth": ["..."],
         "noveltyLeverage": ["..."],
-        "llmFeasibility": ["..."],
+
         "ironicPremise": ["..."],
         "sceneGenerativePower": ["..."],
         "contentCharge": ["..."]
@@ -146,7 +146,7 @@ SCORING RUBRIC (0-5):
 - conflictEngine: Stakes depth, pressure mechanism quality, recurring dilemma strength, ironicTwist quality, and conflictType-to-conflictAxis coherence (e.g., INDIVIDUAL_VS_SYSTEM axis + PERSON_VS_SOCIETY type = strong pairing; mismatched pairings need strong justification).
 - agencyBreadth: Action verb diversity, strategy range, and meaningful choice space.
 - noveltyLeverage: Familiar frame plus a load-bearing differentiator.
-- llmFeasibility: Rule enforceability, drift resistance, and implementation tractability.
+
 - ironicPremise: 0-1 premise is straightforward with no built-in contradiction; 2-3 mild irony or subtext present; 4-5 the premise contains a deep structural irony where the protagonist's strength is also their undoing, or the world's rules create inherently paradoxical choices.
 - sceneGenerativePower: 0-1 premise evokes only abstract tensions; 2-3 a few specific scenes come to mind; 4-5 reading the premise immediately triggers 5+ vivid, distinct scenes you can see playing out.
 - contentCharge: 0-1 concept has no recognizable content-packet DNA; 2-3 packet elements are present but cosmetically applied; 4-5 the concept's identity, world rules, and conflict engine are inseparable from the content packet's wildness invariant and social engine.
@@ -156,7 +156,7 @@ DIMENSION WEIGHTS:
 - conflictEngine: weight {{CONCEPT_SCORING_WEIGHTS.conflictEngine}}
 - agencyBreadth: weight {{CONCEPT_SCORING_WEIGHTS.agencyBreadth}}
 - noveltyLeverage: weight {{CONCEPT_SCORING_WEIGHTS.noveltyLeverage}}
-- llmFeasibility: weight {{CONCEPT_SCORING_WEIGHTS.llmFeasibility}}
+
 - ironicPremise: weight {{CONCEPT_SCORING_WEIGHTS.ironicPremise}}
 - sceneGenerativePower: weight {{CONCEPT_SCORING_WEIGHTS.sceneGenerativePower}}
 - contentCharge: weight {{CONCEPT_SCORING_WEIGHTS.contentCharge}}

@@ -42,7 +42,6 @@ function createScoredConceptPayload(index: number): {
     conflictEngine: number;
     agencyBreadth: number;
     noveltyLeverage: number;
-    llmFeasibility: number;
     ironicPremise: number;
     sceneGenerativePower: number;
     contentCharge: number;
@@ -52,7 +51,6 @@ function createScoredConceptPayload(index: number): {
     conflictEngine: readonly string[];
     agencyBreadth: readonly string[];
     noveltyLeverage: readonly string[];
-    llmFeasibility: readonly string[];
     ironicPremise: readonly string[];
     sceneGenerativePower: readonly string[];
     contentCharge: readonly string[];
@@ -65,7 +63,6 @@ function createScoredConceptPayload(index: number): {
       conflictEngine: 4,
       agencyBreadth: 3,
       noveltyLeverage: 3,
-      llmFeasibility: 5,
       ironicPremise: 3,
       sceneGenerativePower: 3,
       contentCharge: 3,
@@ -75,7 +72,6 @@ function createScoredConceptPayload(index: number): {
       conflictEngine: [`Conflict evidence ${index}`],
       agencyBreadth: [`Agency evidence ${index}`],
       noveltyLeverage: [`Novelty evidence ${index}`],
-      llmFeasibility: [`Feasibility evidence ${index}`],
       ironicPremise: ['Irony evidence'],
       sceneGenerativePower: ['Scene evidence'],
       contentCharge: ['Content charge evidence'],

@@ -201,7 +201,6 @@ export interface ConceptDimensionScores {
   readonly conflictEngine: number;
   readonly agencyBreadth: number;
   readonly noveltyLeverage: number;
-  readonly llmFeasibility: number;
   readonly ironicPremise: number;
   readonly sceneGenerativePower: number;
   readonly contentCharge: number;
@@ -212,7 +211,6 @@ export interface ConceptScoreEvidence {
   readonly conflictEngine: readonly string[];
   readonly agencyBreadth: readonly string[];
   readonly noveltyLeverage: readonly string[];
-  readonly llmFeasibility: readonly string[];
   readonly ironicPremise: readonly string[];
   readonly sceneGenerativePower: readonly string[];
   readonly contentCharge: readonly string[];
@@ -472,14 +470,13 @@ export interface ConceptVerificationResult {
 }
 
 export const CONCEPT_SCORING_WEIGHTS = {
-  hookStrength: 10,
-  conflictEngine: 18,
-  agencyBreadth: 15,
-  noveltyLeverage: 10,
-  llmFeasibility: 18,
-  ironicPremise: 14,
-  sceneGenerativePower: 5,
-  contentCharge: 10,
+  hookStrength: 12,
+  conflictEngine: 22,
+  agencyBreadth: 18,
+  noveltyLeverage: 12,
+  ironicPremise: 17,
+  sceneGenerativePower: 6,
+  contentCharge: 13,
 } as const;
 
 export const CONCEPT_PASS_THRESHOLDS = {
@@ -487,7 +484,6 @@ export const CONCEPT_PASS_THRESHOLDS = {
   conflictEngine: 3,
   agencyBreadth: 3,
   noveltyLeverage: 2,
-  llmFeasibility: 3,
   ironicPremise: 3,
   sceneGenerativePower: 3,
   contentCharge: 2,
@@ -499,7 +495,6 @@ export function computeOverallScore(scores: ConceptDimensionScores): number {
     (scores.conflictEngine * CONCEPT_SCORING_WEIGHTS.conflictEngine) / 5 +
     (scores.agencyBreadth * CONCEPT_SCORING_WEIGHTS.agencyBreadth) / 5 +
     (scores.noveltyLeverage * CONCEPT_SCORING_WEIGHTS.noveltyLeverage) / 5 +
-    (scores.llmFeasibility * CONCEPT_SCORING_WEIGHTS.llmFeasibility) / 5 +
     (scores.ironicPremise * CONCEPT_SCORING_WEIGHTS.ironicPremise) / 5 +
     (scores.sceneGenerativePower * CONCEPT_SCORING_WEIGHTS.sceneGenerativePower) / 5 +
     (scores.contentCharge * CONCEPT_SCORING_WEIGHTS.contentCharge) / 5
@@ -512,7 +507,6 @@ export function passesConceptThresholds(scores: ConceptDimensionScores): boolean
     scores.conflictEngine >= CONCEPT_PASS_THRESHOLDS.conflictEngine &&
     scores.agencyBreadth >= CONCEPT_PASS_THRESHOLDS.agencyBreadth &&
     scores.noveltyLeverage >= CONCEPT_PASS_THRESHOLDS.noveltyLeverage &&
-    scores.llmFeasibility >= CONCEPT_PASS_THRESHOLDS.llmFeasibility &&
     scores.ironicPremise >= CONCEPT_PASS_THRESHOLDS.ironicPremise &&
     scores.sceneGenerativePower >= CONCEPT_PASS_THRESHOLDS.sceneGenerativePower &&
     scores.contentCharge >= CONCEPT_PASS_THRESHOLDS.contentCharge

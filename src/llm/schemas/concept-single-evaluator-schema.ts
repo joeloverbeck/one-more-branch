@@ -8,7 +8,7 @@ const SCORE_SCHEMA = {
     'conflictEngine',
     'agencyBreadth',
     'noveltyLeverage',
-    'llmFeasibility',
+
     'ironicPremise',
     'sceneGenerativePower',
     'contentCharge',
@@ -18,7 +18,7 @@ const SCORE_SCHEMA = {
     conflictEngine: { type: 'number' },
     agencyBreadth: { type: 'number' },
     noveltyLeverage: { type: 'number' },
-    llmFeasibility: { type: 'number' },
+
     ironicPremise: { type: 'number' },
     sceneGenerativePower: { type: 'number' },
     contentCharge: { type: 'number' },
@@ -33,7 +33,7 @@ const SCORE_EVIDENCE_SCHEMA = {
     'conflictEngine',
     'agencyBreadth',
     'noveltyLeverage',
-    'llmFeasibility',
+
     'ironicPremise',
     'sceneGenerativePower',
     'contentCharge',
@@ -43,7 +43,7 @@ const SCORE_EVIDENCE_SCHEMA = {
     conflictEngine: { type: 'array', items: { type: 'string' }, minItems: 1 },
     agencyBreadth: { type: 'array', items: { type: 'string' }, minItems: 1 },
     noveltyLeverage: { type: 'array', items: { type: 'string' }, minItems: 1 },
-    llmFeasibility: { type: 'array', items: { type: 'string' }, minItems: 1 },
+
     ironicPremise: { type: 'array', items: { type: 'string' }, minItems: 1 },
     sceneGenerativePower: { type: 'array', items: { type: 'string' }, minItems: 1 },
     contentCharge: { type: 'array', items: { type: 'string' }, minItems: 1 },

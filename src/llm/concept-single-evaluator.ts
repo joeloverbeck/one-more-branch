@@ -80,7 +80,6 @@ function parseScores(value: unknown): ConceptDimensionScores {
     conflictEngine: parseClampedScore(data['conflictEngine'], 'conflictEngine', label),
     agencyBreadth: parseClampedScore(data['agencyBreadth'], 'agencyBreadth', label),
     noveltyLeverage: parseClampedScore(data['noveltyLeverage'], 'noveltyLeverage', label),
-    llmFeasibility: parseClampedScore(data['llmFeasibility'], 'llmFeasibility', label),
     ironicPremise: parseClampedScore(data['ironicPremise'], 'ironicPremise', label),
     sceneGenerativePower: parseClampedScore(
       data['sceneGenerativePower'],
@@ -103,7 +102,6 @@ function parseScoreEvidence(value: unknown): ConceptScoreEvidence {
     conflictEngine: requireNonEmptyStringArray(data['conflictEngine'], 'conflictEngine', ev),
     agencyBreadth: requireNonEmptyStringArray(data['agencyBreadth'], 'agencyBreadth', ev),
     noveltyLeverage: requireNonEmptyStringArray(data['noveltyLeverage'], 'noveltyLeverage', ev),
-    llmFeasibility: requireNonEmptyStringArray(data['llmFeasibility'], 'llmFeasibility', ev),
     ironicPremise: requireNonEmptyStringArray(data['ironicPremise'], 'ironicPremise', ev),
     sceneGenerativePower: requireNonEmptyStringArray(
       data['sceneGenerativePower'],
