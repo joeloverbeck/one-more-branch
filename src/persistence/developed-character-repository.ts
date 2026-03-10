@@ -7,6 +7,24 @@ import {
 } from './file-utils.js';
 import { createJsonEntityRepository } from './json-entity-repository.js';
 
+function parseDevelopedCharacterEntity(value: unknown): SavedDevelopedCharacter {
+  if (typeof value !== 'object' || value === null) {
+    throw new Error('Invalid developed character data');
+  }
+
+  const record = value as Record<string, unknown>;
+  // Strip legacy fields that are no longer part of the persisted model
+  const { sourceWebName: _, webContext: __, ...rest } = record;
+  void _;
+  void __;
+
+  if (!isSavedDevelopedCharacter(rest)) {
+    throw new Error('Invalid developed character after legacy field removal');
+  }
+
+  return rest;
+}
+
 const developedCharacterRepository = createJsonEntityRepository<SavedDevelopedCharacter>({
   lockPrefix: 'developed-character',
   entityLabel: 'developed character',
@@ -15,6 +33,7 @@ const developedCharacterRepository = createJsonEntityRepository<SavedDevelopedCh
   getDir: getDevelopedCharactersDir,
   getFilePath: getDevelopedCharacterFilePath,
   isEntity: isSavedDevelopedCharacter,
+  parseEntity: parseDevelopedCharacterEntity,
 });
 
 export async function saveDevelopedCharacter(char: SavedDevelopedCharacter): Promise<void> {

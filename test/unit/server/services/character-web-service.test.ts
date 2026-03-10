@@ -15,7 +15,10 @@ import type {
 } from '@/models/character-pipeline-types';
 import type { DecomposedCharacter } from '@/models/decomposed-character';
 import type { SavedCharacterWeb } from '@/models/saved-character-web';
-import type { SavedDevelopedCharacter } from '@/models/saved-developed-character';
+import type {
+  CharacterWebContext,
+  SavedDevelopedCharacter,
+} from '@/models/saved-developed-character';
 import {
   createCharacterWebService,
   type CharacterWebService,
@@ -92,13 +95,6 @@ function createCharacter(
     createdAt: '2026-03-09T12:00:00.000Z',
     updatedAt: '2026-03-09T12:00:00.000Z',
     sourceWebId: 'web-1',
-    sourceWebName: 'Shattered Compass',
-    webContext: {
-      assignment: createAssignment(),
-      protagonistName: 'Iria Vale',
-      relationshipArchetypes: createArchetypes(),
-      castDynamicsSummary: 'The crew survives by weaponizing trust they do not actually possess.',
-    },
     characterKernel: null,
     tridimensionalProfile: null,
     agencyModel: null,
@@ -293,7 +289,7 @@ function createDeps(): jest.Mocked<CharacterWebServiceDeps> {
       rawResponse: 'raw-stage',
     } satisfies RunCharacterStageResult),
     toDecomposedCharacter: jest
-      .fn<DecomposedCharacter, [SavedDevelopedCharacter]>()
+      .fn<DecomposedCharacter, [SavedDevelopedCharacter, CharacterWebContext]>()
       .mockImplementation((character) => createDecomposedCharacter(character.characterName)),
     toDecomposedCharacterFromWeb: jest
       .fn<DecomposedCharacter, [CastRoleAssignment, readonly RelationshipArchetype[], string]>()
@@ -402,14 +398,6 @@ describe('character-web-service', () => {
       createdAt: '2026-03-09T12:00:00.000Z',
       updatedAt: '2026-03-09T12:00:00.000Z',
       sourceWebId: 'web-1',
-      sourceWebName: 'Shattered Compass',
-      webContext: {
-        assignment: createWeb().assignments[1],
-        protagonistName: 'Iria Vale',
-        relationshipArchetypes: createArchetypes(),
-        castDynamicsSummary:
-          'The crew survives by weaponizing trust they do not actually possess.',
-      },
       characterKernel: null,
       tridimensionalProfile: null,
       agencyModel: null,
@@ -471,6 +459,12 @@ describe('character-web-service', () => {
         kernelSummary: expect.stringContaining('A revenge story about inherited guilt.'),
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         conceptSummary: expect.stringContaining('A fugitive captain leads an impossible expedition.'),
+      }),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      webContext: expect.objectContaining({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        assignment: expect.objectContaining({ characterName: 'Iria Vale' }),
+        protagonistName: 'Iria Vale',
       }),
       otherDevelopedCharacters: undefined,
       onGenerationStage: undefined,
@@ -567,7 +561,10 @@ describe('character-web-service', () => {
 
     const result = await service.toDecomposedCharacters('web-1');
 
-    expect(deps.toDecomposedCharacter).toHaveBeenCalledWith(completed);
+    expect(deps.toDecomposedCharacter).toHaveBeenCalledWith(completed, expect.objectContaining({
+      assignment: protagonistAssignment,
+      protagonistName: 'Iria Vale',
+    }));
     expect(deps.toDecomposedCharacterFromWeb).toHaveBeenCalledWith(
       rivalAssignment,
       createArchetypes(),

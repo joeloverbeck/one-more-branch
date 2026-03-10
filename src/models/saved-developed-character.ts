@@ -22,8 +22,6 @@ export interface SavedDevelopedCharacter {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly sourceWebId: string;
-  readonly sourceWebName: string;
-  readonly webContext: CharacterWebContext;
   readonly characterKernel: CharacterKernel | null;
   readonly tridimensionalProfile: TridimensionalProfile | null;
   readonly agencyModel: AgencyModel | null;
@@ -49,8 +47,6 @@ export function isSavedDevelopedCharacter(
     typeof value['createdAt'] === 'string' &&
     typeof value['updatedAt'] === 'string' &&
     typeof value['sourceWebId'] === 'string' &&
-    typeof value['sourceWebName'] === 'string' &&
-    isObjectRecord(value['webContext']) &&
     (value['characterKernel'] === null || isObjectRecord(value['characterKernel'])) &&
     (value['tridimensionalProfile'] === null || isObjectRecord(value['tridimensionalProfile'])) &&
     (value['agencyModel'] === null || isObjectRecord(value['agencyModel'])) &&

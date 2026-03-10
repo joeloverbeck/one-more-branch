@@ -18,6 +18,7 @@ import { getProtagonistAssignment, type SavedCharacterWeb } from '../models/save
 import type { SavedKernel } from '../models/saved-kernel.js';
 import {
   isCharacterFullyComplete,
+  type CharacterWebContext,
   type SavedDevelopedCharacter,
 } from '../models/saved-developed-character.js';
 import { validateStagePayload } from './character-stage-validators.js';
@@ -88,7 +89,7 @@ interface CharacterWebServiceDeps {
   readonly deleteDevelopedCharacter: typeof deleteDevelopedCharacter;
   readonly generateCharacterWeb: typeof generateCharacterWeb;
   readonly runCharacterStage: typeof runCharacterStage;
-  readonly toDecomposedCharacter: typeof toDecomposedCharacter;
+  readonly toDecomposedCharacter: (char: SavedDevelopedCharacter, webContext: CharacterWebContext) => DecomposedCharacter;
   readonly toDecomposedCharacterFromWeb: typeof toDecomposedCharacterFromWeb;
   readonly loadConcept: (conceptId: string) => Promise<SavedConcept | null>;
   readonly loadKernel: (kernelId: string) => Promise<SavedKernel | null>;
@@ -149,6 +150,29 @@ function requireWeb(
   }
 
   return web;
+}
+
+function buildWebContext(
+  web: SavedCharacterWeb,
+  characterName: string,
+): CharacterWebContext {
+  const assignment = web.assignments.find(
+    (candidate) => normalizeName(candidate.characterName) === normalizeName(characterName),
+  );
+
+  if (assignment === undefined) {
+    throw new EngineError(
+      `Character ${characterName} not found in web ${web.id} assignments`,
+      'VALIDATION_FAILED',
+    );
+  }
+
+  return {
+    assignment,
+    protagonistName: web.protagonistName,
+    relationshipArchetypes: web.relationshipArchetypes,
+    castDynamicsSummary: web.castDynamicsSummary,
+  };
 }
 
 function isMissingCharacterError(error: unknown, charId: string): boolean {
@@ -381,13 +405,6 @@ export function createCharacterWebService(
         createdAt: now,
         updatedAt: now,
         sourceWebId: web.id,
-        sourceWebName: web.name,
-        webContext: {
-          assignment,
-          protagonistName: web.protagonistName,
-          relationshipArchetypes: web.relationshipArchetypes,
-          castDynamicsSummary: web.castDynamicsSummary,
-        },
         characterKernel: null,
         tridimensionalProfile: null,
         agencyModel: null,
@@ -426,11 +443,14 @@ export function createCharacterWebService(
             )
           : undefined;
 
+      const webContext = buildWebContext(web, character.characterName);
+
       const result = await deps.runCharacterStage({
         character,
         stage,
         apiKey: trimApiKey(apiKey),
         inputs: derivedInputs,
+        webContext,
         otherDevelopedCharacters,
         onGenerationStage: onStage,
       });
@@ -466,11 +486,14 @@ export function createCharacterWebService(
             )
           : undefined;
 
+      const webContext = buildWebContext(web, character.characterName);
+
       const result = await deps.runCharacterStage({
         character: resetCharacter,
         stage,
         apiKey: trimApiKey(apiKey),
         inputs: derivedInputs,
+        webContext,
         otherDevelopedCharacters,
         onGenerationStage: onStage,
       });
@@ -520,7 +543,8 @@ export function createCharacterWebService(
         const developedCharacter = charactersByName.get(normalizeName(assignment.characterName));
 
         if (developedCharacter !== undefined && isCharacterFullyComplete(developedCharacter)) {
-          return deps.toDecomposedCharacter(developedCharacter);
+          const webCtx = buildWebContext(web, developedCharacter.characterName);
+          return deps.toDecomposedCharacter(developedCharacter, webCtx);
         }
 
         return deps.toDecomposedCharacterFromWeb(

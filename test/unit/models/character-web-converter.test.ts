@@ -15,7 +15,10 @@ import {
   toDecomposedCharacter,
   toDecomposedCharacterFromWeb,
 } from '../../../src/models/character-web-converter.js';
-import type { SavedDevelopedCharacter } from '../../../src/models/saved-developed-character.js';
+import type {
+  CharacterWebContext,
+  SavedDevelopedCharacter,
+} from '../../../src/models/saved-developed-character.js';
 
 function createAssignment(
   overrides: Partial<CastRoleAssignment> = {},
@@ -50,6 +53,18 @@ function createArchetypes(): readonly RelationshipArchetype[] {
   ];
 }
 
+function createWebContext(
+  overrides: Partial<CharacterWebContext> = {},
+): CharacterWebContext {
+  return {
+    assignment: createAssignment(),
+    protagonistName: 'Iria Vale',
+    relationshipArchetypes: createArchetypes(),
+    castDynamicsSummary: 'Everyone shares the route, but no one shares the terms.',
+    ...overrides,
+  };
+}
+
 function createCharacter(
   overrides: Partial<SavedDevelopedCharacter> = {},
 ): SavedDevelopedCharacter {
@@ -59,13 +74,6 @@ function createCharacter(
     createdAt: '2026-03-08T10:00:00.000Z',
     updatedAt: '2026-03-08T10:00:00.000Z',
     sourceWebId: 'web-1',
-    sourceWebName: 'Salt Ledger',
-    webContext: {
-      assignment: createAssignment(),
-      protagonistName: 'Iria Vale',
-      relationshipArchetypes: createArchetypes(),
-      castDynamicsSummary: 'Everyone shares the route, but no one shares the terms.',
-    },
     characterKernel: {
       characterName: 'Mara Voss',
       superObjective: 'Claim the route before the protagonist can legitimize it.',
@@ -134,7 +142,7 @@ function createCharacter(
 
 describe('toDecomposedCharacter', () => {
   it('maps a fully developed character into a DecomposedCharacter', () => {
-    const result = toDecomposedCharacter(createCharacter());
+    const result = toDecomposedCharacter(createCharacter(), createWebContext());
 
     expect(result).toEqual({
       name: 'Mara Voss',
@@ -169,14 +177,13 @@ describe('toDecomposedCharacter', () => {
     const result = toDecomposedCharacter(
       createCharacter({
         characterName: 'Iria Vale',
-        webContext: {
-          ...createCharacter().webContext,
-          assignment: createAssignment({
-            characterName: 'Iria Vale',
-            isProtagonist: true,
-            storyFunction: StoryFunction.CATALYST,
-          }),
-        },
+      }),
+      createWebContext({
+        assignment: createAssignment({
+          characterName: 'Iria Vale',
+          isProtagonist: true,
+          storyFunction: StoryFunction.CATALYST,
+        }),
       }),
     );
 
@@ -203,6 +210,7 @@ describe('toDecomposedCharacter', () => {
           personalDilemmas: ['Cut Pell loose or drag him under.'],
         },
       }),
+      createWebContext(),
     );
 
     expect(result.protagonistRelationship).toBeNull();
@@ -214,6 +222,7 @@ describe('toDecomposedCharacter', () => {
         createCharacter({
           agencyModel: null,
         }),
+        createWebContext(),
       ),
     ).toThrow('Character Mara Voss is missing completed stage data');
   });

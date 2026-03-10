@@ -14,7 +14,7 @@ import type {
   DecomposedRelationship,
   SpeechFingerprint,
 } from './decomposed-character.js';
-import type { SavedDevelopedCharacter } from './saved-developed-character.js';
+import type { CharacterWebContext, SavedDevelopedCharacter } from './saved-developed-character.js';
 import { isCharacterFullyComplete } from './saved-developed-character.js';
 import { normalizeForComparison } from './normalize.js';
 
@@ -122,7 +122,10 @@ function findArchetypeWithProtagonist(
   return protagonistArchetype ?? null;
 }
 
-function buildFullRawDescription(char: SavedDevelopedCharacter): string {
+function buildFullRawDescription(
+  char: SavedDevelopedCharacter,
+  webContext: CharacterWebContext,
+): string {
   const characterKernel = char.characterKernel;
   const tridimensionalProfile = char.tridimensionalProfile;
 
@@ -131,7 +134,7 @@ function buildFullRawDescription(char: SavedDevelopedCharacter): string {
   }
 
   return [
-    `${char.webContext.assignment.characterName} is driven by ${trimTerminalPunctuation(characterKernel.superObjective)}.`,
+    `${webContext.assignment.characterName} is driven by ${trimTerminalPunctuation(characterKernel.superObjective)}.`,
     `${trimTerminalPunctuation(tridimensionalProfile.physiology)}.`,
     `${trimTerminalPunctuation(tridimensionalProfile.sociology)}.`,
     `${trimTerminalPunctuation(tridimensionalProfile.psychology)}.`,
@@ -255,14 +258,15 @@ function assertFullCharacterReady(char: SavedDevelopedCharacter): asserts char i
 
 export function toDecomposedCharacter(
   char: SavedDevelopedCharacter,
+  webContext: CharacterWebContext,
 ): DecomposedCharacter {
   const resolvedProtagonistName = requireNonEmptyName(
     'protagonistName',
-    char.webContext.protagonistName,
+    webContext.protagonistName,
   );
   assertFullCharacterReady(char);
 
-  const protagonistRelationship = char.webContext.assignment.isProtagonist
+  const protagonistRelationship = webContext.assignment.isProtagonist
     ? null
     : findRelationshipWithProtagonist(
         char.deepRelationships.relationships,
@@ -271,7 +275,7 @@ export function toDecomposedCharacter(
       );
 
   return {
-    name: char.webContext.assignment.characterName,
+    name: webContext.assignment.characterName,
     speechFingerprint: char.textualPresentation.speechFingerprint,
     coreTraits: char.tridimensionalProfile.coreTraits,
     motivations: char.characterKernel.superObjective,
@@ -287,7 +291,7 @@ export function toDecomposedCharacter(
     coreBeliefs: char.agencyModel.coreBeliefs,
     conflictPriority: char.textualPresentation.conflictPriority,
     appearance: char.textualPresentation.appearance,
-    rawDescription: buildFullRawDescription(char),
+    rawDescription: buildFullRawDescription(char, webContext),
   };
 }
 

@@ -150,13 +150,6 @@ function createCharacter(
     createdAt: '2026-03-09T12:00:00.000Z',
     updatedAt: '2026-03-09T12:00:00.000Z',
     sourceWebId: 'web-1',
-    sourceWebName: 'Shattered Compass',
-    webContext: {
-      assignment: createAssignment(),
-      protagonistName: 'Iria Vale',
-      relationshipArchetypes: createArchetypes(),
-      castDynamicsSummary: 'Trust is survival and poison in equal measure.',
-    },
     characterKernel: null,
     tridimensionalProfile: null,
     agencyModel: null,
