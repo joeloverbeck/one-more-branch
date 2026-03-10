@@ -4538,3 +4538,112 @@ main {
     flex-direction: row;
   }
 }
+
+/* ── Stage Block Renderers ───────────────────────────────────────── */
+
+.stage-block {
+  margin-top: 0.75rem;
+}
+
+.stage-block-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.stage-field {
+  margin-bottom: 0.5rem;
+}
+
+.stage-field-label {
+  font-weight: 600;
+  color: var(--text-secondary, #b0b0b0);
+}
+
+.stage-field-value {
+  color: var(--text-primary, #e0e0e0);
+}
+
+.stage-field-empty {
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.stage-field-long {
+  white-space: pre-wrap;
+  margin-top: 0.25rem;
+  padding: 0.5rem;
+  background: var(--bg-tertiary, #1a1a2e);
+  border-radius: 4px;
+  line-height: 1.5;
+}
+
+.stage-bullet-list {
+  margin: 0.25rem 0 0 1.25rem;
+  padding: 0;
+}
+
+.stage-bullet-list li {
+  margin-bottom: 0.2rem;
+}
+
+.stage-enum-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  background: var(--accent-muted, #2a2a4a);
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.stage-relationship-card {
+  border: 1px solid var(--border-color, #3a3a5a);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background: var(--bg-secondary, #16162a);
+}
+
+.stage-relationship-header {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: var(--accent-color, #7c8aff);
+}
+
+.stage-speech-section {
+  border-left: 3px solid var(--accent-muted, #2a2a4a);
+  padding-left: 1rem;
+  margin: 0.5rem 0;
+}
+
+.stage-section-header {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.stage-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stage-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stage-edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color, #3a3a5a);
+}
+
+.btn-sm {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+}

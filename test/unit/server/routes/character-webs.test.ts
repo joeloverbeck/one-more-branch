@@ -560,6 +560,6 @@ describe('character-web routes', () => {
       (layer) => layer.route
     );
 
-    expect(routeLayers.length).toBe(13);
+    expect(routeLayers.length).toBe(14);
   });
 });

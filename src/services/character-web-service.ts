@@ -20,6 +20,7 @@ import {
   isCharacterFullyComplete,
   type SavedDevelopedCharacter,
 } from '../models/saved-developed-character.js';
+import { validateStagePayload } from './character-stage-validators.js';
 import {
   deleteCharacterWeb,
   listCharacterWebs,
@@ -67,6 +68,11 @@ export interface CharacterWebService {
   listCharactersForWeb(webId: string): Promise<SavedDevelopedCharacter[]>;
   deleteCharacter(charId: string): Promise<void>;
   toDecomposedCharacters(webId: string): Promise<DecomposedCharacter[]>;
+  patchCharacterStage(
+    charId: string,
+    stage: CharacterDevStage,
+    payload: unknown,
+  ): Promise<SavedDevelopedCharacter>;
 }
 
 interface CharacterWebServiceDeps {
@@ -523,6 +529,46 @@ export function createCharacterWebService(
           web.protagonistName,
         );
       });
+    },
+
+    async patchCharacterStage(
+      charId: string,
+      stage: CharacterDevStage,
+      payload: unknown,
+    ): Promise<SavedDevelopedCharacter> {
+      const trimmedCharId = trimRequired('Character id', charId);
+      const character = await loadRequiredCharacter(deps, trimmedCharId);
+
+      if (!character.completedStages.includes(stage)) {
+        throw new EngineError(
+          `Stage ${stage} has not been completed yet — cannot patch`,
+          'VALIDATION_FAILED',
+        );
+      }
+
+      validateStagePayload(stage, payload);
+
+      const stageFieldMap: Record<CharacterDevStage, string> = {
+        1: 'characterKernel',
+        2: 'tridimensionalProfile',
+        3: 'agencyModel',
+        4: 'deepRelationships',
+        5: 'textualPresentation',
+      };
+
+      const fieldName = stageFieldMap[stage];
+      const existingData = character[fieldName as keyof typeof character] as unknown as Record<string, unknown>;
+      const patchData = payload as Record<string, unknown>;
+      const mergedData = { ...existingData, ...patchData };
+
+      const updated: SavedDevelopedCharacter = {
+        ...character,
+        updatedAt: deps.now(),
+        [fieldName]: mergedData,
+      };
+
+      await deps.saveDevelopedCharacter(updated);
+      return updated;
     },
   };
 }
