@@ -243,6 +243,25 @@ characterWebRoutes.post(
   })
 );
 
+characterWebRoutes.patch(
+  '/api/:webId',
+  wrapAsyncRoute(async (req: Request, res: Response) => {
+    const webId = readRouteParam(req.params['webId']);
+
+    try {
+      const web = await characterWebService.patchWeb(webId, req.body);
+      return res.json({ success: true, web });
+    } catch (error) {
+      const knownError = mapKnownError(error);
+      if (knownError) {
+        return res.status(knownError.status).json({ success: false, error: knownError.message });
+      }
+
+      throw error;
+    }
+  })
+);
+
 characterWebRoutes.delete(
   '/api/:webId',
   wrapAsyncRoute(async (req: Request, res: Response) => {

@@ -22,6 +22,7 @@ import {
   type SavedDevelopedCharacter,
 } from '../models/saved-developed-character.js';
 import { validateStagePayload } from './character-stage-validators.js';
+import { validateWebPatchPayload } from './character-web-validators.js';
 import {
   deleteCharacterWeb,
   listCharacterWebs,
@@ -74,6 +75,7 @@ export interface CharacterWebService {
     stage: CharacterDevStage,
     payload: unknown,
   ): Promise<SavedDevelopedCharacter>;
+  patchWeb(webId: string, payload: unknown): Promise<SavedCharacterWeb>;
 }
 
 interface CharacterWebServiceDeps {
@@ -593,6 +595,93 @@ export function createCharacterWebService(
 
       await deps.saveDevelopedCharacter(updated);
       return updated;
+    },
+
+    async patchWeb(webId: string, payload: unknown): Promise<SavedCharacterWeb> {
+      const trimmedWebId = trimRequired('Character web id', webId);
+      const web = requireWeb(trimmedWebId, await deps.loadCharacterWeb(trimmedWebId));
+      const validated = validateWebPatchPayload(payload);
+
+      let updatedAssignments = web.assignments;
+      if (validated.assignments !== undefined) {
+        updatedAssignments = web.assignments.map((existing) => {
+          const patch = validated.assignments!.find(
+            (entry) => normalizeName(entry.characterName) === normalizeName(existing.characterName),
+          );
+
+          if (patch === undefined) {
+            return existing;
+          }
+
+          return {
+            ...existing,
+            narrativeRole: patch.narrativeRole,
+            conflictRelationship: patch.conflictRelationship,
+          };
+        });
+
+        const unknownNames = validated.assignments.filter(
+          (entry) =>
+            !web.assignments.some(
+              (existing) =>
+                normalizeName(existing.characterName) === normalizeName(entry.characterName),
+            ),
+        );
+
+        if (unknownNames.length > 0) {
+          throw new EngineError(
+            `Unknown character names: ${unknownNames.map((entry) => entry.characterName).join(', ')}`,
+            'VALIDATION_FAILED',
+          );
+        }
+      }
+
+      let updatedRelationships = web.relationshipArchetypes;
+      if (validated.relationshipArchetypes !== undefined) {
+        updatedRelationships = web.relationshipArchetypes.map((existing) => {
+          const patch = validated.relationshipArchetypes!.find(
+            (entry) =>
+              normalizeName(entry.fromCharacter) === normalizeName(existing.fromCharacter) &&
+              normalizeName(entry.toCharacter) === normalizeName(existing.toCharacter),
+          );
+
+          if (patch === undefined) {
+            return existing;
+          }
+
+          return {
+            ...existing,
+            essentialTension: patch.essentialTension,
+          };
+        });
+
+        const unknownPairs = validated.relationshipArchetypes.filter(
+          (entry) =>
+            !web.relationshipArchetypes.some(
+              (existing) =>
+                normalizeName(existing.fromCharacter) === normalizeName(entry.fromCharacter) &&
+                normalizeName(existing.toCharacter) === normalizeName(entry.toCharacter),
+            ),
+        );
+
+        if (unknownPairs.length > 0) {
+          throw new EngineError(
+            `Unknown relationship pairs: ${unknownPairs.map((entry) => `${entry.fromCharacter} → ${entry.toCharacter}`).join(', ')}`,
+            'VALIDATION_FAILED',
+          );
+        }
+      }
+
+      const updatedWeb: SavedCharacterWeb = {
+        ...web,
+        updatedAt: deps.now(),
+        castDynamicsSummary: validated.castDynamicsSummary ?? web.castDynamicsSummary,
+        assignments: updatedAssignments,
+        relationshipArchetypes: updatedRelationships,
+      };
+
+      await deps.saveCharacterWeb(updatedWeb);
+      return updatedWeb;
     },
   };
 }
