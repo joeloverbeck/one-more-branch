@@ -69,6 +69,7 @@ function createContext(
 ): CharPresentationPromptContext {
   return {
     webContext: createWebContext(),
+    worldbuilding: '',
     characterKernel: {
       characterName: 'Kael',
       superObjective: 'Reclaim the throne before the kingdom calcifies under a usurper.',

@@ -24,6 +24,7 @@ Generate the character's dramatic kernel: super-objective, opposition, stakes, c
 | `kernelSummary` | `string?` | Compact text summary of the story kernel (fallback) |
 | `conceptSummary` | `string?` | Compact text summary of the concept spec (fallback) |
 | `userNotes` | `string?` | Free-text user notes |
+| `worldbuilding` | `string` | Raw worldbuilding prose (geography, cultures, factions, history, magic, technology). Empty string if none provided. |
 | `webContext` | `CharacterWebContext` | Character's role assignment, archetypes, cast dynamics |
 | `storyKernel` | `StoryKernel?` | Full typed kernel (~10 fields + valueSpectrum) |
 | `conceptSpec` | `ConceptSpec?` | Full typed concept spec (~25 fields) |
@@ -104,6 +105,13 @@ CONSTRAINT: Align the super-objective with the value at stake. ...
 {{else if kernelSummary}}
 STORY KERNEL:
 {{kernelSummary}}
+{{/if}}
+
+{{#if worldbuilding}}
+WORLDBUILDING:
+{{worldbuilding}}
+
+CONSTRAINT: Ground the super-objective and opposition in the world's power structures and realities. Use worldbuilding facts to determine what resources, institutions, and forces are available to the character.
 {{/if}}
 
 {{#if userNotes}}

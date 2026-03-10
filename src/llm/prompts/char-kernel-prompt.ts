@@ -12,6 +12,7 @@ export interface CharacterDevPromptContext {
   readonly kernelSummary?: string;
   readonly conceptSummary?: string;
   readonly userNotes?: string;
+  readonly worldbuilding: string;
   readonly webContext: CharacterWebContext;
   readonly storyKernel?: StoryKernel;
   readonly conceptSpec?: ConceptSpec;
@@ -97,6 +98,10 @@ export function buildCharKernelPrompt(context: CharacterDevPromptContext): ChatM
     userSections.push(kernelSection.trim());
   } else if (context.kernelSummary) {
     userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
+  }
+
+  if (context.worldbuilding.length > 0) {
+    userSections.push(`WORLDBUILDING:\n${context.worldbuilding}\n\nCONSTRAINT: Ground the super-objective and opposition in the world's power structures and realities. Use worldbuilding facts to determine what resources, institutions, and forces are available to the character.`);
   }
 
   if (context.userNotes) {

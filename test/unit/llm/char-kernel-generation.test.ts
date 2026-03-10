@@ -107,6 +107,7 @@ describe('buildCharKernelPrompt', () => {
   it('produces system and user messages with character name and role', () => {
     const context: CharacterDevPromptContext = {
       webContext: createWebContext(),
+      worldbuilding: '',
     };
     const messages = buildCharKernelPrompt(context);
 
@@ -121,6 +122,7 @@ describe('buildCharKernelPrompt', () => {
   it('includes cast dynamics summary', () => {
     const context: CharacterDevPromptContext = {
       webContext: createWebContext(),
+      worldbuilding: '',
     };
     const messages = buildCharKernelPrompt(context);
 
@@ -132,6 +134,7 @@ describe('buildCharKernelPrompt', () => {
   it('includes relationship archetypes when present', () => {
     const context: CharacterDevPromptContext = {
       webContext: createWebContext(),
+      worldbuilding: '',
     };
     const messages = buildCharKernelPrompt(context);
 
@@ -143,6 +146,7 @@ describe('buildCharKernelPrompt', () => {
   it('omits relationship archetypes section when empty', () => {
     const context: CharacterDevPromptContext = {
       webContext: createWebContext({ relationshipArchetypes: [] }),
+      worldbuilding: '',
     };
     const messages = buildCharKernelPrompt(context);
 
@@ -153,6 +157,7 @@ describe('buildCharKernelPrompt', () => {
     const context: CharacterDevPromptContext = {
       webContext: createWebContext(),
       kernelSummary: 'A story about power and betrayal.',
+      worldbuilding: '',
     };
     const messages = buildCharKernelPrompt(context);
 
@@ -163,6 +168,7 @@ describe('buildCharKernelPrompt', () => {
     const context: CharacterDevPromptContext = {
       webContext: createWebContext(),
       conceptSummary: 'Dark medieval fantasy.',
+      worldbuilding: '',
     };
     const messages = buildCharKernelPrompt(context);
 
@@ -173,6 +179,7 @@ describe('buildCharKernelPrompt', () => {
     const context: CharacterDevPromptContext = {
       webContext: createWebContext(),
       userNotes: 'Make him sympathetic.',
+      worldbuilding: '',
     };
     const messages = buildCharKernelPrompt(context);
 
@@ -182,6 +189,7 @@ describe('buildCharKernelPrompt', () => {
   it('omits optional sections when not provided', () => {
     const context: CharacterDevPromptContext = {
       webContext: createWebContext(),
+      worldbuilding: '',
     };
     const messages = buildCharKernelPrompt(context);
 
@@ -256,7 +264,7 @@ describe('generateCharKernel', () => {
     const mockResponse = createMockResponse(validKernelResponseRaw());
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-    await generateCharKernel({ webContext: createWebContext() }, 'test-api-key');
+    await generateCharKernel({ webContext: createWebContext(), worldbuilding: '' }, 'test-api-key');
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
     const fetchCall = (global.fetch as jest.Mock).mock.calls[0] as [string, RequestInit];
@@ -270,7 +278,7 @@ describe('generateCharKernel', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     const result = await generateCharKernel(
-      { webContext: createWebContext(), kernelSummary: 'A test kernel' },
+      { webContext: createWebContext(), kernelSummary: 'A test kernel', worldbuilding: '' },
       'test-api-key'
     );
 
@@ -290,7 +298,7 @@ describe('generateCharKernel', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await expect(
-      generateCharKernel({ webContext: createWebContext() }, 'test-api-key')
+      generateCharKernel({ webContext: createWebContext(), worldbuilding: '' }, 'test-api-key')
     ).rejects.toThrow(/missing characterName/);
   });
 
@@ -300,7 +308,7 @@ describe('generateCharKernel', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await expect(
-      generateCharKernel({ webContext: createWebContext() }, 'test-api-key')
+      generateCharKernel({ webContext: createWebContext(), worldbuilding: '' }, 'test-api-key')
     ).rejects.toThrow(/missing superObjective/);
   });
 
@@ -310,7 +318,7 @@ describe('generateCharKernel', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await expect(
-      generateCharKernel({ webContext: createWebContext() }, 'test-api-key')
+      generateCharKernel({ webContext: createWebContext(), worldbuilding: '' }, 'test-api-key')
     ).rejects.toThrow(/missing or empty immediateObjectives/);
   });
 
@@ -320,7 +328,7 @@ describe('generateCharKernel', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await expect(
-      generateCharKernel({ webContext: createWebContext() }, 'test-api-key')
+      generateCharKernel({ webContext: createWebContext(), worldbuilding: '' }, 'test-api-key')
     ).rejects.toThrow(/missing primaryOpposition/);
   });
 
@@ -330,7 +338,7 @@ describe('generateCharKernel', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await expect(
-      generateCharKernel({ webContext: createWebContext() }, 'test-api-key')
+      generateCharKernel({ webContext: createWebContext(), worldbuilding: '' }, 'test-api-key')
     ).rejects.toThrow(/missing or empty stakes/);
   });
 
@@ -340,7 +348,7 @@ describe('generateCharKernel', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await expect(
-      generateCharKernel({ webContext: createWebContext() }, 'test-api-key')
+      generateCharKernel({ webContext: createWebContext(), worldbuilding: '' }, 'test-api-key')
     ).rejects.toThrow(/missing or empty constraints/);
   });
 
@@ -350,7 +358,7 @@ describe('generateCharKernel', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await expect(
-      generateCharKernel({ webContext: createWebContext() }, 'test-api-key')
+      generateCharKernel({ webContext: createWebContext(), worldbuilding: '' }, 'test-api-key')
     ).rejects.toThrow(/missing pressurePoint/);
   });
 
@@ -359,7 +367,7 @@ describe('generateCharKernel', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await generateCharKernel(
-      { webContext: createWebContext(), kernelSummary: 'Test' },
+      { webContext: createWebContext(), kernelSummary: 'Test', worldbuilding: '' },
       'test-api-key'
     );
 
@@ -370,7 +378,7 @@ describe('generateCharKernel', () => {
     const mockResponse = createMockResponse(validKernelResponseRaw());
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-    await generateCharKernel({ webContext: createWebContext() }, 'test-api-key');
+    await generateCharKernel({ webContext: createWebContext(), worldbuilding: '' }, 'test-api-key');
 
     const fetchCall = (global.fetch as jest.Mock).mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(fetchCall[1].body as string) as Record<string, unknown>;

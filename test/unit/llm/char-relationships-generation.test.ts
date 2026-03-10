@@ -187,6 +187,7 @@ function createContext(
     characterKernel: createCharacterKernel(),
     tridimensionalProfile: createTridimensionalProfile(),
     agencyModel: createAgencyModel(),
+    worldbuilding: '',
     ...overrides,
   };
 }

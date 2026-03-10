@@ -170,6 +170,10 @@ export function buildCharRelationshipsPrompt(
     userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
+  if (context.worldbuilding.length > 0) {
+    userSections.push(`WORLDBUILDING:\n${context.worldbuilding}\n\nCONSTRAINT: Ground relationship dynamics in the world's social structures, political factions, and cultural norms. Use worldbuilding to determine what alliances, hierarchies, and taboos shape how characters relate.`);
+  }
+
   if (context.userNotes) {
     userSections.push(`USER NOTES:\n${context.userNotes}`);
   }

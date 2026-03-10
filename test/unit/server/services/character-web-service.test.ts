@@ -57,6 +57,7 @@ function createInputs(overrides: Partial<CastPipelineInputs> = {}): CastPipeline
     kernelSummary: 'A revenge story about inherited guilt.',
     conceptSummary: 'A fugitive captain leads an impossible expedition.',
     userNotes: 'Keep everyone dangerous and emotionally articulate.',
+    worldbuilding: '',
     ...overrides,
   };
 }
@@ -324,6 +325,7 @@ describe('character-web-service', () => {
       protagonistName: '',
       inputs: {
         userNotes: 'Keep everyone dangerous.',
+        worldbuilding: '',
       },
       assignments: [],
       relationshipArchetypes: [],

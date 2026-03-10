@@ -92,6 +92,7 @@ describe('buildCharacterWebPrompt', () => {
       kernelSummary: 'A story about betrayal.',
       conceptSummary: 'Dark fantasy world.',
       userNotes: 'Include a trickster.',
+      worldbuilding: '',
     };
     const messages = buildCharacterWebPrompt(context);
 
@@ -104,7 +105,7 @@ describe('buildCharacterWebPrompt', () => {
   });
 
   it('handles missing optional inputs gracefully', () => {
-    const context: CharacterWebPromptContext = {};
+    const context: CharacterWebPromptContext = { worldbuilding: '' };
     const messages = buildCharacterWebPrompt(context);
 
     expect(messages).toHaveLength(2);
@@ -116,12 +117,12 @@ describe('buildCharacterWebPrompt', () => {
   });
 
   it('includes kernel section when provided', () => {
-    const messages = buildCharacterWebPrompt({ kernelSummary: 'Test kernel' });
+    const messages = buildCharacterWebPrompt({ kernelSummary: 'Test kernel', worldbuilding: '' });
     expect(messages[1].content).toContain('STORY KERNEL:\nTest kernel');
   });
 
   it('includes concept section when provided', () => {
-    const messages = buildCharacterWebPrompt({ conceptSummary: 'Test concept' });
+    const messages = buildCharacterWebPrompt({ conceptSummary: 'Test concept', worldbuilding: '' });
     expect(messages[1].content).toContain('CONCEPT:\nTest concept');
   });
 });
@@ -171,7 +172,7 @@ describe('generateCharacterWeb', () => {
     const mockResponse = createMockResponse(validWebResponseRaw());
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-    await generateCharacterWeb({}, 'test-api-key');
+    await generateCharacterWeb({ worldbuilding: '' }, 'test-api-key');
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
     const fetchCall = (global.fetch as jest.Mock).mock.calls[0] as [string, RequestInit];
@@ -185,7 +186,7 @@ describe('generateCharacterWeb', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     const result = await generateCharacterWeb(
-      { kernelSummary: 'A test kernel' },
+      { kernelSummary: 'A test kernel', worldbuilding: '' },
       'test-api-key'
     );
 
@@ -209,7 +210,7 @@ describe('generateCharacterWeb', () => {
     const mockResponse = createMockResponse(badPayload);
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-    await expect(generateCharacterWeb({}, 'test-api-key')).rejects.toThrow(
+    await expect(generateCharacterWeb({ worldbuilding: '' }, 'test-api-key')).rejects.toThrow(
       /invalid storyFunction/
     );
   });
@@ -221,7 +222,7 @@ describe('generateCharacterWeb', () => {
     const mockResponse = createMockResponse(badPayload);
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-    await expect(generateCharacterWeb({}, 'test-api-key')).rejects.toThrow(
+    await expect(generateCharacterWeb({ worldbuilding: '' }, 'test-api-key')).rejects.toThrow(
       /invalid characterDepth/
     );
   });
@@ -233,7 +234,7 @@ describe('generateCharacterWeb', () => {
     const mockResponse = createMockResponse(badPayload);
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-    await expect(generateCharacterWeb({}, 'test-api-key')).rejects.toThrow(
+    await expect(generateCharacterWeb({ worldbuilding: '' }, 'test-api-key')).rejects.toThrow(
       /invalid or has invalid enum values/
     );
   });
@@ -245,7 +246,7 @@ describe('generateCharacterWeb', () => {
     const mockResponse = createMockResponse(badPayload);
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-    await expect(generateCharacterWeb({}, 'test-api-key')).rejects.toThrow(
+    await expect(generateCharacterWeb({ worldbuilding: '' }, 'test-api-key')).rejects.toThrow(
       /invalid or has invalid enum values/
     );
   });
@@ -258,7 +259,7 @@ describe('generateCharacterWeb', () => {
     const mockResponse = createMockResponse(badPayload);
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-    await expect(generateCharacterWeb({}, 'test-api-key')).rejects.toThrow(
+    await expect(generateCharacterWeb({ worldbuilding: '' }, 'test-api-key')).rejects.toThrow(
       /missing assignments/
     );
   });
@@ -268,7 +269,7 @@ describe('generateCharacterWeb', () => {
     const mockResponse = createMockResponse(badPayload);
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-    await expect(generateCharacterWeb({}, 'test-api-key')).rejects.toThrow(
+    await expect(generateCharacterWeb({ worldbuilding: '' }, 'test-api-key')).rejects.toThrow(
       /at least one assignment/
     );
   });
@@ -278,7 +279,7 @@ describe('generateCharacterWeb', () => {
     const mockResponse = createMockResponse(badPayload);
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-    await expect(generateCharacterWeb({}, 'test-api-key')).rejects.toThrow(
+    await expect(generateCharacterWeb({ worldbuilding: '' }, 'test-api-key')).rejects.toThrow(
       /missing castDynamicsSummary/
     );
   });
@@ -287,7 +288,7 @@ describe('generateCharacterWeb', () => {
     const mockResponse = createMockResponse(validWebResponseRaw());
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
-    await generateCharacterWeb({ kernelSummary: 'Test' }, 'test-api-key');
+    await generateCharacterWeb({ kernelSummary: 'Test', worldbuilding: '' }, 'test-api-key');
 
     expect(mockLogPrompt).toHaveBeenCalledWith(
       mockLogger,

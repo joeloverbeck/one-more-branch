@@ -39,7 +39,7 @@ import {
 import { loadKernel } from '../persistence/kernel-repository.js';
 
 export interface CharacterWebService {
-  createWeb(name: string, sourceConceptId: string, userNotes?: string): Promise<SavedCharacterWeb>;
+  createWeb(name: string, sourceConceptId: string, userNotes?: string, worldbuilding?: string): Promise<SavedCharacterWeb>;
   generateWeb(
     webId: string,
     apiKey: string,
@@ -222,6 +222,7 @@ async function deriveInputsFromConcept(
   deps: CharacterWebServiceDeps,
   sourceConceptId: string,
   userNotes?: string,
+  worldbuilding?: string,
 ): Promise<CastPipelineInputs> {
   const concept = await deps.loadConcept(sourceConceptId);
   if (concept === null) {
@@ -251,6 +252,7 @@ async function deriveInputsFromConcept(
     kernelSummary: kernelSummary.trim() || undefined,
     conceptSummary: conceptSummary.trim() || undefined,
     userNotes: userNotes?.trim() ?? undefined,
+    worldbuilding: worldbuilding?.trim() ?? '',
     storyKernel: kernel.evaluatedKernel.kernel,
     conceptSpec: concept.evaluatedConcept.concept,
   };
@@ -286,6 +288,7 @@ export function createCharacterWebService(
       deps,
       web.sourceConceptId,
       web.inputs.userNotes,
+      web.inputs.worldbuilding,
     );
 
     emitGenerationStage(onStage, 'GENERATING_CHARACTER_WEB', 'started', attempt);
@@ -311,6 +314,7 @@ export function createCharacterWebService(
       name: string,
       sourceConceptId: string,
       userNotes?: string,
+      worldbuilding?: string,
     ): Promise<SavedCharacterWeb> {
       const trimmedConceptId = trimRequired('Source concept id', sourceConceptId);
       const now = deps.now();
@@ -323,6 +327,7 @@ export function createCharacterWebService(
         protagonistName: '',
         inputs: {
           userNotes: trimOptional(userNotes),
+          worldbuilding: worldbuilding?.trim() ?? '',
         },
         assignments: [],
         relationshipArchetypes: [],
@@ -436,6 +441,7 @@ export function createCharacterWebService(
         deps,
         web.sourceConceptId,
         web.inputs.userNotes,
+        web.inputs.worldbuilding,
       );
 
       const otherDevelopedCharacters =
@@ -478,6 +484,7 @@ export function createCharacterWebService(
         deps,
         web.sourceConceptId,
         web.inputs.userNotes,
+        web.inputs.worldbuilding,
       );
 
       const resetCharacter = resetCharacterFromStage(character, stage, deps.now());

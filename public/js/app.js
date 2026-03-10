@@ -12000,6 +12000,7 @@ function initCharacterWebsPage() {
   var createBtn = document.getElementById('character-web-create-btn');
   var webNameInput = document.getElementById('character-web-name');
   var conceptSelector = document.getElementById('character-web-concept-selector');
+  var worldbuildingInput = document.getElementById('character-web-worldbuilding');
   var userNotesInput = document.getElementById('character-web-user-notes');
   var webList = document.getElementById('character-web-list');
   var webDetailsSection = document.getElementById('character-web-details');
@@ -12022,6 +12023,7 @@ function initCharacterWebsPage() {
     !loading ||
     !createBtn ||
     !webNameInput ||
+    !worldbuildingInput ||
     !userNotesInput ||
     !webList ||
     !webDetailsSection ||
@@ -12873,11 +12875,14 @@ function initCharacterWebsPage() {
             sourceConceptId: conceptId,
             userNotes:
               typeof userNotesInput.value === 'string' ? userNotesInput.value.trim() : '',
+            worldbuilding:
+              typeof worldbuildingInput.value === 'string' ? worldbuildingInput.value.trim() : '',
           }),
         },
         'Failed to create character web'
       );
       webNameInput.value = '';
+      worldbuildingInput.value = '';
       userNotesInput.value = '';
       if (conceptSelector instanceof HTMLSelectElement) {
         conceptSelector.value = '';

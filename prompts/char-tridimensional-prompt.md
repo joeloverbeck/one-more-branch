@@ -24,6 +24,7 @@ Build a three-dimensional character profile using Lajos Egri's method: physiolog
 | `kernelSummary` | `string?` | Compact text summary of the story kernel (fallback) |
 | `conceptSummary` | `string?` | Compact text summary of the concept spec (fallback) |
 | `userNotes` | `string?` | Free-text user notes |
+| `worldbuilding` | `string` | Raw worldbuilding prose (geography, cultures, factions, history, magic, technology). Empty string if none provided. |
 | `webContext` | `CharacterWebContext` | Character's role assignment, archetypes, cast dynamics |
 | `storyKernel` | `StoryKernel?` | Full typed kernel (~10 fields + valueSpectrum) |
 | `conceptSpec` | `ConceptSpec?` | Full typed concept spec (~25 fields) |
@@ -106,6 +107,13 @@ CONSTRAINT: Use the dramatic stance to calibrate the character's psychological t
 {{else if kernelSummary}}
 STORY KERNEL:
 {{kernelSummary}}
+{{/if}}
+
+{{#if worldbuilding}}
+WORLDBUILDING:
+{{worldbuilding}}
+
+CONSTRAINT: Ground sociology in the worldbuilding — class systems, occupations, cultural norms, and institutions must reflect the world as described. Use world geography, climate, and resources to inform physiology where relevant.
 {{/if}}
 
 {{#if userNotes}}

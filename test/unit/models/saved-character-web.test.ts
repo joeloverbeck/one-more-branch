@@ -16,7 +16,7 @@ function makeValidWeb(): Record<string, unknown> {
     updatedAt: '2026-03-08T00:00:00Z',
     sourceConceptId: 'c-1',
     protagonistName: 'Alice',
-    inputs: { kernelSummary: 'A dark tale' },
+    inputs: { kernelSummary: 'A dark tale', worldbuilding: '' },
     assignments: [
       {
         characterName: 'Alice',
@@ -72,6 +72,12 @@ describe('isSavedCharacterWeb', () => {
   it('returns false when relationshipArchetypes is missing', () => {
     const web = makeValidWeb();
     delete web['relationshipArchetypes'];
+    expect(isSavedCharacterWeb(web)).toBe(false);
+  });
+
+  it('returns false when inputs.worldbuilding is missing', () => {
+    const web = makeValidWeb();
+    web['inputs'] = { kernelSummary: 'A dark tale' };
     expect(isSavedCharacterWeb(web)).toBe(false);
   });
 

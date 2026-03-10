@@ -149,6 +149,10 @@ Personal Dilemmas: ${formatStringList(deepRelationships.personalDilemmas)}`);
     userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
+  if (context.worldbuilding.length > 0) {
+    userSections.push(`WORLDBUILDING:\n${context.worldbuilding}\n\nCONSTRAINT: Ground speech patterns, vocabulary, and appearance in the world's cultures, languages, and aesthetic norms. Use worldbuilding to determine dialect, dress conventions, and knowledge boundaries.`);
+  }
+
   if (context.userNotes) {
     userSections.push(`USER NOTES:\n${context.userNotes}`);
   }
