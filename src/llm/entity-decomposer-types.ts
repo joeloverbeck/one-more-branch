@@ -5,6 +5,7 @@ import type { Npc } from '../models/npc.js';
 import type { StoryKernel } from '../models/story-kernel.js';
 import type { StorySpine } from '../models/story-spine.js';
 
+
 export interface EntityDecomposerContext {
   readonly characterConcept: string;
   readonly worldbuilding: string;
@@ -24,18 +25,3 @@ export interface EntityDecompositionResult {
   readonly rawResponse: string;
 }
 
-export interface WorldDecompositionContext {
-  readonly worldbuilding: string;
-  readonly tone: string;
-  readonly toneFeel?: readonly string[];
-  readonly toneAvoid?: readonly string[];
-  readonly spine?: StorySpine;
-  readonly conceptSpec?: ConceptSpec;
-  readonly storyKernel?: StoryKernel;
-  readonly startingSituation?: string;
-}
-
-export interface WorldDecompositionResult {
-  readonly decomposedWorld: DecomposedWorld;
-  readonly rawResponse: string;
-}

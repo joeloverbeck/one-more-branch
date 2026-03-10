@@ -22,9 +22,4 @@ describe('new-story.ejs template field order', () => {
     expect(precedingChunk).not.toMatch(/<input[^>]*$/);
   });
 
-  it('should include the optional character-web selector and hidden webId field', () => {
-    expect(template).toContain('id="character-web-selector"');
-    expect(template).toContain('name="webId"');
-    expect(template).toContain('id="selected-web-id"');
-  });
 });

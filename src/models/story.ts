@@ -24,7 +24,6 @@ export interface Story {
   readonly id: StoryId;
   readonly title: string;
   readonly characterConcept: string;
-  readonly webId?: string;
   readonly worldbuilding: string;
   readonly tone: StoryTone;
   readonly npcs?: readonly Npc[];
@@ -50,7 +49,6 @@ export interface Story {
 export interface CreateStoryData {
   title: string;
   characterConcept: string;
-  webId?: string;
   worldbuilding?: string;
   tone?: string;
   npcs?: readonly Npc[];
@@ -89,14 +87,12 @@ export function createStory(data: CreateStoryData): Story {
     (npc) => npc.name.trim().length > 0 && npc.description.trim().length > 0
   );
   const npcs = validNpcs && validNpcs.length > 0 ? validNpcs : undefined;
-  const webId = data.webId?.trim();
   const startingSituation = data.startingSituation?.trim();
 
   return {
     id: generateStoryId(),
     title,
     characterConcept,
-    ...(webId && webId.length > 0 ? { webId } : {}),
     worldbuilding: data.worldbuilding?.trim() ?? '',
     tone: data.tone?.trim() ?? 'fantasy adventure',
     npcs,
@@ -156,7 +152,6 @@ export function isStory(value: unknown): value is Story {
   const obj = value as Record<string, unknown>;
   const title = obj['title'];
   const characterConcept = obj['characterConcept'];
-  const webId = obj['webId'];
   const structure = obj['structure'];
   const structureVersions = obj['structureVersions'];
 
@@ -166,7 +161,6 @@ export function isStory(value: unknown): value is Story {
     title.trim().length > 0 &&
     typeof characterConcept === 'string' &&
     characterConcept.trim().length > 0 &&
-    (webId === undefined || typeof webId === 'string') &&
     typeof obj['worldbuilding'] === 'string' &&
     typeof obj['tone'] === 'string' &&
     Array.isArray(obj['globalCanon']) &&

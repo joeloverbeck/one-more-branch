@@ -22,7 +22,6 @@ import { CONCEPT_SINGLE_SPECIFICITY_SCHEMA } from '../../../../src/llm/schemas/c
 import { CONCEPT_SPECIFICITY_SCHEMA } from '../../../../src/llm/schemas/concept-specificity-schema';
 import { CONCEPT_STRESS_TEST_SCHEMA } from '../../../../src/llm/schemas/concept-stress-tester-schema';
 import { ENTITY_DECOMPOSITION_SCHEMA } from '../../../../src/llm/schemas/entity-decomposer-schema';
-import { WORLD_DECOMPOSITION_SCHEMA } from '../../../../src/llm/schemas/world-decomposition-schema';
 import {
   KERNEL_EVALUATION_DEEP_SCHEMA,
   KERNEL_EVALUATION_SCORING_SCHEMA,
@@ -236,7 +235,6 @@ describe('Anthropic schema compatibility', () => {
     { name: 'SPINE_GENERATION_SCHEMA', schema: SPINE_GENERATION_SCHEMA },
     { name: 'SPINE_REWRITE_SCHEMA', schema: SPINE_REWRITE_SCHEMA },
     { name: 'ENTITY_DECOMPOSITION_SCHEMA', schema: ENTITY_DECOMPOSITION_SCHEMA },
-    { name: 'WORLD_DECOMPOSITION_SCHEMA', schema: WORLD_DECOMPOSITION_SCHEMA },
     { name: 'CONCEPT_IDEATION_SCHEMA', schema: CONCEPT_IDEATION_SCHEMA },
     { name: 'CONCEPT_STRESS_TEST_SCHEMA', schema: CONCEPT_STRESS_TEST_SCHEMA },
     { name: 'KERNEL_IDEATION_SCHEMA', schema: KERNEL_IDEATION_SCHEMA },

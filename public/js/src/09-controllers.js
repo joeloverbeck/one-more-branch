@@ -650,9 +650,6 @@ function initNewStoryPage() {
   const spineSection = document.getElementById('spine-section');
   const kernelSelectorStory = document.getElementById('kernel-selector-story');
   const kernelDisplayPanel = document.getElementById('kernel-display-panel');
-  const characterWebSelector = document.getElementById('character-web-selector');
-  const characterWebSelectorSummary = document.getElementById('character-web-selector-summary');
-  const selectedWebIdInput = document.getElementById('selected-web-id');
   const errorDiv = document.querySelector('.alert-error');
 
   if (!form || !loading || !generateSpineBtn) {
@@ -900,73 +897,6 @@ function initNewStoryPage() {
     };
   }
 
-  function renderSelectedCharacterWebSummary(web) {
-    if (!characterWebSelectorSummary) {
-      return;
-    }
-
-    if (!web) {
-      characterWebSelectorSummary.textContent = '';
-      characterWebSelectorSummary.style.display = 'none';
-      return;
-    }
-
-    var assignmentCount = Array.isArray(web.assignments) ? web.assignments.length : 0;
-    characterWebSelectorSummary.textContent =
-      (web.protagonistName || 'No protagonist yet') + ' • ' + assignmentCount + ' characters';
-    characterWebSelectorSummary.style.display = 'block';
-  }
-
-  async function loadCharacterWebOptions() {
-    if (!(characterWebSelector instanceof HTMLSelectElement)) {
-      return;
-    }
-
-    try {
-      var response = await fetch('/character-webs/api/list');
-      var data = await response.json();
-      if (!response.ok || !data.success || !Array.isArray(data.webs)) {
-        return;
-      }
-
-      data.webs.forEach(function (web) {
-        var option = document.createElement('option');
-        option.value = web.id;
-        option.textContent = web.name || 'Untitled Character Web';
-        option.dataset.protagonistName = web.protagonistName || '';
-        option.dataset.assignmentCount = Array.isArray(web.assignments)
-          ? String(web.assignments.length)
-          : '0';
-        characterWebSelector.appendChild(option);
-      });
-    } catch (_error) {
-      renderSelectedCharacterWebSummary(null);
-    }
-  }
-
-  function handleCharacterWebSelectionChange() {
-    if (!(characterWebSelector instanceof HTMLSelectElement)) {
-      return;
-    }
-
-    var selectedOption = characterWebSelector.options[characterWebSelector.selectedIndex];
-    var webId = (characterWebSelector.value || '').trim();
-
-    if (selectedWebIdInput && typeof selectedWebIdInput.value === 'string') {
-      selectedWebIdInput.value = webId;
-    }
-
-    if (!selectedOption || !webId) {
-      renderSelectedCharacterWebSummary(null);
-      return;
-    }
-
-    renderSelectedCharacterWebSummary({
-      protagonistName: selectedOption.dataset.protagonistName || '',
-      assignments: new Array(Number(selectedOption.dataset.assignmentCount || '0')),
-    });
-  }
-
   function collectFormData() {
     var formData = new FormData(form);
     var npcs = collectNpcEntries();
@@ -983,7 +913,6 @@ function initNewStoryPage() {
     return {
       title: toTrimmedString(formData.get('title')),
       characterConcept: characterConcept,
-      webId: toTrimmedString(formData.get('webId')),
       worldbuilding: worldbuildingFreeText,
       tone: toneFreeText,
       npcs: npcs.length > 0 ? npcs : undefined,
@@ -1136,12 +1065,6 @@ function initNewStoryPage() {
     });
   }
 
-  if (characterWebSelector instanceof HTMLSelectElement) {
-    void loadCharacterWebOptions();
-    characterWebSelector.addEventListener('change', handleCharacterWebSelectionChange);
-    handleCharacterWebSelectionChange();
-  }
-
   // ── Concept selector logic ─────────────────────────────────────
 
   var conceptDropdownInstance = null;
@@ -1221,7 +1144,6 @@ function initNewStoryPage() {
       var conceptSpecFromFields = buildConceptSpecFromFields();
       var spineBody = {
         characterConcept: formValues.characterConcept,
-        webId: formValues.webId || undefined,
         worldbuilding: formValues.worldbuilding,
         tone: formValues.tone,
         npcs: formValues.npcs,
@@ -1294,7 +1216,6 @@ function initNewStoryPage() {
       var createBody = {
         title: formValues.title,
         characterConcept: formValues.characterConcept,
-        webId: formValues.webId || undefined,
         worldbuilding: formValues.worldbuilding,
         tone: formValues.tone,
         npcs: formValues.npcs,

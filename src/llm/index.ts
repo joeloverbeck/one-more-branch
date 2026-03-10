@@ -79,12 +79,10 @@ export { mergePageWriterAndReconciledStateWithAnalystResults } from './result-me
 
 export { generateAgendaResolver } from './agenda-resolver-generation.js';
 
-export { decomposeEntities, decomposeWorldbuildingOnly } from './entity-decomposer.js';
+export { decomposeEntities } from './entity-decomposer.js';
 export type {
   EntityDecomposerContext,
   EntityDecompositionResult,
-  WorldDecompositionContext,
-  WorldDecompositionResult,
 } from './entity-decomposer-types.js';
 
 export { generateSceneDirections } from './scene-ideator.js';
