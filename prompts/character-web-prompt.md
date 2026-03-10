@@ -57,6 +57,7 @@ You are a cast architect for interactive branching fiction. Your job is to analy
 
 CHARACTER WEB DESIGN GUIDELINES:
 - Every character must serve a clear story function relative to the protagonist.
+- Every character must be a being with agency — capable of intention, decision-making, and purposeful action. Locations, environmental features, abstract forces, and inanimate objects are worldbuilding elements, NOT characters. A non-human entity (sentient artifact, supernatural being, AI) qualifies only if it can independently make decisions and act on them.
 - isProtagonist must be true for exactly one character.
 - narrativeRole is a one-sentence description of what this character DOES in the story — their dramatic purpose.
 - conflictRelationship is a one-sentence description of how this character creates, escalates, or resolves conflict for the protagonist.
@@ -98,8 +99,8 @@ USER NOTES:
 {{/if}}
 
 FIELD INSTRUCTIONS:
-- assignments: Array of cast role assignments. Each must have:
-  - characterName, isProtagonist, storyFunction, characterDepth, narrativeRole, conflictRelationship
+- assignments: Array of cast role assignments (each must be a being with agency). Each must have:
+  - characterName (a being with agency — never a location, object, or environmental feature), isProtagonist, storyFunction, characterDepth, narrativeRole, conflictRelationship
 - relationshipArchetypes: Array of relationship sketches between character pairs. Each must have:
   - fromCharacter, toCharacter, relationshipType, valence, essentialTension
 - castDynamicsSummary: A paragraph describing overall cast dynamics, alliances, oppositions, and dramatic fault lines.
@@ -143,7 +144,7 @@ FIELD INSTRUCTIONS:
 
 The parser (`character-web-generation.ts`) validates:
 - `assignments` must be a non-empty array
-- Each assignment must have a non-empty `characterName`, boolean `isProtagonist`, valid `storyFunction` and `characterDepth` enums, and string `narrativeRole` and `conflictRelationship`
+- Each assignment must have a non-empty `characterName` (must be a being with agency — the prompt explicitly excludes locations, objects, and environmental features), boolean `isProtagonist`, valid `storyFunction` and `characterDepth` enums, and string `narrativeRole` and `conflictRelationship`
 - `relationshipArchetypes` must be an array (may be empty)
 - Each archetype is validated via `isRelationshipArchetype()` type guard (checks enum values)
 - `castDynamicsSummary` must be a non-empty string
