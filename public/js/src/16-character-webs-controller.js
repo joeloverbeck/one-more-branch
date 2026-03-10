@@ -161,6 +161,26 @@ function initCharacterWebsPage() {
     state.selectedCharacter = updatedCharacter;
   }
 
+  async function patchWeb(payload) {
+    if (!state.selectedWeb || !state.selectedWeb.web) {
+      return;
+    }
+
+    var data = await fetchJson(
+      '/character-webs/api/' + encodeURIComponent(state.selectedWeb.web.id),
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      },
+      'Failed to save web changes'
+    );
+
+    if (data && data.web) {
+      state.selectedWeb.web = data.web;
+    }
+  }
+
   function renderWebList() {
     if (!Array.isArray(state.webs) || state.webs.length === 0) {
       webList.innerHTML = '<p class="form-help">No character webs yet.</p>';
@@ -209,14 +229,8 @@ function initCharacterWebsPage() {
     });
   }
 
-  function renderAssignments(web) {
-    if (!Array.isArray(web.assignments) || web.assignments.length === 0) {
-      assignmentsContainer.innerHTML =
-        '<p class="form-help">Generate the web to populate cast assignments.</p>';
-      return;
-    }
-
-    assignmentsContainer.innerHTML = web.assignments
+  function renderAssignmentsReadOnly(web) {
+    return web.assignments
       .map(function (assignment) {
         return (
           '<article class="spine-card">' +
@@ -244,20 +258,138 @@ function initCharacterWebsPage() {
       .join('');
   }
 
-  function renderRelationships(web) {
-    if (!Array.isArray(web.relationshipArchetypes) || web.relationshipArchetypes.length === 0) {
-      relationshipsContainer.innerHTML =
-        '<p class="form-help">Generate the web to populate relationship archetypes.</p>';
+  function renderAssignments(web) {
+    if (!Array.isArray(web.assignments) || web.assignments.length === 0) {
+      assignmentsContainer.innerHTML =
+        '<p class="form-help">Generate the web to populate cast assignments.</p>';
       return;
     }
 
-    relationshipsContainer.innerHTML = web.relationshipArchetypes
+    assignmentsContainer.innerHTML =
+      '<div class="stage-block-toolbar">' +
+      '<button type="button" class="btn btn-secondary btn-sm web-assignments-edit-btn">Edit</button>' +
+      '</div>' +
+      '<div class="web-assignments-content">' +
+      renderAssignmentsReadOnly(web) +
+      '</div>';
+
+    assignmentsContainer.querySelector('.web-assignments-edit-btn').addEventListener('click', function () {
+      var contentEl = assignmentsContainer.querySelector('.web-assignments-content');
+      var toolbar = assignmentsContainer.querySelector('.stage-block-toolbar');
+      if (!contentEl) return;
+
+      var editors = [];
+      contentEl.innerHTML = '';
+
+      web.assignments.forEach(function (assignment) {
+        var card = document.createElement('article');
+        card.className = 'spine-card';
+
+        var heading = document.createElement('h4');
+        heading.textContent = assignment.characterName;
+        if (assignment.isProtagonist) {
+          heading.innerHTML += ' <span class="spine-badge spine-badge-type">Protagonist</span>';
+        }
+        card.appendChild(heading);
+
+        var fnField = document.createElement('div');
+        fnField.className = 'spine-field';
+        fnField.innerHTML = '<span class="spine-label">Story Function:</span> ' +
+          escapeHtml(String(assignment.storyFunction || '').replace(/_/g, ' '));
+        card.appendChild(fnField);
+
+        var depthField = document.createElement('div');
+        depthField.className = 'spine-field';
+        depthField.innerHTML = '<span class="spine-label">Depth:</span> ' +
+          escapeHtml(String(assignment.characterDepth || '').replace(/_/g, ' '));
+        card.appendChild(depthField);
+
+        var roleLabel = document.createElement('label');
+        roleLabel.className = 'stage-field-label';
+        roleLabel.textContent = 'Narrative Role:';
+        card.appendChild(roleLabel);
+
+        var roleTextarea = document.createElement('textarea');
+        roleTextarea.className = 'concept-inline-textarea';
+        roleTextarea.rows = 3;
+        roleTextarea.value = assignment.narrativeRole || '';
+        card.appendChild(roleTextarea);
+
+        var conflictLabel = document.createElement('label');
+        conflictLabel.className = 'stage-field-label';
+        conflictLabel.textContent = 'Conflict Relationship:';
+        card.appendChild(conflictLabel);
+
+        var conflictTextarea = document.createElement('textarea');
+        conflictTextarea.className = 'concept-inline-textarea';
+        conflictTextarea.rows = 3;
+        conflictTextarea.value = assignment.conflictRelationship || '';
+        card.appendChild(conflictTextarea);
+
+        contentEl.appendChild(card);
+
+        editors.push({
+          characterName: assignment.characterName,
+          roleTextarea: roleTextarea,
+          conflictTextarea: conflictTextarea,
+        });
+      });
+
+      var actions = document.createElement('div');
+      actions.className = 'stage-edit-actions';
+
+      var saveBtn = document.createElement('button');
+      saveBtn.type = 'button';
+      saveBtn.className = 'btn btn-primary btn-sm';
+      saveBtn.textContent = 'Save Changes';
+
+      var cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.className = 'btn btn-secondary btn-sm';
+      cancelBtn.textContent = 'Cancel';
+
+      actions.appendChild(saveBtn);
+      actions.appendChild(cancelBtn);
+      contentEl.appendChild(actions);
+      if (toolbar) toolbar.style.display = 'none';
+
+      cancelBtn.addEventListener('click', function () {
+        renderAssignments(web);
+      });
+
+      saveBtn.addEventListener('click', function () {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        var assignmentsPayload = editors.map(function (ed) {
+          return {
+            characterName: ed.characterName,
+            narrativeRole: ed.roleTextarea.value.trim(),
+            conflictRelationship: ed.conflictTextarea.value.trim(),
+          };
+        });
+
+        patchWeb({ assignments: assignmentsPayload })
+          .then(function () {
+            renderAssignments(state.selectedWeb.web);
+          })
+          .catch(function (err) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Changes';
+            window.alert('Save failed: ' + (err.message || 'Unknown error'));
+          });
+      });
+    });
+  }
+
+  function renderRelationshipsReadOnly(web) {
+    return web.relationshipArchetypes
       .map(function (relationship) {
         return (
           '<article class="spine-card">' +
           '<h4>' +
           escapeHtml(relationship.fromCharacter) +
-          ' → ' +
+          ' \u2192 ' +
           escapeHtml(relationship.toCharacter) +
           '</h4>' +
           '<div class="spine-field"><span class="spine-label">Type:</span> ' +
@@ -273,6 +405,116 @@ function initCharacterWebsPage() {
         );
       })
       .join('');
+  }
+
+  function renderRelationships(web) {
+    if (!Array.isArray(web.relationshipArchetypes) || web.relationshipArchetypes.length === 0) {
+      relationshipsContainer.innerHTML =
+        '<p class="form-help">Generate the web to populate relationship archetypes.</p>';
+      return;
+    }
+
+    relationshipsContainer.innerHTML =
+      '<div class="stage-block-toolbar">' +
+      '<button type="button" class="btn btn-secondary btn-sm web-relationships-edit-btn">Edit</button>' +
+      '</div>' +
+      '<div class="web-relationships-content">' +
+      renderRelationshipsReadOnly(web) +
+      '</div>';
+
+    relationshipsContainer.querySelector('.web-relationships-edit-btn').addEventListener('click', function () {
+      var contentEl = relationshipsContainer.querySelector('.web-relationships-content');
+      var toolbar = relationshipsContainer.querySelector('.stage-block-toolbar');
+      if (!contentEl) return;
+
+      var editors = [];
+      contentEl.innerHTML = '';
+
+      web.relationshipArchetypes.forEach(function (relationship) {
+        var card = document.createElement('article');
+        card.className = 'spine-card';
+
+        var heading = document.createElement('h4');
+        heading.textContent = relationship.fromCharacter + ' \u2192 ' + relationship.toCharacter;
+        card.appendChild(heading);
+
+        var typeField = document.createElement('div');
+        typeField.className = 'spine-field';
+        typeField.innerHTML = '<span class="spine-label">Type:</span> ' +
+          escapeHtml(String(relationship.relationshipType || '').replace(/_/g, ' '));
+        card.appendChild(typeField);
+
+        var valenceField = document.createElement('div');
+        valenceField.className = 'spine-field';
+        valenceField.innerHTML = '<span class="spine-label">Valence:</span> ' +
+          escapeHtml(String(relationship.valence || '').replace(/_/g, ' '));
+        card.appendChild(valenceField);
+
+        var tensionLabel = document.createElement('label');
+        tensionLabel.className = 'stage-field-label';
+        tensionLabel.textContent = 'Essential Tension:';
+        card.appendChild(tensionLabel);
+
+        var tensionTextarea = document.createElement('textarea');
+        tensionTextarea.className = 'concept-inline-textarea';
+        tensionTextarea.rows = 3;
+        tensionTextarea.value = relationship.essentialTension || '';
+        card.appendChild(tensionTextarea);
+
+        contentEl.appendChild(card);
+
+        editors.push({
+          fromCharacter: relationship.fromCharacter,
+          toCharacter: relationship.toCharacter,
+          tensionTextarea: tensionTextarea,
+        });
+      });
+
+      var actions = document.createElement('div');
+      actions.className = 'stage-edit-actions';
+
+      var saveBtn = document.createElement('button');
+      saveBtn.type = 'button';
+      saveBtn.className = 'btn btn-primary btn-sm';
+      saveBtn.textContent = 'Save Changes';
+
+      var cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.className = 'btn btn-secondary btn-sm';
+      cancelBtn.textContent = 'Cancel';
+
+      actions.appendChild(saveBtn);
+      actions.appendChild(cancelBtn);
+      contentEl.appendChild(actions);
+      if (toolbar) toolbar.style.display = 'none';
+
+      cancelBtn.addEventListener('click', function () {
+        renderRelationships(web);
+      });
+
+      saveBtn.addEventListener('click', function () {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        var archetypesPayload = editors.map(function (ed) {
+          return {
+            fromCharacter: ed.fromCharacter,
+            toCharacter: ed.toCharacter,
+            essentialTension: ed.tensionTextarea.value.trim(),
+          };
+        });
+
+        patchWeb({ relationshipArchetypes: archetypesPayload })
+          .then(function () {
+            renderRelationships(state.selectedWeb.web);
+          })
+          .catch(function (err) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Changes';
+            window.alert('Save failed: ' + (err.message || 'Unknown error'));
+          });
+      });
+    });
   }
 
   function renderCharacters() {
@@ -359,9 +601,83 @@ function initCharacterWebsPage() {
         formatDate(web.updatedAt) +
         (web.protagonistName ? ' • Protagonist: ' + web.protagonistName : '');
     }
-    if (webSummary) {
+    var summaryBlock = document.getElementById('character-web-summary-block');
+    if (webSummary && summaryBlock) {
       webSummary.textContent =
         web.castDynamicsSummary || 'Generate the web to discover the cast dynamics.';
+
+      var existingToolbar = summaryBlock.querySelector('.stage-block-toolbar');
+      if (existingToolbar) {
+        existingToolbar.remove();
+      }
+
+      if (web.castDynamicsSummary) {
+        var summaryToolbar = document.createElement('div');
+        summaryToolbar.className = 'stage-block-toolbar';
+
+        var summaryEditBtn = document.createElement('button');
+        summaryEditBtn.type = 'button';
+        summaryEditBtn.className = 'btn btn-secondary btn-sm';
+        summaryEditBtn.textContent = 'Edit';
+
+        summaryToolbar.appendChild(summaryEditBtn);
+        summaryBlock.insertBefore(summaryToolbar, webSummary);
+
+        summaryEditBtn.addEventListener('click', function () {
+          summaryToolbar.style.display = 'none';
+          webSummary.style.display = 'none';
+
+          var textarea = document.createElement('textarea');
+          textarea.className = 'concept-inline-textarea';
+          textarea.rows = 5;
+          textarea.value = web.castDynamicsSummary || '';
+
+          var actions = document.createElement('div');
+          actions.className = 'stage-edit-actions';
+
+          var saveBtn = document.createElement('button');
+          saveBtn.type = 'button';
+          saveBtn.className = 'btn btn-primary btn-sm';
+          saveBtn.textContent = 'Save Changes';
+
+          var cancelBtn = document.createElement('button');
+          cancelBtn.type = 'button';
+          cancelBtn.className = 'btn btn-secondary btn-sm';
+          cancelBtn.textContent = 'Cancel';
+
+          actions.appendChild(saveBtn);
+          actions.appendChild(cancelBtn);
+
+          summaryBlock.appendChild(textarea);
+          summaryBlock.appendChild(actions);
+
+          cancelBtn.addEventListener('click', function () {
+            textarea.remove();
+            actions.remove();
+            summaryToolbar.style.display = '';
+            webSummary.style.display = '';
+          });
+
+          saveBtn.addEventListener('click', function () {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'Saving...';
+
+            patchWeb({ castDynamicsSummary: textarea.value.trim() })
+              .then(function () {
+                textarea.remove();
+                actions.remove();
+                summaryToolbar.style.display = '';
+                webSummary.style.display = '';
+                webSummary.textContent = state.selectedWeb.web.castDynamicsSummary;
+              })
+              .catch(function (err) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+                window.alert('Save failed: ' + (err.message || 'Unknown error'));
+              });
+          });
+        });
+      }
     }
 
     renderAssignments(web);
