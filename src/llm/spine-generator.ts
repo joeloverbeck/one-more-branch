@@ -1,6 +1,6 @@
 import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
-import { logger, logPrompt } from '../logging/index.js';
+import { logger, logPrompt, logResponse } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
   extractResponseContent,
@@ -279,11 +279,13 @@ export async function generateStorySpines(
   const messages = buildSpinePrompt(context);
   logPrompt(logger, 'spine', messages);
 
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => fetchSpine(apiKey, m, messages, temperature, maxTokens),
       primaryModel,
       'spine',
     )
   );
+  logResponse(logger, 'spine', result.rawResponse);
+  return result;
 }

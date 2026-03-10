@@ -6,7 +6,7 @@ import type {
   SpeechFingerprint,
 } from '../models/decomposed-character.js';
 import type { DecomposedWorld, WorldFact, WorldFactDomain, WorldFactType } from '../models/decomposed-world.js';
-import { logger, logPrompt } from '../logging/index.js';
+import { logger, logPrompt, logResponse } from '../logging/index.js';
 import type { JsonSchema, ChatMessage } from './llm-client-types.js';
 import {
   OPENROUTER_API_URL,
@@ -320,7 +320,7 @@ export async function decomposeEntities(
   const messages = buildEntityDecomposerPrompt(context);
   logPrompt(logger, 'entityDecomposer', messages);
 
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (model) =>
         fetchDecomposition(apiKey, {
@@ -336,5 +336,7 @@ export async function decomposeEntities(
       'entityDecomposer',
     )
   );
+  logResponse(logger, 'entityDecomposer', result.rawResponse);
+  return result;
 }
 

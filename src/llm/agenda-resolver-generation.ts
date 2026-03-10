@@ -1,5 +1,5 @@
 import { getStageModel, getStageMaxTokens } from '../config/stage-model.js';
-import { logger, logPrompt } from '../logging/index.js';
+import { logger, logPrompt, logResponse } from '../logging/index.js';
 import {
   OPENROUTER_API_URL,
   extractResponseContent,
@@ -74,9 +74,11 @@ export async function generateAgendaResolver(
     storyNpcs
   );
 
-  return {
+  const result = {
     updatedAgendas: validated.updatedAgendas,
     updatedRelationships: validated.updatedRelationships,
     rawResponse: validated.rawResponse,
   };
+  logResponse(logger, 'agendaResolver', result.rawResponse);
+  return result;
 }

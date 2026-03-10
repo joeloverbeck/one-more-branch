@@ -1,5 +1,5 @@
 import { getStageModel } from '../config/stage-model.js';
-import { logger, logPrompt } from '../logging/index.js';
+import { logger, logPrompt, logResponse } from '../logging/index.js';
 import { generateAccountantWithFallback } from './accountant-generation.js';
 import { generateLorekeeperWithFallback } from './lorekeeper-generation.js';
 import { generateStructureEvaluatorWithFallback } from './structure-evaluator-generation.js';
@@ -60,13 +60,15 @@ export async function generateOpeningPage(
 
   const resolvedOptions = { ...options, promptOptions };
   const primaryModel = resolvedOptions.model ?? getStageModel('writer');
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => generateWriterWithFallback(messages, { ...resolvedOptions, model: m }),
       primaryModel,
       'writer'
     )
   );
+  logResponse(logger, 'opening', result.rawResponse);
+  return result;
 }
 
 export async function generateWriterPage(
@@ -80,13 +82,15 @@ export async function generateWriterPage(
 
   const resolvedOptions = { ...options, promptOptions };
   const primaryModel = resolvedOptions.model ?? getStageModel('writer');
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => generateWriterWithFallback(messages, { ...resolvedOptions, model: m }),
       primaryModel,
       'writer'
     )
   );
+  logResponse(logger, 'writer', result.rawResponse);
+  return result;
 }
 
 export async function generatePageWriterOutput(
@@ -107,13 +111,15 @@ export async function generateStructureEvaluation(
 
   const evalOptions = { ...options, temperature: 0.3 };
   const primaryModel = evalOptions.model ?? getStageModel('structureEvaluator');
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => generateStructureEvaluatorWithFallback(messages, { ...evalOptions, model: m }),
       primaryModel,
       'structureEvaluator'
     )
   );
+  logResponse(logger, 'structureEvaluator', result.rawResponse);
+  return result;
 }
 
 export async function generatePromiseTracking(
@@ -126,13 +132,15 @@ export async function generatePromiseTracking(
 
   const evalOptions = { ...options, temperature: 0.3 };
   const primaryModel = evalOptions.model ?? getStageModel('promiseTracker');
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => generatePromiseTrackerWithFallback(messages, { ...evalOptions, model: m }),
       primaryModel,
       'promiseTracker'
     )
   );
+  logResponse(logger, 'promiseTracker', result.rawResponse);
+  return result;
 }
 
 export async function generateProseQualityEvaluation(
@@ -145,13 +153,15 @@ export async function generateProseQualityEvaluation(
 
   const evalOptions = { ...options, temperature: 0.3 };
   const primaryModel = evalOptions.model ?? getStageModel('proseQuality');
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => generateProseQualityWithFallback(messages, { ...evalOptions, model: m }),
       primaryModel,
       'proseQuality'
     )
   );
+  logResponse(logger, 'proseQuality', result.rawResponse);
+  return result;
 }
 
 export async function generateNpcIntelligenceEvaluation(
@@ -164,13 +174,15 @@ export async function generateNpcIntelligenceEvaluation(
 
   const evalOptions = { ...options, temperature: 0.3 };
   const primaryModel = evalOptions.model ?? getStageModel('npcIntelligence');
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => generateNpcIntelligenceWithFallback(messages, { ...evalOptions, model: m }),
       primaryModel,
       'npcIntelligence'
     )
   );
+  logResponse(logger, 'npcIntelligence', result.rawResponse);
+  return result;
 }
 
 export async function generatePagePlan(
@@ -182,13 +194,15 @@ export async function generatePagePlan(
   logPrompt(logger, 'planner', messages);
 
   const primaryModel = options.model ?? getStageModel('planner');
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => generatePlannerWithFallback(messages, { ...options, model: m }),
       primaryModel,
       'planner'
     )
   );
+  logResponse(logger, 'planner', result.rawResponse);
+  return result;
 }
 
 export async function generateStateAccountant(
@@ -201,13 +215,15 @@ export async function generateStateAccountant(
   logPrompt(logger, 'accountant', messages);
 
   const primaryModel = options.model ?? getStageModel('accountant');
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => generateAccountantWithFallback(messages, { ...options, model: m }),
       primaryModel,
       'accountant'
     )
   );
+  logResponse(logger, 'accountant', result.rawResponse);
+  return result;
 }
 
 export async function generateLorekeeperBible(
@@ -220,13 +236,15 @@ export async function generateLorekeeperBible(
 
   const lorekeeperOptions = { ...options, temperature: 0.3 };
   const primaryModel = lorekeeperOptions.model ?? getStageModel('lorekeeper');
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => generateLorekeeperWithFallback(messages, { ...lorekeeperOptions, model: m }),
       primaryModel,
       'lorekeeper'
     )
   );
+  logResponse(logger, 'lorekeeper', result.rawResponse);
+  return result;
 }
 
 export async function generateChoices(
@@ -238,13 +256,15 @@ export async function generateChoices(
   logPrompt(logger, 'choiceGenerator', messages);
 
   const primaryModel = options.model ?? getStageModel('choiceGenerator');
-  return withRetry(() =>
+  const result = await withRetry(() =>
     withModelFallback(
       (m) => generateChoiceGeneratorWithFallback(messages, { ...options, model: m }),
       primaryModel,
       'choiceGenerator'
     )
   );
+  logResponse(logger, 'choiceGenerator', result.rawResponse);
+  return result;
 }
 
 export async function validateApiKey(apiKey: string): Promise<boolean> {
