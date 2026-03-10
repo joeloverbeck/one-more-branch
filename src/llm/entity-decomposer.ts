@@ -24,16 +24,12 @@ import {
 import type {
   EntityDecomposerContext,
   EntityDecompositionResult,
-  WorldDecompositionContext,
-  WorldDecompositionResult,
 } from './entity-decomposer-types.js';
 import { LLMError } from './llm-client-types.js';
 import { withModelFallback } from './model-fallback.js';
 import { buildEntityDecomposerPrompt } from './prompts/entity-decomposer-prompt.js';
-import { buildWorldDecomposerPrompt } from './prompts/world-decomposer-prompt.js';
 import { withRetry } from './retry.js';
 import { ENTITY_DECOMPOSITION_SCHEMA } from './schemas/entity-decomposer-schema.js';
-import { WORLD_DECOMPOSITION_SCHEMA } from './schemas/world-decomposition-schema.js';
 
 const VALID_DOMAINS: readonly WorldFactDomain[] = [
   'geography',
@@ -247,32 +243,6 @@ function parseDecompositionResponse(
   return { decomposedCharacters, decomposedWorld };
 }
 
-function parseWorldDecompositionResponse(
-  parsed: unknown,
-  worldbuilding: string
-): Omit<WorldDecompositionResult, 'rawResponse'> {
-  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError(
-      'World decomposition response must be an object',
-      'DECOMPOSITION_PARSE_ERROR',
-      true
-    );
-  }
-
-  const data = parsed as Record<string, unknown>;
-  const rawFacts = Array.isArray(data['worldFacts']) ? (data['worldFacts'] as unknown[]) : [];
-  const worldFacts: WorldFact[] = rawFacts
-    .map((raw) => parseWorldFact(raw))
-    .filter((fact): fact is WorldFact => fact !== null);
-
-  return {
-    decomposedWorld: {
-      facts: worldFacts,
-      rawWorldbuilding: worldbuilding,
-    },
-  };
-}
-
 interface DecompositionRequest<TParsed> {
   readonly model: string;
   readonly temperature: number;
@@ -368,32 +338,3 @@ export async function decomposeEntities(
   );
 }
 
-export async function decomposeWorldbuildingOnly(
-  context: WorldDecompositionContext,
-  apiKey: string
-): Promise<WorldDecompositionResult> {
-  const config = getConfig().llm;
-  const primaryModel = getStageModel('entityDecomposer');
-  const temperature = config.temperature;
-  const maxTokens = config.maxTokens;
-
-  const messages = buildWorldDecomposerPrompt(context);
-  logPrompt(logger, 'worldDecomposer', messages);
-
-  return withRetry(() =>
-    withModelFallback(
-      (model) =>
-        fetchDecomposition(apiKey, {
-          model,
-          temperature,
-          maxTokens,
-          responseLabel: 'world-decomposer',
-          messages,
-          schema: WORLD_DECOMPOSITION_SCHEMA,
-          parseResponse: (parsed) => parseWorldDecompositionResponse(parsed, context.worldbuilding),
-        }),
-      primaryModel,
-      'entityDecomposer',
-    )
-  );
-}

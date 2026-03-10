@@ -292,54 +292,6 @@ describe('storyRoutes', () => {
       );
     });
 
-    it('passes trimmed webId through to prepareStory', async () => {
-      const status = jest.fn().mockReturnThis();
-      const render = jest.fn();
-      const redirect = jest.fn();
-      const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
-      const story = createStory({
-        title: 'Web Story',
-        characterConcept: 'A long enough concept for validation',
-      });
-      const page = createPage({
-        id: 1,
-        narrativeText: 'Page text',
-        sceneSummary: 'Test summary of the scene events and consequences.',
-        choices: [createChoice('Go left'), createChoice('Go right')],
-        isEnding: false,
-        parentPageId: null,
-        parentChoiceIndex: null,
-      });
-      const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory').mockResolvedValue({
-        story: { ...story, id: storyId },
-        page,
-      });
-
-      await getRouteHandler('post', '/create')(
-        {
-          body: {
-            title: 'Web Story',
-            characterConcept: 'A long enough concept for validation',
-            apiKey: 'valid-key-12345',
-            spine: mockSpine,
-            storyKernel: mockKernel,
-            webId: '  web-7  ',
-          },
-        } as Request,
-        { status, render, redirect } as unknown as Response
-      );
-
-      expect(status).not.toHaveBeenCalled();
-      expect(render).not.toHaveBeenCalled();
-      expect(prepareStorySpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          webId: 'web-7',
-        }),
-      );
-      expect(redirect).toHaveBeenCalledWith(
-        '/play/550e8400-e29b-41d4-a716-446655440000/briefing'
-      );
-    });
   });
 
   describe('POST /create error', () => {
@@ -1287,7 +1239,6 @@ describe('storyRoutes', () => {
             apiKey: 'valid-key-12345',
             spine: mockSpine,
             storyKernel: mockKernel,
-            webId: 'web-missing',
           },
         } as Request,
         { status, json } as unknown as Response

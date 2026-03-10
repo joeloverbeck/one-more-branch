@@ -30,7 +30,6 @@ describe('story-creation-service', () => {
         characterConcept: '  A brave adventurer seeking fortune  ',
         worldbuilding: '  A medieval fantasy world  ',
         tone: '  Epic  ',
-        webId: '  web-42  ',
         apiKey: '  sk-valid-api-key-12345  ',
         storyKernel: VALID_KERNEL,
       });
@@ -42,7 +41,6 @@ describe('story-creation-service', () => {
           characterConcept: 'A brave adventurer seeking fortune',
           worldbuilding: 'A medieval fantasy world',
           tone: 'Epic',
-          webId: 'web-42',
           apiKey: 'sk-valid-api-key-12345',
           storyKernel: VALID_KERNEL,
         });
@@ -153,34 +151,6 @@ describe('story-creation-service', () => {
       if (result.valid) {
         expect(result.trimmed.worldbuilding).toBe('Fantasy realm');
         expect(result.trimmed.tone).toBe('Dark');
-      }
-    });
-
-    it('drops webId when it trims to empty and keeps it when non-empty', () => {
-      let result = validateStoryInput({
-        title: 'My Story',
-        characterConcept: 'A brave adventurer seeking fortune',
-        webId: '   ',
-        apiKey: 'sk-valid-api-key-12345',
-        storyKernel: VALID_KERNEL,
-      });
-
-      expect(result.valid).toBe(true);
-      if (result.valid) {
-        expect(result.trimmed.webId).toBeUndefined();
-      }
-
-      result = validateStoryInput({
-        title: 'My Story',
-        characterConcept: 'A brave adventurer seeking fortune',
-        webId: '  web-1  ',
-        apiKey: 'sk-valid-api-key-12345',
-        storyKernel: VALID_KERNEL,
-      });
-
-      expect(result.valid).toBe(true);
-      if (result.valid) {
-        expect(result.trimmed.webId).toBe('web-1');
       }
     });
 

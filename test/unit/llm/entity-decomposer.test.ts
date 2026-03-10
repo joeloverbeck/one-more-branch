@@ -23,11 +23,9 @@ jest.mock('../../../src/llm/retry.js', () => ({
 }));
 
 import { ENTITY_DECOMPOSITION_SCHEMA } from '../../../src/llm/schemas/entity-decomposer-schema';
-import { WORLD_DECOMPOSITION_SCHEMA } from '../../../src/llm/schemas/world-decomposition-schema';
-import { decomposeEntities, decomposeWorldbuildingOnly } from '../../../src/llm/entity-decomposer';
+import { decomposeEntities } from '../../../src/llm/entity-decomposer';
 import type {
   EntityDecomposerContext,
-  WorldDecompositionContext,
 } from '../../../src/llm/entity-decomposer-types';
 
 interface CharacterPayload {
@@ -150,14 +148,6 @@ function createMinimalContext(): EntityDecomposerContext {
     worldbuilding: 'A dark fantasy city ruled by a corrupt tribunal.',
     tone: 'Grimdark fantasy',
     npcs: [{ name: 'Mirela', description: 'A fortune teller with secrets.' }],
-  };
-}
-
-function createWorldOnlyContext(): WorldDecompositionContext {
-  return {
-    worldbuilding: 'A dark fantasy city ruled by a corrupt tribunal.',
-    tone: 'Grimdark fantasy',
-    startingSituation: 'The protagonist arrives during a tribunal purge.',
   };
 }
 
@@ -539,83 +529,3 @@ describe('decomposeEntities', () => {
   });
 });
 
-describe('decomposeWorldbuildingOnly', () => {
-  const originalFetch = globalThis.fetch;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  afterEach(() => {
-    globalThis.fetch = originalFetch;
-  });
-
-  it('sends the world-only prompt and schema to OpenRouter', async () => {
-    const payload = { worldFacts: createValidPayload().worldFacts };
-    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
-
-    await decomposeWorldbuildingOnly(createWorldOnlyContext(), 'test-key');
-
-    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
-    const [, options] = (globalThis.fetch as jest.Mock).mock.calls[0] as [string, RequestInit];
-    const body = JSON.parse(options.body as string) as Record<string, unknown>;
-    const messages = Array.isArray(body['messages'])
-      ? (body['messages'] as Array<Record<string, unknown>>)
-      : [];
-    const userMessage = messages.find((message) => message['role'] === 'user');
-
-    expect(body['response_format']).toEqual(WORLD_DECOMPOSITION_SCHEMA);
-    expect(userMessage).toBeDefined();
-    expect(typeof userMessage?.['content']).toBe('string');
-    expect(userMessage?.['content']).toContain(
-      'Character data is provided separately. Do NOT generate character profiles'
-    );
-    expect(JSON.stringify(messages)).not.toContain('CHARACTER CONCEPT');
-  });
-
-  it('returns DecomposedWorld and preserves rawWorldbuilding', async () => {
-    const payload = { worldFacts: createValidPayload().worldFacts };
-    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
-
-    const context = createWorldOnlyContext();
-    const result = await decomposeWorldbuildingOnly(context, 'test-key');
-
-    expect(result.decomposedWorld.rawWorldbuilding).toBe(context.worldbuilding);
-    expect(result.decomposedWorld.facts).toHaveLength(3);
-    expect(result.decomposedWorld.facts[0]!.domain).toBe('society');
-  });
-
-  it('reuses world fact parsing rules for invalid domains and empty facts', async () => {
-    const payload = {
-      worldFacts: [
-        {
-          domain: 'INVALID_DOMAIN',
-          fact: 'The tribunal taxes every bridge crossing',
-          scope: 'Capital',
-          factType: 'LAW',
-        },
-        {
-          domain: 'history',
-          fact: '',
-          scope: 'Everywhere',
-          factType: 'DISPUTED',
-        },
-      ],
-    };
-    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
-
-    const result = await decomposeWorldbuildingOnly(createWorldOnlyContext(), 'test-key');
-
-    expect(result.decomposedWorld.facts).toHaveLength(1);
-    expect(result.decomposedWorld.facts[0]!.domain).toBe('culture');
-  });
-
-  it('accepts empty worldFacts arrays', async () => {
-    globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse({ worldFacts: [] }));
-
-    const result = await decomposeWorldbuildingOnly(createWorldOnlyContext(), 'test-key');
-
-    expect(result.decomposedWorld.facts).toEqual([]);
-    expect(result.rawResponse).toBeTruthy();
-  });
-});

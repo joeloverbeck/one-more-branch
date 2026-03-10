@@ -3,7 +3,7 @@ import { LLM_STAGE_KEYS, type LlmStage } from '../config/llm-stage-registry.js';
 import { createPromptFileSinkFromConfig, type PromptSink } from './prompt-file-sink.js';
 import type { Logger } from './types.js';
 
-export const NON_STAGE_PROMPT_TYPES = ['opening', 'writerChoiceRepair', 'worldDecomposer'] as const;
+export const NON_STAGE_PROMPT_TYPES = ['opening', 'writerChoiceRepair'] as const;
 
 export type NonStagePromptType = (typeof NON_STAGE_PROMPT_TYPES)[number];
 export type PromptType = LlmStage | NonStagePromptType;

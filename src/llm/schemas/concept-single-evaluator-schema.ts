@@ -11,6 +11,7 @@ const SCORE_SCHEMA = {
     'llmFeasibility',
     'ironicPremise',
     'sceneGenerativePower',
+    'contentCharge',
   ],
   properties: {
     hookStrength: { type: 'number' },
@@ -20,6 +21,7 @@ const SCORE_SCHEMA = {
     llmFeasibility: { type: 'number' },
     ironicPremise: { type: 'number' },
     sceneGenerativePower: { type: 'number' },
+    contentCharge: { type: 'number' },
   },
 } as const;
 
@@ -34,6 +36,7 @@ const SCORE_EVIDENCE_SCHEMA = {
     'llmFeasibility',
     'ironicPremise',
     'sceneGenerativePower',
+    'contentCharge',
   ],
   properties: {
     hookStrength: { type: 'array', items: { type: 'string' }, minItems: 1 },
@@ -43,6 +46,7 @@ const SCORE_EVIDENCE_SCHEMA = {
     llmFeasibility: { type: 'array', items: { type: 'string' }, minItems: 1 },
     ironicPremise: { type: 'array', items: { type: 'string' }, minItems: 1 },
     sceneGenerativePower: { type: 'array', items: { type: 'string' }, minItems: 1 },
+    contentCharge: { type: 'array', items: { type: 'string' }, minItems: 1 },
   },
 } as const;
 

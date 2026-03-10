@@ -255,65 +255,6 @@ describe('new story form submit', () => {
     expect(body.conceptSpec).toBeUndefined();
   });
 
-  it('includes the selected character web id when creating a story', async () => {
-    fetchMock.mockImplementation((url: string) => {
-      if (typeof url === 'string' && url.includes('/character-webs/api/list')) {
-        return Promise.resolve(
-          mockJsonResponse({
-            success: true,
-            webs: [
-              {
-                id: 'web-42',
-                name: 'Court of Ash',
-                protagonistName: 'Iria Vale',
-                assignments: [{ characterName: 'Iria Vale' }],
-              },
-            ],
-          })
-        );
-      }
-      if (typeof url === 'string' && url.includes('generation-progress')) {
-        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
-      }
-      if (typeof url === 'string' && url.includes('generate-spines')) {
-        return Promise.resolve(mockJsonResponse({ success: true, options: MOCK_SPINE_OPTIONS }));
-      }
-      if (typeof url === 'string' && url.includes('/kernels/api/')) {
-        return Promise.resolve(
-          mockJsonResponse({
-            success: true,
-            kernel: { id: 'kernel-1', evaluatedKernel: { kernel: MOCK_KERNEL } },
-          })
-        );
-      }
-      return Promise.resolve(mockJsonResponse({ success: true, storyId: 'story-1' }));
-    });
-
-    setupPage();
-    (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();
-    fillForm();
-    await selectKernel();
-
-    const webSelector = document.getElementById('character-web-selector') as HTMLSelectElement;
-    webSelector.value = 'web-42';
-    webSelector.dispatchEvent(new Event('change'));
-
-    clickGenerateSpine();
-    await jest.runAllTimersAsync();
-
-    const card = document.querySelector('.spine-card') as HTMLElement;
-    card.click();
-    await jest.runAllTimersAsync();
-
-    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
-      (call) => typeof call[0] === 'string' && call[0].includes('create-ajax')
-    );
-    expect(postCall).toBeDefined();
-
-    const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
-    expect(body.webId).toBe('web-42');
-  });
-
   it('does not send partial conceptSpec when only oneLineHook is filled', async () => {
     setupPage();
     (document.getElementById('skip-concept-btn') as HTMLButtonElement).click();

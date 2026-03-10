@@ -439,14 +439,6 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
               </select>
               <div id="kernel-display-panel" class="kernel-display-panel" style="display: none;"></div>
             </div>
-            <div class="form-group">
-              <label for="character-web-selector">Load Character Web</label>
-              <select id="character-web-selector">
-                <option value="">None</option>
-              </select>
-              <div id="character-web-selector-summary" class="form-help" style="display: none;"></div>
-              <input type="hidden" id="selected-web-id" name="webId" value="">
-            </div>
           </section>
           <section class="wizard-step" data-step="2" style="display:none">
             <div class="form-group">

@@ -3,21 +3,17 @@ import {
   createPage,
   createStory,
   parsePageId,
-  type DecomposedCharacter,
   Story,
   StoryMetadata,
   StorySpine,
 } from '../../../src/models';
 import * as models from '../../../src/models';
 import {
-  decomposeEntities,
-  decomposeWorldbuildingOnly,
   generateStoryStructure,
 } from '../../../src/llm';
 import { storage } from '../../../src/persistence';
 import { generatePage } from '../../../src/engine/page-service';
 import { createStoryStructure } from '../../../src/engine/structure-factory';
-import { characterWebService } from '../../../src/services/character-web-service';
 import {
   deleteStory,
   generateOpeningPage,
@@ -53,16 +49,6 @@ jest.mock('../../../src/llm', () => ({
     decomposedWorld: { facts: [], rawWorldbuilding: '' },
     rawResponse: '{}',
   }),
-  decomposeWorldbuildingOnly: jest.fn().mockResolvedValue({
-    decomposedWorld: { facts: [], rawWorldbuilding: '' },
-    rawResponse: '{}',
-  }),
-}));
-
-jest.mock('../../../src/services/character-web-service', () => ({
-  characterWebService: {
-    toDecomposedCharacters: jest.fn(),
-  },
 }));
 
 const mockedStorage = storage as {
@@ -80,11 +66,6 @@ const mockedGeneratePage = generatePage as jest.MockedFunction<typeof generatePa
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
-const mockedDecomposeEntities = decomposeEntities as jest.MockedFunction<typeof decomposeEntities>;
-const mockedDecomposeWorldbuildingOnly =
-  decomposeWorldbuildingOnly as jest.MockedFunction<typeof decomposeWorldbuildingOnly>;
-const mockedCharacterWebService = characterWebService as jest.Mocked<typeof characterWebService>;
-
 const mockSpine: StorySpine = {
   centralDramaticQuestion: 'Can justice survive in a corrupt system?',
   protagonistNeedVsWant: { need: 'truth', want: 'safety', dynamic: 'DIVERGENT' },
@@ -191,33 +172,6 @@ function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateSto
   };
 }
 
-function createDecomposedCharacter(name: string): DecomposedCharacter {
-  return {
-    name,
-    speechFingerprint: {
-      catchphrases: [],
-      vocabularyProfile: 'Controlled diction.',
-      sentencePatterns: 'Short commands.',
-      verbalTics: [],
-      dialogueSamples: [],
-      metaphorFrames: '',
-      antiExamples: [],
-      discourseMarkers: [],
-      registerShifts: '',
-    },
-    coreTraits: ['guarded'],
-    motivations: 'Survive',
-    thematicStance: 'Trust is a liability.',
-    protagonistRelationship: null,
-    knowledgeBoundaries: 'Knows enough to stay dangerous.',
-    decisionPattern: 'Act first.',
-    coreBeliefs: ['Competence matters'],
-    conflictPriority: 'Winning',
-    appearance: 'Salt-stained finery.',
-    rawDescription: 'A dangerous navigator.',
-  };
-}
-
 describe('story-service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -269,7 +223,7 @@ describe('story-service', () => {
     it('generates structure before first page and passes structured story forward', async () => {
       const createStorySpy = jest.spyOn(models, 'createStory');
       const onGenerationStage = jest.fn();
-      const story = buildStory({ webId: 'web-1' });
+      const story = buildStory();
       const structureResult = buildStructureGenerationResult();
       const page = createPage({
         id: parsePageId(1),
@@ -356,7 +310,7 @@ describe('story-service', () => {
     });
 
     it('deletes story directory when page generation fails and rethrows original error', async () => {
-      const story = buildStory({ webId: 'web-1' });
+      const story = buildStory();
       const structureResult = buildStructureGenerationResult();
       const generationError = new Error('Generation failed');
 
@@ -380,7 +334,7 @@ describe('story-service', () => {
     });
 
     it('deletes story when structure generation fails and rethrows original error', async () => {
-      const story = buildStory({ webId: 'web-1' });
+      const story = buildStory();
       const structureError = new Error('Structure generation failed');
 
       jest.spyOn(models, 'createStory').mockReturnValueOnce(story);
@@ -446,65 +400,6 @@ describe('story-service', () => {
       expect(mockedStorage.savePage).not.toHaveBeenCalled();
     });
 
-    it('uses character-web decomposition when webId is provided', async () => {
-      const story = buildStory({ webId: 'web-1' });
-      const structureResult = buildStructureGenerationResult();
-      const webCharacters = [
-        createDecomposedCharacter('Iria Vale'),
-        {
-          ...createDecomposedCharacter('Mara Voss'),
-          protagonistRelationship: {
-            valence: -1,
-            dynamic: 'RIVAL',
-            history: 'They learned to distrust each other on opposite sides of the academy.',
-            currentTension: 'They need each other to decode the archive maps.',
-            leverage: 'Each knows the other cannot finish the mission alone.',
-          },
-        },
-      ];
-      const decomposedWorld = {
-        facts: ['The tribunal archives rewrite maps nightly.'],
-        rawWorldbuilding: 'The city treats maps as contraband.',
-      };
-
-      jest.spyOn(models, 'createStory').mockReturnValueOnce(story);
-      mockedStorage.saveStory.mockResolvedValue(undefined);
-      mockedStorage.updateStory.mockResolvedValue(undefined);
-      mockedGenerateStoryStructure.mockResolvedValue(structureResult);
-      mockedCharacterWebService.toDecomposedCharacters.mockResolvedValue(webCharacters);
-      mockedDecomposeWorldbuildingOnly.mockResolvedValue({
-        decomposedWorld,
-        rawResponse: '{}',
-      });
-
-      const result = await prepareStory({
-        title: 'Prepared Story',
-        characterConcept: 'A valid concept that is definitely long enough.',
-        worldbuilding: 'The city treats maps as contraband.',
-        apiKey: 'test-key',
-        spine: mockSpine,
-        webId: 'web-1',
-      });
-
-      expect(mockedCharacterWebService.toDecomposedCharacters.mock.calls).toEqual([['web-1']]);
-      expect(mockedDecomposeEntities).not.toHaveBeenCalled();
-      expect(mockedDecomposeWorldbuildingOnly).toHaveBeenCalledWith(
-        expect.objectContaining({
-          worldbuilding: story.worldbuilding,
-          spine: mockSpine,
-        }),
-        'test-key',
-      );
-      expect(mockedStorage.updateStory).toHaveBeenCalledWith(
-        expect.objectContaining({
-          webId: 'web-1',
-          decomposedCharacters: webCharacters,
-          decomposedWorld,
-        }),
-      );
-      expect(result.story.webId).toBe('web-1');
-      expect(result.story.decomposedCharacters).toEqual(webCharacters);
-    });
   });
 
   describe('generateOpeningPage', () => {
