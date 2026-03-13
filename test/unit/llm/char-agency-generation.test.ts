@@ -51,6 +51,7 @@ function createWebContext(overrides?: Partial<CharacterWebContext>): CharacterWe
       characterDepth: CharacterDepth.ROUND,
       narrativeRole: 'The rival who challenges the protagonist at every turn.',
       conflictRelationship: "Directly opposes the protagonist's goals.",
+      privateAgenda: 'Secure an independent power base beyond the throne.',
     },
     protagonistName: 'Mira',
     relationshipArchetypes: [
@@ -83,6 +84,14 @@ function createCharacterKernel(overrides?: Partial<CharacterKernel>): CharacterK
     ],
     pressurePoint:
       'His sister is held hostage by the king - any overt action risks her life.',
+    moralLine: 'Will not harm innocents even to reclaim the throne.',
+    unacceptableCost: 'Losing his sister in the process of gaining power.',
+    worstFear: 'Becoming the same tyrant who murdered his father.',
+    sceneObjectivePatterns: [
+      'Gather intelligence through casual conversation',
+      'Test loyalty before revealing anything',
+      'Secure escape routes before committing',
+    ],
     ...overrides,
   };
 }
@@ -106,6 +115,26 @@ function createTridimensionalProfile(
       'Class guilt',
       'Hypervigilance',
       'Reluctant deception',
+    ],
+    formativeWound: 'Witnessing his father\'s murder as a child and being powerless to stop it.',
+    protectiveMask: 'The humble blacksmith who wants nothing more than a quiet life.',
+    misbelief: 'That reclaiming the throne will heal the wound of his father\'s death.',
+    credibleSurprises: [
+      'Showing genuine mercy to a defeated enemy',
+      'Revealing his identity to save a stranger',
+    ],
+    implausibleMoves: [
+      'Publicly announcing his claim without allies',
+      'Trusting the king\'s inner circle at face value',
+    ],
+    stressTells: [
+      'Clenches his jaw and grips the nearest object',
+      'Reverts to formal court speech patterns',
+    ],
+    attachmentStyle: 'Dismissive-avoidant, keeping emotional distance to protect himself and others.',
+    traitToSceneAffordances: [
+      'Patient fury -> can sustain a tense negotiation without breaking',
+      'Hypervigilance -> notices small environmental details others miss',
     ],
     ...overrides,
   };
@@ -133,6 +162,18 @@ function validAgencyResponseRaw(
     ],
     decisionPattern:
       'He gathers leverage before acting, but when family is threatened his planning collapses into decisive emotional risk-taking.',
+    focalizationFilter: {
+      noticesFirst: 'Power dynamics and social hierarchy',
+      systematicallyMisses: 'Emotional undercurrents in conversations',
+      misreadsAs: 'Interprets kindness as weakness or manipulation',
+    },
+    escalationLadder: [
+      'Polite deflection',
+      'Pointed questions',
+      'Direct confrontation',
+      'Threats',
+      'Violence',
+    ],
     ...overrides,
   };
 }
@@ -223,6 +264,8 @@ describe('CHAR_AGENCY_GENERATION_SCHEMA', () => {
       'currentIntentions',
       'falseBeliefs',
       'decisionPattern',
+      'focalizationFilter',
+      'escalationLadder',
     ]);
   });
 

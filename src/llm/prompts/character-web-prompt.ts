@@ -93,13 +93,25 @@ export function buildCharacterWebPrompt(context: CharacterWebPromptContext): Cha
   - characterDepth: ROUND for major characters, FLAT for minor ones.
   - narrativeRole: One sentence — what this character DOES in the story.
   - conflictRelationship: One sentence — how this character creates or resolves conflict for the protagonist.
+  - privateAgenda: What this NPC wants independent of the protagonist. Empty string for the protagonist.
 - relationshipArchetypes: Array of relationship sketches between character pairs. Each must have:
   - fromCharacter: Name of the first character.
   - toCharacter: Name of the second character.
   - relationshipType: One of KIN, ALLY, RIVAL, PATRON, CLIENT, MENTOR, SUBORDINATE, ROMANTIC, EX_ROMANTIC, INFORMANT.
   - valence: One of POSITIVE, NEGATIVE, AMBIVALENT.
   - essentialTension: One sentence capturing the core dramatic friction.
-- castDynamicsSummary: A paragraph describing overall cast dynamics, alliances, oppositions, and dramatic fault lines.`);
+- castDynamicsSummary: A paragraph describing overall cast dynamics, alliances, oppositions, and dramatic fault lines.
+- conflictTriangles: Array of sets of 3 characters with incompatible loyalties. At least 1 required if cast has 3+ ROUND characters. Each entry has:
+  - characters: Array of exactly 3 character names.
+  - incompatibility: One sentence describing the incompatible loyalty or goal.
+- allianceFaultLines: Array of current alliances that could fracture. 0+ entries. Each entry has:
+  - allies: Array of exactly 2 allied character names.
+  - faultLine: One sentence describing what could shatter the alliance.`);
+
+  userSections.push(`PRIVATE AGENDA RULE:
+- Every non-protagonist ROUND character must have a privateAgenda that is not reducible to helping, hindering, or teaching the protagonist. It must be something they want independent of the protagonist's story.
+- The protagonist's privateAgenda must be an empty string.
+- FLAT characters may have an empty string privateAgenda.`);
 
   return [
     { role: 'system', content: systemSections.join('\n\n') },

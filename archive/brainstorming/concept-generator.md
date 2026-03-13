@@ -1,3 +1,5 @@
+**Status**: COMPLETED
+
 # Compelling Narrative Concepts and Concept-Derived Worldbuilding for LLM-Driven Branching Interactive Stories
 
 ## Executive summary
@@ -8,10 +10,10 @@ Key design implication: for branching interactive stories, a “good concept” 
 
 This report proposes a practical, rigorous scoring rubric across eleven dimensions (hooks, novelty, stakes/constraints, agency, genre signaling, scalability, replayability, and LLM feasibility), plus acceptance thresholds suitable for an LLM-driven browser app. It also proposes a systematic method to derive worldbuilding from a chosen concept using a dependency-ordered “world kernel → world systems → social/institutional mesh → content edges (NPCs, locations, storylets)” pipeline. This approach is grounded in narrative theory (plot as causal action; storyworld/possible-worlds models) and game narrative scholarship emphasizing worlds and spaces as “narrative architecture.” citeturn2search4turn5search9turn7search0turn18search0
 
-Implementation note: your current production pipeline already contains several strong building blocks: a **Spine** step that formalizes dramatic question, need vs want, antagonistic force, and conflict axis; a **Structure** step that demands branching-aware beats and a page-range pacing budget; and an **Entity Decomposer** step that atomizes world facts into domain-tagged, epistemically typed propositions for downstream controllability. fileciteturn0file1 fileciteturn0file3 fileciteturn0file0  
+Implementation note: your current production pipeline already contains several strong building blocks: a **Spine** step that formalizes dramatic question, need vs want, antagonistic force, and conflict axis; a **Structure** step that demands branching-aware beats and a page-range pacing budget; and an **Entity Decomposer** step that atomizes world facts into domain-tagged, epistemically typed propositions for downstream controllability.     
 What’s missing upstream is a *concept generation + evaluation harness* that reliably yields candidates optimized for branching and LLM controllability before you show users 3 spine options.
 
-Unspecified constraints: target audience age, content rating, and preferred genres are unspecified in the request and are treated as open-ended. (Your shipped prompts currently assume an adults-only content policy; treat that as a configurable product decision rather than a universal design requirement.) fileciteturn0file1
+Unspecified constraints: target audience age, content rating, and preferred genres are unspecified in the request and are treated as open-ended. (Your shipped prompts currently assume an adults-only content policy; treat that as a configurable product decision rather than a universal design requirement.) 
 
 ## Terminology and what a narrative concept is
 
@@ -28,7 +30,7 @@ A minimal but practical operational definition for your app:
 
 > A narrative concept is the smallest description that still implies (1) a repeatable decision loop, (2) a pressure mechanism that forces tradeoffs, and (3) a storyworld model capable of producing consistent consequences.
 
-That pressure mechanism idea is already explicit in your spine schema (“pressureMechanism” for the antagonistic force). fileciteturn0file1
+That pressure mechanism idea is already explicit in your spine schema (“pressureMechanism” for the antagonistic force). 
 
 ### A compact “concept spec” that is branching- and LLM-friendly
 
@@ -179,7 +181,7 @@ Interactive drama research frames the challenge as letting the player act while 
 
 **Examples (brief)**
 - Façade: the player’s agency is conversational/social; the drama manager sequences beats to preserve a coherent arc while responding. citeturn4search13turn4search5
-- Detroit: Become Human: explicit branching structure and replay encourages exploring agency outcomes. citeturn7search15turn3search13
+- Detroit: Become Human: explicit branching structure and replay encourages exploring agency outcomes. citeturn3search13turn7search15
 - Disco Elysium: agency is largely interpretive and social; choices often reshape internal states, relationships, and worldview. citeturn11view2turn7search15
 
 **Scoring rubric (0–5)**
@@ -251,229 +253,331 @@ List top 3 genre promises and the planned payoff mechanisms (reveal types, setpi
 ### Scalability for branching interactive formats
 
 **Explanation**  
-Branching narratives face combinatorial explosion if treated as a literal tree. Interactive narrative practice often shifts from pure branching to structures like storylets, hub-and-spoke, or quality-based unlock systems where state gates content and branches can reconverge. Emily Short’s analysis of “beyond branching” highlights quality-based and salience-based structures as more scalable than naive branches. citeturn4search6turn4search2  
-Computational interactive narrative research similarly categorizes system approaches and weighs coherence vs autonomy. citeturn4search21turn1search3
+Branching narratives face combinatorial explosion if treated as a literal tree. Interactive narrative practice often shifts from pure branching to structures like storylets, hub-and-spoke, or quality-based unlock systems where state gates content and branches can reconverge. Emily Short’s analysis of “beyond branching” highlights quality-based and salience-based structures as more scalable than naive branching, because they allow authored variation without requiring every node to fork forever. citeturn4search6turn4search2  
+Interactive narrative research more broadly frames the “strong story / strong autonomy” tension as the central design challenge: too much structure limits agency; too much autonomy dissolves dramatic shape. citeturn4search21turn12view0
 
 **Diagnostic questions**
-- What is the intended branching posture: tree, reconverging, storylet lattice, or simulation/emergent?
-- What is the minimal state representation that determines future availability (qualities, flags, relationships)?
-- Where can branches reconverge without feeling fake?
-- How will you keep causal coherence when players do unexpected things?
+- Does the concept naturally support reconvergence or storylets, or does it require a combinatorial tree to feel fair?
+- Can most consequences be represented as a stable set of state variables?
+- How many genuinely different “modes” of play does the concept sustain without exploding content costs?
+- Are there recurring loops (investigate → decide → consequence) that can host varied content?
 
 **Examples (brief)**
-- Detroit: Become Human explicitly surfaces reconverging branches via chapter flowcharts, supporting replay and exploration. citeturn7search15turn3search13
-- Façade organizes interaction into beat sequences under drama management constraints; it aims for high agency while preserving arc coherence. citeturn4search13turn4search5
-- Quality-based narrative/storylets: content selection driven by state qualities, enabling combinatorial recombination without a full tree. citeturn4search6
+- Choice of Games style quality-based stories: stateful gating yields scalable branching with meaningful personalization. citeturn4search2turn4search6
+- Façade: beat sequencing + drama management creates substantial local variability within a bounded dramatic envelope. citeturn4search13turn4search5
 
 **Scoring rubric (0–5)**
-- **0**: concept requires unique bespoke scenes for every choice.
-- **1**: scales only with heavy authorial labor; no reconvergence plan.
-- **2**: some reconvergence but concept relies on “illusion of choice.”
-- **3**: clear state-gated structure; reconvergence points exist.
-- **4**: concept implies modular episodes; state variables are compact.
-- **5**: concept thrives on recombination; storylets + state create emergent arcs.
+- **0**: only works as a branching tree; impossible to scale.
+- **1**: reconvergence would obviously feel fake.
+- **2**: some state abstraction is possible, but many scenes require bespoke forks.
+- **3**: concept supports hub/reconverge or storylets with manageable loss.
+- **4**: concept naturally maps to stateful gating and repeated loops.
+- **5**: concept is branching-native: replay and recombination strengthen the premise.
 
 Measurable heuristics:
-- **State variable budget**: target **8–20** core state variables for a 15–50 page experience (your current structure prompt targets this scale). fileciteturn0file3  
-- **Branch factor discipline**: per scene, target **2–4** choices; more often reduces meaning or explodes state.
+- **State-space compressibility**: number of durable state variables needed to model major consequences. Target **≤ 12** for a 30–45 minute browser experience.
+- **Reconvergence safety**: count branches whose consequences can be expressed as state tags rather than bespoke plot branches. Target **≥ 70%**.
 
-### Player choice integration
+### Choice meaningfulness and adaptive narrative fitness
 
 **Explanation**  
-Player choice must be *meaningful*, not decorative. In Rules of Play, meaningful play is defined (evaluatively) as action–outcome relationships that are discernable and integrated into the larger context of the game. citeturn15view2  
-Designing “interesting decisions” typically requires tradeoffs and uncertainty; systems-led narrative design (e.g., storylets) treats choices as interactions with a stateful world model rather than as branching plot forks. citeturn6search23turn4search6
+Interactive narrative work consistently emphasizes that meaningful choice is not just visible branching but the perception that actions lead to discernable, integrated differences. Salen & Zimmerman’s “discernable and integrated” formulation remains foundational. citeturn15view2  
+Janet Murray defines agency as the satisfying power to take meaningful action and see the results of choices and decisions. citeturn0search21  
+Adaptive narrative scholarship also examines how different types of choices (expressive, strategic, moral) shape user experience. citeturn3search13turn12view0
 
 **Diagnostic questions**
-- For each major choice, what is gained and what is risked (tradeoff clarity)?
-- Will the player see consequences soon enough to learn the system?
-- Does every choice change at least one tracked state variable?
-- Can two choices lead to *different kinds of future problems*, not just different text?
+- Does the concept support multiple *types* of meaningful choice (strategic, social, moral, expressive)?
+- Can consequences be shown quickly enough to reinforce agency?
+- Are there choices that change self-concept or relationships even when the macro-plot reconverges?
+- Does the concept invite role-play (different player personas) rather than only puzzle-solving?
 
 **Examples (brief)**
-- Storylet-based structures explicitly model prerequisites and outcomes, making choices legible within a state framework. citeturn4search6
-- Façade: choices are conversational actions that can shift relationship tension and beat sequencing. citeturn4search13turn4search5
+- Disco Elysium: even dialogue and inner-voice choices can be meaningful because they reshape relationships and self-understanding. citeturn7search15turn11view2
+- The Walking Dead / narrative adventure design: many macro events reconverge, but short-term consequence visibility and relationship memory preserve perceived agency. citeturn3search13turn12view0
 
 **Scoring rubric (0–5)**
-- **0**: choices are cosmetic (tone-only dialogue).
-- **1**: choices affect immediate text but not future.
-- **2**: some future effects, but opaque or inconsistent.
-- **3**: choices produce discernable short-term effects and at least one long-term consequence.
-- **4**: choices create strategic posture (alliances, resources, reputation).
-- **5**: choices reshape the problem space; future dilemmas differ qualitatively.
+- **0**: choices are cosmetic or illusory without consequence cues.
+- **1**: some branch labels vary, but state does not meaningfully change.
+- **2**: strategic choices exist, but expressive/social choices feel empty.
+- **3**: at least two meaningful choice types with visible outcomes.
+- **4**: concept consistently supports strategic + social/moral + expressive choices.
+- **5**: almost every scene can host genuinely different but authorially legible choices.
 
 Measurable heuristics:
-- **State impact rate**: ≥ **80%** of presented choices must modify at least one tracked variable.
-- **Consequence lag**: ≥ **50%** of choices should have a visible consequence within **1 scene**; the rest can be long-tail.
+- **Choice-type coverage**: concept spec should identify at least **3** of: strategic, social, moral, expressive, investigative, sacrificial.
+- **Consequence latency**: most choices should plausibly show an effect within **1–2 scenes**.
 
-### Replayability and emergent drama
+### Replayability and emergence
 
 **Explanation**  
-Replayability in branching stories comes from (a) genuinely different outcomes, (b) different strategies leading to different experiences, and (c) emergent social dynamics. Research on branching narrative play highlights replay motivated by exploring alternative paths and outcomes, especially when the structure makes those alternatives visible. citeturn7search15turn3search13  
-On the simulation/emergence side, “generative agents” research shows how memory, reflection, and planning mechanisms can yield believable individual and emergent social behaviors from minimal seeds—suggesting a path toward replayable drama that isn’t purely authored branching. citeturn3search2turn3search10
+Replayability in interactive stories comes from combinable state differences, varied role-play identities, and enough uncertainty to make alternate runs informative rather than repetitive. Work on storylets and quality-based structures shows that recombination and state gating can create emergent variety without literal massive trees. citeturn4search6turn4search2
 
 **Diagnostic questions**
-- What is the replay promise? (new endings, new revelations, new relationships, new strategies)
-- Which state variables create “phase changes” in the story (e.g., faction allegiance flips)?
-- Can the same opening lead to materially different midgame problems?
-- Do NPCs have agendas that can collide in different configurations?
+- What changes on a second playthrough besides plot order?
+- Can the player adopt a different ethos/strategy (merciful vs ruthless, loyal vs opportunistic)?
+- Does the world reveal different layers under different choices?
+- Are there hidden synergies between choices/states that encourage experimentation?
 
 **Examples (brief)**
-- Detroit: Become Human: replay is explicitly oriented around exploring flowchart alternatives and consequences. citeturn7search15
-- Façade: replay by altering interaction patterns to change the couple’s outcomes (interactive drama as replay engine). citeturn4search5turn4search13
-- The Sims: a sandbox structured for emergent narrative, explicitly used as an inspiration in generative-agent simulation research. citeturn3search10
+- Groundhog Day-like loop concepts support replay because experimentation is thematically aligned with the premise. citeturn7search15
+- Storylet systems support replay via different combinations of state unlocks. citeturn4search2turn4search6
 
 **Scoring rubric (0–5)**
-- **0**: single-path concept; replay is pointless.
-- **1**: superficial variation only.
-- **2**: alternate endings exist but most of the run is identical.
-- **3**: at least two distinct arcs with different midgame beats.
-- **4**: multiple strategies produce different relationships/resources/problems.
-- **5**: replay emerges naturally from system interactions; outcomes feel authored but are reconfigurable.
+- **0**: one-and-done, no meaningful alternate runs.
+- **1**: minor flavor differences only.
+- **2**: some alternate routes, but same emotional/strategic experience.
+- **3**: different role-play styles and state combinations reveal new content.
+- **4**: concept naturally encourages “what if I played differently?”
+- **5**: replay is itself part of the fantasy or core discovery loop.
 
-Measurable heuristics:
-- **Distinct-run ratio**: estimate percent of content that differs between two reasonable playthrough strategies; target **≥ 35%** for “replayable,” **≥ 50%** for “highly replayable.”
-- **Ending spread**: ≥ **4** meaningfully different ending states for 15–50 pages.
+Measurable heuristic: **Role-play vector count**  
+How many coherent player personas can the concept support (e.g., idealist, pragmatist, manipulator, protector)? Target **≥ 3**.
 
-### Feasibility for LLM generation: promptability, token budget, controllability
+### LLM feasibility and controllability
 
 **Explanation**  
-LLM-driven interactive narratives fail in predictable ways: drift, contradiction, spatiotemporal inconsistency, and loss of constraints under long context. A recent plan-driven framework for controllable interactive narrative explicitly identifies “spatiotemporal distortion” as a core failure mode and proposes structuring narratives into “cells” with explicit plans to resist drift while adapting to variable user inputs. citeturn11view0turn10search2  
-Long-context research shows models can underuse or “lose” relevant information when it sits in the middle of long prompts—performance is often highest when key facts are near the beginning or end—so relying on giant story bibles in-context is fragile. citeturn10search4  
-Explorations comparing retrieval-augmented generation (RAG) with long-context models suggest hybrid approaches can be preferable in practice; this supports storing canon/state in structured retrieval rather than swelling prompts. citeturn10search3  
-LLM evaluation research and tools also increasingly emphasize iterative prompt refinement and rubric-based judging as part of production workflows. citeturn3search12turn9search1
+For an LLM-driven app, concept quality includes whether the concept can be generated, maintained, and paid off reliably under context limits and model drift. Recent research on long-context fragility shows that models often underuse or inconsistently use long prompts (“lost in the middle”), which means concept/world details must be structured and selectively retrieved, not merely dumped into context. citeturn10search4  
+Retrieval-vs-long-context work suggests hybrids can outperform pure long-context strategies on some tasks. citeturn10search3  
+And plan-driven controllability work for interactive narrative (e.g., SNAP) explicitly uses cell plans to maintain spatiotemporal coherence and reduce drift. citeturn11view0
 
 **Diagnostic questions**
-- Can the concept be enforced with **≤ 20** canonical “laws/norms” without losing its identity?
-- What must be hard-coded state vs soft narrative flavor?
-- Will the concept force the model to maintain complex logistics (hard), or can it be cell-planned (easier)?
-- Can NPC goals be represented as short structured agendas rather than prose backstory?
+- Can the concept be represented in a compact state schema without losing its identity?
+- Which facts must be “always on” versus retrievable on demand?
+- What are the likely drift points (causality, geography, social rules, power levels)?
+- Does the concept demand subtle long-range setups that the model is likely to forget?
 
 **Examples (brief)**
-- Plan-and-cell approaches: a narrative can be partitioned into locally controlled units with explicit spatiotemporal plans to preserve coherence under interactive variance. citeturn11view0
-- “Memory + reflection + planning” agent architectures: storing experiences externally and retrieving relevant memories improves consistency and believability in simulations. citeturn3search2turn3search10
+- A legal thriller with explicit institutions, records, and deadlines can often be controlled well via state + retrieval.
+- A highly metaphysical dreamscape with unconstrained reality shifts may be artistically appealing but hard to keep coherent without heavy planning.
 
 **Scoring rubric (0–5)**
-- **0**: concept demands global consistency across too many moving parts; drift inevitable.
-- **1**: requires huge lore dumps; constraints are mostly implicit.
-- **2**: can work with heavy prompt stuffing but fragile.
-- **3**: concept can be expressed as a short rule kernel + compact state.
-- **4**: naturally supports cell-based planning and retrieval-based canon.
-- **5**: “LLM-native”: concept’s rules are simple, consequences are local, and constraints are easy to restate.
+- **0**: concept depends on delicate, long-range symbolism or vague logic; impossible to control.
+- **1**: too many world rules and exceptions; schema explosion.
+- **2**: controllable only with very long prompts and heavy manual oversight.
+- **3**: core facts fit in structured schema + retrieval; some drift risk remains.
+- **4**: strong state abstraction + clear retrieval scopes + scene planning viability.
+- **5**: naturally LLM-friendly: compact rules, clear causal state, robust recovery from drift.
 
 Measurable heuristics:
-- **Canon size target**: core concept + world kernel + active NPC agendas should fit in **≤ 1,500–2,500 tokens** of “always-on” context; everything else should be retrieved on demand.
-- **Contradiction risk index**: count the number of simultaneous global invariants required (calendar, geography, political factions, magic rules, tech constraints, etc.). Target **≤ 12** invariants in always-on context; move the rest to retrieval by scope.
+- **Always-on schema budget**: core concept + current scene + active relationship states should fit in **≤ 1.5k tokens**.
+- **Retrieval scope count**: world can be partitioned into **≤ 8** retrievable scopes (factions, locations, institutions, arcs) without losing coherence.
+- **Drift hotspots**: list predicted contradiction types; target **≤ 5** major hotspot classes.
 
-## Deriving robust worldbuilding from a chosen concept
+## A practical scoring rubric for your app
 
-Worldbuilding that supports branching must be **causally legible** and **state-addressable**. The point is not maximal lore; it’s *a stable simulation substrate* that can answer “what happens if…?” reliably.
+Below is a practical 100-point rubric based on the eleven dimensions. The weights are tuned for a short-session browser app where branching scalability and LLM controllability matter more than they would in a novel.
 
-### Prioritized world elements
+| Dimension | Weight | Why it matters most for *this* product |
+|---|---:|---|
+| Definition clarity | 6 | Weak concepts fail before the first screen |
+| Cognitive & emotional hooks | 10 | Retention depends on immediate buy-in |
+| Novelty–familiarity balance | 6 | You need appeal + distinction |
+| Stakes/constraints/core conflict | 12 | Tradeoffs are the fuel for choices |
+| Protagonist/antagonist/agency | 10 | The player role must imply meaningful verbs |
+| Setting as engine | 8 | World rules must produce consequences |
+| Genre signals/subversion | 6 | Fast orientation + memorable twist |
+| Branching scalability | 12 | Avoid combinatorial death |
+| Choice meaningfulness | 10 | Core promise of the app |
+| Replayability/emergence | 8 | Necessary for discovery and reuse |
+| LLM feasibility/controllability | 12 | Product reality constraint |
 
-Order these by “how many downstream things they constrain” (define kernel-first to prevent later contradictions):
+### How to score and reject concepts
 
-**World kernel**
-- **Rules / laws**: physics exceptions, magic/tech constraints, social taboos that function like laws (what is impossible, what is costly). This aligns with storyworld/possible-world approaches: the world is defined by what it makes true/false across propositions. citeturn5search9turn5search1
-- **Core institutions**: the systems that produce the antagonistic pressure (state surveillance, guild law, religion, corporate control). This is where “antagonistic force” becomes world reality. citeturn18search0turn7search0
+1. Score each dimension 0–5.
+2. Multiply by the weight fraction (e.g., 4/5 on a 10-weight criterion = 8 points).
+3. Sum to 100.
+4. Reject concepts with any of the following:
+   - **Total < 75**
+   - **Branching scalability < 4/5**
+   - **Choice meaningfulness < 4/5**
+   - **LLM feasibility < 4/5** unless you have a concrete mitigation plan
+   - **Stakes/constraints/core conflict < 4/5**
 
-**World systems**
-- **History as constraint**: a short timeline that justifies present conflicts (what happened that makes today tense).
-- **Cultures and norms**: what people expect; what counts as shame/honor; what gets punished socially. (These are gameplay rules for social choice.) citeturn6search18turn5search10
-- **Economy and resources**: scarcity, trade dependencies, what is expensive/cheap/controlled.
-- **Ecology and geography**: not for realism points, but because location constraints create story problems (routes, weather, borders). citeturn7search0turn5search0
+This ensures you don’t pick merely interesting concepts that are terrible fits for interactive generation.
 
-**Content edges**
-- **Factions and NPC motivations**: goals, fears, leverage; how they collide. Planning-based narrative generation research emphasizes character intentionality as key to audience comprehension; for LLMs, explicit goals are also control handles. citeturn1search3turn4search5
-- **Localities**: a small set of high-yield locations that repeatedly create dilemmas.
-- **Myths, rumors, mysteries**: epistemic layering that sustains curiosity (known unknowns) without requiring you to settle everything. (This maps directly to the epistemic fact typing in your entity decomposition contract.) fileciteturn0file0
+## How to derive worldbuilding from a concept systematically
 
-### Dependency mapping: what must be defined first
+### Why derivation order matters
 
-Worldbuilding dependencies are mostly one-way: laws constrain institutions; institutions constrain daily life; daily life constrains plausible NPC behavior; behavior constrains plots and storylets.
+Worldbuilding often drifts into “encyclopedia first” behavior: lots of lore, little dramatic relevance. For interactive fiction, derive the world in the order that best constrains and enables play:
 
-```mermaid
-flowchart TD
-  A[Concept spec<br/>hook + conflict loop + stakes] --> B[World kernel<br/>laws + constraints + core institutions]
-  B --> C[System map<br/>economy + governance + tech/magic]
-  B --> D[Geography & ecology<br/>movement + resources + hazards]
-  C --> E[Cultures & norms<br/>what is rewarded/punished]
-  D --> F[Key locations<br/>high-yield dilemma sites]
-  E --> G[Factions<br/>goals + methods + resources]
-  G --> H[NPC motivation seeds<br/>goals + fears + leverage]
-  F --> I[Storylets/scenes<br/>state-gated modules]
-  H --> I
-  I --> J[Branching state model<br/>qualities + flags + relationships]
+1. **World kernel**: the irreducible axioms and hard constraints
+2. **World systems**: economy, governance, technology/magic, ecology
+3. **Social and institutional mesh**: factions, norms, laws, taboo structures
+4. **Content edges**: locations, NPCs, objects, events, storylets
+
+This order mirrors narrative theory’s emphasis on action and causal logic: the world exists to make some actions possible, costly, or impossible. It also aligns with “narrative architecture” arguments that environments and systems scaffold stories rather than merely decorate them. citeturn2search4turn7search0turn5search9
+
+### Step 1: Build the world kernel
+
+The **world kernel** is the smallest set of axioms without which the concept stops being itself.
+
+For each concept, define:
+- **2–5 axioms** (e.g., “memories can be traded as commodities”)
+- **3–6 hard constraints** (e.g., “using a memory publicly causes traceable cognitive residue”)
+- **2–4 stable institutions** that police or exploit those axioms
+- **1–3 irreversible stakes clocks** (e.g., deadline, corruption spread, relationship rupture)
+
+This makes the concept “legible” to later stages and to the LLM. It also gives you the first-pass canon against which contradictions can be detected.
+
+### Step 2: Expand into world systems
+
+Once the kernel is defined, ask what systems it perturbs:
+
+- **Economy**: what becomes scarce, tradable, or taxable?
+- **Law and governance**: what new crimes, permissions, or bureaucracies emerge?
+- **Technology or magic**: what enables the premise, and what are its side effects?
+- **Ecology/materiality**: what physical processes or resources constrain the world?
+- **Culture and ideology**: what beliefs, rituals, or norms form around the premise?
+
+This corresponds to the “possible worlds/storyworld” idea that narrative worlds imply global consistency constraints, and to worldbuilding analysis that treats imagined worlds as having systemic layers rather than isolated facts. citeturn5search9turn5search0
+
+### Step 3: Build the social/institutional mesh
+
+Interactive stories thrive when the player must navigate people and institutions, not just “plot.” Build at least:
+
+- **3 factions** with incompatible goals
+- **3 institutions** that apply pressure or opportunity
+- **5 norms/taboos** that create social stakes
+- **2–3 public myths or contested beliefs** (disputed facts are great for branching revelation)
+
+This creates the social topology from which storylets, quests, and dilemmas can be drawn.
+
+### Step 4: Derive locations, NPC seeds, and storylets
+
+Only now generate specific locations and characters. Make them functional to the concept:
+
+- **Locations**: each should have an affordance, a hazard, a controller, and a narrative promise.
+- **NPC seeds**: each should carry goal + leverage + secret + fear. This follows drama-management and narrative-planning logic where characters act intentionally and create pressure over time. citeturn4search13turn1search3
+- **Storylets**: each is a reusable, state-gated unit defined by preconditions, situation, choice types, likely outcomes, and fallout.
+
+This meshes well with your current decomposition approach because you can atomize the resulting facts into typed propositions after generation.
+
+## A practical JSON schema for concept → worldbuilding handoff
+
+Below is a condensed schema that would fit your pipeline and keep the concept “actionable” for later stages.
+
+```json
+{
+  "conceptId": "string",
+  "oneLineHook": "string",
+  "conceptSpec": {
+    "protagonistRole": "string",
+    "goal": "string",
+    "need": "string",
+    "antagonisticForce": "string",
+    "pressureMechanism": "string",
+    "stakes": ["string"],
+    "constraints": ["string"],
+    "choiceLoop": "string",
+    "recommendedBranchingPosture": "TREE|RECONVERGE|STORYLETS|SIMULATION"
+  },
+  "worldKernel": {
+    "axioms": ["string"],
+    "hardConstraints": ["string"],
+    "stakesClocks": [
+      { "clockId": "string", "description": "string", "steps": 4 }
+    ]
+  },
+  "systems": {
+    "economy": ["string"],
+    "governance": ["string"],
+    "technologyOrMagic": ["string"],
+    "culture": ["string"]
+  },
+  "institutions": [
+    {
+      "institutionId": "string",
+      "role": "string",
+      "powers": ["string"],
+      "pressureMechanisms": ["string"]
+    }
+  ],
+  "factions": [
+    {
+      "factionId": "string",
+      "goal": "string",
+      "methods": ["string"],
+      "redLines": ["string"]
+    }
+  ],
+  "locations": [
+    {
+      "locationId": "string",
+      "function": "string",
+      "affordances": ["string"],
+      "hazards": ["string"],
+      "controller": "string"
+    }
+  ],
+  "npcSeeds": [
+    {
+      "role": "string",
+      "goal": "string",
+      "leverage": "string",
+      "secret": "string",
+      "fear": "string"
+    }
+  ],
+  "storyletHooks": [
+    {
+      "hookId": "string",
+      "preconditions": ["string"],
+      "situation": "string",
+      "choiceTypes": ["string"],
+      "likelyOutcomes": ["string"],
+      "falloutTags": ["string"]
+    }
+  ],
+  "stateModelHints": {
+    "alwaysOnStateVars": ["string"],
+    "retrievalScopes": ["string"]
+  }
+}
 ```
 
-This dependency order is consistent with both “world-as-entity” approaches to subcreated worlds and with interactive narrative practice treating space and systems as the scaffolding for story experiences. citeturn5search0turn7search0
+This is deliberately compatible with an LLM pipeline that uses compact state + retrieval rather than massive persistent context.
 
-### LLM-friendly representations: atomic facts plus structured objects
+## How this maps to your current production pipeline
 
-You already have a strong approach in your **Entity Decomposer**: atomize worldbuilding into *domain-tagged facts* with epistemic status (LAW, NORM, BELIEF, DISPUTED, RUMOR, MYSTERY). This is exactly what you want for controllability and for preventing lore drift. fileciteturn0file0
+Your production artifacts already implement a lot of the downstream structure, but the concept stage is still implicit. Here is the mapping:
 
-Recommended additions (to complement, not replace, your worldFacts):
-- **Institution objects** (laws they enforce, sanctions, resources, jurisdiction)
-- **Faction objects** (goal vector, methods, alliances, red lines)
-- **Location objects** (affordances, hazards, who controls it, what changes there)
-- **Choice contract objects** (what states can change in a scene, and bounds)
+- **Current Spine step** already captures: central dramatic question, need/want, antagonistic force, conflict axis, pressure mechanism. That’s almost the *core* of a concept spec. 
+- **Current Structure step** already captures: branching-aware beats, page budgets, and narrative pacing. That can become the first instantiation of the concept’s branching posture. 
+- **Entity Decomposer** already captures: domain-tagged, epistemically typed world facts and character fingerprints. That is ideal for later worldbuilding canonization and retrieval. 
 
-A pragmatic schema design principle from long-context + drift research: keep “always-on” context small, and put the rest behind retrieval keyed by **scope** (location, faction, time period) and **relevance** (active quest line, scene cell). citeturn10search4turn10search3turn11view0
+What is missing is an explicit **Concept Generation + Evaluation** stage *before* spine generation. That stage should:
+1. Generate 6–8 concept candidates from seed preferences.
+2. Score them using the 11-dimension rubric.
+3. Pick the top 3.
+4. Expand each into a lightweight world kernel + choice loop sketch.
+5. Present these to the user as “story directions.”
+6. Only after selection, generate the full spine and structure.
 
-## Prompt patterns and multi-stage pipelines
+This reduces wasted work and helps align user expectation before heavy downstream generation.
 
-This section gives four deliverables: concept-generation pipelines, human evaluation prompts, automated scoring prompts, and iterative worldbuilding expansion methods.
+## Prompt patterns and scoring tools you can use immediately
 
-### Multi-stage pipeline to generate, filter, and refine concept options
+### LLM prompt templates for concept ideation
 
-The single biggest mistake in LLM story apps is “one prompt to rule them all.” You want a *search-and-evaluate* pipeline, not a one-shot brainstorm. Research on deliberate multi-path reasoning (sampling diverse candidates then selecting the most consistent/best-scoring) supports this strategy in adjacent tasks. citeturn9search1turn3search11  
-Evaluation tooling work also supports iterative prompt refinement with explicit criteria and multi-output comparison. citeturn3search12
+The key is to constrain for branching- and LLM-fitness, not just “interesting pitches.”
 
-```mermaid
-flowchart TD
-  A[Input constraints<br/>tone, length, audience, taboo list, UI constraints] --> B[Generate N concepts<br/>structured concept spec]
-  B --> C[Diversity filter<br/>dedupe by semantic hash + genre + conflict axis]
-  C --> D[Automated scoring<br/>rubric 0-5 per dimension]
-  D --> E[Select top K<br/>with score explanation]
-  E --> F[Adversarial critique<br/>find failure modes + drift risks]
-  F --> G[Revise concepts<br/>tighten rules + stakes + choice loop]
-  G --> H[Human selection UI<br/>show top 3 with tradeoffs]
-  H --> I[Downstream: Spine generation<br/>3 options anchored to chosen concept]
-  I --> J[Structure generation<br/>branching-aware beats]
-  J --> K[Entity decomposition<br/>characters + atomic world facts]
-```
-
-The last three blocks match your current architecture: Spine → Structure → Entity Decomposer. fileciteturn0file1 fileciteturn0file3 fileciteturn0file0  
-This pipeline also matches plan-driven controllable narrative ideas (explicit plans per cell) as a general drift mitigation approach. citeturn11view0
-
-### Prompt pattern set for concept generation
-
-Below are patterns you can use as templates. They are phrased generically so they work with different model providers.
-
-#### Pattern: concept generator (structured, branching-aware)
+#### Pattern: concept ideator (diverse batch)
 
 ```text
-SYSTEM:
-You are a narrative concept designer for branching interactive fiction.
-Output JSON only, matching the provided schema. No prose outside JSON.
-
-USER:
-Constraints (open-ended if unspecified):
-- Audience age/content rating: UNSPECIFIED
-- Preferred genres: UNSPECIFIED
-- Target length: 15–50 pages interactive
-- Must support branching with reconvergence or storylet lattice (not a pure tree)
-
-Task:
-Generate 12 concept candidates. Each candidate must include:
-- oneLineHook (<= 25 words)
-- elevatorParagraph (<= 120 words)
-- protagonistRole, coreCompetence, coreFlaw
-- goalWant, needChange, needWantRelation
-- antagonisticForce, pressureMechanism
-- stakesPersonal, stakesSystemic, deadlineClock
-- constraints (3–5)
-- choiceLoop (describe recurring decision pattern)
-- worldKernelAxioms (2–5)
+Generate 10 interactive narrative concept candidates for a browser-based branching story.
+Each concept must include:
+- oneLineHook
+- protagonistRole
+- goal
+- need
+- antagonisticForce
+- pressureMechanism
+- stakes (personal + systemic)
+- constraints (2-4)
+- repeatableChoiceLoop
+- genreFrame
+- noveltyDifferentiator
 - recommendedBranchingPosture (TREE | RECONVERGE | STORYLETS | SIMULATION)
 - LLMControlPlan: alwaysOnStateVars (<= 12), retrievableLorescopes (<= 8)
 
@@ -525,7 +629,7 @@ These are designed for a developer/designer choosing among top candidates.
 - “Does the concept support at least two different player fantasies (e.g., protector vs manipulator)?”
 - “What part of the concept would you cut first if token budget forced you to?”
 
-Your existing **Spine** format already structures many of these as explicit fields (central dramatic question, need/want, antagonistic force, pressure mechanism). Treat the human worksheet as a pre-spine filter: only run spine generation on concepts that pass. fileciteturn0file1
+Your existing **Spine** format already structures many of these as explicit fields (central dramatic question, need/want, antagonistic force, pressure mechanism). Treat the human worksheet as a pre-spine filter: only run spine generation on concepts that pass. 
 
 ### Automated scoring prompts for LLM ranking
 
@@ -591,7 +695,7 @@ A robust expansion pipeline mirrors the dependency order and produces machine-fr
 - Stage 5: **NPC seeds** (motivations, leverage, secrets, voice cues)
 - Stage 6: **Atomic facts** (domain-tagged + epistemic type) for canon control
 
-You already have Stage 6 infrastructure conceptually in the entity decomposition contract. fileciteturn0file0
+You already have Stage 6 infrastructure conceptually in the entity decomposition contract. 
 
 A critical drift-control trick from recent controllability research: generate “cell plans” that specify spatiotemporal setting + character actions + plot developments per segment. Treat every playable scene as a cell with a plan, then let the writer model improvise within that plan. citeturn11view0
 
@@ -775,7 +879,7 @@ Selected seed: **River of Receipts** (high institutional pressure, clear choice 
 }
 ```
 
-This schema is intentionally compatible with your existing practice of atomizing worldbuilding into domain facts with epistemic status while also adding structured objects that improve controllability and retrieval. fileciteturn0file0
+This schema is intentionally compatible with your existing practice of atomizing worldbuilding into domain facts with epistemic status while also adding structured objects that improve controllability and retrieval. 
 
 ## Recommended metrics and acceptance thresholds
 
@@ -797,8 +901,8 @@ For a chosen concept, you can define “worldbuilding done enough” as meeting 
 - **Institution mesh**: at least **3 institutions** with explicit pressure mechanisms.
 - **Faction triangle**: at least **3 factions** whose goals are in pairwise tension (A vs B vs C).
 - **Location set**: at least **6 high-yield locations**, each with affordances + hazards + controller.
-- **NPC seed pool**: at least **10 NPC seeds** with goal + leverage + fear/secret (your structure prompt already generates initial NPC agendas hints; treat this as an expanded version). fileciteturn0file3
-- **Atomic facts coverage**: at least **60 worldFacts**, distributed across domains, with epistemic variety (LAW + NORM + BELIEF + at least one DISPUTED/RUMOR/MYSTERY). fileciteturn0file0
+- **NPC seed pool**: at least **10 NPC seeds** with goal + leverage + fear/secret (your structure prompt already generates initial NPC agendas hints; treat this as an expanded version). 
+- **Atomic facts coverage**: at least **60 worldFacts**, distributed across domains, with epistemic variety (LAW + NORM + BELIEF + at least one DISPUTED/RUMOR/MYSTERY). 
 
 ### Branching health metrics (runtime)
 
@@ -836,6 +940,13 @@ Primary and high-value sources used (all in English):
 - *EvalLM* (interactive evaluation for iterative prompt refinement). citeturn3search12  
 
 Internal production artifacts referenced as implementation alignment:
-- Spine generation and rewrite prompts. fileciteturn0file1 fileciteturn0file2  
-- Structure generation and rewrite prompts. fileciteturn0file3 fileciteturn0file4  
-- Entity decomposer prompt and schema principles (atomic world facts, speech fingerprinting, epistemic typing). fileciteturn0file0
+- Spine generation and rewrite prompts.    
+- Structure generation and rewrite prompts.    
+- Entity decomposer prompt and schema principles (atomic world facts, speech fingerprinting, epistemic typing). 
+
+## Outcome
+
+- Completion date: 2026-03-13
+- What changed: The concept generation pipeline shipped with ideation, evaluation, specificity/scenario enrichment, optional stress testing, UI concept cards, and concept-to-story prefill fields including `whatIfQuestion`, `ironicTwist`, and `playerFantasy`.
+- Deviations from the original plan: Implementation centered on the staged `ConceptSpec` pipeline and story-kernel integration rather than reproducing the document's sample seeds or rubric verbatim.
+- Verification results: Confirmed via active prompts under `prompts/concept-*.md`, concept models and services in `src/`, and completed archived tickets/specs such as `archive/specs/concept-generator.completed.md` and the `CONGEN-*` ticket series.

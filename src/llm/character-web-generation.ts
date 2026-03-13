@@ -5,7 +5,12 @@ import {
 import { CHARACTER_WEB_GENERATION_SCHEMA } from './schemas/character-web-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
-import type { CastRoleAssignment, RelationshipArchetype } from '../models/character-pipeline-types.js';
+import type {
+  AllianceFaultLine,
+  CastRoleAssignment,
+  ConflictTriangle,
+  RelationshipArchetype,
+} from '../models/character-pipeline-types.js';
 import {
   isStoryFunction,
   isCharacterDepth,
@@ -17,6 +22,8 @@ export interface CharacterWebGenerationResult {
   readonly assignments: readonly CastRoleAssignment[];
   readonly relationshipArchetypes: readonly RelationshipArchetype[];
   readonly castDynamicsSummary: string;
+  readonly conflictTriangles: readonly ConflictTriangle[];
+  readonly allianceFaultLines: readonly AllianceFaultLine[];
   readonly rawResponse: string;
 }
 
@@ -79,6 +86,10 @@ function parseAssignment(raw: unknown, index: number): CastRoleAssignment {
     );
   }
 
+  const privateAgenda = typeof data['privateAgenda'] === 'string'
+    ? data['privateAgenda'].trim()
+    : '';
+
   return {
     characterName: data['characterName'].trim(),
     isProtagonist: data['isProtagonist'],
@@ -86,6 +97,7 @@ function parseAssignment(raw: unknown, index: number): CastRoleAssignment {
     characterDepth: data['characterDepth'],
     narrativeRole: data['narrativeRole'],
     conflictRelationship: data['conflictRelationship'],
+    privateAgenda,
   };
 }
 
@@ -147,10 +159,34 @@ function parseCharacterWebResponse(
     parseRelationshipArchetype(r, i)
   );
 
+  const rawTriangles = Array.isArray(data['conflictTriangles']) ? data['conflictTriangles'] : [];
+  const conflictTriangles: ConflictTriangle[] = rawTriangles
+    .filter((t): t is Record<string, unknown> => typeof t === 'object' && t !== null)
+    .map((t) => ({
+      characters: Array.isArray(t['characters'])
+        ? (t['characters'].filter((c): c is string => typeof c === 'string').slice(0, 3) as [string, string, string])
+        : ([] as unknown as [string, string, string]),
+      incompatibility: typeof t['incompatibility'] === 'string' ? t['incompatibility'].trim() : '',
+    }))
+    .filter((t) => t.characters.length === 3 && t.incompatibility.length > 0);
+
+  const rawFaultLines = Array.isArray(data['allianceFaultLines']) ? data['allianceFaultLines'] : [];
+  const allianceFaultLines: AllianceFaultLine[] = rawFaultLines
+    .filter((f): f is Record<string, unknown> => typeof f === 'object' && f !== null)
+    .map((f) => ({
+      allies: Array.isArray(f['allies'])
+        ? (f['allies'].filter((a): a is string => typeof a === 'string').slice(0, 2) as [string, string])
+        : ([] as unknown as [string, string]),
+      faultLine: typeof f['faultLine'] === 'string' ? f['faultLine'].trim() : '',
+    }))
+    .filter((f) => f.allies.length === 2 && f.faultLine.length > 0);
+
   return {
     assignments,
     relationshipArchetypes,
     castDynamicsSummary: data['castDynamicsSummary'].trim(),
+    conflictTriangles,
+    allianceFaultLines,
   };
 }
 

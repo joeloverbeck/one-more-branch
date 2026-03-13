@@ -46,6 +46,8 @@ export const CHAR_PRESENTATION_GENERATION_SCHEMA: JsonSchema = {
         'appearance',
         'knowledgeBoundaries',
         'conflictPriority',
+        'stressVariants',
+        'relationSpecificVariants',
       ],
       properties: {
         characterName: {
@@ -87,6 +89,58 @@ export const CHAR_PRESENTATION_GENERATION_SCHEMA: JsonSchema = {
         conflictPriority: {
           type: 'string',
           description: 'What wins when this character faces competing goals or loyalties.',
+        },
+        stressVariants: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['underThreat', 'inIntimacy', 'whenLying', 'whenAshamed', 'whenWinning'],
+          properties: {
+            underThreat: {
+              type: 'string',
+              description: 'Voice shift when physically or socially threatened.',
+            },
+            inIntimacy: {
+              type: 'string',
+              description: 'Voice shift in vulnerable or intimate moments.',
+            },
+            whenLying: {
+              type: 'string',
+              description: 'Voice shift when deliberately deceiving.',
+            },
+            whenAshamed: {
+              type: 'string',
+              description: 'Voice shift when confronting personal shame.',
+            },
+            whenWinning: {
+              type: 'string',
+              description: 'Voice shift when in a position of power or triumph.',
+            },
+          },
+        },
+        relationSpecificVariants: {
+          type: 'array',
+          description:
+            '0 or more entries for major cast relationships showing how voice changes toward specific characters.',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['towardCharacter', 'registerShift', 'emotionalLeakage'],
+            properties: {
+              towardCharacter: {
+                type: 'string',
+                description: 'Name of the other character.',
+              },
+              registerShift: {
+                type: 'string',
+                description: 'How formality and diction changes toward this character.',
+              },
+              emotionalLeakage: {
+                type: 'string',
+                description:
+                  "What feelings slip through despite the character's control.",
+              },
+            },
+          },
         },
       },
     },

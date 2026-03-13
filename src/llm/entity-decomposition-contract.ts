@@ -199,6 +199,60 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
       'E.g. ["Hiding their noble birth", "Knows the rebel hideout location"]. ' +
       'Empty array if no notable secrets.',
   },
+  moralLine: {
+    type: 'string',
+    description:
+      'The line this character will not cross. 1 sentence. ' +
+      'E.g. "Will never harm a child, regardless of the stakes."',
+  },
+  worstFear: {
+    type: 'string',
+    description:
+      'What would psychologically destroy this character. 1 sentence. ' +
+      'E.g. "Being publicly revealed as the fraud she secretly believes herself to be."',
+  },
+  formativeWound: {
+    type: 'string',
+    description:
+      'The defining early experience that shaped this character\'s defenses. 1-2 sentences. ' +
+      'E.g. "Abandoned by her father at age seven, she learned that depending on others means getting hurt."',
+  },
+  misbelief: {
+    type: 'string',
+    description:
+      'The false conclusion the character drew from their wound that distorts their worldview. 1 sentence. ' +
+      'E.g. "Believes that showing vulnerability is always exploited."',
+  },
+  stressVariants: {
+    type: 'nullable_object',
+    description:
+      'How voice changes under pressure — underThreat, inIntimacy, whenLying, whenAshamed, whenWinning. ' +
+      'null if not yet determined.',
+  },
+  focalizationFilter: {
+    type: 'nullable_object',
+    description:
+      'What this character notices first, systematically misses, and misreads. ' +
+      'null if not yet determined.',
+  },
+  escalationLadder: {
+    type: 'array',
+    description:
+      '3-5 ordered steps showing how this character escalates when blocked, from mildest to most extreme. ' +
+      'Empty array if not yet determined.',
+  },
+  ruptureTriggers: {
+    type: 'array',
+    description:
+      '1-3 specific events or revelations that would shatter the protagonist relationship. ' +
+      'Empty array if not applicable.',
+  },
+  repairMoves: {
+    type: 'array',
+    description:
+      '1-3 specific actions that could mend the protagonist relationship after damage. ' +
+      'Empty array if not applicable.',
+  },
 };
 
 export const SPEECH_REQUIRED_FIELDS = Object.keys(SPEECH_SCHEMA_FIELDS) as ReadonlyArray<
@@ -226,6 +280,15 @@ export const CHARACTER_REQUIRED_FIELDS: ReadonlyArray<
   'emotionSalience',
   'storyFunction',
   'narrativeRole',
+  'moralLine',
+  'worstFear',
+  'formativeWound',
+  'misbelief',
+  'stressVariants',
+  'focalizationFilter',
+  'escalationLadder',
+  'ruptureTriggers',
+  'repairMoves',
 ];
 
 export const SPEECH_STRING_FIELDS: ReadonlyArray<keyof SpeechFingerprint> = [
@@ -257,6 +320,10 @@ export const CHARACTER_STRING_FIELDS: ReadonlyArray<
   'conflictPriority',
   'pressurePoint',
   'narrativeRole',
+  'moralLine',
+  'worstFear',
+  'formativeWound',
+  'misbelief',
 ];
 
 export const CHARACTER_ARRAY_FIELDS: ReadonlyArray<
@@ -264,7 +331,17 @@ export const CHARACTER_ARRAY_FIELDS: ReadonlyArray<
     DecomposedCharacter,
     'speechFingerprint' | 'rawDescription' | 'name' | 'protagonistRelationship'
   >
-> = ['coreTraits', 'coreBeliefs', 'falseBeliefs', 'secretsKept', 'stakes', 'personalDilemmas'];
+> = [
+  'coreTraits',
+  'coreBeliefs',
+  'falseBeliefs',
+  'secretsKept',
+  'stakes',
+  'personalDilemmas',
+  'escalationLadder',
+  'ruptureTriggers',
+  'repairMoves',
+];
 
 export const SPEECH_EXTRACTION_BULLETS: readonly string[] = [
   'Catchphrases: Signature phrases they would repeat based on personality and background',

@@ -133,12 +133,22 @@ function buildFullRawDescription(
     throw new Error(`Character ${char.characterName} is missing data for rawDescription`);
   }
 
-  return [
+  const lines = [
     `${webContext.assignment.characterName} is driven by ${trimTerminalPunctuation(characterKernel.superObjective)}.`,
     `${trimTerminalPunctuation(tridimensionalProfile.physiology)}.`,
     `${trimTerminalPunctuation(tridimensionalProfile.sociology)}.`,
     `${trimTerminalPunctuation(tridimensionalProfile.psychology)}.`,
-  ].join(' ');
+  ];
+
+  if (tridimensionalProfile.formativeWound?.trim().length > 0) {
+    lines.push(`Shaped by: ${trimTerminalPunctuation(tridimensionalProfile.formativeWound)}.`);
+  }
+
+  if (tridimensionalProfile.misbelief?.trim().length > 0) {
+    lines.push(`Believes: ${trimTerminalPunctuation(tridimensionalProfile.misbelief)}.`);
+  }
+
+  return lines.join(' ');
 }
 
 function buildFullThematicStance(char: SavedDevelopedCharacter): string {
@@ -274,16 +284,17 @@ export function toDecomposedCharacter(
         resolvedProtagonistName,
       );
 
+  const protagonistRel = protagonistRelationship === null
+    ? null
+    : mapRelationshipToDecomposed(protagonistRelationship);
+
   return {
     name: webContext.assignment.characterName,
     speechFingerprint: char.textualPresentation.speechFingerprint,
     coreTraits: char.tridimensionalProfile.coreTraits,
     superObjective: char.characterKernel.superObjective,
     thematicStance: buildFullThematicStance(char),
-    protagonistRelationship:
-      protagonistRelationship === null
-        ? null
-        : mapRelationshipToDecomposed(protagonistRelationship),
+    protagonistRelationship: protagonistRel,
     knowledgeBoundaries: char.textualPresentation.knowledgeBoundaries,
     falseBeliefs: char.agencyModel.falseBeliefs,
     secretsKept: char.deepRelationships.secrets,
@@ -292,6 +303,15 @@ export function toDecomposedCharacter(
     conflictPriority: char.textualPresentation.conflictPriority,
     appearance: char.textualPresentation.appearance,
     rawDescription: buildFullRawDescription(char, webContext),
+    moralLine: char.characterKernel.moralLine,
+    worstFear: char.characterKernel.worstFear,
+    formativeWound: char.tridimensionalProfile.formativeWound,
+    misbelief: char.tridimensionalProfile.misbelief,
+    stressVariants: char.textualPresentation.stressVariants,
+    focalizationFilter: char.agencyModel.focalizationFilter,
+    escalationLadder: char.agencyModel.escalationLadder,
+    ruptureTriggers: protagonistRelationship?.ruptureTriggers,
+    repairMoves: protagonistRelationship?.repairMoves,
   };
 }
 

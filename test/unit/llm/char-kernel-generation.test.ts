@@ -82,6 +82,13 @@ function validKernelResponseRaw(
     ],
     pressurePoint:
       'His sister is held hostage by the king — any overt action risks her life.',
+    moralLine: 'Will never betray a sworn oath',
+    unacceptableCost: 'Losing his sister',
+    worstFear: 'Being forgotten by history',
+    sceneObjectivePatterns: [
+      'Opens with charm, then applies pressure',
+      'Retreats to regroup when outmatched',
+    ],
     ...overrides,
   };
 }
@@ -215,6 +222,10 @@ describe('CHAR_KERNEL_GENERATION_SCHEMA', () => {
       'stakes',
       'constraints',
       'pressurePoint',
+      'moralLine',
+      'unacceptableCost',
+      'worstFear',
+      'sceneObjectivePatterns',
     ]);
   });
 
@@ -229,6 +240,10 @@ describe('CHAR_KERNEL_GENERATION_SCHEMA', () => {
     expect(properties['stakes']).toBeDefined();
     expect(properties['constraints']).toBeDefined();
     expect(properties['pressurePoint']).toBeDefined();
+    expect(properties['moralLine']).toBeDefined();
+    expect(properties['unacceptableCost']).toBeDefined();
+    expect(properties['worstFear']).toBeDefined();
+    expect(properties['sceneObjectivePatterns']).toBeDefined();
   });
 
   it('defines array fields with string items', () => {

@@ -1,4 +1,8 @@
-import type { SpeechFingerprint } from './decomposed-character.js';
+import type {
+  FocalizationFilter,
+  SpeechFingerprint,
+  StressVariants,
+} from './decomposed-character.js';
 import type { EmotionSalience } from './character-enums.js';
 
 export interface StandaloneDecomposedCharacter {
@@ -20,6 +24,13 @@ export interface StandaloneDecomposedCharacter {
   readonly pressurePoint?: string;
   readonly personalDilemmas?: readonly string[];
   readonly emotionSalience?: EmotionSalience;
+  readonly moralLine?: string;
+  readonly worstFear?: string;
+  readonly formativeWound?: string;
+  readonly misbelief?: string;
+  readonly stressVariants?: StressVariants;
+  readonly focalizationFilter?: FocalizationFilter;
+  readonly escalationLadder?: readonly string[];
 }
 
 export function isStandaloneDecomposedCharacter(
@@ -72,6 +83,26 @@ export function formatStandaloneCharacterSummary(char: StandaloneDecomposedChara
 
   if (char.emotionSalience) {
     lines.push(`  Emotion Salience: ${char.emotionSalience}`);
+  }
+
+  if (char.moralLine) {
+    lines.push(`  Moral Line: ${char.moralLine}`);
+  }
+
+  if (char.worstFear) {
+    lines.push(`  Worst Fear: ${char.worstFear}`);
+  }
+
+  if (char.formativeWound) {
+    lines.push(`  Formative Wound: ${char.formativeWound}`);
+  }
+
+  if (char.misbelief) {
+    lines.push(`  Misbelief: ${char.misbelief}`);
+  }
+
+  if (char.escalationLadder && char.escalationLadder.length > 0) {
+    lines.push(`  Escalation Ladder: ${char.escalationLadder.join(' → ')}`);
   }
 
   return lines.join('\n');

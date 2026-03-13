@@ -84,6 +84,36 @@ function parseCharAgencyResponse(parsed: unknown): AgencyModel {
     );
   }
 
+  const rawFilter = data['focalizationFilter'];
+  if (typeof rawFilter !== 'object' || rawFilter === null || Array.isArray(rawFilter)) {
+    throw new LLMError(
+      'Agency model response missing focalizationFilter',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
+  const filterData = rawFilter as Record<string, unknown>;
+  if (
+    typeof filterData['noticesFirst'] !== 'string' ||
+    typeof filterData['systematicallyMisses'] !== 'string' ||
+    typeof filterData['misreadsAs'] !== 'string'
+  ) {
+    throw new LLMError(
+      'Agency model response focalizationFilter missing required fields',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
+  if (!Array.isArray(data['escalationLadder']) || data['escalationLadder'].length === 0) {
+    throw new LLMError(
+      'Agency model response missing or empty escalationLadder',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
   return {
     characterName: data['characterName'].trim(),
     replanningPolicy: data['replanningPolicy'],
@@ -93,6 +123,12 @@ function parseCharAgencyResponse(parsed: unknown): AgencyModel {
     currentIntentions: parseRequiredStringArray(data, 'currentIntentions'),
     falseBeliefs: parseRequiredStringArray(data, 'falseBeliefs'),
     decisionPattern: data['decisionPattern'].trim(),
+    focalizationFilter: {
+      noticesFirst: filterData['noticesFirst'].trim(),
+      systematicallyMisses: filterData['systematicallyMisses'].trim(),
+      misreadsAs: filterData['misreadsAs'].trim(),
+    },
+    escalationLadder: parseRequiredStringArray(data, 'escalationLadder'),
   };
 }
 

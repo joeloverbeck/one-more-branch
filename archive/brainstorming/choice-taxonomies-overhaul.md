@@ -1,3 +1,5 @@
+**Status**: COMPLETED
+
 # Choice Taxonomies Overhaul
 
 I asked ChatGPT the following:
@@ -306,3 +308,10 @@ That is the proper fix. Not a patch.
 primaryDelta should be expanded and renamed. choiceType should be rebuilt from the ground up as a pure action-family taxonomy. Moral, identity, and similar pressures should become soft tags or a separate optional axis, not stay inside the core enum.
 
 If you only do one thing, do the choiceType redesign first. That is the real blocker.
+
+## Outcome
+
+- Completion date: 2026-03-13
+- What changed: The expanded `ChoiceType` and `PrimaryDelta` taxonomies were implemented in the production enums, prompt guidance, choice schema, and play/debug UI.
+- Deviations from the original plan: The overhaul shipped as a direct replacement of the old enums and guidance rather than as a separate soft-tag axis in this document.
+- Verification results: Confirmed in `src/models/choice-enums.ts`, `src/llm/schemas/choice-generator-schema.ts`, `src/llm/prompts/sections/shared/choice-guidelines.ts`, and `prompts/choice-generator-prompt.md`.
