@@ -1,5 +1,6 @@
 import type { ProseQualityContext } from '../prose-quality-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTENT_POLICY } from '../content-policy.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
@@ -50,7 +51,7 @@ function buildThematicKernelSection(context: ProseQualityContext): string {
 }
 
 export function buildProseQualityPrompt(context: ProseQualityContext): ChatMessage[] {
-  const sections: string[] = [PROSE_QUALITY_ROLE];
+  const sections: string[] = [PROSE_QUALITY_ROLE, CONTENT_POLICY];
 
   if (context.tone) {
     sections.push(buildToneDirective(context.tone, context.toneFeel, context.toneAvoid));

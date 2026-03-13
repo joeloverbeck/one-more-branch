@@ -1,5 +1,6 @@
 import type { NpcIntelligenceContext } from '../npc-intelligence-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTENT_POLICY } from '../content-policy.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
 
@@ -72,7 +73,7 @@ function buildNpcRelationshipsSection(context: NpcIntelligenceContext): string {
 }
 
 export function buildNpcIntelligencePrompt(context: NpcIntelligenceContext): ChatMessage[] {
-  const systemPrompt = [NPC_INTELLIGENCE_ROLE, NPC_INTELLIGENCE_RULES].join('\n\n');
+  const systemPrompt = [NPC_INTELLIGENCE_ROLE, CONTENT_POLICY, NPC_INTELLIGENCE_RULES].join('\n\n');
 
   const spineSection = buildSpineSection(context.spine);
   const genreConventionsSection = buildGenreConventionsSection(context.genreFrame);

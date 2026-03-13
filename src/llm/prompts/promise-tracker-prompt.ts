@@ -1,5 +1,6 @@
 import type { PromiseTrackerContext } from '../promise-tracker-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTENT_POLICY } from '../content-policy.js';
 
 const PROMISE_TRACKER_ROLE = `You are a narrative promise and thread tracker for interactive fiction. Your SINGLE responsibility is to track all forward-looking narrative obligations and their lifecycle — detecting new promises, resolving existing ones, assessing payoff quality, and identifying delayed consequences.
 
@@ -177,7 +178,7 @@ export function buildPromiseTrackerPrompt(context: PromiseTrackerContext): ChatM
 NARRATIVE TO EVALUATE:
 ${context.narrative}`;
 
-  const systemPrompt = `${PROMISE_TRACKER_ROLE}\n\n${PROMISE_TRACKER_RULES}`;
+  const systemPrompt = `${PROMISE_TRACKER_ROLE}\n\n${CONTENT_POLICY}\n\n${PROMISE_TRACKER_RULES}`;
 
   return [
     { role: 'system', content: systemPrompt },

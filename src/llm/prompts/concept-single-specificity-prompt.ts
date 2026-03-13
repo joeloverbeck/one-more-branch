@@ -1,6 +1,7 @@
 import type { EvaluatedConcept } from '../../models/concept-generator.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTENT_POLICY } from '../content-policy.js';
 
 const ROLE_INTRO =
   'You are a concept specificity analyst for interactive branching fiction. Your job is to prove whether this concept is genuinely specific and load-bearing, or a dressed-up genre template. You perform destructive analytical testing — probing, breaking, and exposing weaknesses.';
@@ -23,7 +24,7 @@ export function buildSingleConceptSpecificityPrompt(
   evaluated: EvaluatedConcept,
   kernel: StoryKernel,
 ): ChatMessage[] {
-  const systemSections: string[] = [ROLE_INTRO, SPECIFICITY_DIRECTIVES, KERNEL_FIDELITY_DIRECTIVE];
+  const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, SPECIFICITY_DIRECTIVES, KERNEL_FIDELITY_DIRECTIVE];
 
   const conceptInput = {
     oneLineHook: evaluated.concept.oneLineHook,

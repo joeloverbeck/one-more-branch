@@ -7,6 +7,7 @@ import {
 } from '../../models/concept-generator.js';
 import type { ContentPacket } from '../../models/content-packet.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTENT_POLICY } from '../content-policy.js';
 
 const ROLE_INTRO =
   'You are an adversarial story architect. Your job is to break this concept under realistic play pressure and harden it for robust branching execution.';
@@ -119,6 +120,7 @@ export function buildConceptStressTesterPrompt(context: ConceptStressTesterConte
 
   const systemSections: string[] = [
     ROLE_INTRO,
+    CONTENT_POLICY,
     ADVERSARIAL_DIRECTIVES,
     `WEAK DIMENSION FOCUS:
 - Prioritize reinforcement for: ${weakDimensionsLine}

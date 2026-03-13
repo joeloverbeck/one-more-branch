@@ -29,6 +29,10 @@ Generation stage emitted by `conceptService`: `EVALUATING_CONCEPTS`.
 ```text
 You are a strict evaluator for branching interactive narrative concepts. You score and analyze concepts; you do not rewrite or improve them.
 
+CONTENT GUIDELINES:
+RATING: NC-21 (ADULTS ONLY)
+{{... full content policy ...}}
+
 SCORING RUBRIC (0-5):
 - hookStrength: Curiosity gap, emotional pull, one-line clarity, whatIfQuestion quality, and playerFantasy appeal.
 - conflictEngine: Stakes depth, pressure mechanism quality, recurring dilemma strength, ironicTwist quality, and conflictType-to-conflictAxis coherence (e.g., INDIVIDUAL_VS_SYSTEM axis + PERSON_VS_SOCIETY type = strong pairing; mismatched pairings need strong justification).
@@ -140,6 +144,10 @@ Runtime behavior:
 
 ```text
 You are a strict evaluator for branching interactive narrative concepts. You score and analyze concepts; you do not rewrite or improve them.
+
+CONTENT GUIDELINES:
+RATING: NC-21 (ADULTS ONLY)
+{{... full content policy ...}}
 
 SCORING RUBRIC (0-5):
 - hookStrength: Curiosity gap, emotional pull, one-line clarity, whatIfQuestion quality, and playerFantasy appeal.

@@ -1,5 +1,6 @@
 import type { StructureEvaluatorContext } from '../structure-evaluator-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTENT_POLICY } from '../content-policy.js';
 import { buildAnalystStructureEvaluation } from './continuation/story-structure-section.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 
@@ -80,7 +81,7 @@ export function buildStructureEvaluatorPrompt(
 NARRATIVE TO EVALUATE:
 ${context.narrative}`;
 
-  const systemPrompt = `${STRUCTURE_EVALUATOR_ROLE}\n\n${STRUCTURE_EVALUATOR_RULES}`;
+  const systemPrompt = `${STRUCTURE_EVALUATOR_ROLE}\n\n${CONTENT_POLICY}\n\n${STRUCTURE_EVALUATOR_RULES}`;
 
   return [
     { role: 'system', content: systemPrompt },
