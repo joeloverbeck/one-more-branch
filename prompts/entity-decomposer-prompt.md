@@ -339,6 +339,18 @@ The frontend displays this stage as "STUDYING" in the spinner UI with Sims-style
 
 ## Contract Notes
 
+## Split Decomposition Pipeline
+
+When characters are built through the character dev pipeline (stages 1-5 + character web), a separate split decomposition pipeline is available:
+
+- **Character Decomposer** (`src/llm/prompts/character-decomposer-prompt.ts`): Decomposes each character individually into a `StandaloneDecomposedCharacter` (no story context). See `prompts/character-decomposer-prompt.md`.
+- **Worldbuilding Decomposer** (`src/llm/prompts/worldbuilding-decomposer-prompt.ts`): Decomposes worldbuilding prose into structured world facts independently. See `prompts/worldbuilding-decomposer-prompt.md`.
+- **Character Contextualizer** (`src/llm/prompts/character-contextualizer-prompt.ts`): Adds thematic stance and protagonist relationships to standalone character profiles. See `prompts/character-contextualizer-prompt.md`.
+
+The split pipeline enables parallel execution (characters + worldbuilding decompose simultaneously) and is used when character profiles are already structured via the character dev pipeline. The full entity decomposer remains available for the legacy single-call path.
+
+## Contract Notes
+
 - Raw fields (`characterConcept`, `worldbuilding`, `npcs`) remain untouched on the Story object.
 - `decomposedCharacters` and `decomposedWorld` are optional on the Story model but required on all downstream context types (OpeningContext, ContinuationContext, LorekeeperContext, StructureContext, etc.). Once entity decomposition runs, all downstream stages use decomposed data exclusively.
 - Raw data fallbacks (`characterConcept`, `worldbuilding`, `npcs`) have been removed from all downstream prompt builders. The entity decomposer is the single gateway between raw form data and the rest of the pipeline.

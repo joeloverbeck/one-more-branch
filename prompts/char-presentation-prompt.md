@@ -93,6 +93,8 @@ CHARACTER KERNEL (from Stage 1):
 - Stakes: {{characterKernel.stakes | join '; '}}
 - Constraints: {{characterKernel.constraints | join '; '}}
 - Pressure Point: {{characterKernel.pressurePoint}}
+- Moral Line: {{characterKernel.moralLine}}
+- Worst Fear: {{characterKernel.worstFear}}
 
 TRIDIMENSIONAL PROFILE (from Stage 2):
 - Physiology: {{tridimensionalProfile.physiology}}
@@ -100,6 +102,10 @@ TRIDIMENSIONAL PROFILE (from Stage 2):
 - Psychology: {{tridimensionalProfile.psychology}}
 - Derivation Chain: {{tridimensionalProfile.derivationChain}}
 - Core Traits: {{tridimensionalProfile.coreTraits | join '; '}}
+- Formative Wound: {{tridimensionalProfile.formativeWound}}
+- Protective Mask: {{tridimensionalProfile.protectiveMask}}
+- Misbelief: {{tridimensionalProfile.misbelief}}
+- Stress Tells: {{tridimensionalProfile.stressTells | join '; '}}
 
 AGENCY MODEL (from Stage 3):
 - Replanning Policy: {{agencyModel.replanningPolicy}}
@@ -109,6 +115,7 @@ AGENCY MODEL (from Stage 3):
 - Current Intentions: {{agencyModel.currentIntentions | join '; '}}
 - False Beliefs: {{agencyModel.falseBeliefs | join '; '}}
 - Decision Pattern: {{agencyModel.decisionPattern}}
+- Escalation Ladder: {{agencyModel.escalationLadder | join '; '}}
 
 DEEP RELATIONSHIPS (from Stage 4):
 Relationships:
@@ -168,6 +175,8 @@ FIELD INSTRUCTIONS:
 - appearance: Brief physical presentation guidance grounded in prior stages.
 - knowledgeBoundaries: What the character knows, suspects, misreads, and cannot know.
 - conflictPriority: State what wins when the character's goals conflict.
+- stressVariants: Object with underThreat, inIntimacy, whenLying, whenAshamed, whenWinning — how the character's voice shifts under each condition.
+- relationSpecificVariants: Array of 0+ entries for major cast relationships. Each has towardCharacter, registerShift, and emotionalLeakage.
 ```
 
 ## JSON Response Shape
@@ -189,7 +198,21 @@ FIELD INSTRUCTIONS:
   },
   "appearance": "{{physical presentation grounded in prior stages}}",
   "knowledgeBoundaries": "{{what knows, suspects, misreads, cannot know}}",
-  "conflictPriority": "{{what wins when goals conflict}}"
+  "conflictPriority": "{{what wins when goals conflict}}",
+  "stressVariants": {
+    "underThreat": "{{voice shift under threat}}",
+    "inIntimacy": "{{voice shift in intimate settings}}",
+    "whenLying": "{{voice shift when lying}}",
+    "whenAshamed": "{{voice shift when ashamed}}",
+    "whenWinning": "{{voice shift when winning}}"
+  },
+  "relationSpecificVariants": [
+    {
+      "towardCharacter": "{{character name}}",
+      "registerShift": "{{how voice changes toward this character}}",
+      "emotionalLeakage": "{{what emotion leaks through}}"
+    }
+  ]
 }
 ```
 

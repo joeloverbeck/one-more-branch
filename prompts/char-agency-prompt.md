@@ -91,6 +91,9 @@ CHARACTER KERNEL (from Stage 1):
 - Stakes: {{characterKernel.stakes | join '; '}}
 - Constraints: {{characterKernel.constraints | join '; '}}
 - Pressure Point: {{characterKernel.pressurePoint}}
+- Moral Line: {{characterKernel.moralLine}}
+- Worst Fear: {{characterKernel.worstFear}}
+- Scene Objective Patterns: {{characterKernel.sceneObjectivePatterns | join '; '}}
 
 TRIDIMENSIONAL PROFILE (from Stage 2):
 - Physiology: {{tridimensionalProfile.physiology}}
@@ -98,6 +101,10 @@ TRIDIMENSIONAL PROFILE (from Stage 2):
 - Psychology: {{tridimensionalProfile.psychology}}
 - Derivation Chain: {{tridimensionalProfile.derivationChain}}
 - Core Traits: {{tridimensionalProfile.coreTraits | join '; '}}
+- Formative Wound: {{tridimensionalProfile.formativeWound}}
+- Protective Mask: {{tridimensionalProfile.protectiveMask}}
+- Misbelief: {{tridimensionalProfile.misbelief}}
+- Attachment Style: {{tridimensionalProfile.attachmentStyle}}
 
 {{#if conceptSpec}}
 CONCEPT ANALYSIS (use to ground character decomposition):
@@ -140,6 +147,12 @@ FIELD INSTRUCTIONS:
 - currentIntentions: Array of immediate, active pursuits this character is trying to carry out now.
 - falseBeliefs: Array of incorrect assumptions, blind spots, or misreadings driving conflict.
 - decisionPattern: A concise explanation of how this character typically makes choices under pressure.
+- focalizationFilter: Object with noticesFirst, systematicallyMisses, misreadsAs — what this character perceives, overlooks, and misinterprets.
+- escalationLadder: Array of 3-5 ordered steps showing how this character escalates when blocked, from mildest to most extreme.
+
+GENERATION RULES:
+- focalizationFilter must be grounded in the character's wound, training, and social position — not arbitrary.
+- escalationLadder must be ordered from mildest to most extreme response. The final step should approach but not cross the moralLine from the kernel.
 ```
 
 ## JSON Response Shape
@@ -153,7 +166,13 @@ FIELD INSTRUCTIONS:
   "desires": ["{{enduring want}}"],
   "currentIntentions": ["{{immediate active pursuit}}"],
   "falseBeliefs": ["{{incorrect assumption driving conflict}}"],
-  "decisionPattern": "{{how the character chooses under pressure}}"
+  "decisionPattern": "{{how the character chooses under pressure}}",
+  "focalizationFilter": {
+    "noticesFirst": "{{what this character perceives first}}",
+    "systematicallyMisses": "{{what this character overlooks}}",
+    "misreadsAs": "{{what this character misinterprets}}"
+  },
+  "escalationLadder": ["{{mildest response}}", "{{moderate response}}", "{{most extreme response}}"]
 }
 ```
 
