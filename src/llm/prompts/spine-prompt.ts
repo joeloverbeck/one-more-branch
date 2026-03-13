@@ -2,6 +2,8 @@ import type { ConceptSpec } from '../../models/concept-generator.js';
 import type { ConceptVerification } from '../../models/concept-generator.js';
 import type { Npc } from '../../models/npc.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
+import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
+import { formatStandaloneCharacterSummary } from '../../models/standalone-decomposed-character.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
@@ -12,6 +14,7 @@ export interface SpinePromptContext {
   worldbuilding: string;
   tone: string;
   npcs?: readonly Npc[];
+  decomposedCharacters?: readonly StandaloneDecomposedCharacter[];
   startingSituation?: string;
   conceptSpec?: ConceptSpec;
   storyKernel?: StoryKernel;
@@ -160,9 +163,11 @@ export function buildSpinePrompt(context: SpinePromptContext): ChatMessage[] {
     : '';
 
   const npcsSection =
-    context.npcs && context.npcs.length > 0
-      ? `NPCS (Available Characters):\n${formatNpcsForPrompt(context.npcs)}\n\n`
-      : '';
+    context.decomposedCharacters && context.decomposedCharacters.length > 0
+      ? `CHARACTERS (Pre-Decomposed Profiles):\n${context.decomposedCharacters.map(formatStandaloneCharacterSummary).join('\n\n')}\n\n`
+      : context.npcs && context.npcs.length > 0
+        ? `NPCS (Available Characters):\n${formatNpcsForPrompt(context.npcs)}\n\n`
+        : '';
 
   const startingSituationSection = context.startingSituation
     ? `STARTING SITUATION:\n${context.startingSituation}\n\n`
