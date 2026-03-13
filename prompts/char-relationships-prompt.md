@@ -93,6 +93,8 @@ CHARACTER KERNEL (from Stage 1):
 - Stakes: {{characterKernel.stakes | join '; '}}
 - Constraints: {{characterKernel.constraints | join '; '}}
 - Pressure Point: {{characterKernel.pressurePoint}}
+- Moral Line: {{characterKernel.moralLine}}
+- Worst Fear: {{characterKernel.worstFear}}
 
 TRIDIMENSIONAL PROFILE (from Stage 2):
 - Physiology: {{tridimensionalProfile.physiology}}
@@ -100,6 +102,8 @@ TRIDIMENSIONAL PROFILE (from Stage 2):
 - Psychology: {{tridimensionalProfile.psychology}}
 - Derivation Chain: {{tridimensionalProfile.derivationChain}}
 - Core Traits: {{tridimensionalProfile.coreTraits | join '; '}}
+- Formative Wound: {{tridimensionalProfile.formativeWound}}
+- Misbelief: {{tridimensionalProfile.misbelief}}
 
 AGENCY MODEL (from Stage 3):
 - Replanning Policy: {{agencyModel.replanningPolicy}}
@@ -109,6 +113,7 @@ AGENCY MODEL (from Stage 3):
 - Current Intentions: {{agencyModel.currentIntentions | join '; '}}
 - False Beliefs: {{agencyModel.falseBeliefs | join '; '}}
 - Decision Pattern: {{agencyModel.decisionPattern}}
+- Escalation Ladder: {{agencyModel.escalationLadder | join '; '}}
 
 {{#if otherDevelopedCharacters}}
 OTHER DEVELOPED CHARACTERS:
@@ -162,9 +167,15 @@ FIELD INSTRUCTIONS:
 - history: Brief explanation of the relationship's past.
 - currentTension: Brief explanation of the unstable present pressure in the relationship.
 - leverage: What one side can currently use against the other.
+- ruptureTriggers: Array of 1-3 specific events or revelations that would shatter this relationship.
+- repairMoves: Array of 1-3 specific actions that could mend this relationship after damage.
 - secrets: Array of secrets the focal character is keeping.
 - personalDilemmas: Array of dramatic dilemmas the focal character is currently trapped in.
 - Do not use alternate field names such as dilemmas.
+
+GENERATION RULES:
+- ruptureTriggers must be concrete events, not abstract conditions — things that could happen in a scene.
+- repairMoves must be concrete actions available to the characters, not meta-descriptions.
 ```
 
 ## JSON Response Shape
@@ -180,7 +191,9 @@ FIELD INSTRUCTIONS:
       "numericValence": 1,
       "history": "{{how the relationship became what it is now}}",
       "currentTension": "{{present unstable pressure}}",
-      "leverage": "{{what one side can use against the other}}"
+      "leverage": "{{what one side can use against the other}}",
+      "ruptureTriggers": ["{{specific event that would shatter this relationship}}"],
+      "repairMoves": ["{{specific action that could mend this relationship}}"]
     }
   ],
   "secrets": ["{{secret the focal character is keeping}}"],

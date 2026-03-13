@@ -134,6 +134,26 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     sourcePath: 'src/llm/prompts/entity-decomposer-prompt.ts',
     docPath: 'prompts/entity-decomposer-prompt.md',
   },
+  {
+    promptType: 'characterContextualizer',
+    sourcePath: 'src/llm/prompts/character-contextualizer-prompt.ts',
+    docPath: 'prompts/character-contextualizer-prompt.md',
+  },
+  {
+    promptType: 'worldbuildingDecomposer',
+    sourcePath: 'src/llm/prompts/worldbuilding-decomposer-prompt.ts',
+    docPath: 'prompts/worldbuilding-decomposer-prompt.md',
+  },
+  {
+    promptType: 'characterDecomposer',
+    sourcePath: 'src/llm/prompts/character-decomposer-prompt.ts',
+    docPath: 'prompts/character-decomposer-prompt.md',
+  },
+  {
+    promptType: 'conceptSingleEvaluator',
+    sourcePath: 'src/llm/prompts/concept-single-evaluator-prompt.ts',
+    docPath: 'prompts/concept-single-evaluator-prompt.md',
+  },
 ];
 
 function readRepoFile(relativePath: string): string {

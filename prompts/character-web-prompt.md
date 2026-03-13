@@ -107,11 +107,28 @@ USER NOTES:
 {{/if}}
 
 FIELD INSTRUCTIONS:
-- assignments: Array of cast role assignments (each must be a being with agency). Each must have:
-  - characterName (a being with agency — never a location, object, or environmental feature), isProtagonist, storyFunction, characterDepth, narrativeRole, conflictRelationship
+- assignments: Array of cast role assignments. Each must have:
+  - characterName: The name of a being with agency (capable of decisions and purposeful action — never a location, object, or environmental feature).
+  - isProtagonist: true for exactly one character, false for all others.
+  - storyFunction: One of ANTAGONIST, RIVAL, ALLY, MENTOR, CATALYST, OBSTACLE, FOIL, TRICKSTER, INNOCENT.
+  - characterDepth: ROUND for major characters, FLAT for minor ones.
+  - narrativeRole: One sentence — what this character DOES in the story.
+  - conflictRelationship: One sentence — how this character creates or resolves conflict for the protagonist.
+  - privateAgenda: What this NPC wants independent of the protagonist. Empty string for the protagonist.
 - relationshipArchetypes: Array of relationship sketches between character pairs. Each must have:
   - fromCharacter, toCharacter, relationshipType, valence, essentialTension
 - castDynamicsSummary: A paragraph describing overall cast dynamics, alliances, oppositions, and dramatic fault lines.
+- conflictTriangles: Array of sets of 3 characters with incompatible loyalties. At least 1 required if cast has 3+ ROUND characters. Each entry has:
+  - characters: Array of exactly 3 character names.
+  - incompatibility: One sentence describing the incompatible loyalty or goal.
+- allianceFaultLines: Array of current alliances that could fracture. 0+ entries. Each entry has:
+  - allies: Array of exactly 2 allied character names.
+  - faultLine: One sentence describing what could shatter the alliance.
+
+PRIVATE AGENDA RULE:
+- Every non-protagonist ROUND character must have a privateAgenda that is not reducible to helping, hindering, or teaching the protagonist. It must be something they want independent of the protagonist's story.
+- The protagonist's privateAgenda must be an empty string.
+- FLAT characters may have an empty string privateAgenda.
 ```
 
 ## JSON Response Shape
@@ -125,7 +142,8 @@ FIELD INSTRUCTIONS:
       "storyFunction": "CATALYST",
       "characterDepth": "ROUND",
       "narrativeRole": "{{one sentence — dramatic purpose}}",
-      "conflictRelationship": "{{one sentence — conflict creation/resolution}}"
+      "conflictRelationship": "{{one sentence — conflict creation/resolution}}",
+      "privateAgenda": "{{what this NPC wants independent of the protagonist}}"
     }
   ],
   "relationshipArchetypes": [
@@ -137,7 +155,19 @@ FIELD INSTRUCTIONS:
       "essentialTension": "{{one sentence — core dramatic friction}}"
     }
   ],
-  "castDynamicsSummary": "{{paragraph describing cast dynamics}}"
+  "castDynamicsSummary": "{{paragraph describing cast dynamics}}",
+  "conflictTriangles": [
+    {
+      "characters": ["{{name1}}", "{{name2}}", "{{name3}}"],
+      "incompatibility": "{{one sentence — incompatible loyalty or goal}}"
+    }
+  ],
+  "allianceFaultLines": [
+    {
+      "allies": ["{{name1}}", "{{name2}}"],
+      "faultLine": "{{one sentence — what could shatter the alliance}}"
+    }
+  ]
 }
 ```
 
