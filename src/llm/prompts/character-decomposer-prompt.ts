@@ -57,7 +57,12 @@ INSTRUCTIONS:
 4. Core beliefs should read like statements the character would actually think or say
 5. For false beliefs: identify sincere misconceptions from character background and context
 6. For secrets: identify truths the character actively hides from others
-7. If the description is sparse, INFER richly from what is implied — background, social class, occupation, and personality all shape speech, beliefs, and behavior`;
+7. If the description is sparse, INFER richly from what is implied — background, social class, occupation, and personality all shape speech, beliefs, and behavior
+8. superObjective: Identify the single deepest dramatic drive — what this character would pursue even at great personal cost
+9. stakes: List 2-4 concrete things the character stands to lose or gain
+10. pressurePoint: Identify the one vulnerability that could force this character to act against their own interest
+11. personalDilemmas: Identify 1-3 competing loyalties or values that create genuine internal conflict
+12. emotionSalience: Assess how emotionally expressive this character is (LOW/MEDIUM/HIGH). null if uncertain`;
 
   return [
     { role: 'system', content: CHARACTER_DECOMPOSER_SYSTEM_PROMPT },

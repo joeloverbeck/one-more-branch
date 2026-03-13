@@ -5,6 +5,7 @@ import type {
   DecomposedRelationship,
   SpeechFingerprint,
 } from '../models/decomposed-character.js';
+import { isEmotionSalience, isStoryFunction } from '../models/character-enums.js';
 import type { DecomposedWorld, WorldFact, WorldFactDomain, WorldFactType } from '../models/decomposed-world.js';
 import { logger, logPrompt, logResponse } from '../logging/index.js';
 import type { JsonSchema, ChatMessage } from './llm-client-types.js';
@@ -161,11 +162,18 @@ function parseCharacter(
     character[field] = parseStringArrayField(data, field);
   }
 
+  const superObjective = character.superObjective as string;
+  const pressurePoint = character.pressurePoint as string;
+  const narrativeRole = character.narrativeRole as string;
+  const stakes = character.stakes as string[];
+  const personalDilemmas = character.personalDilemmas as string[];
+  const rawEmotionSalience = data['emotionSalience'];
+  const rawStoryFunction = data['storyFunction'];
+
   return {
     name: data['name'].trim(),
     speechFingerprint,
     coreTraits: character.coreTraits as string[],
-    motivations: character.motivations as string,
     thematicStance: character.thematicStance as string,
     protagonistRelationship: parseProtagonistRelationship(data['protagonistRelationship']),
     knowledgeBoundaries: character.knowledgeBoundaries as string,
@@ -176,6 +184,13 @@ function parseCharacter(
     conflictPriority: character.conflictPriority as string,
     appearance: character.appearance as string,
     rawDescription,
+    ...(superObjective ? { superObjective } : {}),
+    ...(stakes.length > 0 ? { stakes } : {}),
+    ...(pressurePoint ? { pressurePoint } : {}),
+    ...(personalDilemmas.length > 0 ? { personalDilemmas } : {}),
+    ...(isEmotionSalience(rawEmotionSalience) ? { emotionSalience: rawEmotionSalience } : {}),
+    ...(isStoryFunction(rawStoryFunction) ? { storyFunction: rawStoryFunction } : {}),
+    ...(narrativeRole ? { narrativeRole } : {}),
   };
 }
 

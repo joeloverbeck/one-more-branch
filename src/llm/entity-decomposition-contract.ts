@@ -15,10 +15,17 @@ interface NullableObjectFieldSchemaDefinition {
   readonly description: string;
 }
 
+interface NullableEnumFieldSchemaDefinition {
+  readonly type: 'nullable_enum';
+  readonly description: string;
+  readonly values: readonly string[];
+}
+
 type FieldSchemaDefinition =
   | StringFieldSchemaDefinition
   | StringArrayFieldSchemaDefinition
-  | NullableObjectFieldSchemaDefinition;
+  | NullableObjectFieldSchemaDefinition
+  | NullableEnumFieldSchemaDefinition;
 
 type SchemaFieldMap<TKey extends string> = Record<TKey, FieldSchemaDefinition>;
 
@@ -93,9 +100,53 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
     type: 'array',
     description: '3-5 defining personality traits. E.g. ["stubborn", "loyal", "sarcastic"].',
   },
-  motivations: {
+  superObjective: {
     type: 'string',
-    description: 'What drives this character. 1-2 sentences.',
+    description:
+      'The character\'s overarching dramatic goal — the single deepest drive that shapes all their actions. ' +
+      'E.g. "To prove she deserves to exist on her own terms." 1 sentence.',
+  },
+  stakes: {
+    type: 'array',
+    description:
+      'What this character stands to lose or gain. 2-4 concrete items. ' +
+      'E.g. ["Her freedom if the pact is discovered", "The only family she has left"].',
+  },
+  pressurePoint: {
+    type: 'string',
+    description:
+      'The vulnerability that could force this character to act against their own self-interest. ' +
+      'E.g. "Threatening her daughter is the one thing that overrides her survival instinct." 1 sentence.',
+  },
+  personalDilemmas: {
+    type: 'array',
+    description:
+      'Competing loyalties or values that create internal conflict. 1-3 items. ' +
+      'E.g. ["Loyalty to her crew vs. duty to the crown", "Desire for revenge vs. promise to her mother"].',
+  },
+  emotionSalience: {
+    type: 'nullable_enum',
+    description:
+      'How emotionally expressive this character is. LOW = stoic/guarded, MEDIUM = situationally expressive, HIGH = emotionally driven.',
+    values: ['LOW', 'MEDIUM', 'HIGH'],
+  },
+  storyFunction: {
+    type: 'nullable_enum',
+    description:
+      'This character\'s structural role in the story. ' +
+      'ANTAGONIST: primary opposition. RIVAL: competing for same goal. ALLY: active support. ' +
+      'MENTOR: guidance/wisdom. CATALYST: triggers change. OBSTACLE: blocks progress. ' +
+      'FOIL: contrasts protagonist. TRICKSTER: disrupts order. INNOCENT: represents stakes.',
+    values: [
+      'ANTAGONIST', 'RIVAL', 'ALLY', 'MENTOR', 'CATALYST',
+      'OBSTACLE', 'FOIL', 'TRICKSTER', 'INNOCENT',
+    ],
+  },
+  narrativeRole: {
+    type: 'string',
+    description:
+      'What this character DOES in the story — their functional contribution to the narrative. ' +
+      'E.g. "Provides the protagonist access to the underworld" or "Forces the protagonist to confront their past." 1 sentence.',
   },
   thematicStance: {
     type: 'string',
@@ -159,7 +210,7 @@ export const CHARACTER_REQUIRED_FIELDS: ReadonlyArray<
 > = [
   'name',
   'coreTraits',
-  'motivations',
+  'superObjective',
   'thematicStance',
   'protagonistRelationship',
   'knowledgeBoundaries',
@@ -169,6 +220,12 @@ export const CHARACTER_REQUIRED_FIELDS: ReadonlyArray<
   'conflictPriority',
   'falseBeliefs',
   'secretsKept',
+  'stakes',
+  'pressurePoint',
+  'personalDilemmas',
+  'emotionSalience',
+  'storyFunction',
+  'narrativeRole',
 ];
 
 export const SPEECH_STRING_FIELDS: ReadonlyArray<keyof SpeechFingerprint> = [
@@ -192,12 +249,14 @@ export const CHARACTER_STRING_FIELDS: ReadonlyArray<
     'speechFingerprint' | 'rawDescription' | 'name' | 'protagonistRelationship'
   >
 > = [
-  'motivations',
+  'superObjective',
   'thematicStance',
   'knowledgeBoundaries',
   'appearance',
   'decisionPattern',
   'conflictPriority',
+  'pressurePoint',
+  'narrativeRole',
 ];
 
 export const CHARACTER_ARRAY_FIELDS: ReadonlyArray<
@@ -205,7 +264,7 @@ export const CHARACTER_ARRAY_FIELDS: ReadonlyArray<
     DecomposedCharacter,
     'speechFingerprint' | 'rawDescription' | 'name' | 'protagonistRelationship'
   >
-> = ['coreTraits', 'coreBeliefs', 'falseBeliefs', 'secretsKept'];
+> = ['coreTraits', 'coreBeliefs', 'falseBeliefs', 'secretsKept', 'stakes', 'personalDilemmas'];
 
 export const SPEECH_EXTRACTION_BULLETS: readonly string[] = [
   'Catchphrases: Signature phrases they would repeat based on personality and background',

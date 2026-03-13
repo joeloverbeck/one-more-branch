@@ -64,7 +64,7 @@ function mergeContextIntoCharacter(
     name: standalone.name,
     speechFingerprint: standalone.speechFingerprint,
     coreTraits: standalone.coreTraits,
-    motivations: standalone.motivations,
+    ...(standalone.superObjective ? { superObjective: standalone.superObjective } : {}),
     thematicStance:
       typeof contextEntry.thematicStance === 'string' ? contextEntry.thematicStance : '',
     protagonistRelationship: parseProtagonistRelationship(contextEntry.protagonistRelationship),
@@ -76,6 +76,10 @@ function mergeContextIntoCharacter(
     conflictPriority: standalone.conflictPriority,
     appearance: standalone.appearance,
     rawDescription: standalone.rawDescription,
+    ...(standalone.stakes ? { stakes: standalone.stakes } : {}),
+    ...(standalone.pressurePoint ? { pressurePoint: standalone.pressurePoint } : {}),
+    ...(standalone.personalDilemmas ? { personalDilemmas: standalone.personalDilemmas } : {}),
+    ...(standalone.emotionSalience ? { emotionSalience: standalone.emotionSalience } : {}),
   };
 }
 

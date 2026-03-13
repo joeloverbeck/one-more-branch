@@ -10,7 +10,7 @@ import type { JsonSchema } from '../llm-client-types.js';
 type SchemaProperty = Record<string, any>;
 
 function buildSchemaProperties(
-  fields: Record<string, { type: string; description: string }>
+  fields: Record<string, { type: string; description: string; values?: readonly string[] }>
 ): Record<string, SchemaProperty> {
   const properties: Record<string, SchemaProperty> = {};
 
@@ -26,6 +26,17 @@ function buildSchemaProperties(
 
     if (field.type === 'nullable_object') {
       // Handled separately below — skip here
+      continue;
+    }
+
+    if (field.type === 'nullable_enum' && field.values) {
+      properties[key] = {
+        anyOf: [
+          { type: 'string', enum: [...field.values] },
+          { type: 'null' },
+        ],
+        description: field.description,
+      };
       continue;
     }
 

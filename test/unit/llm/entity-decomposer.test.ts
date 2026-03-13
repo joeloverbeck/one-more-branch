@@ -42,7 +42,7 @@ interface CharacterPayload {
     registerShifts: string;
   };
   coreTraits: string[];
-  motivations: string;
+  superObjective: string;
   thematicStance: string;
   relationships: string[];
   knowledgeBoundaries: string;
@@ -78,7 +78,7 @@ function createValidPayload(): { characters: CharacterPayload[]; worldFacts: Wor
           registerShifts: 'Stays clipped in public, becomes blunt profanity under stress.',
         },
         coreTraits: ['stoic', 'loyal', 'haunted'],
-        motivations: 'Seeks redemption for a betrayal that cost lives',
+        superObjective: 'Seeks redemption for a betrayal that cost lives',
         thematicStance:
           'Argues that duty without compassion becomes tyranny, but still defaults to order.',
         relationships: ['Former commander of the Iron Guard', 'Distrusts the tribunal'],
@@ -107,7 +107,7 @@ function createValidPayload(): { characters: CharacterPayload[]; worldFacts: Wor
           registerShifts: 'Performs in crowds, speaks quietly and directly in private.',
         },
         coreTraits: ['cunning', 'theatrical', 'compassionate'],
-        motivations: 'Protect her travelling troupe from the war',
+        superObjective: 'Protect her travelling troupe from the war',
         thematicStance: 'Treats truth as performative and tests whether survival justifies deception.',
         relationships: ['Romantic tension with Kael', 'Secretly works for the resistance'],
         knowledgeBoundaries: 'Knows underground networks but not military strategy',

@@ -66,7 +66,7 @@ function buildDecomposedCharacter(): DecomposedCharacter {
       registerShifts: 'formal to stern',
     },
     coreTraits: ['wise', 'patient'],
-    motivations: 'Protect Middle Earth',
+    superObjective: 'Protect Middle Earth',
     thematicStance: 'Believes mercy must restrain power, even in existential war.',
     protagonistRelationship: {
       valence: 3,

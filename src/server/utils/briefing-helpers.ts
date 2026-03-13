@@ -48,7 +48,7 @@ export function extractProtagonistBriefing(
     name: protagonist.name,
     appearance: protagonist.appearance,
     coreTraits: protagonist.coreTraits,
-    motivations: protagonist.motivations,
+    motivations: protagonist.superObjective ?? '',
   };
 }
 
@@ -68,7 +68,7 @@ export function extractNpcBriefings(
       name: character.name,
       appearance: character.appearance,
       coreTraits: character.coreTraits,
-      motivations: character.motivations,
+      motivations: character.superObjective ?? '',
       protagonistRelationship: rel
         ? { valence: rel.valence, dynamic: rel.dynamic, currentTension: rel.currentTension }
         : null,

@@ -100,7 +100,7 @@ describe('buildLorekeeperPrompt', () => {
           {
             name: 'Jon Ureña',
             coreTraits: ['introverted', 'disciplined'],
-            motivations: 'Find connection without getting betrayed again.',
+            superObjective: 'Find connection without getting betrayed again.',
             protagonistRelationship: null,
             knowledgeBoundaries: 'Knows city gangs but not court politics.',
             appearance: 'Tall, stoic, scarred knuckles.',
@@ -123,7 +123,7 @@ describe('buildLorekeeperPrompt', () => {
           {
             name: 'Captain Voss',
             coreTraits: ['charismatic', 'calculating'],
-            motivations: 'Control the district.',
+            superObjective: 'Control the district.',
             protagonistRelationship: {
               valence: -2,
               dynamic: 'manipulator',
@@ -382,7 +382,7 @@ function buildMinimalDecomposedCharacter(
     name,
     speechFingerprint: EMPTY_SPEECH_FINGERPRINT,
     coreTraits: [],
-    motivations: '',
+    superObjective: '',
     protagonistRelationship: null,
     knowledgeBoundaries: '',
     decisionPattern: '',

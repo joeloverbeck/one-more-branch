@@ -478,7 +478,7 @@ describe('planner continuation context section', () => {
         {
           name: 'Rin',
           coreTraits: ['resourceful', 'stubborn'],
-          motivations: 'Expose station sabotage',
+          superObjective: 'Expose station sabotage',
           protagonistRelationship: null,
           knowledgeBoundaries: 'Knows courier routes, not reactor internals',
           appearance: 'Lean, grease-stained uniform',
@@ -501,7 +501,7 @@ describe('planner continuation context section', () => {
         {
           name: 'Voss',
           coreTraits: ['secretive'],
-          motivations: 'Contain evidence leak',
+          superObjective: 'Contain evidence leak',
           protagonistRelationship: {
             valence: -2,
             dynamic: 'antagonist',

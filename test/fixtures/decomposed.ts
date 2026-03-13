@@ -21,7 +21,6 @@ export function buildMinimalDecomposedCharacter(
     name,
     speechFingerprint: EMPTY_SPEECH_FINGERPRINT,
     coreTraits: [],
-    motivations: '',
     thematicStance: '',
     protagonistRelationship: null,
     knowledgeBoundaries: '',

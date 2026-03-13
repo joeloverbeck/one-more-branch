@@ -22,32 +22,34 @@
 
       <div class="stories-grid">
         <article class="story-card">
-          <div class="story-card-content">
-            <div class="form-group">
-              <label for="characters-api-key">OpenRouter API Key</label>
-              <input
-                type="password"
-                id="characters-api-key"
-                placeholder="sk-or-..."
-                autocomplete="off"
-              >
-              <p class="form-help">Stored only in this browser session.</p>
-            </div>
+          <form id="character-decompose-form">
+            <div class="story-card-content">
+              <div class="form-group">
+                <label for="characters-api-key">OpenRouter API Key</label>
+                <input
+                  type="password"
+                  id="characters-api-key"
+                  placeholder="sk-or-..."
+                  autocomplete="off"
+                >
+                <p class="form-help">Stored only in this browser session.</p>
+              </div>
 
-            <div class="form-group">
-              <label for="character-name-input">Character Name *</label>
-              <input type="text" id="character-name-input" maxlength="100" placeholder="e.g. Kira Blackwood" required>
-            </div>
+              <div class="form-group">
+                <label for="character-name-input">Character Name *</label>
+                <input type="text" id="character-name-input" maxlength="100" placeholder="e.g. Kira Blackwood" required>
+              </div>
 
-            <div class="form-group">
-              <label for="character-desc-input">Character Description *</label>
-              <textarea id="character-desc-input" rows="8" placeholder="Describe the character in as much detail as you want — personality, background, appearance, speech patterns, motivations, secrets..." required></textarea>
-              <p class="form-help">The richer the description, the more nuanced the decomposition.</p>
+              <div class="form-group">
+                <label for="character-desc-input">Character Description *</label>
+                <textarea id="character-desc-input" rows="8" placeholder="Describe the character in as much detail as you want — personality, background, appearance, speech patterns, motivations, secrets..." required></textarea>
+                <p class="form-help">The richer the description, the more nuanced the decomposition.</p>
+              </div>
             </div>
-          </div>
-          <div class="story-card-actions">
-            <button type="button" class="btn btn-primary" id="character-decompose-btn">Decompose Character</button>
-          </div>
+            <div class="story-card-actions">
+              <button type="button" class="btn btn-primary" id="character-decompose-btn">Decompose Character</button>
+            </div>
+          </form>
         </article>
 
         <article class="story-card">

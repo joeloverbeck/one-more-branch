@@ -25,7 +25,7 @@ describe('formatDecomposedCharacterForPrompt', () => {
         registerShifts: 'Formal around officers, crude under stress.',
       },
       coreTraits: ['stoic', 'loyal'],
-      motivations: 'Seeks redemption',
+      superObjective: 'Seeks redemption',
       thematicStance: 'Believes duty requires sacrifice, even when mercy is costly.',
       protagonistRelationship: {
         valence: 2,
@@ -44,11 +44,11 @@ describe('formatDecomposedCharacterForPrompt', () => {
     };
   }
 
-  it('includes character name, traits, and motivations', () => {
+  it('includes character name, traits, and super-objective', () => {
     const result = formatDecomposedCharacterForPrompt(createCharacter());
     expect(result).toContain('CHARACTER: Kael');
     expect(result).toContain('Core Traits: stoic, loyal');
-    expect(result).toContain('Motivations: Seeks redemption');
+    expect(result).toContain('Super-Objective: Seeks redemption');
     expect(result).toContain(
       'Thematic Stance: Believes duty requires sacrifice, even when mercy is costly.'
     );

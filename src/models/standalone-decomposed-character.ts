@@ -1,4 +1,5 @@
 import type { SpeechFingerprint } from './decomposed-character.js';
+import type { EmotionSalience } from './character-enums.js';
 
 export interface StandaloneDecomposedCharacter {
   readonly id: string;
@@ -6,7 +7,7 @@ export interface StandaloneDecomposedCharacter {
   readonly rawDescription: string;
   readonly speechFingerprint: SpeechFingerprint;
   readonly coreTraits: readonly string[];
-  readonly motivations: string;
+  readonly superObjective?: string;
   readonly knowledgeBoundaries: string;
   readonly falseBeliefs?: readonly string[];
   readonly secretsKept?: readonly string[];
@@ -15,6 +16,10 @@ export interface StandaloneDecomposedCharacter {
   readonly conflictPriority: string;
   readonly appearance: string;
   readonly createdAt: string;
+  readonly stakes?: readonly string[];
+  readonly pressurePoint?: string;
+  readonly personalDilemmas?: readonly string[];
+  readonly emotionSalience?: EmotionSalience;
 }
 
 export function isStandaloneDecomposedCharacter(
@@ -32,7 +37,6 @@ export function isStandaloneDecomposedCharacter(
     typeof obj['speechFingerprint'] === 'object' &&
     obj['speechFingerprint'] !== null &&
     Array.isArray(obj['coreTraits']) &&
-    typeof obj['motivations'] === 'string' &&
     typeof obj['knowledgeBoundaries'] === 'string' &&
     typeof obj['decisionPattern'] === 'string' &&
     Array.isArray(obj['coreBeliefs']) &&
@@ -46,8 +50,29 @@ export function formatStandaloneCharacterSummary(char: StandaloneDecomposedChara
   const lines: string[] = [
     `${char.name}`,
     `  Traits: ${char.coreTraits.join(', ')}`,
-    `  Motivations: ${char.motivations}`,
-    `  Appearance: ${char.appearance}`,
   ];
+
+  if (char.superObjective) {
+    lines.push(`  Super-Objective: ${char.superObjective}`);
+  }
+
+  lines.push(`  Appearance: ${char.appearance}`);
+
+  if (char.stakes && char.stakes.length > 0) {
+    lines.push(`  Stakes: ${char.stakes.join(', ')}`);
+  }
+
+  if (char.pressurePoint) {
+    lines.push(`  Pressure Point: ${char.pressurePoint}`);
+  }
+
+  if (char.personalDilemmas && char.personalDilemmas.length > 0) {
+    lines.push(`  Dilemmas: ${char.personalDilemmas.join(', ')}`);
+  }
+
+  if (char.emotionSalience) {
+    lines.push(`  Emotion Salience: ${char.emotionSalience}`);
+  }
+
   return lines.join('\n');
 }

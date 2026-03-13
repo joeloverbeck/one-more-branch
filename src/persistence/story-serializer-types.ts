@@ -29,7 +29,9 @@ export interface DecomposedCharacterFileData {
   name: string;
   speechFingerprint: SpeechFingerprintFileData;
   coreTraits: string[];
-  motivations: string;
+  /** @deprecated Use superObjective instead. Kept for backward-compatible deserialization. */
+  motivations?: string;
+  superObjective?: string;
   thematicStance: string;
   protagonistRelationship?: DecomposedRelationshipFileData | null;
   knowledgeBoundaries: string;
@@ -40,6 +42,12 @@ export interface DecomposedCharacterFileData {
   conflictPriority: string;
   appearance: string;
   rawDescription: string;
+  stakes?: string[];
+  pressurePoint?: string;
+  personalDilemmas?: string[];
+  emotionSalience?: string;
+  storyFunction?: string;
+  narrativeRole?: string;
 }
 
 export interface WorldFactFileData {

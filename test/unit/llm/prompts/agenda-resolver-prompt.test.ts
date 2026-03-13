@@ -54,7 +54,7 @@ describe('buildAgendaResolverPrompt', () => {
           {
             name: 'Azra',
             coreTraits: ['cautious', 'calculating'],
-            motivations: 'Escape the city alive.',
+            superObjective: 'Escape the city alive.',
             protagonistRelationship: {
               valence: -1,
               dynamic: 'uneasy ally',

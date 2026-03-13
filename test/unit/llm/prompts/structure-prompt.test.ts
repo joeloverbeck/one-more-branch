@@ -69,7 +69,7 @@ describe('buildStructurePrompt', () => {
             registerShifts: 'none',
           },
           coreTraits: ['cunning', 'loyal'],
-          motivations: 'Redemption through one last run',
+          superObjective: 'Redemption through one last run',
           protagonistRelationship: null,
           knowledgeBoundaries: 'Knows the outer islands',
           decisionPattern: 'Risk-averse unless cornered',
