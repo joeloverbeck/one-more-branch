@@ -1,6 +1,7 @@
 import type { ConceptVerifierContext } from '../../models/concept-generator.js';
 import type { ContentPacket } from '../../models/content-packet.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTENT_POLICY } from '../content-policy.js';
 import type { ConceptSpecificityAnalysis } from '../concept-specificity-types.js';
 
 const ROLE_INTRO =
@@ -65,7 +66,7 @@ export function buildConceptScenarioPrompt(
   context: ConceptVerifierContext,
   specificityAnalyses: readonly ConceptSpecificityAnalysis[],
 ): ChatMessage[] {
-  const systemSections: string[] = [ROLE_INTRO, SCENARIO_DIRECTIVES];
+  const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, SCENARIO_DIRECTIVES];
 
   if (context.contentPackets && context.contentPackets.length > 0) {
     systemSections.push(buildContentPacketSetpieceDirective(context.contentPackets));

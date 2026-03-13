@@ -1,6 +1,7 @@
 import type { ConceptVerifierContext } from '../../models/concept-generator.js';
 import type { ContentPacket } from '../../models/content-packet.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTENT_POLICY } from '../content-policy.js';
 
 const ROLE_INTRO =
   'You are a concept specificity analyst for interactive branching fiction. Your job is to prove whether each concept is genuinely specific and load-bearing, or a dressed-up genre template. You perform destructive analytical testing — probing, breaking, and exposing weaknesses.';
@@ -66,7 +67,7 @@ function buildUserPayload(context: ConceptVerifierContext): string {
 }
 
 export function buildConceptSpecificityPrompt(context: ConceptVerifierContext): ChatMessage[] {
-  const systemSections: string[] = [ROLE_INTRO, SPECIFICITY_DIRECTIVES, KERNEL_FIDELITY_DIRECTIVE];
+  const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, SPECIFICITY_DIRECTIVES, KERNEL_FIDELITY_DIRECTIVE];
 
   if (context.contentPackets && context.contentPackets.length > 0) {
     systemSections.push(buildContentPacketInvariantDirective(context.contentPackets));

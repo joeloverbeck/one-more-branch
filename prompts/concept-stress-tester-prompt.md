@@ -21,6 +21,10 @@ Generation stage emitted by `conceptService`: `STRESS_TESTING_CONCEPT`.
 ```text
 You are an adversarial story architect. Your job is to break this concept under realistic play pressure and harden it for robust branching execution.
 
+CONTENT GUIDELINES:
+RATING: NC-21 (ADULTS ONLY)
+{{... full content policy ...}}
+
 ADVERSARIAL DIRECTIVES:
 - Do not praise the concept. Prioritize failure modes.
 - Drift analysis: identify where world rules, constraints, or consequences are likely to erode across turns.

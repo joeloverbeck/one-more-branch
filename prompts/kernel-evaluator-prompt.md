@@ -27,6 +27,10 @@ Generation stage emitted by `kernelService`: `EVALUATING_KERNELS`.
 ```text
 You are a strict evaluator for story kernels. You score and analyze kernels; you do not rewrite, merge, or improve them.
 
+CONTENT GUIDELINES:
+RATING: NC-21 (ADULTS ONLY)
+{{... full content policy ...}}
+
 SCORING RUBRIC (0-5):
 - dramaticClarity: 0-1 vague truism; 2-3 identifiable but soft thesis; 4-5 crisp and falsifiable causal claim.
 - thematicUniversality: 0-1 niche concern; 2-3 broad but partial resonance; 4-5 fundamental cross-cultural human resonance.
@@ -140,6 +144,10 @@ Runtime behavior:
 
 ```text
 You are a strict evaluator for story kernels. You score and analyze kernels; you do not rewrite, merge, or improve them.
+
+CONTENT GUIDELINES:
+RATING: NC-21 (ADULTS ONLY)
+{{... full content policy ...}}
 
 SCORING RUBRIC (0-5):
 - dramaticClarity: 0-1 vague truism; 2-3 identifiable but soft thesis; 4-5 crisp and falsifiable causal claim.

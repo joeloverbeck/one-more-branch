@@ -10,6 +10,7 @@ import type { StoryStructure } from '../../models/story-arc.js';
 import type { StorySpine } from '../../models/story-spine.js';
 import type { AgendaResolverAnalystSignals } from '../npc-intelligence-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTENT_POLICY } from '../content-policy.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 
@@ -165,7 +166,7 @@ Realign NPC goals and off-screen behavior to reflect this structural shift.
 }
 
 function buildAgendaResolverSystemPrompt(context: AgendaResolverPromptContext): string {
-  const sections: string[] = [AGENDA_RESOLVER_SYSTEM_PROMPT];
+  const sections: string[] = [AGENDA_RESOLVER_SYSTEM_PROMPT, CONTENT_POLICY];
   if (context.tone) {
     sections.push(buildToneDirective(context.tone, context.toneFeel, context.toneAvoid));
   }

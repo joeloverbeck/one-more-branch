@@ -1,6 +1,7 @@
 import type { EvaluatedConcept } from '../../models/concept-generator.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTENT_POLICY } from '../content-policy.js';
 
 interface SingleSpecificityResult {
   readonly signatureScenario: string;
@@ -21,7 +22,7 @@ export function buildSingleConceptScenarioPrompt(
   kernel: StoryKernel,
   specificityResult: SingleSpecificityResult,
 ): ChatMessage[] {
-  const systemSections: string[] = [ROLE_INTRO, SCENARIO_DIRECTIVES];
+  const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, SCENARIO_DIRECTIVES];
 
   const conceptInput = {
     oneLineHook: evaluated.concept.oneLineHook,

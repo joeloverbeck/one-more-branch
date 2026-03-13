@@ -5,6 +5,7 @@ import {
 } from '../../models/concept-generator.js';
 import type { ConceptSeedInput } from '../../models/concept-generator.js';
 import type { ChatMessage } from '../llm-client-types.js';
+import { CONTENT_POLICY } from '../content-policy.js';
 
 const ROLE_INTRO =
   'You are a strict evaluator for branching interactive narrative concepts. You score and analyze concepts; you do not rewrite or improve them.';
@@ -53,6 +54,7 @@ export function buildSingleConceptScoringPrompt(
 ): ChatMessage[] {
   const systemSections: string[] = [
     ROLE_INTRO,
+    CONTENT_POLICY,
     RUBRIC,
     formatWeights(),
     `SCORING RULES:
@@ -88,6 +90,7 @@ export function buildSingleConceptDeepEvalPrompt(
 ): ChatMessage[] {
   const systemSections: string[] = [
     ROLE_INTRO,
+    CONTENT_POLICY,
     RUBRIC,
     formatWeights(),
     `DEEP EVALUATION RULES:
