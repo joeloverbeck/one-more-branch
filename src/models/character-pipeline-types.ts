@@ -21,6 +21,7 @@ import type {
   SpeechFingerprint,
   StressVariants,
 } from './decomposed-character.js';
+import type { DecomposedWorld } from './decomposed-world.js';
 import type { StoryKernel } from './story-kernel.js';
 
 // --- Cast-level dramatic system types ---
@@ -153,7 +154,9 @@ export interface CastPipelineInputs {
   readonly kernelSummary?: string;
   readonly conceptSummary?: string;
   readonly userNotes?: string;
-  readonly worldbuilding: string;
+  readonly worldbuilding?: string;
+  readonly sourceWorldbuildingId?: string;
+  readonly decomposedWorld?: DecomposedWorld;
   readonly storyKernel?: StoryKernel;
   readonly conceptSpec?: ConceptSpec;
 }

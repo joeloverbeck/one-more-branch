@@ -51,15 +51,26 @@ export interface DecomposedCharacterFileData {
 }
 
 export interface WorldFactFileData {
+  id?: string;
   domain: string;
   fact: string;
   scope: string;
   factType?: string;
+  narrativeWeight?: string;
+  thematicTag?: string;
+  sensoryHook?: string;
+  exampleEvidence?: string;
+  tensionWithIds?: string[];
+  implicationOfIds?: string[];
+  storyFunctions?: string[];
+  sceneAffordances?: string[];
 }
 
 export interface DecomposedWorldFileData {
   facts: WorldFactFileData[];
-  rawWorldbuilding: string;
+  rawWorldbuilding?: string;
+  worldLogline?: string;
+  openQuestions?: string[];
 }
 
 export interface CanonFactFileData {

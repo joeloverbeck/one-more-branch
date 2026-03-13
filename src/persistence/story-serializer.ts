@@ -303,12 +303,23 @@ export function serializeStory(story: Story): StoryFileData {
       ? {
           decomposedWorld: {
             facts: story.decomposedWorld.facts.map((f) => ({
+              ...(f.id ? { id: f.id } : {}),
               domain: f.domain,
               fact: f.fact,
               scope: f.scope,
               ...(f.factType ? { factType: f.factType } : {}),
+              ...(f.narrativeWeight ? { narrativeWeight: f.narrativeWeight } : {}),
+              ...(f.thematicTag ? { thematicTag: f.thematicTag } : {}),
+              ...(f.sensoryHook ? { sensoryHook: f.sensoryHook } : {}),
+              ...(f.exampleEvidence ? { exampleEvidence: f.exampleEvidence } : {}),
+              ...(f.tensionWithIds && f.tensionWithIds.length > 0 ? { tensionWithIds: [...f.tensionWithIds] } : {}),
+              ...(f.implicationOfIds && f.implicationOfIds.length > 0 ? { implicationOfIds: [...f.implicationOfIds] } : {}),
+              ...(f.storyFunctions && f.storyFunctions.length > 0 ? { storyFunctions: [...f.storyFunctions] } : {}),
+              ...(f.sceneAffordances && f.sceneAffordances.length > 0 ? { sceneAffordances: [...f.sceneAffordances] } : {}),
             })),
-            rawWorldbuilding: story.decomposedWorld.rawWorldbuilding,
+            ...(story.decomposedWorld.rawWorldbuilding ? { rawWorldbuilding: story.decomposedWorld.rawWorldbuilding } : {}),
+            ...(story.decomposedWorld.worldLogline ? { worldLogline: story.decomposedWorld.worldLogline } : {}),
+            ...(story.decomposedWorld.openQuestions && story.decomposedWorld.openQuestions.length > 0 ? { openQuestions: [...story.decomposedWorld.openQuestions] } : {}),
           },
         }
       : {}),
@@ -457,13 +468,24 @@ export function deserializeStory(data: StoryFileData): Story {
     ...(data.decomposedWorld
       ? {
           decomposedWorld: {
-            facts: data.decomposedWorld.facts.map((f) => ({
+            facts: data.decomposedWorld.facts.map((f, idx) => ({
+              id: f.id ?? `wf-${idx + 1}`,
               domain: f.domain as WorldFactDomain,
               fact: f.fact,
               scope: f.scope,
               ...(f.factType ? { factType: f.factType as WorldFactType } : {}),
+              ...(f.narrativeWeight ? { narrativeWeight: f.narrativeWeight } : {}),
+              ...(f.thematicTag ? { thematicTag: f.thematicTag } : {}),
+              ...(f.sensoryHook ? { sensoryHook: f.sensoryHook } : {}),
+              ...(f.exampleEvidence ? { exampleEvidence: f.exampleEvidence } : {}),
+              ...(f.tensionWithIds && f.tensionWithIds.length > 0 ? { tensionWithIds: f.tensionWithIds } : {}),
+              ...(f.implicationOfIds && f.implicationOfIds.length > 0 ? { implicationOfIds: f.implicationOfIds } : {}),
+              ...(f.storyFunctions ? { storyFunctions: f.storyFunctions } : {}),
+              ...(f.sceneAffordances && f.sceneAffordances.length > 0 ? { sceneAffordances: f.sceneAffordances } : {}),
             })),
-            rawWorldbuilding: data.decomposedWorld.rawWorldbuilding,
+            ...(data.decomposedWorld.rawWorldbuilding ? { rawWorldbuilding: data.decomposedWorld.rawWorldbuilding } : {}),
+            ...(data.decomposedWorld.worldLogline ? { worldLogline: data.decomposedWorld.worldLogline } : {}),
+            ...(data.decomposedWorld.openQuestions && data.decomposedWorld.openQuestions.length > 0 ? { openQuestions: data.decomposedWorld.openQuestions } : {}),
           } as DecomposedWorld,
         }
       : {}),

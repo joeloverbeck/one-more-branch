@@ -75,10 +75,10 @@ describe('isSavedCharacterWeb', () => {
     expect(isSavedCharacterWeb(web)).toBe(false);
   });
 
-  it('returns false when inputs.worldbuilding is missing', () => {
+  it('returns true when inputs.worldbuilding is missing (worldbuilding is optional)', () => {
     const web = makeValidWeb();
     web['inputs'] = { kernelSummary: 'A dark tale' };
-    expect(isSavedCharacterWeb(web)).toBe(false);
+    expect(isSavedCharacterWeb(web)).toBe(true);
   });
 
   it('returns false when castDynamicsSummary is missing', () => {

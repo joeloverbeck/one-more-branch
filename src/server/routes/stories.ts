@@ -114,6 +114,7 @@ storyRoutes.post(
     const body = req.body as {
       characterConcept?: string;
       worldbuilding?: string;
+      worldbuildingId?: string;
       tone?: string;
       npcs?: Array<{ name?: string; description?: string }>;
       protagonistCharacterId?: string;
@@ -198,10 +199,20 @@ storyRoutes.post(
             )
           : undefined;
 
+      let decomposedWorld;
+      if (body.worldbuildingId) {
+        const { loadWorldbuildingById } = await import('../../services/worldbuilding-service.js');
+        const wb = await loadWorldbuildingById(body.worldbuildingId);
+        if (wb?.decomposedWorld) {
+          decomposedWorld = wb.decomposedWorld;
+        }
+      }
+
       const result = await generateStorySpines(
         {
           characterConcept,
-          worldbuilding: body.worldbuilding?.trim() ?? '',
+          worldbuilding: body.worldbuilding?.trim() ?? undefined,
+          decomposedWorld,
           tone: body.tone?.trim() ?? 'fantasy adventure',
           npcs: validNpcs && validNpcs.length > 0 ? validNpcs : undefined,
           decomposedCharacters:

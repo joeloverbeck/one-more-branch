@@ -14,6 +14,9 @@ export const GENERATION_FLOW_TYPES = [
   'character-web-generation',
   'character-stage-generation',
   'character-decomposition',
+  'worldbuilding-seed',
+  'worldbuilding-elaboration',
+  'worldbuilding-decompose',
 ] as const;
 
 export type GenerationFlowType = (typeof GENERATION_FLOW_TYPES)[number];

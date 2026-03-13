@@ -222,8 +222,21 @@ export {
   formatSpeechFingerprintForWriter,
 } from './decomposed-character';
 
-export type { WorldFactDomain, WorldFact, DecomposedWorld } from './decomposed-world';
+export type {
+  WorldFactDomain,
+  WorldFact,
+  DecomposedWorld,
+  NarrativeWeight,
+  WorldStoryFunction,
+  WorldPromptConsumer,
+} from './decomposed-world';
 export { formatDecomposedWorldForPrompt } from './decomposed-world';
+
+export type { WorldSeed } from './world-seed';
+export type { SavedWorldbuilding, WorldbuildingSourceKind } from './saved-worldbuilding';
+export { isSavedWorldbuilding } from './saved-worldbuilding';
+export type { WorldbuildingDevStage, WorldbuildingPipelineInputs } from './worldbuilding-pipeline-types';
+export { WORLDBUILDING_STAGE_NAMES } from './worldbuilding-pipeline-types';
 
 export type {
   GenreFrame,

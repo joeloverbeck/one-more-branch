@@ -109,6 +109,9 @@ describe('generation-progress service', () => {
       'character-web-generation',
       'character-stage-generation',
       'character-decomposition',
+      'worldbuilding-seed',
+      'worldbuilding-elaboration',
+      'worldbuilding-decompose',
     ]);
 
     const service = createGenerationProgressService();

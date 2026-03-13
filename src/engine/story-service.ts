@@ -65,43 +65,54 @@ async function runNewDecompositionPipeline(
     options.npcCharacterIds ?? []
   );
 
-  // Run character contextualization and worldbuilding decomposition in parallel
+  // Run character contextualization and (optionally) worldbuilding decomposition in parallel
   options.onGenerationStage?.({
     stage: 'CONTEXTUALIZING_CHARACTERS',
     status: 'started',
     attempt: 1,
   });
-  options.onGenerationStage?.({
-    stage: 'DECOMPOSING_WORLD',
-    status: 'started',
-    attempt: 1,
-  });
+
+  const worldAlreadyDecomposed = story.decomposedWorld && story.decomposedWorld.facts.length > 0;
+
+  if (!worldAlreadyDecomposed) {
+    options.onGenerationStage?.({
+      stage: 'DECOMPOSING_WORLD',
+      status: 'started',
+      attempt: 1,
+    });
+  }
+
+  const contextualizationPromise = contextualizeCharacters(
+    {
+      characters: standaloneCharacters,
+      protagonistIndex: 0,
+      spine: story.spine!,
+      tone: story.tone,
+      toneFeel: story.toneFeel,
+      toneAvoid: story.toneAvoid,
+      startingSituation: story.startingSituation,
+      conceptSpec: story.conceptSpec,
+      storyKernel: story.storyKernel,
+    },
+    options.apiKey
+  );
+
+  const worldbuildingPromise = worldAlreadyDecomposed
+    ? Promise.resolve(null)
+    : decomposeWorldbuilding(
+        {
+          worldbuilding: story.worldbuilding ?? '',
+          tone: story.tone,
+          toneFeel: story.toneFeel,
+          toneAvoid: story.toneAvoid,
+          spine: story.spine,
+        },
+        options.apiKey
+      );
 
   const [contextualizationResult, worldbuildingResult] = await Promise.all([
-    contextualizeCharacters(
-      {
-        characters: standaloneCharacters,
-        protagonistIndex: 0,
-        spine: story.spine!,
-        tone: story.tone,
-        toneFeel: story.toneFeel,
-        toneAvoid: story.toneAvoid,
-        startingSituation: story.startingSituation,
-        conceptSpec: story.conceptSpec,
-        storyKernel: story.storyKernel,
-      },
-      options.apiKey
-    ),
-    decomposeWorldbuilding(
-      {
-        worldbuilding: story.worldbuilding,
-        tone: story.tone,
-        toneFeel: story.toneFeel,
-        toneAvoid: story.toneAvoid,
-        spine: story.spine,
-      },
-      options.apiKey
-    ),
+    contextualizationPromise,
+    worldbuildingPromise,
   ]);
 
   options.onGenerationStage?.({
@@ -109,20 +120,27 @@ async function runNewDecompositionPipeline(
     status: 'completed',
     attempt: 1,
   });
-  options.onGenerationStage?.({
-    stage: 'DECOMPOSING_WORLD',
-    status: 'completed',
-    attempt: 1,
-  });
+
+  if (!worldAlreadyDecomposed) {
+    options.onGenerationStage?.({
+      stage: 'DECOMPOSING_WORLD',
+      status: 'completed',
+      attempt: 1,
+    });
+  }
 
   const initialNpcRelationships = buildInitialNpcRelationships(
     contextualizationResult.decomposedCharacters
   );
 
+  const finalDecomposedWorld = worldAlreadyDecomposed
+    ? story.decomposedWorld
+    : worldbuildingResult!.decomposedWorld;
+
   return {
     ...story,
     decomposedCharacters: contextualizationResult.decomposedCharacters,
-    decomposedWorld: worldbuildingResult.decomposedWorld,
+    decomposedWorld: finalDecomposedWorld,
     ...(initialNpcRelationships.length > 0 ? { initialNpcRelationships } : {}),
   };
 }
@@ -201,6 +219,15 @@ async function buildPreparedStory(
     toneFeel: options.spine.toneFeel,
     toneAvoid: options.spine.toneAvoid,
   };
+
+  // Pre-load worldbuilding asset if worldbuildingId is provided
+  if (options.worldbuildingId) {
+    const { loadWorldbuildingById } = await import('../services/worldbuilding-service.js');
+    const wb = await loadWorldbuildingById(options.worldbuildingId);
+    if (wb?.decomposedWorld) {
+      story = { ...story, decomposedWorld: wb.decomposedWorld };
+    }
+  }
 
   onStoryCreated?.(story);
 

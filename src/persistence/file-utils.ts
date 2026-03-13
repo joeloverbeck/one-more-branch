@@ -268,6 +268,21 @@ export function getDevelopedCharacterFilePath(charId: string): string {
   return path.join(getDevelopedCharactersDir(), `${charId}.json`);
 }
 
+export function getWorldbuildingDir(): string {
+  return path.resolve(process.cwd(), getConfig().storage.worldbuildingDir);
+}
+
+export function ensureWorldbuildingDir(): void {
+  const dir = getWorldbuildingDir();
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+}
+
+export function getWorldbuildingFilePath(id: string): string {
+  return path.join(getWorldbuildingDir(), `${id}.json`);
+}
+
 export async function deleteFile(filePath: string): Promise<void> {
   try {
     await fs.unlink(filePath);

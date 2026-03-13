@@ -25,7 +25,7 @@ const VALID_DOMAINS: readonly WorldFactDomain[] = [
 ];
 
 const VALID_FACT_TYPES: readonly WorldFactType[] = [
-  'LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY',
+  'LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY', 'PRACTICE', 'TABOO',
 ];
 
 function isValidDomain(value: unknown): value is WorldFactDomain {
@@ -35,6 +35,8 @@ function isValidDomain(value: unknown): value is WorldFactDomain {
 function isValidFactType(value: unknown): value is WorldFactType {
   return typeof value === 'string' && VALID_FACT_TYPES.includes(value as WorldFactType);
 }
+
+let wbWorldFactCounter = 0;
 
 function parseWorldFact(raw: unknown): WorldFact | null {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
@@ -50,8 +52,11 @@ function parseWorldFact(raw: unknown): WorldFact | null {
   const domain = isValidDomain(data['domain']) ? data['domain'] : 'culture';
   const scope = typeof data['scope'] === 'string' ? data['scope'] : 'General';
   const factType = isValidFactType(data['factType']) ? data['factType'] : undefined;
+  const id = typeof data['id'] === 'string' && data['id'].length > 0
+    ? data['id']
+    : `wf-${++wbWorldFactCounter}`;
 
-  return { domain, fact: data['fact'].trim(), scope, ...(factType ? { factType } : {}) };
+  return { id, domain, fact: data['fact'].trim(), scope, ...(factType ? { factType } : {}) };
 }
 
 export interface WorldbuildingDecompositionResult {
