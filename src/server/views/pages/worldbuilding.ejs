@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container" id="worldbuilding-page">
+    <section class="hero">
+      <h1>Worldbuilding</h1>
+      <p class="tagline">Generate, decompose, and manage reusable world assets for stories and character webs.</p>
+    </section>
+
+    <div class="alert alert-error" id="worldbuilding-error" style="display: none;" role="alert"></div>
+
+    <section class="form-section">
+      <h2>Workspace</h2>
+
+      <form id="worldbuilding-api-key-form">
+        <div class="form-group">
+          <label for="worldbuilding-api-key">OpenRouter API Key</label>
+          <input
+            type="password"
+            id="worldbuilding-api-key"
+            placeholder="sk-or-..."
+            autocomplete="off"
+          >
+          <p class="form-help">Stored only in this browser session. Required for generation actions.</p>
+        </div>
+      </form>
+
+      <div class="stories-grid">
+        <article class="story-card">
+          <div class="story-card-content">
+            <h3>Generate from Pipeline</h3>
+
+            <div class="form-group">
+              <label for="wb-pipeline-name">World Name</label>
+              <input type="text" id="wb-pipeline-name" maxlength="100" placeholder="e.g. The Shattered Republics">
+            </div>
+
+            <div class="form-group">
+              <label for="wb-user-notes">User Notes</label>
+              <textarea id="wb-user-notes" rows="4" placeholder="Describe the world you want..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="wb-tone">Tone</label>
+              <input type="text" id="wb-tone" placeholder="e.g. grim political fantasy">
+            </div>
+
+            <div class="form-group">
+              <label for="wb-content-preferences">Content Preferences (optional)</label>
+              <textarea id="wb-content-preferences" rows="2" placeholder="Creative direction..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="wb-starting-situation">Starting Situation (optional)</label>
+              <textarea id="wb-starting-situation" rows="2" placeholder="Where does the story begin?"></textarea>
+            </div>
+
+            <button class="btn btn-primary" id="wb-create-btn" type="button">Create Worldbuilding</button>
+          </div>
+        </article>
+
+        <article class="story-card">
+          <div class="story-card-content">
+            <h3>Paste &amp; Decompose</h3>
+
+            <div class="form-group">
+              <label for="wb-raw-name">World Name</label>
+              <input type="text" id="wb-raw-name" maxlength="100" placeholder="e.g. Imported Setting">
+            </div>
+
+            <div class="form-group">
+              <label for="wb-raw-text">Raw Worldbuilding Prose</label>
+              <textarea id="wb-raw-text" rows="8" placeholder="Paste your worldbuilding text here..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="wb-raw-tone">Tone</label>
+              <input type="text" id="wb-raw-tone" placeholder="e.g. dark fantasy">
+            </div>
+
+            <button class="btn btn-primary" id="wb-decompose-btn" type="button">Decompose Into World Asset</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <div id="worldbuilding-loading" class="loading-spinner" style="display: none;">
+      <div class="spinner"></div>
+      <p class="loading-text" id="worldbuilding-loading-text">Working...</p>
+    </div>
+
+    <section class="form-section" id="worldbuilding-list-section">
+      <h2>Saved Worlds</h2>
+      <div id="worldbuilding-list" class="stories-grid"></div>
+      <p id="worldbuilding-empty" style="display: none;">No saved worldbuilding assets yet.</p>
+    </section>
+
+    <section class="form-section" id="worldbuilding-detail-section" style="display: none;">
+      <h2 id="wb-detail-title">World Detail</h2>
+      <div class="stories-grid">
+        <article class="story-card">
+          <div class="story-card-content">
+            <div id="wb-detail-info"></div>
+            <div class="btn-group" style="margin-top: 1rem;">
+              <button class="btn btn-primary" id="wb-generate-seed-btn" type="button">Generate Seed</button>
+              <button class="btn btn-primary" id="wb-generate-elaboration-btn" type="button">Generate Elaboration</button>
+              <button class="btn btn-danger" id="wb-delete-btn" type="button">Delete</button>
+              <button class="btn" id="wb-back-btn" type="button">Back to List</button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div id="wb-preview-tabs" style="margin-top: 1rem;">
+        <div class="btn-group">
+          <button class="btn btn-small" data-tab="seed">Seed</button>
+          <button class="btn btn-small" data-tab="markdown">Markdown</button>
+          <button class="btn btn-small" data-tab="facts">Facts</button>
+        </div>
+        <pre id="wb-preview-content" style="margin-top: 0.5rem; white-space: pre-wrap; max-height: 400px; overflow-y: auto; padding: 1rem; background: var(--bg-secondary, #1a1a2e); border-radius: 8px;"></pre>
+      </div>
+    </section>
+  </main>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

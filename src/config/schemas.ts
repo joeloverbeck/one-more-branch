@@ -19,6 +19,7 @@ const StorageConfigSchema = z.object({
   characterWebsDir: z.string().min(1).default('character-webs'),
   contentPacketsDir: z.string().min(1).default('content-packets'),
   tasteProfilesDir: z.string().min(1).default('taste-profiles'),
+  worldbuildingDir: z.string().min(1).default('worldbuilding'),
 });
 
 /**

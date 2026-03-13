@@ -13,6 +13,7 @@ import {
   buildConceptAnalysisSection,
   buildKernelGroundingSection,
 } from './sections/shared/concept-kernel-sections.js';
+import { buildWorldSectionForCharacterDev } from './sections/shared/worldbuilding-sections.js';
 
 export interface CharPresentationPromptContext extends CharacterDevPromptContext {
   readonly characterKernel: CharacterKernel;
@@ -156,8 +157,14 @@ Personal Dilemmas: ${formatStringList(deepRelationships.personalDilemmas)}`);
     userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
-  if (context.worldbuilding.length > 0) {
-    userSections.push(`WORLDBUILDING:\n${context.worldbuilding}\n\nCONSTRAINT: Ground speech patterns, vocabulary, and appearance in the world's cultures, languages, and aesthetic norms. Use worldbuilding to determine dialect, dress conventions, and knowledge boundaries.`);
+  const worldSection = context.decomposedWorld
+    ? buildWorldSectionForCharacterDev(context.decomposedWorld)
+    : context.worldbuilding && context.worldbuilding.length > 0
+      ? `WORLDBUILDING:\n${context.worldbuilding}`
+      : '';
+
+  if (worldSection.length > 0) {
+    userSections.push(`${worldSection}\n\nCONSTRAINT: Ground speech patterns, vocabulary, and appearance in the world's cultures, languages, and aesthetic norms. Use worldbuilding to determine dialect, dress conventions, and knowledge boundaries.`);
   }
 
   if (context.userNotes) {

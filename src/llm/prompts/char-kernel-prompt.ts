@@ -1,4 +1,5 @@
 import type { ConceptSpec } from '../../models/concept-generator.js';
+import type { DecomposedWorld } from '../../models/decomposed-world.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { CharacterWebContext } from '../../models/saved-developed-character.js';
@@ -7,12 +8,14 @@ import {
   buildConceptAnalysisSection,
   buildKernelGroundingSection,
 } from './sections/shared/concept-kernel-sections.js';
+import { buildWorldSectionForCharacterDev } from './sections/shared/worldbuilding-sections.js';
 
 export interface CharacterDevPromptContext {
   readonly kernelSummary?: string;
   readonly conceptSummary?: string;
   readonly userNotes?: string;
-  readonly worldbuilding: string;
+  readonly worldbuilding?: string;
+  readonly decomposedWorld?: DecomposedWorld;
   readonly webContext: CharacterWebContext;
   readonly storyKernel?: StoryKernel;
   readonly conceptSpec?: ConceptSpec;
@@ -100,8 +103,14 @@ export function buildCharKernelPrompt(context: CharacterDevPromptContext): ChatM
     userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
-  if (context.worldbuilding.length > 0) {
-    userSections.push(`WORLDBUILDING:\n${context.worldbuilding}\n\nCONSTRAINT: Ground the super-objective and opposition in the world's power structures and realities. Use worldbuilding facts to determine what resources, institutions, and forces are available to the character.`);
+  const worldSection = context.decomposedWorld
+    ? buildWorldSectionForCharacterDev(context.decomposedWorld)
+    : context.worldbuilding && context.worldbuilding.length > 0
+      ? `WORLDBUILDING:\n${context.worldbuilding}`
+      : '';
+
+  if (worldSection.length > 0) {
+    userSections.push(`${worldSection}\n\nCONSTRAINT: Ground the super-objective and opposition in the world's power structures and realities. Use worldbuilding facts to determine what resources, institutions, and forces are available to the character.`);
   }
 
   if (context.userNotes) {

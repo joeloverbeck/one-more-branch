@@ -139,7 +139,7 @@ const WORLD_FACT_SCHEMA: SchemaProperty = {
     },
     factType: {
       type: 'string',
-      enum: ['LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY'],
+      enum: ['LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY', 'PRACTICE', 'TABOO'],
       description:
         'Epistemic status of this fact. ' +
         'LAW: fundamental world truth (magic rules, physics, cosmology). ' +

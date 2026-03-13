@@ -80,6 +80,8 @@ describe('Engine types', () => {
         'GENERATING_CHAR_AGENCY',
         'GENERATING_CHAR_RELATIONSHIPS',
         'GENERATING_CHAR_PRESENTATION',
+        'GENERATING_WORLD_SEED',
+        'ELABORATING_WORLD',
       ];
 
       expect(GENERATION_STAGES).toEqual(expectedStages);

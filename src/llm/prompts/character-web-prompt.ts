@@ -1,4 +1,5 @@
 import type { ConceptSpec } from '../../models/concept-generator.js';
+import type { DecomposedWorld } from '../../models/decomposed-world.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
@@ -6,12 +7,14 @@ import {
   buildConceptAnalysisSection,
   buildKernelGroundingSection,
 } from './sections/shared/concept-kernel-sections.js';
+import { buildWorldSectionForCharacterWeb } from './sections/shared/worldbuilding-sections.js';
 
 export interface CharacterWebPromptContext {
   readonly kernelSummary?: string;
   readonly conceptSummary?: string;
   readonly userNotes?: string;
-  readonly worldbuilding: string;
+  readonly worldbuilding?: string;
+  readonly decomposedWorld?: DecomposedWorld;
   readonly storyKernel?: StoryKernel;
   readonly conceptSpec?: ConceptSpec;
 }
@@ -77,8 +80,14 @@ export function buildCharacterWebPrompt(context: CharacterWebPromptContext): Cha
     userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
-  if (context.worldbuilding.length > 0) {
-    userSections.push(`WORLDBUILDING:\n${context.worldbuilding}\n\nCONSTRAINT: Ground character names, social positions, and occupations in the worldbuilding. Use world facts to determine what kinds of characters are plausible and what roles exist in this setting.`);
+  const worldSection = context.decomposedWorld
+    ? buildWorldSectionForCharacterWeb(context.decomposedWorld)
+    : context.worldbuilding && context.worldbuilding.length > 0
+      ? `WORLDBUILDING:\n${context.worldbuilding}`
+      : '';
+
+  if (worldSection.length > 0) {
+    userSections.push(`${worldSection}\n\nCONSTRAINT: Ground character names, social positions, and occupations in the worldbuilding. Use world facts to determine what kinds of characters are plausible and what roles exist in this setting.`);
   }
 
   if (context.userNotes) {

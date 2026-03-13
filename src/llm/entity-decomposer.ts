@@ -54,6 +54,8 @@ const VALID_FACT_TYPES: readonly WorldFactType[] = [
   'DISPUTED',
   'RUMOR',
   'MYSTERY',
+  'PRACTICE',
+  'TABOO',
 ];
 
 function isValidDomain(value: unknown): value is WorldFactDomain {
@@ -194,6 +196,8 @@ function parseCharacter(
   };
 }
 
+let entityWorldFactCounter = 0;
+
 function parseWorldFact(raw: unknown): WorldFact | null {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     return null;
@@ -208,8 +212,11 @@ function parseWorldFact(raw: unknown): WorldFact | null {
   const domain = isValidDomain(data['domain']) ? data['domain'] : 'culture';
   const scope = typeof data['scope'] === 'string' ? data['scope'] : 'General';
   const factType = isValidFactType(data['factType']) ? data['factType'] : undefined;
+  const id = typeof data['id'] === 'string' && data['id'].length > 0
+    ? data['id']
+    : `wf-${++entityWorldFactCounter}`;
 
-  return { domain, fact: data['fact'].trim(), scope, ...(factType ? { factType } : {}) };
+  return { id, domain, fact: data['fact'].trim(), scope, ...(factType ? { factType } : {}) };
 }
 
 function parseDecompositionResponse(

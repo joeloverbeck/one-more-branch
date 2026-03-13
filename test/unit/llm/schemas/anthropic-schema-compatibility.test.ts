@@ -25,6 +25,8 @@ import { CHARACTER_CONTEXTUALIZATION_SCHEMA } from '../../../../src/llm/schemas/
 import { CHARACTER_DECOMPOSITION_SCHEMA } from '../../../../src/llm/schemas/character-decomposer-schema';
 import { ENTITY_DECOMPOSITION_SCHEMA } from '../../../../src/llm/schemas/entity-decomposer-schema';
 import { WORLDBUILDING_DECOMPOSITION_SCHEMA } from '../../../../src/llm/schemas/worldbuilding-decomposer-schema';
+import { WORLDBUILDING_SEED_SCHEMA } from '../../../../src/llm/schemas/worldbuilding-seed-schema';
+import { WORLDBUILDING_ELABORATION_SCHEMA } from '../../../../src/llm/schemas/worldbuilding-elaboration-schema';
 import {
   KERNEL_EVALUATION_DEEP_SCHEMA,
   KERNEL_EVALUATION_SCORING_SCHEMA,
@@ -271,6 +273,8 @@ describe('Anthropic schema compatibility', () => {
     { name: 'CHAR_AGENCY_GENERATION_SCHEMA', schema: CHAR_AGENCY_GENERATION_SCHEMA },
     { name: 'CHAR_RELATIONSHIPS_GENERATION_SCHEMA', schema: CHAR_RELATIONSHIPS_GENERATION_SCHEMA },
     { name: 'CHAR_PRESENTATION_GENERATION_SCHEMA', schema: CHAR_PRESENTATION_GENERATION_SCHEMA },
+    { name: 'WORLDBUILDING_SEED_SCHEMA', schema: WORLDBUILDING_SEED_SCHEMA },
+    { name: 'WORLDBUILDING_ELABORATION_SCHEMA', schema: WORLDBUILDING_ELABORATION_SCHEMA },
   ];
 
   it.each(llmResponseSchemas)('%s should satisfy Anthropic schema compatibility checks', ({ schema }) => {

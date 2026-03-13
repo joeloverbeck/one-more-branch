@@ -1,5 +1,6 @@
 import type { ConceptSpec } from '../../models/concept-generator.js';
 import type { ConceptVerification } from '../../models/concept-generator.js';
+import type { DecomposedWorld } from '../../models/decomposed-world.js';
 import type { Npc } from '../../models/npc.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
@@ -7,11 +8,13 @@ import { formatStandaloneCharacterSummary } from '../../models/standalone-decomp
 import type { StoryKernel } from '../../models/story-kernel.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
+import { buildWorldSectionForSpine } from './sections/shared/worldbuilding-sections.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 
 export interface SpinePromptContext {
   characterConcept: string;
-  worldbuilding: string;
+  worldbuilding?: string;
+  decomposedWorld?: DecomposedWorld;
   tone: string;
   npcs?: readonly Npc[];
   decomposedCharacters?: readonly StandaloneDecomposedCharacter[];
@@ -158,9 +161,11 @@ export function buildSpinePrompt(context: SpinePromptContext): ChatMessage[] {
   systemSections.push(CONTENT_POLICY);
   systemSections.push(SPINE_DESIGN_GUIDELINES);
 
-  const worldSection = context.worldbuilding
-    ? `WORLDBUILDING:\n${context.worldbuilding}\n\n`
-    : '';
+  const worldSection = context.decomposedWorld
+    ? `${buildWorldSectionForSpine(context.decomposedWorld)}\n\n`
+    : context.worldbuilding
+      ? `WORLDBUILDING:\n${context.worldbuilding}\n\n`
+      : '';
 
   const npcsSection =
     context.decomposedCharacters && context.decomposedCharacters.length > 0

@@ -40,6 +40,8 @@ export const LLM_STAGE_KEYS = [
   'charAgency',
   'charRelationships',
   'charPresentation',
+  'worldbuildingSeed',
+  'worldbuildingElaboration',
 ] as const;
 
 export type LlmStage = (typeof LLM_STAGE_KEYS)[number];

@@ -54,6 +54,7 @@ export interface StartStoryOptions {
   readonly title: string;
   readonly characterConcept: string;
   readonly worldbuilding?: string;
+  readonly worldbuildingId?: string;
   readonly tone?: string;
   readonly npcs?: readonly Npc[];
   readonly protagonistCharacterId?: string;

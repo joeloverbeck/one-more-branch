@@ -8,6 +8,7 @@ import {
   buildConceptAnalysisSection,
   buildKernelGroundingSection,
 } from './sections/shared/concept-kernel-sections.js';
+import { buildWorldSectionForCharacterDev } from './sections/shared/worldbuilding-sections.js';
 
 export interface CharTridimensionalPromptContext extends CharacterDevPromptContext {
   readonly characterKernel: CharacterKernel;
@@ -108,8 +109,14 @@ export function buildCharTridimensionalPrompt(
     userSections.push(`STORY KERNEL:\n${context.kernelSummary}`);
   }
 
-  if (context.worldbuilding.length > 0) {
-    userSections.push(`WORLDBUILDING:\n${context.worldbuilding}\n\nCONSTRAINT: Ground sociology in the worldbuilding — class systems, occupations, cultural norms, and institutions must reflect the world as described. Use world geography, climate, and resources to inform physiology where relevant.`);
+  const worldSection = context.decomposedWorld
+    ? buildWorldSectionForCharacterDev(context.decomposedWorld)
+    : context.worldbuilding && context.worldbuilding.length > 0
+      ? `WORLDBUILDING:\n${context.worldbuilding}`
+      : '';
+
+  if (worldSection.length > 0) {
+    userSections.push(`${worldSection}\n\nCONSTRAINT: Ground sociology in the worldbuilding — class systems, occupations, cultural norms, and institutions must reflect the world as described. Use world geography, climate, and resources to inform physiology where relevant.`);
   }
 
   if (context.userNotes) {

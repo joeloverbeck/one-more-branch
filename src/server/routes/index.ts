@@ -12,6 +12,7 @@ import { logRoutes } from './logs';
 import { playRoutes } from './play';
 import { progressRoutes } from './progress';
 import { storyRoutes } from './stories';
+import { worldbuildingRoutes } from './worldbuilding';
 
 export const router = Router();
 
@@ -32,4 +33,5 @@ router.use('/logs', logRoutes);
 router.use('/stories', storyRoutes);
 router.use('/play', playRoutes);
 router.use('/content-packets', contentPacketRoutes);
+router.use('/worldbuilding', worldbuildingRoutes);
 router.use('/generation-progress', progressRoutes);

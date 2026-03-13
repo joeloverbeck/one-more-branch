@@ -324,7 +324,6 @@ describe('character-web-service', () => {
       protagonistName: '',
       inputs: {
         userNotes: 'Keep everyone dangerous.',
-        worldbuilding: '',
       },
       assignments: [],
       relationshipArchetypes: [],
