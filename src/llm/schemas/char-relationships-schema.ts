@@ -26,6 +26,8 @@ export const CHAR_RELATIONSHIPS_GENERATION_SCHEMA: JsonSchema = {
               'history',
               'currentTension',
               'leverage',
+              'ruptureTriggers',
+              'repairMoves',
             ],
             properties: {
               fromCharacter: {
@@ -82,6 +84,16 @@ export const CHAR_RELATIONSHIPS_GENERATION_SCHEMA: JsonSchema = {
               leverage: {
                 type: 'string',
                 description: 'What one side can currently use against the other.',
+              },
+              ruptureTriggers: {
+                type: 'array',
+                description: '1-3 specific events or revelations that would shatter this relationship.',
+                items: { type: 'string' },
+              },
+              repairMoves: {
+                type: 'array',
+                description: '1-3 specific actions that could mend this relationship after damage.',
+                items: { type: 'string' },
               },
             },
           },

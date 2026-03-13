@@ -55,6 +55,7 @@ function createWebContext(overrides?: Partial<CharacterWebContext>): CharacterWe
       characterDepth: CharacterDepth.ROUND,
       narrativeRole: 'The rival who challenges the protagonist at every turn.',
       conflictRelationship: "Directly opposes the protagonist's goals.",
+      privateAgenda: 'Secure an independent power base beyond the throne.',
     },
     protagonistName: 'Mira',
     relationshipArchetypes: [
@@ -87,6 +88,13 @@ function createCharacterKernel(overrides?: Partial<CharacterKernel>): CharacterK
     ],
     pressurePoint:
       'His sister is held hostage by the king - any overt action risks her life.',
+    moralLine: 'He will not harm children, no matter the strategic gain.',
+    unacceptableCost: 'Losing his sister in the process of gaining power.',
+    worstFear: 'Becoming the tyrant his father was rumoured to be.',
+    sceneObjectivePatterns: [
+      'Gather intelligence through casual conversation',
+      'Test loyalty before revealing anything',
+    ],
     ...overrides,
   };
 }
@@ -111,6 +119,14 @@ function createTridimensionalProfile(
       'Hypervigilance',
       'Reluctant deception',
     ],
+    formativeWound: 'Witnessing his father\'s murder as a child.',
+    protectiveMask: 'The stoic blacksmith who never asks questions.',
+    misbelief: 'Only violence can restore what violence destroyed.',
+    credibleSurprises: ['Showing mercy to a captured enemy'],
+    implausibleMoves: ['Openly trusting the king'],
+    stressTells: ['Clenches his jaw', 'Avoids eye contact'],
+    attachmentStyle: 'Avoidant — keeps allies at arm\'s length.',
+    traitToSceneAffordances: ['Hypervigilance → notices hidden threats first'],
     ...overrides,
   };
 }
@@ -132,6 +148,17 @@ function createAgencyModel(overrides?: Partial<AgencyModel>): AgencyModel {
     ],
     decisionPattern:
       'He gathers leverage before acting, but when family is threatened his planning collapses into decisive emotional risk-taking.',
+    focalizationFilter: {
+      noticesFirst: 'Power dynamics and hidden weapons.',
+      systematicallyMisses: 'Emotional warmth directed at him.',
+      misreadsAs: 'Interprets kindness as manipulation.',
+    },
+    escalationLadder: [
+      'Silent observation',
+      'Veiled threats',
+      'Direct confrontation',
+      'Lethal force',
+    ],
     ...overrides,
   };
 }
@@ -153,6 +180,13 @@ function createOtherDevelopedCharacter(
       stakes: ['Civilian lives', 'Her own claim to moral legitimacy'],
       constraints: ['Cannot expose her hidden lineage yet'],
       pressurePoint: 'She still loves the version of Kael who no longer exists.',
+      moralLine: 'Will not sacrifice civilians for political gain.',
+      unacceptableCost: 'Losing her moral authority by sanctioning atrocities.',
+      worstFear: 'That peace is impossible and she has been naive all along.',
+      sceneObjectivePatterns: [
+        'Build rapport before making requests',
+        'Frame demands as mutual benefits',
+      ],
     },
     tridimensionalProfile: {
       characterName: 'Mira',
@@ -161,6 +195,14 @@ function createOtherDevelopedCharacter(
       psychology: 'Empathic, controlling, and desperate to avert mass bloodshed.',
       derivationChain: 'Exile + duty -> mediation instincts and secret ruthlessness.',
       coreTraits: ['Diplomatic', 'Guarded', 'Stubborn compassion'],
+      formativeWound: 'Watching her homeland burn while diplomats debated.',
+      protectiveMask: 'The calm mediator who never shows fear.',
+      misbelief: 'That she can prevent all violence through negotiation.',
+      credibleSurprises: ['Resorting to blackmail when diplomacy fails'],
+      implausibleMoves: ['Publicly endorsing violence as a solution'],
+      stressTells: ['Picks at her nails', 'Speaks too quickly'],
+      attachmentStyle: 'Anxious-preoccupied, over-investing in alliances.',
+      traitToSceneAffordances: ['Diplomatic → reads social cues before others'],
     },
     agencyModel: {
       characterName: 'Mira',
@@ -171,6 +213,12 @@ function createOtherDevelopedCharacter(
       currentIntentions: ['Broker a temporary alliance'],
       falseBeliefs: ['Kael can still be reasoned back into restraint'],
       decisionPattern: 'She negotiates until the last safe second, then acts surgically.',
+      focalizationFilter: {
+        noticesFirst: 'Emotional undercurrents and alliances.',
+        systematicallyMisses: 'Military logistics and supply chains.',
+        misreadsAs: 'Interprets silence as agreement.',
+      },
+      escalationLadder: ['diplomatic appeal', 'emotional pressure', 'ultimatum', 'covert action'],
     },
     deepRelationships: null,
     textualPresentation: null,
@@ -209,6 +257,8 @@ function validRelationshipsResponseRaw(
           'Kael wants decisive bloodshed while Mira keeps diverting him toward slower coalition-building.',
         leverage:
           'Mira knows where Kael\'s sister is hidden; Kael knows Mira\'s secret lineage could fracture her coalition.',
+        ruptureTriggers: ['Discovering the betrayal at the bridge'],
+        repairMoves: ['A public apology before the court'],
       },
     ],
     secrets: [
@@ -304,6 +354,20 @@ describe('CHAR_RELATIONSHIPS_GENERATION_SCHEMA', () => {
     >;
     expect(schema['type']).toBe('object');
     expect(schema['required']).toEqual(['relationships', 'secrets', 'personalDilemmas']);
+  });
+
+  it('requires ruptureTriggers and repairMoves on relationship items', () => {
+    const schema = CHAR_RELATIONSHIPS_GENERATION_SCHEMA.json_schema.schema as Record<
+      string,
+      unknown
+    >;
+    const properties = schema['properties'] as Record<string, unknown>;
+    const relationships = properties['relationships'] as Record<string, unknown>;
+    const relationshipItem = relationships['items'] as Record<string, unknown>;
+    const required = relationshipItem['required'] as string[];
+
+    expect(required).toContain('ruptureTriggers');
+    expect(required).toContain('repairMoves');
   });
 
   it('defines relationship enum fields and numeric valence range', () => {

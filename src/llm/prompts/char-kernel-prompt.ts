@@ -115,7 +115,15 @@ export function buildCharKernelPrompt(context: CharacterDevPromptContext): ChatM
 - primaryOpposition: The main force standing between the character and their super-objective.
 - stakes: Array of what the character stands to lose or gain.
 - constraints: Array of internal or external limitations restricting the character.
-- pressurePoint: The specific vulnerability that forces the character to act against their interests when pressed.`);
+- pressurePoint: The specific vulnerability that forces the character to act against their interests when pressed.
+- moralLine: The line this character will not cross. 1 sentence.
+- unacceptableCost: The price this character refuses to pay, even for their super-objective. 1 sentence.
+- worstFear: What would psychologically destroy this character. 1 sentence.
+- sceneObjectivePatterns: Array of 2-4 patterns describing how this character typically pursues goals in concrete interactions. E.g. "Opens with flattery, then applies incremental pressure."`);
+
+  userSections.push(`GENERATION RULES:
+- moralLine and unacceptableCost must not be duplicates — one is ethical, the other is personal.
+- sceneObjectivePatterns must describe observable tactics, not abstract strategy.`);
 
   return [
     { role: 'system', content: systemSections.join('\n\n') },

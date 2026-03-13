@@ -36,6 +36,7 @@ function validAssignmentRaw(overrides?: Record<string, unknown>): Record<string,
     characterDepth: 'ROUND',
     narrativeRole: 'The protagonist who drives the story.',
     conflictRelationship: 'Faces the antagonist directly.',
+    privateAgenda: '',
     ...overrides,
   };
 }
@@ -61,9 +62,12 @@ function validWebResponseRaw(
         characterName: 'Mira',
         isProtagonist: false,
         storyFunction: 'ANTAGONIST',
+        privateAgenda: 'Seeks to undermine Kael at every turn.',
       }),
     ],
     relationshipArchetypes: [validRelationshipRaw()],
+    conflictTriangles: [],
+    allianceFaultLines: [],
     castDynamicsSummary: 'Kael and Mira form the central conflict axis.',
     ...overrides,
   };
@@ -138,6 +142,8 @@ describe('CHARACTER_WEB_GENERATION_SCHEMA', () => {
     expect(schema['required']).toEqual([
       'assignments',
       'relationshipArchetypes',
+      'conflictTriangles',
+      'allianceFaultLines',
       'castDynamicsSummary',
     ]);
   });

@@ -20,6 +20,20 @@ export interface DecomposedRelationship {
 
 import type { EmotionSalience, StoryFunction } from './character-enums.js';
 
+export interface FocalizationFilter {
+  readonly noticesFirst: string;
+  readonly systematicallyMisses: string;
+  readonly misreadsAs: string;
+}
+
+export interface StressVariants {
+  readonly underThreat: string;
+  readonly inIntimacy: string;
+  readonly whenLying: string;
+  readonly whenAshamed: string;
+  readonly whenWinning: string;
+}
+
 export interface DecomposedCharacter {
   readonly name: string;
   readonly speechFingerprint: SpeechFingerprint;
@@ -41,6 +55,15 @@ export interface DecomposedCharacter {
   readonly emotionSalience?: EmotionSalience;
   readonly storyFunction?: StoryFunction;
   readonly narrativeRole?: string;
+  readonly moralLine?: string;
+  readonly worstFear?: string;
+  readonly formativeWound?: string;
+  readonly misbelief?: string;
+  readonly stressVariants?: StressVariants;
+  readonly focalizationFilter?: FocalizationFilter;
+  readonly escalationLadder?: readonly string[];
+  readonly ruptureTriggers?: readonly string[];
+  readonly repairMoves?: readonly string[];
 }
 
 export function formatDecomposedCharacterForPrompt(
@@ -89,6 +112,46 @@ export function formatDecomposedCharacterForPrompt(
 
   if (char.narrativeRole) {
     lines.push(`Narrative Role: ${char.narrativeRole}`);
+  }
+
+  if (char.moralLine) {
+    lines.push(`Moral Line: ${char.moralLine}`);
+  }
+
+  if (char.worstFear) {
+    lines.push(`Worst Fear: ${char.worstFear}`);
+  }
+
+  if (char.formativeWound) {
+    lines.push(`Formative Wound: ${char.formativeWound}`);
+  }
+
+  if (char.misbelief) {
+    lines.push(`Misbelief: ${char.misbelief}`);
+  }
+
+  if (char.focalizationFilter) {
+    lines.push(
+      `Focalization Filter:`,
+      `  Notices First: ${char.focalizationFilter.noticesFirst}`,
+      `  Systematically Misses: ${char.focalizationFilter.systematicallyMisses}`,
+      `  Misreads As: ${char.focalizationFilter.misreadsAs}`
+    );
+  }
+
+  if (char.escalationLadder && char.escalationLadder.length > 0) {
+    lines.push(`Escalation Ladder:\n${char.escalationLadder.map((step, i) => `  ${i + 1}. ${step}`).join('\n')}`);
+  }
+
+  if (char.stressVariants) {
+    lines.push(
+      `Stress Variants:`,
+      `  Under Threat: ${char.stressVariants.underThreat}`,
+      `  In Intimacy: ${char.stressVariants.inIntimacy}`,
+      `  When Lying: ${char.stressVariants.whenLying}`,
+      `  When Ashamed: ${char.stressVariants.whenAshamed}`,
+      `  When Winning: ${char.stressVariants.whenWinning}`
+    );
   }
 
   if (char.protagonistRelationship !== null) {

@@ -78,6 +78,13 @@ function createCharacterKernel(overrides?: Partial<CharacterKernel>): CharacterK
     ],
     pressurePoint:
       'His sister is held hostage by the king — any overt action risks her life.',
+    moralLine: 'Will not harm innocents even if it costs him the throne.',
+    unacceptableCost: 'Losing his sister to save himself.',
+    worstFear: 'That he is becoming the tyrant he seeks to overthrow.',
+    sceneObjectivePatterns: [
+      'Seeks information through indirect questioning',
+      'Tests loyalty before revealing trust',
+    ],
     ...overrides,
   };
 }
@@ -103,6 +110,14 @@ function validTridimensionalResponseRaw(
       'Reluctant deception',
       'Protective instinct',
     ],
+    formativeWound: 'Witnessed her village destroyed as a child',
+    protectiveMask: 'Projects cold competence to hide vulnerability',
+    misbelief: 'Believes strength means never needing anyone',
+    credibleSurprises: ['Would sacrifice tactical advantage to protect a child'],
+    implausibleMoves: ['Would never abandon a companion in danger'],
+    stressTells: ['Clenches jaw', 'Goes unnaturally still'],
+    attachmentStyle: 'Avoidant — keeps others at arm length until trust is proven through action',
+    traitToSceneAffordances: ['Her stubbornness creates escalation when others push back'],
     ...overrides,
   };
 }
@@ -265,6 +280,14 @@ describe('CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA', () => {
       'psychology',
       'derivationChain',
       'coreTraits',
+      'formativeWound',
+      'protectiveMask',
+      'misbelief',
+      'credibleSurprises',
+      'implausibleMoves',
+      'stressTells',
+      'attachmentStyle',
+      'traitToSceneAffordances',
     ]);
   });
 
@@ -281,6 +304,14 @@ describe('CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA', () => {
     expect(properties['psychology']).toBeDefined();
     expect(properties['derivationChain']).toBeDefined();
     expect(properties['coreTraits']).toBeDefined();
+    expect(properties['formativeWound']).toBeDefined();
+    expect(properties['protectiveMask']).toBeDefined();
+    expect(properties['misbelief']).toBeDefined();
+    expect(properties['credibleSurprises']).toBeDefined();
+    expect(properties['implausibleMoves']).toBeDefined();
+    expect(properties['stressTells']).toBeDefined();
+    expect(properties['attachmentStyle']).toBeDefined();
+    expect(properties['traitToSceneAffordances']).toBeDefined();
   });
 
   it('defines coreTraits as array with string items', () => {

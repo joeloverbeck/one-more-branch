@@ -16,8 +16,24 @@ import {
   isRelationshipValence,
 } from './character-enums.js';
 import type { ConceptSpec } from './concept-generator.js';
-import type { SpeechFingerprint } from './decomposed-character.js';
+import type {
+  FocalizationFilter,
+  SpeechFingerprint,
+  StressVariants,
+} from './decomposed-character.js';
 import type { StoryKernel } from './story-kernel.js';
+
+// --- Cast-level dramatic system types ---
+
+export interface ConflictTriangle {
+  readonly characters: readonly [string, string, string];
+  readonly incompatibility: string;
+}
+
+export interface AllianceFaultLine {
+  readonly allies: readonly [string, string];
+  readonly faultLine: string;
+}
 
 // --- Stage 1: Cast Roles ---
 
@@ -28,6 +44,7 @@ export interface CastRoleAssignment {
   readonly characterDepth: CharacterDepth;
   readonly narrativeRole: string;
   readonly conflictRelationship: string;
+  readonly privateAgenda: string;
 }
 
 export interface CastRolesResult {
@@ -45,6 +62,10 @@ export interface CharacterKernel {
   readonly stakes: readonly string[];
   readonly constraints: readonly string[];
   readonly pressurePoint: string;
+  readonly moralLine: string;
+  readonly unacceptableCost: string;
+  readonly worstFear: string;
+  readonly sceneObjectivePatterns: readonly string[];
 }
 
 // --- Stage 3: Tridimensional Profiles ---
@@ -56,6 +77,14 @@ export interface TridimensionalProfile {
   readonly psychology: string;
   readonly derivationChain: string;
   readonly coreTraits: readonly string[];
+  readonly formativeWound: string;
+  readonly protectiveMask: string;
+  readonly misbelief: string;
+  readonly credibleSurprises: readonly string[];
+  readonly implausibleMoves: readonly string[];
+  readonly stressTells: readonly string[];
+  readonly attachmentStyle: string;
+  readonly traitToSceneAffordances: readonly string[];
 }
 
 // --- Stage 4: Agency Models ---
@@ -69,6 +98,8 @@ export interface AgencyModel {
   readonly currentIntentions: readonly string[];
   readonly falseBeliefs: readonly string[];
   readonly decisionPattern: string;
+  readonly focalizationFilter: FocalizationFilter;
+  readonly escalationLadder: readonly string[];
 }
 
 // --- Stage 5: Social Web ---
@@ -82,6 +113,8 @@ export interface CastRelationship {
   readonly history: string;
   readonly currentTension: string;
   readonly leverage: string;
+  readonly ruptureTriggers: readonly string[];
+  readonly repairMoves: readonly string[];
 }
 
 export interface SocialWebResult {
@@ -97,6 +130,12 @@ export interface CastSecret {
 
 // --- Stage 6: Textual Presentation ---
 
+export interface RelationSpecificVariant {
+  readonly towardCharacter: string;
+  readonly registerShift: string;
+  readonly emotionalLeakage: string;
+}
+
 export interface TextualPresentation {
   readonly characterName: string;
   readonly voiceRegister: VoiceRegister;
@@ -104,6 +143,8 @@ export interface TextualPresentation {
   readonly appearance: string;
   readonly knowledgeBoundaries: string;
   readonly conflictPriority: string;
+  readonly stressVariants: StressVariants;
+  readonly relationSpecificVariants: readonly RelationSpecificVariant[];
 }
 
 // --- Shared pipeline inputs ---

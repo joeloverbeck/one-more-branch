@@ -8,7 +8,13 @@ export const CHARACTER_WEB_GENERATION_SCHEMA: JsonSchema = {
     schema: {
       type: 'object',
       additionalProperties: false,
-      required: ['assignments', 'relationshipArchetypes', 'castDynamicsSummary'],
+      required: [
+        'assignments',
+        'relationshipArchetypes',
+        'conflictTriangles',
+        'allianceFaultLines',
+        'castDynamicsSummary',
+      ],
       properties: {
         assignments: {
           type: 'array',
@@ -24,6 +30,7 @@ export const CHARACTER_WEB_GENERATION_SCHEMA: JsonSchema = {
               'characterDepth',
               'narrativeRole',
               'conflictRelationship',
+              'privateAgenda',
             ],
             properties: {
               characterName: {
@@ -71,6 +78,11 @@ export const CHARACTER_WEB_GENERATION_SCHEMA: JsonSchema = {
                 type: 'string',
                 description:
                   'One sentence — how this character creates or resolves conflict for the protagonist.',
+              },
+              privateAgenda: {
+                type: 'string',
+                description:
+                  'What this NPC wants independent of the protagonist. Required for non-protagonist ROUND characters. Empty string for the protagonist.',
               },
             },
           },
@@ -130,6 +142,49 @@ export const CHARACTER_WEB_GENERATION_SCHEMA: JsonSchema = {
                 type: 'string',
                 description:
                   'One sentence capturing the core dramatic friction in this relationship.',
+              },
+            },
+          },
+        },
+        conflictTriangles: {
+          type: 'array',
+          description:
+            'Sets of 3 characters with incompatible loyalties. At least 1 required if cast has 3+ ROUND characters.',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['characters', 'incompatibility'],
+            properties: {
+              characters: {
+                type: 'array',
+                description: 'Exactly 3 character names forming the triangle.',
+                items: { type: 'string' },
+              },
+              incompatibility: {
+                type: 'string',
+                description:
+                  'The incompatible loyalty or goal that makes this triangle unstable.',
+              },
+            },
+          },
+        },
+        allianceFaultLines: {
+          type: 'array',
+          description: 'Where current alliances could fracture. 0+ entries.',
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['allies', 'faultLine'],
+            properties: {
+              allies: {
+                type: 'array',
+                description: 'Exactly 2 allied character names.',
+                items: { type: 'string' },
+              },
+              faultLine: {
+                type: 'string',
+                description:
+                  'The specific issue or event that could shatter this alliance.',
               },
             },
           },

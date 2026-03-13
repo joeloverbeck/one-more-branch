@@ -94,6 +94,16 @@ function parseRelationships(data: Record<string, unknown>): DeepRelationshipResu
       );
     }
 
+    const rawRupture = relationship['ruptureTriggers'];
+    const ruptureTriggers = Array.isArray(rawRupture)
+      ? rawRupture.filter((r): r is string => typeof r === 'string').map((s) => s.trim()).filter((s) => s.length > 0)
+      : [];
+
+    const rawRepair = relationship['repairMoves'];
+    const repairMoves = Array.isArray(rawRepair)
+      ? rawRepair.filter((r): r is string => typeof r === 'string').map((s) => s.trim()).filter((s) => s.length > 0)
+      : [];
+
     return {
       fromCharacter: parseRequiredString(relationship['fromCharacter'], 'fromCharacter'),
       toCharacter: parseRequiredString(relationship['toCharacter'], 'toCharacter'),
@@ -103,6 +113,8 @@ function parseRelationships(data: Record<string, unknown>): DeepRelationshipResu
       history: parseRequiredString(relationship['history'], 'history'),
       currentTension: parseRequiredString(relationship['currentTension'], 'currentTension'),
       leverage: parseRequiredString(relationship['leverage'], 'leverage'),
+      ruptureTriggers,
+      repairMoves,
     };
   });
 }

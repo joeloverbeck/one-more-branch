@@ -1,3 +1,5 @@
+**Status**: COMPLETED
+
 # Improvements to Architect
 
 We provided the prompts at prompts/* to ChatGPT and we asked ChatGPT to figure out if we could improve the story architecting process. It said:
@@ -62,3 +64,10 @@ PerceivedAgencyTechniques[] checklist for your writer:
 - altered future tone of scenes (not just events)
 
 Net effect: your loop stops being “branching story” and becomes “authored choices that shape self + world”.
+
+## Outcome
+
+- Completion date: 2026-03-13
+- What changed: The architecting pipeline absorbed the relevant intent/pressure/reincorporation work through stateful narrative promises, NPC agenda pressure planning, and stronger choice-authoring constraints.
+- Deviations from the original plan: Not every suggested field was adopted verbatim; parts were mapped onto existing systems and some checklist-style guidance was explicitly rejected to avoid formulaic prose.
+- Verification results: Confirmed in `archive/specs/2026-02-14-stateful-narrative-promises-design.completed.md`, which records implemented equivalents for antagonist pressure plans, reincorporation tracking, and choice design budget decisions.

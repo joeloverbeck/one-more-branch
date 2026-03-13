@@ -77,6 +77,44 @@ function parseCharTridimensionalResponse(parsed: unknown): TridimensionalProfile
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 
+  if (typeof data['formativeWound'] !== 'string' || data['formativeWound'].trim().length === 0) {
+    throw new LLMError(
+      'Tridimensional profile response missing formativeWound',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
+  if (typeof data['protectiveMask'] !== 'string' || data['protectiveMask'].trim().length === 0) {
+    throw new LLMError(
+      'Tridimensional profile response missing protectiveMask',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
+  if (typeof data['misbelief'] !== 'string' || data['misbelief'].trim().length === 0) {
+    throw new LLMError(
+      'Tridimensional profile response missing misbelief',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
+  if (typeof data['attachmentStyle'] !== 'string' || data['attachmentStyle'].trim().length === 0) {
+    throw new LLMError(
+      'Tridimensional profile response missing attachmentStyle',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
+  const parseStringArray = (key: string): string[] =>
+    (Array.isArray(data[key]) ? (data[key] as unknown[]) : [])
+      .filter((item): item is string => typeof item === 'string')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
   return {
     characterName: (data['characterName']).trim(),
     physiology: (data['physiology']).trim(),
@@ -84,6 +122,14 @@ function parseCharTridimensionalResponse(parsed: unknown): TridimensionalProfile
     psychology: (data['psychology']).trim(),
     derivationChain: (data['derivationChain']).trim(),
     coreTraits,
+    formativeWound: (data['formativeWound']).trim(),
+    protectiveMask: (data['protectiveMask']).trim(),
+    misbelief: (data['misbelief']).trim(),
+    credibleSurprises: parseStringArray('credibleSurprises'),
+    implausibleMoves: parseStringArray('implausibleMoves'),
+    stressTells: parseStringArray('stressTells'),
+    attachmentStyle: (data['attachmentStyle']).trim(),
+    traitToSceneAffordances: parseStringArray('traitToSceneAffordances'),
   };
 }
 

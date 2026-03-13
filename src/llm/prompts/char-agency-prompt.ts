@@ -86,14 +86,21 @@ export function buildCharAgencyPrompt(context: CharAgencyPromptContext): ChatMes
 - Primary Opposition: ${characterKernel.primaryOpposition}
 - Stakes: ${characterKernel.stakes.join('; ')}
 - Constraints: ${characterKernel.constraints.join('; ')}
-- Pressure Point: ${characterKernel.pressurePoint}`);
+- Pressure Point: ${characterKernel.pressurePoint}
+- Moral Line: ${characterKernel.moralLine}
+- Worst Fear: ${characterKernel.worstFear}
+- Scene Objective Patterns: ${characterKernel.sceneObjectivePatterns.join('; ')}`);
 
   userSections.push(`TRIDIMENSIONAL PROFILE (from Stage 2):
 - Physiology: ${tridimensionalProfile.physiology}
 - Sociology: ${tridimensionalProfile.sociology}
 - Psychology: ${tridimensionalProfile.psychology}
 - Derivation Chain: ${tridimensionalProfile.derivationChain}
-- Core Traits: ${tridimensionalProfile.coreTraits.join('; ')}`);
+- Core Traits: ${tridimensionalProfile.coreTraits.join('; ')}
+- Formative Wound: ${tridimensionalProfile.formativeWound}
+- Protective Mask: ${tridimensionalProfile.protectiveMask}
+- Misbelief: ${tridimensionalProfile.misbelief}
+- Attachment Style: ${tridimensionalProfile.attachmentStyle}`);
 
   const conceptSection = buildAgencyConceptSection(context.conceptSpec);
   const kernelSection = buildAgencyKernelSection(context.storyKernel);
@@ -126,7 +133,13 @@ export function buildCharAgencyPrompt(context: CharAgencyPromptContext): ChatMes
 - desires: Array of enduring wants shaping the character's behavior.
 - currentIntentions: Array of immediate, active pursuits this character is trying to carry out now.
 - falseBeliefs: Array of incorrect assumptions, blind spots, or misreadings driving conflict.
-- decisionPattern: A concise explanation of how this character typically makes choices under pressure.`);
+- decisionPattern: A concise explanation of how this character typically makes choices under pressure.
+- focalizationFilter: Object with noticesFirst, systematicallyMisses, misreadsAs — what this character perceives, overlooks, and misinterprets.
+- escalationLadder: Array of 3-5 ordered steps showing how this character escalates when blocked, from mildest to most extreme.`);
+
+  userSections.push(`GENERATION RULES:
+- focalizationFilter must be grounded in the character's wound, training, and social position — not arbitrary.
+- escalationLadder must be ordered from mildest to most extreme response. The final step should approach but not cross the moralLine from the kernel.`);
 
   return [
     { role: 'system', content: systemSections.join('\n\n') },

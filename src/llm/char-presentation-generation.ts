@@ -1,5 +1,8 @@
 import type { SpeechFingerprint } from '../models/decomposed-character.js';
-import type { TextualPresentation } from '../models/character-pipeline-types.js';
+import type {
+  RelationSpecificVariant,
+  TextualPresentation,
+} from '../models/character-pipeline-types.js';
 import { isVoiceRegister } from '../models/character-enums.js';
 import {
   SPEECH_ARRAY_FIELDS,
@@ -86,6 +89,35 @@ function parseCharPresentationResponse(parsed: unknown): TextualPresentation {
     );
   }
 
+  const rawStress = data['stressVariants'];
+  if (typeof rawStress !== 'object' || rawStress === null || Array.isArray(rawStress)) {
+    throw new LLMError(
+      'Textual presentation response missing stressVariants',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
+  const stressData = rawStress as Record<string, unknown>;
+  const stressVariants = {
+    underThreat: parseRequiredString(stressData['underThreat'], 'stressVariants.underThreat'),
+    inIntimacy: parseRequiredString(stressData['inIntimacy'], 'stressVariants.inIntimacy'),
+    whenLying: parseRequiredString(stressData['whenLying'], 'stressVariants.whenLying'),
+    whenAshamed: parseRequiredString(stressData['whenAshamed'], 'stressVariants.whenAshamed'),
+    whenWinning: parseRequiredString(stressData['whenWinning'], 'stressVariants.whenWinning'),
+  };
+
+  const rawRelVariants = Array.isArray(data['relationSpecificVariants'])
+    ? data['relationSpecificVariants']
+    : [];
+  const relationSpecificVariants: RelationSpecificVariant[] = rawRelVariants
+    .filter((v): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v))
+    .map((v) => ({
+      towardCharacter: parseRequiredString(v['towardCharacter'], 'relationSpecificVariants.towardCharacter'),
+      registerShift: parseRequiredString(v['registerShift'], 'relationSpecificVariants.registerShift'),
+      emotionalLeakage: parseRequiredString(v['emotionalLeakage'], 'relationSpecificVariants.emotionalLeakage'),
+    }));
+
   return {
     characterName: parseRequiredString(data['characterName'], 'characterName'),
     voiceRegister: data['voiceRegister'],
@@ -93,6 +125,8 @@ function parseCharPresentationResponse(parsed: unknown): TextualPresentation {
     appearance: parseRequiredString(data['appearance'], 'appearance'),
     knowledgeBoundaries: parseRequiredString(data['knowledgeBoundaries'], 'knowledgeBoundaries'),
     conflictPriority: parseRequiredString(data['conflictPriority'], 'conflictPriority'),
+    stressVariants,
+    relationSpecificVariants,
   };
 }
 

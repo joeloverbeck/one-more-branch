@@ -110,14 +110,20 @@ export function buildCharPresentationPrompt(
 - Primary Opposition: ${characterKernel.primaryOpposition}
 - Stakes: ${formatStringList(characterKernel.stakes)}
 - Constraints: ${formatStringList(characterKernel.constraints)}
-- Pressure Point: ${characterKernel.pressurePoint}`);
+- Pressure Point: ${characterKernel.pressurePoint}
+- Moral Line: ${characterKernel.moralLine}
+- Worst Fear: ${characterKernel.worstFear}`);
 
   userSections.push(`TRIDIMENSIONAL PROFILE (from Stage 2):
 - Physiology: ${tridimensionalProfile.physiology}
 - Sociology: ${tridimensionalProfile.sociology}
 - Psychology: ${tridimensionalProfile.psychology}
 - Derivation Chain: ${tridimensionalProfile.derivationChain}
-- Core Traits: ${formatStringList(tridimensionalProfile.coreTraits)}`);
+- Core Traits: ${formatStringList(tridimensionalProfile.coreTraits)}
+- Formative Wound: ${tridimensionalProfile.formativeWound}
+- Protective Mask: ${tridimensionalProfile.protectiveMask}
+- Misbelief: ${tridimensionalProfile.misbelief}
+- Stress Tells: ${formatStringList(tridimensionalProfile.stressTells)}`);
 
   userSections.push(`AGENCY MODEL (from Stage 3):
 - Replanning Policy: ${agencyModel.replanningPolicy}
@@ -126,7 +132,8 @@ export function buildCharPresentationPrompt(
 - Desires: ${formatStringList(agencyModel.desires)}
 - Current Intentions: ${formatStringList(agencyModel.currentIntentions)}
 - False Beliefs: ${formatStringList(agencyModel.falseBeliefs)}
-- Decision Pattern: ${agencyModel.decisionPattern}`);
+- Decision Pattern: ${agencyModel.decisionPattern}
+- Escalation Ladder: ${formatStringList(agencyModel.escalationLadder)}`);
 
   userSections.push(`DEEP RELATIONSHIPS (from Stage 4):
 Relationships:
@@ -171,7 +178,9 @@ Personal Dilemmas: ${formatStringList(deepRelationships.personalDilemmas)}`);
 - speechFingerprint.registerShifts: How the voice changes under stress, intimacy, public pressure, or status shifts.
 - appearance: Brief physical presentation guidance grounded in prior stages.
 - knowledgeBoundaries: What the character knows, suspects, misreads, and cannot know.
-- conflictPriority: State what wins when the character's goals conflict.`);
+- conflictPriority: State what wins when the character's goals conflict.
+- stressVariants: Object with underThreat, inIntimacy, whenLying, whenAshamed, whenWinning — how the character's voice shifts under each condition.
+- relationSpecificVariants: Array of 0+ entries for major cast relationships. Each has towardCharacter, registerShift, and emotionalLeakage.`);
 
   return [
     { role: 'system', content: systemSections.join('\n\n') },

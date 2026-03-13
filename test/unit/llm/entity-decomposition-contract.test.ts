@@ -32,8 +32,13 @@ describe('entity-decomposition-contract alignment', () => {
   });
 
   it('keeps character field sets aligned across parser/schema contract lists', () => {
-    // Enum fields (emotionSalience, storyFunction) are handled separately from string/array fields
-    const ENUM_FIELDS = new Set(['emotionSalience', 'storyFunction']);
+    // Enum and nullable-object fields are handled separately from string/array fields
+    const ENUM_FIELDS = new Set([
+      'emotionSalience',
+      'storyFunction',
+      'stressVariants',
+      'focalizationFilter',
+    ]);
     const characterSet = new Set([...CHARACTER_ARRAY_FIELDS, ...CHARACTER_STRING_FIELDS]);
     expect(characterSet).toEqual(
       new Set(

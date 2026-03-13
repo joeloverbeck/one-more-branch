@@ -17,6 +17,8 @@ export const CHAR_AGENCY_GENERATION_SCHEMA: JsonSchema = {
         'currentIntentions',
         'falseBeliefs',
         'decisionPattern',
+        'focalizationFilter',
+        'escalationLadder',
       ],
       properties: {
         characterName: {
@@ -64,6 +66,32 @@ export const CHAR_AGENCY_GENERATION_SCHEMA: JsonSchema = {
         decisionPattern: {
           type: 'string',
           description: 'A concise explanation of how the character typically makes decisions under pressure.',
+        },
+        focalizationFilter: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['noticesFirst', 'systematicallyMisses', 'misreadsAs'],
+          properties: {
+            noticesFirst: {
+              type: 'string',
+              description:
+                'What this character attends to before anything else in a room or situation.',
+            },
+            systematicallyMisses: {
+              type: 'string',
+              description: 'What this character consistently overlooks or underweights.',
+            },
+            misreadsAs: {
+              type: 'string',
+              description: 'How this character systematically misinterprets certain cues.',
+            },
+          },
+        },
+        escalationLadder: {
+          type: 'array',
+          description:
+            '3-5 ordered steps showing how this character escalates when blocked. From mild to extreme.',
+          items: { type: 'string' },
         },
       },
     },

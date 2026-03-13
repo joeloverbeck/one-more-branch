@@ -87,7 +87,11 @@ export function buildCharTridimensionalPrompt(
 - Primary Opposition: ${characterKernel.primaryOpposition}
 - Stakes: ${characterKernel.stakes.join('; ')}
 - Constraints: ${characterKernel.constraints.join('; ')}
-- Pressure Point: ${characterKernel.pressurePoint}`);
+- Pressure Point: ${characterKernel.pressurePoint}
+- Moral Line: ${characterKernel.moralLine}
+- Unacceptable Cost: ${characterKernel.unacceptableCost}
+- Worst Fear: ${characterKernel.worstFear}
+- Scene Objective Patterns: ${characterKernel.sceneObjectivePatterns.join('; ')}`);
 
   const conceptSection = buildTridimensionalConceptSection(context.conceptSpec);
   const kernelSection = buildTridimensionalKernelSection(context.storyKernel);
@@ -118,7 +122,20 @@ export function buildCharTridimensionalPrompt(
 - sociology: The character's environmental dimension — class, occupation, education, community. These shape how they pursue their super-objective.
 - psychology: The character's mental dimension — morals, temperament, complexes, abilities. Must logically follow from physiology + sociology.
 - derivationChain: Show explicitly how you derived each dimension from the kernel and cast role. Chain of reasoning from dramatic needs to character details.
-- coreTraits: Array of 5-8 defining behavioral traits that emerge from the three dimensions.`);
+- coreTraits: Array of 5-8 defining behavioral traits that emerge from the three dimensions.
+- formativeWound: The defining early experience that shaped this character's defenses. 1-2 sentences.
+- protectiveMask: The persona this character projects to hide or compensate for their wound. 1 sentence.
+- misbelief: The false conclusion the character drew from their wound that distorts their worldview. 1 sentence.
+- credibleSurprises: Array of 2-3 actions that initially seem out of pattern but become inevitable in light of wound + need + pressure.
+- implausibleMoves: Array of 2-3 actions that would break character integrity — the outer boundary.
+- stressTells: Array of 2-4 physical/behavioral tells when under pressure.
+- attachmentStyle: How this character forms and maintains bonds. 1 sentence.
+- traitToSceneAffordances: Array of 2-4 entries linking a core trait to what it enables or blocks in scenes.`);
+
+  userSections.push(`GENERATION RULES:
+- formativeWound must generate the protectiveMask and misbelief as logical consequences.
+- credibleSurprises must be actions that initially seem out of pattern but become inevitable in light of wound, need, and pressure.
+- implausibleMoves define the outer boundary of character integrity — these are actions this character could NEVER do without becoming a different person.`);
 
   return [
     { role: 'system', content: systemSections.join('\n\n') },

@@ -48,6 +48,7 @@ function createWebContext(overrides?: Partial<CharacterWebContext>): CharacterWe
       characterDepth: CharacterDepth.ROUND,
       narrativeRole: 'The rival claimant pressing the protagonist toward civil war.',
       conflictRelationship: 'Directly opposes the protagonist while needing their mercy.',
+      privateAgenda: 'Build a personal army loyal only to him.',
     },
     protagonistName: 'Mira',
     relationshipArchetypes: [
@@ -78,10 +79,17 @@ function createContext(
       stakes: ['His family line dies with him', 'The rebellion becomes pure slaughter'],
       constraints: ['His sister is hidden among civilians', 'He refuses to become a butcher'],
       pressurePoint: 'Any threat to his sister makes him reckless.',
+      moralLine: 'He will not sacrifice civilians to win the throne.',
+      unacceptableCost: 'Losing his sister to gain the crown.',
+      worstFear: 'Becoming the tyrant he set out to overthrow.',
+      sceneObjectivePatterns: [
+        'Test loyalty before revealing plans',
+        'Secure retreat options before committing',
+      ],
     },
     tridimensionalProfile: {
       characterName: 'Kael',
-      physiology: 'Lean, scarred, sleep-starved, carrying a soldier’s economy of motion.',
+      physiology: 'Lean, scarred, sleep-starved, carrying a soldier\'s economy of motion.',
       sociology:
         'Raised in a deposed royal household, then hardened among smugglers and deserters.',
       psychology:
@@ -89,6 +97,14 @@ function createContext(
       derivationChain:
         'Dispossession plus concealment produced a man who performs calm while expecting betrayal.',
       coreTraits: ['controlled', 'vindictive', 'protective', 'strategic', 'ashamed'],
+      formativeWound: 'Witnessing his family executed while hiding behind a false wall.',
+      protectiveMask: 'Cold strategic composure that keeps everyone at a safe distance.',
+      misbelief: 'That showing vulnerability will always be punished.',
+      stressTells: ['jaw clenching', 'speaking in clipped imperatives', 'touching his scar'],
+      credibleSurprises: ['Showing genuine mercy to a defeated enemy'],
+      implausibleMoves: ['Publicly trusting the king at face value'],
+      attachmentStyle: 'Dismissive-avoidant, keeping emotional distance.',
+      traitToSceneAffordances: ['Hypervigilance → notices hidden threats first'],
     },
     agencyModel: {
       characterName: 'Kael',
@@ -100,6 +116,12 @@ function createContext(
       falseBeliefs: ['Mira will always stop him before he crosses the line'],
       decisionPattern:
         'He gathers advantages patiently, then makes abrupt irreversible moves when family is threatened.',
+      escalationLadder: ['veiled warning', 'public ultimatum', 'targeted strike', 'scorched earth'],
+      focalizationFilter: {
+        noticesFirst: 'Power dynamics and exit routes.',
+        systematicallyMisses: 'Genuine emotional overtures.',
+        misreadsAs: 'Interprets vulnerability as manipulation.',
+      },
     },
     deepRelationships: {
       relationships: [
@@ -114,7 +136,9 @@ function createContext(
           currentTension:
             'Mira wants legitimacy through coalition; Kael keeps preparing for a decisive purge.',
           leverage:
-            'Mira knows where Kael’s sister is hidden, while Kael knows Mira’s bloodline could shatter her alliances.',
+            'Mira knows where Kael\'s sister is hidden, while Kael knows Mira\'s bloodline could shatter her alliances.',
+          ruptureTriggers: ['Discovering Kael ordered a civilian massacre'],
+          repairMoves: ['Kael publicly renouncing violence against non-combatants'],
         },
       ],
       secrets: ['Kael suspects his father ordered atrocities that justify the rebellion against him.'],
@@ -157,9 +181,17 @@ function validPresentationResponseRaw(
     appearance:
       'Lean and severe, with an old cheek scar and the disciplined stillness of someone used to being watched.',
     knowledgeBoundaries:
-      'Kael knows the court’s military fractures and Mira’s coalition weaknesses, but he does not know which captains are double agents and misreads how much mercy the public will tolerate.',
+      'Kael knows the court\'s military fractures and Mira\'s coalition weaknesses, but he does not know which captains are double agents and misreads how much mercy the public will tolerate.',
     conflictPriority:
       'When survival, loyalty, and legitimacy collide, Kael protects his sister first and the throne second.',
+    stressVariants: {
+      underThreat: 'Voice drops to a whisper',
+      inIntimacy: 'Stumbles over words',
+      whenLying: 'Becomes overly formal',
+      whenAshamed: 'Retreats into sarcasm',
+      whenWinning: 'Becomes expansive and generous',
+    },
+    relationSpecificVariants: [],
     ...overrides,
   };
 }
@@ -233,6 +265,8 @@ describe('CHAR_PRESENTATION_GENERATION_SCHEMA', () => {
       'appearance',
       'knowledgeBoundaries',
       'conflictPriority',
+      'stressVariants',
+      'relationSpecificVariants',
     ]);
   });
 
@@ -327,7 +361,7 @@ describe('generateCharPresentation', () => {
       createMockResponse(
         validPresentationResponseRaw({
           speechFingerprint: {
-            ...validPresentationResponseRaw().speechFingerprint,
+            ...(validPresentationResponseRaw().speechFingerprint as Record<string, unknown>),
             dialogueSamples: 'Not an array',
           },
         })
