@@ -148,7 +148,7 @@ describe('toDecomposedCharacter', () => {
       name: 'Mara Voss',
       speechFingerprint: createCharacter().textualPresentation!.speechFingerprint,
       coreTraits: ['competitive', 'wary', 'resourceful'],
-      motivations: 'Claim the route before the protagonist can legitimize it.',
+      superObjective: 'Claim the route before the protagonist can legitimize it.',
       thematicStance:
         'Iria Vale forcing cooperation turns Lose the route, Lose control of her crew into a personal test.',
       protagonistRelationship: {
@@ -250,7 +250,7 @@ describe('toDecomposedCharacterFromWeb', () => {
         registerShifts: '',
       },
       coreTraits: ['rival', 'round'],
-      motivations:
+      superObjective:
         'A brilliant salvager who keeps outbidding the crew. She needs the protagonist but refuses to yield control.',
       thematicStance:
         'They need each other to survive, but each reads compromise as surrender. This defines how this rival pressures the protagonist.',

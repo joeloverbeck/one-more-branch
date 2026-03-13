@@ -22,7 +22,7 @@ function makeDecomposed(name: string, overrides: Partial<DecomposedCharacter> = 
     name,
     speechFingerprint: makeFingerprint(),
     coreTraits: ['wise'],
-    motivations: 'Seek truth',
+    superObjective: 'Seek truth',
     relationships: [],
     knowledgeBoundaries: 'None',
     decisionPattern: 'Measured',

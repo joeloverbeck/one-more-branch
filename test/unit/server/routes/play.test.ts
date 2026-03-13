@@ -478,7 +478,7 @@ describe('playRoutes', () => {
             name: 'Aria',
             appearance: 'Tall with silver hair',
             coreTraits: ['Cautious', 'Empathetic'],
-            motivations: 'Keep the kingdom intact',
+            superObjective: 'Keep the kingdom intact',
             relationships: ['Mentors Prince Oren'],
             speechFingerprint: {
               catchphrases: [],

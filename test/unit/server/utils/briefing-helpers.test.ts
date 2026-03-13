@@ -10,7 +10,7 @@ function buildCharacter(overrides: Partial<DecomposedCharacter> = {}): Decompose
     name: 'Aria',
     appearance: 'Tall with silver hair',
     coreTraits: ['Calm', 'Perceptive'],
-    motivations: 'Protect the city',
+    superObjective: 'Protect the city',
     protagonistRelationship: null,
     knowledgeBoundaries: 'Does not know traitor identity',
     rawDescription: 'Character',
@@ -47,7 +47,7 @@ describe('briefing-helpers', () => {
   it('maps NPCs and joins agendas with case-insensitive name matching', () => {
     const characters = [
       buildCharacter({ name: 'Aria' }),
-      buildCharacter({ name: 'Captain Vex', motivations: 'Keep power' }),
+      buildCharacter({ name: 'Captain Vex', superObjective: 'Keep power' }),
     ];
     const agendas: NpcAgenda[] = [
       {

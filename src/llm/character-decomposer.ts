@@ -1,6 +1,7 @@
 import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
 import type { SpeechFingerprint } from '../models/decomposed-character.js';
+import { isEmotionSalience } from '../models/character-enums.js';
 import type { StandaloneDecomposedCharacter } from '../models/standalone-decomposed-character.js';
 import { logger, logPrompt, logResponse } from '../logging/index.js';
 import type { JsonSchema, ChatMessage } from './llm-client-types.js';
@@ -79,13 +80,18 @@ function parseCharacterDecompositionResponse(
 
   const speechFingerprint = parseSpeechFingerprint(data);
 
+  const superObjective = parseStringField(data, 'superObjective');
+  const pressurePoint = parseStringField(data, 'pressurePoint');
+  const stakes = parseStringArrayField(data, 'stakes');
+  const personalDilemmas = parseStringArrayField(data, 'personalDilemmas');
+  const rawEmotionSalience = data['emotionSalience'];
+
   return {
     character: {
       name: data['name'].trim(),
       rawDescription: context.characterDescription,
       speechFingerprint,
       coreTraits: parseStringArrayField(data, 'coreTraits'),
-      motivations: parseStringField(data, 'motivations'),
       knowledgeBoundaries: parseStringField(data, 'knowledgeBoundaries'),
       falseBeliefs: parseStringArrayField(data, 'falseBeliefs'),
       secretsKept: parseStringArrayField(data, 'secretsKept'),
@@ -93,6 +99,11 @@ function parseCharacterDecompositionResponse(
       coreBeliefs: parseStringArrayField(data, 'coreBeliefs'),
       conflictPriority: parseStringField(data, 'conflictPriority'),
       appearance: parseStringField(data, 'appearance'),
+      ...(superObjective ? { superObjective } : {}),
+      ...(stakes.length > 0 ? { stakes } : {}),
+      ...(pressurePoint ? { pressurePoint } : {}),
+      ...(personalDilemmas.length > 0 ? { personalDilemmas } : {}),
+      ...(isEmotionSalience(rawEmotionSalience) ? { emotionSalience: rawEmotionSalience } : {}),
     },
   };
 }

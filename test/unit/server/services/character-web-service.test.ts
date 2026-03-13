@@ -180,7 +180,7 @@ function createDecomposedCharacter(name: string): DecomposedCharacter {
       registerShifts: '',
     },
     coreTraits: ['guarded'],
-    motivations: 'Survive',
+    superObjective: 'Survive',
     thematicStance: 'Trust is a liability.',
     protagonistRelationship: null,
     knowledgeBoundaries: 'Knows enough to stay dangerous.',

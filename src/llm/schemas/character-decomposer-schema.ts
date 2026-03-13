@@ -8,7 +8,7 @@ import type { JsonSchema } from '../llm-client-types.js';
 type SchemaProperty = Record<string, any>;
 
 function buildSchemaProperties(
-  fields: Record<string, { type: string; description: string }>
+  fields: Record<string, { type: string; description: string; values?: readonly string[] }>
 ): Record<string, SchemaProperty> {
   const properties: Record<string, SchemaProperty> = {};
 
@@ -23,6 +23,17 @@ function buildSchemaProperties(
     }
 
     if (field.type === 'nullable_object') {
+      continue;
+    }
+
+    if (field.type === 'nullable_enum' && field.values) {
+      properties[key] = {
+        anyOf: [
+          { type: 'string', enum: [...field.values] },
+          { type: 'null' },
+        ],
+        description: field.description,
+      };
       continue;
     }
 
@@ -52,7 +63,7 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
       required: [
         'name',
         'coreTraits',
-        'motivations',
+        'superObjective',
         'knowledgeBoundaries',
         'appearance',
         'decisionPattern',
@@ -60,6 +71,10 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
         'conflictPriority',
         'falseBeliefs',
         'secretsKept',
+        'stakes',
+        'pressurePoint',
+        'personalDilemmas',
+        'emotionSalience',
         'speechFingerprint',
       ],
       properties: {
@@ -72,9 +87,37 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
           description: '3-5 defining personality traits. E.g. ["stubborn", "loyal", "sarcastic"].',
           items: { type: 'string' },
         },
-        motivations: {
+        superObjective: {
           type: 'string',
-          description: 'What drives this character. 1-2 sentences.',
+          description:
+            'The character\'s overarching dramatic goal — the single deepest drive that shapes all their actions. ' +
+            'E.g. "To prove she deserves to exist on her own terms." 1 sentence.',
+        },
+        stakes: {
+          type: 'array',
+          description:
+            'What this character stands to lose or gain. 2-4 concrete items. ' +
+            'E.g. ["Her freedom if the pact is discovered", "The only family she has left"].',
+          items: { type: 'string' },
+        },
+        pressurePoint: {
+          type: 'string',
+          description:
+            'The vulnerability that could force this character to act against their own self-interest. 1 sentence.',
+        },
+        personalDilemmas: {
+          type: 'array',
+          description:
+            'Competing loyalties or values that create internal conflict. 1-3 items.',
+          items: { type: 'string' },
+        },
+        emotionSalience: {
+          anyOf: [
+            { type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH'] },
+            { type: 'null' },
+          ],
+          description:
+            'How emotionally expressive this character is. LOW = stoic/guarded, MEDIUM = situationally expressive, HIGH = emotionally driven.',
         },
         knowledgeBoundaries: {
           type: 'string',

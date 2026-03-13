@@ -22,6 +22,7 @@ import {
 import { isGenreObligationTag } from '../models/genre-obligations';
 import type { CanonFact } from '../models/state/canon';
 import type { DecomposedCharacter } from '../models/decomposed-character';
+import { isEmotionSalience, isStoryFunction } from '../models/character-enums';
 import type { DecomposedWorld, WorldFactDomain, WorldFactType } from '../models/decomposed-world';
 import type {
   StorySpine,
@@ -268,7 +269,7 @@ export function serializeStory(story: Story): StoryFileData {
               registerShifts: char.speechFingerprint.registerShifts,
             },
             coreTraits: [...char.coreTraits],
-            motivations: char.motivations,
+            ...(char.superObjective ? { superObjective: char.superObjective } : {}),
             thematicStance: char.thematicStance,
             protagonistRelationship: char.protagonistRelationship
               ? { ...char.protagonistRelationship }
@@ -285,6 +286,16 @@ export function serializeStory(story: Story): StoryFileData {
             conflictPriority: char.conflictPriority,
             appearance: char.appearance,
             rawDescription: char.rawDescription,
+            ...(char.stakes && char.stakes.length > 0
+              ? { stakes: [...char.stakes] }
+              : {}),
+            ...(char.pressurePoint ? { pressurePoint: char.pressurePoint } : {}),
+            ...(char.personalDilemmas && char.personalDilemmas.length > 0
+              ? { personalDilemmas: [...char.personalDilemmas] }
+              : {}),
+            ...(char.emotionSalience ? { emotionSalience: char.emotionSalience } : {}),
+            ...(char.storyFunction ? { storyFunction: char.storyFunction } : {}),
+            ...(char.narrativeRole ? { narrativeRole: char.narrativeRole } : {}),
           })),
         }
       : {}),
@@ -394,34 +405,52 @@ export function deserializeStory(data: StoryFileData): Story {
     ...(data.decomposedCharacters
       ? {
           decomposedCharacters: data.decomposedCharacters.map(
-            (char): DecomposedCharacter => ({
-              name: char.name,
-              speechFingerprint: {
-                catchphrases: [...char.speechFingerprint.catchphrases],
-                vocabularyProfile: char.speechFingerprint.vocabularyProfile,
-                sentencePatterns: char.speechFingerprint.sentencePatterns,
-                verbalTics: [...char.speechFingerprint.verbalTics],
-                dialogueSamples: [...char.speechFingerprint.dialogueSamples],
-                metaphorFrames: char.speechFingerprint.metaphorFrames,
-                antiExamples: [...char.speechFingerprint.antiExamples],
-                discourseMarkers: [...char.speechFingerprint.discourseMarkers],
-                registerShifts: char.speechFingerprint.registerShifts,
-              },
-              coreTraits: [...char.coreTraits],
-              motivations: char.motivations,
-              thematicStance: char.thematicStance,
-              protagonistRelationship: char.protagonistRelationship
-                ? { ...char.protagonistRelationship }
-                : null,
-              knowledgeBoundaries: char.knowledgeBoundaries,
-              ...(char.falseBeliefs ? { falseBeliefs: [...char.falseBeliefs] } : {}),
-              ...(char.secretsKept ? { secretsKept: [...char.secretsKept] } : {}),
-              decisionPattern: char.decisionPattern,
-              coreBeliefs: [...char.coreBeliefs],
-              conflictPriority: char.conflictPriority,
-              appearance: char.appearance,
-              rawDescription: char.rawDescription,
-            })
+            (char): DecomposedCharacter => {
+              // Auto-migrate legacy motivations → superObjective
+              const superObjective = char.superObjective ?? char.motivations;
+              return {
+                name: char.name,
+                speechFingerprint: {
+                  catchphrases: [...char.speechFingerprint.catchphrases],
+                  vocabularyProfile: char.speechFingerprint.vocabularyProfile,
+                  sentencePatterns: char.speechFingerprint.sentencePatterns,
+                  verbalTics: [...char.speechFingerprint.verbalTics],
+                  dialogueSamples: [...char.speechFingerprint.dialogueSamples],
+                  metaphorFrames: char.speechFingerprint.metaphorFrames,
+                  antiExamples: [...char.speechFingerprint.antiExamples],
+                  discourseMarkers: [...char.speechFingerprint.discourseMarkers],
+                  registerShifts: char.speechFingerprint.registerShifts,
+                },
+                coreTraits: [...char.coreTraits],
+                ...(superObjective ? { superObjective } : {}),
+                thematicStance: char.thematicStance,
+                protagonistRelationship: char.protagonistRelationship
+                  ? { ...char.protagonistRelationship }
+                  : null,
+                knowledgeBoundaries: char.knowledgeBoundaries,
+                ...(char.falseBeliefs ? { falseBeliefs: [...char.falseBeliefs] } : {}),
+                ...(char.secretsKept ? { secretsKept: [...char.secretsKept] } : {}),
+                decisionPattern: char.decisionPattern,
+                coreBeliefs: [...char.coreBeliefs],
+                conflictPriority: char.conflictPriority,
+                appearance: char.appearance,
+                rawDescription: char.rawDescription,
+                ...(char.stakes && char.stakes.length > 0
+                  ? { stakes: [...char.stakes] }
+                  : {}),
+                ...(char.pressurePoint ? { pressurePoint: char.pressurePoint } : {}),
+                ...(char.personalDilemmas && char.personalDilemmas.length > 0
+                  ? { personalDilemmas: [...char.personalDilemmas] }
+                  : {}),
+                ...(isEmotionSalience(char.emotionSalience)
+                  ? { emotionSalience: char.emotionSalience }
+                  : {}),
+                ...(isStoryFunction(char.storyFunction)
+                  ? { storyFunction: char.storyFunction }
+                  : {}),
+                ...(char.narrativeRole ? { narrativeRole: char.narrativeRole } : {}),
+              };
+            }
           ),
         }
       : {}),

@@ -187,6 +187,13 @@ INSTRUCTIONS:
 9. For false beliefs: identify sincere misconceptions from character background and context
 10. For secrets: identify truths the character actively hides from others
 11. Every character MUST include thematicStance as one sentence about their relationship to the story's thematic argument/value at stake
+12. superObjective: Identify the single deepest dramatic drive — what this character would pursue even at great personal cost. This REPLACES generic motivations
+13. stakes: List 2-4 concrete things the character stands to lose or gain. These should feel tangible, not abstract
+14. pressurePoint: Identify the one vulnerability that could force this character to act against their own interest
+15. personalDilemmas: Identify 1-3 competing loyalties or values that create genuine internal conflict
+16. emotionSalience: Assess how emotionally expressive this character is (LOW/MEDIUM/HIGH). null if uncertain
+17. storyFunction: Assign each NPC a structural role (ANTAGONIST, RIVAL, ALLY, MENTOR, CATALYST, OBSTACLE, FOIL, TRICKSTER, INNOCENT). null for the protagonist
+18. narrativeRole: Describe what each character DOES in the story — their functional contribution to the narrative
 ```
 
 ## JSON Response Shape
@@ -210,7 +217,13 @@ INSTRUCTIONS:
         "registerShifts": "{{how speech changes by context}}"
       },
       "coreTraits": ["{{trait1}}", "{{trait2}}", "{{trait3}}"],
-      "motivations": "{{what drives this character}}",
+      "superObjective": "{{single deepest dramatic drive}}",
+      "stakes": ["{{what character stands to lose or gain}}"],
+      "pressurePoint": "{{vulnerability forcing action against self-interest}}",
+      "personalDilemmas": ["{{competing loyalty or value}}"],
+      "emotionSalience": "{{LOW|MEDIUM|HIGH|null}}",
+      "storyFunction": "{{ANTAGONIST|RIVAL|ALLY|MENTOR|CATALYST|OBSTACLE|FOIL|TRICKSTER|INNOCENT|null}}",
+      "narrativeRole": "{{what this character DOES in the story}}",
       "thematicStance": "{{how this character aligns or conflicts with the story's thematic argument}}",
       "protagonistRelationship": {
         "valence": 3,

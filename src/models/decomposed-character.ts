@@ -18,11 +18,13 @@ export interface DecomposedRelationship {
   readonly leverage: string; // 1 sentence
 }
 
+import type { EmotionSalience, StoryFunction } from './character-enums.js';
+
 export interface DecomposedCharacter {
   readonly name: string;
   readonly speechFingerprint: SpeechFingerprint;
   readonly coreTraits: readonly string[];
-  readonly motivations: string;
+  readonly superObjective?: string;
   readonly thematicStance: string;
   readonly protagonistRelationship: DecomposedRelationship | null;
   readonly knowledgeBoundaries: string;
@@ -33,6 +35,12 @@ export interface DecomposedCharacter {
   readonly conflictPriority: string;
   readonly appearance: string;
   readonly rawDescription: string;
+  readonly stakes?: readonly string[];
+  readonly pressurePoint?: string;
+  readonly personalDilemmas?: readonly string[];
+  readonly emotionSalience?: EmotionSalience;
+  readonly storyFunction?: StoryFunction;
+  readonly narrativeRole?: string;
 }
 
 export function formatDecomposedCharacterForPrompt(
@@ -48,10 +56,40 @@ export function formatDecomposedCharacterForPrompt(
 
   lines.push(
     `Core Traits: ${char.coreTraits.join(', ')}`,
-    `Motivations: ${char.motivations}`,
+  );
+
+  if (char.superObjective) {
+    lines.push(`Super-Objective: ${char.superObjective}`);
+  }
+
+  lines.push(
     `Thematic Stance: ${char.thematicStance}`,
     `Appearance: ${char.appearance}`
   );
+
+  if (char.stakes && char.stakes.length > 0) {
+    lines.push(`Stakes:\n${char.stakes.map((s) => `  - ${s}`).join('\n')}`);
+  }
+
+  if (char.pressurePoint) {
+    lines.push(`Pressure Point: ${char.pressurePoint}`);
+  }
+
+  if (char.personalDilemmas && char.personalDilemmas.length > 0) {
+    lines.push(`Personal Dilemmas:\n${char.personalDilemmas.map((d) => `  - ${d}`).join('\n')}`);
+  }
+
+  if (char.emotionSalience) {
+    lines.push(`Emotion Salience: ${char.emotionSalience}`);
+  }
+
+  if (char.storyFunction) {
+    lines.push(`Story Function: ${char.storyFunction}`);
+  }
+
+  if (char.narrativeRole) {
+    lines.push(`Narrative Role: ${char.narrativeRole}`);
+  }
 
   if (char.protagonistRelationship !== null) {
     const rel = char.protagonistRelationship;

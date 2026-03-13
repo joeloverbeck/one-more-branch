@@ -21,4 +21,11 @@ export const ENTITY_DECOMPOSER_USER_INSTRUCTIONS: readonly string[] = [
   'For false beliefs: identify sincere misconceptions from character background and context',
   'For secrets: identify truths the character actively hides from others',
   "Every character MUST include thematicStance as one sentence about their relationship to the story's thematic argument/value at stake",
+  'superObjective: Identify the single deepest dramatic drive — what this character would pursue even at great personal cost. This REPLACES generic motivations',
+  'stakes: List 2-4 concrete things the character stands to lose or gain. These should feel tangible, not abstract',
+  'pressurePoint: Identify the one vulnerability that could force this character to act against their own interest',
+  'personalDilemmas: Identify 1-3 competing loyalties or values that create genuine internal conflict',
+  'emotionSalience: Assess how emotionally expressive this character is (LOW/MEDIUM/HIGH). null if uncertain',
+  'storyFunction: Assign each NPC a structural role (ANTAGONIST, RIVAL, ALLY, MENTOR, CATALYST, OBSTACLE, FOIL, TRICKSTER, INNOCENT). null for the protagonist',
+  'narrativeRole: Describe what each character DOES in the story — their functional contribution to the narrative',
 ];

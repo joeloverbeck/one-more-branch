@@ -278,7 +278,7 @@ export function toDecomposedCharacter(
     name: webContext.assignment.characterName,
     speechFingerprint: char.textualPresentation.speechFingerprint,
     coreTraits: char.tridimensionalProfile.coreTraits,
-    motivations: char.characterKernel.superObjective,
+    superObjective: char.characterKernel.superObjective,
     thematicStance: buildFullThematicStance(char),
     protagonistRelationship:
       protagonistRelationship === null
@@ -309,7 +309,7 @@ export function toDecomposedCharacterFromWeb(
     name: assignment.characterName,
     speechFingerprint: LIGHTWEIGHT_SPEECH_FINGERPRINT,
     coreTraits: buildLightweightCoreTraits(assignment),
-    motivations: buildLightweightMotivations(assignment),
+    superObjective: buildLightweightMotivations(assignment),
     thematicStance: buildLightweightThematicStance(assignment, protagonistArchetype),
     protagonistRelationship:
       protagonistArchetype === null ? null : mapArchetypeToDecomposedRelationship(protagonistArchetype),
