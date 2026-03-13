@@ -10,6 +10,7 @@ import type { ConceptSpec, ConceptVerification } from '../../models/concept-gene
 import type { StorySpine } from '../../models/story-spine.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 import { isStoryKernel } from '../../models/story-kernel.js';
+import { loadCharacter } from '../../persistence/character-repository.js';
 import { generationProgressService } from '../services/index.js';
 import { logLLMError, StoryFormInput, validateStoryInput } from '../services/index.js';
 import {
@@ -115,6 +116,8 @@ storyRoutes.post(
       worldbuilding?: string;
       tone?: string;
       npcs?: Array<{ name?: string; description?: string }>;
+      protagonistCharacterId?: string;
+      npcCharacterIds?: string[];
       startingSituation?: string;
       apiKey?: string;
       conceptSpec?: unknown;
@@ -183,12 +186,28 @@ storyRoutes.post(
           ? rawContentPreferences
           : undefined;
 
+      // Load decomposed characters when IDs are provided (new pipeline)
+      const allCharacterIds = [
+        ...(body.protagonistCharacterId ? [body.protagonistCharacterId] : []),
+        ...(body.npcCharacterIds ?? []),
+      ];
+      const decomposedCharacters =
+        allCharacterIds.length > 0
+          ? (await Promise.all(allCharacterIds.map((id) => loadCharacter(id)))).filter(
+              (c): c is NonNullable<typeof c> => c !== null
+            )
+          : undefined;
+
       const result = await generateStorySpines(
         {
           characterConcept,
           worldbuilding: body.worldbuilding?.trim() ?? '',
           tone: body.tone?.trim() ?? 'fantasy adventure',
           npcs: validNpcs && validNpcs.length > 0 ? validNpcs : undefined,
+          decomposedCharacters:
+            decomposedCharacters && decomposedCharacters.length > 0
+              ? decomposedCharacters
+              : undefined,
           startingSituation: body.startingSituation?.trim(),
           conceptSpec: validatedConceptSpec,
           storyKernel: validatedKernel,

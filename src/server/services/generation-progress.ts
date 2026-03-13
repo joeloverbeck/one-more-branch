@@ -13,6 +13,7 @@ export const GENERATION_FLOW_TYPES = [
   'content-generation',
   'character-web-generation',
   'character-stage-generation',
+  'character-decomposition',
 ] as const;
 
 export type GenerationFlowType = (typeof GENERATION_FLOW_TYPES)[number];

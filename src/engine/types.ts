@@ -1,5 +1,5 @@
 import type { FullPipelineMetrics } from '../llm/generation-pipeline-types.js';
-import { Npc, Page, PageId, Story, StoryId } from '../models';
+import { type Npc, Page, PageId, Story, StoryId } from '../models';
 import type { ConceptSpec, ConceptVerification } from '../models/concept-generator.js';
 import type { StorySpine } from '../models/story-spine.js';
 import type { StoryKernel } from '../models/story-kernel.js';
@@ -56,6 +56,8 @@ export interface StartStoryOptions {
   readonly worldbuilding?: string;
   readonly tone?: string;
   readonly npcs?: readonly Npc[];
+  readonly protagonistCharacterId?: string;
+  readonly npcCharacterIds?: readonly string[];
   readonly startingSituation?: string;
   readonly conceptSpec?: ConceptSpec;
   readonly storyKernel?: StoryKernel;

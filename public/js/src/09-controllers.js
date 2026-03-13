@@ -665,6 +665,17 @@ function initNewStoryPage() {
   initNpcControls();
   initDynamicLists();
 
+  // Character selector for decomposed characters
+  var protagonistSelectEl = document.getElementById('protagonist-character-selector');
+  var npcCheckboxContainer = document.getElementById('npc-character-checkboxes');
+  var characterSelector =
+    protagonistSelectEl && npcCheckboxContainer
+      ? createCharacterSelector(protagonistSelectEl, npcCheckboxContainer)
+      : null;
+  if (characterSelector) {
+    characterSelector.init();
+  }
+
   function toTrimmedString(value) {
     return typeof value === 'string' ? value.trim() : '';
   }
@@ -1153,6 +1164,16 @@ function initNewStoryPage() {
         contentPreferences: selectedContentPreferences || undefined,
         progressId: progressId,
       };
+      if (characterSelector) {
+        var protId = characterSelector.getProtagonistCharacterId();
+        if (protId) {
+          spineBody.protagonistCharacterId = protId;
+        }
+        var npcIds = characterSelector.getNpcCharacterIds();
+        if (npcIds.length > 0) {
+          spineBody.npcCharacterIds = npcIds;
+        }
+      }
       if (selectedKernelForStory) {
         spineBody.storyKernel = selectedKernelForStory;
       }
@@ -1225,6 +1246,16 @@ function initNewStoryPage() {
         spine: spine,
         progressId: progressId,
       };
+      if (characterSelector) {
+        var protId = characterSelector.getProtagonistCharacterId();
+        if (protId) {
+          createBody.protagonistCharacterId = protId;
+        }
+        var npcIds = characterSelector.getNpcCharacterIds();
+        if (npcIds.length > 0) {
+          createBody.npcCharacterIds = npcIds;
+        }
+      }
       if (selectedKernelForStory) {
         createBody.storyKernel = selectedKernelForStory;
       }
@@ -1321,4 +1352,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initEvolutionPage();
   initKernelEvolutionPage();
   initCharacterWebsPage();
+  initCharactersPage();
 });

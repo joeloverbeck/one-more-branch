@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container" id="characters-page">
+    <section class="hero">
+      <h1>Character Profiles</h1>
+      <p class="tagline">Decompose characters individually for maximum fidelity. Select them later when creating stories.</p>
+    </section>
+
+    <div class="alert alert-error" id="characters-error" style="display: none;" role="alert"></div>
+
+    <section class="form-section">
+      <h2>Decompose a Character</h2>
+
+      <div class="stories-grid">
+        <article class="story-card">
+          <div class="story-card-content">
+            <div class="form-group">
+              <label for="characters-api-key">OpenRouter API Key</label>
+              <input
+                type="password"
+                id="characters-api-key"
+                placeholder="sk-or-..."
+                autocomplete="off"
+              >
+              <p class="form-help">Stored only in this browser session.</p>
+            </div>
+
+            <div class="form-group">
+              <label for="character-name-input">Character Name *</label>
+              <input type="text" id="character-name-input" maxlength="100" placeholder="e.g. Kira Blackwood" required>
+            </div>
+
+            <div class="form-group">
+              <label for="character-desc-input">Character Description *</label>
+              <textarea id="character-desc-input" rows="8" placeholder="Describe the character in as much detail as you want — personality, background, appearance, speech patterns, motivations, secrets..." required></textarea>
+              <p class="form-help">The richer the description, the more nuanced the decomposition.</p>
+            </div>
+          </div>
+          <div class="story-card-actions">
+            <button type="button" class="btn btn-primary" id="character-decompose-btn">Decompose Character</button>
+          </div>
+        </article>
+
+        <article class="story-card">
+          <div class="story-card-content">
+            <h3>Saved Characters</h3>
+            <p class="form-help">Select a character to view their full decomposition or delete them.</p>
+            <div id="character-list"></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="form-section" id="character-detail-section" style="display: none;">
+      <div class="story-card">
+        <div class="story-card-content">
+          <h2 id="selected-character-name"></h2>
+          <div id="character-detail-content"></div>
+        </div>
+        <div class="story-card-actions">
+          <button type="button" class="btn btn-danger" id="character-delete-btn">Delete Character</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="loading-overlay" id="loading" style="display: none;">
+      <div class="loading-stage" aria-live="polite"></div>
+      <div class="loading-spinner"></div>
+      <p class="loading-status">Decomposing character...</p>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { characterRoutes } from './characters';
 import { characterWebRoutes } from './character-webs';
 import { conceptSeedRoutes } from './concept-seeds';
 import { conceptRoutes } from './concepts';
@@ -20,6 +21,7 @@ router.use((_req, res, next) => {
 });
 
 router.use('/', homeRoutes);
+router.use('/characters', characterRoutes);
 router.use('/character-webs', characterWebRoutes);
 router.use('/concept-seeds', conceptSeedRoutes);
 router.use('/concepts', conceptRoutes);

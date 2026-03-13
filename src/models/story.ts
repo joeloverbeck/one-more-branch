@@ -27,6 +27,8 @@ export interface Story {
   readonly worldbuilding: string;
   readonly tone: StoryTone;
   readonly npcs?: readonly Npc[];
+  readonly protagonistCharacterId?: string;
+  readonly npcCharacterIds?: readonly string[];
   readonly startingSituation?: string;
   globalCanon: GlobalCanon;
   globalCharacterCanon: GlobalCharacterCanon;
@@ -52,6 +54,8 @@ export interface CreateStoryData {
   worldbuilding?: string;
   tone?: string;
   npcs?: readonly Npc[];
+  protagonistCharacterId?: string;
+  npcCharacterIds?: readonly string[];
   startingSituation?: string;
   conceptSpec?: ConceptSpec;
   storyKernel?: StoryKernel;
@@ -88,6 +92,8 @@ export function createStory(data: CreateStoryData): Story {
   );
   const npcs = validNpcs && validNpcs.length > 0 ? validNpcs : undefined;
   const startingSituation = data.startingSituation?.trim();
+  const npcCharacterIds =
+    data.npcCharacterIds && data.npcCharacterIds.length > 0 ? data.npcCharacterIds : undefined;
 
   return {
     id: generateStoryId(),
@@ -96,6 +102,8 @@ export function createStory(data: CreateStoryData): Story {
     worldbuilding: data.worldbuilding?.trim() ?? '',
     tone: data.tone?.trim() ?? 'fantasy adventure',
     npcs,
+    ...(data.protagonistCharacterId ? { protagonistCharacterId: data.protagonistCharacterId } : {}),
+    ...(npcCharacterIds ? { npcCharacterIds } : {}),
     startingSituation:
       startingSituation && startingSituation.length > 0 ? startingSituation : undefined,
     conceptSpec: data.conceptSpec,

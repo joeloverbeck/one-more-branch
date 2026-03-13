@@ -223,6 +223,21 @@ export function getTasteProfileFilePath(tasteProfileId: string): string {
   return path.join(getTasteProfilesDir(), `${tasteProfileId}.json`);
 }
 
+export function getCharactersDir(): string {
+  return path.resolve(process.cwd(), getConfig().storage.charactersDir);
+}
+
+export function ensureCharactersDir(): void {
+  const dir = getCharactersDir();
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+}
+
+export function getCharacterFilePath(characterId: string): string {
+  return path.join(getCharactersDir(), `${characterId}.json`);
+}
+
 export function getCharacterWebsDir(): string {
   return path.resolve(process.cwd(), getConfig().storage.characterWebsDir);
 }

@@ -960,6 +960,72 @@ const STAGE_PHRASE_POOLS = {
     'Bagging and tagging every unconfirmed rumor in the setting...',
     'Compiling the master index of who trusts whom and why...',
   ],
+  DECOMPOSING_CHARACTER: [
+    'Extracting verbal DNA from the character description...',
+    'Interviewing the character about their favorite words...',
+    'Building a voice-print from personality clues...',
+    'Sorting personality traits into labeled jars...',
+    'Recording speech patterns with a tiny narrative microphone...',
+    'Running personality tests on a fictional person...',
+    'Extracting catchphrases like rare gemstones...',
+    'Converting prose description into a structured dossier...',
+    'Distilling a character essay into personality espresso...',
+    'Ensuring this voice is unique in the narrative universe...',
+    'Deconstructing a personality without a license...',
+    'Bottling a voice like a rare perfume...',
+    'Reading between the lines of the character description...',
+    'Measuring the gap between what they say and how they say it...',
+    'Pinning this character specimen to the personality corkboard...',
+    'Extracting the personality core without damaging the backstory...',
+    'Sequencing the genome of this character\'s vocabulary...',
+    'Performing a deep-tissue analysis on speaking patterns...',
+    'Calibrating the voice detector for this specific dialect...',
+    'Filing decision patterns by impulsiveness and cunning...',
+  ],
+  CONTEXTUALIZING_CHARACTERS: [
+    'Mapping every relationship on a giant corkboard...',
+    'Sorting relationship dynamics by emotional voltage...',
+    'Cross-referencing character stances with thematic arguments...',
+    'Determining who stands where on the value spectrum...',
+    'Calculating leverage ratios between cast members...',
+    'Assigning thematic positions to each character...',
+    'Tracing the tension lines between protagonist and cast...',
+    'Measuring each NPC\'s orbit around the protagonist...',
+    'Calibrating relationship valence with emotional instruments...',
+    'Determining who\'s an ally, who\'s a foil, who\'s a wildcard...',
+    'Weighing character leverage on the interpersonal scales...',
+    'Preparing slides of relationship tension for close inspection...',
+    'Filing each NPC\'s history with the protagonist...',
+    'Pinning relationship valence readings to the tension board...',
+    'Positioning characters along the thematic fault line...',
+    'Sorting cast members by proximity to the dramatic question...',
+    'Assigning threat levels to each character\'s hidden agenda...',
+    'Mapping power dynamics with emotional sonar equipment...',
+    'Classifying each character\'s stance on the core thesis...',
+    'Building the relationship web from the protagonist outward...',
+  ],
+  DECOMPOSING_WORLD: [
+    'Decomposing worldbuilding into bite-sized propositions...',
+    'Pressing flowers from the worldbuilding garden into facts...',
+    'Filing worldbuilding lore under probably important...',
+    'Turning worldbuilding essays into indexed fact cards...',
+    'Building a fact atlas of the fictional universe...',
+    'Pressing raw lore into neat domain-stamped tablets...',
+    'Encoding world rules into machine-readable prophecy...',
+    'Tagging every world fact with its jurisdiction...',
+    'Stamping each world fact with its domain classification...',
+    'Performing an autopsy on the worldbuilding prose...',
+    'Sorting cultural norms from cultural wishful thinking...',
+    'Distilling geography descriptions into cartographic facts...',
+    'Pickling ecological details in preservation fluid...',
+    'Archiving historical events by how disputed they still are...',
+    'Laminating world laws so nobody can smudge them later...',
+    'Filing technology levels under plausible through ambitious...',
+    'Bagging and tagging every unconfirmed rumor in the setting...',
+    'Separating genuine mysteries from poorly labeled plot holes...',
+    'Classifying magic systems by how much they break physics...',
+    'Fitting each religion into its proper taxonomic bracket...',
+  ],
   STRUCTURING_STORY: [
     'Pouring the foundation for a brand-new story...',
     'Surveying the narrative landscape for load-bearing themes...',
@@ -1601,6 +1667,9 @@ const STAGE_DISPLAY_NAMES = {
   EVALUATING_NPC_INTELLIGENCE: 'READING MINDS',
   RESOLVING_AGENDAS: 'SCHEMING',
   DECOMPOSING_ENTITIES: 'STUDYING',
+  DECOMPOSING_CHARACTER: 'DECOMPOSING CHARACTER',
+  CONTEXTUALIZING_CHARACTERS: 'CONTEXTUALIZING',
+  DECOMPOSING_WORLD: 'WORLD-BUILDING',
   STRUCTURING_STORY: 'STRUCTURING',
   RESTRUCTURING_STORY: 'RESTRUCTURING',
   GENERATING_KERNELS: 'IDEATING',
@@ -4814,6 +4883,122 @@ function readFieldValue(fieldDef) {
   return (el.value || '').trim();
 }
 
+// ── Character Selector Component ─────────────────────────────────────
+// Populates protagonist dropdown and NPC checkboxes from decomposed characters.
+
+/**
+ * Creates a character selector controller for the new-story form.
+ * Fetches saved decomposed characters and renders selection UI.
+ *
+ * @param {HTMLSelectElement} protagonistSelect - The protagonist dropdown
+ * @param {HTMLElement} npcContainer - Container for NPC checkboxes
+ * @returns {{ init: () => Promise<void>, getProtagonistCharacterId: () => string, getNpcCharacterIds: () => string[] }}
+ */
+function createCharacterSelector(protagonistSelect, npcContainer) {
+  var characters = [];
+
+  function renderProtagonistOptions(selectedId) {
+    // Keep the default empty option
+    while (protagonistSelect.options.length > 1) {
+      protagonistSelect.remove(1);
+    }
+    for (var i = 0; i < characters.length; i++) {
+      var ch = characters[i];
+      var opt = document.createElement('option');
+      opt.value = ch.id;
+      opt.textContent = ch.name;
+      if (ch.id === selectedId) {
+        opt.selected = true;
+      }
+      protagonistSelect.appendChild(opt);
+    }
+  }
+
+  function renderNpcCheckboxes(excludeId) {
+    npcContainer.innerHTML = '';
+    var available = characters.filter(function (ch) { return ch.id !== excludeId; });
+
+    if (available.length === 0) {
+      npcContainer.innerHTML = '<p class="form-help" style="margin:0;">No other characters available.</p>';
+      return;
+    }
+
+    for (var i = 0; i < available.length; i++) {
+      var ch = available[i];
+      var label = document.createElement('label');
+      label.className = 'character-checkbox-label';
+
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = ch.id;
+      checkbox.className = 'character-checkbox';
+      checkbox.name = 'npcCharacterIds';
+
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'character-checkbox-name';
+      nameSpan.textContent = ch.name;
+
+      label.appendChild(checkbox);
+      label.appendChild(nameSpan);
+
+      if (ch.coreTraits && ch.coreTraits.length > 0) {
+        var traitsSpan = document.createElement('span');
+        traitsSpan.className = 'character-checkbox-traits';
+        traitsSpan.textContent = ' — ' + ch.coreTraits.slice(0, 3).join(', ');
+        label.appendChild(traitsSpan);
+      }
+
+      npcContainer.appendChild(label);
+    }
+  }
+
+  function getProtagonistCharacterId() {
+    return protagonistSelect.value || '';
+  }
+
+  function getNpcCharacterIds() {
+    var checkboxes = npcContainer.querySelectorAll('input.character-checkbox:checked');
+    var ids = [];
+    for (var i = 0; i < checkboxes.length; i++) {
+      ids.push(checkboxes[i].value);
+    }
+    return ids;
+  }
+
+  async function init() {
+    try {
+      var response = await fetch('/characters/api/list');
+      if (!response.ok) {
+        return;
+      }
+      var data = await response.json();
+      characters = Array.isArray(data.characters) ? data.characters : [];
+    } catch (_err) {
+      characters = [];
+    }
+
+    if (characters.length === 0) {
+      npcContainer.innerHTML =
+        '<p class="form-help" style="margin:0;">No decomposed characters yet. ' +
+        '<a href="/characters">Create some</a> first.</p>';
+      return;
+    }
+
+    renderProtagonistOptions('');
+    renderNpcCheckboxes('');
+
+    protagonistSelect.addEventListener('change', function () {
+      renderNpcCheckboxes(protagonistSelect.value);
+    });
+  }
+
+  return {
+    init: init,
+    getProtagonistCharacterId: getProtagonistCharacterId,
+    getNpcCharacterIds: getNpcCharacterIds,
+  };
+}
+
   // ── Choice renderers ──────────────────────────────────────────────
 
   function renderChoiceButtons(choiceList) {
@@ -7410,6 +7595,17 @@ function initNewStoryPage() {
   initNpcControls();
   initDynamicLists();
 
+  // Character selector for decomposed characters
+  var protagonistSelectEl = document.getElementById('protagonist-character-selector');
+  var npcCheckboxContainer = document.getElementById('npc-character-checkboxes');
+  var characterSelector =
+    protagonistSelectEl && npcCheckboxContainer
+      ? createCharacterSelector(protagonistSelectEl, npcCheckboxContainer)
+      : null;
+  if (characterSelector) {
+    characterSelector.init();
+  }
+
   function toTrimmedString(value) {
     return typeof value === 'string' ? value.trim() : '';
   }
@@ -7898,6 +8094,16 @@ function initNewStoryPage() {
         contentPreferences: selectedContentPreferences || undefined,
         progressId: progressId,
       };
+      if (characterSelector) {
+        var protId = characterSelector.getProtagonistCharacterId();
+        if (protId) {
+          spineBody.protagonistCharacterId = protId;
+        }
+        var npcIds = characterSelector.getNpcCharacterIds();
+        if (npcIds.length > 0) {
+          spineBody.npcCharacterIds = npcIds;
+        }
+      }
       if (selectedKernelForStory) {
         spineBody.storyKernel = selectedKernelForStory;
       }
@@ -7970,6 +8176,16 @@ function initNewStoryPage() {
         spine: spine,
         progressId: progressId,
       };
+      if (characterSelector) {
+        var protId = characterSelector.getProtagonistCharacterId();
+        if (protId) {
+          createBody.protagonistCharacterId = protId;
+        }
+        var npcIds = characterSelector.getNpcCharacterIds();
+        if (npcIds.length > 0) {
+          createBody.npcCharacterIds = npcIds;
+        }
+      }
       if (selectedKernelForStory) {
         createBody.storyKernel = selectedKernelForStory;
       }
@@ -8066,6 +8282,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initEvolutionPage();
   initKernelEvolutionPage();
   initCharacterWebsPage();
+  initCharactersPage();
 });
 
   // ── Briefing page controller ─────────────────────────────────────
@@ -13052,5 +13269,387 @@ function initCharacterWebsPage() {
 
   void loadSelectorOptions();
   void refreshWebs();
+}
+
+// ── Characters Page Controller ───────────────────────────────────
+
+function initCharactersPage() {
+  var page = document.getElementById('characters-page');
+  if (!page) {
+    return;
+  }
+
+  var loading = document.getElementById('loading');
+  var errorBlock = document.getElementById('characters-error');
+  var apiKeyInput = document.getElementById('characters-api-key');
+  var decomposeBtn = document.getElementById('character-decompose-btn');
+  var nameInput = document.getElementById('character-name-input');
+  var descInput = document.getElementById('character-desc-input');
+  var characterList = document.getElementById('character-list');
+  var detailSection = document.getElementById('character-detail-section');
+  var selectedNameHeading = document.getElementById('selected-character-name');
+  var detailContent = document.getElementById('character-detail-content');
+  var deleteBtn = document.getElementById('character-delete-btn');
+
+  if (!loading || !decomposeBtn || !nameInput || !descInput || !characterList) {
+    return;
+  }
+
+  var loadingProgress = createLoadingProgressController(loading);
+  var state = {
+    characters: [],
+    selectedCharacter: null,
+  };
+
+  var storedKey = getApiKey();
+  if (apiKeyInput && storedKey && apiKeyInput.value.length === 0) {
+    apiKeyInput.value = storedKey;
+  }
+
+  function setError(message) {
+    if (!errorBlock) {
+      return;
+    }
+    errorBlock.textContent = message;
+    errorBlock.style.display = 'block';
+  }
+
+  function clearError() {
+    if (!errorBlock) {
+      return;
+    }
+    errorBlock.textContent = '';
+    errorBlock.style.display = 'none';
+  }
+
+  function getApiKeyFromPage() {
+    var apiKey = apiKeyInput && typeof apiKeyInput.value === 'string'
+      ? apiKeyInput.value.trim()
+      : '';
+    if (apiKey.length < 10) {
+      throw new Error('OpenRouter API key is required');
+    }
+    setApiKey(apiKey);
+    return apiKey;
+  }
+
+  function formatDate(value) {
+    if (!value) {
+      return '';
+    }
+    try {
+      return new Date(value).toLocaleDateString();
+    } catch (_error) {
+      return value;
+    }
+  }
+
+  function renderCharacterList() {
+    if (!Array.isArray(state.characters) || state.characters.length === 0) {
+      characterList.innerHTML = '<p class="form-help">No characters decomposed yet.</p>';
+      return;
+    }
+
+    characterList.innerHTML = state.characters
+      .map(function (character) {
+        var isSelected = state.selectedCharacter && state.selectedCharacter.id === character.id;
+        var traits = Array.isArray(character.coreTraits)
+          ? character.coreTraits.slice(0, 3).join(', ')
+          : '';
+        return (
+          '<article class="spine-card' +
+          (isSelected ? ' spine-card-selected' : '') +
+          '" data-character-id="' +
+          escapeHtml(character.id) +
+          '">' +
+          '<div class="story-card-content">' +
+          '<h4>' +
+          escapeHtml(character.name || 'Unnamed') +
+          '</h4>' +
+          (traits
+            ? '<div class="spine-field"><span class="spine-label">Traits:</span> ' +
+              escapeHtml(traits) +
+              '</div>'
+            : '') +
+          '<div class="spine-field"><span class="spine-label">Created:</span> ' +
+          escapeHtml(formatDate(character.createdAt)) +
+          '</div>' +
+          '</div>' +
+          '<div class="story-card-actions">' +
+          '<button type="button" class="btn btn-secondary character-select-btn" data-character-id="' +
+          escapeHtml(character.id) +
+          '">View</button>' +
+          '</div>' +
+          '</article>'
+        );
+      })
+      .join('');
+
+    characterList.querySelectorAll('.character-select-btn').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var characterId = button.getAttribute('data-character-id') || '';
+        if (characterId) {
+          void selectCharacter(characterId);
+        }
+      });
+    });
+  }
+
+  function renderCharacterDetail() {
+    var character = state.selectedCharacter;
+    if (!character || !detailSection || !detailContent) {
+      if (detailSection) {
+        detailSection.style.display = 'none';
+      }
+      return;
+    }
+
+    detailSection.style.display = 'block';
+    if (selectedNameHeading) {
+      selectedNameHeading.textContent = character.name || 'Unnamed';
+    }
+
+    var sections = [];
+
+    if (character.appearance) {
+      sections.push(
+        '<div class="spine-field"><span class="spine-label">Appearance:</span> ' +
+        escapeHtml(character.appearance) +
+        '</div>'
+      );
+    }
+
+    if (Array.isArray(character.coreTraits) && character.coreTraits.length > 0) {
+      sections.push(
+        '<div class="spine-field"><span class="spine-label">Core Traits:</span> ' +
+        escapeHtml(character.coreTraits.join(', ')) +
+        '</div>'
+      );
+    }
+
+    if (character.motivations) {
+      sections.push(
+        '<div class="spine-field"><span class="spine-label">Motivations:</span> ' +
+        escapeHtml(character.motivations) +
+        '</div>'
+      );
+    }
+
+    if (Array.isArray(character.coreBeliefs) && character.coreBeliefs.length > 0) {
+      sections.push(
+        '<div class="spine-field"><span class="spine-label">Core Beliefs:</span> ' +
+        escapeHtml(character.coreBeliefs.join(', ')) +
+        '</div>'
+      );
+    }
+
+    if (character.decisionPattern) {
+      sections.push(
+        '<div class="spine-field"><span class="spine-label">Decision Pattern:</span> ' +
+        escapeHtml(character.decisionPattern) +
+        '</div>'
+      );
+    }
+
+    if (character.conflictPriority) {
+      sections.push(
+        '<div class="spine-field"><span class="spine-label">Conflict Priority:</span> ' +
+        escapeHtml(character.conflictPriority) +
+        '</div>'
+      );
+    }
+
+    if (character.knowledgeBoundaries) {
+      sections.push(
+        '<div class="spine-field"><span class="spine-label">Knowledge Boundaries:</span> ' +
+        escapeHtml(character.knowledgeBoundaries) +
+        '</div>'
+      );
+    }
+
+    if (Array.isArray(character.falseBeliefs) && character.falseBeliefs.length > 0) {
+      sections.push(
+        '<div class="spine-field"><span class="spine-label">False Beliefs:</span> ' +
+        escapeHtml(character.falseBeliefs.join('; ')) +
+        '</div>'
+      );
+    }
+
+    if (Array.isArray(character.secretsKept) && character.secretsKept.length > 0) {
+      sections.push(
+        '<div class="spine-field"><span class="spine-label">Secrets Kept:</span> ' +
+        escapeHtml(character.secretsKept.join('; ')) +
+        '</div>'
+      );
+    }
+
+    if (character.speechFingerprint) {
+      var sf = character.speechFingerprint;
+      var speechParts = [];
+      if (sf.vocabularyLevel) {
+        speechParts.push('Vocabulary: ' + sf.vocabularyLevel);
+      }
+      if (sf.sentencePattern) {
+        speechParts.push('Pattern: ' + sf.sentencePattern);
+      }
+      if (sf.verbalTic) {
+        speechParts.push('Tic: ' + sf.verbalTic);
+      }
+      if (sf.emotionalDefault) {
+        speechParts.push('Default emotion: ' + sf.emotionalDefault);
+      }
+      if (speechParts.length > 0) {
+        sections.push(
+          '<div class="spine-field"><span class="spine-label">Speech Fingerprint:</span> ' +
+          escapeHtml(speechParts.join(' | ')) +
+          '</div>'
+        );
+      }
+    }
+
+    if (character.rawDescription) {
+      sections.push(
+        '<details class="form-section-collapsible">' +
+        '<summary>Original Description</summary>' +
+        '<div class="form-section-collapsible__body">' +
+        '<p>' + escapeHtmlWithBreaks(character.rawDescription) + '</p>' +
+        '</div>' +
+        '</details>'
+      );
+    }
+
+    detailContent.innerHTML = sections.join('');
+  }
+
+  async function refreshCharacters(preferredId) {
+    try {
+      var response = await fetch('/characters/api/list', { method: 'GET' });
+      var data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error((data && data.error) || 'Failed to load characters');
+      }
+      state.characters = Array.isArray(data.characters) ? data.characters : [];
+      renderCharacterList();
+
+      if (preferredId) {
+        await selectCharacter(preferredId);
+      } else if (state.selectedCharacter) {
+        var stillExists = state.characters.some(function (c) {
+          return c.id === state.selectedCharacter.id;
+        });
+        if (!stillExists) {
+          state.selectedCharacter = null;
+          renderCharacterDetail();
+        }
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to load characters');
+    }
+  }
+
+  async function selectCharacter(characterId) {
+    try {
+      var response = await fetch(
+        '/characters/api/' + encodeURIComponent(characterId),
+        { method: 'GET' }
+      );
+      var data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error((data && data.error) || 'Failed to load character');
+      }
+      state.selectedCharacter = data.character;
+      renderCharacterDetail();
+      renderCharacterList();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to load character');
+    }
+  }
+
+  async function decomposeCharacter() {
+    clearError();
+    var characterName = nameInput.value.trim();
+    var characterDescription = descInput.value.trim();
+
+    if (!characterName) {
+      setError('Character name is required');
+      return;
+    }
+    if (characterDescription.length < 10) {
+      setError('Character description must be at least 10 characters');
+      return;
+    }
+
+    try {
+      var apiKey = getApiKeyFromPage();
+      var progressId = createProgressId();
+      decomposeBtn.disabled = true;
+      loading.style.display = 'flex';
+      loadingProgress.start(progressId);
+
+      var response = await fetch('/characters/decompose', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          characterName: characterName,
+          characterDescription: characterDescription,
+          apiKey: apiKey,
+          progressId: progressId,
+        }),
+      });
+
+      var data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error((data && data.error) || 'Decomposition failed');
+      }
+
+      nameInput.value = '';
+      descInput.value = '';
+      await refreshCharacters(data.character && data.character.id);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Decomposition failed');
+    } finally {
+      loadingProgress.stop();
+      loading.style.display = 'none';
+      decomposeBtn.disabled = false;
+    }
+  }
+
+  async function deleteSelectedCharacter() {
+    if (!state.selectedCharacter) {
+      return;
+    }
+
+    if (!window.confirm('Delete character "' + (state.selectedCharacter.name || '') + '"?')) {
+      return;
+    }
+
+    try {
+      var response = await fetch(
+        '/characters/api/' + encodeURIComponent(state.selectedCharacter.id),
+        { method: 'DELETE' }
+      );
+      var data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error((data && data.error) || 'Failed to delete character');
+      }
+      state.selectedCharacter = null;
+      renderCharacterDetail();
+      await refreshCharacters();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to delete character');
+    }
+  }
+
+  decomposeBtn.addEventListener('click', function () {
+    void decomposeCharacter();
+  });
+
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', function () {
+      void deleteSelectedCharacter();
+    });
+  }
+
+  void refreshCharacters();
 }
 })();

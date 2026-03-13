@@ -1,5 +1,8 @@
+import { contextualizeCharacters } from '../llm/character-contextualizer.js';
 import { decomposeEntities, generateStoryStructure } from '../llm';
+import { decomposeWorldbuilding } from '../llm/worldbuilding-decomposer.js';
 import type { SelectedSceneDirection } from '../models/scene-direction.js';
+import type { StandaloneDecomposedCharacter } from '../models/standalone-decomposed-character.js';
 import { buildInitialNpcRelationships } from '../models/state/npc-relationship';
 import {
   createStory,
@@ -11,6 +14,7 @@ import {
   StoryMetadata,
   updateStoryStructure,
 } from '../models';
+import { loadCharacter } from '../persistence/character-repository.js';
 import { storage } from '../persistence';
 import { generatePage } from './page-service';
 import { createStoryStructure } from './structure-factory';
@@ -36,40 +40,97 @@ function validateStartStoryOptions(options: StartStoryOptions): void {
   }
 }
 
-async function buildPreparedStory(
-  options: StartStoryOptions,
-  onStoryCreated?: (story: Story) => void
+async function loadStandaloneCharacters(
+  protagonistCharacterId: string,
+  npcCharacterIds: readonly string[]
+): Promise<StandaloneDecomposedCharacter[]> {
+  const allIds = [protagonistCharacterId, ...npcCharacterIds];
+  const characters = await Promise.all(allIds.map((id) => loadCharacter(id)));
+  const missing = allIds.filter((id, i) => !characters[i]);
+  if (missing.length > 0) {
+    throw new EngineError(
+      `Characters not found: ${missing.join(', ')}`,
+      'VALIDATION_FAILED'
+    );
+  }
+  return characters.map((c) => c!);
+}
+
+async function runNewDecompositionPipeline(
+  story: Story,
+  options: StartStoryOptions
 ): Promise<Story> {
-  validateStartStoryOptions(options);
+  const standaloneCharacters = await loadStandaloneCharacters(
+    options.protagonistCharacterId!,
+    options.npcCharacterIds ?? []
+  );
 
-  const premisePromises = (options.conceptVerification?.premisePromises ?? [])
-    .map((promise) => promise.trim())
-    .filter((promise) => promise.length > 0);
-  const trimmedTitle = options.title.trim();
-  const trimmedCharacterConcept = options.characterConcept.trim();
+  // Run character contextualization and worldbuilding decomposition in parallel
+  options.onGenerationStage?.({
+    stage: 'CONTEXTUALIZING_CHARACTERS',
+    status: 'started',
+    attempt: 1,
+  });
+  options.onGenerationStage?.({
+    stage: 'DECOMPOSING_WORLD',
+    status: 'started',
+    attempt: 1,
+  });
 
-  let story: Story = {
-    ...createStory({
-      title: trimmedTitle,
-      characterConcept: trimmedCharacterConcept,
-      worldbuilding: options.worldbuilding,
-      tone: options.tone,
-      ...(options.npcs ? { npcs: options.npcs } : {}),
-      ...(options.startingSituation ? { startingSituation: options.startingSituation } : {}),
-      ...(options.conceptSpec ? { conceptSpec: options.conceptSpec } : {}),
-      ...(options.storyKernel ? { storyKernel: options.storyKernel } : {}),
-      ...(premisePromises.length > 0 ? { premisePromises } : {}),
-    }),
-    spine: options.spine,
-    toneFeel: options.spine.toneFeel,
-    toneAvoid: options.spine.toneAvoid,
+  const [contextualizationResult, worldbuildingResult] = await Promise.all([
+    contextualizeCharacters(
+      {
+        characters: standaloneCharacters,
+        protagonistIndex: 0,
+        spine: story.spine!,
+        tone: story.tone,
+        toneFeel: story.toneFeel,
+        toneAvoid: story.toneAvoid,
+        startingSituation: story.startingSituation,
+        conceptSpec: story.conceptSpec,
+        storyKernel: story.storyKernel,
+      },
+      options.apiKey
+    ),
+    decomposeWorldbuilding(
+      {
+        worldbuilding: story.worldbuilding,
+        tone: story.tone,
+        toneFeel: story.toneFeel,
+        toneAvoid: story.toneAvoid,
+        spine: story.spine,
+      },
+      options.apiKey
+    ),
+  ]);
+
+  options.onGenerationStage?.({
+    stage: 'CONTEXTUALIZING_CHARACTERS',
+    status: 'completed',
+    attempt: 1,
+  });
+  options.onGenerationStage?.({
+    stage: 'DECOMPOSING_WORLD',
+    status: 'completed',
+    attempt: 1,
+  });
+
+  const initialNpcRelationships = buildInitialNpcRelationships(
+    contextualizationResult.decomposedCharacters
+  );
+
+  return {
+    ...story,
+    decomposedCharacters: contextualizationResult.decomposedCharacters,
+    decomposedWorld: worldbuildingResult.decomposedWorld,
+    ...(initialNpcRelationships.length > 0 ? { initialNpcRelationships } : {}),
   };
+}
 
-  onStoryCreated?.(story);
-
-  await storage.saveStory(story);
-
-  // Stage 1: Decompose entities (uses toneFeel from spine)
+async function runLegacyDecompositionPipeline(
+  story: Story,
+  options: StartStoryOptions
+): Promise<Story> {
   options.onGenerationStage?.({
     stage: 'DECOMPOSING_ENTITIES',
     status: 'started',
@@ -93,15 +154,63 @@ async function buildPreparedStory(
     status: 'completed',
     attempt: 1,
   });
+
   const initialNpcRelationships = buildInitialNpcRelationships(
     decompositionResult.decomposedCharacters
   );
-  story = {
+
+  return {
     ...story,
     decomposedCharacters: decompositionResult.decomposedCharacters,
     decomposedWorld: decompositionResult.decomposedWorld,
     ...(initialNpcRelationships.length > 0 ? { initialNpcRelationships } : {}),
   };
+}
+
+async function buildPreparedStory(
+  options: StartStoryOptions,
+  onStoryCreated?: (story: Story) => void
+): Promise<Story> {
+  validateStartStoryOptions(options);
+
+  const premisePromises = (options.conceptVerification?.premisePromises ?? [])
+    .map((promise) => promise.trim())
+    .filter((promise) => promise.length > 0);
+  const trimmedTitle = options.title.trim();
+  const trimmedCharacterConcept = options.characterConcept.trim();
+
+  let story: Story = {
+    ...createStory({
+      title: trimmedTitle,
+      characterConcept: trimmedCharacterConcept,
+      worldbuilding: options.worldbuilding,
+      tone: options.tone,
+      ...(options.npcs ? { npcs: options.npcs } : {}),
+      ...(options.protagonistCharacterId
+        ? { protagonistCharacterId: options.protagonistCharacterId }
+        : {}),
+      ...(options.npcCharacterIds && options.npcCharacterIds.length > 0
+        ? { npcCharacterIds: options.npcCharacterIds }
+        : {}),
+      ...(options.startingSituation ? { startingSituation: options.startingSituation } : {}),
+      ...(options.conceptSpec ? { conceptSpec: options.conceptSpec } : {}),
+      ...(options.storyKernel ? { storyKernel: options.storyKernel } : {}),
+      ...(premisePromises.length > 0 ? { premisePromises } : {}),
+    }),
+    spine: options.spine,
+    toneFeel: options.spine.toneFeel,
+    toneAvoid: options.spine.toneAvoid,
+  };
+
+  onStoryCreated?.(story);
+
+  await storage.saveStory(story);
+
+  // Stage 1: Decompose — new pipeline (character IDs) or legacy (raw NPCs)
+  const useNewPipeline = Boolean(options.protagonistCharacterId);
+  story = useNewPipeline
+    ? await runNewDecompositionPipeline(story, options)
+    : await runLegacyDecompositionPipeline(story, options);
   await storage.updateStory(story);
 
   // Stage 2: Generate structure (uses spine + decomposed data)
