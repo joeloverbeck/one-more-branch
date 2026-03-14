@@ -67,16 +67,18 @@ async function executeKernelStage<T>(
   const startTime = Date.now();
   try {
     const result = await work();
+    const durationMs = Date.now() - startTime;
     logger.info('Generation stage completed', {
       flow: 'kernel-generation',
       stage: context.logStage,
       attempt,
-      durationMs: Date.now() - startTime,
+      durationMs,
     });
     context.onStage?.({
       stage: context.stageEvent,
       status: 'completed',
       attempt,
+      durationMs,
     });
     return result;
   } catch (error) {

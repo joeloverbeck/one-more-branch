@@ -105,7 +105,7 @@ When a user references a `tickets/...` path but that file is missing while a mat
 <!-- gitnexus:start -->
 # GitNexus MCP
 
-This project is indexed by GitNexus as **one-more-branch** (5560 symbols, 14409 relationships, 300 execution flows).
+This project is indexed by GitNexus as **one-more-branch** (5568 symbols, 14453 relationships, 300 execution flows).
 
 ## Always Start Here
 

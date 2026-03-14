@@ -1,6 +1,6 @@
 # STOARCGEN-022: Kernel Stage Observability Alignment
 
-**Status**: TODO
+**Status**: COMPLETED
 **Depends on**: STOARCGEN-020
 **Blocks**: None
 
@@ -14,13 +14,16 @@ This is intentionally not a generic runner ticket. The problem here is narrower:
 
 What is true in the current code:
 - `runKernelStage()` uses a local helper, `executeKernelStage(...)`, that emits callback progress events and also logs start/completed/failed stage entries.
+- `src/engine/generation-pipeline-helpers.ts` already exposes the canonical thin helper, `runGenerationStage(...)`, for stage seams that only need `started` / `completed` plus `durationMs`.
 - logger completion entries include `durationMs`
 - callback completion events do not include `durationMs`
 - failed stages log an error but do not surface a failure event through the callback contract
+- `GenerationStageEvent` in `src/engine/types.ts` still intentionally supports only `status: 'started' | 'completed'`
 
 This is not the same architectural shape as STOARCGEN-020:
 - the kernel runner owns logging, unlike the thin helper used by structure and character pipelines
-- collapsing it directly into the same helper would either lose useful logging semantics or bloat the helper into a false abstraction
+- collapsing it directly into the same helper would either split timing ownership across two seams or bloat the helper into a false abstraction
+- the remaining service-level kernel lifecycle normalization is already tracked separately in `tickets/STOARCGEN-024-kernel-evolution-service-stage-normalization.md`
 
 ## Problem
 
@@ -45,12 +48,15 @@ It should not own:
 - alternate callback contracts
 - ad hoc per-call event shapes
 - hidden divergence between logs and progress events
+- delegation to `runGenerationStage(...)` if that would make callback timing and log timing come from different sources
 
 ## Files to Touch
 
+- `tickets/STOARCGEN-022-kernel-stage-observability-alignment.md`
 - `src/llm/kernel-stage-runner.ts`
 - `test/unit/llm/kernel-stage-runner.test.ts`
-- related service tests if they assert kernel stage events
+
+No service-layer files should change in this ticket. That work belongs to STOARCGEN-024.
 
 ## Detailed Changes
 
@@ -68,7 +74,7 @@ The callback channel should expose the same timing truth that logs already expos
 
 Decide whether kernel-stage failure should remain log-only or emit a canonical progress failure signal through a separate seam.
 
-If the current global `GenerationStageEvent` contract intentionally supports only `started` / `completed`, document that decision in the ticket implementation notes and keep failure logging local.
+If the current global `GenerationStageEvent` contract intentionally supports only `started` / `completed`, keep failure logging local and document in the ticket outcome that no failure-event contract change was made.
 
 Do not invent a one-off kernel-only failure event shape.
 
@@ -95,6 +101,7 @@ Do not fold it into a generic helper unless implementation proves there is a cle
 - Kernel-stage completion callback events include `durationMs`
 - Logger output remains unchanged in meaning and coverage
 - No public API contract of `runKernelStage()` changes beyond more complete progress event data
+- `kernel-stage-runner` keeps owning its combined callback/logging/timing seam instead of being forced onto `runGenerationStage(...)`
 
 ### Tests that should pass or be added
 
@@ -116,3 +123,17 @@ It is more robust:
 
 It is more extensible:
 - future kernel orchestration changes have a clearer contract boundary instead of hidden drift between observability channels
+
+## Outcome
+
+- Completion date: 2026-03-14
+- What actually changed:
+  - `src/llm/kernel-stage-runner.ts` now computes one successful-stage `durationMs` value and emits it through both the completion log entry and the completion callback event.
+  - `test/unit/llm/kernel-stage-runner.test.ts` now verifies completion events include `durationMs`, callback/log durations stay aligned, and failures still only emit the started callback event while remaining log-driven for failure reporting.
+- Deviations from the original plan:
+  - No failure-event contract was added because `GenerationStageEvent` still intentionally supports only `started` / `completed`, and adding a kernel-only failure shape would worsen the architecture.
+  - `runGenerationStage(...)` was intentionally not reused here because it would split timing ownership away from the specialized kernel logging seam instead of simplifying it.
+- Verification:
+  - `npm run test:unit -- --coverage=false --runTestsByPath test/unit/llm/kernel-stage-runner.test.ts`
+  - `npm run typecheck`
+  - `npm run lint`

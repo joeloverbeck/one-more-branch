@@ -84,6 +84,11 @@ function findStageEntry(
 }
 
 describe('kernel-stage-runner', () => {
+  beforeEach(() => {
+    logger.clear();
+    jest.restoreAllMocks();
+  });
+
   it('runs ideator then evaluator and emits stage callbacks in order', async () => {
     const kernels = Array.from({ length: 6 }, (_, index) => createKernel(index + 1));
     const scoredKernels = kernels.map((kernel) => createScoredKernel(kernel));
@@ -99,7 +104,7 @@ describe('kernel-stage-runner', () => {
       rawResponse: 'evaluator raw',
     });
 
-    const events: Array<{ stage: string; status: string; attempt: number }> = [];
+    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
     const result = await runKernelStage(
       {
         thematicInterests: ' trust and control ',
@@ -137,12 +142,21 @@ describe('kernel-stage-runner', () => {
       'test-api-key-123',
     );
 
-    expect(events).toEqual([
-      { stage: 'GENERATING_KERNELS', status: 'started', attempt: 1 },
-      { stage: 'GENERATING_KERNELS', status: 'completed', attempt: 1 },
-      { stage: 'EVALUATING_KERNELS', status: 'started', attempt: 1 },
-      { stage: 'EVALUATING_KERNELS', status: 'completed', attempt: 1 },
-    ]);
+    expect(events).toHaveLength(4);
+    expect(events[0]).toEqual({ stage: 'GENERATING_KERNELS', status: 'started', attempt: 1 });
+    expect(events[1]).toMatchObject({
+      stage: 'GENERATING_KERNELS',
+      status: 'completed',
+      attempt: 1,
+    });
+    expect(typeof events[1]?.durationMs).toBe('number');
+    expect(events[2]).toEqual({ stage: 'EVALUATING_KERNELS', status: 'started', attempt: 1 });
+    expect(events[3]).toMatchObject({
+      stage: 'EVALUATING_KERNELS',
+      status: 'completed',
+      attempt: 1,
+    });
+    expect(typeof events[3]?.durationMs).toBe('number');
 
     expect(result).toEqual({
       ideatedKernels: kernels,
@@ -177,6 +191,69 @@ describe('kernel-stage-runner', () => {
     expect(typeof evaluatorComplete?.context?.durationMs).toBe('number');
   });
 
+  it('keeps callback and logger durations aligned for successful stages', async () => {
+    const kernels = Array.from({ length: 2 }, (_, index) => createKernel(index + 1));
+    const scoredKernels = kernels.map((kernel) => createScoredKernel(kernel));
+    const evaluatedKernels = kernels.map((kernel) => createEvaluatedKernel(kernel));
+    const dateNowSpy = jest
+      .spyOn(Date, 'now')
+      .mockReturnValueOnce(100)
+      .mockReturnValueOnce(115)
+      .mockReturnValueOnce(200)
+      .mockReturnValueOnce(240);
+    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+
+    await runKernelStage(
+      {
+        thematicInterests: 'trust and control',
+        emotionalCore: 'grief',
+        apiKey: 'test-api-key-123',
+      },
+      (event) => {
+        events.push(event);
+      },
+      {
+        generateKernels: jest.fn().mockResolvedValue({
+          kernels,
+          rawResponse: 'ideator raw',
+        }),
+        evaluateKernels: jest.fn().mockResolvedValue({
+          scoredKernels,
+          evaluatedKernels,
+          rawResponse: 'evaluator raw',
+        }),
+      },
+    );
+
+    expect(dateNowSpy).toHaveBeenCalledTimes(4);
+
+    const completedEvents = events.filter(
+      (event) => event.status === 'completed',
+    ) as Array<{ stage: string; status: string; attempt: number; durationMs: number }>;
+
+    expect(completedEvents).toEqual([
+      {
+        stage: 'GENERATING_KERNELS',
+        status: 'completed',
+        attempt: 1,
+        durationMs: 15,
+      },
+      {
+        stage: 'EVALUATING_KERNELS',
+        status: 'completed',
+        attempt: 1,
+        durationMs: 40,
+      },
+    ]);
+
+    const entries = logger.getEntries();
+    const ideatorComplete = findStageEntry(entries, 'Generation stage completed', 'kernel-ideator');
+    const evaluatorComplete = findStageEntry(entries, 'Generation stage completed', 'kernel-evaluator');
+
+    expect(ideatorComplete?.context?.durationMs).toBe(15);
+    expect(evaluatorComplete?.context?.durationMs).toBe(40);
+  });
+
   it('throws for short api keys before invoking dependencies', async () => {
     const generateKernels = jest.fn();
     const evaluateKernels = jest.fn();
@@ -201,13 +278,16 @@ describe('kernel-stage-runner', () => {
   it('logs a failed stage when ideation throws', async () => {
     const error = new Error('ideation failed');
     const evaluateKernels = jest.fn();
+    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
 
     await expect(
       runKernelStage(
         {
           apiKey: 'test-api-key-123',
         },
-        undefined,
+        (event) => {
+          events.push(event);
+        },
         {
           generateKernels: jest.fn().mockRejectedValue(error),
           evaluateKernels,
@@ -226,5 +306,6 @@ describe('kernel-stage-runner', () => {
     expect(failureEntry?.context?.flow).toBe('kernel-generation');
     expect(failureEntry?.context?.attempt).toBe(1);
     expect(typeof failureEntry?.context?.durationMs).toBe('number');
+    expect(events).toEqual([{ stage: 'GENERATING_KERNELS', status: 'started', attempt: 1 }]);
   });
 });
