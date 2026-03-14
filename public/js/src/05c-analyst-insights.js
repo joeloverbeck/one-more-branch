@@ -88,6 +88,24 @@ function parseInsightsContextFromDom() {
   }
 }
 
+function getActDisplaySubtitle(actDisplayInfo) {
+  if (!actDisplayInfo) {
+    return null;
+  }
+  if (typeof actDisplayInfo === 'string' && actDisplayInfo.length > 0) {
+    return actDisplayInfo;
+  }
+  if (
+    typeof actDisplayInfo === 'object' &&
+    typeof actDisplayInfo.displayString === 'string' &&
+    actDisplayInfo.displayString.length > 0
+  ) {
+    return actDisplayInfo.displayString;
+  }
+
+  return null;
+}
+
 function formatAnalystEnum(value) {
   if (typeof value !== 'string' || value.length === 0) {
     return 'Unknown';
@@ -127,16 +145,41 @@ function renderInsightsEmpty(msg) {
 
 // ── Tab: Structure ───────────────────────────────────────────────
 
-function renderStructureTab(ar) {
+function renderStructureTab(ar, ctx) {
   var completionGateSatisfied = ar.completionGateSatisfied === true;
   var completionGateReason = typeof ar.completionGateFailureReason === 'string'
     ? ar.completionGateFailureReason
     : '';
   var completionGateValue = completionGateSatisfied ? 'SATISFIED' : 'PENDING';
   var momentum = MOMENTUM_META[ar.sceneMomentum] || MOMENTUM_META.STASIS;
+  var actDisplayInfo = ctx && typeof ctx === 'object' ? ctx.actDisplayInfo : null;
+  var actQuestion =
+    actDisplayInfo &&
+    typeof actDisplayInfo === 'object' &&
+    typeof actDisplayInfo.actQuestion === 'string' &&
+    actDisplayInfo.actQuestion.length > 0
+      ? actDisplayInfo.actQuestion
+      : '';
+  var exitCondition =
+    actDisplayInfo &&
+    typeof actDisplayInfo === 'object' &&
+    typeof actDisplayInfo.exitCondition === 'string' &&
+    actDisplayInfo.exitCondition.length > 0
+      ? actDisplayInfo.exitCondition
+      : '';
 
   var html = '<details class="insights-section" open>'
     + '<summary><h4>Milestone Progress</h4></summary>'
+    + (actQuestion
+      ? "<p class=\"insights-copy\"><strong>Act's Dramatic Question:</strong> "
+        + escapeHtml(actQuestion)
+        + '</p>'
+      : '')
+    + (exitCondition
+      ? '<p class="insights-copy"><strong>Milestone Exit Criteria:</strong> '
+        + escapeHtml(exitCondition)
+        + '</p>'
+      : '')
     + '<div class="milestone-gauge">'
     + renderGaugeRow('Objective Evidence', ar.objectiveEvidenceStrength, OBJECTIVE_EVIDENCE_FILL)
     + renderGaugeRow('Commitment', ar.commitmentStrength, COMMITMENT_FILL)
@@ -453,9 +496,10 @@ function renderInsightsBody(analystResult, context) {
 
   var ctx = context && typeof context === 'object' ? context : {};
   var headerHtml = '';
+  var actDisplaySubtitle = getActDisplaySubtitle(ctx.actDisplayInfo);
 
-  if (typeof ctx.actDisplayInfo === 'string' && ctx.actDisplayInfo.length > 0) {
-    headerHtml += '<p class="insights-milestone-subtitle">' + escapeHtml(ctx.actDisplayInfo) + '</p>';
+  if (actDisplaySubtitle) {
+    headerHtml += '<p class="insights-milestone-subtitle">' + escapeHtml(actDisplaySubtitle) + '</p>';
   }
 
   if (typeof ctx.sceneSummary === 'string' && ctx.sceneSummary.length > 0) {
@@ -478,7 +522,7 @@ function renderInsightsBody(analystResult, context) {
 
   // Tab panels
   var panels = {
-    structure: renderStructureTab(analystResult),
+    structure: renderStructureTab(analystResult, ctx),
     narrative: renderNarrativeTab(analystResult),
     npcs: renderNpcsTab(analystResult),
     payoffs: renderPayoffsTab(analystResult, ctx),

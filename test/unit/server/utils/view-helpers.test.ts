@@ -35,12 +35,17 @@ function createTestStructure(acts: Array<{ id: string; name: string }>): StorySt
       objective: 'Test objective',
       stakes: 'Test stakes',
       entryCondition: 'Test entry',
+      actQuestion: `Question for ${act.name}`,
+      exitReversal: `Reversal for ${act.name}`,
+      promiseTargets: [`Promise for ${act.name}`],
+      obligationTargets: [`Obligation for ${act.name}`],
       milestones: [
         {
           id: `${index + 1}.1`,
           name: `${act.name} Milestone`,
           description: 'Test milestone description',
           objective: 'Test milestone objective',
+          exitCondition: `Exit condition for ${act.name}`,
           role: 'setup',
         },
       ],
@@ -125,6 +130,11 @@ describe('getActDisplayInfo', () => {
         actObjective: 'Test objective',
         actStakes: 'Test stakes',
         milestoneObjective: 'Test milestone objective',
+        actQuestion: 'Question for The Beginning',
+        exitCondition: 'Exit condition for The Beginning',
+        exitReversal: 'Reversal for The Beginning',
+        promiseTargets: ['Promise for The Beginning'],
+        obligationTargets: ['Obligation for The Beginning'],
       });
     });
 
@@ -160,6 +170,11 @@ describe('getActDisplayInfo', () => {
         actObjective: 'Test objective',
         actStakes: 'Test stakes',
         milestoneObjective: 'Test milestone objective',
+        actQuestion: 'Question for The Middle',
+        exitCondition: 'Exit condition for The Middle',
+        exitReversal: 'Reversal for The Middle',
+        promiseTargets: ['Promise for The Middle'],
+        obligationTargets: ['Obligation for The Middle'],
       });
     });
 
@@ -195,6 +210,11 @@ describe('getActDisplayInfo', () => {
         actObjective: 'Test objective',
         actStakes: 'Test stakes',
         milestoneObjective: 'Test milestone objective',
+        actQuestion: 'Question for Another Custom',
+        exitCondition: 'Exit condition for Another Custom',
+        exitReversal: 'Reversal for Another Custom',
+        promiseTargets: ['Promise for Another Custom'],
+        obligationTargets: ['Obligation for Another Custom'],
       });
     });
   });
@@ -209,12 +229,17 @@ describe('getActDisplayInfo', () => {
             objective: 'Establish the world',
             stakes: 'Character survival',
             entryCondition: 'Story start',
+            actQuestion: 'Will the lead accept the mission?',
+            exitReversal: 'The lead sees there is no safe retreat.',
+            promiseTargets: ['Deliver the hidden map'],
+            obligationTargets: ['call_to_adventure'],
             milestones: [
               {
                 id: '1.1',
                 name: 'Discovery',
                 description: 'First discovery',
                 objective: 'Find the clue',
+                exitCondition: 'The lead secures proof of the threat.',
                 role: 'setup',
               },
             ],
@@ -246,6 +271,11 @@ describe('getActDisplayInfo', () => {
       expect(result?.actObjective).toBe('Establish the world');
       expect(result?.actStakes).toBe('Character survival');
       expect(result?.milestoneObjective).toBe('Find the clue');
+      expect(result?.actQuestion).toBe('Will the lead accept the mission?');
+      expect(result?.exitCondition).toBe('The lead secures proof of the threat.');
+      expect(result?.exitReversal).toBe('The lead sees there is no safe retreat.');
+      expect(result?.promiseTargets).toEqual(['Deliver the hidden map']);
+      expect(result?.obligationTargets).toEqual(['call_to_adventure']);
     });
 
     it('returns null for empty objective and stakes strings', () => {
@@ -257,12 +287,17 @@ describe('getActDisplayInfo', () => {
             objective: '',
             stakes: '',
             entryCondition: 'Start',
+            actQuestion: '',
+            exitReversal: '',
+            promiseTargets: [],
+            obligationTargets: [],
             milestones: [
               {
                 id: '1.1',
                 name: 'Milestone',
                 description: 'Desc',
                 objective: '',
+                exitCondition: '',
                 role: 'setup',
               },
             ],
@@ -294,6 +329,11 @@ describe('getActDisplayInfo', () => {
       expect(result?.actObjective).toBeNull();
       expect(result?.actStakes).toBeNull();
       expect(result?.milestoneObjective).toBeNull();
+      expect(result?.actQuestion).toBeNull();
+      expect(result?.exitCondition).toBeNull();
+      expect(result?.exitReversal).toBeNull();
+      expect(result?.promiseTargets).toEqual([]);
+      expect(result?.obligationTargets).toEqual([]);
     });
   });
 

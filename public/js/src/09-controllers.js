@@ -1,5 +1,88 @@
 // ── Controllers ───────────────────────────────────────────────────
 
+function buildInsightsContext(actDisplayInfo, sceneSummary, resolvedThreadMeta, resolvedPromiseMeta) {
+  return {
+    actDisplayInfo: actDisplayInfo || null,
+    sceneSummary: sceneSummary || null,
+    resolvedThreadMeta: resolvedThreadMeta || {},
+    resolvedPromiseMeta: resolvedPromiseMeta || {},
+  };
+}
+
+function buildActStructureDetailsHtml(actDisplayInfo) {
+  if (!actDisplayInfo) {
+    return '';
+  }
+
+  var items = '';
+
+  if (actDisplayInfo.actObjective) {
+    items +=
+      '<div class="act-structure-details__item">' +
+      '<span class="act-structure-details__label">Act Objective</span>' +
+      '<span class="act-structure-details__text">' +
+      escapeHtml(actDisplayInfo.actObjective) +
+      '</span>' +
+      '</div>';
+  }
+
+  if (actDisplayInfo.actStakes) {
+    items +=
+      '<div class="act-structure-details__item">' +
+      '<span class="act-structure-details__label">Stakes</span>' +
+      '<span class="act-structure-details__text">' +
+      escapeHtml(actDisplayInfo.actStakes) +
+      '</span>' +
+      '</div>';
+  }
+
+  if (actDisplayInfo.milestoneObjective) {
+    items +=
+      '<div class="act-structure-details__item">' +
+      '<span class="act-structure-details__label">Milestone Objective</span>' +
+      '<span class="act-structure-details__text">' +
+      escapeHtml(actDisplayInfo.milestoneObjective) +
+      '</span>' +
+      '</div>';
+  }
+
+  if (actDisplayInfo.actQuestion) {
+    items +=
+      '<div class="act-structure-details__item">' +
+      '<span class="act-structure-details__label">Act Question</span>' +
+      '<span class="act-structure-details__text">' +
+      escapeHtml(actDisplayInfo.actQuestion) +
+      '</span>' +
+      '</div>';
+  }
+
+  if (actDisplayInfo.exitCondition) {
+    items +=
+      '<div class="act-structure-details__item">' +
+      '<span class="act-structure-details__label">Milestone Exit Condition</span>' +
+      '<span class="act-structure-details__text">' +
+      escapeHtml(actDisplayInfo.exitCondition) +
+      '</span>' +
+      '</div>';
+  }
+
+  if (actDisplayInfo.exitReversal) {
+    items +=
+      '<div class="act-structure-details__item">' +
+      '<span class="act-structure-details__label">Exit Reversal</span>' +
+      '<span class="act-structure-details__text">' +
+      escapeHtml(actDisplayInfo.exitReversal) +
+      '</span>' +
+      '</div>';
+  }
+
+  if (!items) {
+    return '';
+  }
+
+  return '<div class="act-structure-details" id="act-structure-details" hidden>' + items + '</div>';
+}
+
 function initPlayPage() {
   const container = document.querySelector('.play-container');
   if (!container) {
@@ -265,12 +348,15 @@ function initPlayPage() {
   }
 
   function handleChoiceSuccess(data) {
-    insightsController.update(data.page.analystResult, {
-      actDisplayInfo: data.actDisplayInfo ? data.actDisplayInfo.displayString : null,
-      sceneSummary: data.page.sceneSummary || null,
-      resolvedThreadMeta: data.page.resolvedThreadMeta || {},
-      resolvedPromiseMeta: data.page.resolvedPromiseMeta || {},
-    });
+    insightsController.update(
+      data.page.analystResult,
+      buildInsightsContext(
+        data.actDisplayInfo,
+        data.page.sceneSummary,
+        data.page.resolvedThreadMeta,
+        data.page.resolvedPromiseMeta
+      )
+    );
     recapController.update(data.recapSummaries || []);
 
     currentPageId = data.page.id;
@@ -331,43 +417,7 @@ function initPlayPage() {
     if (data.actDisplayInfo) {
       var newActNumber = data.actDisplayInfo.actNumber;
       var actChanged = previousActNumber !== null && newActNumber !== previousActNumber;
-
-      var detailsHtml = '';
-      if (
-        data.actDisplayInfo.actObjective ||
-        data.actDisplayInfo.actStakes ||
-        data.actDisplayInfo.milestoneObjective
-      ) {
-        detailsHtml = '<div class="act-structure-details" id="act-structure-details" hidden>';
-        if (data.actDisplayInfo.actObjective) {
-          detailsHtml +=
-            '<div class="act-structure-details__item">' +
-            '<span class="act-structure-details__label">Act Objective</span>' +
-            '<span class="act-structure-details__text">' +
-            escapeHtml(data.actDisplayInfo.actObjective) +
-            '</span>' +
-            '</div>';
-        }
-        if (data.actDisplayInfo.actStakes) {
-          detailsHtml +=
-            '<div class="act-structure-details__item">' +
-            '<span class="act-structure-details__label">Stakes</span>' +
-            '<span class="act-structure-details__text">' +
-            escapeHtml(data.actDisplayInfo.actStakes) +
-            '</span>' +
-            '</div>';
-        }
-        if (data.actDisplayInfo.milestoneObjective) {
-          detailsHtml +=
-            '<div class="act-structure-details__item">' +
-            '<span class="act-structure-details__label">Milestone Objective</span>' +
-            '<span class="act-structure-details__text">' +
-            escapeHtml(data.actDisplayInfo.milestoneObjective) +
-            '</span>' +
-            '</div>';
-        }
-        detailsHtml += '</div>';
-      }
+      var detailsHtml = buildActStructureDetailsHtml(data.actDisplayInfo);
 
       var wrapperHtml =
         '<span class="act-indicator act-indicator--clickable" id="act-indicator"' +

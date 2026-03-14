@@ -77,7 +77,12 @@ describe('play page choice click handler', () => {
         resolvedPromiseMeta: {},
       },
       wasGenerated: true,
-      actDisplayInfo: { displayString: 'Act I - The Beginning' },
+      actDisplayInfo: {
+        displayString: 'Act I - The Beginning',
+        actObjective: 'Leave the village.',
+        actQuestion: 'Will the hero leave home behind?',
+        exitCondition: 'The hero commits to the road.',
+      },
       deviationInfo: null,
       ...overrides,
     };
@@ -195,6 +200,47 @@ describe('play page choice click handler', () => {
 
     const actIndicator = document.querySelector('.act-indicator');
     expect(actIndicator?.textContent).toContain('Act II - Rising Action');
+  });
+
+  it('refreshes the expanded act structure details with new fields', async () => {
+    setupAndInit({
+      actDisplayInfo: {
+        displayString: 'Act I - The Beginning',
+        actObjective: 'Leave the village.',
+      },
+      choices: [
+        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+      ],
+    });
+
+    fetchMock
+      .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
+      .mockResolvedValueOnce(
+        mockJsonResponse(
+          makeSuccessfulChoiceResponse({
+            actDisplayInfo: {
+              displayString: 'Act II - Rising Action',
+              actNumber: 2,
+              actObjective: 'Hold the alliance together.',
+              actQuestion: 'Can the alliance survive betrayal?',
+              exitCondition: 'The alliance chooses a public side.',
+              exitReversal: 'The council fractures in front of the court.',
+            },
+          })
+        )
+      );
+
+    clickChoice(0);
+    await jest.runAllTimersAsync();
+
+    const details = document.getElementById('act-structure-details');
+    expect(details?.textContent).toContain('Act Question');
+    expect(details?.textContent).toContain('Can the alliance survive betrayal?');
+    expect(details?.textContent).toContain('Milestone Exit Condition');
+    expect(details?.textContent).toContain('The alliance chooses a public side.');
+    expect(details?.textContent).toContain('Exit Reversal');
+    expect(details?.textContent).toContain('The council fractures in front of the court.');
   });
 
   it('hides loading overlay after fetch completes', async () => {

@@ -35,7 +35,16 @@ export interface PlayPageOptions {
     suggestedUrgency?: string;
   }>;
   trackedPromisesOverflowSummary?: string;
-  actDisplayInfo?: { displayString: string; actNumber?: number } | null;
+  actDisplayInfo?: {
+    displayString: string;
+    actNumber?: number;
+    actObjective?: string | null;
+    actStakes?: string | null;
+    milestoneObjective?: string | null;
+    actQuestion?: string | null;
+    exitCondition?: string | null;
+    exitReversal?: string | null;
+  } | null;
   stateChanges?: string[];
   hasCustomChoiceInput?: boolean;
   analystResult?: Record<string, unknown> | null;
@@ -161,6 +170,31 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
           </div>
         </aside>`
       : '';
+
+  const actStructureItems = actDisplayInfo
+    ? [
+        actDisplayInfo.actObjective
+          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Act Objective</span><span class="act-structure-details__text">${actDisplayInfo.actObjective}</span></div>`
+          : '',
+        actDisplayInfo.actStakes
+          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Stakes</span><span class="act-structure-details__text">${actDisplayInfo.actStakes}</span></div>`
+          : '',
+        actDisplayInfo.milestoneObjective
+          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Milestone Objective</span><span class="act-structure-details__text">${actDisplayInfo.milestoneObjective}</span></div>`
+          : '',
+        actDisplayInfo.actQuestion
+          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Act Question</span><span class="act-structure-details__text">${actDisplayInfo.actQuestion}</span></div>`
+          : '',
+        actDisplayInfo.exitCondition
+          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Milestone Exit Condition</span><span class="act-structure-details__text">${actDisplayInfo.exitCondition}</span></div>`
+          : '',
+        actDisplayInfo.exitReversal
+          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Exit Reversal</span><span class="act-structure-details__text">${actDisplayInfo.exitReversal}</span></div>`
+          : '',
+      ]
+        .filter(Boolean)
+        .join('')
+    : '';
 
   const sidebarHtml = `<div class="sidebar-widgets" id="sidebar-widgets">${threadsHtml}${threatsHtml}${constraintsHtml}${trackedPromisesHtml}</div>`;
 
@@ -302,6 +336,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
                 <span class="page-indicator">Page ${pageId}</span>
               </div>
             </div>
+            ${actStructureItems ? `<div class="act-structure-details" id="act-structure-details" hidden>${actStructureItems}</div>` : ''}
             <div class="story-actions-strip" id="story-actions-strip">
               <button type="button" class="recap-btn" id="recap-btn" aria-haspopup="dialog" aria-controls="recap-modal">
                 <span class="recap-btn__icon" aria-hidden="true">&#x1f4dc;</span>
@@ -369,7 +404,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
         </div>
       </div>
       <script type="application/json" id="analyst-data">${JSON.stringify(analystResult)}</script>
-      <script type="application/json" id="insights-context">${JSON.stringify({ actDisplayInfo: actDisplayInfo ? actDisplayInfo.displayString : null, sceneSummary, resolvedThreadMeta: options.resolvedThreadMeta ?? {}, resolvedPromiseMeta: options.resolvedPromiseMeta ?? {} })}</script>
+      <script type="application/json" id="insights-context">${JSON.stringify({ actDisplayInfo, sceneSummary, resolvedThreadMeta: options.resolvedThreadMeta ?? {}, resolvedPromiseMeta: options.resolvedPromiseMeta ?? {} })}</script>
       <script type="application/json" id="recap-data">${JSON.stringify(recapSummaries)}</script>
       <script type="application/json" id="lore-data">${JSON.stringify({ worldFacts, characterCanon })}</script>
     </main>

@@ -21,6 +21,11 @@ export interface ActDisplayInfo {
   readonly actObjective: string | null;
   readonly actStakes: string | null;
   readonly milestoneObjective: string | null;
+  readonly actQuestion: string | null;
+  readonly exitCondition: string | null;
+  readonly exitReversal: string | null;
+  readonly promiseTargets: readonly string[];
+  readonly obligationTargets: readonly string[];
 }
 
 export interface OpenThreadPanelRow {
@@ -115,6 +120,14 @@ function extractActNumber(actId: string, fallbackIndex: number): number {
   return match?.[1] ? parseInt(match[1], 10) : fallbackIndex + 1;
 }
 
+function normalizeDisplayText(value: string | null | undefined): string | null {
+  if (typeof value !== 'string' || value.length === 0) {
+    return null;
+  }
+
+  return value;
+}
+
 export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | null {
   if (!page.structureVersionId) return null;
 
@@ -140,9 +153,14 @@ export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | nu
     milestoneId: currentMilestone.id,
     milestoneName: currentMilestone.name,
     displayString: `Act ${actNumber}: ${currentAct.name} - Milestone ${currentMilestone.id}: ${currentMilestone.name}`,
-    actObjective: currentAct.objective || null,
-    actStakes: currentAct.stakes || null,
-    milestoneObjective: currentMilestone.objective || null,
+    actObjective: normalizeDisplayText(currentAct.objective),
+    actStakes: normalizeDisplayText(currentAct.stakes),
+    milestoneObjective: normalizeDisplayText(currentMilestone.objective),
+    actQuestion: normalizeDisplayText(currentAct.actQuestion),
+    exitCondition: normalizeDisplayText(currentMilestone.exitCondition),
+    exitReversal: normalizeDisplayText(currentAct.exitReversal),
+    promiseTargets: currentAct.promiseTargets,
+    obligationTargets: currentAct.obligationTargets,
   };
 }
 

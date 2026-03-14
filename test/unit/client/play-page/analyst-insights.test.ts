@@ -99,7 +99,11 @@ describe('analyst insights modal', () => {
   it('displays milestone info subtitle when actDisplayInfo is provided', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       analystResult: createMockAnalystResult(),
-      actDisplayInfo: { displayString: 'Act 1: The Setup - Milestone 1.2: The Discovery' },
+      actDisplayInfo: {
+        displayString: 'Act 1: The Setup - Milestone 1.2: The Discovery',
+        actQuestion: 'Will the team survive first contact?',
+        exitCondition: 'The team escapes the breach alive.',
+      },
     });
     loadAppAndInit();
 
@@ -111,6 +115,28 @@ describe('analyst insights modal', () => {
     const subtitle = modalBody.querySelector('.insights-milestone-subtitle');
     expect(subtitle).not.toBeNull();
     expect(subtitle?.textContent).toBe('Act 1: The Setup - Milestone 1.2: The Discovery');
+  });
+
+  it('displays act question and milestone exit criteria in the structure tab', async () => {
+    document.body.innerHTML = buildPlayPageHtml({
+      analystResult: createMockAnalystResult(),
+      actDisplayInfo: {
+        displayString: 'Act 1: The Setup - Milestone 1.2: The Discovery',
+        actQuestion: 'Will the team survive first contact?',
+        exitCondition: 'The team escapes the breach alive.',
+      },
+    });
+    loadAppAndInit();
+
+    const button = document.getElementById('insights-btn') as HTMLButtonElement;
+    button.click();
+    await jest.advanceTimersByTimeAsync(0);
+
+    const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
+    expect(modalBody.textContent).toContain("Act's Dramatic Question:");
+    expect(modalBody.textContent).toContain('Will the team survive first contact?');
+    expect(modalBody.textContent).toContain('Milestone Exit Criteria:');
+    expect(modalBody.textContent).toContain('The team escapes the breach alive.');
   });
 
   it('displays scene summary when provided', async () => {

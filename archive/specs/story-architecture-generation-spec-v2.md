@@ -2,7 +2,7 @@
 
 ## Status
 
-**Status**: IN PROGRESS
+**Status**: COMPLETED
 
 ## Decision
 
@@ -506,3 +506,20 @@ A structure is valid only if:
 6. **Lint**: `npm run lint` passes
 7. **Coverage**: `npm run test:coverage` maintains 70% thresholds
 8. **Manual test**: Create a story and verify the structure has distinct act questions, meaningful exit reversals, concrete exit conditions, and specific (non-generic) milestone hooks
+
+## Outcome
+
+- Completion date: 2026-03-14
+- What was actually changed:
+  - Landed the macro-architecture, milestone-generation, and validation split with the new structure fields (`anchorMoments`, `actQuestion`, `exitReversal`, `promiseTargets`, `obligationTargets`, `exitCondition`)
+  - Completed the downstream consumer and UI surfaces needed to expose those fields in the play page, briefing page, and analyst insights modal
+  - Preserved canonical `milestone` terminology without reintroducing `beat` aliases
+- Deviations from the original plan:
+  - The compact act indicator was preserved; richer structure context was added to the existing expandable details panel and analyst insights modal instead of turning the indicator into a denser multi-line component
+  - The briefing route remained co-located in `src/server/routes/play.ts` rather than moving to a separate route module
+- Verification results:
+  - `npm run concat:js`
+  - `npm run test:unit -- --coverage=false --runTestsByPath test/unit/server/utils/view-helpers.test.ts test/unit/server/routes/play.test.ts test/unit/server/views/play.test.ts test/unit/server/views/briefing.test.ts`
+  - `npm run test:client`
+  - `npm run typecheck`
+  - `npm run lint`
