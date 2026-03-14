@@ -3,6 +3,7 @@
 - Source: `src/llm/prompts/structure-prompt.ts`
 - System prompt source: `buildStructureSystemPrompt()` from `src/llm/prompts/system-prompt-builder.ts`
 - Output schema source: `src/llm/schemas/structure-schema.ts`
+- Status: legacy one-shot structure prompt retained for reference/tests. Active structure generation now uses `macro-architecture-prompt.ts` for Call 1 and `milestone-generation-prompt.ts` for Call 2.
 
 ## Messages Sent To Model
 

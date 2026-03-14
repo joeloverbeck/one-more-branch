@@ -4,6 +4,7 @@ export { buildPagePlannerPrompt } from './page-planner-prompt.js';
 export { buildStateAccountantPrompt } from './state-accountant-prompt.js';
 export { buildStructurePrompt } from './structure-prompt.js';
 export { buildMacroArchitecturePrompt } from './macro-architecture-prompt.js';
+export { buildMilestoneGenerationPrompt } from './milestone-generation-prompt.js';
 export { buildStructureRewritePrompt } from './structure-rewrite-prompt.js';
 export { buildLorekeeperPrompt } from './lorekeeper-prompt.js';
 export { buildChoiceGeneratorPrompt } from './choice-generator-prompt.js';

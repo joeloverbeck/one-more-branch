@@ -2,6 +2,7 @@ import {
   Story,
   StoryId,
   StoryStructure,
+  createDefaultAnchorMoments,
   createInitialVersionedStructure,
   createRewrittenVersionedStructure,
   createChoice,
@@ -98,6 +99,33 @@ function buildStory(overrides?: Partial<Story>): Story {
   };
 }
 
+function normalizeExpectedStructure(structure: StoryStructure | null): StoryStructure | null {
+  if (!structure) {
+    return null;
+  }
+
+  const maybeStructure = structure as StoryStructure & {
+    anchorMoments?: StoryStructure['anchorMoments'];
+  };
+
+  return {
+    ...structure,
+    anchorMoments:
+      maybeStructure.anchorMoments ?? createDefaultAnchorMoments(structure.acts.length),
+    acts: structure.acts.map((act) => ({
+      ...act,
+      actQuestion: act.actQuestion ?? '',
+      exitReversal: act.exitReversal ?? '',
+      promiseTargets: act.promiseTargets ?? [],
+      obligationTargets: act.obligationTargets ?? [],
+      milestones: act.milestones.map((milestone) => ({
+        ...milestone,
+        exitCondition: milestone.exitCondition ?? '',
+      })),
+    })),
+  };
+}
+
 function expectLoadedStoryToMatchPersistedFields(loaded: Story | null, expected: Story): void {
   expect(loaded).not.toBeNull();
   expect(loaded?.id).toBe(expected.id);
@@ -107,7 +135,7 @@ function expectLoadedStoryToMatchPersistedFields(loaded: Story | null, expected:
   expect(loaded?.tone).toBe(expected.tone);
   expect(loaded?.globalCanon).toEqual(expected.globalCanon);
   expect(loaded?.globalCharacterCanon).toEqual(expected.globalCharacterCanon);
-  expect(loaded?.structure).toEqual(expected.structure);
+  expect(loaded?.structure).toEqual(normalizeExpectedStructure(expected.structure));
   expect(loaded?.createdAt).toEqual(expected.createdAt);
   expect(loaded?.updatedAt).toEqual(expected.updatedAt);
   expect(loaded?.structureVersions).toEqual(expected.structureVersions ?? []);

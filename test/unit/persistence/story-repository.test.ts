@@ -463,8 +463,22 @@ describe('story-repository', () => {
     });
 
     await expect(loadStory(story.id)).rejects.toThrow(
-      'Persisted story milestone 1.1 is missing required causalLink'
+      'Persisted story milestone 1.1 must include a non-empty causalLink'
     );
+  });
+
+  it('saveStory normalizes missing anchorMoments on in-memory structures before persisting', async () => {
+    const structureWithoutAnchorMoments = {
+      ...buildTestStructure(),
+      anchorMoments: undefined,
+    } as unknown as StoryStructure;
+    const story = buildTestStory({ structure: structureWithoutAnchorMoments });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded?.structure?.anchorMoments).toEqual(createDefaultAnchorMoments(1));
   });
 
   it('saveStory/loadStory preserves npcs field', async () => {

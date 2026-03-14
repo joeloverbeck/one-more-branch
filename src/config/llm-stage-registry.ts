@@ -15,6 +15,8 @@ export const LLM_STAGE_KEYS = [
   'characterDecomposer',
   'characterContextualizer',
   'worldbuildingDecomposer',
+  'macroArchitecture',
+  'milestoneGeneration',
   'structure',
   'planner',
   'accountant',

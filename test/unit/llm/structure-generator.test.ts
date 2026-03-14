@@ -1,4 +1,5 @@
 const mockLogPrompt = jest.fn();
+const mockLogResponse = jest.fn();
 const mockLogger = {
   info: jest.fn(),
   debug: jest.fn(),
@@ -15,61 +16,137 @@ jest.mock('../../../src/logging/index.js', () => ({
   get logPrompt(): typeof mockLogPrompt {
     return mockLogPrompt;
   },
-  logResponse: jest.fn(),
+  get logResponse(): typeof mockLogResponse {
+    return mockLogResponse;
+  },
 }));
 
-import { STRUCTURE_GENERATION_SCHEMA } from '../../../src/llm/schemas/structure-schema';
+import { MACRO_ARCHITECTURE_SCHEMA } from '../../../src/llm/schemas/macro-architecture-schema';
+import { MILESTONE_GENERATION_SCHEMA } from '../../../src/llm/schemas/milestone-generation-schema';
 import { generateStoryStructure } from '../../../src/llm/structure-generator';
 import { buildMinimalDecomposedCharacter } from '../../fixtures/decomposed';
 
-interface StructurePayload {
+function createMacroPayload(): {
   overallTheme: string;
   premise: string;
+  openingImage: string;
+  closingImage: string;
   pacingBudget: { targetPagesMin: number; targetPagesMax: number };
+  anchorMoments: {
+    incitingIncident: { actIndex: number; description: string };
+    midpoint: { actIndex: number; milestoneSlot: number; midpointType: string };
+    climax: { actIndex: number; description: string };
+    signatureScenarioPlacement: { actIndex: number; description: string };
+  };
+  initialNpcAgendas: Array<{
+    npcName: string;
+    currentGoal: string;
+    leverage: string;
+    fear: string;
+    offScreenBehavior: string;
+  }>;
   acts: Array<{
     name: string;
     objective: string;
     stakes: string;
     entryCondition: string;
+    actQuestion: string;
+    exitReversal: string;
+    promiseTargets: string[];
+    obligationTargets: string[];
+  }>;
+} {
+  return {
+    overallTheme: 'Expose the tribunal and reclaim public trust.',
+    premise:
+      'A disgraced guard must turn the city’s public hearing rituals against the judges who framed her.',
+    openingImage: 'A rain-soaked hearing dais before dawn.',
+    closingImage: 'The same dais occupied by witnesses instead of judges.',
+    pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
+    anchorMoments: {
+      incitingIncident: { actIndex: 0, description: 'The guard is framed in front of the harbor court.' },
+      midpoint: { actIndex: 1, milestoneSlot: 1, midpointType: 'FALSE_DEFEAT' },
+      climax: { actIndex: 2, description: 'The harbor court loses control of the verdict.' },
+      signatureScenarioPlacement: { actIndex: 1, description: 'A ritual hearing becomes a public trap.' },
+    },
+    initialNpcAgendas: [
+      {
+        npcName: 'Judge Corven',
+        currentGoal: 'Destroy the ledger before witnesses align.',
+        leverage: 'Commands the harbor guard chain.',
+        fear: 'Public confession under oath.',
+        offScreenBehavior: 'Rotates loyal guards and burns paper trails.',
+      },
+    ],
+    acts: [
+      {
+        name: 'Act I',
+        objective: 'Find proof of the frame-up.',
+        stakes: 'Failure means immediate execution.',
+        entryCondition: 'The murder charge is announced in public.',
+        actQuestion: 'Who arranged the frame-up?',
+        exitReversal: 'The first proof implicates the guard’s mentor.',
+        promiseTargets: ['Public ritual becomes a weapon'],
+        obligationTargets: ['crime_or_puzzle_presented'],
+      },
+      {
+        name: 'Act II',
+        objective: 'Turn procedure into leverage.',
+        stakes: 'Failure cements tribunal rule.',
+        entryCondition: 'The mentor’s signature appears in a sealed ledger.',
+        actQuestion: 'Can law be used against the tribunal?',
+        exitReversal: 'The crowd turns, but legal protection disappears.',
+        promiseTargets: ['Public ritual becomes a weapon'],
+        obligationTargets: ['key_clue_recontextualized'],
+      },
+      {
+        name: 'Act III',
+        objective: 'Replace the tribunal’s version of justice.',
+        stakes: 'Failure makes the purge permanent.',
+        entryCondition: 'The tribunal splinters in public.',
+        actQuestion: 'What justice survives public shame?',
+        exitReversal: '',
+        promiseTargets: ['Public ritual becomes a weapon'],
+        obligationTargets: ['culprit_unmasked'],
+      },
+    ],
+  };
+}
+
+function createMilestonePayload(): {
+  acts: Array<{
+    actIndex: number;
     milestones: Array<{
       name: string;
       description: string;
       objective: string;
+      causalLink: string;
+      exitCondition: string;
       role: string;
-      escalationType?: string | null;
-      secondaryEscalationType?: string | null;
-      crisisType?: string | null;
-      expectedGapMagnitude?: string | null;
-      isMidpoint?: boolean;
-      midpointType?: string | null;
-      uniqueScenarioHook?: string | null;
-      approachVectors?: string[] | null;
-      setpieceSourceIndex?: number | null;
-      obligatorySceneTag?: string | null;
+      escalationType: string | null;
+      secondaryEscalationType: string | null;
+      crisisType: string | null;
+      expectedGapMagnitude: string | null;
+      isMidpoint: boolean;
+      midpointType: string | null;
+      uniqueScenarioHook: string | null;
+      approachVectors: string[] | null;
+      setpieceSourceIndex: number | null;
+      obligatorySceneTag: string | null;
     }>;
   }>;
-}
-
-function createValidStructurePayload(): StructurePayload {
+} {
   return {
-    overallTheme: 'Expose the tribunal and reclaim your honor.',
-    premise:
-      'A disgraced guard must infiltrate the tribunal that framed her to uncover proof of their corruption.',
-    openingImage: 'An opening image placeholder.',
-    closingImage: 'A closing image placeholder.',
-    pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     acts: [
       {
-        name: 'Act I',
-        objective: 'Get pulled into the conspiracy.',
-        stakes: 'Failure means execution.',
-        entryCondition: 'A public murder is pinned on the protagonist.',
+        actIndex: 0,
         milestones: [
           {
-            name: 'Witness contact',
-            description: 'Find a hidden witness.',
-            objective: 'Obtain credible evidence.',
-            causalLink: 'Because of prior events.',
+            name: 'Witness at low tide',
+            description: 'The guard corners a dock witness before curfew.',
+            objective: 'Secure testimony before tribunal agents silence the witness.',
+            causalLink: 'Because public accusation cuts off every lawful path to evidence.',
+            exitCondition: 'The witness either talks or vanishes with the proof.',
             role: 'setup',
             escalationType: null,
             secondaryEscalationType: null,
@@ -80,97 +157,100 @@ function createValidStructurePayload(): StructurePayload {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
-            obligatorySceneTag: null,
+            obligatorySceneTag: 'crime_or_puzzle_presented',
           },
           {
-            name: 'Archive theft',
-            description: 'Steal archive records.',
-            objective: 'Secure proof before it burns.',
-            causalLink: 'Because of prior events.',
+            name: 'Archive floodgate breach',
+            description: 'The guard breaks into the archive during a tide alarm.',
+            objective: 'Recover the sealed ledger before the floodgates lock.',
+            causalLink: 'Because the witness reveals where the court moved the ledger.',
+            exitCondition: 'The ledger is recovered or thrown into public view.',
             role: 'turning_point',
-            escalationType: null,
+            escalationType: 'TEMPORAL_OR_ENVIRONMENTAL_PRESSURE',
             secondaryEscalationType: null,
-            crisisType: null,
-            expectedGapMagnitude: null,
+            crisisType: 'BEST_BAD_CHOICE',
+            expectedGapMagnitude: 'WIDE',
             isMidpoint: false,
             midpointType: null,
-            uniqueScenarioHook: null,
-            approachVectors: null,
+            uniqueScenarioHook:
+              'The hearing archive floods on a civic timer, turning legal evidence into a drowning race.',
+            approachVectors: ['SWIFT_ACTION', 'STEALTH_SUBTERFUGE'],
             setpieceSourceIndex: 0,
             obligatorySceneTag: null,
           },
         ],
       },
       {
-        name: 'Act II',
-        objective: 'Expose the network while hunted.',
-        stakes: 'Failure locks the city under martial rule.',
-        entryCondition: 'The records name powerful conspirators.',
+        actIndex: 1,
         milestones: [
           {
-            name: 'Rival negotiation',
-            description: 'Negotiate with rivals.',
-            objective: 'Gain reluctant allies.',
-            causalLink: 'Because of prior events.',
+            name: 'Belltower intercept',
+            description: 'The guard hijacks the court bell code used by tribunal runners.',
+            objective: 'Map which judges are coordinating the purge.',
+            causalLink: 'Because the ledger lists timings instead of names.',
+            exitCondition: 'The runner network is decoded.',
             role: 'escalation',
-            escalationType: null,
+            escalationType: 'REVELATION_SHIFT',
             secondaryEscalationType: null,
-            crisisType: null,
-            expectedGapMagnitude: null,
+            crisisType: 'IRRECONCILABLE_GOODS',
+            expectedGapMagnitude: 'MODERATE',
             isMidpoint: false,
             midpointType: null,
-            uniqueScenarioHook: null,
-            approachVectors: null,
+            uniqueScenarioHook:
+              'The city’s ceremonial bell code doubles as covert judicial command traffic.',
+            approachVectors: ['ANALYTICAL_REASONING', 'CAREFUL_OBSERVATION'],
             setpieceSourceIndex: 1,
-            obligatorySceneTag: null,
+            obligatorySceneTag: 'key_clue_recontextualized',
           },
           {
-            name: 'Rigged hearing',
-            description: 'Survive a rigged hearing.',
-            objective: 'Force evidence into the open.',
-            causalLink: 'Because of prior events.',
+            name: 'Ritual hearing ambush',
+            description: 'The guard turns the hearing oath ritual into a public trap.',
+            objective: 'Force a judge to confess on the record.',
+            causalLink: 'Because the intercepted code identifies which judge must speak for the purge.',
+            exitCondition: 'A confession is made in front of the crowd.',
             role: 'turning_point',
-            escalationType: null,
-            secondaryEscalationType: null,
-            crisisType: null,
-            expectedGapMagnitude: null,
+            escalationType: 'REVERSAL_OF_FORTUNE',
+            secondaryEscalationType: 'MORAL_OR_ETHICAL_PRESSURE',
+            crisisType: 'BEST_BAD_CHOICE',
+            expectedGapMagnitude: 'CHASM',
             isMidpoint: true,
             midpointType: 'FALSE_DEFEAT',
-            uniqueScenarioHook: null,
-            approachVectors: null,
+            uniqueScenarioHook:
+              'The tribunal’s oath sequence becomes the mechanism that strips a judge of plausible deniability.',
+            approachVectors: ['PERSUASION_INFLUENCE', 'SELF_EXPRESSION'],
             setpieceSourceIndex: 2,
             obligatorySceneTag: null,
           },
         ],
       },
       {
-        name: 'Act III',
-        objective: 'End the conspiracy and define justice.',
-        stakes: 'Failure cements permanent authoritarian control.',
-        entryCondition: 'Conspirators are identified and vulnerable.',
+        actIndex: 2,
         milestones: [
           {
-            name: 'Alliance split',
-            description: 'Alliance fractures.',
-            objective: 'Choose justice over revenge.',
-            causalLink: 'Because of prior events.',
+            name: 'Clerk mutiny',
+            description: 'Record clerks revolt over the purge order.',
+            objective: 'Keep the archive staff alive long enough to testify.',
+            causalLink: 'Because the confession makes the purge order explicit.',
+            exitCondition: 'Enough clerks survive to contradict the tribunal publicly.',
             role: 'turning_point',
-            escalationType: null,
+            escalationType: 'COMPLICATION_CASCADE',
             secondaryEscalationType: null,
-            crisisType: null,
-            expectedGapMagnitude: null,
+            crisisType: 'BEST_BAD_CHOICE',
+            expectedGapMagnitude: 'WIDE',
             isMidpoint: false,
             midpointType: null,
-            uniqueScenarioHook: null,
-            approachVectors: null,
+            uniqueScenarioHook:
+              'The bureaucracy itself mutinies when the clerks who forged the lie become its next victims.',
+            approachVectors: ['ENDURANCE_RESILIENCE', 'EMPATHIC_CONNECTION'],
             setpieceSourceIndex: 3,
             obligatorySceneTag: null,
           },
           {
-            name: 'Tribunal reckoning',
-            description: 'Confront tribunal leaders.',
-            objective: 'Resolve the central conflict.',
-            causalLink: 'Because of prior events.',
+            name: 'Harbor verdict',
+            description: 'The city hears a new verdict outside tribunal walls.',
+            objective: 'Transfer judgment from the tribunal to the witnesses.',
+            causalLink: 'Because the surviving clerks expose the legal machinery in public.',
+            exitCondition: 'Public authority shifts away from the tribunal.',
             role: 'resolution',
             escalationType: null,
             secondaryEscalationType: null,
@@ -181,40 +261,11 @@ function createValidStructurePayload(): StructurePayload {
             uniqueScenarioHook: null,
             approachVectors: null,
             setpieceSourceIndex: null,
-            obligatorySceneTag: null,
+            obligatorySceneTag: 'culprit_unmasked',
           },
         ],
       },
     ],
-  };
-}
-
-function createMysteryConceptSpec(): import('../../../src/models/concept-generator').ConceptSpec {
-  return {
-    oneLineHook: 'Detective story',
-    elevatorParagraph: 'A detective unravels civic corruption.',
-    genreFrame: 'MYSTERY' as const,
-    genreSubversion: 'Detective caused the inciting incident.',
-    protagonistRole: 'Disgraced detective',
-    coreCompetence: 'Pattern recognition',
-    coreFlaw: 'Self-deception',
-    actionVerbs: ['investigate', 'interrogate', 'infiltrate', 'evade', 'expose', 'choose'],
-    coreConflictLoop: 'Truth versus institutional power',
-    conflictAxis: 'TRUTH_VS_STABILITY' as const,
-    conflictType: 'PERSON_VS_SOCIETY' as const,
-    pressureSource: 'Tribunal suppression',
-    stakesPersonal: 'Loss of allies',
-    stakesSystemic: 'Permanent authoritarian control',
-    deadlineMechanism: 'Evidence purge at sunrise',
-    settingAxioms: ['Harbor districts flood nightly', 'Tribunals control shipping courts'],
-    constraintSet: ['No weapons in tribunal halls', 'Witnesses vanish after curfew'],
-    keyInstitutions: ['Harbor Tribunal', 'Tide Guard'],
-    settingScale: 'LOCAL' as const,
-    whatIfQuestion: 'Can truth survive corrupt institutions?',
-    ironicTwist: 'The detective must expose their own lie first.',
-    playerFantasy: 'Outmaneuvering corrupt elites',
-    incitingDisruption: 'A witness is killed in public',
-    escapeValve: 'Smuggler tunnels beneath the docks',
   };
 }
 
@@ -260,12 +311,65 @@ describe('structure-generator', () => {
       ],
       rawWorldbuilding: 'A plague-ridden harbor city controlled by merchant tribunals.',
     },
+    conceptSpec: {
+      oneLineHook: 'A disgraced guard weaponizes public ritual.',
+      elevatorParagraph: 'A hearing ritual becomes the engine of civic collapse.',
+      genreFrame: 'MYSTERY' as const,
+      genreSubversion: 'The investigator helped build the system.',
+      protagonistRole: 'Disgraced guard',
+      coreCompetence: 'Pattern recognition under pressure',
+      coreFlaw: 'Compulsive self-justification',
+      actionVerbs: ['investigate', 'interrogate', 'infiltrate', 'evade', 'expose', 'choose'],
+      coreConflictLoop: 'Truth versus institutional power',
+      conflictAxis: 'TRUTH_VS_STABILITY' as const,
+      conflictType: 'PERSON_VS_SOCIETY' as const,
+      pressureSource: 'Tribunal suppression',
+      stakesPersonal: 'Loss of allies',
+      stakesSystemic: 'Permanent authoritarian control',
+      deadlineMechanism: 'Evidence purge at sunrise',
+      settingAxioms: ['Harbor districts flood nightly', 'Tribunals control shipping courts'],
+      constraintSet: ['No weapons in tribunal halls', 'Witnesses vanish after curfew'],
+      keyInstitutions: ['Harbor Tribunal', 'Tide Guard'],
+      settingScale: 'LOCAL' as const,
+      whatIfQuestion: 'Can truth survive corrupt institutions?',
+      ironicTwist: 'The guard must expose her own lie first.',
+      playerFantasy: 'Outmaneuvering corrupt elites',
+      incitingDisruption: 'A witness is killed in public',
+      escapeValve: 'Smuggler tunnels beneath the docks',
+      protagonistLie: 'I can stay clean inside a dirty institution.',
+      protagonistTruth: 'Truth requires public cost.',
+      protagonistGhost: 'She once signed off on an innocent arrest.',
+      wantNeedCollisionSketch: 'She wants exoneration but needs public accountability.',
+    },
+    conceptVerification: {
+      conceptId: 'concept_1',
+      signatureScenario: 'A ritual hearing becomes a public trap.',
+      loglineCompressible: true,
+      logline: 'A disgraced guard weaponizes public ritual against a tribunal cover-up.',
+      premisePromises: ['Public ritual becomes a weapon'],
+      escalatingSetpieces: ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3'],
+      setpieceCausalChainBroken: false,
+      setpieceCausalLinks: ['0->1', '1->2', '2->3'],
+      inevitabilityStatement: 'The ritual machinery will eventually turn on itself.',
+      loadBearingCheck: {
+        passes: true,
+        reasoning: 'Specific to the harbor tribunal.',
+        genericCollapse: 'Would collapse without ritualized law.',
+      },
+      kernelFidelityCheck: {
+        passes: true,
+        reasoning: 'Aligned to public shame versus truth.',
+        kernelDrift: 'None.',
+      },
+      conceptIntegrityScore: 92,
+    },
   };
 
   beforeEach(() => {
     jest.useFakeTimers();
     fetchMock.mockReset();
     mockLogPrompt.mockReset();
+    mockLogResponse.mockReset();
     mockLogger.warn.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
   });
@@ -297,57 +401,45 @@ describe('structure-generator', () => {
     await jest.advanceTimersByTimeAsync(2000);
   }
 
-  it('generates story structure and returns parsed result with raw response', async () => {
-    const payload = createValidStructurePayload();
-    const rawContent = JSON.stringify(payload);
+  it('runs macro architecture first, then milestone generation, and merges the result', async () => {
+    fetchMock
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMacroPayload())))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMilestonePayload())));
 
-    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
+    const result = await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
 
-    const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: {},
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.overallTheme).toBe(createMacroPayload().overallTheme);
+    expect(result.acts[1]?.milestones[1]).toMatchObject({
+      name: 'Ritual hearing ambush',
+      isMidpoint: true,
+      midpointType: 'FALSE_DEFEAT',
     });
+    expect(result.acts[1]?.actQuestion).toBe('Can law be used against the tribunal?');
+    expect(result.rawResponse).toContain('[macroArchitecture]');
+    expect(result.rawResponse).toContain('[milestoneGeneration]');
 
-    expect(result.rawResponse).toBe(rawContent);
-    expect(result.overallTheme).toBe(payload.overallTheme);
-    expect(result.premise).toBe(payload.premise);
-    expect(result.openingImage).toBe(payload.openingImage);
-    expect(result.closingImage).toBe(payload.closingImage);
-    expect(result.pacingBudget).toEqual(payload.pacingBudget);
-    expect(result.anchorMoments).toEqual({
-      incitingIncident: { actIndex: 0, description: '' },
-      midpoint: { actIndex: 1, milestoneSlot: 0, midpointType: 'FALSE_DEFEAT' },
-      climax: { actIndex: 2, description: '' },
-      signatureScenarioPlacement: null,
-    });
-    expect(result.acts[0]).toMatchObject({
-      ...payload.acts[0],
-      actQuestion: '',
-      exitReversal: '',
-      promiseTargets: [],
-      obligationTargets: [],
-    });
-    expect(result.acts[0]?.milestones[0]).toMatchObject({
-      ...payload.acts[0]!.milestones[0],
-      exitCondition: '',
-    });
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getRequestBody(0).response_format).toEqual(MACRO_ARCHITECTURE_SCHEMA);
+    expect(getRequestBody(1).response_format).toEqual(MILESTONE_GENERATION_SCHEMA);
 
-    const body = getRequestBody();
-    expect(body.response_format).toEqual(STRUCTURE_GENERATION_SCHEMA);
-    expect(body.temperature).toBe(0.8);
-    expect(body.max_tokens).toBe(16384);
+    const milestoneMessages = getRequestBody(1).messages as Array<{ role: string; content: string }>;
+    expect(milestoneMessages[1]?.content).toContain('LOCKED MACRO ARCHITECTURE');
+    expect(milestoneMessages[1]?.content).toContain('"actQuestion": "Who arranged the frame-up?"');
 
-    const messages = body.messages as Array<{ role: string; content: string }>;
-    expect(Array.isArray(messages)).toBe(true);
-    expect(messages[messages.length - 1]?.content).toContain('plague-ridden harbor city');
-    expect(messages[messages.length - 1]?.content).toContain(context.tone);
-    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'structure', expect.any(Array));
-    expect(mockLogPrompt).toHaveBeenCalledTimes(1);
+    expect(mockLogPrompt).toHaveBeenNthCalledWith(1, mockLogger, 'macroArchitecture', expect.any(Array));
+    expect(mockLogPrompt).toHaveBeenNthCalledWith(
+      2,
+      mockLogger,
+      'milestoneGeneration',
+      expect.any(Array)
+    );
+    expect(mockLogResponse).toHaveBeenCalledTimes(2);
   });
 
-  it('passes custom model, temperature, and max tokens when provided', async () => {
-    const payload = createValidStructurePayload();
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
+  it('passes model overrides and max token overrides to both stages', async () => {
+    fetchMock
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMacroPayload())))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMilestonePayload())));
 
     await generateStoryStructure(context, 'test-api-key', {
       model: 'openai/gpt-4.1-mini',
@@ -356,26 +448,15 @@ describe('structure-generator', () => {
       promptOptions: {},
     });
 
-    const body = getRequestBody();
-    expect(body.model).toBe('openai/gpt-4.1-mini');
-    expect(body.temperature).toBe(0.55);
-    expect(body.max_tokens).toBe(1234);
+    expect(getRequestBody(0).model).toBe('openai/gpt-4.1-mini');
+    expect(getRequestBody(1).model).toBe('openai/gpt-4.1-mini');
+    expect(getRequestBody(0).temperature).toBe(0.55);
+    expect(getRequestBody(1).temperature).toBe(0.55);
+    expect(getRequestBody(0).max_tokens).toBe(1234);
+    expect(getRequestBody(1).max_tokens).toBe(1234);
   });
 
-  it('uses configured default model when model is omitted', async () => {
-    const payload = createValidStructurePayload();
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
-
-    await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: {},
-    });
-
-    const body = getRequestBody();
-    expect(typeof body.model).toBe('string');
-    expect((body.model as string).length).toBeGreaterThan(0);
-  });
-
-  it('throws INVALID_JSON when model content is not valid JSON', async () => {
+  it('retries when the macro stage returns invalid JSON', async () => {
     fetchMock.mockResolvedValue(responseWithMessageContent('{"overallTheme":'));
 
     const pending = generateStoryStructure(context, 'test-api-key');
@@ -387,234 +468,41 @@ describe('structure-generator', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
-  it('parses JSON wrapped in markdown code fences', async () => {
-    const payload = createValidStructurePayload();
-    const fenced = `\`\`\`json\n${JSON.stringify(payload)}\n\`\`\``;
-    fetchMock.mockResolvedValue(responseWithMessageContent(fenced));
+  it('parses fenced JSON during milestone generation', async () => {
+    fetchMock
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMacroPayload())))
+      .mockResolvedValueOnce(
+        responseWithMessageContent(`\`\`\`json\n${JSON.stringify(createMilestonePayload())}\n\`\`\``)
+      );
 
-    const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: {},
-    });
+    const result = await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
 
-    expect(result.overallTheme).toBe(payload.overallTheme);
     expect(result.acts).toHaveLength(3);
+    expect(result.acts[2]?.milestones[1]?.name).toBe('Harbor verdict');
   });
 
-  it('throws STRUCTURE_PARSE_ERROR when overallTheme is missing', async () => {
-    const payload = createValidStructurePayload();
-    const invalid = { acts: payload.acts };
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(invalid)));
+  it('throws parse errors from milestone generation when the midpoint placement is wrong', async () => {
+    const badMilestones = createMilestonePayload();
+    badMilestones.acts[1]!.milestones[1]!.isMidpoint = false;
+    badMilestones.acts[1]!.milestones[1]!.midpointType = null;
+    badMilestones.acts[1]!.milestones[0]!.isMidpoint = true;
+    badMilestones.acts[1]!.milestones[0]!.midpointType = 'FALSE_DEFEAT';
+
+    fetchMock
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMacroPayload())))
+      .mockResolvedValue(responseWithMessageContent(JSON.stringify(badMilestones)));
 
     const pending = generateStoryStructure(context, 'test-api-key');
     const expectation = expect(pending).rejects.toMatchObject({ code: 'STRUCTURE_PARSE_ERROR' });
 
     await advanceRetryDelays();
     await expectation;
+
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
-  it('throws STRUCTURE_PARSE_ERROR when acts count is below 3', async () => {
-    const payload = createValidStructurePayload();
-    const invalid = { ...payload, acts: payload.acts.slice(0, 2) };
-    const rawContent = JSON.stringify(invalid);
-    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
-
-    const pending = generateStoryStructure(context, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({
-      code: 'STRUCTURE_PARSE_ERROR',
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      message: expect.stringContaining('received: 2'),
-      context: { rawContent },
-    });
-
-    await advanceRetryDelays();
-    await expectation;
-  });
-
-  it('throws STRUCTURE_PARSE_ERROR when acts count exceeds 5', async () => {
-    const payload = createValidStructurePayload();
-    const extraActs = Array.from({ length: 3 }, (_, i) => ({
-      ...payload.acts[0]!,
-      name: `Act ${4 + i}`,
-    }));
-    const invalid = { ...payload, acts: [...payload.acts, ...extraActs] };
-    const rawContent = JSON.stringify(invalid);
-    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
-
-    const pending = generateStoryStructure(context, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({
-      code: 'STRUCTURE_PARSE_ERROR',
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      message: expect.stringContaining('received: 6'),
-      context: { rawContent },
-    });
-
-    await advanceRetryDelays();
-    await expectation;
-  });
-
-  it('accepts 4 acts as a valid structure', async () => {
-    const payload = createValidStructurePayload();
-    const extraAct = {
-      name: 'Act IV',
-      objective: 'Wrap up loose ends.',
-      stakes: 'Failure leaves threads dangling.',
-      entryCondition: 'The main conflict is resolved.',
-      milestones: [
-        {
-          name: 'Aftermath',
-          description: 'Survey the aftermath.',
-          objective: 'Understand consequences.',
-          causalLink: 'Because of prior events.',
-          role: 'setup',
-        },
-        {
-          name: 'New equilibrium',
-          description: 'Establish a new normal.',
-          objective: 'Close the story.',
-          causalLink: 'Because of prior events.',
-          role: 'resolution',
-        },
-      ],
-    };
-    const valid = { ...payload, acts: [...payload.acts, extraAct] };
-    const rawContent = JSON.stringify(valid);
-    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
-
-    const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: {},
-    });
-
-    expect(result.acts).toHaveLength(4);
-    expect(result.acts[3]!.name).toBe('Act IV');
-  });
-
-  it('throws STRUCTURE_PARSE_ERROR with type info when acts is not an array', async () => {
-    const payload = createValidStructurePayload();
-    const invalid = { ...payload, acts: 'not-an-array' };
-    const rawContent = JSON.stringify(invalid);
-    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
-
-    const pending = generateStoryStructure(context, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({
-      code: 'STRUCTURE_PARSE_ERROR',
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      message: expect.stringContaining('received: string'),
-      context: { rawContent },
-    });
-
-    await advanceRetryDelays();
-    await expectation;
-  });
-
-  it('throws STRUCTURE_PARSE_ERROR when an act has an invalid milestone count', async () => {
-    const payload = createValidStructurePayload();
-    payload.acts[1] = {
-      ...payload.acts[1],
-      milestones: [
-        {
-          name: 'Single milestone',
-          description: 'Only one milestone',
-          objective: 'Insufficient milestones.',
-          causalLink: 'Because of prior events.',
-          role: 'escalation',
-        },
-      ],
-    };
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
-
-    const pending = generateStoryStructure(context, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({ code: 'STRUCTURE_PARSE_ERROR' });
-
-    await advanceRetryDelays();
-    await expectation;
-  });
-
-  it('throws STRUCTURE_PARSE_ERROR when an act is missing required fields', async () => {
-    const payload = createValidStructurePayload();
-    payload.acts[0] = {
-      ...payload.acts[0],
-      stakes: undefined as unknown as string,
-    };
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
-
-    const pending = generateStoryStructure(context, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({ code: 'STRUCTURE_PARSE_ERROR' });
-
-    await advanceRetryDelays();
-    await expectation;
-  });
-
-  it('throws STRUCTURE_PARSE_ERROR when a milestone is missing required fields', async () => {
-    const payload = createValidStructurePayload();
-    payload.acts[2] = {
-      ...payload.acts[2],
-      milestones: [
-        {
-          name: 'Climax confrontation',
-          description: 'Complete the confrontation.',
-          objective: 'Resolve climax.',
-          causalLink: 'Because of prior events.',
-          role: 'turning_point',
-        },
-        {
-          name: 'Invalid objective',
-          description: 'Missing objective',
-          objective: undefined as unknown as string,
-          causalLink: 'Because of prior events.',
-          role: 'resolution',
-        },
-      ],
-    };
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
-
-    const pending = generateStoryStructure(context, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({ code: 'STRUCTURE_PARSE_ERROR' });
-
-    await advanceRetryDelays();
-    await expectation;
-  });
-
-  it('throws STRUCTURE_PARSE_ERROR when a milestone name is missing', async () => {
-    const payload = createValidStructurePayload();
-    payload.acts[0] = {
-      ...payload.acts[0],
-      milestones: [
-        {
-          name: undefined as unknown as string,
-          description: 'Find a hidden witness.',
-          objective: 'Obtain credible evidence.',
-          causalLink: 'Because of prior events.',
-          role: 'setup',
-        },
-        payload.acts[0]!.milestones[1]!,
-      ],
-    };
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
-
-    const pending = generateStoryStructure(context, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({ code: 'STRUCTURE_PARSE_ERROR' });
-
-    await advanceRetryDelays();
-    await expectation;
-  });
-
-  it('throws EMPTY_RESPONSE when OpenRouter returns no message content', async () => {
-    fetchMock.mockResolvedValue(
-      createJsonResponse(200, {
-        id: 'or-structure-empty',
-        choices: [],
-      })
-    );
-
-    const pending = generateStoryStructure(context, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({ code: 'EMPTY_RESPONSE' });
-
-    await advanceRetryDelays();
-    await expectation;
-  });
-
-  it('throws retryable HTTP error for 500 responses and retries', async () => {
-    fetchMock.mockResolvedValue(createErrorResponse(500, 'server error'));
+  it('retries retryable HTTP failures', async () => {
+    fetchMock.mockResolvedValue(createErrorResponse(500, 'server exploded'));
 
     const pending = generateStoryStructure(context, 'test-api-key');
     const expectation = expect(pending).rejects.toMatchObject({
@@ -628,8 +516,8 @@ describe('structure-generator', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
-  it('throws non-retryable HTTP error for 401 responses without retry', async () => {
-    fetchMock.mockResolvedValue(createErrorResponse(401, 'invalid key'));
+  it('does not retry non-retryable HTTP failures', async () => {
+    fetchMock.mockResolvedValue(createErrorResponse(401, 'bad auth'));
 
     await expect(generateStoryStructure(context, 'test-api-key')).rejects.toMatchObject({
       code: 'HTTP_401',
@@ -639,172 +527,37 @@ describe('structure-generator', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('falls back premise to overallTheme when premise is missing', async () => {
-    const payload = createValidStructurePayload();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { premise: _premise, ...withoutPremise } = payload;
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutPremise)));
+  it('warns when fewer than four unique setpieces are traced', async () => {
+    const lowCoverage = createMilestonePayload();
+    lowCoverage.acts[1]!.milestones[0]!.setpieceSourceIndex = 0;
+    lowCoverage.acts[1]!.milestones[1]!.setpieceSourceIndex = 1;
+    lowCoverage.acts[2]!.milestones[0]!.setpieceSourceIndex = 1;
 
-    const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: {},
-    });
-
-    expect(result.premise).toBe(payload.overallTheme);
-  });
-
-  it('falls back pacingBudget to defaults when pacingBudget is missing', async () => {
-    const payload = createValidStructurePayload();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { pacingBudget: _pacingBudget, ...withoutBudget } = payload;
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutBudget)));
-
-    const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: {},
-    });
-
-    expect(result.pacingBudget).toEqual({ targetPagesMin: 15, targetPagesMax: 50 });
-  });
-
-  it('falls back milestone role to escalation when role is missing', async () => {
-    const payload = createValidStructurePayload();
-    const withoutRoles = {
-      ...payload,
-      acts: payload.acts.map((act) => ({
-        ...act,
-        milestones: act.milestones.map(({ role: _role, ...milestone }) => milestone),
-      })),
-    };
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutRoles)));
-
-    const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: {},
-    });
-
-    for (const act of result.acts) {
-      for (const milestone of act.milestones) {
-        expect(milestone.role).toBe('escalation');
-      }
-    }
-  });
-
-  it('falls back milestone role to escalation when role has invalid value', async () => {
-    const payload = createValidStructurePayload();
-    const withInvalidRoles = {
-      ...payload,
-      acts: payload.acts.map((act) => ({
-        ...act,
-        milestones: act.milestones.map((milestone) => ({ ...milestone, role: 'invalid_role' })),
-      })),
-    };
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withInvalidRoles)));
-
-    const result = await generateStoryStructure(context, 'test-api-key', {
-      promptOptions: {},
-    });
-
-    // Parser currently accepts any string for role; the schema enforces the enum at LLM level.
-    // The parser's fallback only triggers when role is not a string.
-    for (const act of result.acts) {
-      for (const milestone of act.milestones) {
-        expect(typeof milestone.role).toBe('string');
-      }
-    }
-  });
-
-  it('logs warning when concept verification exists and fewer than 4 unique setpieces are traced', async () => {
-    const payload = createValidStructurePayload();
-    payload.acts[2]!.milestones[0]!.setpieceSourceIndex = 2;
-    payload.acts[2]!.milestones[1]!.setpieceSourceIndex = null;
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
-
-    await generateStoryStructure(
-      {
-        ...context,
-        conceptVerification: {
-          conceptId: 'concept_1',
-          signatureScenario: 'A trial begins in the flooded docks.',
-          loglineCompressible: true,
-          logline: 'A disgraced advocate weaponizes ritual law before the harbor courts erase every witness.',
-          premisePromises: ['promise 1', 'promise 2', 'promise 3'],
-          escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
-          setpieceCausalChainBroken: false,
-          setpieceCausalLinks: ['1->2', '2->3', '3->4', '4->5', '5->6'],
-          inevitabilityStatement: 'Escalation is unavoidable.',
-          loadBearingCheck: {
-            passes: true,
-            reasoning: 'Grounded in world constraints.',
-            genericCollapse: 'Cannot be detached from harbor institutions.',
-          },
-          kernelFidelityCheck: {
-            passes: true,
-            reasoning: 'Aligned with thematic direction.',
-            kernelDrift: 'None.',
-          },
-          conceptIntegrityScore: 90,
-        },
-      },
-      'test-api-key',
-      { promptOptions: {} }
-    );
-
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      'Structure setpiece tracing below target: 3/4 unique setpieces mapped'
-    );
-  });
-
-  it('does not log setpiece warning when concept verification is absent', async () => {
-    const payload = createValidStructurePayload();
-    payload.acts[1]!.milestones[0]!.setpieceSourceIndex = 0;
-    payload.acts[1]!.milestones[1]!.setpieceSourceIndex = null;
-    payload.acts[2]!.milestones[0]!.setpieceSourceIndex = null;
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
+    fetchMock
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMacroPayload())))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(lowCoverage)));
 
     await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
 
-    expect(mockLogger.warn).not.toHaveBeenCalled();
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'Structure setpiece tracing below target: 2/4 unique setpieces mapped'
+    );
   });
 
-  it('logs warning when genre obligations are missing from milestone tags', async () => {
-    const payload = createValidStructurePayload();
-    payload.acts[0]!.milestones[1]!.obligatorySceneTag = 'crime_or_puzzle_presented';
-    payload.acts[1]!.milestones[0]!.obligatorySceneTag = 'red_herring_planted';
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
+  it('warns when genre obligations are missing from milestone tags', async () => {
+    const missingObligations = createMilestonePayload();
+    missingObligations.acts[0]!.milestones[0]!.obligatorySceneTag = null;
+    missingObligations.acts[1]!.milestones[0]!.obligatorySceneTag = null;
+    missingObligations.acts[2]!.milestones[1]!.obligatorySceneTag = null;
 
-    await generateStoryStructure(
-      {
-        ...context,
-        conceptSpec: createMysteryConceptSpec(),
-      },
-      'test-api-key',
-      { promptOptions: {} }
-    );
+    fetchMock
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMacroPayload())))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(missingObligations)));
+
+    await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
 
     expect(mockLogger.warn).toHaveBeenCalledWith(
-      'Structure missing genre obligation tags: key_witness_or_suspect_confronted, key_clue_recontextualized, detective_synthesis_moment, culprit_unmasked'
-    );
-  });
-
-  it('does not log genre obligation warning when all obligations are tagged', async () => {
-    const payload = createValidStructurePayload();
-    payload.acts[0]!.milestones[0]!.obligatorySceneTag = 'crime_or_puzzle_presented';
-    payload.acts[0]!.milestones[1]!.obligatorySceneTag = 'red_herring_planted';
-    payload.acts[1]!.milestones[0]!.obligatorySceneTag = 'key_witness_or_suspect_confronted';
-    payload.acts[1]!.milestones[1]!.obligatorySceneTag = 'key_clue_recontextualized';
-    payload.acts[2]!.milestones[0]!.obligatorySceneTag = 'detective_synthesis_moment';
-    payload.acts[2]!.milestones[1]!.obligatorySceneTag = 'culprit_unmasked';
-    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
-
-    await generateStoryStructure(
-      {
-        ...context,
-        conceptSpec: createMysteryConceptSpec(),
-      },
-      'test-api-key',
-      { promptOptions: {} }
-    );
-
-    expect(mockLogger.warn).not.toHaveBeenCalledWith(
-      expect.stringContaining('Structure missing genre obligation tags:')
+      'Structure missing genre obligation tags: crime_or_puzzle_presented, red_herring_planted, key_witness_or_suspect_confronted, key_clue_recontextualized, detective_synthesis_moment, culprit_unmasked'
     );
   });
 });

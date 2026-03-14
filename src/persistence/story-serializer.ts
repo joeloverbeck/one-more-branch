@@ -52,26 +52,34 @@ function parsePersistedAnchorMoments(data: StoryStructureFileData): StoryStructu
 }
 
 function structureToFileData(structure: StoryStructure): StoryStructureFileData {
+  const anchorMoments = normalizeAnchorMoments(
+    (structure as StoryStructure & { anchorMoments?: unknown }).anchorMoments,
+    structure.acts.length
+  );
+
   return {
     anchorMoments: {
-      incitingIncident: { ...structure.anchorMoments.incitingIncident },
-      midpoint: { ...structure.anchorMoments.midpoint },
-      climax: { ...structure.anchorMoments.climax },
-      signatureScenarioPlacement: structure.anchorMoments.signatureScenarioPlacement
-        ? { ...structure.anchorMoments.signatureScenarioPlacement }
+      incitingIncident: { ...anchorMoments.incitingIncident },
+      midpoint: { ...anchorMoments.midpoint },
+      climax: { ...anchorMoments.climax },
+      signatureScenarioPlacement: anchorMoments.signatureScenarioPlacement
+        ? { ...anchorMoments.signatureScenarioPlacement }
         : null,
     },
-    acts: structure.acts.map((act) => ({
-      id: act.id,
-      name: act.name,
-      objective: act.objective,
-      stakes: act.stakes,
-      entryCondition: act.entryCondition,
-      actQuestion: act.actQuestion,
-      exitReversal: act.exitReversal,
-      promiseTargets: [...act.promiseTargets],
-      obligationTargets: [...act.obligationTargets],
-      milestones: act.milestones.map((milestone) => ({
+    acts: structure.acts.map((act) => {
+      const normalizedActFields = normalizeStructureActFields(act);
+
+      return {
+        id: act.id,
+        name: act.name,
+        objective: act.objective,
+        stakes: act.stakes,
+        entryCondition: act.entryCondition,
+        actQuestion: normalizedActFields.actQuestion,
+        exitReversal: normalizedActFields.exitReversal,
+        promiseTargets: [...normalizedActFields.promiseTargets],
+        obligationTargets: [...normalizedActFields.obligationTargets],
+        milestones: act.milestones.map((milestone) => ({
         id: milestone.id,
         name: milestone.name,
         description: milestone.description,
@@ -89,8 +97,9 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
         approachVectors: milestone.approachVectors ? [...milestone.approachVectors] : null,
         setpieceSourceIndex: milestone.setpieceSourceIndex,
         obligatorySceneTag: milestone.obligatorySceneTag,
-      })),
-    })),
+        })),
+      };
+    }),
     overallTheme: structure.overallTheme,
     premise: structure.premise,
     openingImage: structure.openingImage,

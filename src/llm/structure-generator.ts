@@ -1,6 +1,10 @@
-import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
+import { getStageMaxTokens, getStageModel, type LlmStage } from '../config/stage-model.js';
 import { logger, logPrompt, logResponse } from '../logging/index.js';
+import type {
+  MacroArchitectureResult,
+  StructureGenerationResult,
+} from '../models/structure-generation.js';
 import { getGenreObligationTags } from '../models/genre-obligations.js';
 import {
   OPENROUTER_API_URL,
@@ -9,15 +13,21 @@ import {
   readErrorDetails,
   readJsonResponse,
 } from './http-client.js';
-import type { StructureGenerationResult } from '../models/structure-generation.js';
-import { resolvePromptOptions } from './options.js';
-import { buildStructurePrompt, type StructureContext } from './prompts/structure-prompt.js';
-import { withModelFallback } from './model-fallback.js';
-import { withRetry } from './retry.js';
-import { STRUCTURE_GENERATION_SCHEMA } from './schemas/structure-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
+import type { ChatMessage, JsonSchema } from './llm-client-types.js';
 import { LLMError } from './llm-client-types.js';
-import { parseStructureResponseObject } from './structure-response-parser.js';
+import { parseMacroArchitectureResponseObject } from './macro-architecture-response-parser.js';
+import { parseMilestoneGenerationResponseObject } from './milestone-generation-response-parser.js';
+import { withModelFallback } from './model-fallback.js';
+import { resolvePromptOptions } from './options.js';
+import { buildMacroArchitecturePrompt } from './prompts/macro-architecture-prompt.js';
+import {
+  buildMilestoneGenerationPrompt,
+  type StructureContext,
+} from './prompts/milestone-generation-prompt.js';
+import { withRetry } from './retry.js';
+import { MACRO_ARCHITECTURE_SCHEMA } from './schemas/macro-architecture-schema.js';
+import { MILESTONE_GENERATION_SCHEMA } from './schemas/milestone-generation-schema.js';
 
 const MIN_UNIQUE_TRACED_SETPIECES = 4;
 
@@ -49,15 +59,18 @@ function collectTaggedObligations(
   return tagged;
 }
 
-async function fetchStructure(
+async function callStructuredStage<T>(
+  stage: LlmStage,
   apiKey: string,
   model: string,
-  messages: ReturnType<typeof buildStructurePrompt>,
+  messages: ChatMessage[],
+  schema: JsonSchema,
   temperature: number,
   maxTokens: number,
-  hasConceptVerification: boolean,
-  expectedGenreObligations: readonly string[] | null
-): Promise<StructureGenerationResult> {
+  parse: (parsed: unknown, rawText: string) => T
+): Promise<T> {
+  logPrompt(logger, stage, messages);
+
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
     headers: {
@@ -71,7 +84,7 @@ async function fetchStructure(
       messages,
       temperature,
       max_tokens: maxTokens,
-      response_format: STRUCTURE_GENERATION_SCHEMA,
+      response_format: schema,
     }),
   });
 
@@ -87,28 +100,13 @@ async function fetchStructure(
   }
 
   const data = await readJsonResponse(response);
-  const content = extractResponseContent(data, 'structure', model, maxTokens);
-
+  const content = extractResponseContent(data, stage, model, maxTokens);
   const parsedMessage = parseMessageJsonContent(content);
   const responseText = parsedMessage.rawText;
+  logResponse(logger, stage, responseText);
+
   try {
-    const parsed = parseStructureResponseObject(parsedMessage.parsed);
-    if (hasConceptVerification) {
-      const uniqueSetpiecesUsed = countUniqueSetpieceIndices(parsed);
-      if (uniqueSetpiecesUsed < MIN_UNIQUE_TRACED_SETPIECES) {
-        logger.warn(
-          `Structure setpiece tracing below target: ${uniqueSetpiecesUsed}/${MIN_UNIQUE_TRACED_SETPIECES} unique setpieces mapped`
-        );
-      }
-    }
-    if (expectedGenreObligations && expectedGenreObligations.length > 0) {
-      const tagged = collectTaggedObligations(parsed);
-      const missing = expectedGenreObligations.filter((tag) => !tagged.has(tag));
-      if (missing.length > 0) {
-        logger.warn(`Structure missing genre obligation tags: ${missing.join(', ')}`);
-      }
-    }
-    return { ...parsed, rawResponse: responseText };
+    return parse(parsedMessage.parsed, responseText);
   } catch (error) {
     if (error instanceof LLMError) {
       throw new LLMError(error.message, error.code, error.retryable, {
@@ -116,6 +114,100 @@ async function fetchStructure(
       });
     }
     throw error;
+  }
+}
+
+async function generateMacroArchitecture(
+  context: StructureContext,
+  apiKey: string,
+  options: {
+    model: string;
+    temperature: number;
+    maxTokens: number;
+    promptOptions: ReturnType<typeof resolvePromptOptions>;
+  }
+): Promise<MacroArchitectureResult> {
+  const messages = buildMacroArchitecturePrompt(context, options.promptOptions);
+  return callStructuredStage(
+    'macroArchitecture',
+    apiKey,
+    options.model,
+    messages,
+    MACRO_ARCHITECTURE_SCHEMA,
+    options.temperature,
+    options.maxTokens,
+    (parsed, rawText) => ({
+      ...parseMacroArchitectureResponseObject(parsed),
+      rawResponse: rawText,
+    })
+  );
+}
+
+async function generateMilestones(
+  context: StructureContext,
+  macroArchitecture: MacroArchitectureResult,
+  apiKey: string,
+  options: {
+    model: string;
+    temperature: number;
+    maxTokens: number;
+    promptOptions: ReturnType<typeof resolvePromptOptions>;
+  }
+): Promise<StructureGenerationResult> {
+  const messages = buildMilestoneGenerationPrompt(context, macroArchitecture, options.promptOptions);
+  const milestoneStageResult = await callStructuredStage(
+    'milestoneGeneration',
+    apiKey,
+    options.model,
+    messages,
+    MILESTONE_GENERATION_SCHEMA,
+    options.temperature,
+    options.maxTokens,
+    (parsed, rawText) => ({
+      parsed: parseMilestoneGenerationResponseObject(parsed, macroArchitecture, {
+        verifiedSetpieceCount: context.conceptVerification?.escalatingSetpieces.length ?? 0,
+      }),
+      rawResponse: rawText,
+    })
+  );
+  const milestoneResult = milestoneStageResult.parsed;
+
+  return {
+    overallTheme: macroArchitecture.overallTheme,
+    premise: macroArchitecture.premise,
+    openingImage: macroArchitecture.openingImage,
+    closingImage: macroArchitecture.closingImage,
+    pacingBudget: macroArchitecture.pacingBudget,
+    anchorMoments: macroArchitecture.anchorMoments,
+    initialNpcAgendas: macroArchitecture.initialNpcAgendas,
+    acts: macroArchitecture.acts.map((act, actIndex) => ({
+      ...act,
+      milestones: milestoneResult.acts[actIndex]?.milestones ?? [],
+    })),
+    rawResponse: `[macroArchitecture]\n${macroArchitecture.rawResponse}\n\n[milestoneGeneration]\n${milestoneStageResult.rawResponse}`,
+  };
+}
+
+function warnOnSoftValidation(
+  result: Omit<StructureGenerationResult, 'rawResponse'>,
+  hasConceptVerification: boolean,
+  expectedGenreObligations: readonly string[] | null
+): void {
+  if (hasConceptVerification) {
+    const uniqueSetpiecesUsed = countUniqueSetpieceIndices(result);
+    if (uniqueSetpiecesUsed < MIN_UNIQUE_TRACED_SETPIECES) {
+      logger.warn(
+        `Structure setpiece tracing below target: ${uniqueSetpiecesUsed}/${MIN_UNIQUE_TRACED_SETPIECES} unique setpieces mapped`
+      );
+    }
+  }
+
+  if (expectedGenreObligations && expectedGenreObligations.length > 0) {
+    const tagged = collectTaggedObligations(result);
+    const missing = expectedGenreObligations.filter((tag) => !tagged.has(tag));
+    if (missing.length > 0) {
+      logger.warn(`Structure missing genre obligation tags: ${missing.join(', ')}`);
+    }
   }
 }
 
@@ -130,36 +222,46 @@ export async function generateStoryStructure(
   };
   const promptOptions = resolvePromptOptions(resolvedOptions);
   const config = getConfig().llm;
-  const primaryModel = options?.model ?? getStageModel('structure');
+  const overrideModel = options?.model;
   const temperature = options?.temperature ?? config.temperature;
-  const maxTokens = options?.maxTokens ?? config.maxTokens;
-
-  const messages = buildStructurePrompt(context, promptOptions);
-  logPrompt(logger, 'structure', messages);
+  const macroMaxTokens = options?.maxTokens ?? getStageMaxTokens('macroArchitecture');
+  const milestoneMaxTokens = options?.maxTokens ?? getStageMaxTokens('milestoneGeneration');
   const hasConceptVerification = (context.conceptVerification?.escalatingSetpieces.length ?? 0) > 0;
   const expectedGenreObligationEntries = context.conceptSpec
     ? getGenreObligationTags(context.conceptSpec.genreFrame)
     : null;
   const expectedGenreObligations = expectedGenreObligationEntries
-    ? expectedGenreObligationEntries.map((e) => e.tag)
+    ? expectedGenreObligationEntries.map((entry) => entry.tag)
     : null;
+
+  const macroArchitecture = await withRetry(() =>
+    withModelFallback(
+      (model) =>
+        generateMacroArchitecture(context, apiKey, {
+          model,
+          temperature,
+          maxTokens: macroMaxTokens,
+          promptOptions,
+        }),
+      overrideModel ?? getStageModel('macroArchitecture'),
+      'macroArchitecture'
+    )
+  );
 
   const result = await withRetry(() =>
     withModelFallback(
-      (m) =>
-        fetchStructure(
-          apiKey,
-          m,
-          messages,
+      (model) =>
+        generateMilestones(context, macroArchitecture, apiKey, {
+          model,
           temperature,
-          maxTokens,
-          hasConceptVerification,
-          expectedGenreObligations
-        ),
-      primaryModel,
-      'structure'
+          maxTokens: milestoneMaxTokens,
+          promptOptions,
+        }),
+      overrideModel ?? getStageModel('milestoneGeneration'),
+      'milestoneGeneration'
     )
   );
-  logResponse(logger, 'structure', result.rawResponse);
+
+  warnOnSoftValidation(result, hasConceptVerification, expectedGenreObligations);
   return result;
 }
