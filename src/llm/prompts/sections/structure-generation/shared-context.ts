@@ -147,7 +147,8 @@ export function buildStructureGenerationGenreObligationsSection(
   return `GENRE OBLIGATION CONTRACT (for ${conceptSpec.genreFrame}):
 ${listed}
 
-CONSTRAINT: At least one milestone must be tagged with each obligation above using obligatorySceneTag.
+CONSTRAINT: Use act-level obligationTargets to decide which obligations this structure is actively allocating.
+Each allocated obligation should be fulfilled by at least one milestone tagged with obligatorySceneTag.
 If a milestone does not fulfill any obligation, set obligatorySceneTag to null.
 
 `;

@@ -136,7 +136,7 @@ REQUIREMENTS (follow ALL):
    - SELF_EXPRESSION: Defining identity through the act itself; the approach IS the message
    For "setup", "reflection", and "resolution" milestones, set approachVectors to null.
    Select vectors that create meaningful diversity — avoid repeating the same combination across milestones. The planner will use these as suggestions when designing player choices.
-22. If a genre obligation contract is provided, assign obligatorySceneTag on milestones that fulfill those obligations. Use one of the listed obligation tags verbatim. At least one milestone must cover each listed obligation. For milestones that do not fulfill an obligation, set obligatorySceneTag to null.
+22. If a genre obligation contract is provided, first use act-level obligationTargets to decide which obligations this structure is actively allocating. Then assign obligatorySceneTag on milestones that fulfill those allocated obligations. Use one of the listed obligation tags verbatim. Each allocated obligation should be covered by at least one milestone. For milestones that do not fulfill an obligation, set obligatorySceneTag to null.
 
 OUTPUT SHAPE:
 - overallTheme: string

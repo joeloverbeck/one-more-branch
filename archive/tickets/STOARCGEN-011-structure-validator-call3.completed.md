@@ -82,12 +82,12 @@ Implement these 10 checks as pure functions / pure helpers:
 2. **Milestone count**: 2-4 milestones per act
 3. **Escalation type required**: `escalationType` non-null for all escalation/turning_point milestones
 4. **Setpiece coverage**: >= 4 unique traced setpieces (when `conceptVerification` provided)
-5. **Genre obligation coverage**: All expected obligation tags present across milestones
+5. **Genre obligation coverage**: All allocated obligation tags present across milestones, with fallback to the full genre list only when no obligations were allocated
 6. **Exit condition non-empty**: `exitCondition` non-empty for every milestone
 7. **Act question distinct**: `actQuestion` distinct across all acts
 8. **Exit reversal present**: `exitReversal` non-empty for all non-final acts
 9. **Promise target coverage**: `promiseTargets` across all acts cover all premise promises
-10. **Obligation target coverage**: `obligationTargets` across all acts cover all genre obligations
+10. **Obligation target coverage**: `obligationTargets` define the structure's active genre-obligation coverage contract
 
 Each check returns a `ValidationResult`:
 ```typescript
@@ -166,7 +166,7 @@ async function validateAndRepairStructure(
 - Validation results include diagnostics for observability
 - Repair prompt follows existing prompt builder patterns
 - `generateStoryStructure()` remains the entry point that owns generation + validation as one coherent pipeline
-- All 10 checks match the spec's acceptance criteria exactly
+- All 10 checks match the current validator contract exactly, including obligation-target-driven genre coverage
 
 ## Outcome
 

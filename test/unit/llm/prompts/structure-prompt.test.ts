@@ -184,7 +184,12 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('GENRE OBLIGATION CONTRACT (for MYSTERY)');
     expect(lastUser).toContain('crime_or_puzzle_presented');
     expect(lastUser).toContain('obligatorySceneTag');
-    expect(lastUser).toContain('At least one milestone must be tagged with each obligation');
+    expect(lastUser).toContain(
+      'Use act-level obligationTargets to decide which obligations this structure is actively allocating'
+    );
+    expect(lastUser).toContain(
+      'Each allocated obligation should be covered by at least one milestone'
+    );
   });
 
   it('includes causal linkage requirement and output field', () => {

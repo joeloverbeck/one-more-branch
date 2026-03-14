@@ -101,7 +101,8 @@ GENRE OBLIGATION CONTRACT (for {{conceptSpec.genreFrame}}):
 - {{this.tag}}: {{this.gloss}}
 {{/each}}
 
-CONSTRAINT: At least one beat must be tagged with each obligation above using `obligatorySceneTag`.
+CONSTRAINT: Use act-level `obligationTargets` to decide which obligations this structure is actively allocating.
+Each allocated obligation should be fulfilled by at least one beat tagged with `obligatorySceneTag`.
 If a beat does not fulfill any obligation, set `obligatorySceneTag` to `null`.
 {{/if}}
 
@@ -181,7 +182,7 @@ REQUIREMENTS (follow ALL):
    For all other beats, set `isMidpoint: false` and `midpointType: null`.
 19. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat's conflict unique to THIS specific story's concept, characters, and world. Not a generic description — a hook grounded in the particular setting, relationships, and dramatic question. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null.
 20. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from: DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION. For "setup", "reflection", and "resolution" beats, set approachVectors to null.
-21. If a genre obligation contract is provided, assign `obligatorySceneTag` on beats that fulfill those obligations. Use one of the listed tags verbatim. At least one beat must cover each listed obligation. For beats that do not fulfill an obligation, set `obligatorySceneTag` to null.
+21. If a genre obligation contract is provided, first use act-level `obligationTargets` to decide which obligations this structure is actively allocating. Then assign `obligatorySceneTag` on beats that fulfill those allocated obligations. Use one of the listed tags verbatim. Each allocated obligation should be covered by at least one beat. For beats that do not fulfill an obligation, set `obligatorySceneTag` to null.
 
 TONE REMINDER: All output must fit the tone: {{tone}}.
 
