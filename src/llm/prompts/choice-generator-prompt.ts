@@ -53,9 +53,33 @@ function buildMilestoneObjectiveSection(
     return '';
   }
 
+  const exitCondition =
+    typeof milestone.exitCondition === 'string' ? milestone.exitCondition : '';
+  const exitConditionLine =
+    exitCondition.trim().length > 0
+      ? `\nExit Condition: ${exitCondition}`
+      : '';
+
+  const actQuestion =
+    typeof act.actQuestion === 'string' ? act.actQuestion : '';
+  const actQuestionLine =
+    actQuestion.trim().length > 0
+      ? `\nAct Question: ${actQuestion}`
+      : '';
+
+  const escalationLine =
+    milestone.escalationType != null
+      ? `\nEscalation Type: ${milestone.escalationType}`
+      : '';
+
+  const crisisLine =
+    milestone.role === 'turning_point' && milestone.crisisType != null
+      ? `\nCrisis Type: ${milestone.crisisType}`
+      : '';
+
   return `CURRENT BEAT: "${milestone.name}" (${milestone.role})
-Milestone Objective: ${milestone.objective}
-Act Objective: ${act.objective}
+Milestone Objective: ${milestone.objective}${exitConditionLine}
+Act Objective: ${act.objective}${actQuestionLine}${escalationLine}${crisisLine}
 
 `;
 }
@@ -96,6 +120,62 @@ function buildStoryBibleContextSection(storyBible: StoryBible): string {
   return `RELEVANT HISTORY:\n${storyBible.relevantHistory}\n\n`;
 }
 
+function buildStructureAwareChoiceDesignSection(
+  structure?: StoryStructure,
+  accumulatedStructureState?: AccumulatedStructureState
+): string {
+  if (!structure || !accumulatedStructureState) {
+    return '';
+  }
+
+  const { currentActIndex, currentMilestoneIndex } = accumulatedStructureState;
+  const act = structure.acts[currentActIndex];
+  if (!act) {
+    return '';
+  }
+
+  const milestone = act.milestones[currentMilestoneIndex];
+  if (!milestone) {
+    return '';
+  }
+
+  const lines: string[] = [];
+
+  const exitCondition =
+    typeof milestone.exitCondition === 'string' ? milestone.exitCondition : '';
+  if (exitCondition.trim().length > 0) {
+    lines.push(
+      '- When an Exit Condition is shown: at least one choice should move toward satisfying it and at least one should complicate or delay it.'
+    );
+  }
+
+  const actQuestion =
+    typeof act.actQuestion === 'string' ? act.actQuestion : '';
+  if (actQuestion.trim().length > 0) {
+    lines.push(
+      '- When an Act Question is shown: choices should offer divergent answers to this question.'
+    );
+  }
+
+  if (milestone.escalationType != null) {
+    lines.push(
+      '- When an Escalation Type is shown: choice intensity and consequences should reflect the escalation flavor (e.g., BETRAYAL_OR_ALLIANCE_SHIFT choices involve trust/loyalty pressure).'
+    );
+  }
+
+  if (milestone.role === 'turning_point' && milestone.crisisType != null) {
+    lines.push(
+      '- When a Crisis Type is shown for a turning_point: shape choices to present that specific dilemma shape (BEST_BAD_CHOICE = all options have costs; IRRECONCILABLE_GOODS = choosing one worthy path excludes another).'
+    );
+  }
+
+  if (lines.length === 0) {
+    return '';
+  }
+
+  return `STRUCTURE-AWARE CHOICE DESIGN:\n${lines.join('\n')}\n\n`;
+}
+
 const CHOICE_GENERATOR_SYSTEM = `You are a choice architect for interactive fiction. Your sole focus is crafting meaningful, divergent player choices that emerge naturally from the scene just written.
 
 You do NOT write narrative prose. You ONLY generate structured choice objects.
@@ -125,6 +205,10 @@ export function buildChoiceGeneratorPrompt(
   const guidelinesSection = context.choiceGuidance === 'strict'
     ? STRICT_CHOICE_GUIDELINES + '\n\n'
     : '';
+  const structureAwareSection = buildStructureAwareChoiceDesignSection(
+    context.structure,
+    context.accumulatedStructureState
+  );
 
   const userPrompt = `Generate structured choices for the following scene.
 
@@ -148,7 +232,7 @@ REQUIREMENTS:
 9. Provide choiceSubtype when it adds useful nuance (e.g., BARGAIN, AMBUSH, CONFESSION). Set to null otherwise.
 10. Provide choiceShape when the choice clearly fits a pressure category (TRADEOFF, DILEMMA, GAMBLE, etc.). Set to null otherwise.
 
-WHEN IN CONFLICT, PRIORITIZE:
+${structureAwareSection}WHEN IN CONFLICT, PRIORITIZE:
 1. Choices answer the dramatic question with divergent tags
 2. Choices are natural responses to the scene's final moment
 3. Each choice changes a different dimension of the story`;
