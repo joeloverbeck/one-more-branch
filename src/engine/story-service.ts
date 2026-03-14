@@ -240,12 +240,6 @@ async function buildPreparedStory(
     : await runLegacyDecompositionPipeline(story, options);
   await storage.updateStory(story);
 
-  // Stage 2: Generate structure (uses spine + decomposed data)
-  options.onGenerationStage?.({
-    stage: 'STRUCTURING_STORY',
-    status: 'started',
-    attempt: 1,
-  });
   const structureResult = await generateStoryStructure(
     {
       tone: story.tone,
@@ -257,13 +251,9 @@ async function buildPreparedStory(
       storyKernel: story.storyKernel,
       conceptVerification: options.conceptVerification,
     },
-    options.apiKey
+    options.apiKey,
+    { onGenerationStage: options.onGenerationStage }
   );
-  options.onGenerationStage?.({
-    stage: 'STRUCTURING_STORY',
-    status: 'completed',
-    attempt: 1,
-  });
 
   const structure = createStoryStructure(structureResult);
   story = updateStoryStructure(story, structure);

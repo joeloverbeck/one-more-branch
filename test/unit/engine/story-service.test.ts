@@ -238,7 +238,42 @@ describe('story-service', () => {
 
       createStorySpy.mockReturnValueOnce(story);
       mockedStorage.saveStory.mockResolvedValue(undefined);
-      mockedGenerateStoryStructure.mockResolvedValue(structureResult);
+      mockedGenerateStoryStructure.mockImplementation((_context, _apiKey, options) => {
+        options?.onGenerationStage?.({
+          stage: 'DESIGNING_ARCHITECTURE',
+          status: 'started',
+          attempt: 1,
+        });
+        options?.onGenerationStage?.({
+          stage: 'DESIGNING_ARCHITECTURE',
+          status: 'completed',
+          attempt: 1,
+          durationMs: 10,
+        });
+        options?.onGenerationStage?.({
+          stage: 'GENERATING_MILESTONES',
+          status: 'started',
+          attempt: 1,
+        });
+        options?.onGenerationStage?.({
+          stage: 'GENERATING_MILESTONES',
+          status: 'completed',
+          attempt: 1,
+          durationMs: 10,
+        });
+        options?.onGenerationStage?.({
+          stage: 'VALIDATING_STRUCTURE',
+          status: 'started',
+          attempt: 1,
+        });
+        options?.onGenerationStage?.({
+          stage: 'VALIDATING_STRUCTURE',
+          status: 'completed',
+          attempt: 1,
+          durationMs: 10,
+        });
+        return Promise.resolve(structureResult);
+      });
       mockedGeneratePage.mockResolvedValue({ page, updatedStory, metrics: {
         plannerDurationMs: 0,
         accountantDurationMs: 0,
@@ -283,7 +318,8 @@ describe('story-service', () => {
           decomposedCharacters: [],
           decomposedWorld: { facts: [], rawWorldbuilding: '' },
         }),
-        'test-key'
+        'test-key',
+        { onGenerationStage }
       );
       expect(mockedStorage.updateStory).toHaveBeenCalled();
       const firstPageCall = mockedGeneratePage.mock.calls[0];
@@ -296,8 +332,12 @@ describe('story-service', () => {
       expect(onGenerationStage.mock.calls).toEqual([
         [{ stage: 'DECOMPOSING_ENTITIES', status: 'started', attempt: 1 }],
         [{ stage: 'DECOMPOSING_ENTITIES', status: 'completed', attempt: 1 }],
-        [{ stage: 'STRUCTURING_STORY', status: 'started', attempt: 1 }],
-        [{ stage: 'STRUCTURING_STORY', status: 'completed', attempt: 1 }],
+        [{ stage: 'DESIGNING_ARCHITECTURE', status: 'started', attempt: 1 }],
+        [{ stage: 'DESIGNING_ARCHITECTURE', status: 'completed', attempt: 1, durationMs: 10 }],
+        [{ stage: 'GENERATING_MILESTONES', status: 'started', attempt: 1 }],
+        [{ stage: 'GENERATING_MILESTONES', status: 'completed', attempt: 1, durationMs: 10 }],
+        [{ stage: 'VALIDATING_STRUCTURE', status: 'started', attempt: 1 }],
+        [{ stage: 'VALIDATING_STRUCTURE', status: 'completed', attempt: 1, durationMs: 10 }],
       ]);
       expect(mockedStorage.savePage).toHaveBeenCalledWith(story.id, page);
       expect(mockedStorage.updateStory).toHaveBeenCalledWith(updatedStory);

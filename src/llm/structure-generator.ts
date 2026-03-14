@@ -1,5 +1,7 @@
 import { getConfig } from '../config/index.js';
 import { getStageMaxTokens } from '../config/stage-model.js';
+import { emitGenerationStage } from '../engine/generation-pipeline-helpers.js';
+import type { GenerationStage, GenerationStageCallback } from '../engine/types.js';
 import type {
   MacroArchitectureResult,
   StructureGenerationResult,
@@ -17,6 +19,29 @@ import {
 import { MACRO_ARCHITECTURE_SCHEMA } from './schemas/macro-architecture-schema.js';
 import { MILESTONE_GENERATION_SCHEMA } from './schemas/milestone-generation-schema.js';
 import { validateAndRepairStructure } from './structure-validator.js';
+
+type StructureGenerationOptions = Partial<GenerationOptions> & {
+  onGenerationStage?: GenerationStageCallback;
+};
+
+const STRUCTURE_PIPELINE_STAGES = {
+  macroArchitecture: 'DESIGNING_ARCHITECTURE',
+  milestoneGeneration: 'GENERATING_MILESTONES',
+  validation: 'VALIDATING_STRUCTURE',
+} satisfies Record<'macroArchitecture' | 'milestoneGeneration' | 'validation', GenerationStage>;
+
+async function runStructureStage<T>(
+  onGenerationStage: GenerationStageCallback | undefined,
+  stage: GenerationStage,
+  operation: () => Promise<T>
+): Promise<T> {
+  const attempt = 1;
+  const startedAt = Date.now();
+  emitGenerationStage(onGenerationStage, stage, 'started', attempt);
+  const result = await operation();
+  emitGenerationStage(onGenerationStage, stage, 'completed', attempt, Date.now() - startedAt);
+  return result;
+}
 
 async function generateMacroArchitecture(
   context: StructureContext,
@@ -98,7 +123,7 @@ async function generateMilestones(
 export async function generateStoryStructure(
   context: StructureContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>
+  options?: StructureGenerationOptions
 ): Promise<StructureGenerationResult> {
   const resolvedOptions: GenerationOptions = {
     apiKey,
@@ -110,20 +135,34 @@ export async function generateStoryStructure(
   const temperature = options?.temperature ?? config.temperature;
   const macroMaxTokens = options?.maxTokens ?? getStageMaxTokens('macroArchitecture');
   const milestoneMaxTokens = options?.maxTokens ?? getStageMaxTokens('milestoneGeneration');
-  const macroArchitecture = await generateMacroArchitecture(context, apiKey, {
-    ...(overrideModel ? { model: overrideModel } : {}),
-    temperature,
-    maxTokens: macroMaxTokens,
-    promptOptions,
-  });
+  const macroArchitecture = await runStructureStage(
+    options?.onGenerationStage,
+    STRUCTURE_PIPELINE_STAGES.macroArchitecture,
+    () =>
+      generateMacroArchitecture(context, apiKey, {
+        ...(overrideModel ? { model: overrideModel } : {}),
+        temperature,
+        maxTokens: macroMaxTokens,
+        promptOptions,
+      })
+  );
 
-  const result = await generateMilestones(context, macroArchitecture, apiKey, {
-    ...(overrideModel ? { model: overrideModel } : {}),
-    temperature,
-    maxTokens: milestoneMaxTokens,
-    promptOptions,
-  });
+  const result = await runStructureStage(
+    options?.onGenerationStage,
+    STRUCTURE_PIPELINE_STAGES.milestoneGeneration,
+    () =>
+      generateMilestones(context, macroArchitecture, apiKey, {
+        ...(overrideModel ? { model: overrideModel } : {}),
+        temperature,
+        maxTokens: milestoneMaxTokens,
+        promptOptions,
+      })
+  );
 
-  const validated = await validateAndRepairStructure(result, context, apiKey, resolvedOptions);
+  const validated = await runStructureStage(
+    options?.onGenerationStage,
+    STRUCTURE_PIPELINE_STAGES.validation,
+    () => validateAndRepairStructure(result, context, apiKey, resolvedOptions)
+  );
   return validated.result;
 }
