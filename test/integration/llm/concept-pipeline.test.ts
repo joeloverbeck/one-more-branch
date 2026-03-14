@@ -28,6 +28,14 @@ function responseWithMessageContent(content: string): Response {
   });
 }
 
+function expectCompletedStage(
+  event: { stage: string; status: string; attempt: number; durationMs?: number },
+  stage: string,
+): void {
+  expect(event).toMatchObject({ stage, status: 'completed', attempt: 1 });
+  expect(typeof event.durationMs).toBe('number');
+}
+
 describe('Concept Pipeline Integration', () => {
   const fetchMock: jest.MockedFunction<typeof fetch> = jest.fn();
   const originalFetch = global.fetch;
@@ -44,7 +52,7 @@ describe('Concept Pipeline Integration', () => {
   it('runs ideation then evaluation through real service orchestration', async () => {
     const service = createConceptService();
     const seeds = createConceptSeedInputFixture();
-    const stageEvents: Array<{ stage: string; status: string; attempt: number }> = [];
+    const stageEvents: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
 
     const seederPayload = {
       concepts: Array.from({ length: 6 }, (_, index) => createConceptSeedFixture(index + 1)),
@@ -202,22 +210,23 @@ describe('Concept Pipeline Integration', () => {
     expect(result.evaluatedConcepts[0]?.overallScore).toBe(computeOverallScore(topScore));
     expect(result.evaluatedConcepts[2]?.overallScore).toBe(computeOverallScore(lowScore));
     expect(result.evaluatedConcepts[0]?.overallScore).not.toBe(1);
-    expect(stageEvents).toEqual([
-      { stage: 'SEEDING_CONCEPTS', status: 'started', attempt: 1 },
-      { stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 },
-      { stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 },
-      { stage: 'ENGINEERING_CONCEPTS', status: 'completed', attempt: 1 },
-      { stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 },
-      { stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 },
-      { stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 },
-      { stage: 'GENERATING_SCENARIOS', status: 'completed', attempt: 1 },
-    ]);
+    expect(stageEvents).toHaveLength(10);
+    expect(stageEvents[0]).toEqual({ stage: 'SEEDING_CONCEPTS', status: 'started', attempt: 1 });
+    expectCompletedStage(stageEvents[1]!, 'SEEDING_CONCEPTS');
+    expect(stageEvents[2]).toEqual({ stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 });
+    expectCompletedStage(stageEvents[3]!, 'ARCHITECTING_CONCEPTS');
+    expect(stageEvents[4]).toEqual({ stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 });
+    expectCompletedStage(stageEvents[5]!, 'ENGINEERING_CONCEPTS');
+    expect(stageEvents[6]).toEqual({ stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 });
+    expectCompletedStage(stageEvents[7]!, 'EVALUATING_CONCEPTS');
+    expect(stageEvents[8]).toEqual({ stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 });
+    expectCompletedStage(stageEvents[9]!, 'ANALYZING_SPECIFICITY');
   });
 
   it('runs stress-test stage through real service orchestration', async () => {
     const service = createConceptService();
     const stressPayload = createConceptStressTestFixture();
-    const stageEvents: Array<{ stage: string; status: string; attempt: number }> = [];
+    const stageEvents: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
 
     fetchMock.mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(stressPayload)));
 
@@ -235,9 +244,8 @@ describe('Concept Pipeline Integration', () => {
     expect(result.hardenedConcept.oneLineHook).toBe('Hook 99');
     expect(result.driftRisks).toHaveLength(1);
     expect(result.playerBreaks).toHaveLength(1);
-    expect(stageEvents).toEqual([
-      { stage: 'STRESS_TESTING_CONCEPT', status: 'started', attempt: 1 },
-      { stage: 'STRESS_TESTING_CONCEPT', status: 'completed', attempt: 1 },
-    ]);
+    expect(stageEvents).toHaveLength(2);
+    expect(stageEvents[0]).toEqual({ stage: 'STRESS_TESTING_CONCEPT', status: 'started', attempt: 1 });
+    expectCompletedStage(stageEvents[1]!, 'STRESS_TESTING_CONCEPT');
   });
 });

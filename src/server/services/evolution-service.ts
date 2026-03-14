@@ -1,6 +1,10 @@
-import { evolveConceptIdeas as runEvolveConceptIdeas } from '../../llm/concept-evolver.js';
+import { generateConceptCharacterWorlds } from '../../llm/concept-architect.js';
+import { generateConceptEngines } from '../../llm/concept-engineer.js';
+import { generateEvolvedConceptSeeds } from '../../llm/concept-evolver-seeder.js';
 import { evaluateConcepts as runEvaluateConcepts } from '../../llm/concept-evaluator.js';
+import { mergeConceptStages } from '../../llm/concept-ideator.js';
 import { verifyConcepts as runVerifyConcepts } from '../../llm/concept-verifier.js';
+import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
 import type {
   ConceptSpec,
@@ -29,7 +33,9 @@ export interface EvolveConceptsResult {
 }
 
 interface EvolutionServiceDeps {
-  readonly evolveConceptIdeas: typeof runEvolveConceptIdeas;
+  readonly generateEvolvedConceptSeeds: typeof generateEvolvedConceptSeeds;
+  readonly generateConceptCharacterWorlds: typeof generateConceptCharacterWorlds;
+  readonly generateConceptEngines: typeof generateConceptEngines;
   readonly evaluateConcepts: typeof runEvaluateConcepts;
   readonly verifyConcepts: typeof runVerifyConcepts;
 }
@@ -39,7 +45,9 @@ export interface EvolutionService {
 }
 
 const defaultDeps: EvolutionServiceDeps = {
-  evolveConceptIdeas: runEvolveConceptIdeas,
+  generateEvolvedConceptSeeds,
+  generateConceptCharacterWorlds,
+  generateConceptEngines,
   evaluateConcepts: runEvaluateConcepts,
   verifyConcepts: runVerifyConcepts,
 };
@@ -81,78 +89,71 @@ export function createEvolutionService(deps: EvolutionServiceDeps = defaultDeps)
       const kernel = requireKernel(input.kernel);
       const onGenerationStage = input.onGenerationStage;
 
-      onGenerationStage?.({
-        stage: 'SEEDING_EVOLVED_CONCEPTS',
-        status: 'started',
-        attempt: 1,
-      });
-      onGenerationStage?.({
-        stage: 'ARCHITECTING_CONCEPTS',
-        status: 'started',
-        attempt: 1,
-      });
-      onGenerationStage?.({
-        stage: 'ENGINEERING_CONCEPTS',
-        status: 'started',
-        attempt: 1,
-      });
-      const evolution = await deps.evolveConceptIdeas(
-        {
-          parentConcepts,
-          kernel,
-          protagonistDetails: input.protagonistDetails,
-          genreVibes: input.genreVibes,
-          moodKeywords: input.moodKeywords,
-          contentPreferences: input.contentPreferences,
-        },
-        apiKey,
-      );
-      onGenerationStage?.({
-        stage: 'ENGINEERING_CONCEPTS',
-        status: 'completed',
-        attempt: 1,
-      });
-
-      onGenerationStage?.({
-        stage: 'EVALUATING_CONCEPTS',
-        status: 'started',
-        attempt: 1,
-      });
-      const evaluation = await deps.evaluateConcepts(
-        {
-          concepts: evolution.concepts,
-          userSeeds: {
+      const seedResult = await runGenerationStage(onGenerationStage, 'SEEDING_EVOLVED_CONCEPTS', () =>
+        deps.generateEvolvedConceptSeeds(
+          {
+            parentConcepts,
+            kernel,
+            protagonistDetails: input.protagonistDetails,
             genreVibes: input.genreVibes,
             moodKeywords: input.moodKeywords,
             contentPreferences: input.contentPreferences,
-            apiKey,
           },
-        },
-        apiKey,
+          apiKey,
+        ),
       );
-      onGenerationStage?.({
-        stage: 'EVALUATING_CONCEPTS',
-        status: 'completed',
-        attempt: 1,
-      });
-
-      onGenerationStage?.({
-        stage: 'ANALYZING_SPECIFICITY',
-        status: 'started',
-        attempt: 1,
-      });
-      const verification = await deps.verifyConcepts(
-        { evaluatedConcepts: evaluation.evaluatedConcepts, kernel },
-        apiKey,
+      const architectResult = await runGenerationStage(onGenerationStage, 'ARCHITECTING_CONCEPTS', () =>
+        deps.generateConceptCharacterWorlds(
+          {
+            seeds: seedResult.seeds,
+            kernel,
+            protagonistDetails: input.protagonistDetails,
+            genreVibes: input.genreVibes,
+            moodKeywords: input.moodKeywords,
+            contentPreferences: input.contentPreferences,
+          },
+          apiKey,
+        ),
       );
-      onGenerationStage?.({
-        stage: 'GENERATING_SCENARIOS',
-        status: 'completed',
-        attempt: 1,
-      });
+      const engineResult = await runGenerationStage(onGenerationStage, 'ENGINEERING_CONCEPTS', () =>
+        deps.generateConceptEngines(
+          {
+            seeds: seedResult.seeds,
+            characterWorlds: architectResult.characterWorlds,
+            kernel,
+            protagonistDetails: input.protagonistDetails,
+            genreVibes: input.genreVibes,
+            moodKeywords: input.moodKeywords,
+            contentPreferences: input.contentPreferences,
+          },
+          apiKey,
+        ),
+      );
+      const concepts = mergeConceptStages(
+        seedResult.seeds,
+        architectResult.characterWorlds,
+        engineResult.engines,
+      );
+      const evaluation = await runGenerationStage(onGenerationStage, 'EVALUATING_CONCEPTS', () =>
+        deps.evaluateConcepts(
+          {
+            concepts,
+            userSeeds: {
+              genreVibes: input.genreVibes,
+              moodKeywords: input.moodKeywords,
+              contentPreferences: input.contentPreferences,
+              apiKey,
+            },
+          },
+          apiKey,
+        ),
+      );
+      const verification = await runGenerationStage(onGenerationStage, 'ANALYZING_SPECIFICITY', () =>
+        deps.verifyConcepts({ evaluatedConcepts: evaluation.evaluatedConcepts, kernel }, apiKey),
+      );
 
       return {
-        evolvedConcepts: evolution.concepts,
+        evolvedConcepts: concepts,
         scoredConcepts: evaluation.scoredConcepts,
         evaluatedConcepts: evaluation.evaluatedConcepts,
         verifications: verification.verifications,

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { emitGenerationStage } from '../engine/generation-pipeline-helpers.js';
+import { runGenerationStage } from '../engine/generation-pipeline-helpers.js';
 import { EngineError, type GenerationStageCallback } from '../engine/types.js';
 import { runCharacterStage } from '../llm/character-stage-runner.js';
 import { generateCharacterWeb } from '../llm/character-web-generation.js';
@@ -303,22 +303,22 @@ export function createCharacterWebService(
       web.inputs.worldbuilding,
     );
 
-    emitGenerationStage(onStage, 'GENERATING_CHARACTER_WEB', 'started', attempt);
-    const generation = await deps.generateCharacterWeb(derivedInputs, trimmedApiKey);
-    const protagonistAssignment = getProtagonistAssignment(generation.assignments);
+    return runGenerationStage(onStage, 'GENERATING_CHARACTER_WEB', async () => {
+      const generation = await deps.generateCharacterWeb(derivedInputs, trimmedApiKey);
+      const protagonistAssignment = getProtagonistAssignment(generation.assignments);
 
-    const updatedWeb: SavedCharacterWeb = {
-      ...web,
-      updatedAt: deps.now(),
-      protagonistName: protagonistAssignment.characterName,
-      assignments: generation.assignments,
-      relationshipArchetypes: generation.relationshipArchetypes,
-      castDynamicsSummary: generation.castDynamicsSummary,
-    };
+      const updatedWeb: SavedCharacterWeb = {
+        ...web,
+        updatedAt: deps.now(),
+        protagonistName: protagonistAssignment.characterName,
+        assignments: generation.assignments,
+        relationshipArchetypes: generation.relationshipArchetypes,
+        castDynamicsSummary: generation.castDynamicsSummary,
+      };
 
-    await deps.saveCharacterWeb(updatedWeb);
-    emitGenerationStage(onStage, 'GENERATING_CHARACTER_WEB', 'completed', attempt);
-    return updatedWeb;
+      await deps.saveCharacterWeb(updatedWeb);
+      return updatedWeb;
+    }, attempt);
   };
 
   return {
