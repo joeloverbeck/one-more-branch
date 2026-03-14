@@ -63,6 +63,11 @@ These replace (or subdivide) the existing `STRUCTURING_STORY` stage.
 - `anchorMoments` → `StructureGenerationResult.anchorMoments`
 - Raw responses concatenated or structured
 
+Implementation note:
+- Avoid reintroducing ad hoc defaulting/normalization in multiple places while wiring the 3-call pipeline.
+- Reuse a shared structure normalization/migration seam if available so parser output, merged generation output, runtime structure construction, and persistence stay aligned.
+- See `STOARCGEN-016` for the dedicated consolidation follow-up.
+
 ### Existing validation helpers
 
 Keep the existing `countUniqueSetpieceIndices()` and `collectTaggedObligations()` helpers — they now operate on the merged result (same as before, but reading `milestones` instead of `beats`).

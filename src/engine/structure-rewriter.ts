@@ -139,6 +139,7 @@ export function mergePreservedWithRegenerated(
         description: milestone.description,
         objective: milestone.objective,
         causalLink: milestone.causalLink,
+        exitCondition: milestone.exitCondition ?? '',
         role: parseMilestoneRole(milestone.role),
         escalationType: parseEscalationType(milestone.escalationType),
         secondaryEscalationType: parseEscalationType(milestone.secondaryEscalationType),
@@ -177,6 +178,7 @@ export function mergePreservedWithRegenerated(
         description: milestone.description,
         objective: milestone.objective,
         causalLink: milestone.causalLink,
+        exitCondition: milestone.exitCondition,
         role: milestone.role,
         escalationType: milestone.escalationType,
         secondaryEscalationType: milestone.secondaryEscalationType,
@@ -208,6 +210,10 @@ export function mergePreservedWithRegenerated(
       objective: regeneratedAct?.objective ?? '',
       stakes: regeneratedAct?.stakes ?? '',
       entryCondition: regeneratedAct?.entryCondition ?? 'Continuing from prior act',
+      actQuestion: regeneratedAct?.actQuestion ?? '',
+      exitReversal: regeneratedAct?.exitReversal ?? '',
+      promiseTargets: regeneratedAct?.promiseTargets ?? [],
+      obligationTargets: regeneratedAct?.obligationTargets ?? [],
       milestones: mergedMilestones,
     });
   }
@@ -229,6 +235,7 @@ export function mergePreservedWithRegenerated(
     openingImage: originalOpeningImage,
     closingImage: regeneratedStructure.closingImage,
     pacingBudget: regeneratedStructure.pacingBudget,
+    anchorMoments: regeneratedStructure.anchorMoments,
     generatedAt: new Date(),
   };
 }

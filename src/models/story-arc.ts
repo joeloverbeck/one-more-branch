@@ -51,12 +51,43 @@ export const APPROACH_VECTORS = [
 
 export type ApproachVector = (typeof APPROACH_VECTORS)[number];
 
+export interface AnchorMomentPlacement {
+  readonly actIndex: number;
+  readonly description: string;
+}
+
+export interface MidpointAnchorMoment {
+  readonly actIndex: number;
+  readonly milestoneSlot: number;
+  readonly midpointType: MidpointType;
+}
+
+export interface AnchorMoments {
+  readonly incitingIncident: AnchorMomentPlacement;
+  readonly midpoint: MidpointAnchorMoment;
+  readonly climax: AnchorMomentPlacement;
+  readonly signatureScenarioPlacement: AnchorMomentPlacement | null;
+}
+
+export function createDefaultAnchorMoments(actCount: number): AnchorMoments {
+  const lastActIndex = Math.max(0, actCount - 1);
+  const midpointActIndex = Math.min(1, lastActIndex);
+
+  return {
+    incitingIncident: { actIndex: 0, description: '' },
+    midpoint: { actIndex: midpointActIndex, milestoneSlot: 0, midpointType: 'FALSE_DEFEAT' },
+    climax: { actIndex: lastActIndex, description: '' },
+    signatureScenarioPlacement: null,
+  };
+}
+
 export interface StoryMilestone {
   readonly id: string;
   readonly name: string;
   readonly description: string;
   readonly objective: string;
   readonly causalLink: string;
+  readonly exitCondition: string;
   readonly role: MilestoneRole;
   readonly escalationType: EscalationType | null;
   readonly secondaryEscalationType: EscalationType | null;
@@ -76,6 +107,10 @@ export interface StoryAct {
   readonly objective: string;
   readonly stakes: string;
   readonly entryCondition: string;
+  readonly actQuestion: string;
+  readonly exitReversal: string;
+  readonly promiseTargets: readonly string[];
+  readonly obligationTargets: readonly string[];
   readonly milestones: readonly StoryMilestone[];
 }
 
@@ -91,6 +126,7 @@ export interface StoryStructure {
   readonly openingImage: string;
   readonly closingImage: string;
   readonly pacingBudget: PacingBudget;
+  readonly anchorMoments: AnchorMoments;
   readonly generatedAt: Date;
 }
 

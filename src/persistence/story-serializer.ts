@@ -4,6 +4,7 @@
  */
 
 import {
+  createDefaultAnchorMoments,
   MilestoneRole,
   Story,
   StoryStructure,
@@ -60,20 +61,72 @@ function parsePersistedCausalLink(value: unknown, milestoneId: string): string {
   throw new Error(`Persisted story milestone ${milestoneId} is missing required causalLink`);
 }
 
+function parseStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((entry): entry is string => typeof entry === 'string');
+}
+
+function parsePersistedAnchorMoments(data: StoryStructureFileData): StoryStructure['anchorMoments'] {
+  const defaults = createDefaultAnchorMoments(data.acts.length);
+  const anchorMoments = data.anchorMoments;
+
+  if (anchorMoments === undefined) {
+    return defaults;
+  }
+
+  return {
+    incitingIncident: {
+      actIndex: anchorMoments.incitingIncident?.actIndex ?? defaults.incitingIncident.actIndex,
+      description: anchorMoments.incitingIncident?.description ?? defaults.incitingIncident.description,
+    },
+    midpoint: {
+      actIndex: anchorMoments.midpoint?.actIndex ?? defaults.midpoint.actIndex,
+      milestoneSlot: anchorMoments.midpoint?.milestoneSlot ?? defaults.midpoint.milestoneSlot,
+      midpointType: parseMidpointType(anchorMoments.midpoint?.midpointType) ?? defaults.midpoint.midpointType,
+    },
+    climax: {
+      actIndex: anchorMoments.climax?.actIndex ?? defaults.climax.actIndex,
+      description: anchorMoments.climax?.description ?? defaults.climax.description,
+    },
+    signatureScenarioPlacement: anchorMoments.signatureScenarioPlacement
+      ? {
+          actIndex: anchorMoments.signatureScenarioPlacement.actIndex,
+          description: anchorMoments.signatureScenarioPlacement.description,
+        }
+      : null,
+  };
+}
+
 function structureToFileData(structure: StoryStructure): StoryStructureFileData {
   return {
+    anchorMoments: {
+      incitingIncident: { ...structure.anchorMoments.incitingIncident },
+      midpoint: { ...structure.anchorMoments.midpoint },
+      climax: { ...structure.anchorMoments.climax },
+      signatureScenarioPlacement: structure.anchorMoments.signatureScenarioPlacement
+        ? { ...structure.anchorMoments.signatureScenarioPlacement }
+        : null,
+    },
     acts: structure.acts.map((act) => ({
       id: act.id,
       name: act.name,
       objective: act.objective,
       stakes: act.stakes,
       entryCondition: act.entryCondition,
+      actQuestion: act.actQuestion,
+      exitReversal: act.exitReversal,
+      promiseTargets: [...act.promiseTargets],
+      obligationTargets: [...act.obligationTargets],
       milestones: act.milestones.map((milestone) => ({
         id: milestone.id,
         name: milestone.name,
         description: milestone.description,
         objective: milestone.objective,
         causalLink: milestone.causalLink,
+        exitCondition: milestone.exitCondition,
         role: milestone.role,
         escalationType: milestone.escalationType,
         secondaryEscalationType: milestone.secondaryEscalationType,
@@ -103,6 +156,10 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
     objective: act.objective,
     stakes: act.stakes,
     entryCondition: act.entryCondition,
+    actQuestion: act.actQuestion ?? '',
+    exitReversal: act.exitReversal ?? '',
+    promiseTargets: parseStringArray(act.promiseTargets),
+    obligationTargets: parseStringArray(act.obligationTargets),
     milestones: act.milestones.map((milestone) => {
       const midpointType = parseMidpointType(milestone.midpointType);
       const isMidpoint = milestone.isMidpoint === true;
@@ -122,6 +179,7 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
         description: milestone.description,
         objective: milestone.objective,
         causalLink: parsePersistedCausalLink(milestone.causalLink, milestone.id),
+        exitCondition: milestone.exitCondition ?? '',
         role: milestone.role as MilestoneRole,
         escalationType: parseEscalationType(milestone.escalationType),
         secondaryEscalationType: parseEscalationType(milestone.secondaryEscalationType),
@@ -152,6 +210,7 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
     openingImage: data.openingImage,
     closingImage: data.closingImage,
     pacingBudget: data.pacingBudget,
+    anchorMoments: parsePersistedAnchorMoments(data),
     generatedAt: new Date(data.generatedAt),
   };
 }

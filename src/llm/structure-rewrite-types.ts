@@ -12,6 +12,7 @@ export interface CompletedBeat {
   readonly description: string;
   readonly objective: string;
   readonly causalLink: string;
+  readonly exitCondition: string;
   readonly role: string;
   readonly escalationType: string | null;
   readonly secondaryEscalationType: string | null;
@@ -34,6 +35,7 @@ export interface PlannedBeat {
   readonly description: string;
   readonly objective: string;
   readonly causalLink: string;
+  readonly exitCondition: string;
   readonly role: string;
   readonly escalationType: string | null;
   readonly secondaryEscalationType: string | null;

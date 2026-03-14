@@ -101,6 +101,9 @@ export type {
 export { normalizeCharacterName, normalizeForComparison } from './normalize.js';
 
 export {
+  AnchorMomentPlacement,
+  MidpointAnchorMoment,
+  AnchorMoments,
   ApproachVector,
   MilestoneStatus,
   MilestoneRole,
@@ -118,6 +121,7 @@ export {
   MilestoneDeviation,
   NoDeviation,
   DeviationResult,
+  createDefaultAnchorMoments,
   createEmptyAccumulatedStructureState,
   getCurrentAct,
   getCurrentMilestone,
@@ -144,6 +148,8 @@ export {
 export type {
   GeneratedMilestone,
   GeneratedAct,
+  MacroAct,
+  MacroArchitectureResult,
   StructureGenerationResult,
 } from './structure-generation';
 

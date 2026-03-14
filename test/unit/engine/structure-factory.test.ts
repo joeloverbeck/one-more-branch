@@ -14,18 +14,29 @@ function createGenerationResult(): StructureGenerationResult {
     openingImage: 'A rain-soaked throne room with a broken crown on the steps.',
     closingImage: 'The restored crown held aloft in first light over a united court.',
     pacingBudget: { targetPagesMin: 18, targetPagesMax: 42 },
+    anchorMoments: {
+      incitingIncident: { actIndex: 0, description: 'A warning arrives at court.' },
+      midpoint: { actIndex: 0, milestoneSlot: 1, midpointType: 'FALSE_DEFEAT' },
+      climax: { actIndex: 1, description: 'The final stand at the capital.' },
+      signatureScenarioPlacement: null,
+    },
     acts: [
       {
         name: 'Act One',
         objective: 'Accept the quest',
         stakes: 'Home is at risk',
         entryCondition: 'A messenger arrives',
+        actQuestion: 'Will the heir leave home behind?',
+        exitReversal: 'The heir is forced onto the road.',
+        promiseTargets: ['The kingdom can still be saved'],
+        obligationTargets: ['call_to_adventure'],
         milestones: [
           {
             name: 'Messenger warning',
             description: 'A warning arrives',
             objective: 'Hear the warning',
             causalLink: 'Because the messenger reaches the heir in time.',
+            exitCondition: 'The heir understands the threat is real.',
             role: 'setup',
             isMidpoint: false,
             midpointType: null,
@@ -35,6 +46,7 @@ function createGenerationResult(): StructureGenerationResult {
             description: 'A difficult choice',
             objective: 'Leave home',
             causalLink: 'Because the warning reveals immediate danger at court.',
+            exitCondition: 'The heir commits to the campaign.',
             role: 'turning_point',
             isMidpoint: true,
             midpointType: 'FALSE_DEFEAT',
@@ -46,12 +58,17 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Survive the campaign',
         stakes: 'The kingdom may fall',
         entryCondition: 'The journey begins',
+        actQuestion: 'Can the heir survive long enough to rally allies?',
+        exitReversal: '',
+        promiseTargets: ['The kingdom can still be saved'],
+        obligationTargets: ['final_confrontation'],
         milestones: [
           {
             name: 'First major setback',
             description: 'First major setback',
             objective: 'Recover from loss',
             causalLink: 'Because the heir departs without securing enough allies.',
+            exitCondition: 'The heir regains a path forward.',
             role: 'escalation',
             isMidpoint: false,
             midpointType: null,
@@ -97,6 +114,8 @@ describe('structure-factory', () => {
       expect(result.acts[0]?.objective).toBe('Accept the quest');
       expect(result.acts[0]?.stakes).toBe('Home is at risk');
       expect(result.acts[0]?.entryCondition).toBe('A messenger arrives');
+      expect(result.acts[0]?.actQuestion).toBe('Will the heir leave home behind?');
+      expect(result.acts[0]?.promiseTargets).toEqual(['The kingdom can still be saved']);
     });
 
     it('preserves milestone metadata', () => {
@@ -107,6 +126,43 @@ describe('structure-factory', () => {
       expect(result.acts[0]?.milestones[0]?.causalLink).toBe(
         'Because the messenger reaches the heir in time.'
       );
+      expect(result.acts[0]?.milestones[0]?.exitCondition).toBe(
+        'The heir understands the threat is real.'
+      );
+    });
+
+    it('preserves anchor moments when provided', () => {
+      const result = createStoryStructure(createGenerationResult());
+
+      expect(result.anchorMoments).toEqual({
+        incitingIncident: { actIndex: 0, description: 'A warning arrives at court.' },
+        midpoint: { actIndex: 0, milestoneSlot: 1, midpointType: 'FALSE_DEFEAT' },
+        climax: { actIndex: 1, description: 'The final stand at the capital.' },
+        signatureScenarioPlacement: null,
+      });
+    });
+
+    it('defaults new fields when generation result omits them', () => {
+      const genResult = createGenerationResult();
+      delete (genResult as Partial<StructureGenerationResult>).anchorMoments;
+      delete genResult.acts[0]!.actQuestion;
+      delete genResult.acts[0]!.exitReversal;
+      delete genResult.acts[0]!.promiseTargets;
+      delete genResult.acts[0]!.obligationTargets;
+      delete genResult.acts[0]!.milestones[0]!.exitCondition;
+
+      const result = createStoryStructure(genResult);
+
+      expect(result.anchorMoments.midpoint).toEqual({
+        actIndex: 1,
+        milestoneSlot: 0,
+        midpointType: 'FALSE_DEFEAT',
+      });
+      expect(result.acts[0]?.actQuestion).toBe('');
+      expect(result.acts[0]?.exitReversal).toBe('');
+      expect(result.acts[0]?.promiseTargets).toEqual([]);
+      expect(result.acts[0]?.obligationTargets).toEqual([]);
+      expect(result.acts[0]?.milestones[0]?.exitCondition).toBe('');
     });
 
     it('sets approachVectors to null when not provided', () => {

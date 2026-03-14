@@ -1,4 +1,5 @@
 import type { StructureGenerationResult } from '../models/structure-generation.js';
+import { createDefaultAnchorMoments } from '../models/story-arc.js';
 import { isGenreObligationTag } from '../models/genre-obligations.js';
 import { LLMError } from './llm-client-types.js';
 
@@ -31,6 +32,87 @@ function parseObligatorySceneTag(value: unknown): string | null {
   }
 
   return value;
+}
+
+function parseStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((entry): entry is string => typeof entry === 'string');
+}
+
+function parseAnchorMoments(value: unknown, actCount: number): StructureGenerationResult['anchorMoments'] {
+  const defaults = createDefaultAnchorMoments(actCount);
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return defaults;
+  }
+
+  const data = value as Record<string, unknown>;
+  const incitingIncident =
+    typeof data['incitingIncident'] === 'object' &&
+    data['incitingIncident'] !== null &&
+    !Array.isArray(data['incitingIncident'])
+      ? (data['incitingIncident'] as Record<string, unknown>)
+      : null;
+  const midpoint =
+    typeof data['midpoint'] === 'object' && data['midpoint'] !== null && !Array.isArray(data['midpoint'])
+      ? (data['midpoint'] as Record<string, unknown>)
+      : null;
+  const climax =
+    typeof data['climax'] === 'object' && data['climax'] !== null && !Array.isArray(data['climax'])
+      ? (data['climax'] as Record<string, unknown>)
+      : null;
+  const signatureScenarioPlacement =
+    typeof data['signatureScenarioPlacement'] === 'object' &&
+    data['signatureScenarioPlacement'] !== null &&
+    !Array.isArray(data['signatureScenarioPlacement'])
+      ? (data['signatureScenarioPlacement'] as Record<string, unknown>)
+      : null;
+
+  return {
+    incitingIncident: {
+      actIndex:
+        typeof incitingIncident?.['actIndex'] === 'number'
+          ? incitingIncident['actIndex']
+          : defaults.incitingIncident.actIndex,
+      description:
+        typeof incitingIncident?.['description'] === 'string'
+          ? incitingIncident['description']
+          : defaults.incitingIncident.description,
+    },
+    midpoint: {
+      actIndex:
+        typeof midpoint?.['actIndex'] === 'number'
+          ? midpoint['actIndex']
+          : defaults.midpoint.actIndex,
+      milestoneSlot:
+        typeof midpoint?.['milestoneSlot'] === 'number'
+          ? midpoint['milestoneSlot']
+          : defaults.midpoint.milestoneSlot,
+      midpointType: parseMidpointType(midpoint?.['midpointType']) ?? defaults.midpoint.midpointType,
+    },
+    climax: {
+      actIndex:
+        typeof climax?.['actIndex'] === 'number' ? climax['actIndex'] : defaults.climax.actIndex,
+      description:
+        typeof climax?.['description'] === 'string'
+          ? climax['description']
+          : defaults.climax.description,
+    },
+    signatureScenarioPlacement: signatureScenarioPlacement
+      ? {
+          actIndex:
+            typeof signatureScenarioPlacement['actIndex'] === 'number'
+              ? signatureScenarioPlacement['actIndex']
+              : defaults.incitingIncident.actIndex,
+          description:
+            typeof signatureScenarioPlacement['description'] === 'string'
+              ? signatureScenarioPlacement['description']
+              : '',
+        }
+      : null,
+  };
 }
 
 export function parseStructureResponseObject(
@@ -166,6 +248,8 @@ export function parseStructureResponseObject(
         description: milestoneData['description'],
         objective: milestoneData['objective'],
         causalLink: milestoneData['causalLink'],
+        exitCondition:
+          typeof milestoneData['exitCondition'] === 'string' ? milestoneData['exitCondition'] : '',
         role,
         escalationType,
         secondaryEscalationType,
@@ -185,6 +269,10 @@ export function parseStructureResponseObject(
       objective: actData['objective'],
       stakes: actData['stakes'],
       entryCondition: actData['entryCondition'],
+      actQuestion: typeof actData['actQuestion'] === 'string' ? actData['actQuestion'] : '',
+      exitReversal: typeof actData['exitReversal'] === 'string' ? actData['exitReversal'] : '',
+      promiseTargets: parseStringArray(actData['promiseTargets']),
+      obligationTargets: parseStringArray(actData['obligationTargets']),
       milestones,
     };
   });
@@ -251,6 +339,7 @@ export function parseStructureResponseObject(
     openingImage: data['openingImage'],
     closingImage: data['closingImage'],
     pacingBudget,
+    anchorMoments: parseAnchorMoments(data['anchorMoments'], acts.length),
     acts,
     ...(initialNpcAgendas.length > 0 ? { initialNpcAgendas } : {}),
   };

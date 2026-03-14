@@ -55,6 +55,11 @@ async function rewriteStructure(
 ): Promise<StructureGenerationResult>
 ```
 
+Implementation note:
+- Tiered rewrite work must preserve the same canonical structure normalization/defaulting behavior as initial generation.
+- Do not duplicate fallback/default logic independently in rewrite support, rewrite merging, and runtime structure creation.
+- Reuse the shared normalization/migration seam tracked in `STOARCGEN-016` if it exists by the time this ticket is implemented.
+
 ### Rewrite prompts split
 
 - **Macro rewrite prompt**: Receives completed acts (preserved), regenerates remaining act frames. Used in Tier 2 only.

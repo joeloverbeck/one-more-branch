@@ -4,6 +4,7 @@ import {
   StoryId,
   StoryStructure,
   VersionedStoryStructure,
+  createDefaultAnchorMoments,
   createStory,
   parsePageId,
   parseStoryId,
@@ -41,6 +42,10 @@ function buildTestStructure(): StoryStructure {
         objective: 'Start the journey',
         stakes: 'Lose your home',
         entryCondition: 'A call to action appears',
+        actQuestion: 'Will the protagonist answer the call?',
+        exitReversal: 'Home is no longer safe.',
+        promiseTargets: ['A sheltered survivor must leave home'],
+        obligationTargets: ['call_to_adventure'],
         milestones: [
           {
             id: '1.1',
@@ -48,6 +53,7 @@ function buildTestStructure(): StoryStructure {
             description: 'Meet the guide',
             objective: 'Find an ally',
             causalLink: 'Because a call to action appears at the village gate.',
+            exitCondition: 'The guide agrees to help.',
             role: 'setup',
             escalationType: null,
             secondaryEscalationType: null,
@@ -66,6 +72,7 @@ function buildTestStructure(): StoryStructure {
             description: 'Cross the threshold',
             objective: 'Leave safety',
             causalLink: 'Because the guide exposes the cost of staying behind.',
+            exitCondition: 'The protagonist leaves home behind.',
             role: 'turning_point',
             escalationType: null,
             secondaryEscalationType: null,
@@ -86,6 +93,7 @@ function buildTestStructure(): StoryStructure {
     openingImage: 'An opening image placeholder.',
     closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 15, targetPagesMax: 35 },
+    anchorMoments: createDefaultAnchorMoments(1),
     generatedAt: new Date('2025-01-01T00:00:00.000Z'),
   };
 }
@@ -119,6 +127,10 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
         objective: 'Regroup',
         stakes: 'Lose the final clue',
         entryCondition: 'The plan fails',
+        actQuestion: 'Can the protagonist recover after the plan fails?',
+        exitReversal: 'The ambush reveals a new path.',
+        promiseTargets: ['A sheltered survivor must leave home'],
+        obligationTargets: ['midpoint_reversal'],
         milestones: [
           {
             id: '1.1',
@@ -126,6 +138,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
             description: 'Escape the ambush',
             objective: 'Survive',
             causalLink: 'Because the original route is compromised by betrayal.',
+            exitCondition: 'The protagonist survives the ambush.',
             role: 'setup',
             escalationType: null,
             secondaryEscalationType: null,
@@ -144,6 +157,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
             description: 'Find a new lead',
             objective: 'Regain momentum',
             causalLink: 'Because the ambush reveals an alternate conspirator.',
+            exitCondition: 'A credible new lead is secured.',
             role: 'escalation',
             escalationType: null,
             secondaryEscalationType: null,

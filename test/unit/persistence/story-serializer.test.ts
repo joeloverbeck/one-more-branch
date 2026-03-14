@@ -1,5 +1,6 @@
 import {
   Story,
+  createDefaultAnchorMoments,
   generateStoryId,
   createStructureVersionId,
   parsePageId,
@@ -146,6 +147,10 @@ describe('story-serializer', () => {
               objective: 'Setup',
               stakes: 'Low',
               entryCondition: 'Start',
+              actQuestion: 'Who is the hero before the crisis?',
+              exitReversal: 'The hero can no longer remain passive.',
+              promiseTargets: ['A hero rises'],
+              obligationTargets: ['call_to_adventure'],
               milestones: [
                 {
                   id: 'milestone-1',
@@ -153,8 +158,18 @@ describe('story-serializer', () => {
                   description: 'The beginning',
                   objective: 'Introduce hero',
                   causalLink: 'Introduces the protagonist and launches the narrative trajectory.',
+                  exitCondition: 'The protagonist is drawn into the conflict.',
                   role: 'setup',
+                  escalationType: null,
                   secondaryEscalationType: 'REVELATION_SHIFT',
+                  crisisType: null,
+                  expectedGapMagnitude: null,
+                  isMidpoint: false,
+                  midpointType: null,
+                  uniqueScenarioHook: null,
+                  approachVectors: null,
+                  setpieceSourceIndex: null,
+                  obligatorySceneTag: null,
                 },
               ],
             },
@@ -164,6 +179,7 @@ describe('story-serializer', () => {
           openingImage: 'An opening image placeholder.',
           closingImage: 'A closing image placeholder.',
           pacingBudget: { targetPagesMin: 10, targetPagesMax: 20 },
+          anchorMoments: createDefaultAnchorMoments(1),
           generatedAt: new Date('2025-01-01T12:00:00.000Z'),
         },
       });
@@ -174,8 +190,13 @@ describe('story-serializer', () => {
       expect(result.structure!.acts).toHaveLength(1);
       expect(result.structure!.acts[0].milestones).toHaveLength(1);
       expect(result.structure!.acts[0].milestones[0].role).toBe('setup');
+      expect(result.structure!.acts[0].actQuestion).toBe('Who is the hero before the crisis?');
+      expect(result.structure!.acts[0].milestones[0].exitCondition).toBe(
+        'The protagonist is drawn into the conflict.'
+      );
       expect(result.structure!.acts[0].milestones[0].secondaryEscalationType).toBe('REVELATION_SHIFT');
       expect(result.structure!.overallTheme).toBe('Redemption');
+      expect(result.structure!.anchorMoments).toEqual(createDefaultAnchorMoments(1));
       expect(result.structure!.generatedAt).toEqual(new Date('2025-01-01T12:00:00.000Z'));
     });
 
@@ -191,6 +212,7 @@ describe('story-serializer', () => {
               openingImage: 'An opening image placeholder.',
               closingImage: 'A closing image placeholder.',
               pacingBudget: { targetPagesMin: 5, targetPagesMax: 10 },
+              anchorMoments: createDefaultAnchorMoments(0),
               generatedAt: new Date('2025-01-01T00:00:00.000Z'),
             },
             previousVersionId: null,
@@ -329,6 +351,50 @@ describe('story-serializer', () => {
       const story = buildMinimalStory({ structure: null });
       const result = deserializeStory(serializeStory(story));
       expect(result.structure).toBeNull();
+    });
+
+    it('defaults new structure fields when loading an older persisted story shape', () => {
+      const fileData = serializeStory(buildMinimalStory());
+      fileData.structure = {
+        acts: [
+          {
+            id: 'act-1',
+            name: 'Act One',
+            objective: 'Setup',
+            stakes: 'Low',
+            entryCondition: 'Start',
+            milestones: [
+              {
+                id: '1.1',
+                name: 'Opening',
+                description: 'The beginning',
+                objective: 'Introduce hero',
+                causalLink:
+                  'Introduces the protagonist and launches the narrative trajectory.',
+                role: 'setup',
+                isMidpoint: false,
+                midpointType: null,
+              },
+            ],
+          },
+        ],
+        overallTheme: 'Legacy theme',
+        premise: 'Legacy premise',
+        openingImage: 'Legacy opening',
+        closingImage: 'Legacy closing',
+        pacingBudget: { targetPagesMin: 10, targetPagesMax: 20 },
+        generatedAt: '2025-01-01T00:00:00.000Z',
+      };
+
+      const result = deserializeStory(fileData);
+
+      expect(result.structure).not.toBeNull();
+      expect(result.structure!.anchorMoments).toEqual(createDefaultAnchorMoments(1));
+      expect(result.structure!.acts[0].actQuestion).toBe('');
+      expect(result.structure!.acts[0].exitReversal).toBe('');
+      expect(result.structure!.acts[0].promiseTargets).toEqual([]);
+      expect(result.structure!.acts[0].obligationTargets).toEqual([]);
+      expect(result.structure!.acts[0].milestones[0].exitCondition).toBe('');
     });
   });
 

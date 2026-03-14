@@ -56,6 +56,58 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
             },
           },
         },
+        anchorMoments: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['incitingIncident', 'midpoint', 'climax', 'signatureScenarioPlacement'],
+          properties: {
+            incitingIncident: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['actIndex', 'description'],
+              properties: {
+                actIndex: { type: 'integer' },
+                description: { type: 'string' },
+              },
+            },
+            midpoint: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['actIndex', 'milestoneSlot', 'midpointType'],
+              properties: {
+                actIndex: { type: 'integer' },
+                milestoneSlot: { type: 'integer' },
+                midpointType: {
+                  type: 'string',
+                  enum: [...MIDPOINT_TYPES],
+                },
+              },
+            },
+            climax: {
+              type: 'object',
+              additionalProperties: false,
+              required: ['actIndex', 'description'],
+              properties: {
+                actIndex: { type: 'integer' },
+                description: { type: 'string' },
+              },
+            },
+            signatureScenarioPlacement: {
+              anyOf: [
+                {
+                  type: 'object',
+                  additionalProperties: false,
+                  required: ['actIndex', 'description'],
+                  properties: {
+                    actIndex: { type: 'integer' },
+                    description: { type: 'string' },
+                  },
+                },
+                { type: 'null' },
+              ],
+            },
+          },
+        },
         initialNpcAgendas: {
           type: 'array',
           description: 'Initial agendas for each NPC. Empty array if no NPCs defined.',
@@ -100,6 +152,27 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
               objective: { type: 'string' },
               stakes: { type: 'string' },
               entryCondition: { type: 'string' },
+              actQuestion: {
+                type: 'string',
+                description: 'Optional for the current pipeline migration. Dramatic question this act answers.',
+              },
+              exitReversal: {
+                type: 'string',
+                description:
+                  'Optional for the current pipeline migration. What reversal or shift ends this act.',
+              },
+              promiseTargets: {
+                type: 'array',
+                items: { type: 'string' },
+                description:
+                  'Optional for the current pipeline migration. Premise promises this act advances.',
+              },
+              obligationTargets: {
+                type: 'array',
+                items: { type: 'string' },
+                description:
+                  'Optional for the current pipeline migration. Genre obligations this act covers.',
+              },
               milestones: {
                 type: 'array',
                 description: '2-4 milestones per act that function as flexible milestones.',
@@ -131,6 +204,11 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                       type: 'string',
                       description:
                         'One sentence describing the cause of this milestone. Use prior milestone outcomes where possible; first milestones should reference inciting conditions.',
+                    },
+                    exitCondition: {
+                      type: 'string',
+                      description:
+                        'Optional for the current pipeline migration. Concrete condition that ends this milestone.',
                     },
                     role: {
                       type: 'string',

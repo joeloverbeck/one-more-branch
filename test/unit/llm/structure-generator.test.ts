@@ -307,7 +307,29 @@ describe('structure-generator', () => {
       promptOptions: {},
     });
 
-    expect(result).toEqual({ ...payload, rawResponse: rawContent });
+    expect(result.rawResponse).toBe(rawContent);
+    expect(result.overallTheme).toBe(payload.overallTheme);
+    expect(result.premise).toBe(payload.premise);
+    expect(result.openingImage).toBe(payload.openingImage);
+    expect(result.closingImage).toBe(payload.closingImage);
+    expect(result.pacingBudget).toEqual(payload.pacingBudget);
+    expect(result.anchorMoments).toEqual({
+      incitingIncident: { actIndex: 0, description: '' },
+      midpoint: { actIndex: 1, milestoneSlot: 0, midpointType: 'FALSE_DEFEAT' },
+      climax: { actIndex: 2, description: '' },
+      signatureScenarioPlacement: null,
+    });
+    expect(result.acts[0]).toMatchObject({
+      ...payload.acts[0],
+      actQuestion: '',
+      exitReversal: '',
+      promiseTargets: [],
+      obligationTargets: [],
+    });
+    expect(result.acts[0]?.milestones[0]).toMatchObject({
+      ...payload.acts[0]!.milestones[0],
+      exitCondition: '',
+    });
     expect(fetchMock).toHaveBeenCalledTimes(1);
 
     const body = getRequestBody();

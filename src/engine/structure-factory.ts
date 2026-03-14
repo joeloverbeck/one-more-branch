@@ -1,4 +1,5 @@
 import type {
+  AnchorMoments,
   ApproachVector,
   MilestoneRole,
   CrisisType,
@@ -16,6 +17,7 @@ import {
   ESCALATION_TYPES,
   GAP_MAGNITUDES,
   MIDPOINT_TYPES,
+  createDefaultAnchorMoments,
 } from '../models/story-arc';
 import { isGenreObligationTag } from '../models/genre-obligations';
 import type { StructureGenerationResult } from './structure-types';
@@ -102,6 +104,87 @@ function parseCausalLink(value: unknown, milestoneId: string): string {
   throw new Error(`Structure milestone ${milestoneId} must include a non-empty causalLink`);
 }
 
+function parseString(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback;
+}
+
+function parseStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.filter((entry): entry is string => typeof entry === 'string');
+}
+
+function normalizeAnchorMoments(value: unknown, actCount: number): AnchorMoments {
+  const defaults = createDefaultAnchorMoments(actCount);
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return defaults;
+  }
+
+  const data = value as Record<string, unknown>;
+  const incitingIncident =
+    typeof data['incitingIncident'] === 'object' &&
+    data['incitingIncident'] !== null &&
+    !Array.isArray(data['incitingIncident'])
+      ? (data['incitingIncident'] as Record<string, unknown>)
+      : null;
+  const midpoint =
+    typeof data['midpoint'] === 'object' && data['midpoint'] !== null && !Array.isArray(data['midpoint'])
+      ? (data['midpoint'] as Record<string, unknown>)
+      : null;
+  const climax =
+    typeof data['climax'] === 'object' && data['climax'] !== null && !Array.isArray(data['climax'])
+      ? (data['climax'] as Record<string, unknown>)
+      : null;
+  const signatureScenarioPlacement =
+    typeof data['signatureScenarioPlacement'] === 'object' &&
+    data['signatureScenarioPlacement'] !== null &&
+    !Array.isArray(data['signatureScenarioPlacement'])
+      ? (data['signatureScenarioPlacement'] as Record<string, unknown>)
+      : null;
+
+  return {
+    incitingIncident: {
+      actIndex:
+        typeof incitingIncident?.['actIndex'] === 'number'
+          ? incitingIncident['actIndex']
+          : defaults.incitingIncident.actIndex,
+      description: parseString(
+        incitingIncident?.['description'],
+        defaults.incitingIncident.description
+      ),
+    },
+    midpoint: {
+      actIndex:
+        typeof midpoint?.['actIndex'] === 'number'
+          ? midpoint['actIndex']
+          : defaults.midpoint.actIndex,
+      milestoneSlot:
+        typeof midpoint?.['milestoneSlot'] === 'number'
+          ? midpoint['milestoneSlot']
+          : defaults.midpoint.milestoneSlot,
+      midpointType:
+        parseMidpointType((midpoint?.['midpointType'] as string | null | undefined) ?? null) ??
+        defaults.midpoint.midpointType,
+    },
+    climax: {
+      actIndex:
+        typeof climax?.['actIndex'] === 'number' ? climax['actIndex'] : defaults.climax.actIndex,
+      description: parseString(climax?.['description'], defaults.climax.description),
+    },
+    signatureScenarioPlacement: signatureScenarioPlacement
+      ? {
+          actIndex:
+            typeof signatureScenarioPlacement['actIndex'] === 'number'
+              ? signatureScenarioPlacement['actIndex']
+              : defaults.incitingIncident.actIndex,
+          description: parseString(signatureScenarioPlacement['description']),
+        }
+      : null,
+  };
+}
+
 /**
  * Creates StoryStructure from raw generation result.
  * Assigns hierarchical IDs to milestones (e.g., "1.1", "1.2", "2.1").
@@ -127,6 +210,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
         description: milestoneData.description,
         objective: milestoneData.objective,
         causalLink: parseCausalLink(milestoneData.causalLink, milestoneId),
+        exitCondition: parseString(milestoneData.exitCondition),
         role: parseMilestoneRole(milestoneData.role),
         escalationType: parseEscalationType(milestoneData.escalationType),
         secondaryEscalationType: parseEscalationType(milestoneData.secondaryEscalationType),
@@ -148,6 +232,10 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
       objective: actData.objective,
       stakes: actData.stakes,
       entryCondition: actData.entryCondition,
+      actQuestion: parseString(actData.actQuestion),
+      exitReversal: parseString(actData.exitReversal),
+      promiseTargets: parseStringArray(actData.promiseTargets),
+      obligationTargets: parseStringArray(actData.obligationTargets),
       milestones,
     };
   });
@@ -159,6 +247,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
     openingImage: result.openingImage,
     closingImage: result.closingImage,
     pacingBudget: result.pacingBudget,
+    anchorMoments: normalizeAnchorMoments(result.anchorMoments, acts.length),
     generatedAt: new Date(),
   };
 }
