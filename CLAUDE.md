@@ -120,7 +120,7 @@ src/
 │   │   │                     #   structure-rewrite, spine-rewrite, agenda-resolver,
 │   │   │                     #   entity-decomposer, spine)
 │   │   └── sections/         # Shared prompt sections (opening/, continuation/,
-│   │                         #   planner/, shared/)
+│   │                         #   planner/, shared/, structure-generation/)
 │   ├── schemas/              # JSON Schema definitions for structured LLM output
 │   ├── validation/           # Writer and accountant output validation and ID repair
 │   ├── client.ts             # OpenRouter HTTP client
@@ -185,7 +185,7 @@ archive/specs/      # Archived completed specifications
 
 1. **Story Creation**: User provides title + character concept + worldbuilding + tone + NPCs + starting situation + spine (with toneFeel/toneAvoid) + API key
 2. **Entity Decomposition**: LLM decomposes raw worldbuilding and NPCs into structured character profiles and world facts, guided by spine, conceptSpec, storyKernel, startingSituation, and tone feel
-3. **Structure Generation**: LLM generates a StoryStructure using spine + decomposed data (acts, beats, pacing budget, theme, NPC agendas)
+3. **Structure Generation**: LLM generates a StoryStructure using spine + decomposed data (acts, beats, pacing budget, theme, NPC agendas). Shared structure-generation context lives in `src/llm/prompts/sections/structure-generation/shared-context.ts`; prompt-local files compose that seam instead of importing reusable helpers from each other.
 4. **Page Planning** (Planner prompt): LLM creates a reduced PagePlan with scene intent, continuity anchors, writer brief, dramatic question, and isEnding. The planner is the SOLE authority on whether a page is an ending (`isEnding: true` => no choices generated). Continuation planner also receives thread ages, overdue-thread pressure directives, accumulated tracked promises (`accumulatedPromises`, oldest-first opportunities), and payoff quality feedback
 5. **State Accounting** (Accountant prompt): LLM generates state intents (what state changes to target) separately from the planner. The accountant receives the reduced plan and produces structured state mutation intents
 6. **Context Curation** (Lorekeeper prompt): LLM curates a scene-focused Story Bible from full story context, filtering worldbuilding, characters, canon, and history to only what's relevant for the upcoming scene
@@ -391,7 +391,7 @@ Completed specs are archived in `archive/specs/`.
 - **Story preparation** (run once at story creation, 3 LLM calls):
   1. **Spine prompt** (`spine-generator.ts`): Generates spine options with tone keywords (separate pre-creation step)
   2. **Entity decomposition prompt** (`entity-decomposer.ts`): Decomposes raw worldbuilding/NPCs into structured profiles and world facts, enriched with spine, conceptSpec, storyKernel, and startingSituation context
-  3. **Structure prompt** (`structure-generator.ts`): Generates story arc using spine + decomposed data
+  3. **Structure prompt** (`structure-generator.ts`): Generates story arc using spine + decomposed data. Shared context rendering for structure and macro-architecture prompts lives under `src/llm/prompts/sections/structure-generation/`
 - **Per-page generation** (up to 8 stages: 6 LLM calls + 2 engine-side):
   1. **Planner prompt** (`planner-generation.ts`): Creates reduced page plan with scene intent, dramatic question, isEnding (no state intents). Sole authority on endings
   2. **State accountant prompt** (`accountant-generation.ts`): Generates state intents from reduced plan
@@ -412,6 +412,7 @@ Completed specs are archived in `archive/specs/`.
 - Retry with exponential backoff on transient failures (429, 5xx)
 - Content policy sections injected via `content-policy.ts`
 - System prompts assembled by `system-prompt-builder.ts` with shared sections
+- Structure-generation prompts use a dedicated shared-context seam for world/character/tone/spine/kernel/concept rendering; prompt-specific requirements and output contracts stay in the owning prompt file
 
 ## Content Policy
 
@@ -547,7 +548,7 @@ When modifying interfaces like `PageWriterResult`, `StateReconciliationResult`, 
 <!-- gitnexus:start -->
 # GitNexus MCP
 
-This project is indexed by GitNexus as **one-more-branch** (5439 symbols, 14115 relationships, 300 execution flows).
+This project is indexed by GitNexus as **one-more-branch** (5473 symbols, 14201 relationships, 300 execution flows).
 
 ## Always Start Here
 

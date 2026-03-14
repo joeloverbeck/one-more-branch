@@ -261,7 +261,7 @@ describe('buildStructurePrompt', () => {
     });
     const lastUser = getUserMessages(messages).at(-1) ?? '';
 
-    expect(lastUser).toContain('PREMISE PROMISE CONTRACT');
+    expect(lastUser).toContain('PREMISE PROMISE CONTRACT (from upstream concept verification):');
     expect(lastUser).toContain('The protagonist must weaponize a public legal ritual.');
     expect(lastUser).toContain('Avoid generic escalation that ignores the concept');
   });

@@ -1,74 +1,21 @@
-import type { ConceptSpec, ConceptVerification } from '../../models/concept-generator.js';
-import { getGenreObligationTags } from '../../models/genre-obligations.js';
-import type { DecomposedCharacter } from '../../models/decomposed-character.js';
-import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
-import type { DecomposedWorld } from '../../models/decomposed-world.js';
-import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
-import type { StoryKernel } from '../../models/story-kernel.js';
-import type { StorySpine } from '../../models/story-spine.js';
+import type { ConceptVerification } from '../../models/concept-generator.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
-
-export interface StructureContext {
-  tone: string;
-  startingSituation?: string;
-  spine?: StorySpine;
-  decomposedCharacters: readonly DecomposedCharacter[];
-  decomposedWorld: DecomposedWorld;
-  conceptSpec?: ConceptSpec;
-  storyKernel?: StoryKernel;
-  conceptVerification?: ConceptVerification;
-}
-
-function buildCharacterSection(context: StructureContext): string {
-  if (context.decomposedCharacters.length > 0) {
-    const profiles = context.decomposedCharacters
-      .map((char) => formatDecomposedCharacterForPrompt(char))
-      .join('\n\n');
-    return `CHARACTERS (decomposed profiles):\n${profiles}\n\n`;
-  }
-  return '';
-}
-
-function buildWorldSection(context: StructureContext): string {
-  if (context.decomposedWorld.facts.length > 0) {
-    return `${formatDecomposedWorldForPrompt(context.decomposedWorld)}\n\n`;
-  }
-  return '';
-}
-
-function buildToneFeelSection(context: StructureContext): string {
-  const spine = context.spine;
-  if (!spine) return '';
-
-  const lines: string[] = [];
-  if (spine.toneFeel.length > 0) {
-    lines.push(`TONE FEEL (target atmosphere): ${spine.toneFeel.join(', ')}`);
-  }
-  if (spine.toneAvoid.length > 0) {
-    lines.push(`TONE AVOID (must not drift toward): ${spine.toneAvoid.join(', ')}`);
-  }
-  return lines.length > 0 ? lines.join('\n') + '\n\n' : '';
-}
-
-function buildConceptStakesSection(conceptSpec?: ConceptSpec): string {
-  if (!conceptSpec) {
-    return '';
-  }
-
-  return `CONCEPT STAKES (use to ground your per-act stakes):
-Personal stakes: ${conceptSpec.stakesPersonal}
-Systemic stakes: ${conceptSpec.stakesSystemic}
-Pressure source: ${conceptSpec.pressureSource}
-Deadline mechanism: ${conceptSpec.deadlineMechanism}
-
-Each act's stakes should escalate FROM these foundations. Act 1 stakes should connect to the personal dimension, Act 2 should compound both personal and systemic, Act 3 should put the systemic stakes at maximum risk.
-
-`;
-}
+import {
+  buildDirectionalGuidanceSection,
+  buildStructureGenerationCharacterSection,
+  buildStructureGenerationConceptStakesSection,
+  buildStructureGenerationGenreObligationsSection,
+  buildStructureGenerationKernelSection,
+  buildStructureGenerationPremisePromiseSection,
+  buildStructureGenerationStartingSituationSection,
+  buildStructureGenerationToneSection,
+  buildStructureGenerationWorldSection,
+  type StructureContext,
+} from './sections/structure-generation/shared-context.js';
 
 function buildSetpieceBankSection(verification?: ConceptVerification): string {
   if (!verification || verification.escalatingSetpieces.length === 0) {
@@ -92,121 +39,35 @@ setpiece, set setpieceSourceIndex to null.
 `;
 }
 
-function buildPremisePromiseSection(verification?: ConceptVerification): string {
-  const premisePromises = verification?.premisePromises ?? [];
-  if (premisePromises.length === 0) {
-    return '';
-  }
-
-  const listed = premisePromises.map((promise) => `- ${promise}`).join('\n');
-  return `PREMISE PROMISE CONTRACT (from upstream concept verification):
-${listed}
-
-CONSTRAINT: Design act stakes and escalation/turning_point milestone objectives so the story can credibly deliver these audience expectations over time.
-Avoid generic escalation that ignores the concept's promised experience.
-
-`;
-}
-
-function buildKernelSection(storyKernel?: StoryKernel): string {
-  if (!storyKernel) {
-    return '';
-  }
-
-  return `THEMATIC KERNEL:
-Dramatic thesis: ${storyKernel.dramaticThesis}
-Antithesis: ${storyKernel.antithesis}
-Direction of change: ${storyKernel.directionOfChange}
-Conflict axis: ${storyKernel.conflictAxis}
-Dramatic stance: ${storyKernel.dramaticStance}
-Thematic question: ${storyKernel.thematicQuestion}
-Moral argument: ${storyKernel.moralArgument}
-
-VALUE SPECTRUM (McKee — use to calibrate per-act value charge):
-Positive: ${storyKernel.valueSpectrum.positive}
-Contrary: ${storyKernel.valueSpectrum.contrary}
-Contradictory: ${storyKernel.valueSpectrum.contradictory}
-Negation of negation: ${storyKernel.valueSpectrum.negationOfNegation}
-
-Use this thesis/antithesis tension to shape escalating conflicts and turning-point choices. Design act stakes so the value charge progresses through the spectrum: early acts should operate near positive/contrary, middle acts should push toward contradictory, and the climax should risk the negation of negation.
-
-`;
-}
-
-export function buildGenreObligationsSection(conceptSpec?: ConceptSpec): string {
-  if (!conceptSpec) {
-    return '';
-  }
-
-  const obligations = getGenreObligationTags(conceptSpec.genreFrame);
-  if (obligations.length === 0) {
-    return '';
-  }
-
-  const listed = obligations.map((entry) => `- ${entry.tag}: ${entry.gloss}`).join('\n');
-  return `GENRE OBLIGATION CONTRACT (for ${conceptSpec.genreFrame}):
-${listed}
-
-CONSTRAINT: At least one milestone must be tagged with each obligation above using obligatorySceneTag.
-If a milestone does not fulfill any obligation, set obligatorySceneTag to null.
-
-`;
-}
-
-export function buildDirectionalGuidanceSection(storyKernel?: StoryKernel): string {
-  if (!storyKernel) {
-    return 'Act 3 should include a "turning_point" milestone representing a crisis -- an impossible choice or sacrifice';
-  }
-
-  const direction = storyKernel.directionOfChange;
-
-  switch (direction) {
-    case 'POSITIVE':
-      return (
-        'Act 3 should include a "turning_point" milestone representing a crisis -- a supreme test of who the protagonist has become. ' +
-        'Milestone architecture should allow triumph through sacrifice or growth; the crisis is the crucible where inner transformation ' +
-        'proves its worth. The resolution milestone should consummate the victory, showing the new equilibrium earned through change'
-      );
-    case 'NEGATIVE':
-      return (
-        'Act 3 should include a "turning_point" milestone representing a crisis -- a trap that seals the protagonist\'s loss. ' +
-        'Every option the protagonist faces should lead to compromise or defeat; the crisis confirms that the fatal flaw ' +
-        'or opposing force was insurmountable. The resolution milestone should consummate the fall, showing the cost of failure or refusal to change'
-      );
-    case 'IRONIC':
-      return (
-        'Act 3 should include a "turning_point" milestone representing a crisis -- a Pyrrhic crossroads where victory costs something essential. ' +
-        'The protagonist may achieve the outer goal but lose something irreplaceable, or gain wisdom too late to use it. ' +
-        'The resolution milestone should feel hollow or bittersweet, showing that the answer to the dramatic question is more complex than expected'
-      );
-    case 'AMBIGUOUS':
-      return (
-        'Act 3 should include a "turning_point" milestone representing a crisis -- an open question where outcomes are genuinely uncertain. ' +
-        'The crisis should resist clean resolution; multiple interpretations of success and failure coexist. ' +
-        'The resolution milestone should leave the dramatic question resonating rather than answered, inviting the reader to decide what the story means'
-      );
-  }
-}
-
 export function buildStructurePrompt(
   context: StructureContext,
   _options?: PromptOptions
 ): ChatMessage[] {
-  const worldSection = buildWorldSection(context);
-  const characterSection = buildCharacterSection(context);
-
-  const startingSituationSection = context.startingSituation
-    ? `STARTING SITUATION:\n${context.startingSituation}\n\n`
-    : '';
-
+  const worldSection = buildStructureGenerationWorldSection(context);
+  const characterSection = buildStructureGenerationCharacterSection(context);
+  const startingSituationSection = buildStructureGenerationStartingSituationSection(context);
   const spineSection = buildSpineSection(context.spine);
-  const toneFeelSection = buildToneFeelSection(context);
-  const conceptStakesSection = buildConceptStakesSection(context.conceptSpec);
+  const toneFeelSection = buildStructureGenerationToneSection(context.spine);
+  const conceptStakesSection = buildStructureGenerationConceptStakesSection(
+    context.conceptSpec,
+    "Each act's stakes should escalate FROM these foundations. Act 1 stakes should connect to the personal dimension, Act 2 should compound both personal and systemic, Act 3 should put the systemic stakes at maximum risk.",
+    'CONCEPT STAKES (use to ground your per-act stakes):'
+  );
   const setpieceBankSection = buildSetpieceBankSection(context.conceptVerification);
-  const premisePromiseSection = buildPremisePromiseSection(context.conceptVerification);
+  const premisePromiseSection = buildStructureGenerationPremisePromiseSection(
+    context.conceptVerification,
+    'CONSTRAINT: Design act stakes and escalation/turning_point milestone objectives so the story can credibly deliver these audience expectations over time.\nAvoid generic escalation that ignores the concept\'s promised experience.',
+    'PREMISE PROMISE CONTRACT (from upstream concept verification):'
+  );
   const genreConventionsSection = buildGenreConventionsSection(context.conceptSpec?.genreFrame);
-  const genreObligationsSection = buildGenreObligationsSection(context.conceptSpec);
-  const kernelSection = buildKernelSection(context.storyKernel);
+  const genreObligationsSection = buildStructureGenerationGenreObligationsSection(
+    context.conceptSpec
+  );
+  const kernelSection = buildStructureGenerationKernelSection(context.storyKernel, {
+    valueSpectrumHeading: 'VALUE SPECTRUM (McKee — use to calibrate per-act value charge):',
+    guidanceText:
+      'Use this thesis/antithesis tension to shape escalating conflicts and turning-point choices. Design act stakes so the value charge progresses through the spectrum: early acts should operate near positive/contrary, middle acts should push toward contradictory, and the climax should risk the negation of negation.',
+  });
 
   const userPrompt = `Generate a story structure before the first page.
 
@@ -332,3 +193,5 @@ OUTPUT SHAPE:
   messages.push({ role: 'user', content: userPrompt });
   return messages;
 }
+
+export { buildDirectionalGuidanceSection, type StructureContext };

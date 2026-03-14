@@ -1,18 +1,19 @@
-import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
-import { buildMacroArchitecturePrompt } from '../../../../src/llm/prompts/macro-architecture-prompt';
+import {
+  buildDirectionalGuidanceSection,
+  buildStructureGenerationCharacterSection,
+  buildStructureGenerationConceptStakesSection,
+  buildStructureGenerationKernelSection,
+  buildStructureGenerationPremisePromiseSection,
+  buildStructureGenerationStartingSituationSection,
+  buildStructureGenerationToneSection,
+  buildStructureGenerationWorldSection,
+  type StructureContext,
+} from '../../../../../../src/llm/prompts/sections/structure-generation/shared-context';
 
-function getSystemMessage(messages: { role: string; content: string }[]): string {
-  return messages.find((message) => message.role === 'system')?.content ?? '';
-}
-
-function getUserMessage(messages: { role: string; content: string }[]): string {
-  return messages.find((message) => message.role === 'user')?.content ?? '';
-}
-
-describe('buildMacroArchitecturePrompt', () => {
-  const baseContext = {
+describe('structure-generation shared context builders', () => {
+  const baseContext: StructureContext = {
     tone: 'stormy maritime thriller',
-    startingSituation: 'A decorated captain is framed during a public tribunal.',
+    startingSituation: 'A tribunal ship arrives with forged warrants.',
     decomposedCharacters: [
       {
         name: 'Captain Vale',
@@ -41,25 +42,25 @@ describe('buildMacroArchitecturePrompt', () => {
     decomposedWorld: {
       facts: [
         {
-          domain: 'institution' as const,
-          fact: 'Harbor tribunals control shipping law and can erase records overnight.',
+          domain: 'institution',
+          fact: 'Harbor tribunals can erase shipping records overnight.',
           scope: 'global',
         },
       ],
-      rawWorldbuilding: 'Harbor tribunals control shipping law and can erase records overnight.',
+      rawWorldbuilding: 'Harbor tribunals can erase shipping records overnight.',
     },
     conceptSpec: {
       oneLineHook: 'A framed captain fights a corrupt harbor tribunal.',
       elevatorParagraph: 'A public law ritual turns into a hunt for proof and legitimacy.',
-      genreFrame: 'MYSTERY' as const,
+      genreFrame: 'MYSTERY',
       genreSubversion: 'The investigator helped build the corrupt system.',
       protagonistRole: 'Framed captain',
       coreCompetence: 'Command under pressure',
       coreFlaw: 'Faith in institutions',
       actionVerbs: ['investigate', 'command', 'infiltrate', 'expose', 'choose', 'survive'],
       coreConflictLoop: 'Truth versus civic stability',
-      conflictAxis: 'TRUTH_VS_STABILITY' as const,
-      conflictType: 'PERSON_VS_SOCIETY' as const,
+      conflictAxis: 'TRUTH_VS_STABILITY',
+      conflictType: 'PERSON_VS_SOCIETY',
       pressureSource: 'Tribunal suppression',
       stakesPersonal: 'Execution and dishonor',
       stakesSystemic: 'Permanent rule by the conspirators',
@@ -67,7 +68,7 @@ describe('buildMacroArchitecturePrompt', () => {
       settingAxioms: ['The harbor floods nightly'],
       constraintSet: ['No open violence in tribunal halls'],
       keyInstitutions: ['Harbor Tribunal'],
-      settingScale: 'LOCAL' as const,
+      settingScale: 'LOCAL',
       whatIfQuestion: 'What if justice requires exposing your own complicity?',
       ironicTwist: 'The only surviving evidence proves the captain once obeyed the tribunal.',
       playerFantasy: 'Outmaneuvering corrupt institutions',
@@ -108,9 +109,9 @@ describe('buildMacroArchitecturePrompt', () => {
       antithesis: 'Stability is worth moral compromise.',
       valueAtStake: 'justice',
       opposingForce: 'institutional secrecy',
-      directionOfChange: 'IRONIC' as const,
-      conflictAxis: 'TRUTH_VS_STABILITY' as const,
-      dramaticStance: 'IRONIC' as const,
+      directionOfChange: 'IRONIC',
+      conflictAxis: 'TRUTH_VS_STABILITY',
+      dramaticStance: 'IRONIC',
       thematicQuestion: 'Can justice survive the system that enforces order?',
       moralArgument: 'Justice requires breaking the system that rewards silence.',
       valueSpectrum: {
@@ -125,16 +126,16 @@ describe('buildMacroArchitecturePrompt', () => {
       protagonistNeedVsWant: {
         need: 'Accept that the tribunal cannot be redeemed from inside.',
         want: 'Clear her own name and regain command.',
-        dynamic: 'IRRECONCILABLE' as const,
+        dynamic: 'IRRECONCILABLE',
       },
       primaryAntagonisticForce: {
         description: 'A tribunal that converts public ritual into coercive legitimacy.',
         pressureMechanism: 'It punishes dissent by weaponizing public law and record control.',
       },
-      storySpineType: 'MYSTERY' as const,
-      conflictAxis: 'TRUTH_VS_STABILITY' as const,
-      conflictType: 'PERSON_VS_SOCIETY' as const,
-      characterArcType: 'DISILLUSIONMENT' as const,
+      storySpineType: 'MYSTERY',
+      conflictAxis: 'TRUTH_VS_STABILITY',
+      conflictType: 'PERSON_VS_SOCIETY',
+      characterArcType: 'DISILLUSIONMENT',
       toneFeel: ['tense', 'salt-stung', 'ritualized'],
       toneAvoid: ['comic', 'detached'],
       wantNeedCollisionPoint:
@@ -143,41 +144,66 @@ describe('buildMacroArchitecturePrompt', () => {
     },
   };
 
-  it('returns system and user messages', () => {
-    const messages = buildMacroArchitecturePrompt(baseContext);
-
-    expect(messages).toHaveLength(2);
-    expect(messages[0]?.role).toBe('system');
-    expect(messages[1]?.role).toBe('user');
+  it('renders shared world, character, starting situation, and tone sections', () => {
+    expect(buildStructureGenerationWorldSection(baseContext)).toContain('Harbor tribunals');
+    expect(buildStructureGenerationCharacterSection(baseContext)).toContain('Captain Vale');
+    expect(buildStructureGenerationStartingSituationSection(baseContext)).toContain(
+      'STARTING SITUATION'
+    );
+    expect(buildStructureGenerationToneSection(baseContext.spine)).toContain('TONE FEEL');
+    expect(buildStructureGenerationToneSection(baseContext.spine)).toContain('TONE AVOID');
   });
 
-  it('includes content policy in the system prompt', () => {
-    const messages = buildMacroArchitecturePrompt(baseContext);
+  it('supports prompt-local headings and guidance without changing shared section structure', () => {
+    const conceptStakes = buildStructureGenerationConceptStakesSection(
+      baseContext.conceptSpec,
+      'Use these stakes to calibrate act-level escalation.',
+      'CONCEPT STAKES (use to ground your per-act stakes):'
+    );
+    const premisePromises = buildStructureGenerationPremisePromiseSection(
+      baseContext.conceptVerification,
+      'Every premise promise must be allocated to at least one act using promiseTargets.',
+      'PREMISE PROMISE CONTRACT (from upstream concept verification):'
+    );
 
-    expect(getSystemMessage(messages)).toContain(CONTENT_POLICY);
+    expect(conceptStakes).toContain('CONCEPT STAKES (use to ground your per-act stakes):');
+    expect(conceptStakes).toContain('Use these stakes to calibrate act-level escalation.');
+    expect(premisePromises).toContain(
+      'PREMISE PROMISE CONTRACT (from upstream concept verification):'
+    );
+    expect(premisePromises).toContain(
+      'Every premise promise must be allocated to at least one act using promiseTargets.'
+    );
   });
 
-  it('requests macro architecture without asking for milestones', () => {
-    const messages = buildMacroArchitecturePrompt(baseContext);
-    const userMessage = getUserMessage(messages);
+  it('supports prompt-local kernel guidance and value spectrum headings', () => {
+    const kernelSection = buildStructureGenerationKernelSection(baseContext.storyKernel, {
+      valueSpectrumHeading: 'VALUE SPECTRUM (McKee — use to calibrate per-act value charge):',
+      guidanceText: 'Use the kernel to differentiate act questions and ensure escalation.',
+    });
 
-    expect(userMessage).toContain('Do not generate milestones');
-    expect(userMessage).toContain('actQuestion');
-    expect(userMessage).toContain('exitReversal');
-    expect(userMessage).toContain('promiseTargets');
-    expect(userMessage).toContain('obligationTargets');
-    expect(userMessage).toContain('signatureScenarioPlacement');
-    expect(userMessage).not.toContain('causalLink');
+    expect(kernelSection).toContain(
+      'VALUE SPECTRUM (McKee — use to calibrate per-act value charge):'
+    );
+    expect(kernelSection).toContain(
+      'Use the kernel to differentiate act questions and ensure escalation.'
+    );
   });
 
-  it('includes concept verification and premise promise constraints when provided', () => {
-    const messages = buildMacroArchitecturePrompt(baseContext);
-    const userMessage = getUserMessage(messages);
+  it('returns empty strings when optional shared sections have no usable data', () => {
+    expect(
+      buildStructureGenerationCharacterSection({ ...baseContext, decomposedCharacters: [] })
+    ).toBe('');
+    expect(
+      buildStructureGenerationWorldSection({
+        ...baseContext,
+        decomposedWorld: { facts: [], rawWorldbuilding: '' },
+      })
+    ).toBe('');
+    expect(buildStructureGenerationPremisePromiseSection(undefined)).toBe('');
+  });
 
-    expect(userMessage).toContain('CONCEPT STAKES:');
-    expect(userMessage).toContain('PREMISE PROMISE CONTRACT:');
-    expect(userMessage).toContain('Signature scenario: A harbor tribunal hearing collapses into ritual violence.');
-    expect(userMessage).toContain('The tribunal itself becomes the battleground.');
-    expect(userMessage).toContain('Every premise promise must be allocated to at least one act');
+  it('keeps directional guidance centralized by story kernel direction', () => {
+    expect(buildDirectionalGuidanceSection(baseContext.storyKernel)).toContain('Pyrrhic crossroads');
   });
 });

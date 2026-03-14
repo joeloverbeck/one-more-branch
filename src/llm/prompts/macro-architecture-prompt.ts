@@ -1,82 +1,22 @@
-import type { ConceptSpec, ConceptVerification } from '../../models/concept-generator.js';
+import type { ConceptVerification } from '../../models/concept-generator.js';
 import type { DecomposedCharacter } from '../../models/decomposed-character.js';
-import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
-import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
-import type { StoryKernel } from '../../models/story-kernel.js';
-import type { StorySpine } from '../../models/story-spine.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
-import { buildDirectionalGuidanceSection, buildGenreObligationsSection, type StructureContext } from './structure-prompt.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
 import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
-
-function buildCharacterSection(context: StructureContext): string {
-  if (context.decomposedCharacters.length === 0) {
-    return '';
-  }
-
-  const profiles = context.decomposedCharacters
-    .map((character) => formatDecomposedCharacterForPrompt(character))
-    .join('\n\n');
-
-  return `CHARACTERS (decomposed profiles):\n${profiles}\n\n`;
-}
-
-function buildWorldSection(context: StructureContext): string {
-  if (context.decomposedWorld.facts.length === 0) {
-    return '';
-  }
-
-  return `${formatDecomposedWorldForPrompt(context.decomposedWorld)}\n\n`;
-}
-
-function buildToneFeelSection(spine?: StorySpine): string {
-  if (!spine) {
-    return '';
-  }
-
-  const lines: string[] = [];
-  if (spine.toneFeel.length > 0) {
-    lines.push(`TONE FEEL (target atmosphere): ${spine.toneFeel.join(', ')}`);
-  }
-  if (spine.toneAvoid.length > 0) {
-    lines.push(`TONE AVOID (must not drift toward): ${spine.toneAvoid.join(', ')}`);
-  }
-
-  return lines.length > 0 ? `${lines.join('\n')}\n\n` : '';
-}
-
-function buildConceptStakesSection(conceptSpec?: ConceptSpec): string {
-  if (!conceptSpec) {
-    return '';
-  }
-
-  return `CONCEPT STAKES:
-Personal stakes: ${conceptSpec.stakesPersonal}
-Systemic stakes: ${conceptSpec.stakesSystemic}
-Pressure source: ${conceptSpec.pressureSource}
-Deadline mechanism: ${conceptSpec.deadlineMechanism}
-
-Use these stakes to calibrate act-level escalation. Act 1 should activate the personal pressure first, later acts should widen the blast radius toward the systemic stakes.
-
-`;
-}
-
-function buildPremisePromiseSection(verification?: ConceptVerification): string {
-  const premisePromises = verification?.premisePromises ?? [];
-  if (premisePromises.length === 0) {
-    return '';
-  }
-
-  const listed = premisePromises.map((promise) => `- ${promise}`).join('\n');
-  return `PREMISE PROMISE CONTRACT:
-${listed}
-
-Every premise promise must be allocated to at least one act using promiseTargets. Do not leave any promise unassigned or defer it to unspecified future beats.
-
-`;
-}
+import {
+  buildDirectionalGuidanceSection,
+  buildStructureGenerationCharacterSection,
+  buildStructureGenerationConceptStakesSection,
+  buildStructureGenerationGenreObligationsSection,
+  buildStructureGenerationKernelSection,
+  buildStructureGenerationPremisePromiseSection,
+  buildStructureGenerationStartingSituationSection,
+  buildStructureGenerationToneSection,
+  buildStructureGenerationWorldSection,
+  type StructureContext,
+} from './sections/structure-generation/shared-context.js';
 
 function buildSignatureScenarioSection(verification?: ConceptVerification): string {
   if (!verification) {
@@ -97,31 +37,6 @@ If concept verification is present, anchorMoments.signatureScenarioPlacement mus
 `;
 }
 
-function buildKernelSection(storyKernel?: StoryKernel): string {
-  if (!storyKernel) {
-    return '';
-  }
-
-  return `THEMATIC KERNEL:
-Dramatic thesis: ${storyKernel.dramaticThesis}
-Antithesis: ${storyKernel.antithesis}
-Direction of change: ${storyKernel.directionOfChange}
-Conflict axis: ${storyKernel.conflictAxis}
-Dramatic stance: ${storyKernel.dramaticStance}
-Thematic question: ${storyKernel.thematicQuestion}
-Moral argument: ${storyKernel.moralArgument}
-
-VALUE SPECTRUM:
-Positive: ${storyKernel.valueSpectrum.positive}
-Contrary: ${storyKernel.valueSpectrum.contrary}
-Contradictory: ${storyKernel.valueSpectrum.contradictory}
-Negation of negation: ${storyKernel.valueSpectrum.negationOfNegation}
-
-Use the kernel to differentiate act questions and ensure each act turns the value charge harder than the last.
-
-`;
-}
-
 function buildMacroNpcAgendaInstructions(characters: readonly DecomposedCharacter[]): string {
   if (characters.length === 0) {
     return 'Return initialNpcAgendas as an empty array.';
@@ -134,19 +49,28 @@ export function buildMacroArchitecturePrompt(
   context: StructureContext,
   _options?: PromptOptions
 ): ChatMessage[] {
-  const worldSection = buildWorldSection(context);
-  const characterSection = buildCharacterSection(context);
-  const startingSituationSection = context.startingSituation
-    ? `STARTING SITUATION:\n${context.startingSituation}\n\n`
-    : '';
+  const worldSection = buildStructureGenerationWorldSection(context);
+  const characterSection = buildStructureGenerationCharacterSection(context);
+  const startingSituationSection = buildStructureGenerationStartingSituationSection(context);
   const spineSection = buildSpineSection(context.spine);
-  const toneFeelSection = buildToneFeelSection(context.spine);
-  const conceptStakesSection = buildConceptStakesSection(context.conceptSpec);
-  const premisePromiseSection = buildPremisePromiseSection(context.conceptVerification);
+  const toneFeelSection = buildStructureGenerationToneSection(context.spine);
+  const conceptStakesSection = buildStructureGenerationConceptStakesSection(
+    context.conceptSpec,
+    'Use these stakes to calibrate act-level escalation. Act 1 should activate the personal pressure first, later acts should widen the blast radius toward the systemic stakes.'
+  );
+  const premisePromiseSection = buildStructureGenerationPremisePromiseSection(
+    context.conceptVerification,
+    'Every premise promise must be allocated to at least one act using promiseTargets. Do not leave any promise unassigned or defer it to unspecified future beats.'
+  );
   const signatureScenarioSection = buildSignatureScenarioSection(context.conceptVerification);
   const genreConventionsSection = buildGenreConventionsSection(context.conceptSpec?.genreFrame);
-  const genreObligationsSection = buildGenreObligationsSection(context.conceptSpec);
-  const kernelSection = buildKernelSection(context.storyKernel);
+  const genreObligationsSection = buildStructureGenerationGenreObligationsSection(
+    context.conceptSpec
+  );
+  const kernelSection = buildStructureGenerationKernelSection(context.storyKernel, {
+    guidanceText:
+      'Use the kernel to differentiate act questions and ensure each act turns the value charge harder than the last.',
+  });
 
   const userPrompt = `Design the macro architecture for an interactive story before any milestone writing happens.
 
