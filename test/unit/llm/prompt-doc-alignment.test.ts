@@ -125,6 +125,11 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/structure-rewrite-prompt.md',
   },
   {
+    promptType: 'structureRepair',
+    sourcePath: 'src/llm/prompts/structure-repair-prompt.ts',
+    docPath: 'prompts/structure-repair-prompt.md',
+  },
+  {
     promptType: 'spine',
     sourcePath: 'src/llm/prompts/spine-prompt.ts',
     docPath: 'prompts/spine-prompt.md',

@@ -5,7 +5,6 @@ import type {
   MacroArchitectureResult,
   StructureGenerationResult,
 } from '../models/structure-generation.js';
-import { getGenreObligationTags } from '../models/genre-obligations.js';
 import {
   OPENROUTER_API_URL,
   extractResponseContent,
@@ -28,36 +27,7 @@ import {
 import { withRetry } from './retry.js';
 import { MACRO_ARCHITECTURE_SCHEMA } from './schemas/macro-architecture-schema.js';
 import { MILESTONE_GENERATION_SCHEMA } from './schemas/milestone-generation-schema.js';
-
-const MIN_UNIQUE_TRACED_SETPIECES = 4;
-
-function countUniqueSetpieceIndices(
-  result: Omit<StructureGenerationResult, 'rawResponse'>
-): number {
-  const unique = new Set<number>();
-  for (const act of result.acts) {
-    for (const milestone of act.milestones) {
-      if (typeof milestone.setpieceSourceIndex === 'number') {
-        unique.add(milestone.setpieceSourceIndex);
-      }
-    }
-  }
-  return unique.size;
-}
-
-function collectTaggedObligations(
-  result: Omit<StructureGenerationResult, 'rawResponse'>
-): Set<string> {
-  const tagged = new Set<string>();
-  for (const act of result.acts) {
-    for (const milestone of act.milestones) {
-      if (typeof milestone.obligatorySceneTag === 'string') {
-        tagged.add(milestone.obligatorySceneTag);
-      }
-    }
-  }
-  return tagged;
-}
+import { validateAndRepairStructure } from './structure-validator.js';
 
 async function callStructuredStage<T>(
   stage: LlmStage,
@@ -188,29 +158,6 @@ async function generateMilestones(
   };
 }
 
-function warnOnSoftValidation(
-  result: Omit<StructureGenerationResult, 'rawResponse'>,
-  hasConceptVerification: boolean,
-  expectedGenreObligations: readonly string[] | null
-): void {
-  if (hasConceptVerification) {
-    const uniqueSetpiecesUsed = countUniqueSetpieceIndices(result);
-    if (uniqueSetpiecesUsed < MIN_UNIQUE_TRACED_SETPIECES) {
-      logger.warn(
-        `Structure setpiece tracing below target: ${uniqueSetpiecesUsed}/${MIN_UNIQUE_TRACED_SETPIECES} unique setpieces mapped`
-      );
-    }
-  }
-
-  if (expectedGenreObligations && expectedGenreObligations.length > 0) {
-    const tagged = collectTaggedObligations(result);
-    const missing = expectedGenreObligations.filter((tag) => !tagged.has(tag));
-    if (missing.length > 0) {
-      logger.warn(`Structure missing genre obligation tags: ${missing.join(', ')}`);
-    }
-  }
-}
-
 export async function generateStoryStructure(
   context: StructureContext,
   apiKey: string,
@@ -226,14 +173,6 @@ export async function generateStoryStructure(
   const temperature = options?.temperature ?? config.temperature;
   const macroMaxTokens = options?.maxTokens ?? getStageMaxTokens('macroArchitecture');
   const milestoneMaxTokens = options?.maxTokens ?? getStageMaxTokens('milestoneGeneration');
-  const hasConceptVerification = (context.conceptVerification?.escalatingSetpieces.length ?? 0) > 0;
-  const expectedGenreObligationEntries = context.conceptSpec
-    ? getGenreObligationTags(context.conceptSpec.genreFrame)
-    : null;
-  const expectedGenreObligations = expectedGenreObligationEntries
-    ? expectedGenreObligationEntries.map((entry) => entry.tag)
-    : null;
-
   const macroArchitecture = await withRetry(() =>
     withModelFallback(
       (model) =>
@@ -262,6 +201,6 @@ export async function generateStoryStructure(
     )
   );
 
-  warnOnSoftValidation(result, hasConceptVerification, expectedGenreObligations);
-  return result;
+  const validated = await validateAndRepairStructure(result, context, apiKey, resolvedOptions);
+  return validated.result;
 }

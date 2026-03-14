@@ -59,6 +59,7 @@ Implementation note:
 - Tiered rewrite work must preserve the same canonical structure normalization/defaulting behavior as initial generation.
 - Do not duplicate fallback/default logic independently in rewrite support, rewrite merging, and runtime structure creation.
 - Reuse the shared normalization/migration seam tracked in `STOARCGEN-016` if it exists by the time this ticket is implemented.
+- Rewrite-tier execution should not fork another copy of structured-stage HTTP/logging/retry/fallback orchestration. Reuse or extend `src/llm/llm-stage-runner.ts` where appropriate, and see `STOARCGEN-018` for the dedicated consolidation follow-up.
 
 ### Rewrite prompts split
 

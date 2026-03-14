@@ -456,6 +456,41 @@ describe('structure-generator', () => {
     expect(getRequestBody(1).max_tokens).toBe(1234);
   });
 
+  it('runs targeted repair when semantic validation fails after milestone generation', async () => {
+    const duplicateQuestionMacro = createMacroPayload();
+    duplicateQuestionMacro.acts[1]!.actQuestion = duplicateQuestionMacro.acts[0]!.actQuestion;
+
+    fetchMock
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(duplicateQuestionMacro)))
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMilestonePayload())))
+      .mockResolvedValueOnce(
+        responseWithMessageContent(
+          JSON.stringify({
+            repairedActs: [
+              {
+                actIndex: 1,
+                act: {
+                  ...duplicateQuestionMacro.acts[1],
+                  actQuestion: 'Can law become a public weapon?',
+                  milestones: createMilestonePayload().acts[1]!.milestones,
+                },
+              },
+            ],
+          })
+        )
+      );
+
+    const result = await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(result.acts[1]?.actQuestion).toBe('Can law become a public weapon?');
+    expect(result.rawResponse).toContain('[structureRepair]');
+    const repairRequest = getRequestBody(2) as {
+      response_format?: { json_schema?: { name?: string } };
+    };
+    expect(repairRequest.response_format?.json_schema?.name).toBe('story_structure_repair');
+  });
+
   it('retries when the macro stage returns invalid JSON', async () => {
     fetchMock.mockResolvedValue(responseWithMessageContent('{"overallTheme":'));
 
@@ -527,7 +562,7 @@ describe('structure-generator', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it('warns when fewer than four unique setpieces are traced', async () => {
+  it('warns when structure validation still fails after one repair attempt', async () => {
     const lowCoverage = createMilestonePayload();
     lowCoverage.acts[1]!.milestones[0]!.setpieceSourceIndex = 0;
     lowCoverage.acts[1]!.milestones[1]!.setpieceSourceIndex = 1;
@@ -535,16 +570,31 @@ describe('structure-generator', () => {
 
     fetchMock
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMacroPayload())))
-      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(lowCoverage)));
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(lowCoverage)))
+      .mockResolvedValueOnce(
+        responseWithMessageContent(
+          JSON.stringify({
+            repairedActs: [
+              {
+                actIndex: 2,
+                act: {
+                  ...createMacroPayload().acts[2],
+                  milestones: lowCoverage.acts[2]!.milestones,
+                },
+              },
+            ],
+          })
+        )
+      );
 
     await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
 
     expect(mockLogger.warn).toHaveBeenCalledWith(
-      'Structure setpiece tracing below target: 2/4 unique setpieces mapped'
+      'Structure validation still failing after repair [setpiece-coverage]: Expected at least 4 unique traced setpieces, received 2'
     );
   });
 
-  it('warns when genre obligations are missing from milestone tags', async () => {
+  it('repairs missing genre obligation coverage before returning', async () => {
     const missingObligations = createMilestonePayload();
     missingObligations.acts[0]!.milestones[0]!.obligatorySceneTag = null;
     missingObligations.acts[1]!.milestones[0]!.obligatorySceneTag = null;
@@ -552,12 +602,59 @@ describe('structure-generator', () => {
 
     fetchMock
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMacroPayload())))
-      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(missingObligations)));
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(missingObligations)))
+      .mockResolvedValueOnce(
+        responseWithMessageContent(
+          JSON.stringify({
+            repairedActs: [
+              {
+                actIndex: 0,
+                act: {
+                  ...createMacroPayload().acts[0],
+                  milestones: [
+                    {
+                      ...missingObligations.acts[0]!.milestones[0],
+                      obligatorySceneTag: 'crime_or_puzzle_presented',
+                    },
+                    missingObligations.acts[0]!.milestones[1],
+                  ],
+                },
+              },
+              {
+                actIndex: 1,
+                act: {
+                  ...createMacroPayload().acts[1],
+                  milestones: [
+                    {
+                      ...missingObligations.acts[1]!.milestones[0],
+                      obligatorySceneTag: 'key_clue_recontextualized',
+                    },
+                    missingObligations.acts[1]!.milestones[1],
+                  ],
+                },
+              },
+              {
+                actIndex: 2,
+                act: {
+                  ...createMacroPayload().acts[2],
+                  milestones: [
+                    missingObligations.acts[2]!.milestones[0],
+                    {
+                      ...missingObligations.acts[2]!.milestones[1],
+                      obligatorySceneTag: 'culprit_unmasked',
+                    },
+                  ],
+                },
+              },
+            ],
+          })
+        )
+      );
 
-    await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
+    const result = await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
 
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      'Structure missing genre obligation tags: crime_or_puzzle_presented, red_herring_planted, key_witness_or_suspect_confronted, key_clue_recontextualized, detective_synthesis_moment, culprit_unmasked'
-    );
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(result.acts[0]?.milestones[0]?.obligatorySceneTag).toBe('crime_or_puzzle_presented');
+    expect(mockLogger.warn).not.toHaveBeenCalled();
   });
 });

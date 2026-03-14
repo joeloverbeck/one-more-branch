@@ -30,6 +30,7 @@ export const LLM_STAGE_KEYS = [
   'agendaResolver',
   'sceneIdeator',
   'structureRewrite',
+  'structureRepair',
   'spineRewrite',
   'contentOneShot',
   'contentTasteDistiller',
