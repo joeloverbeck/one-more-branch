@@ -1,7 +1,7 @@
 # STOARCGEN-013: Tiered Rewrite Pipeline
 
 **Status**: TODO
-**Depends on**: STOARCGEN-012 (pipeline orchestration)
+**Depends on**: STOARCGEN-012 (pipeline orchestration), STOARCGEN-017
 **Blocks**: None
 
 ## Summary
@@ -66,6 +66,9 @@ Implementation note:
 - **Milestone rewrite prompt**: Receives completed milestones (preserved) + act frames, generates new milestones. Used in Tier 1 and Tier 2.
 
 These are variants of the generation prompts (STOARCGEN-009, STOARCGEN-010) with additional context about what is preserved vs. regenerated.
+
+Implementation note:
+- Rewrite prompt variants should reuse the shared structure-generation prompt-context builders introduced in `STOARCGEN-017` instead of forking another copy of structure context rendering.
 
 ## Out of Scope
 

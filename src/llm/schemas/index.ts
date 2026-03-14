@@ -1,5 +1,6 @@
 export { WRITER_GENERATION_SCHEMA } from './writer-schema.js';
 export { STRUCTURE_GENERATION_SCHEMA } from './structure-schema.js';
+export { MACRO_ARCHITECTURE_SCHEMA } from './macro-architecture-schema.js';
 export { PAGE_PLANNER_GENERATION_SCHEMA } from './page-planner-schema.js';
 export { STATE_ACCOUNTANT_SCHEMA } from './state-accountant-schema.js';
 export { validateWriterResponse } from './writer-response-transformer.js';

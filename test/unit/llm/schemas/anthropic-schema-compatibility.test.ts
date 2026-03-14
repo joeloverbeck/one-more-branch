@@ -51,6 +51,7 @@ import { CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA } from '../../../../src/llm/schem
 import { CHAR_AGENCY_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-agency-schema';
 import { CHAR_RELATIONSHIPS_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-relationships-schema';
 import { CHAR_PRESENTATION_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-presentation-schema';
+import { MACRO_ARCHITECTURE_SCHEMA } from '../../../../src/llm/schemas/macro-architecture-schema';
 import type { JsonSchema } from '../../../../src/llm/llm-client-types';
 
 type SchemaIssue = {
@@ -232,6 +233,7 @@ describe('Anthropic schema compatibility', () => {
   const llmResponseSchemas: Array<{ name: string; schema: JsonSchema }> = [
     { name: 'WRITER_GENERATION_SCHEMA', schema: WRITER_GENERATION_SCHEMA },
     { name: 'STRUCTURE_GENERATION_SCHEMA', schema: STRUCTURE_GENERATION_SCHEMA },
+    { name: 'MACRO_ARCHITECTURE_SCHEMA', schema: MACRO_ARCHITECTURE_SCHEMA },
     { name: 'PAGE_PLANNER_GENERATION_SCHEMA', schema: PAGE_PLANNER_GENERATION_SCHEMA },
     { name: 'STATE_ACCOUNTANT_SCHEMA', schema: STATE_ACCOUNTANT_SCHEMA },
     { name: 'LOREKEEPER_SCHEMA', schema: LOREKEEPER_SCHEMA },

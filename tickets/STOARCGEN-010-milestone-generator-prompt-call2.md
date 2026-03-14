@@ -1,7 +1,7 @@
 # STOARCGEN-010: Milestone Generator Prompt + Schema + Parser (Call 2)
 
 **Status**: TODO
-**Depends on**: STOARCGEN-008, STOARCGEN-009
+**Depends on**: STOARCGEN-008, STOARCGEN-009, STOARCGEN-017
 **Blocks**: STOARCGEN-012 (pipeline orchestration)
 
 ## Summary
@@ -40,6 +40,9 @@ Create the Milestone Generator prompt, JSON schema, and response parser. This is
 - Include `decomposedCharacters`, `decomposedWorld`, `conceptVerification` for specificity
 - Include `toneFeel`/`toneAvoid` for tone alignment
 
+Implementation note:
+- Reuse the shared structure-generation prompt-context builders from `STOARCGEN-017` rather than cloning world/character/spine/kernel/concept section formatting again inside the milestone prompt.
+
 ### Schema (`milestone-generation-schema.ts`)
 
 JSON Schema for `response_format` producing an array of acts, each containing milestones:
@@ -63,6 +66,7 @@ Use `anyOf`/`oneOf` for nullable fields (Anthropic/Bedrock compatibility).
 - Pipeline wiring (STOARCGEN-012)
 - Rewrite-specific milestone prompt variant (STOARCGEN-013)
 - Modifying the existing `structure-prompt.ts` (it becomes the macro architecture prompt conceptually, but this ticket creates the new milestone-specific prompt)
+- Shared prompt-context extraction itself (`STOARCGEN-017`)
 
 ## Acceptance Criteria
 

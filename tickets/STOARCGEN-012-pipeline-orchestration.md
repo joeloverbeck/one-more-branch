@@ -67,6 +67,7 @@ Implementation note:
 - Avoid reintroducing ad hoc defaulting/normalization in multiple places while wiring the 3-call pipeline.
 - Reuse a shared structure normalization/migration seam if available so parser output, merged generation output, runtime structure construction, and persistence stay aligned.
 - See `STOARCGEN-016` for the dedicated consolidation follow-up.
+- Do not introduce new prompt-context duplication while wiring Call 1 / Call 2. Reuse the shared structure-generation prompt-context seam from `STOARCGEN-017` if it exists by the time this ticket is implemented.
 
 ### Existing validation helpers
 
