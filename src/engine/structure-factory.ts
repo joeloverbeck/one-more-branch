@@ -1,17 +1,17 @@
 import type {
   ApproachVector,
-  BeatRole,
+  MilestoneRole,
   CrisisType,
   EscalationType,
   GapMagnitude,
   MidpointType,
   StoryAct,
-  StoryBeat,
+  StoryMilestone,
   StoryStructure,
 } from '../models/story-arc';
 import {
   APPROACH_VECTORS,
-  BEAT_ROLES,
+  MILESTONE_ROLES,
   CRISIS_TYPES,
   ESCALATION_TYPES,
   GAP_MAGNITUDES,
@@ -20,9 +20,9 @@ import {
 import { isGenreObligationTag } from '../models/genre-obligations';
 import type { StructureGenerationResult } from './structure-types';
 
-function parseBeatRole(role: string): BeatRole {
-  if (BEAT_ROLES.includes(role as BeatRole)) {
-    return role as BeatRole;
+function parseMilestoneRole(role: string): MilestoneRole {
+  if (MILESTONE_ROLES.includes(role as MilestoneRole)) {
+    return role as MilestoneRole;
   }
   return 'escalation';
 }
@@ -92,53 +92,53 @@ function parseObligatorySceneTag(value: unknown): string | null {
   return value;
 }
 
-function parseCausalLink(value: unknown, beatId: string): string {
+function parseCausalLink(value: unknown, milestoneId: string): string {
   if (typeof value === 'string') {
     const normalized = value.trim();
     if (normalized.length > 0) {
       return normalized;
     }
   }
-  throw new Error(`Structure beat ${beatId} must include a non-empty causalLink`);
+  throw new Error(`Structure milestone ${milestoneId} must include a non-empty causalLink`);
 }
 
 /**
  * Creates StoryStructure from raw generation result.
- * Assigns hierarchical IDs to beats (e.g., "1.1", "1.2", "2.1").
+ * Assigns hierarchical IDs to milestones (e.g., "1.1", "1.2", "2.1").
  */
 export function createStoryStructure(result: StructureGenerationResult): StoryStructure {
   const acts: StoryAct[] = result.acts.map((actData, actIndex) => {
     const actId = String(actIndex + 1);
-    const beats: StoryBeat[] = actData.beats.map((beatData, beatIndex) => {
-      const beatId = `${actId}.${beatIndex + 1}`;
-      const midpointType = parseMidpointType(beatData.midpointType);
-      const isMidpoint = beatData.isMidpoint === true;
+    const milestones: StoryMilestone[] = actData.milestones.map((milestoneData, milestoneIndex) => {
+      const milestoneId = `${actId}.${milestoneIndex + 1}`;
+      const midpointType = parseMidpointType(milestoneData.midpointType);
+      const isMidpoint = milestoneData.isMidpoint === true;
 
       if (isMidpoint && midpointType === null) {
-        throw new Error(`Structure beat ${beatId} is midpoint-tagged but missing midpointType`);
+        throw new Error(`Structure milestone ${milestoneId} is midpoint-tagged but missing midpointType`);
       }
       if (!isMidpoint && midpointType !== null) {
-        throw new Error(`Structure beat ${beatId} has midpointType but isMidpoint is false`);
+        throw new Error(`Structure milestone ${milestoneId} has midpointType but isMidpoint is false`);
       }
 
       return {
-        id: beatId,
-        name: beatData.name,
-        description: beatData.description,
-        objective: beatData.objective,
-        causalLink: parseCausalLink(beatData.causalLink, beatId),
-        role: parseBeatRole(beatData.role),
-        escalationType: parseEscalationType(beatData.escalationType),
-        secondaryEscalationType: parseEscalationType(beatData.secondaryEscalationType),
-        crisisType: parseCrisisType(beatData.crisisType),
-        expectedGapMagnitude: parseGapMagnitude(beatData.expectedGapMagnitude),
+        id: milestoneId,
+        name: milestoneData.name,
+        description: milestoneData.description,
+        objective: milestoneData.objective,
+        causalLink: parseCausalLink(milestoneData.causalLink, milestoneId),
+        role: parseMilestoneRole(milestoneData.role),
+        escalationType: parseEscalationType(milestoneData.escalationType),
+        secondaryEscalationType: parseEscalationType(milestoneData.secondaryEscalationType),
+        crisisType: parseCrisisType(milestoneData.crisisType),
+        expectedGapMagnitude: parseGapMagnitude(milestoneData.expectedGapMagnitude),
         isMidpoint,
         midpointType,
         uniqueScenarioHook:
-          typeof beatData.uniqueScenarioHook === 'string' ? beatData.uniqueScenarioHook : null,
-        approachVectors: parseApproachVectors(beatData.approachVectors),
-        setpieceSourceIndex: parseSetpieceSourceIndex(beatData.setpieceSourceIndex),
-        obligatorySceneTag: parseObligatorySceneTag(beatData.obligatorySceneTag),
+          typeof milestoneData.uniqueScenarioHook === 'string' ? milestoneData.uniqueScenarioHook : null,
+        approachVectors: parseApproachVectors(milestoneData.approachVectors),
+        setpieceSourceIndex: parseSetpieceSourceIndex(milestoneData.setpieceSourceIndex),
+        obligatorySceneTag: parseObligatorySceneTag(milestoneData.obligatorySceneTag),
       };
     });
 
@@ -148,7 +148,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
       objective: actData.objective,
       stakes: actData.stakes,
       entryCondition: actData.entryCondition,
-      beats,
+      milestones,
     };
   });
 

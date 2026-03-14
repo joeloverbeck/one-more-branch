@@ -141,7 +141,7 @@ describe('buildTrackedPromisesSection', () => {
     const promises = [makeTrackedPromise('pr-1', THREAD_PACING.PROMISE_AGING_NOTICE_PAGES, 'Old hint')];
     const result = buildTrackedPromisesSection(promises);
     expect(result).toContain('opportunities for reincorporation');
-    expect(result).toContain('not mandatory beats');
+    expect(result).toContain('not mandatory milestones');
   });
 
   it('omits promise IDs when includePromiseIds is false', () => {

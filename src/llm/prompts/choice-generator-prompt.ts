@@ -34,7 +34,7 @@ export interface ChoiceGeneratorContext {
   readonly choiceGuidance: 'basic' | 'strict';
 }
 
-function buildBeatObjectiveSection(
+function buildMilestoneObjectiveSection(
   structure?: StoryStructure,
   accumulatedStructureState?: AccumulatedStructureState
 ): string {
@@ -42,19 +42,19 @@ function buildBeatObjectiveSection(
     return '';
   }
 
-  const { currentActIndex, currentBeatIndex } = accumulatedStructureState;
+  const { currentActIndex, currentMilestoneIndex } = accumulatedStructureState;
   const act = structure.acts[currentActIndex];
   if (!act) {
     return '';
   }
 
-  const beat = act.beats[currentBeatIndex];
-  if (!beat) {
+  const milestone = act.milestones[currentMilestoneIndex];
+  if (!milestone) {
     return '';
   }
 
-  return `CURRENT BEAT: "${beat.name}" (${beat.role})
-Beat Objective: ${beat.objective}
+  return `CURRENT BEAT: "${milestone.name}" (${milestone.role})
+Milestone Objective: ${milestone.objective}
 Act Objective: ${act.objective}
 
 `;
@@ -110,7 +110,7 @@ export function buildChoiceGeneratorPrompt(
   const threatsSection = buildThreatsSection(context.activeState);
   const constraintsSection = buildConstraintsSection(context.activeState);
   const threadsSection = buildThreadsSection(context.activeState);
-  const beatSection = buildBeatObjectiveSection(
+  const milestoneSection = buildMilestoneObjectiveSection(
     context.structure,
     context.accumulatedStructureState
   );
@@ -134,12 +134,12 @@ ${context.narrative}
 === SCENE SUMMARY ===
 ${context.sceneSummary}
 
-${spineSection}${beatSection}${dramaticQuestionSection}${protagonistSection}${affectSection}${bibleSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${guidelinesSection}NEED VS WANT RULE: At least one choice should force the protagonist to choose between pursuing their Want and addressing their true Need from the spine. This tension creates the most compelling dramatic choices.
+${spineSection}${milestoneSection}${dramaticQuestionSection}${protagonistSection}${affectSection}${bibleSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${guidelinesSection}NEED VS WANT RULE: At least one choice should force the protagonist to choose between pursuing their Want and addressing their true Need from the spine. This tension creates the most compelling dramatic choices.
 
 REQUIREMENTS:
 1. Generate 2-4 structured choice objects (typically 3; add a 4th only when the situation truly warrants another distinct path)
 2. No two choices may share both the same choiceType AND the same primaryDelta
-3. Choices must flow from the scene's final dramatic beat - reference specific moments from the narrative
+3. Choices must flow from the scene's final dramatic milestone - reference specific moments from the narrative
 4. Start each choice text with a clear action verb (e.g., "Demand", "Flee", "Accept")
 5. Do NOT offer a choice that repeats what already happened in the scene
 6. Do NOT offer choices that prematurely close off open narrative threads unless dramatically appropriate

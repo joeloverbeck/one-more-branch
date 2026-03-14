@@ -26,9 +26,9 @@ function countUniqueSetpieceIndices(
 ): number {
   const unique = new Set<number>();
   for (const act of result.acts) {
-    for (const beat of act.beats) {
-      if (typeof beat.setpieceSourceIndex === 'number') {
-        unique.add(beat.setpieceSourceIndex);
+    for (const milestone of act.milestones) {
+      if (typeof milestone.setpieceSourceIndex === 'number') {
+        unique.add(milestone.setpieceSourceIndex);
       }
     }
   }
@@ -40,9 +40,9 @@ function collectTaggedObligations(
 ): Set<string> {
   const tagged = new Set<string>();
   for (const act of result.acts) {
-    for (const beat of act.beats) {
-      if (typeof beat.obligatorySceneTag === 'string') {
-        tagged.add(beat.obligatorySceneTag);
+    for (const milestone of act.milestones) {
+      if (typeof milestone.obligatorySceneTag === 'string') {
+        tagged.add(milestone.obligatorySceneTag);
       }
     }
   }

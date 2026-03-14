@@ -16,7 +16,7 @@ import type {
   StructureRewriteContext,
   StructureRewriteResult,
 } from '../llm/structure-rewrite-types';
-import { BEAT_ROLES, BeatRole, StoryAct, StoryBeat, StoryStructure } from '../models/story-arc';
+import { MILESTONE_ROLES, MilestoneRole, StoryAct, StoryMilestone, StoryStructure } from '../models/story-arc';
 import {
   createStoryStructure,
   parseApproachVectors,
@@ -39,15 +39,15 @@ export type StructureRewriteGenerator = (
   apiKey: string
 ) => Promise<StructureGenerationResult>;
 
-function parseBeatRole(role: string): BeatRole {
-  if (BEAT_ROLES.includes(role as BeatRole)) {
-    return role as BeatRole;
+function parseMilestoneRole(role: string): MilestoneRole {
+  if (MILESTONE_ROLES.includes(role as MilestoneRole)) {
+    return role as MilestoneRole;
   }
   return 'escalation';
 }
 
-function parseBeatNumber(beatId: string, actIndex: number): number | null {
-  const match = /^(\d+)\.(\d+)$/.exec(beatId);
+function parseMilestoneNumber(milestoneId: string, actIndex: number): number | null {
+  const match = /^(\d+)\.(\d+)$/.exec(milestoneId);
   if (!match) {
     return null;
   }
@@ -66,7 +66,7 @@ function parseBeatNumber(beatId: string, actIndex: number): number | null {
   return parsedBeat;
 }
 
-function beatSignature(description: string, objective: string): string {
+function milestoneSignature(description: string, objective: string): string {
   const normalizedDesc = description.trim().replace(/\s+/g, ' ');
   const normalizedObj = objective.trim().replace(/\s+/g, ' ');
   return `${normalizedDesc}\n${normalizedObj}`;
@@ -93,7 +93,7 @@ export function createStructureRewriter(
 
       return {
         structure,
-        preservedBeatIds: context.completedBeats.map((beat) => beat.beatId),
+        preservedMilestoneIds: context.completedBeats.map((milestone) => milestone.milestoneId),
         rawResponse: regenerated.rawResponse,
       };
     },
@@ -107,10 +107,10 @@ export function mergePreservedWithRegenerated(
   originalOpeningImage: string
 ): StoryStructure {
   const preservedByAct = new Map<number, CompletedBeat[]>();
-  for (const beat of preservedBeats) {
-    const beatsInAct = preservedByAct.get(beat.actIndex) ?? [];
-    beatsInAct.push(beat);
-    preservedByAct.set(beat.actIndex, beatsInAct);
+  for (const milestone of preservedBeats) {
+    const milestonesInAct = preservedByAct.get(milestone.actIndex) ?? [];
+    milestonesInAct.push(milestone);
+    preservedByAct.set(milestone.actIndex, milestonesInAct);
   }
 
   const mergedActs: StoryAct[] = [];
@@ -118,88 +118,88 @@ export function mergePreservedWithRegenerated(
   for (let actIndex = 0; actIndex < regeneratedStructure.acts.length; actIndex += 1) {
     const regeneratedAct = regeneratedStructure.acts[actIndex];
     const preservedInAct = (preservedByAct.get(actIndex) ?? []).slice().sort((a, b) => {
-      return a.beatIndex - b.beatIndex;
+      return a.milestoneIndex - b.milestoneIndex;
     });
 
-    const mergedBeats: StoryBeat[] = preservedInAct.map((beat) => {
-      const isMidpoint = beat.isMidpoint === true;
-      const midpointType = parseMidpointType(beat.midpointType);
+    const mergedMilestones: StoryMilestone[] = preservedInAct.map((milestone) => {
+      const isMidpoint = milestone.isMidpoint === true;
+      const midpointType = parseMidpointType(milestone.midpointType);
       if (isMidpoint && midpointType === null) {
         throw new Error(
-          `Preserved beat ${beat.beatId} is midpoint-tagged but missing midpointType`
+          `Preserved milestone ${milestone.milestoneId} is midpoint-tagged but missing midpointType`
         );
       }
       if (!isMidpoint && midpointType !== null) {
-        throw new Error(`Preserved beat ${beat.beatId} has midpointType but isMidpoint is false`);
+        throw new Error(`Preserved milestone ${milestone.milestoneId} has midpointType but isMidpoint is false`);
       }
 
       return {
-        id: beat.beatId,
-        name: beat.name,
-        description: beat.description,
-        objective: beat.objective,
-        causalLink: beat.causalLink,
-        role: parseBeatRole(beat.role),
-        escalationType: parseEscalationType(beat.escalationType),
-        secondaryEscalationType: parseEscalationType(beat.secondaryEscalationType),
-        crisisType: parseCrisisType(beat.crisisType),
-        expectedGapMagnitude: parseGapMagnitude(beat.expectedGapMagnitude),
+        id: milestone.milestoneId,
+        name: milestone.name,
+        description: milestone.description,
+        objective: milestone.objective,
+        causalLink: milestone.causalLink,
+        role: parseMilestoneRole(milestone.role),
+        escalationType: parseEscalationType(milestone.escalationType),
+        secondaryEscalationType: parseEscalationType(milestone.secondaryEscalationType),
+        crisisType: parseCrisisType(milestone.crisisType),
+        expectedGapMagnitude: parseGapMagnitude(milestone.expectedGapMagnitude),
         isMidpoint,
         midpointType,
-        uniqueScenarioHook: beat.uniqueScenarioHook,
-        approachVectors: parseApproachVectors(beat.approachVectors),
-        setpieceSourceIndex: beat.setpieceSourceIndex,
-        obligatorySceneTag: beat.obligatorySceneTag,
+        uniqueScenarioHook: milestone.uniqueScenarioHook,
+        approachVectors: parseApproachVectors(milestone.approachVectors),
+        setpieceSourceIndex: milestone.setpieceSourceIndex,
+        obligatorySceneTag: milestone.obligatorySceneTag,
       };
     });
 
-    let nextBeatNumber = mergedBeats.reduce((max, beat) => {
-      const beatNumber = parseBeatNumber(beat.id, actIndex);
-      if (beatNumber === null) {
+    let nextMilestoneNumber = mergedMilestones.reduce((max, milestone) => {
+      const milestoneNumber = parseMilestoneNumber(milestone.id, actIndex);
+      if (milestoneNumber === null) {
         return max;
       }
-      return Math.max(max, beatNumber);
+      return Math.max(max, milestoneNumber);
     }, 0);
 
-    const seenBeatSignature = new Set(
-      mergedBeats.map((beat) => beatSignature(beat.description, beat.objective))
+    const seenMilestoneSignature = new Set(
+      mergedMilestones.map((milestone) => milestoneSignature(milestone.description, milestone.objective))
     );
 
-    for (const beat of regeneratedAct?.beats ?? []) {
-      const signature = beatSignature(beat.description, beat.objective);
-      if (seenBeatSignature.has(signature)) {
+    for (const milestone of regeneratedAct?.milestones ?? []) {
+      const signature = milestoneSignature(milestone.description, milestone.objective);
+      if (seenMilestoneSignature.has(signature)) {
         continue;
       }
 
-      mergedBeats.push({
-        id: `${actIndex + 1}.${nextBeatNumber + 1}`,
-        name: beat.name,
-        description: beat.description,
-        objective: beat.objective,
-        causalLink: beat.causalLink,
-        role: beat.role,
-        escalationType: beat.escalationType,
-        secondaryEscalationType: beat.secondaryEscalationType,
-        crisisType: beat.crisisType,
-        expectedGapMagnitude: beat.expectedGapMagnitude,
-        isMidpoint: beat.isMidpoint,
-        midpointType: beat.midpointType,
-        uniqueScenarioHook: beat.uniqueScenarioHook,
-        approachVectors: beat.approachVectors ?? null,
-        setpieceSourceIndex: beat.setpieceSourceIndex ?? null,
-        obligatorySceneTag: beat.obligatorySceneTag ?? null,
+      mergedMilestones.push({
+        id: `${actIndex + 1}.${nextMilestoneNumber + 1}`,
+        name: milestone.name,
+        description: milestone.description,
+        objective: milestone.objective,
+        causalLink: milestone.causalLink,
+        role: milestone.role,
+        escalationType: milestone.escalationType,
+        secondaryEscalationType: milestone.secondaryEscalationType,
+        crisisType: milestone.crisisType,
+        expectedGapMagnitude: milestone.expectedGapMagnitude,
+        isMidpoint: milestone.isMidpoint,
+        midpointType: milestone.midpointType,
+        uniqueScenarioHook: milestone.uniqueScenarioHook,
+        approachVectors: milestone.approachVectors ?? null,
+        setpieceSourceIndex: milestone.setpieceSourceIndex ?? null,
+        obligatorySceneTag: milestone.obligatorySceneTag ?? null,
       });
-      nextBeatNumber += 1;
-      seenBeatSignature.add(signature);
+      nextMilestoneNumber += 1;
+      seenMilestoneSignature.add(signature);
     }
 
-    if (mergedBeats.length === 0) {
-      throw new Error(`Merged structure is missing beats for act ${actIndex + 1}`);
+    if (mergedMilestones.length === 0) {
+      throw new Error(`Merged structure is missing milestones for act ${actIndex + 1}`);
     }
 
-    const actMidpoints = mergedBeats.filter((beat) => beat.isMidpoint).length;
+    const actMidpoints = mergedMilestones.filter((milestone) => milestone.isMidpoint).length;
     if (actMidpoints > 1) {
-      throw new Error(`Merged act ${actIndex + 1} has multiple midpoint beats`);
+      throw new Error(`Merged act ${actIndex + 1} has multiple midpoint milestones`);
     }
 
     mergedActs.push({
@@ -208,17 +208,17 @@ export function mergePreservedWithRegenerated(
       objective: regeneratedAct?.objective ?? '',
       stakes: regeneratedAct?.stakes ?? '',
       entryCondition: regeneratedAct?.entryCondition ?? 'Continuing from prior act',
-      beats: mergedBeats,
+      milestones: mergedMilestones,
     });
   }
 
   const totalMidpoints = mergedActs.reduce(
-    (sum, act) => sum + act.beats.filter((beat) => beat.isMidpoint).length,
+    (sum, act) => sum + act.milestones.filter((milestone) => milestone.isMidpoint).length,
     0
   );
   if (totalMidpoints > 1) {
     throw new Error(
-      `Merged structure contains multiple midpoint beats (received: ${totalMidpoints})`
+      `Merged structure contains multiple midpoint milestones (received: ${totalMidpoints})`
     );
   }
 

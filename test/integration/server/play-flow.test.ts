@@ -90,7 +90,7 @@ const mockedStructureResult = {
       objective: 'Establish immediate danger.',
       stakes: 'Failure traps the protagonist early.',
       entryCondition: 'A disruptive event forces movement.',
-      beats: [
+      milestones: [
         {
           description: 'Assess first threat',
           objective: 'Avoid immediate collapse.',
@@ -108,7 +108,7 @@ const mockedStructureResult = {
       objective: 'Deepen conflict and gather leverage.',
       stakes: 'Failure empowers hostile forces.',
       entryCondition: 'The first choices expose broader conflict.',
-      beats: [
+      milestones: [
         {
           description: 'Take a risky action',
           objective: 'Gain critical information.',
@@ -126,7 +126,7 @@ const mockedStructureResult = {
       objective: 'Reach final resolution.',
       stakes: 'Failure leaves permanent damage.',
       entryCondition: 'Enough information exists for decisive action.',
-      beats: [
+      milestones: [
         {
           description: 'Commit final approach',
           objective: 'Align resources.',
@@ -439,7 +439,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     );
     mockedRunAnalystEvaluation.mockResolvedValueOnce({
       result: createMockAnalystResult({
-        beatConcluded: false,
+        milestoneConcluded: false,
         sceneMomentum: 'STASIS',
         objectiveEvidenceStrength: 'NONE',
         commitmentStrength: 'NONE',
@@ -559,7 +559,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     );
     mockedRunAnalystEvaluation.mockResolvedValueOnce({
       result: createMockAnalystResult({
-        beatConcluded: false,
+        milestoneConcluded: false,
         sceneMomentum: 'STASIS',
         objectiveEvidenceStrength: 'NONE',
         commitmentStrength: 'NONE',
@@ -763,7 +763,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     );
     mockedRunAnalystEvaluation.mockResolvedValueOnce({
       result: createMockAnalystResult({
-        beatConcluded: false,
+        milestoneConcluded: false,
         sceneMomentum: 'STASIS',
         objectiveEvidenceStrength: 'NONE',
         commitmentStrength: 'NONE',

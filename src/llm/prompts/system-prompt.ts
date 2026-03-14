@@ -19,7 +19,7 @@ const STRUCTURE_ROLE_INTRO = `You are an expert interactive fiction storyteller 
 
 const STRUCTURE_DESIGN_GUIDELINES = `STRUCTURE DESIGN GUIDELINES:
 - Create compelling dramatic structures (typically three-act).
-- Design beats as flexible milestones that allow branching paths.
+- Design milestones as flexible milestones that allow branching paths.
 - Ensure stakes escalate naturally through the narrative.
 - Make entry conditions clear but not overly prescriptive.
 - Balance setup, confrontation, and resolution across acts.

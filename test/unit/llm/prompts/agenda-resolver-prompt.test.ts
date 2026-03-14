@@ -273,7 +273,7 @@ describe('buildAgendaResolverPrompt', () => {
       const context = buildMinimalContext({
         deviationContext: {
           reason: 'Protagonist refused the quest',
-          newBeats: [
+          newMilestones: [
             { name: 'Reluctant Return', objective: 'Deal with consequences of refusal', role: 'turning_point' },
             { name: 'Forced Hand', objective: 'External pressure forces action', role: 'escalation' },
           ],
@@ -310,7 +310,7 @@ describe('buildAgendaResolverPrompt', () => {
         },
         deviationContext: {
           reason: 'Protagonist fled the city',
-          newBeats: [
+          newMilestones: [
             { name: 'Exile', objective: 'Survive in the wasteland', role: 'setup' },
           ],
         },

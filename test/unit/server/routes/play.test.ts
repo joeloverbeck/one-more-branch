@@ -333,7 +333,7 @@ describe('playRoutes', () => {
             objective: 'Start the journey',
             stakes: 'High',
             entryCondition: 'Always',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
                 name: 'The Setup',
@@ -406,12 +406,12 @@ describe('playRoutes', () => {
           actDisplayInfo: {
             actNumber: 1,
             actName: 'The Beginning',
-            beatId: '1.1',
-            beatName: 'The Setup',
-            displayString: 'Act 1: The Beginning - Beat 1.1: The Setup',
+            milestoneId: '1.1',
+            milestoneName: 'The Setup',
+            displayString: 'Act 1: The Beginning - Milestone 1.1: The Setup',
             actObjective: 'Start the journey',
             actStakes: 'High',
-            beatObjective: 'Start moving.',
+            milestoneObjective: 'Start moving.',
           },
         })
       );
@@ -1248,8 +1248,8 @@ describe('playRoutes', () => {
       });
       const deviationInfo = {
         detected: true,
-        reason: 'Player action invalidated planned story beats.',
-        beatsInvalidated: 2,
+        reason: 'Player action invalidated planned story milestones.',
+        milestonesInvalidated: 2,
       };
       jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
       jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
@@ -1275,8 +1275,8 @@ describe('playRoutes', () => {
           success: true,
           deviationInfo: {
             detected: true,
-            reason: 'Player action invalidated planned story beats.',
-            beatsInvalidated: 2,
+            reason: 'Player action invalidated planned story milestones.',
+            milestonesInvalidated: 2,
           },
         })
       );
@@ -1332,11 +1332,11 @@ describe('playRoutes', () => {
         tone: 'Adventure',
       });
       const analystResult = {
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'Summary.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -1363,9 +1363,9 @@ describe('playRoutes', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: '{}',
       };
       const resultPage = createPage({
@@ -1412,7 +1412,7 @@ describe('playRoutes', () => {
             objective: 'Begin the journey',
             stakes: 'High',
             entryCondition: 'Always',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
                 name: 'Opening Move',
@@ -1428,7 +1428,7 @@ describe('playRoutes', () => {
             objective: 'Face challenges',
             stakes: 'Higher',
             entryCondition: 'After act one',
-            beats: [
+            milestones: [
               {
                 id: '2.1',
                 name: 'Rising Pressure',
@@ -1509,12 +1509,12 @@ describe('playRoutes', () => {
           actDisplayInfo: {
             actNumber: 2,
             actName: 'Act Two',
-            beatId: '2.1',
-            beatName: 'Rising Pressure',
-            displayString: 'Act 2: Act Two - Beat 2.1: Rising Pressure',
+            milestoneId: '2.1',
+            milestoneName: 'Rising Pressure',
+            displayString: 'Act 2: Act Two - Milestone 2.1: Rising Pressure',
             actObjective: 'Face challenges',
             actStakes: 'Higher',
-            beatObjective: 'Force commitment.',
+            milestoneObjective: 'Force commitment.',
           },
         })
       );

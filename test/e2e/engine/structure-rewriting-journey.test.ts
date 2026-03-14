@@ -100,8 +100,8 @@ function extractStructureResult(
   ar: AnalystResult
 ): StructureEvaluatorResult & { rawResponse: string } {
   return {
-    beatConcluded: ar.beatConcluded,
-    beatResolution: ar.beatResolution,
+    milestoneConcluded: ar.milestoneConcluded,
+    milestoneResolution: ar.milestoneResolution,
     sceneMomentum: ar.sceneMomentum,
     objectiveEvidenceStrength: ar.objectiveEvidenceStrength,
     commitmentStrength: ar.commitmentStrength,
@@ -113,13 +113,13 @@ function extractStructureResult(
     completionGateFailureReason: ar.completionGateFailureReason,
     deviationDetected: ar.deviationDetected,
     deviationReason: ar.deviationReason,
-    invalidatedBeatIds: ar.invalidatedBeatIds,
+    invalidatedMilestoneIds: ar.invalidatedMilestoneIds,
     spineDeviationDetected: ar.spineDeviationDetected,
     spineDeviationReason: ar.spineDeviationReason,
     spineInvalidatedElement: ar.spineInvalidatedElement,
-    alignedBeatId: ar.alignedBeatId,
-    beatAlignmentConfidence: ar.beatAlignmentConfidence,
-    beatAlignmentReason: ar.beatAlignmentReason,
+    alignedMilestoneId: ar.alignedMilestoneId,
+    milestoneAlignmentConfidence: ar.milestoneAlignmentConfidence,
+    milestoneAlignmentReason: ar.milestoneAlignmentReason,
     pacingIssueDetected: ar.pacingIssueDetected,
     pacingIssueReason: ar.pacingIssueReason,
     recommendedAction: ar.recommendedAction,
@@ -196,7 +196,7 @@ const mockedStructureResult = createMockStoryStructure({
       objective: 'Discover how the alliance is manipulated.',
       stakes: 'Failure locks the city into authoritarian control.',
       entryCondition: 'A public emergency forces immediate action.',
-      beats: [
+      milestones: [
         {
           id: '1.1',
           name: 'Alliance commitment',
@@ -221,7 +221,7 @@ const mockedStructureResult = createMockStoryStructure({
       objective: 'Break the alliance command network.',
       stakes: 'Failure gives the regime permanent narrative control.',
       entryCondition: 'The first command links are identified.',
-      beats: [
+      milestones: [
         {
           id: '2.1',
           name: 'Command relay infiltration',
@@ -246,7 +246,7 @@ const mockedStructureResult = createMockStoryStructure({
       objective: 'Force a public reckoning.',
       stakes: 'Failure normalizes the coup.',
       entryCondition: 'Enough evidence exists for direct challenge.',
-      beats: [
+      milestones: [
         {
           id: '3.1',
           name: 'Witness assembly',
@@ -313,7 +313,7 @@ function createRewriteFetchResponse(): Response {
         objective: 'Stabilize trust after public compromise.',
         stakes: 'Failure leaves the hero isolated.',
         entryCondition: 'The alliance now sees the hero as compromised.',
-        beats: [
+        milestones: [
           {
             name: 'Risky alliance commitment',
             description: 'Publicly commit to a risky alliance.',
@@ -337,7 +337,7 @@ function createRewriteFetchResponse(): Response {
         objective: 'Attack the regime through legitimacy cracks.',
         stakes: 'Failure legitimizes emergency rule.',
         entryCondition: 'Hidden channels expose legal manipulation.',
-        beats: [
+        milestones: [
           {
             name: 'Forged decree exposure',
             description: 'Expose forged emergency decrees.',
@@ -361,7 +361,7 @@ function createRewriteFetchResponse(): Response {
         objective: 'Resolve the conflict in public view.',
         stakes: 'Failure rewrites history in favor of the regime.',
         entryCondition: 'Public doubt reaches critical mass.',
-        beats: [
+        milestones: [
           {
             name: 'Public witness chain',
             description: 'Coordinate a public witness chain.',
@@ -499,8 +499,8 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
 function buildAnalystResult(narrative: string): AnalystResult {
   if (narrative.includes('copy sealed dispatches')) {
     return createMockAnalystResult({
-      beatConcluded: true,
-      beatResolution: 'Secured proof that alliance command controls emergency law edits.',
+      milestoneConcluded: true,
+      milestoneResolution: 'Secured proof that alliance command controls emergency law edits.',
       sceneMomentum: 'MAJOR_PROGRESS',
       objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
       commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
@@ -512,8 +512,8 @@ function buildAnalystResult(narrative: string): AnalystResult {
     return createMockAnalystResult({
       deviationDetected: true,
       deviationReason:
-        'The protagonist is publicly framed as regime-aligned, invalidating infiltration beats.',
-      invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
+        'The protagonist is publicly framed as regime-aligned, invalidating infiltration milestones.',
+      invalidatedMilestoneIds: ['2.1', '2.2', '3.1', '3.2'],
       sceneSummary: 'Public perception now places the protagonist inside alliance leadership.',
       sceneMomentum: 'REVERSAL_OR_SETBACK',
       objectiveEvidenceStrength: 'NONE',
@@ -523,8 +523,8 @@ function buildAnalystResult(narrative: string): AnalystResult {
   }
 
   return createMockAnalystResult({
-    beatConcluded: true,
-    beatResolution: 'Alliance emergency authority ended through public accountability.',
+    milestoneConcluded: true,
+    milestoneResolution: 'Alliance emergency authority ended through public accountability.',
     sceneMomentum: 'MAJOR_PROGRESS',
     objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
     commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
@@ -658,8 +658,8 @@ describe('Structure Rewriting Journey E2E', () => {
     });
     createdStoryIds.add(start.story.id);
     for (const act of start.story.structure?.acts ?? []) {
-      for (const beat of act.beats) {
-        expect(beat.name).toBeTruthy();
+      for (const milestone of act.milestones) {
+        expect(milestone.name).toBeTruthy();
       }
     }
 
@@ -687,9 +687,9 @@ describe('Structure Rewriting Journey E2E', () => {
     expect(rewrittenVersion?.previousVersionId).toBe(initialVersion?.id);
     expect(rewrittenVersion?.createdAtPageId).toBe(page3.page.id);
     expect(rewrittenVersion?.rewriteReason).toBe(
-      'The protagonist is publicly framed as regime-aligned, invalidating infiltration beats.'
+      'The protagonist is publicly framed as regime-aligned, invalidating infiltration milestones.'
     );
-    expect(rewrittenVersion?.preservedBeatIds).toContain('1.1');
+    expect(rewrittenVersion?.preservedMilestoneIds).toContain('1.1');
     expect(page2.page.structureVersionId).toBe(initialVersion?.id ?? null);
     expect(page3.page.structureVersionId).toBe(rewrittenVersion?.id ?? null);
 

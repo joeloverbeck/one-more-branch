@@ -77,12 +77,12 @@ describe('page-repository', () => {
       ...basePage,
       accumulatedStructureState: {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Reached the portal' },
-          { beatId: '1.2', status: 'active' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Reached the portal' },
+          { milestoneId: '1.2', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       },
     };
@@ -105,12 +105,12 @@ describe('page-repository', () => {
     const parsed = JSON.parse(persistedJson) as Record<string, unknown>;
     expect(parsed['accumulatedStructureState']).toEqual({
       currentActIndex: 1,
-      currentBeatIndex: 0,
-      beatProgressions: [
-        { beatId: '1.1', status: 'concluded', resolution: 'Reached the portal' },
-        { beatId: '1.2', status: 'active' },
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'concluded', resolution: 'Reached the portal' },
+        { milestoneId: '1.2', status: 'active' },
       ],
-      pagesInCurrentBeat: 0,
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     });
 
@@ -280,9 +280,9 @@ describe('page-repository', () => {
       },
       accumulatedStructureState: {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       },
       protagonistAffect: {

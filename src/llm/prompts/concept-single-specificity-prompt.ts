@@ -11,7 +11,7 @@ const SPECIFICITY_DIRECTIVES = `SPECIFICITY DIRECTIVES:
 - Produce evidence that the concept is irreducibly unique — or expose that it collapses into genre.
 - The signature scenario must describe the single most iconic interactive decision moment — where the player's choice ONLY exists because of this concept's premise.
 - logline compression test: assess whether the full concept compresses into a compelling <=27-word logline. Set loglineCompressible and provide the compressed logline text in logline.
-- premise promises are audience expectations: list 3-5 specific scenarios this premise promises the reader will experience. These are not structure beats.
+- premise promises are audience expectations: list 3-5 specific scenarios this premise promises the reader will experience. These are not structure milestones.
 - The inevitability statement captures what kind of story MUST happen given this premise.
 - The load-bearing check is a negative test: remove the conflict engine and determine whether the story collapses into generic genre.`;
 

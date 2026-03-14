@@ -140,7 +140,7 @@ const STAGE_PHRASE_POOLS = {
     'Spinning the scene purpose wheel with dramatic intent...',
     'Presenting three doors, each a different shade of consequence...',
     'Calculating which revelations are ripe for harvest...',
-    'Designing three trajectories through the next beat...',
+    'Designing three trajectories through the next milestone...',
     'Offering sacrifice, betrayal, and transformation as options...',
     'Preparing a tasting flight of narrative directions...',
   ],
@@ -167,7 +167,7 @@ const STAGE_PHRASE_POOLS = {
     'Budgeting exactly seven units of suspense...',
     'Interviewing three raccoons about long-term strategy...',
     'Mapping alternate futures on a napkin atlas...',
-    'Counting plot beats with abacus-level confidence...',
+    'Counting plot milestones with abacus-level confidence...',
     'Assembling a task force of overqualified pigeons...',
     'Translating chaos into bullet points and coffee rings...',
     'Scheduling destiny in 15-minute calendar blocks...',
@@ -484,7 +484,7 @@ const STAGE_PHRASE_POOLS = {
     'Priming the conflict engine for immediate ignition...',
     'Adding velvet ropes around the first big reveal...',
     'Handing the narrator a megaphone and a secret...',
-    'Sculpting the opening beat with dramatic chisels...',
+    'Sculpting the opening milestone with dramatic chisels...',
     'Letting the first line do one theatrical bow...',
     'Tightening the intro knots with narrative pliers...',
     'Positioning the stakes where everyone can trip on them...',
@@ -504,7 +504,7 @@ const STAGE_PHRASE_POOLS = {
     'Adjusting atmosphere levels to "electric storm"...',
     'Planting one breadcrumb and seven complications...',
     'Sneaking tension into the room through the vents...',
-    'Ironing the opening beats until they snap...',
+    'Ironing the opening milestones until they snap...',
     'Installing fireworks behind the first reveal...',
     'Teaching chapter one to kick the door in politely...',
     'Loading the scene with premium-grade anticipation...',
@@ -520,7 +520,7 @@ const STAGE_PHRASE_POOLS = {
     'Inflating atmosphere with a bicycle pump of suspense...',
     'Giving the setting a dramatic entrance and a name tag...',
     'Slipping a mystery under the door like a coupon...',
-    'Arranging the first beat like a fancy charcuterie board...',
+    'Arranging the first milestone like a fancy charcuterie board...',
     'Warming up the tension with a gentle hiss...',
     'Introducing the protagonist with OSHA-certified charisma...',
     'Adding a cinematic zoom to a completely normal object...',
@@ -586,7 +586,7 @@ const STAGE_PHRASE_POOLS = {
     'Adding controlled sparks to the conflict wiring...',
     'Rotating viewpoints to prevent dramatic traffic jams...',
     'Escalating stakes with OSHA-compliant urgency...',
-    'Fastening the next beat with industrial foreshadowing...',
+    'Fastening the next milestone with industrial foreshadowing...',
     'Checking dialogue pressure before the next release...',
     'Threading payoffs through active construction zones...',
     'Keeping the emotional RPMs in the red...',
@@ -610,7 +610,7 @@ const STAGE_PHRASE_POOLS = {
     'Letting the subtext simmer on low chaos...',
     'Installing handrails on this slippery escalation...',
     'Routing every shortcut straight into trouble...',
-    'Pressurizing the next beat for maximum pop...',
+    'Pressurizing the next milestone for maximum pop...',
     'Funneling uncertainty into a very loud maybe...',
     'Keeping this chapter one decision away from disaster...',
     'Chasing continuity gremlins with a rolled-up newspaper...',
@@ -641,7 +641,7 @@ const STAGE_PHRASE_POOLS = {
     'Handing the scene a banana peel of irony...',
     'Replacing "maybe" with "oh no" in the margins...',
     'Tightening the screws on a perfectly good situation...',
-    'Teaching the next beat to arrive with a smirk...',
+    'Teaching the next milestone to arrive with a smirk...',
     'Flipping the hourglass and watching everyone panic...',
     'Stacking problems neatly so they fall better later...',
     'Making the consequences sign in at the front desk...',
@@ -665,31 +665,31 @@ const STAGE_PHRASE_POOLS = {
     'Auditing each fork for maximum dramatic irony...',
   ],
   EVALUATING_STRUCTURE: [
-    'Checking the scene against the beat objective...',
+    'Checking the scene against the milestone objective...',
     'Mapping narrative anchors to structural evidence...',
     'Gauging whether the story has shifted course...',
-    'Measuring beat completion with a careful ruler...',
+    'Measuring milestone completion with a careful ruler...',
     'Testing whether the objective anchors hold weight...',
     'Scanning for structural deviation in the narrative...',
-    'Weighing cumulative evidence for beat conclusion...',
+    'Weighing cumulative evidence for milestone conclusion...',
     'Checking if the midpoint delivered its reversal...',
     'Evaluating spine integrity under narrative pressure...',
     'Assessing pacing rhythm against the budget...',
     'Running the completion gate one anchor at a time...',
-    'Comparing protagonist actions to beat requirements...',
+    'Comparing protagonist actions to milestone requirements...',
     'Calculating momentum from scene signals...',
     'Checking whether the turning point actually turned...',
     'Measuring commitment strength in the protagonist\'s choices...',
-    'Scanning for entry condition readiness on the next beat...',
+    'Scanning for entry condition readiness on the next milestone...',
     'Testing structural position against the act timeline...',
     'Drafting a pacing directive for the next scene...',
     'Verifying that escalation actually escalated...',
     'Checking if the dramatic question advanced or stalled...',
     'Mapping evidence strength across objective anchors...',
     'Assessing whether the story spine survived intact...',
-    'Evaluating if the beat resolution earned its moment...',
+    'Evaluating if the milestone resolution earned its moment...',
     'Measuring narrative momentum with a structural compass...',
-    'Checking pacing budget burn rate against remaining beats...',
+    'Checking pacing budget burn rate against remaining milestones...',
   ],
   TRACKING_PROMISES: [
     'Cataloging narrative promises planted in the scene...',
@@ -1141,7 +1141,7 @@ const STAGE_PHRASE_POOLS = {
     'Stacking stakes where they can do the most damage...',
     'Refitting transitions with smoother gears...',
     'Laying fresh track for the final act train...',
-    'Demolishing one wobbly beat at a safe distance...',
+    'Demolishing one wobbly milestone at a safe distance...',
     'Reinforcing the foundation with consequence cement...',
     'Hoisting the payoff into load-bearing position...',
     'Rebalancing the structure for emotional wind...',
@@ -1163,7 +1163,7 @@ const STAGE_PHRASE_POOLS = {
     'Refitting the opening so the ending actually fits...',
     'Realigning chapter joints for smoother movement...',
     'Bolstering weak transitions with structural callbacks...',
-    'Converting dead-end beats into through-lines...',
+    'Converting dead-end milestones into through-lines...',
     'Consolidating duplicate conflicts into one heavy hitter...',
     'Replacing narrative bloat with precision-engineered stakes...',
     'Moving the emotional keystone back into place...',
@@ -1176,7 +1176,7 @@ const STAGE_PHRASE_POOLS = {
     'Reinforcing weak joints with callback brackets...',
     'Rebuilding the climax staircase to code...',
     'Moving exposition crates off emergency exits...',
-    'Swapping brittle beats for tempered story glass...',
+    'Swapping brittle milestones for tempered story glass...',
     'Pouring fresh concrete under the central conflict...',
     'Converting narrative dead space into useful corridors...',
     'Retensioning the arc so it does not wobble...',
@@ -1194,7 +1194,7 @@ const STAGE_PHRASE_POOLS = {
     'Refactoring the plot like it\'s legacy code from 2009...',
     'Moving scenes around until the story stops hissing...',
     'Welding character arcs into a sturdier triangle...',
-    'Replacing a weak beat with a stronger, angrier beat...',
+    'Replacing a weak milestone with a stronger, angrier milestone...',
     'Rerouting exposition through a tunnel marked “fun”...',
     'Rebalancing the middle so it stops sagging politely...',
     'Turning a detour into a shortcut with a crowbar...',
@@ -1217,7 +1217,7 @@ const STAGE_PHRASE_POOLS = {
     'Demoting a scene to "optional content" with a stern look...',
     'Aligning subplots so they stop arguing in public...',
     'Fixing the pacing with a wrench and hurt feelings...',
-    'Sanding down a clunky beat until it sparkles dangerously...',
+    'Sanding down a clunky milestone until it sparkles dangerously...',
     'Replacing "and then" with "therefore" in the walls...',
     'Reattaching the beginning to the ending with duct tape...',
     'Giving the story a posture correction and a pep talk...',
@@ -5339,9 +5339,9 @@ var HUMANIZED_LABELS = {
   NOT_READY: 'Not Ready',
   PARTIAL: 'Partial',
   READY: 'Ready',
-  WITHIN_ACTIVE_BEAT: 'Within Active Beat',
+  WITHIN_ACTIVE_BEAT: 'Within Active Milestone',
   BRIDGING_TO_NEXT_BEAT: 'Bridging',
-  CLEARLY_IN_NEXT_BEAT: 'Next Beat',
+  CLEARLY_IN_NEXT_BEAT: 'Next Milestone',
   PENDING: 'Pending',
   SATISFIED: 'Satisfied',
   STRUCTURAL_SUPERSESSION: 'Structure Evolved',
@@ -5403,22 +5403,22 @@ function formatAnalystEnum(value) {
 
 function gaugeClass(fillPct) {
   if (fillPct <= 33) {
-    return 'beat-gauge__fill--low';
+    return 'milestone-gauge__fill--low';
   }
   if (fillPct <= 66) {
-    return 'beat-gauge__fill--mid';
+    return 'milestone-gauge__fill--mid';
   }
-  return 'beat-gauge__fill--high';
+  return 'milestone-gauge__fill--high';
 }
 
 function renderGaugeRow(label, value, fillMap) {
   var fillPct = fillMap[value] || 0;
-  return '<div class="beat-gauge__row">'
-    + '<span class="beat-gauge__label">' + escapeHtml(label) + '</span>'
-    + '<div class="beat-gauge__track">'
-    + '<span class="beat-gauge__fill ' + gaugeClass(fillPct) + '" style="width:' + fillPct + '%"></span>'
+  return '<div class="milestone-gauge__row">'
+    + '<span class="milestone-gauge__label">' + escapeHtml(label) + '</span>'
+    + '<div class="milestone-gauge__track">'
+    + '<span class="milestone-gauge__fill ' + gaugeClass(fillPct) + '" style="width:' + fillPct + '%"></span>'
     + '</div>'
-    + '<span class="beat-gauge__level">' + escapeHtml(formatAnalystEnum(value)) + '</span>'
+    + '<span class="milestone-gauge__level">' + escapeHtml(formatAnalystEnum(value)) + '</span>'
     + '</div>';
 }
 
@@ -5437,8 +5437,8 @@ function renderStructureTab(ar) {
   var momentum = MOMENTUM_META[ar.sceneMomentum] || MOMENTUM_META.STASIS;
 
   var html = '<details class="insights-section" open>'
-    + '<summary><h4>Beat Progress</h4></summary>'
-    + '<div class="beat-gauge">'
+    + '<summary><h4>Milestone Progress</h4></summary>'
+    + '<div class="milestone-gauge">'
     + renderGaugeRow('Objective Evidence', ar.objectiveEvidenceStrength, OBJECTIVE_EVIDENCE_FILL)
     + renderGaugeRow('Commitment', ar.commitmentStrength, COMMITMENT_FILL)
     + renderGaugeRow('Entry Readiness', ar.entryConditionReadiness, ENTRY_READINESS_FILL)
@@ -5450,11 +5450,11 @@ function renderStructureTab(ar) {
       : '')
     + '</details>';
 
-  // Beat Resolution
-  if (typeof ar.beatResolution === 'string' && ar.beatResolution.length > 0) {
+  // Milestone Resolution
+  if (typeof ar.milestoneResolution === 'string' && ar.milestoneResolution.length > 0) {
     html += '<details class="insights-section">'
-      + '<summary><h4>Beat Resolution</h4></summary>'
-      + '<p class="insights-copy">' + escapeHtml(formatAnalystEnum(ar.beatResolution)) + '</p>'
+      + '<summary><h4>Milestone Resolution</h4></summary>'
+      + '<p class="insights-copy">' + escapeHtml(formatAnalystEnum(ar.milestoneResolution)) + '</p>'
       + '</details>';
   }
 
@@ -5756,7 +5756,7 @@ function renderInsightsBody(analystResult, context) {
   var headerHtml = '';
 
   if (typeof ctx.actDisplayInfo === 'string' && ctx.actDisplayInfo.length > 0) {
-    headerHtml += '<p class="insights-beat-subtitle">' + escapeHtml(ctx.actDisplayInfo) + '</p>';
+    headerHtml += '<p class="insights-milestone-subtitle">' + escapeHtml(ctx.actDisplayInfo) + '</p>';
   }
 
   if (typeof ctx.sceneSummary === 'string' && ctx.sceneSummary.length > 0) {
@@ -6678,8 +6678,8 @@ function createRecapModalController(initialData) {
       return;
     }
 
-    const beatsText = deviationInfo.beatsInvalidated
-      ? ` (${deviationInfo.beatsInvalidated} story beat${deviationInfo.beatsInvalidated > 1 ? 's' : ''} replanned)`
+    const beatsText = deviationInfo.milestonesInvalidated
+      ? ` (${deviationInfo.milestonesInvalidated} story milestone${deviationInfo.milestonesInvalidated > 1 ? 's' : ''} replanned)`
       : '';
 
     const banner = document.createElement('aside');
@@ -6718,8 +6718,8 @@ function createRecapModalController(initialData) {
         + '<div class="milestone-banner__act-name">' + escapeHtml(milestoneInfo.actName || '') + '</div>';
     } else {
       banner.innerHTML =
-        '<div class="milestone-banner__beat-label">Beat Concluded</div>'
-        + '<div class="milestone-banner__beat-name">' + escapeHtml(milestoneInfo.beatName || '') + '</div>';
+        '<div class="milestone-banner__beat-label">Milestone Concluded</div>'
+        + '<div class="milestone-banner__beat-name">' + escapeHtml(milestoneInfo.milestoneName || '') + '</div>';
     }
 
     narrativeElement.after(banner);
@@ -7302,7 +7302,7 @@ function initPlayPage() {
       if (
         data.actDisplayInfo.actObjective ||
         data.actDisplayInfo.actStakes ||
-        data.actDisplayInfo.beatObjective
+        data.actDisplayInfo.milestoneObjective
       ) {
         detailsHtml = '<div class="act-structure-details" id="act-structure-details" hidden>';
         if (data.actDisplayInfo.actObjective) {
@@ -7323,12 +7323,12 @@ function initPlayPage() {
             '</span>' +
             '</div>';
         }
-        if (data.actDisplayInfo.beatObjective) {
+        if (data.actDisplayInfo.milestoneObjective) {
           detailsHtml +=
             '<div class="act-structure-details__item">' +
-            '<span class="act-structure-details__label">Beat Objective</span>' +
+            '<span class="act-structure-details__label">Milestone Objective</span>' +
             '<span class="act-structure-details__text">' +
-            escapeHtml(data.actDisplayInfo.beatObjective) +
+            escapeHtml(data.actDisplayInfo.milestoneObjective) +
             '</span>' +
             '</div>';
         }

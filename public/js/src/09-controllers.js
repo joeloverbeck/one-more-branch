@@ -336,7 +336,7 @@ function initPlayPage() {
       if (
         data.actDisplayInfo.actObjective ||
         data.actDisplayInfo.actStakes ||
-        data.actDisplayInfo.beatObjective
+        data.actDisplayInfo.milestoneObjective
       ) {
         detailsHtml = '<div class="act-structure-details" id="act-structure-details" hidden>';
         if (data.actDisplayInfo.actObjective) {
@@ -357,12 +357,12 @@ function initPlayPage() {
             '</span>' +
             '</div>';
         }
-        if (data.actDisplayInfo.beatObjective) {
+        if (data.actDisplayInfo.milestoneObjective) {
           detailsHtml +=
             '<div class="act-structure-details__item">' +
-            '<span class="act-structure-details__label">Beat Objective</span>' +
+            '<span class="act-structure-details__label">Milestone Objective</span>' +
             '<span class="act-structure-details__text">' +
-            escapeHtml(data.actDisplayInfo.beatObjective) +
+            escapeHtml(data.actDisplayInfo.milestoneObjective) +
             '</span>' +
             '</div>';
         }

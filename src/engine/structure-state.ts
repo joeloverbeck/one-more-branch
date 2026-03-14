@@ -3,31 +3,31 @@ import type {
   StoryStructure,
 } from '../models/story-arc';
 import type { VersionedStoryStructure } from '../models/structure-version';
-import { getBeatOrThrow, parseBeatIndices, upsertBeatProgression } from './beat-utils';
+import { getMilestoneOrThrow, parseMilestoneIndices, upsertMilestoneProgression } from './milestone-utils';
 import type { StructureProgressionResult } from './structure-types';
 
 /**
- * Advances the structure state when a beat is concluded.
+ * Advances the structure state when a milestone is concluded.
  * Returns immutable updated state.
  */
 export function advanceStructureState(
   structure: StoryStructure,
   currentState: AccumulatedStructureState,
-  beatResolution: string
+  milestoneResolution: string
 ): StructureProgressionResult {
-  const resolution = beatResolution.trim();
+  const resolution = milestoneResolution.trim();
   if (!resolution) {
-    throw new Error('Cannot advance structure without a non-empty beat resolution');
+    throw new Error('Cannot advance structure without a non-empty milestone resolution');
   }
 
-  const currentBeat = getBeatOrThrow(
+  const currentMilestone = getMilestoneOrThrow(
     structure,
     currentState.currentActIndex,
-    currentState.currentBeatIndex
+    currentState.currentMilestoneIndex
   );
 
-  const concludedProgressions = upsertBeatProgression(currentState.beatProgressions, {
-    beatId: currentBeat.id,
+  const concludedProgressions = upsertMilestoneProgression(currentState.milestoneProgressions, {
+    milestoneId: currentMilestone.id,
     status: 'concluded',
     resolution,
   });
@@ -37,75 +37,75 @@ export function advanceStructureState(
     throw new Error(`Invalid currentActIndex: ${currentState.currentActIndex}`);
   }
 
-  const isLastBeatOfAct = currentState.currentBeatIndex === currentAct.beats.length - 1;
+  const isLastMilestoneOfAct = currentState.currentMilestoneIndex === currentAct.milestones.length - 1;
   const isLastAct = currentState.currentActIndex === structure.acts.length - 1;
 
-  if (isLastBeatOfAct && isLastAct) {
+  if (isLastMilestoneOfAct && isLastAct) {
     return {
       updatedState: {
         currentActIndex: currentState.currentActIndex,
-        currentBeatIndex: currentState.currentBeatIndex,
-        beatProgressions: concludedProgressions,
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: currentState.currentMilestoneIndex,
+        milestoneProgressions: concludedProgressions,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       },
       actAdvanced: false,
-      beatAdvanced: false,
+      milestoneAdvanced: false,
       isComplete: true,
     };
   }
 
-  const nextActIndex = isLastBeatOfAct
+  const nextActIndex = isLastMilestoneOfAct
     ? currentState.currentActIndex + 1
     : currentState.currentActIndex;
-  const nextBeatIndex = isLastBeatOfAct ? 0 : currentState.currentBeatIndex + 1;
-  const nextBeat = getBeatOrThrow(structure, nextActIndex, nextBeatIndex);
+  const nextMilestoneIndex = isLastMilestoneOfAct ? 0 : currentState.currentMilestoneIndex + 1;
+  const nextMilestone = getMilestoneOrThrow(structure, nextActIndex, nextMilestoneIndex);
 
-  const activatedProgressions = upsertBeatProgression(concludedProgressions, {
-    beatId: nextBeat.id,
+  const activatedProgressions = upsertMilestoneProgression(concludedProgressions, {
+    milestoneId: nextMilestone.id,
     status: 'active',
   });
 
   return {
     updatedState: {
       currentActIndex: nextActIndex,
-      currentBeatIndex: nextBeatIndex,
-      beatProgressions: activatedProgressions,
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: nextMilestoneIndex,
+      milestoneProgressions: activatedProgressions,
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     },
-    actAdvanced: isLastBeatOfAct,
-    beatAdvanced: true,
+    actAdvanced: isLastMilestoneOfAct,
+    milestoneAdvanced: true,
     isComplete: false,
   };
 }
 
 /**
- * Advances structure state past multiple beats when beat alignment detection
- * indicates the narrative has leaped ahead. Concludes intermediate beats
- * with a synthetic "bridged" resolution, then activates the target beat.
+ * Advances structure state past multiple milestones when milestone alignment detection
+ * indicates the narrative has leaped ahead. Concludes intermediate milestones
+ * with a synthetic "bridged" resolution, then activates the target milestone.
  */
-export function advanceWithBeatSkip(
+export function advanceWithMilestoneSkip(
   structure: StoryStructure,
   currentState: AccumulatedStructureState,
-  beatResolution: string,
-  targetBeatId: string,
+  milestoneResolution: string,
+  targetMilestoneId: string,
   bridgedResolution: string
 ): StructureProgressionResult {
-  const target = parseBeatIndices(targetBeatId);
+  const target = parseMilestoneIndices(targetMilestoneId);
   if (!target) {
-    return advanceStructureState(structure, currentState, beatResolution);
+    return advanceStructureState(structure, currentState, milestoneResolution);
   }
 
-  // First, advance normally from the current beat
-  let result = advanceStructureState(structure, currentState, beatResolution);
+  // First, advance normally from the current milestone
+  let result = advanceStructureState(structure, currentState, milestoneResolution);
   if (result.isComplete) return result;
 
-  // Then advance through intermediate beats until we reach the target
+  // Then advance through intermediate milestones until we reach the target
   let state = result.updatedState;
 
   while (
-    !isAtTarget(state, target.actIndex, target.beatIndex) &&
+    !isAtTarget(state, target.actIndex, target.milestoneIndex) &&
     !result.isComplete
   ) {
     result = advanceStructureState(structure, state, bridgedResolution);
@@ -115,7 +115,7 @@ export function advanceWithBeatSkip(
   return {
     updatedState: state,
     actAdvanced: state.currentActIndex !== currentState.currentActIndex,
-    beatAdvanced: true,
+    milestoneAdvanced: true,
     isComplete: result.isComplete,
   };
 }
@@ -123,41 +123,41 @@ export function advanceWithBeatSkip(
 function isAtTarget(
   state: AccumulatedStructureState,
   targetActIdx: number,
-  targetBeatIdx: number
+  targetMilestoneIdx: number
 ): boolean {
-  return state.currentActIndex === targetActIdx && state.currentBeatIndex === targetBeatIdx;
+  return state.currentActIndex === targetActIdx && state.currentMilestoneIndex === targetMilestoneIdx;
 }
 
 /**
  * Applies structure state inheritance (parent -> child page).
- * If beatConcluded, advances the state.
+ * If milestoneConcluded, advances the state.
  */
 export function applyStructureProgression(
   structure: StoryStructure,
   parentState: AccumulatedStructureState,
-  beatConcluded: boolean,
-  beatResolution: string,
-  alignmentSkip?: { targetBeatId: string; bridgedResolution: string }
+  milestoneConcluded: boolean,
+  milestoneResolution: string,
+  alignmentSkip?: { targetMilestoneId: string; bridgedResolution: string }
 ): AccumulatedStructureState {
-  if (!beatConcluded) {
+  if (!milestoneConcluded) {
     return {
       ...parentState,
-      pagesInCurrentBeat: parentState.pagesInCurrentBeat + 1,
+      pagesInCurrentMilestone: parentState.pagesInCurrentMilestone + 1,
     };
   }
 
   if (alignmentSkip) {
-    const result = advanceWithBeatSkip(
+    const result = advanceWithMilestoneSkip(
       structure,
       parentState,
-      beatResolution,
-      alignmentSkip.targetBeatId,
+      milestoneResolution,
+      alignmentSkip.targetMilestoneId,
       alignmentSkip.bridgedResolution
     );
     return result.updatedState;
   }
 
-  const result = advanceStructureState(structure, parentState, beatResolution);
+  const result = advanceStructureState(structure, parentState, milestoneResolution);
   return result.updatedState;
 }
 
@@ -165,9 +165,9 @@ export interface StructureProgressionContext {
   readonly activeStructureVersion: VersionedStoryStructure | null;
   readonly storyStructure: StoryStructure | null;
   readonly parentStructureState: AccumulatedStructureState;
-  readonly beatConcluded: boolean;
-  readonly beatResolution: string;
-  readonly alignmentSkip?: { targetBeatId: string; bridgedResolution: string };
+  readonly milestoneConcluded: boolean;
+  readonly milestoneResolution: string;
+  readonly alignmentSkip?: { targetMilestoneId: string; bridgedResolution: string };
 }
 
 export function resolveStructureProgression(
@@ -180,8 +180,8 @@ export function resolveStructureProgression(
   return applyStructureProgression(
     activeStructure,
     context.parentStructureState,
-    context.beatConcluded,
-    context.beatResolution,
+    context.milestoneConcluded,
+    context.milestoneResolution,
     context.alignmentSkip
   );
 }

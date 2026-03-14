@@ -18,7 +18,7 @@ export type {
   CommitmentStrength,
   StructuralPositionSignal,
   EntryConditionReadiness,
-  BeatAlignmentConfidence,
+  MilestoneAlignmentConfidence,
   StructureEvaluatorResult,
 } from './structure-evaluator-types.js';
 

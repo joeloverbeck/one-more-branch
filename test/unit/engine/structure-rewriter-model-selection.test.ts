@@ -51,8 +51,8 @@ function createRewriteContext(
     completedBeats: [
       {
         actIndex: 0,
-        beatIndex: 0,
-        beatId: '1.1',
+        milestoneIndex: 0,
+        milestoneId: '1.1',
         name: 'Mutiny escape',
         description: 'Survive the mutiny at Blackwake Harbor',
         objective: 'Escape with command logs',
@@ -74,8 +74,8 @@ function createRewriteContext(
     plannedBeats: [],
     sceneSummary: 'The captain publicly allied with a former enemy admiral.',
     currentActIndex: 0,
-    currentBeatIndex: 1,
-    deviationReason: 'Prior rebellion beats are no longer viable after alliance reversal.',
+    currentMilestoneIndex: 1,
+    deviationReason: 'Prior rebellion milestones are no longer viable after alliance reversal.',
     originalTheme: 'Loyalty tested by survival',
     originalOpeningImage: 'A harbor at dawn.',
     originalClosingImage: 'A fleet sailing into sunset.',
@@ -97,7 +97,7 @@ function createValidStructureResponse(): Record<string, unknown> {
         objective: 'Stabilize the fragile alliance',
         stakes: 'The fleet fractures',
         entryCondition: 'Alliance is announced',
-        beats: [
+        milestones: [
           {
             name: 'Mutiny escape',
             description: 'Survive the mutiny at Blackwake Harbor',
@@ -119,7 +119,7 @@ function createValidStructureResponse(): Record<string, unknown> {
         objective: 'Outmaneuver loyalists',
         stakes: 'Civil war',
         entryCondition: 'Fleet enters blockade',
-        beats: [
+        milestones: [
           {
             name: 'Convoy interception',
             description: 'Intercept the sabotage convoy',
@@ -143,7 +143,7 @@ function createValidStructureResponse(): Record<string, unknown> {
         objective: 'Decide who rules',
         stakes: 'Tyranny',
         entryCondition: 'Stormfront closes',
-        beats: [
+        milestones: [
           {
             name: 'Maelstrom strike',
             description: 'Lead a final strike',

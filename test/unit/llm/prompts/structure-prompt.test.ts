@@ -87,12 +87,12 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('Kael');
   });
 
-  it('requests 3-5 acts and 2-4 beats per act', () => {
+  it('requests 3-5 acts and 2-4 milestones per act', () => {
     const messages = buildStructurePrompt(baseContext);
     const lastUser = getUserMessages(messages).at(-1) ?? '';
 
     expect(lastUser).toContain('3-5 acts');
-    expect(lastUser).toContain('2-4 beats');
+    expect(lastUser).toContain('2-4 milestones');
   });
 
   it('includes NC-21 content policy in system prompt', () => {
@@ -103,7 +103,7 @@ describe('buildStructurePrompt', () => {
     expect(systemMessage).toContain(CONTENT_POLICY);
   });
 
-  it('contains dramatic role guidance with all beat roles including reflection', () => {
+  it('contains dramatic role guidance with all milestone roles including reflection', () => {
     const messages = buildStructurePrompt(baseContext);
     const lastUser = getUserMessages(messages).at(-1) ?? '';
 
@@ -184,7 +184,7 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('GENRE OBLIGATION CONTRACT (for MYSTERY)');
     expect(lastUser).toContain('crime_or_puzzle_presented');
     expect(lastUser).toContain('obligatorySceneTag');
-    expect(lastUser).toContain('At least one beat must be tagged with each obligation');
+    expect(lastUser).toContain('At least one milestone must be tagged with each obligation');
   });
 
   it('includes causal linkage requirement and output field', () => {
@@ -224,7 +224,7 @@ describe('buildStructurePrompt', () => {
     });
     const lastUser = getUserMessages(messages).at(-1) ?? '';
 
-    expect(lastUser).toContain('at least 4 of your beat hooks MUST trace back');
+    expect(lastUser).toContain('at least 4 of your milestone hooks MUST trace back');
     expect(lastUser).toContain('setpieceSourceIndex');
     expect(lastUser).toContain('first item = 0, last item = 5');
   });
@@ -266,14 +266,14 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('Avoid generic escalation that ignores the concept');
   });
 
-  it('OUTPUT SHAPE includes premise, pacingBudget, beat name, and beat role', () => {
+  it('OUTPUT SHAPE includes premise, pacingBudget, milestone name, and milestone role', () => {
     const messages = buildStructurePrompt(baseContext);
     const lastUser = getUserMessages(messages).at(-1) ?? '';
 
     expect(lastUser).toContain('OUTPUT SHAPE');
     expect(lastUser).toContain('premise: string');
     expect(lastUser).toContain('pacingBudget:');
-    expect(lastUser).toContain('name: short evocative beat title');
+    expect(lastUser).toContain('name: short evocative milestone title');
     expect(lastUser).toContain(
       'role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"'
     );
@@ -335,7 +335,7 @@ describe('buildStructurePrompt - minimal system prompt', () => {
     const systemMessage = getSystemMessage(messages);
 
     expect(systemMessage).toContain('three-act');
-    expect(systemMessage).toContain('beats');
+    expect(systemMessage).toContain('milestones');
     expect(systemMessage).toContain('stakes');
   });
 });
@@ -399,7 +399,7 @@ describe('buildDirectionalGuidanceSection', () => {
     expect(result).toContain('dramatic question resonating');
   });
 
-  it('all directions include turning_point beat reference', () => {
+  it('all directions include turning_point milestone reference', () => {
     for (const direction of ['POSITIVE', 'NEGATIVE', 'IRONIC', 'AMBIGUOUS'] as const) {
       const result = buildDirectionalGuidanceSection(makeKernel(direction));
 

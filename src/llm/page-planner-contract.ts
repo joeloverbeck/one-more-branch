@@ -6,7 +6,7 @@ export const PAGE_PLANNER_PROMPT_RULES: ReadonlyArray<string> = [
   'Consider NPC agendas when planning scenes. NPCs with active goals may initiate encounters, block the protagonist, or create complications based on their off-screen behavior.',
   'When planning dialogue-heavy scenes, note which characters will speak and consider their distinct voices. The writer will receive full speech fingerprints for scene characters — your writerBrief.mustIncludeBeats can reference specific voice moments.',
   'When planning scenes, ensure the sceneIntent serves the protagonist\'s Need vs Want conflict from the spine.',
-  'Set isEnding to true ONLY when this scene should be the story\'s conclusion — the final resolution beat completing the story arc, a character death that ends the journey, or a natural story conclusion. Default to false.',
+  'Set isEnding to true ONLY when this scene should be the story\'s conclusion — the final resolution milestone completing the story arc, a character death that ends the journey, or a natural story conclusion. Default to false.',
 ];
 
 export const PAGE_PLANNER_TONE_RULE =

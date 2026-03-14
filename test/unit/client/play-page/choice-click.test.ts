@@ -435,7 +435,7 @@ describe('play page choice click handler', () => {
             deviationInfo: {
               detected: true,
               reason: 'The story took an unexpected turn.',
-              beatsInvalidated: 3,
+              milestonesInvalidated: 3,
             },
           })
         )
@@ -448,7 +448,7 @@ describe('play page choice click handler', () => {
     expect(banner).not.toBeNull();
     expect(banner?.innerHTML).toContain('Story Path Shifted');
     expect(banner?.innerHTML).toContain('The story took an unexpected turn.');
-    expect(banner?.innerHTML).toContain('3 story beats replanned');
+    expect(banner?.innerHTML).toContain('3 story milestones replanned');
   });
 
   it('does not stop loading prematurely when ideation path is taken', async () => {

@@ -21,7 +21,7 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
         objective: 'Escape the first sweep',
         stakes: 'Capture means execution.',
         entryCondition: 'Emergency law declared.',
-        beats: [
+        milestones: [
           { id: '1.1', description: 'Reach safehouse', objective: 'Get inside', role: 'setup' },
           {
             id: '1.2',
@@ -37,7 +37,7 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
         objective: 'Cross hostile territory',
         stakes: 'If lost, purge is permanent.',
         entryCondition: 'Leave the capital.',
-        beats: [
+        milestones: [
           {
             id: '2.1',
             description: 'Break through checkpoints',
@@ -52,7 +52,7 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
         objective: 'Expose the planners',
         stakes: 'Silence guarantees totalitarian rule.',
         entryCondition: 'Access relay tower.',
-        beats: [
+        milestones: [
           {
             id: '3.1',
             description: 'Deliver proof',
@@ -95,10 +95,10 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
   it('does NOT inject PACING DIRECTIVE even when pacingNudge is set (pacing moved to planner)', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 5,
-      pacingNudge: 'Beat 1.1 has stalled for 5 pages without advancing the objective.',
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 5,
+      pacingNudge: 'Milestone 1.1 has stalled for 5 pages without advancing the objective.',
     };
 
     const messages = buildContinuationPrompt(
@@ -111,9 +111,9 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
   it('does NOT inject PACING DIRECTIVE when pacingNudge is null', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 

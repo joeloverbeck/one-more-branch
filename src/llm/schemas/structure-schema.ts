@@ -1,7 +1,7 @@
 import type { JsonSchema } from '../llm-client-types.js';
 import {
   APPROACH_VECTORS,
-  BEAT_ROLES,
+  MILESTONE_ROLES,
   CRISIS_TYPES,
   ESCALATION_TYPES,
   GAP_MAGNITUDES,
@@ -94,15 +94,15 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
           items: {
             type: 'object',
             additionalProperties: false,
-            required: ['name', 'objective', 'stakes', 'entryCondition', 'beats'],
+            required: ['name', 'objective', 'stakes', 'entryCondition', 'milestones'],
             properties: {
               name: { type: 'string' },
               objective: { type: 'string' },
               stakes: { type: 'string' },
               entryCondition: { type: 'string' },
-              beats: {
+              milestones: {
                 type: 'array',
-                description: '2-4 beats per act that function as flexible milestones.',
+                description: '2-4 milestones per act that function as flexible milestones.',
                 items: {
                   type: 'object',
                   additionalProperties: false,
@@ -130,12 +130,12 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     causalLink: {
                       type: 'string',
                       description:
-                        'One sentence describing the cause of this beat. Use prior beat outcomes where possible; first beats should reference inciting conditions.',
+                        'One sentence describing the cause of this milestone. Use prior milestone outcomes where possible; first milestones should reference inciting conditions.',
                     },
                     role: {
                       type: 'string',
-                      enum: [...BEAT_ROLES],
-                      description: 'Dramatic function of this beat in the story structure.',
+                      enum: [...MILESTONE_ROLES],
+                      description: 'Dramatic function of this milestone in the story structure.',
                     },
                     escalationType: {
                       anyOf: [
@@ -146,7 +146,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                         { type: 'null' },
                       ],
                       description:
-                        'For escalation/turning_point beats: HOW stakes rise. Null for setup/reflection/resolution beats.',
+                        'For escalation/turning_point milestones: HOW stakes rise. Null for setup/reflection/resolution milestones.',
                     },
                     secondaryEscalationType: {
                       anyOf: [
@@ -157,7 +157,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                         { type: 'null' },
                       ],
                       description:
-                        'Optional second escalation axis for escalation/turning_point beats when pressure rises along two dimensions at once. Null otherwise.',
+                        'Optional second escalation axis for escalation/turning_point milestones when pressure rises along two dimensions at once. Null otherwise.',
                     },
                     crisisType: {
                       anyOf: [
@@ -168,7 +168,7 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                         { type: 'null' },
                       ],
                       description:
-                        'For escalation/turning_point beats: dilemma shape for the beat. Null for setup/reflection/resolution beats.',
+                        'For escalation/turning_point milestones: dilemma shape for the milestone. Null for setup/reflection/resolution milestones.',
                     },
                     expectedGapMagnitude: {
                       anyOf: [
@@ -179,12 +179,12 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                         { type: 'null' },
                       ],
                       description:
-                        'For escalation/turning_point beats: expected width of expectation-vs-result divergence at this beat. Should generally widen over story progression. Null for setup/reflection/resolution beats.',
+                        'For escalation/turning_point milestones: expected width of expectation-vs-result divergence at this milestone. Should generally widen over story progression. Null for setup/reflection/resolution milestones.',
                     },
                     isMidpoint: {
                       type: 'boolean',
                       description:
-                        'True for exactly one beat in the full story structure: the midpoint beat. False for all others.',
+                        'True for exactly one milestone in the full story structure: the midpoint milestone. False for all others.',
                     },
                     midpointType: {
                       anyOf: [
@@ -200,12 +200,12 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                     uniqueScenarioHook: {
                       type: ['string', 'null'],
                       description:
-                        'For escalation/turning_point beats: one sentence describing what makes this beat unique to THIS story. Null for setup/reflection/resolution beats.',
+                        'For escalation/turning_point milestones: one sentence describing what makes this milestone unique to THIS story. Null for setup/reflection/resolution milestones.',
                     },
                     approachVectors: {
                       type: ['array', 'null'],
                       description:
-                        'For escalation/turning_point beats: 2-3 approach vectors suggesting HOW the protagonist could tackle this beat. Null for setup/reflection/resolution beats.',
+                        'For escalation/turning_point milestones: 2-3 approach vectors suggesting HOW the protagonist could tackle this milestone. Null for setup/reflection/resolution milestones.',
                       items: {
                         type: 'string',
                         enum: [...APPROACH_VECTORS],
@@ -220,12 +220,12 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
                         { type: 'null' },
                       ],
                       description:
-                        'Index of concept verification setpiece (0-5) this beat traces to; null when no setpiece mapping is used.',
+                        'Index of concept verification setpiece (0-5) this milestone traces to; null when no setpiece mapping is used.',
                     },
                     obligatorySceneTag: {
                       anyOf: [{ type: 'string' }, { type: 'null' }],
                       description:
-                        'Genre obligation tag assigned to this beat when it fulfills a required obligatory scene; null otherwise.',
+                        'Genre obligation tag assigned to this milestone when it fulfills a required obligatory scene; null otherwise.',
                     },
                   },
                 },

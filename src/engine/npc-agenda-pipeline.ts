@@ -17,7 +17,7 @@ import type { GenerationStageCallback } from './types';
 
 export interface DeviationContextForAgendas {
   readonly reason: string;
-  readonly newBeats: readonly {
+  readonly newMilestones: readonly {
     readonly name: string;
     readonly objective: string;
     readonly role: string;

@@ -1,10 +1,10 @@
 import {
   AccumulatedStructureState,
-  BeatRole,
+  MilestoneRole,
   CrisisType,
   PacingBudget,
-  StoryBeat,
-  createBeatDeviation,
+  StoryMilestone,
+  createMilestoneDeviation,
   createInitialStructureState,
   createNoDeviation,
   StoryStructure,
@@ -12,11 +12,11 @@ import {
   isNoDeviation,
   validateDeviationTargets,
   createEmptyAccumulatedStructureState,
-  getBeatProgression,
+  getMilestoneProgression,
   getCurrentAct,
-  getCurrentBeat,
+  getCurrentMilestone,
   isLastAct,
-  isLastBeatOfAct,
+  isLastMilestoneOfAct,
 } from '@/models/story-arc';
 
 function createTestStructure(): StoryStructure {
@@ -34,7 +34,7 @@ function createTestStructure(): StoryStructure {
         objective: 'Start the journey',
         stakes: 'The village may be destroyed',
         entryCondition: 'Hero chooses to leave home',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             description: 'The call to action appears',
@@ -55,7 +55,7 @@ function createTestStructure(): StoryStructure {
         objective: 'Face escalating conflict',
         stakes: 'Enemies gain control of key routes',
         entryCondition: 'Team enters contested territory',
-        beats: [
+        milestones: [
           {
             id: '2.1',
             description: 'The antagonist strikes back',
@@ -76,7 +76,7 @@ function createTestStructure(): StoryStructure {
         objective: 'Resolve the main conflict',
         stakes: 'The world order may collapse',
         entryCondition: 'Hero reaches the final battlefield',
-        beats: [
+        milestones: [
           {
             id: '3.1',
             description: 'The final confrontation begins',
@@ -90,9 +90,9 @@ function createTestStructure(): StoryStructure {
 }
 
 describe('story-arc model utilities', () => {
-  describe('BeatRole type', () => {
-    it('accepts all valid beat roles on StoryBeat', () => {
-      const roles: BeatRole[] = [
+  describe('MilestoneRole type', () => {
+    it('accepts all valid milestone roles on StoryMilestone', () => {
+      const roles: MilestoneRole[] = [
         'setup',
         'escalation',
         'turning_point',
@@ -100,24 +100,24 @@ describe('story-arc model utilities', () => {
         'resolution',
       ];
       for (const role of roles) {
-        const beat: StoryBeat = {
+        const milestone: StoryMilestone = {
           id: '1.1',
-          description: 'Test beat',
+          description: 'Test milestone',
           objective: 'Test objective',
           role,
         };
-        expect(beat.role).toBe(role);
+        expect(milestone.role).toBe(role);
       }
     });
 
-    it('round-trips beat role through object spread', () => {
-      const beat: StoryBeat = {
+    it('round-trips milestone role through object spread', () => {
+      const milestone: StoryMilestone = {
         id: '1.1',
         description: 'A pivotal moment',
         objective: 'Force a decision',
         role: 'turning_point',
       };
-      const copy = { ...beat };
+      const copy = { ...milestone };
       expect(copy.role).toBe('turning_point');
     });
   });
@@ -176,33 +176,33 @@ describe('story-arc model utilities', () => {
     it('creates an initial empty state', () => {
       expect(createEmptyAccumulatedStructureState()).toEqual({
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       });
     });
   });
 
   describe('createInitialStructureState', () => {
-    it('sets the first beat active and all remaining beats pending', () => {
+    it('sets the first milestone active and all remaining milestones pending', () => {
       const structure = createTestStructure();
       const result = createInitialStructureState(structure);
 
       expect(result.currentActIndex).toBe(0);
-      expect(result.currentBeatIndex).toBe(0);
-      expect(result.pagesInCurrentBeat).toBe(0);
+      expect(result.currentMilestoneIndex).toBe(0);
+      expect(result.pagesInCurrentMilestone).toBe(0);
       expect(result.pacingNudge).toBeNull();
-      expect(result.beatProgressions).toEqual([
-        { beatId: '1.1', status: 'active' },
-        { beatId: '1.2', status: 'pending' },
-        { beatId: '2.1', status: 'pending' },
-        { beatId: '2.2', status: 'pending' },
-        { beatId: '3.1', status: 'pending' },
+      expect(result.milestoneProgressions).toEqual([
+        { milestoneId: '1.1', status: 'active' },
+        { milestoneId: '1.2', status: 'pending' },
+        { milestoneId: '2.1', status: 'pending' },
+        { milestoneId: '2.2', status: 'pending' },
+        { milestoneId: '3.1', status: 'pending' },
       ]);
     });
 
-    it('returns a valid zeroed state when there are no acts/beats', () => {
+    it('returns a valid zeroed state when there are no acts/milestones', () => {
       const structure: StoryStructure = {
         ...createTestStructure(),
         acts: [],
@@ -210,9 +210,9 @@ describe('story-arc model utilities', () => {
 
       expect(createInitialStructureState(structure)).toEqual({
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       });
     });
@@ -223,9 +223,9 @@ describe('story-arc model utilities', () => {
       const structure = createTestStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -236,9 +236,9 @@ describe('story-arc model utilities', () => {
       const structure = createTestStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 4,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -246,118 +246,118 @@ describe('story-arc model utilities', () => {
     });
   });
 
-  describe('getCurrentBeat', () => {
-    it('returns the beat at the current act/beat indices', () => {
+  describe('getCurrentMilestone', () => {
+    it('returns the milestone at the current act/milestone indices', () => {
       const structure = createTestStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
-      expect(getCurrentBeat(structure, state)?.id).toBe('1.2');
+      expect(getCurrentMilestone(structure, state)?.id).toBe('1.2');
     });
 
     it('returns undefined when act index is out of bounds', () => {
       const structure = createTestStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 10,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
-      expect(getCurrentBeat(structure, state)).toBeUndefined();
+      expect(getCurrentMilestone(structure, state)).toBeUndefined();
     });
 
-    it('returns undefined when beat index is out of bounds', () => {
+    it('returns undefined when milestone index is out of bounds', () => {
       const structure = createTestStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 6,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 6,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
-      expect(getCurrentBeat(structure, state)).toBeUndefined();
+      expect(getCurrentMilestone(structure, state)).toBeUndefined();
     });
   });
 
-  describe('getBeatProgression', () => {
-    it('returns progression for an existing beat id', () => {
+  describe('getMilestoneProgression', () => {
+    it('returns progression for an existing milestone id', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Hero agreed to the mission' },
-          { beatId: '1.2', status: 'active' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Hero agreed to the mission' },
+          { milestoneId: '1.2', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
-      expect(getBeatProgression(state, '1.1')).toEqual({
-        beatId: '1.1',
+      expect(getMilestoneProgression(state, '1.1')).toEqual({
+        milestoneId: '1.1',
         status: 'concluded',
         resolution: 'Hero agreed to the mission',
       });
     });
 
-    it('returns undefined for an unknown beat id', () => {
+    it('returns undefined for an unknown milestone id', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [{ beatId: '1.1', status: 'active' }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
-      expect(getBeatProgression(state, '9.9')).toBeUndefined();
+      expect(getMilestoneProgression(state, '9.9')).toBeUndefined();
     });
   });
 
-  describe('isLastBeatOfAct', () => {
-    it('returns true for the final beat in an act', () => {
+  describe('isLastMilestoneOfAct', () => {
+    it('returns true for the final milestone in an act', () => {
       const structure = createTestStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
-      expect(isLastBeatOfAct(structure, state)).toBe(true);
+      expect(isLastMilestoneOfAct(structure, state)).toBe(true);
     });
 
-    it('returns false for non-final beats', () => {
+    it('returns false for non-final milestones', () => {
       const structure = createTestStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
-      expect(isLastBeatOfAct(structure, state)).toBe(false);
+      expect(isLastMilestoneOfAct(structure, state)).toBe(false);
     });
 
     it('returns false when indices do not point to a valid act', () => {
       const structure = createTestStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 10,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
-      expect(isLastBeatOfAct(structure, state)).toBe(false);
+      expect(isLastMilestoneOfAct(structure, state)).toBe(false);
     });
   });
 
@@ -366,9 +366,9 @@ describe('story-arc model utilities', () => {
       const structure = createTestStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 2,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -379,9 +379,9 @@ describe('story-arc model utilities', () => {
       const structure = createTestStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -391,9 +391,9 @@ describe('story-arc model utilities', () => {
 
   describe('DeviationResult', () => {
     describe('isDeviation', () => {
-      it('returns true for BeatDeviation', () => {
-        const result = createBeatDeviation(
-          'Player choice contradicted remaining beats',
+      it('returns true for MilestoneDeviation', () => {
+        const result = createMilestoneDeviation(
+          'Player choice contradicted remaining milestones',
           ['2.2', '3.1'],
           'The protagonist switched allegiances'
         );
@@ -413,9 +413,9 @@ describe('story-arc model utilities', () => {
         expect(isNoDeviation(result)).toBe(true);
       });
 
-      it('returns false for BeatDeviation', () => {
-        const result = createBeatDeviation(
-          'Branch no longer aligns with planned infiltration beat',
+      it('returns false for MilestoneDeviation', () => {
+        const result = createMilestoneDeviation(
+          'Branch no longer aligns with planned infiltration milestone',
           ['2.2'],
           'The protagonist accepted command from the enemy'
         );
@@ -424,9 +424,9 @@ describe('story-arc model utilities', () => {
       });
     });
 
-    describe('createBeatDeviation', () => {
-      it('creates BeatDeviation with all fields', () => {
-        const result = createBeatDeviation(
+    describe('createMilestoneDeviation', () => {
+      it('creates MilestoneDeviation with all fields', () => {
+        const result = createMilestoneDeviation(
           'Narrative shifted to alliance with antagonist',
           ['2.2', '3.1'],
           'The team split after a betrayal'
@@ -435,22 +435,22 @@ describe('story-arc model utilities', () => {
         expect(result).toEqual({
           detected: true,
           reason: 'Narrative shifted to alliance with antagonist',
-          invalidatedBeatIds: ['2.2', '3.1'],
+          invalidatedMilestoneIds: ['2.2', '3.1'],
           sceneSummary: 'The team split after a betrayal',
         });
       });
 
-      it('throws if invalidatedBeatIds is empty', () => {
-        expect(() => createBeatDeviation('No invalidated beats provided', [], 'Summary')).toThrow(
-          'BeatDeviation must have at least one invalidated beat ID'
+      it('throws if invalidatedMilestoneIds is empty', () => {
+        expect(() => createMilestoneDeviation('No invalidated milestones provided', [], 'Summary')).toThrow(
+          'MilestoneDeviation must have at least one invalidated milestone ID'
         );
       });
 
       it('preserves array identity', () => {
-        const invalidatedBeatIds = ['2.2', '3.1'] as const;
-        const result = createBeatDeviation('Deviation detected', invalidatedBeatIds, 'Summary');
+        const invalidatedMilestoneIds = ['2.2', '3.1'] as const;
+        const result = createMilestoneDeviation('Deviation detected', invalidatedMilestoneIds, 'Summary');
 
-        expect(result.invalidatedBeatIds).toBe(invalidatedBeatIds);
+        expect(result.invalidatedMilestoneIds).toBe(invalidatedMilestoneIds);
       });
     });
 
@@ -461,51 +461,51 @@ describe('story-arc model utilities', () => {
     });
 
     describe('validateDeviationTargets', () => {
-      it('returns true when concluded beats are not invalidated', () => {
-        const deviation = createBeatDeviation('Future beats are invalid', ['2.2'], 'Summary');
+      it('returns true when concluded milestones are not invalidated', () => {
+        const deviation = createMilestoneDeviation('Future milestones are invalid', ['2.2'], 'Summary');
         const structureState: AccumulatedStructureState = {
           currentActIndex: 1,
-          currentBeatIndex: 0,
-          beatProgressions: [
-            { beatId: '1.1', status: 'concluded', resolution: 'Quest accepted' },
-            { beatId: '1.2', status: 'concluded', resolution: 'Allies gathered' },
-            { beatId: '2.1', status: 'active' },
+          currentMilestoneIndex: 0,
+          milestoneProgressions: [
+            { milestoneId: '1.1', status: 'concluded', resolution: 'Quest accepted' },
+            { milestoneId: '1.2', status: 'concluded', resolution: 'Allies gathered' },
+            { milestoneId: '2.1', status: 'active' },
           ],
-          pagesInCurrentBeat: 0,
+          pagesInCurrentMilestone: 0,
           pacingNudge: null,
         };
 
         expect(validateDeviationTargets(deviation, structureState)).toBe(true);
       });
 
-      it('returns false when a concluded beat is invalidated', () => {
-        const deviation = createBeatDeviation(
-          'Invalidation includes completed beat',
+      it('returns false when a concluded milestone is invalidated', () => {
+        const deviation = createMilestoneDeviation(
+          'Invalidation includes completed milestone',
           ['1.2'],
           'Summary'
         );
         const structureState: AccumulatedStructureState = {
           currentActIndex: 1,
-          currentBeatIndex: 0,
-          beatProgressions: [
-            { beatId: '1.1', status: 'concluded', resolution: 'Quest accepted' },
-            { beatId: '1.2', status: 'concluded', resolution: 'Allies gathered' },
-            { beatId: '2.1', status: 'active' },
+          currentMilestoneIndex: 0,
+          milestoneProgressions: [
+            { milestoneId: '1.1', status: 'concluded', resolution: 'Quest accepted' },
+            { milestoneId: '1.2', status: 'concluded', resolution: 'Allies gathered' },
+            { milestoneId: '2.1', status: 'active' },
           ],
-          pagesInCurrentBeat: 0,
+          pagesInCurrentMilestone: 0,
           pacingNudge: null,
         };
 
         expect(validateDeviationTargets(deviation, structureState)).toBe(false);
       });
 
-      it('returns true for beat IDs not in progressions', () => {
-        const deviation = createBeatDeviation('Future acts need replacement', ['3.1'], 'Summary');
+      it('returns true for milestone IDs not in progressions', () => {
+        const deviation = createMilestoneDeviation('Future acts need replacement', ['3.1'], 'Summary');
         const structureState: AccumulatedStructureState = {
           currentActIndex: 1,
-          currentBeatIndex: 0,
-          beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Quest accepted' }],
-          pagesInCurrentBeat: 0,
+          currentMilestoneIndex: 0,
+          milestoneProgressions: [{ milestoneId: '1.1', status: 'concluded', resolution: 'Quest accepted' }],
+          pagesInCurrentMilestone: 0,
           pacingNudge: null,
         };
 

@@ -29,7 +29,7 @@ describe('buildOpeningPrompt', () => {
         objective: 'Escape the city after the first riot',
         stakes: 'Capture means execution as a traitor',
         entryCondition: 'The first district falls',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             description: 'The protagonist is caught between guards and rebels',
@@ -50,16 +50,16 @@ describe('buildOpeningPrompt', () => {
         objective: 'Outmaneuver both factions',
         stakes: 'Losing evidence lets the conflict spiral',
         entryCondition: 'The protagonist leaves the capital',
-        beats: [
+        milestones: [
           {
             id: '2.1',
-            description: 'First chase beat',
+            description: 'First chase milestone',
             objective: 'Evade pursuit',
             role: 'escalation',
           },
           {
             id: '2.2',
-            description: 'Second chase beat',
+            description: 'Second chase milestone',
             objective: 'Protect the evidence',
             role: 'turning_point',
           },
@@ -71,16 +71,16 @@ describe('buildOpeningPrompt', () => {
         objective: 'Expose the architect publicly',
         stakes: 'Failure secures permanent authoritarian rule',
         entryCondition: 'Allies gather for final confrontation',
-        beats: [
+        milestones: [
           {
             id: '3.1',
-            description: 'Final entry beat',
+            description: 'Final entry milestone',
             objective: 'Force a confession',
             role: 'escalation',
           },
           {
             id: '3.2',
-            description: 'Final resolution beat',
+            description: 'Final resolution milestone',
             objective: 'Stabilize the city',
             role: 'resolution',
           },
@@ -255,7 +255,7 @@ describe('buildContinuationPrompt', () => {
         objective: 'Escape the first sweep',
         stakes: 'Capture means public execution.',
         entryCondition: 'Emergency law is declared.',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             description: 'Reach a safehouse before patrols seal the district',
@@ -282,7 +282,7 @@ describe('buildContinuationPrompt', () => {
         objective: 'Cross hostile territory with the evidence',
         stakes: 'If lost, the purge becomes permanent.',
         entryCondition: 'You leave the capital perimeter.',
-        beats: [
+        milestones: [
           {
             id: '2.1',
             description: 'Break through checkpoints',
@@ -303,7 +303,7 @@ describe('buildContinuationPrompt', () => {
         objective: 'Expose the planners to the public',
         stakes: 'Silence guarantees totalitarian rule.',
         entryCondition: 'You gain access to the relay tower.',
-        beats: [
+        milestones: [
           {
             id: '3.1',
             description: 'Reach the relay core',
@@ -322,21 +322,21 @@ describe('buildContinuationPrompt', () => {
   };
   const structureState: AccumulatedStructureState = {
     currentActIndex: 0,
-    currentBeatIndex: 1,
-    beatProgressions: [
+    currentMilestoneIndex: 1,
+    milestoneProgressions: [
       {
-        beatId: '1.1',
+        milestoneId: '1.1',
         status: 'concluded',
         resolution: 'You slipped through a drainage tunnel into the safehouse.',
       },
-      { beatId: '1.2', status: 'active' },
-      { beatId: '1.3', status: 'pending' },
-      { beatId: '2.1', status: 'pending' },
-      { beatId: '2.2', status: 'pending' },
-      { beatId: '3.1', status: 'pending' },
-      { beatId: '3.2', status: 'pending' },
+      { milestoneId: '1.2', status: 'active' },
+      { milestoneId: '1.3', status: 'pending' },
+      { milestoneId: '2.1', status: 'pending' },
+      { milestoneId: '2.2', status: 'pending' },
+      { milestoneId: '3.1', status: 'pending' },
+      { milestoneId: '3.2', status: 'pending' },
     ],
-    pagesInCurrentBeat: 0,
+    pagesInCurrentMilestone: 0,
     pacingNudge: null,
   };
   const baseContext = {
@@ -855,17 +855,17 @@ describe('buildContinuationPrompt', () => {
     });
   });
 
-  // Beat Evaluation Context Tests
-  describe('beat evaluation with active state', () => {
-    it('does NOT include active state summary for beat evaluation in writer prompt', () => {
+  // Milestone Evaluation Context Tests
+  describe('milestone evaluation with active state', () => {
+    it('does NOT include active state summary for milestone evaluation in writer prompt', () => {
       const messages = buildContinuationPrompt({
         ...baseContext,
         structure,
         accumulatedStructureState: {
           currentActIndex: 0,
-          currentBeatIndex: 0,
-          beatProgressions: [{ beatId: '1.1', status: 'active' as const }],
-          pagesInCurrentBeat: 0,
+          currentMilestoneIndex: 0,
+          milestoneProgressions: [{ milestoneId: '1.1', status: 'active' as const }],
+          pagesInCurrentMilestone: 0,
           pacingNudge: null,
         },
         activeState: {
@@ -883,9 +883,9 @@ describe('buildContinuationPrompt', () => {
       });
 
       const content = getUserMessage(messages);
-      // Writer prompt does not include beat evaluation active state
-      expect(content).not.toContain('CURRENT STATE (for beat evaluation):');
-      expect(content).not.toContain('Consider these when evaluating beat completion');
+      // Writer prompt does not include milestone evaluation active state
+      expect(content).not.toContain('CURRENT STATE (for milestone evaluation):');
+      expect(content).not.toContain('Consider these when evaluating milestone completion');
     });
 
     it('omits active state summary when all fields empty', () => {
@@ -894,9 +894,9 @@ describe('buildContinuationPrompt', () => {
         structure,
         accumulatedStructureState: {
           currentActIndex: 0,
-          currentBeatIndex: 0,
-          beatProgressions: [{ beatId: '1.1', status: 'active' as const }],
-          pagesInCurrentBeat: 0,
+          currentMilestoneIndex: 0,
+          milestoneProgressions: [{ milestoneId: '1.1', status: 'active' as const }],
+          pagesInCurrentMilestone: 0,
           pacingNudge: null,
         },
         activeState: {
@@ -909,18 +909,18 @@ describe('buildContinuationPrompt', () => {
 
       const content = getUserMessage(messages);
       // Should NOT contain the active state summary section
-      expect(content).not.toContain('CURRENT STATE (for beat evaluation):');
+      expect(content).not.toContain('CURRENT STATE (for milestone evaluation):');
     });
 
-    it('does NOT include compact beat evaluation display in writer prompt', () => {
+    it('does NOT include compact milestone evaluation display in writer prompt', () => {
       const messages = buildContinuationPrompt({
         ...baseContext,
         structure,
         accumulatedStructureState: {
           currentActIndex: 0,
-          currentBeatIndex: 0,
-          beatProgressions: [{ beatId: '1.1', status: 'active' as const }],
-          pagesInCurrentBeat: 0,
+          currentMilestoneIndex: 0,
+          milestoneProgressions: [{ milestoneId: '1.1', status: 'active' as const }],
+          pagesInCurrentMilestone: 0,
           pacingNudge: null,
         },
         activeState: {
@@ -952,8 +952,8 @@ describe('buildContinuationPrompt', () => {
       });
 
       const content = getUserMessage(messages);
-      // Writer prompt does not include beat evaluation active state summary
-      expect(content).not.toContain('CURRENT STATE (for beat evaluation):');
+      // Writer prompt does not include milestone evaluation active state summary
+      expect(content).not.toContain('CURRENT STATE (for milestone evaluation):');
     });
   });
 

@@ -38,9 +38,9 @@ var HUMANIZED_LABELS = {
   NOT_READY: 'Not Ready',
   PARTIAL: 'Partial',
   READY: 'Ready',
-  WITHIN_ACTIVE_BEAT: 'Within Active Beat',
+  WITHIN_ACTIVE_BEAT: 'Within Active Milestone',
   BRIDGING_TO_NEXT_BEAT: 'Bridging',
-  CLEARLY_IN_NEXT_BEAT: 'Next Beat',
+  CLEARLY_IN_NEXT_BEAT: 'Next Milestone',
   PENDING: 'Pending',
   SATISFIED: 'Satisfied',
   STRUCTURAL_SUPERSESSION: 'Structure Evolved',
@@ -102,22 +102,22 @@ function formatAnalystEnum(value) {
 
 function gaugeClass(fillPct) {
   if (fillPct <= 33) {
-    return 'beat-gauge__fill--low';
+    return 'milestone-gauge__fill--low';
   }
   if (fillPct <= 66) {
-    return 'beat-gauge__fill--mid';
+    return 'milestone-gauge__fill--mid';
   }
-  return 'beat-gauge__fill--high';
+  return 'milestone-gauge__fill--high';
 }
 
 function renderGaugeRow(label, value, fillMap) {
   var fillPct = fillMap[value] || 0;
-  return '<div class="beat-gauge__row">'
-    + '<span class="beat-gauge__label">' + escapeHtml(label) + '</span>'
-    + '<div class="beat-gauge__track">'
-    + '<span class="beat-gauge__fill ' + gaugeClass(fillPct) + '" style="width:' + fillPct + '%"></span>'
+  return '<div class="milestone-gauge__row">'
+    + '<span class="milestone-gauge__label">' + escapeHtml(label) + '</span>'
+    + '<div class="milestone-gauge__track">'
+    + '<span class="milestone-gauge__fill ' + gaugeClass(fillPct) + '" style="width:' + fillPct + '%"></span>'
     + '</div>'
-    + '<span class="beat-gauge__level">' + escapeHtml(formatAnalystEnum(value)) + '</span>'
+    + '<span class="milestone-gauge__level">' + escapeHtml(formatAnalystEnum(value)) + '</span>'
     + '</div>';
 }
 
@@ -136,8 +136,8 @@ function renderStructureTab(ar) {
   var momentum = MOMENTUM_META[ar.sceneMomentum] || MOMENTUM_META.STASIS;
 
   var html = '<details class="insights-section" open>'
-    + '<summary><h4>Beat Progress</h4></summary>'
-    + '<div class="beat-gauge">'
+    + '<summary><h4>Milestone Progress</h4></summary>'
+    + '<div class="milestone-gauge">'
     + renderGaugeRow('Objective Evidence', ar.objectiveEvidenceStrength, OBJECTIVE_EVIDENCE_FILL)
     + renderGaugeRow('Commitment', ar.commitmentStrength, COMMITMENT_FILL)
     + renderGaugeRow('Entry Readiness', ar.entryConditionReadiness, ENTRY_READINESS_FILL)
@@ -149,11 +149,11 @@ function renderStructureTab(ar) {
       : '')
     + '</details>';
 
-  // Beat Resolution
-  if (typeof ar.beatResolution === 'string' && ar.beatResolution.length > 0) {
+  // Milestone Resolution
+  if (typeof ar.milestoneResolution === 'string' && ar.milestoneResolution.length > 0) {
     html += '<details class="insights-section">'
-      + '<summary><h4>Beat Resolution</h4></summary>'
-      + '<p class="insights-copy">' + escapeHtml(formatAnalystEnum(ar.beatResolution)) + '</p>'
+      + '<summary><h4>Milestone Resolution</h4></summary>'
+      + '<p class="insights-copy">' + escapeHtml(formatAnalystEnum(ar.milestoneResolution)) + '</p>'
       + '</details>';
   }
 
@@ -455,7 +455,7 @@ function renderInsightsBody(analystResult, context) {
   var headerHtml = '';
 
   if (typeof ctx.actDisplayInfo === 'string' && ctx.actDisplayInfo.length > 0) {
-    headerHtml += '<p class="insights-beat-subtitle">' + escapeHtml(ctx.actDisplayInfo) + '</p>';
+    headerHtml += '<p class="insights-milestone-subtitle">' + escapeHtml(ctx.actDisplayInfo) + '</p>';
   }
 
   if (typeof ctx.sceneSummary === 'string' && ctx.sceneSummary.length > 0) {

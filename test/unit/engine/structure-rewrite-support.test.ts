@@ -4,13 +4,13 @@ import {
   buildRewriteContext,
   extractCompletedBeats,
   extractPlannedBeats,
-  getPreservedBeatIds,
+  getPreservedMilestoneIds,
   validatePreservedBeats,
 } from '../../../src/engine/structure-rewrite-support';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import { createStory } from '../../../src/models/story';
 import { createInitialVersionedStructure } from '../../../src/models/structure-version';
-import { createBeatDeviation, createInitialStructureState } from '../../../src/models/story-arc';
+import { createMilestoneDeviation, createInitialStructureState } from '../../../src/models/story-arc';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
 import {
   buildMinimalDecomposedCharacter,
@@ -29,7 +29,7 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Accept the quest',
         stakes: 'Home is at risk',
         entryCondition: 'A messenger arrives',
-        beats: [
+        milestones: [
           {
             name: 'Messenger arrives',
             description: 'A warning arrives',
@@ -67,7 +67,7 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Survive the campaign',
         stakes: 'The kingdom may fall',
         entryCondition: 'The journey begins',
-        beats: [
+        milestones: [
           {
             name: 'First setback',
             description: 'First major setback',
@@ -96,7 +96,7 @@ function createStructure(): StoryStructure {
 
 describe('structure-rewrite-support', () => {
   describe('extractCompletedBeats', () => {
-    it('returns empty array when no beats are concluded', () => {
+    it('returns empty array when no milestones are concluded', () => {
       const structure = createStructure();
       const state = createInitialStructureState(structure);
 
@@ -105,17 +105,17 @@ describe('structure-rewrite-support', () => {
       expect(completed).toEqual([]);
     });
 
-    it('returns concluded beats with indices, beat IDs, and resolutions in beat order', () => {
+    it('returns concluded milestones with indices, milestone IDs, and resolutions in milestone order', () => {
       const structure = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '2.1', status: 'concluded', resolution: 'Recovered from loss.' },
-          { beatId: '1.2', status: 'concluded', resolution: 'Left home.' },
-          { beatId: '1.1', status: 'concluded', resolution: 'Heard the warning.' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '2.1', status: 'concluded', resolution: 'Recovered from loss.' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Left home.' },
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Heard the warning.' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -124,8 +124,8 @@ describe('structure-rewrite-support', () => {
       expect(completed).toEqual([
         {
           actIndex: 0,
-          beatIndex: 0,
-          beatId: '1.1',
+          milestoneIndex: 0,
+          milestoneId: '1.1',
           name: 'Messenger arrives',
           description: 'A warning arrives',
           objective: 'Hear the warning',
@@ -145,8 +145,8 @@ describe('structure-rewrite-support', () => {
         },
         {
           actIndex: 0,
-          beatIndex: 1,
-          beatId: '1.2',
+          milestoneIndex: 1,
+          milestoneId: '1.2',
           name: 'Choose departure',
           description: 'A difficult choice',
           objective: 'Leave home',
@@ -166,8 +166,8 @@ describe('structure-rewrite-support', () => {
         },
         {
           actIndex: 1,
-          beatIndex: 0,
-          beatId: '2.1',
+          milestoneIndex: 0,
+          milestoneId: '2.1',
           name: 'First setback',
           description: 'First major setback',
           objective: 'Recover from loss',
@@ -188,16 +188,16 @@ describe('structure-rewrite-support', () => {
       ]);
     });
 
-    it('skips missing beats and warns without throwing', () => {
+    it('skips missing milestones and warns without throwing', () => {
       const structure = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Resolved first beat.' },
-          { beatId: '9.9', status: 'concluded', resolution: 'Invalid beat reference.' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Resolved first milestone.' },
+          { milestoneId: '9.9', status: 'concluded', resolution: 'Invalid milestone reference.' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
       const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
@@ -205,45 +205,45 @@ describe('structure-rewrite-support', () => {
       const completed = extractCompletedBeats(structure, state);
 
       expect(completed).toHaveLength(1);
-      expect(completed[0]?.beatId).toBe('1.1');
-      expect(warnSpy).toHaveBeenCalledWith('Beat 9.9 not found in structure');
+      expect(completed[0]?.milestoneId).toBe('1.1');
+      expect(warnSpy).toHaveBeenCalledWith('Milestone 9.9 not found in structure');
 
       warnSpy.mockRestore();
     });
 
-    it('excludes pending and active beats', () => {
+    it('excludes pending and active milestones', () => {
       const structure = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Resolved first beat.' },
-          { beatId: '1.2', status: 'active' },
-          { beatId: '2.1', status: 'pending' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Resolved first milestone.' },
+          { milestoneId: '1.2', status: 'active' },
+          { milestoneId: '2.1', status: 'pending' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       const completed = extractCompletedBeats(structure, state);
 
       expect(completed).toHaveLength(1);
-      expect(completed[0]?.beatId).toBe('1.1');
+      expect(completed[0]?.milestoneId).toBe('1.1');
     });
   });
 
   describe('extractPlannedBeats', () => {
-    it('returns empty array when all beats are concluded', () => {
+    it('returns empty array when all milestones are concluded', () => {
       const structure = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
-          { beatId: '1.2', status: 'concluded', resolution: 'Done.' },
-          { beatId: '2.1', status: 'concluded', resolution: 'Done.' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '2.1', status: 'concluded', resolution: 'Done.' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -252,17 +252,17 @@ describe('structure-rewrite-support', () => {
       expect(planned).toEqual([]);
     });
 
-    it('returns beats that come after the deviation point', () => {
+    it('returns milestones that come after the deviation point', () => {
       const structure = createStructure();
-      // Deviation at Act 1, Beat 2 (index 0, 1) — beat 2.1 should be planned
+      // Deviation at Act 1, Milestone 2 (index 0, 1) — milestone 2.1 should be planned
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
-          { beatId: '1.2', status: 'active' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '1.2', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -271,8 +271,8 @@ describe('structure-rewrite-support', () => {
       expect(planned).toEqual([
         {
           actIndex: 1,
-          beatIndex: 0,
-          beatId: '2.1',
+          milestoneIndex: 0,
+          milestoneId: '2.1',
           name: 'First setback',
           description: 'First major setback',
           objective: 'Recover from loss',
@@ -292,17 +292,17 @@ describe('structure-rewrite-support', () => {
       ]);
     });
 
-    it('excludes concluded beats', () => {
+    it('excludes concluded milestones', () => {
       const structure = createStructure();
-      // Beat 1.1 concluded, deviation at 1.2, 2.1 is planned
+      // Milestone 1.1 concluded, deviation at 1.2, 2.1 is planned
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
-          { beatId: '1.2', status: 'active' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '1.2', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -310,16 +310,16 @@ describe('structure-rewrite-support', () => {
 
       // 1.1 is concluded, 1.2 is current (excluded), only 2.1 remains
       expect(planned).toHaveLength(1);
-      expect(planned[0]?.beatId).toBe('2.1');
+      expect(planned[0]?.milestoneId).toBe('2.1');
     });
 
-    it('excludes the currently active beat', () => {
+    it('excludes the currently active milestone', () => {
       const structure = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [{ beatId: '1.1', status: 'active' }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -327,17 +327,17 @@ describe('structure-rewrite-support', () => {
 
       // 1.1 is current (excluded), 1.2 and 2.1 are planned
       expect(planned).toHaveLength(2);
-      expect(planned[0]?.beatId).toBe('1.2');
-      expect(planned[1]?.beatId).toBe('2.1');
+      expect(planned[0]?.milestoneId).toBe('1.2');
+      expect(planned[1]?.milestoneId).toBe('2.1');
     });
 
-    it('sorts by act/beat index', () => {
+    it('sorts by act/milestone index', () => {
       const structure = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [{ beatId: '1.1', status: 'active' }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -345,23 +345,23 @@ describe('structure-rewrite-support', () => {
 
       // Should be sorted: 1.2 before 2.1
       expect(planned[0]?.actIndex).toBe(0);
-      expect(planned[0]?.beatIndex).toBe(1);
+      expect(planned[0]?.milestoneIndex).toBe(1);
       expect(planned[1]?.actIndex).toBe(1);
-      expect(planned[1]?.beatIndex).toBe(0);
+      expect(planned[1]?.milestoneIndex).toBe(0);
     });
 
-    it('returns empty array when deviation is at the very last beat', () => {
+    it('returns empty array when deviation is at the very last milestone', () => {
       const structure = createStructure();
-      // Deviation at the last beat (Act 2, Beat 1 = index 1, 0)
+      // Deviation at the last milestone (Act 2, Milestone 1 = index 1, 0)
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
-          { beatId: '1.2', status: 'concluded', resolution: 'Done.' },
-          { beatId: '2.1', status: 'active' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '2.1', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -372,7 +372,7 @@ describe('structure-rewrite-support', () => {
   });
 
   describe('buildRewriteContext', () => {
-    it('includes story fields, completed beats, deviation fields, and structure state positions', () => {
+    it('includes story fields, completed milestones, deviation fields, and structure state positions', () => {
       const structure = createStructure();
       const structureVersion = createInitialVersionedStructure(structure);
       const story = {
@@ -387,16 +387,16 @@ describe('structure-rewrite-support', () => {
       };
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Accepted the call.' },
-          { beatId: '1.2', status: 'active' },
-          { beatId: '2.1', status: 'pending' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Accepted the call.' },
+          { milestoneId: '1.2', status: 'active' },
+          { milestoneId: '2.1', status: 'pending' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
-      const deviation = createBeatDeviation(
+      const deviation = createMilestoneDeviation(
         'The protagonist switched allegiance.',
         ['1.2', '2.1'],
         'Now aligned with the rival faction.'
@@ -413,12 +413,12 @@ describe('structure-rewrite-support', () => {
       expect(context.sceneSummary).toBe('Now aligned with the rival faction.');
       expect(context.deviationReason).toBe('The protagonist switched allegiance.');
       expect(context.currentActIndex).toBe(0);
-      expect(context.currentBeatIndex).toBe(1);
+      expect(context.currentMilestoneIndex).toBe(1);
       expect(context.completedBeats).toEqual([
         {
           actIndex: 0,
-          beatIndex: 0,
-          beatId: '1.1',
+          milestoneIndex: 0,
+          milestoneId: '1.1',
           name: 'Messenger arrives',
           description: 'A warning arrives',
           objective: 'Hear the warning',
@@ -437,12 +437,12 @@ describe('structure-rewrite-support', () => {
           resolution: 'Accepted the call.',
         },
       ]);
-      // Beat 2.1 comes after deviation point (0, 1) and is not concluded
+      // Milestone 2.1 comes after deviation point (0, 1) and is not concluded
       expect(context.plannedBeats).toEqual([
         {
           actIndex: 1,
-          beatIndex: 0,
-          beatId: '2.1',
+          milestoneIndex: 0,
+          milestoneId: '2.1',
           name: 'First setback',
           description: 'First major setback',
           objective: 'Recover from loss',
@@ -463,86 +463,86 @@ describe('structure-rewrite-support', () => {
     });
   });
 
-  describe('getPreservedBeatIds', () => {
-    it('returns IDs of concluded beats only', () => {
+  describe('getPreservedMilestoneIds', () => {
+    it('returns IDs of concluded milestones only', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Resolved.' },
-          { beatId: '1.2', status: 'active' },
-          { beatId: '2.1', status: 'concluded', resolution: 'Resolved again.' },
-          { beatId: '2.2', status: 'pending' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' },
+          { milestoneId: '1.2', status: 'active' },
+          { milestoneId: '2.1', status: 'concluded', resolution: 'Resolved again.' },
+          { milestoneId: '2.2', status: 'pending' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
-      expect(getPreservedBeatIds(state)).toEqual(['1.1', '2.1']);
+      expect(getPreservedMilestoneIds(state)).toEqual(['1.1', '2.1']);
     });
 
-    it('returns empty array when no beats are concluded', () => {
+    it('returns empty array when no milestones are concluded', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'active' },
-          { beatId: '1.2', status: 'pending' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'active' },
+          { milestoneId: '1.2', status: 'pending' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
-      expect(getPreservedBeatIds(state)).toEqual([]);
+      expect(getPreservedMilestoneIds(state)).toEqual([]);
     });
   });
 
   describe('validatePreservedBeats', () => {
-    it('returns true when all completed beats are preserved unchanged', () => {
+    it('returns true when all completed milestones are preserved unchanged', () => {
       const original = createStructure();
       const next = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Resolved.' },
-          { beatId: '1.2', status: 'concluded', resolution: 'Resolved.' },
-          { beatId: '2.1', status: 'active' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Resolved.' },
+          { milestoneId: '2.1', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(true);
     });
 
-    it('returns false when a completed beat is missing in the new structure', () => {
+    it('returns false when a completed milestone is missing in the new structure', () => {
       const original = createStructure();
       const next: StoryStructure = {
         ...createStructure(),
-        acts: [original.acts[0]!, { ...original.acts[1]!, beats: [] }],
+        acts: [original.acts[0]!, { ...original.acts[1]!, milestones: [] }],
       };
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [{ beatId: '2.1', status: 'concluded', resolution: 'Resolved.' }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [{ milestoneId: '2.1', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(false);
     });
 
-    it('returns false when completed beat description changes', () => {
+    it('returns false when completed milestone description changes', () => {
       const original = createStructure();
       const next: StoryStructure = {
         ...createStructure(),
         acts: [
           {
             ...original.acts[0]!,
-            beats: [
-              { ...original.acts[0]!.beats[0]!, description: 'Different description' },
-              original.acts[0]!.beats[1]!,
+            milestones: [
+              { ...original.acts[0]!.milestones[0]!, description: 'Different description' },
+              original.acts[0]!.milestones[1]!,
             ],
           },
           original.acts[1]!,
@@ -550,25 +550,25 @@ describe('structure-rewrite-support', () => {
       };
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(false);
     });
 
-    it('returns false when completed beat name changes', () => {
+    it('returns false when completed milestone name changes', () => {
       const original = createStructure();
       const next: StoryStructure = {
         ...createStructure(),
         acts: [
           {
             ...original.acts[0]!,
-            beats: [
-              { ...original.acts[0]!.beats[0]!, name: 'Different beat name' },
-              original.acts[0]!.beats[1]!,
+            milestones: [
+              { ...original.acts[0]!.milestones[0]!, name: 'Different milestone name' },
+              original.acts[0]!.milestones[1]!,
             ],
           },
           original.acts[1]!,
@@ -576,25 +576,25 @@ describe('structure-rewrite-support', () => {
       };
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(false);
     });
 
-    it('returns false when completed beat objective changes', () => {
+    it('returns false when completed milestone objective changes', () => {
       const original = createStructure();
       const next: StoryStructure = {
         ...createStructure(),
         acts: [
           {
             ...original.acts[0]!,
-            beats: [
-              { ...original.acts[0]!.beats[0]!, objective: 'Different objective' },
-              original.acts[0]!.beats[1]!,
+            milestones: [
+              { ...original.acts[0]!.milestones[0]!, objective: 'Different objective' },
+              original.acts[0]!.milestones[1]!,
             ],
           },
           original.acts[1]!,
@@ -602,25 +602,25 @@ describe('structure-rewrite-support', () => {
       };
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(false);
     });
 
-    it('returns false when completed beat role changes', () => {
+    it('returns false when completed milestone role changes', () => {
       const original = createStructure();
       const next: StoryStructure = {
         ...createStructure(),
         acts: [
           {
             ...original.acts[0]!,
-            beats: [
-              { ...original.acts[0]!.beats[0]!, role: 'resolution' as const },
-              original.acts[0]!.beats[1]!,
+            milestones: [
+              { ...original.acts[0]!.milestones[0]!, role: 'resolution' as const },
+              original.acts[0]!.milestones[1]!,
             ],
           },
           original.acts[1]!,
@@ -628,28 +628,28 @@ describe('structure-rewrite-support', () => {
       };
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(false);
     });
 
-    it('returns true when new beats are added after preserved beats', () => {
+    it('returns true when new milestones are added after preserved milestones', () => {
       const original = createStructure();
       const next: StoryStructure = {
         ...createStructure(),
         acts: [
           {
             ...original.acts[0]!,
-            beats: [
-              ...original.acts[0]!.beats,
+            milestones: [
+              ...original.acts[0]!.milestones,
               {
                 id: '1.3',
-                name: 'Additional beat',
-                description: 'Additional beat',
+                name: 'Additional milestone',
+                description: 'Additional milestone',
                 objective: 'New objective',
                 role: 'escalation' as const,
                 escalationType: null,
@@ -666,44 +666,44 @@ describe('structure-rewrite-support', () => {
       };
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Resolved.' },
-          { beatId: '1.2', status: 'active' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' },
+          { milestoneId: '1.2', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(true);
     });
 
-    it('returns true when there are no completed beats', () => {
+    it('returns true when there are no completed milestones', () => {
       const original = createStructure();
       const next = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'active' },
-          { beatId: '1.2', status: 'pending' },
-          { beatId: '2.1', status: 'pending' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'active' },
+          { milestoneId: '1.2', status: 'pending' },
+          { milestoneId: '2.1', status: 'pending' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       expect(validatePreservedBeats(original, next, state)).toBe(true);
     });
 
-    it('returns false when a concluded beat has an invalid beat ID format', () => {
+    it('returns false when a concluded milestone has an invalid milestone ID format', () => {
       const original = createStructure();
       const next = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [{ beatId: 'invalid-id', status: 'concluded', resolution: 'Resolved.' }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [{ milestoneId: 'invalid-id', status: 'concluded', resolution: 'Resolved.' }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -712,69 +712,69 @@ describe('structure-rewrite-support', () => {
   });
 
   describe('extractPlannedBeats with includeCurrentBeat', () => {
-    it('includes the current beat when includeCurrentBeat is true', () => {
+    it('includes the current milestone when includeCurrentBeat is true', () => {
       const structure = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
-          { beatId: '1.2', status: 'active' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '1.2', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       const planned = extractPlannedBeats(structure, state, true);
 
-      // Should include current beat 1.2 and future beat 2.1
+      // Should include current milestone 1.2 and future milestone 2.1
       expect(planned).toHaveLength(2);
-      expect(planned[0]?.beatId).toBe('1.2');
-      expect(planned[1]?.beatId).toBe('2.1');
+      expect(planned[0]?.milestoneId).toBe('1.2');
+      expect(planned[1]?.milestoneId).toBe('2.1');
     });
 
-    it('excludes the current beat when includeCurrentBeat defaults to false', () => {
+    it('excludes the current milestone when includeCurrentBeat defaults to false', () => {
       const structure = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
-          { beatId: '1.2', status: 'active' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '1.2', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       const planned = extractPlannedBeats(structure, state);
 
-      // Should only include future beat 2.1
+      // Should only include future milestone 2.1
       expect(planned).toHaveLength(1);
-      expect(planned[0]?.beatId).toBe('2.1');
+      expect(planned[0]?.milestoneId).toBe('2.1');
     });
 
-    it('includes current beat at position 0,0 when includeCurrentBeat is true', () => {
+    it('includes current milestone at position 0,0 when includeCurrentBeat is true', () => {
       const structure = createStructure();
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [{ beatId: '1.1', status: 'active' }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       const planned = extractPlannedBeats(structure, state, true);
 
-      // Should include current beat 1.1, 1.2, and 2.1
+      // Should include current milestone 1.1, 1.2, and 2.1
       expect(planned).toHaveLength(3);
-      expect(planned[0]?.beatId).toBe('1.1');
-      expect(planned[1]?.beatId).toBe('1.2');
-      expect(planned[2]?.beatId).toBe('2.1');
+      expect(planned[0]?.milestoneId).toBe('1.1');
+      expect(planned[1]?.milestoneId).toBe('1.2');
+      expect(planned[2]?.milestoneId).toBe('2.1');
     });
   });
 
   describe('buildPacingRewriteContext', () => {
-    it('builds context with pacing issue reason and includes current beat in planned beats', () => {
+    it('builds context with pacing issue reason and includes current milestone in planned milestones', () => {
       const structure = createStructure();
       const structureVersion = createInitialVersionedStructure(structure);
       const story = {
@@ -789,12 +789,12 @@ describe('structure-rewrite-support', () => {
       };
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Heard the warning.' },
-          { beatId: '1.2', status: 'active' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Heard the warning.' },
+          { milestoneId: '1.2', status: 'active' },
         ],
-        pagesInCurrentBeat: 5,
+        pagesInCurrentMilestone: 5,
         pacingNudge: null,
       };
 
@@ -802,25 +802,25 @@ describe('structure-rewrite-support', () => {
         story,
         structureVersion,
         state,
-        'Beat is stalling after 5 pages',
+        'Milestone is stalling after 5 pages',
         'The hero hesitates at the gate.'
       );
 
-      expect(context.deviationReason).toBe('Pacing issue: Beat is stalling after 5 pages');
+      expect(context.deviationReason).toBe('Pacing issue: Milestone is stalling after 5 pages');
       expect(context.sceneSummary).toBe('The hero hesitates at the gate.');
       expect(context.tone).toBe('introspective');
       expect(context.currentActIndex).toBe(0);
-      expect(context.currentBeatIndex).toBe(1);
+      expect(context.currentMilestoneIndex).toBe(1);
       expect(context.totalActCount).toBe(2);
 
-      // Completed beats: only 1.1
+      // Completed milestones: only 1.1
       expect(context.completedBeats).toHaveLength(1);
-      expect(context.completedBeats[0]?.beatId).toBe('1.1');
+      expect(context.completedBeats[0]?.milestoneId).toBe('1.1');
 
-      // Planned beats: includes current beat 1.2 and future beat 2.1
+      // Planned milestones: includes current milestone 1.2 and future milestone 2.1
       expect(context.plannedBeats).toHaveLength(2);
-      expect(context.plannedBeats[0]?.beatId).toBe('1.2');
-      expect(context.plannedBeats[1]?.beatId).toBe('2.1');
+      expect(context.plannedBeats[0]?.milestoneId).toBe('1.2');
+      expect(context.plannedBeats[1]?.milestoneId).toBe('2.1');
     });
   });
 });

@@ -10,7 +10,7 @@ export interface VersionedStoryStructure {
   readonly previousVersionId: StructureVersionId | null;
   readonly createdAtPageId: PageId | null;
   readonly rewriteReason: string | null;
-  readonly preservedBeatIds: readonly string[];
+  readonly preservedMilestoneIds: readonly string[];
   readonly createdAt: Date;
 }
 
@@ -51,7 +51,7 @@ export function createInitialVersionedStructure(
     previousVersionId: null,
     createdAtPageId: null,
     rewriteReason: null,
-    preservedBeatIds: [],
+    preservedMilestoneIds: [],
     createdAt: new Date(),
   };
 }
@@ -59,7 +59,7 @@ export function createInitialVersionedStructure(
 export function createRewrittenVersionedStructure(
   previousVersion: VersionedStoryStructure,
   newStructure: StoryStructure,
-  preservedBeatIds: readonly string[],
+  preservedMilestoneIds: readonly string[],
   rewriteReason: string,
   createdAtPageId: PageId
 ): VersionedStoryStructure {
@@ -69,7 +69,7 @@ export function createRewrittenVersionedStructure(
     previousVersionId: previousVersion.id,
     createdAtPageId,
     rewriteReason,
-    preservedBeatIds: [...preservedBeatIds],
+    preservedMilestoneIds: [...preservedMilestoneIds],
     createdAt: new Date(),
   };
 }
@@ -98,7 +98,7 @@ export function isVersionedStoryStructure(value: unknown): value is VersionedSto
   const previousVersionId = versioned['previousVersionId'];
   const createdAtPageId = versioned['createdAtPageId'];
   const rewriteReason = versioned['rewriteReason'];
-  const preservedBeatIds = versioned['preservedBeatIds'];
+  const preservedMilestoneIds = versioned['preservedMilestoneIds'];
 
   return (
     isStructureVersionId(versioned['id']) &&
@@ -106,8 +106,8 @@ export function isVersionedStoryStructure(value: unknown): value is VersionedSto
     (previousVersionId === null || isStructureVersionId(previousVersionId)) &&
     (createdAtPageId === null || isPageId(createdAtPageId)) &&
     (rewriteReason === null || typeof rewriteReason === 'string') &&
-    Array.isArray(preservedBeatIds) &&
-    preservedBeatIds.every((beatId) => typeof beatId === 'string') &&
+    Array.isArray(preservedMilestoneIds) &&
+    preservedMilestoneIds.every((milestoneId) => typeof milestoneId === 'string') &&
     versioned['createdAt'] instanceof Date
   );
 }

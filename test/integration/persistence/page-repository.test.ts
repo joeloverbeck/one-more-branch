@@ -97,13 +97,13 @@ describe('page-repository integration', () => {
     const root = buildRootPage({
       accumulatedStructureState: {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Found the hidden key' },
-          { beatId: '1.2', status: 'active' },
-          { beatId: '1.3', status: 'pending' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Found the hidden key' },
+          { milestoneId: '1.2', status: 'active' },
+          { milestoneId: '1.3', status: 'pending' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       },
     });
@@ -240,7 +240,7 @@ describe('page-repository integration', () => {
     const root = buildRootPage();
     const branchA = createPage({
       id: parsePageId(2),
-      narrativeText: 'Branch A advances the first beat.',
+      narrativeText: 'Branch A advances the first milestone.',
       sceneSummary: 'Test summary of the scene events and consequences.',
       choices: [createChoice('Continue A'), createChoice('Fallback A')],
       stateChanges: { added: ['A advanced'], removed: [] },
@@ -250,13 +250,13 @@ describe('page-repository integration', () => {
       parentAccumulatedActiveState: root.accumulatedActiveState,
       parentAccumulatedStructureState: {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'A resolved the opener.' },
-          { beatId: '1.2', status: 'active' },
-          { beatId: '1.3', status: 'pending' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'A resolved the opener.' },
+          { milestoneId: '1.2', status: 'active' },
+          { milestoneId: '1.3', status: 'pending' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       },
     });
@@ -272,13 +272,13 @@ describe('page-repository integration', () => {
       parentAccumulatedActiveState: root.accumulatedActiveState,
       parentAccumulatedStructureState: {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'active' },
-          { beatId: '1.2', status: 'pending' },
-          { beatId: '1.3', status: 'pending' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'active' },
+          { milestoneId: '1.2', status: 'pending' },
+          { milestoneId: '1.3', status: 'pending' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       },
     });
@@ -292,8 +292,8 @@ describe('page-repository integration', () => {
 
     expect(loadedBranchA?.accumulatedStructureState).toEqual(branchA.accumulatedStructureState);
     expect(loadedBranchB?.accumulatedStructureState).toEqual(branchB.accumulatedStructureState);
-    expect(loadedBranchA?.accumulatedStructureState.currentBeatIndex).toBe(1);
-    expect(loadedBranchB?.accumulatedStructureState.currentBeatIndex).toBe(0);
+    expect(loadedBranchA?.accumulatedStructureState.currentMilestoneIndex).toBe(1);
+    expect(loadedBranchB?.accumulatedStructureState.currentMilestoneIndex).toBe(0);
   });
 
   it('save/load round-trip preserves active state fields with keyed entries', async () => {

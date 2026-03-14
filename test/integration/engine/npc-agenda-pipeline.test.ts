@@ -157,7 +157,7 @@ describe('resolveNpcAgendas', () => {
     mockedGenerateAgendaResolver.mockResolvedValue(mockAgendaResult);
     const deviationContext = {
       reason: 'Protagonist refused the quest',
-      newBeats: [
+      newMilestones: [
         { name: 'Reluctant Return', objective: 'Deal with consequences', role: 'turning_point' },
       ],
     };

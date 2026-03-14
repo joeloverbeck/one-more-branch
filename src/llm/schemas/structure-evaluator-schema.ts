@@ -8,15 +8,15 @@ export const STRUCTURE_EVALUATOR_SCHEMA: JsonSchema = {
     schema: {
       type: 'object',
       properties: {
-        beatConcluded: {
+        milestoneConcluded: {
           type: 'boolean',
           description:
-            'True if the active beat objective was achieved OR if the narrative has progressed beyond the beat scope into later beat territory. Evaluate cumulative progress, not just this single page.',
+            'True if the active milestone objective was achieved OR if the narrative has progressed beyond the milestone scope into later milestone territory. Evaluate cumulative progress, not just this single page.',
         },
-        beatResolution: {
+        milestoneResolution: {
           type: 'string',
           description:
-            'If beatConcluded is true, briefly describe how the beat was resolved. Required when beatConcluded is true.',
+            'If milestoneConcluded is true, briefly describe how the milestone was resolved. Required when milestoneConcluded is true.',
         },
         sceneMomentum: {
           type: 'string',
@@ -61,21 +61,21 @@ export const STRUCTURE_EVALUATOR_SCHEMA: JsonSchema = {
         deviationDetected: {
           type: 'boolean',
           description:
-            'True when remaining planned beats are invalidated by the narrative direction.',
+            'True when remaining planned milestones are invalidated by the narrative direction.',
         },
         deviationReason: {
           type: 'string',
           description: 'Concise explanation for detected deviation; empty when no deviation.',
         },
-        invalidatedBeatIds: {
+        invalidatedMilestoneIds: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Beat IDs invalidated by deviation (format: X.Y); empty when no deviation.',
+          description: 'Milestone IDs invalidated by deviation (format: X.Y); empty when no deviation.',
         },
         spineDeviationDetected: {
           type: 'boolean',
           description:
-            'True ONLY when a spine element has been IRREVERSIBLY invalidated by the narrative. This should be extremely rare — most narrative changes are beat-level deviations, not spine-level. Only set true when the central dramatic question has been definitively answered, the antagonistic force has been permanently eliminated, or the protagonist need-want arc has been fully resolved prematurely.',
+            'True ONLY when a spine element has been IRREVERSIBLY invalidated by the narrative. This should be extremely rare — most narrative changes are milestone-level deviations, not spine-level. Only set true when the central dramatic question has been definitively answered, the antagonistic force has been permanently eliminated, or the protagonist need-want arc has been fully resolved prematurely.',
         },
         spineDeviationReason: {
           type: 'string',
@@ -93,26 +93,26 @@ export const STRUCTURE_EVALUATOR_SCHEMA: JsonSchema = {
           description:
             'Which spine element was invalidated: "dramatic_question" if the CDQ was definitively answered, "antagonistic_force" if the primary opposition was permanently eliminated, "need_want" if the protagonist arc was fully resolved prematurely. null when no spine deviation.',
         },
-        alignedBeatId: {
+        alignedMilestoneId: {
           anyOf: [{ type: 'string' }, { type: 'null' }],
           description:
-            'When structuralPositionSignal is not WITHIN_ACTIVE_BEAT, identify which pending beat (by ID, e.g. "1.4" or "2.1") the narrative most closely aligns with. null when WITHIN_ACTIVE_BEAT or when no clear alignment exists.',
+            'When structuralPositionSignal is not WITHIN_ACTIVE_BEAT, identify which pending milestone (by ID, e.g. "1.4" or "2.1") the narrative most closely aligns with. null when WITHIN_ACTIVE_BEAT or when no clear alignment exists.',
         },
-        beatAlignmentConfidence: {
+        milestoneAlignmentConfidence: {
           type: 'string',
           enum: ['LOW', 'MEDIUM', 'HIGH'],
           description:
-            'Confidence in the alignedBeatId judgment. HIGH = narrative clearly satisfies most conditions of the target beat objective. MEDIUM = narrative has elements of the target beat but is ambiguous. LOW = structural position is uncertain.',
+            'Confidence in the alignedMilestoneId judgment. HIGH = narrative clearly satisfies most conditions of the target milestone objective. MEDIUM = narrative has elements of the target milestone but is ambiguous. LOW = structural position is uncertain.',
         },
-        beatAlignmentReason: {
+        milestoneAlignmentReason: {
           type: 'string',
           description:
-            'One sentence explaining why the narrative aligns with the identified beat. Empty string when alignedBeatId is null.',
+            'One sentence explaining why the narrative aligns with the identified milestone. Empty string when alignedMilestoneId is null.',
         },
         pacingIssueDetected: {
           type: 'boolean',
           description:
-            'True if the narrative shows pacing problems: a beat stalling beyond expected page count, or the story passing through its midpoint without a meaningful reveal or reversal.',
+            'True if the narrative shows pacing problems: a milestone stalling beyond expected page count, or the story passing through its midpoint without a meaningful reveal or reversal.',
         },
         pacingIssueReason: {
           type: 'string',
@@ -128,12 +128,12 @@ export const STRUCTURE_EVALUATOR_SCHEMA: JsonSchema = {
         pacingDirective: {
           type: 'string',
           description:
-            'A holistic 1-3 sentence natural-language pacing directive for the page planner. Synthesize sceneMomentum, objectiveEvidenceStrength, commitmentStrength, structuralPositionSignal, entryConditionReadiness, and the pacing budget context into a single actionable instruction. Address rhythm (breathe or accelerate?), structural position (how close is beat conclusion?), and what narrative movement the next page should deliver. Write as if briefing a writer, not classifying signals.',
+            'A holistic 1-3 sentence natural-language pacing directive for the page planner. Synthesize sceneMomentum, objectiveEvidenceStrength, commitmentStrength, structuralPositionSignal, entryConditionReadiness, and the pacing budget context into a single actionable instruction. Address rhythm (breathe or accelerate?), structural position (how close is milestone conclusion?), and what narrative movement the next page should deliver. Write as if briefing a writer, not classifying signals.',
         },
       },
       required: [
-        'beatConcluded',
-        'beatResolution',
+        'milestoneConcluded',
+        'milestoneResolution',
         'sceneMomentum',
         'objectiveEvidenceStrength',
         'commitmentStrength',
@@ -145,13 +145,13 @@ export const STRUCTURE_EVALUATOR_SCHEMA: JsonSchema = {
         'completionGateFailureReason',
         'deviationDetected',
         'deviationReason',
-        'invalidatedBeatIds',
+        'invalidatedMilestoneIds',
         'spineDeviationDetected',
         'spineDeviationReason',
         'spineInvalidatedElement',
-        'alignedBeatId',
-        'beatAlignmentConfidence',
-        'beatAlignmentReason',
+        'alignedMilestoneId',
+        'milestoneAlignmentConfidence',
+        'milestoneAlignmentReason',
         'pacingIssueDetected',
         'pacingIssueReason',
         'recommendedAction',

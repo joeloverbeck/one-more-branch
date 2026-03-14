@@ -61,8 +61,8 @@ ${context.pagePlan.continuityAnchors.map((anchor) => `- ${anchor}`).join('\n') |
 
 Writer Brief:
 - Opening line directive: ${context.pagePlan.writerBrief.openingLineDirective}
-- Must include beats:
-${context.pagePlan.writerBrief.mustIncludeBeats.map((beat) => `  - ${beat}`).join('\n') || '  - (none)'}
+- Must include milestones:
+${context.pagePlan.writerBrief.mustIncludeBeats.map((milestone) => `  - ${milestone}`).join('\n') || '  - (none)'}
 - Forbidden recaps:
 ${context.pagePlan.writerBrief.forbiddenRecaps.map((item) => `  - ${item}`).join('\n') || '  - (none)'}
 
@@ -199,7 +199,7 @@ The planner has determined this is the story's conclusion. Write this scene as a
 
 ` : ''}REQUIREMENTS (follow all):
 1. Choose the scene opening based on what matters next
-   - Option A (immediate continuation): Start exactly where the previous scene ended with an action, dialogue, or reaction in the next 1-2 beats
+   - Option A (immediate continuation): Start exactly where the previous scene ended with an action, dialogue, or reaction in the next 1-2 milestones
    - Option B (time cut): If nothing meaningful happens for a while (travel, waiting, resting, routine), SKIP time and open at the next scene where the choice's consequences matter
    - In both options: do NOT recap or summarize what happened, and do NOT repeat or rephrase the last sentence of the previous scene
    - For Option B, signal the skip with a brief time cue ("Minutes later...", "That night...", "Two days later..."), then jump straight into action or dialogue

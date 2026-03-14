@@ -31,7 +31,7 @@ function buildStructure(): StoryStructure {
         objective: 'Investigate the signal',
         stakes: 'City falls to chaos',
         entryCondition: 'Signal is detected',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             name: 'Signal triangulation',
@@ -175,7 +175,7 @@ describe('story-repository integration', () => {
           objective: 'Open with conflict',
           stakes: 'Trust collapses',
           entryCondition: 'Crisis begins',
-          beats: [
+          milestones: [
             {
               id: '1.1',
               name: 'City blackout',
@@ -220,7 +220,7 @@ describe('story-repository integration', () => {
           objective: 'Escalate pressure',
           stakes: 'Allies fracture',
           entryCondition: 'The threat adapts',
-          beats: [
+          milestones: [
             {
               id: '2.1',
               name: 'Counterintelligence push',
@@ -265,7 +265,7 @@ describe('story-repository integration', () => {
           objective: 'Resolve the conflict',
           stakes: 'Future order is decided',
           entryCondition: 'A final opening appears',
-          beats: [
+          milestones: [
             {
               id: '3.1',
               name: 'Broadcast the proof',
@@ -317,7 +317,7 @@ describe('story-repository integration', () => {
       ...initialStructure,
       acts: initialStructure.acts.map((act) => ({
         ...act,
-        beats: act.beats.map((beat) => ({ ...beat })),
+        milestones: act.milestones.map((milestone) => ({ ...milestone })),
       })),
       overallTheme: 'Integrity under pressure',
       generatedAt: new Date('2025-02-03T01:00:00.000Z'),
@@ -350,7 +350,7 @@ describe('story-repository integration', () => {
     expect(loaded?.structureVersions?.[1]?.rewriteReason).toBe(
       'Deviation invalidated infiltration path.'
     );
-    expect(loaded?.structureVersions?.[1]?.preservedBeatIds).toEqual(['1.1']);
+    expect(loaded?.structureVersions?.[1]?.preservedMilestoneIds).toEqual(['1.1']);
   });
 
   it('story lifecycle create save update load delete transitions correctly', async () => {

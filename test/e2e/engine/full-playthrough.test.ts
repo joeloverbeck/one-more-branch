@@ -355,7 +355,7 @@ const mockedStructureResult = createMockStoryStructure({
       objective: 'Reveal the initial threat.',
       stakes: 'Failure leaves the protagonist blind to the core danger.',
       entryCondition: 'A disruptive event forces action.',
-      beats: [
+      milestones: [
         {
           id: '1.1',
           name: 'First anomaly discovery',
@@ -380,7 +380,7 @@ const mockedStructureResult = createMockStoryStructure({
       objective: 'Escalate conflict and gather leverage.',
       stakes: 'Failure gives control to the antagonist force.',
       entryCondition: 'The threat network is partially mapped.',
-      beats: [
+      milestones: [
         {
           id: '2.1',
           name: 'Risky infiltration attempt',
@@ -405,7 +405,7 @@ const mockedStructureResult = createMockStoryStructure({
       objective: 'Force final resolution.',
       stakes: 'Failure permanently cements the hostile status quo.',
       entryCondition: 'Public confrontation becomes unavoidable.',
-      beats: [
+      milestones: [
         {
           id: '3.1',
           name: 'Final strategy commitment',
@@ -504,8 +504,8 @@ describe('story engine e2e full playthrough', () => {
     });
     createdStoryIds.add(start.story.id);
     for (const act of start.story.structure?.acts ?? []) {
-      for (const beat of act.beats) {
-        expect(beat.name).toBeTruthy();
+      for (const milestone of act.milestones) {
+        expect(milestone.name).toBeTruthy();
       }
     }
 

@@ -31,7 +31,7 @@ interface StructurePayload {
     objective: string;
     stakes: string;
     entryCondition: string;
-    beats: Array<{
+    milestones: Array<{
       name: string;
       description: string;
       objective: string;
@@ -64,7 +64,7 @@ function createValidStructurePayload(): StructurePayload {
         objective: 'Get pulled into the conspiracy.',
         stakes: 'Failure means execution.',
         entryCondition: 'A public murder is pinned on the protagonist.',
-        beats: [
+        milestones: [
           {
             name: 'Witness contact',
             description: 'Find a hidden witness.',
@@ -106,7 +106,7 @@ function createValidStructurePayload(): StructurePayload {
         objective: 'Expose the network while hunted.',
         stakes: 'Failure locks the city under martial rule.',
         entryCondition: 'The records name powerful conspirators.',
-        beats: [
+        milestones: [
           {
             name: 'Rival negotiation',
             description: 'Negotiate with rivals.',
@@ -148,7 +148,7 @@ function createValidStructurePayload(): StructurePayload {
         objective: 'End the conspiracy and define justice.',
         stakes: 'Failure cements permanent authoritarian control.',
         entryCondition: 'Conspirators are identified and vulnerable.',
-        beats: [
+        milestones: [
           {
             name: 'Alliance split',
             description: 'Alliance fractures.',
@@ -437,7 +437,7 @@ describe('structure-generator', () => {
       objective: 'Wrap up loose ends.',
       stakes: 'Failure leaves threads dangling.',
       entryCondition: 'The main conflict is resolved.',
-      beats: [
+      milestones: [
         {
           name: 'Aftermath',
           description: 'Survey the aftermath.',
@@ -484,15 +484,15 @@ describe('structure-generator', () => {
     await expectation;
   });
 
-  it('throws STRUCTURE_PARSE_ERROR when an act has an invalid beat count', async () => {
+  it('throws STRUCTURE_PARSE_ERROR when an act has an invalid milestone count', async () => {
     const payload = createValidStructurePayload();
     payload.acts[1] = {
       ...payload.acts[1],
-      beats: [
+      milestones: [
         {
-          name: 'Single beat',
-          description: 'Only one beat',
-          objective: 'Insufficient beats.',
+          name: 'Single milestone',
+          description: 'Only one milestone',
+          objective: 'Insufficient milestones.',
           causalLink: 'Because of prior events.',
           role: 'escalation',
         },
@@ -522,11 +522,11 @@ describe('structure-generator', () => {
     await expectation;
   });
 
-  it('throws STRUCTURE_PARSE_ERROR when a beat is missing required fields', async () => {
+  it('throws STRUCTURE_PARSE_ERROR when a milestone is missing required fields', async () => {
     const payload = createValidStructurePayload();
     payload.acts[2] = {
       ...payload.acts[2],
-      beats: [
+      milestones: [
         {
           name: 'Climax confrontation',
           description: 'Complete the confrontation.',
@@ -552,11 +552,11 @@ describe('structure-generator', () => {
     await expectation;
   });
 
-  it('throws STRUCTURE_PARSE_ERROR when a beat name is missing', async () => {
+  it('throws STRUCTURE_PARSE_ERROR when a milestone name is missing', async () => {
     const payload = createValidStructurePayload();
     payload.acts[0] = {
       ...payload.acts[0],
-      beats: [
+      milestones: [
         {
           name: undefined as unknown as string,
           description: 'Find a hidden witness.',
@@ -564,7 +564,7 @@ describe('structure-generator', () => {
           causalLink: 'Because of prior events.',
           role: 'setup',
         },
-        payload.acts[0]!.beats[1]!,
+        payload.acts[0]!.milestones[1]!,
       ],
     };
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
@@ -643,13 +643,13 @@ describe('structure-generator', () => {
     expect(result.pacingBudget).toEqual({ targetPagesMin: 15, targetPagesMax: 50 });
   });
 
-  it('falls back beat role to escalation when role is missing', async () => {
+  it('falls back milestone role to escalation when role is missing', async () => {
     const payload = createValidStructurePayload();
     const withoutRoles = {
       ...payload,
       acts: payload.acts.map((act) => ({
         ...act,
-        beats: act.beats.map(({ role: _role, ...beat }) => beat),
+        milestones: act.milestones.map(({ role: _role, ...milestone }) => milestone),
       })),
     };
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withoutRoles)));
@@ -659,19 +659,19 @@ describe('structure-generator', () => {
     });
 
     for (const act of result.acts) {
-      for (const beat of act.beats) {
-        expect(beat.role).toBe('escalation');
+      for (const milestone of act.milestones) {
+        expect(milestone.role).toBe('escalation');
       }
     }
   });
 
-  it('falls back beat role to escalation when role has invalid value', async () => {
+  it('falls back milestone role to escalation when role has invalid value', async () => {
     const payload = createValidStructurePayload();
     const withInvalidRoles = {
       ...payload,
       acts: payload.acts.map((act) => ({
         ...act,
-        beats: act.beats.map((beat) => ({ ...beat, role: 'invalid_role' })),
+        milestones: act.milestones.map((milestone) => ({ ...milestone, role: 'invalid_role' })),
       })),
     };
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(withInvalidRoles)));
@@ -683,16 +683,16 @@ describe('structure-generator', () => {
     // Parser currently accepts any string for role; the schema enforces the enum at LLM level.
     // The parser's fallback only triggers when role is not a string.
     for (const act of result.acts) {
-      for (const beat of act.beats) {
-        expect(typeof beat.role).toBe('string');
+      for (const milestone of act.milestones) {
+        expect(typeof milestone.role).toBe('string');
       }
     }
   });
 
   it('logs warning when concept verification exists and fewer than 4 unique setpieces are traced', async () => {
     const payload = createValidStructurePayload();
-    payload.acts[2]!.beats[0]!.setpieceSourceIndex = 2;
-    payload.acts[2]!.beats[1]!.setpieceSourceIndex = null;
+    payload.acts[2]!.milestones[0]!.setpieceSourceIndex = 2;
+    payload.acts[2]!.milestones[1]!.setpieceSourceIndex = null;
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
 
     await generateStoryStructure(
@@ -732,9 +732,9 @@ describe('structure-generator', () => {
 
   it('does not log setpiece warning when concept verification is absent', async () => {
     const payload = createValidStructurePayload();
-    payload.acts[1]!.beats[0]!.setpieceSourceIndex = 0;
-    payload.acts[1]!.beats[1]!.setpieceSourceIndex = null;
-    payload.acts[2]!.beats[0]!.setpieceSourceIndex = null;
+    payload.acts[1]!.milestones[0]!.setpieceSourceIndex = 0;
+    payload.acts[1]!.milestones[1]!.setpieceSourceIndex = null;
+    payload.acts[2]!.milestones[0]!.setpieceSourceIndex = null;
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
 
     await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
@@ -742,10 +742,10 @@ describe('structure-generator', () => {
     expect(mockLogger.warn).not.toHaveBeenCalled();
   });
 
-  it('logs warning when genre obligations are missing from beat tags', async () => {
+  it('logs warning when genre obligations are missing from milestone tags', async () => {
     const payload = createValidStructurePayload();
-    payload.acts[0]!.beats[1]!.obligatorySceneTag = 'crime_or_puzzle_presented';
-    payload.acts[1]!.beats[0]!.obligatorySceneTag = 'red_herring_planted';
+    payload.acts[0]!.milestones[1]!.obligatorySceneTag = 'crime_or_puzzle_presented';
+    payload.acts[1]!.milestones[0]!.obligatorySceneTag = 'red_herring_planted';
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
 
     await generateStoryStructure(
@@ -764,12 +764,12 @@ describe('structure-generator', () => {
 
   it('does not log genre obligation warning when all obligations are tagged', async () => {
     const payload = createValidStructurePayload();
-    payload.acts[0]!.beats[0]!.obligatorySceneTag = 'crime_or_puzzle_presented';
-    payload.acts[0]!.beats[1]!.obligatorySceneTag = 'red_herring_planted';
-    payload.acts[1]!.beats[0]!.obligatorySceneTag = 'key_witness_or_suspect_confronted';
-    payload.acts[1]!.beats[1]!.obligatorySceneTag = 'key_clue_recontextualized';
-    payload.acts[2]!.beats[0]!.obligatorySceneTag = 'detective_synthesis_moment';
-    payload.acts[2]!.beats[1]!.obligatorySceneTag = 'culprit_unmasked';
+    payload.acts[0]!.milestones[0]!.obligatorySceneTag = 'crime_or_puzzle_presented';
+    payload.acts[0]!.milestones[1]!.obligatorySceneTag = 'red_herring_planted';
+    payload.acts[1]!.milestones[0]!.obligatorySceneTag = 'key_witness_or_suspect_confronted';
+    payload.acts[1]!.milestones[1]!.obligatorySceneTag = 'key_clue_recontextualized';
+    payload.acts[2]!.milestones[0]!.obligatorySceneTag = 'detective_synthesis_moment';
+    payload.acts[2]!.milestones[1]!.obligatorySceneTag = 'culprit_unmasked';
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify(payload)));
 
     await generateStoryStructure(

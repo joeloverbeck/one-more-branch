@@ -2,7 +2,7 @@ import type { ContinuationGenerationResult } from '../llm/generation-pipeline-ty
 import { logger } from '../logging/index.js';
 import type {
   AccumulatedStructureState,
-  BeatDeviation,
+  MilestoneDeviation,
   PageId,
   Story,
   VersionedStoryStructure,
@@ -44,7 +44,7 @@ export async function handleDeviationIfDetected(
     };
   }
 
-  const deviation: BeatDeviation = context.result.deviation;
+  const deviation: MilestoneDeviation = context.result.deviation;
   const rewriteAttempt = 1;
   logger.info('Generation stage started', {
     ...context.logContext,

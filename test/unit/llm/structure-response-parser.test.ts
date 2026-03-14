@@ -14,7 +14,7 @@ function createValidParsedStructure(): Record<string, unknown> {
         objective: 'Identify the hidden conspirator.',
         stakes: 'Failure means immediate execution.',
         entryCondition: 'The captain is framed for mutiny.',
-        beats: [
+        milestones: [
           {
             name: 'Smuggler meeting',
             description: 'Meet a smuggler at low tide.',
@@ -44,7 +44,7 @@ function createValidParsedStructure(): Record<string, unknown> {
         objective: 'Force traitors into the open.',
         stakes: 'Failure cements martial law.',
         entryCondition: 'The ledgers reveal navy payroll fraud.',
-        beats: [
+        milestones: [
           {
             name: 'Signal interception',
             description: 'Intercept coded harbor lanterns.',
@@ -72,7 +72,7 @@ function createValidParsedStructure(): Record<string, unknown> {
         objective: 'Collapse the conspiracy.',
         stakes: 'Failure installs permanent authoritarian rule.',
         entryCondition: 'A public reveal fractures tribunal unity.',
-        beats: [
+        milestones: [
           {
             name: 'Mutiny containment',
             description: 'Contain a staged mutiny on the flagship.',
@@ -123,13 +123,13 @@ describe('structure-response-parser', () => {
 
     expect(result.initialNpcAgendas).toEqual(parsed['initialNpcAgendas']);
     expect(result.acts).toHaveLength(3);
-    expect(result.acts[1]?.beats[1]).toMatchObject({
+    expect(result.acts[1]?.milestones[1]).toMatchObject({
       isMidpoint: true,
       midpointType: 'FALSE_VICTORY',
     });
-    expect(result.acts[0]?.beats[1]?.secondaryEscalationType).toBe('REVELATION_SHIFT');
-    expect(result.acts[0]?.beats[1]?.expectedGapMagnitude).toBe('WIDE');
-    expect(result.acts[2]?.beats[1]?.obligatorySceneTag).toBe('culprit_unmasked');
+    expect(result.acts[0]?.milestones[1]?.secondaryEscalationType).toBe('REVELATION_SHIFT');
+    expect(result.acts[0]?.milestones[1]?.expectedGapMagnitude).toBe('WIDE');
+    expect(result.acts[2]?.milestones[1]?.obligatorySceneTag).toBe('culprit_unmasked');
     expect(result.openingImage).toContain('storm-lantern');
     expect(result.closingImage).toContain('dawn light');
   });
@@ -146,13 +146,13 @@ describe('structure-response-parser', () => {
 
   it('throws when midpointType exists but isMidpoint is false', () => {
     const parsed = createValidParsedStructure();
-    const invalidBeat = (parsed.acts as Array<{ beats: Array<Record<string, unknown>> }>)[0]
-      .beats[0];
+    const invalidBeat = (parsed.acts as Array<{ milestones: Array<Record<string, unknown>> }>)[0]
+      .milestones[0];
     invalidBeat['midpointType'] = 'FALSE_DEFEAT';
 
     expect(() => parseStructureResponseObject(parsed)).toThrow(LLMError);
     expect(() => parseStructureResponseObject(parsed)).toThrow(
-      'Structure beat 1.1 has midpointType but isMidpoint is false'
+      'Structure milestone 1.1 has midpointType but isMidpoint is false'
     );
   });
 
@@ -189,23 +189,23 @@ describe('structure-response-parser', () => {
 
   it('coerces invalid expectedGapMagnitude values to null', () => {
     const parsed = createValidParsedStructure();
-    const invalidBeat = (parsed.acts as Array<{ beats: Array<Record<string, unknown>> }>)[1]
-      .beats[0];
+    const invalidBeat = (parsed.acts as Array<{ milestones: Array<Record<string, unknown>> }>)[1]
+      .milestones[0];
     invalidBeat['expectedGapMagnitude'] = 'IMPOSSIBLE';
 
     const result = parseStructureResponseObject(parsed);
 
-    expect(result.acts[1]?.beats[0]?.expectedGapMagnitude).toBeNull();
+    expect(result.acts[1]?.milestones[0]?.expectedGapMagnitude).toBeNull();
   });
 
   it('coerces invalid obligatorySceneTag values to null', () => {
     const parsed = createValidParsedStructure();
-    const invalidBeat = (parsed.acts as Array<{ beats: Array<Record<string, unknown>> }>)[2]
-      .beats[0];
+    const invalidBeat = (parsed.acts as Array<{ milestones: Array<Record<string, unknown>> }>)[2]
+      .milestones[0];
     invalidBeat['obligatorySceneTag'] = 'not_a_valid_obligation_tag';
 
     const result = parseStructureResponseObject(parsed);
 
-    expect(result.acts[2]?.beats[0]?.obligatorySceneTag).toBeNull();
+    expect(result.acts[2]?.milestones[0]?.obligatorySceneTag).toBeNull();
   });
 });

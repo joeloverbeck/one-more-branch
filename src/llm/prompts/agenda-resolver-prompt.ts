@@ -46,7 +46,7 @@ export interface AgendaResolverPromptContext {
   readonly currentRelationships?: AccumulatedNpcRelationships;
   readonly deviationContext?: {
     readonly reason: string;
-    readonly newBeats: readonly {
+    readonly newMilestones: readonly {
       readonly name: string;
       readonly objective: string;
       readonly role: string;
@@ -151,15 +151,15 @@ function buildDeviationSection(context: AgendaResolverPromptContext): string {
     return '';
   }
 
-  const beatLines = context.deviationContext.newBeats
+  const milestoneLines = context.deviationContext.newMilestones
     .map((b) => `- ${b.name} (${b.role}): ${b.objective}`)
     .join('\n');
 
   return `STRUCTURAL DEVIATION ALERT:
-The story has just deviated from its planned structure. NPC agendas aligned with now-invalidated beats must be proactively realigned.
+The story has just deviated from its planned structure. NPC agendas aligned with now-invalidated milestones must be proactively realigned.
 Deviation reason: ${context.deviationContext.reason}
-New story beats going forward:
-${beatLines}
+New story milestones going forward:
+${milestoneLines}
 Realign NPC goals and off-screen behavior to reflect this structural shift.
 
 `;

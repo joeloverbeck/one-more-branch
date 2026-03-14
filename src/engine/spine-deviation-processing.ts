@@ -109,27 +109,27 @@ export async function handleSpineDeviationIfDetected(
 }
 
 /**
- * Collects all non-concluded beat IDs from the structure. Used to force
+ * Collects all non-concluded milestone IDs from the structure. Used to force
  * a full structure rewrite when the spine changes but the analyst didn't
- * detect a beat-level deviation.
+ * detect a milestone-level deviation.
  */
-export function collectRemainingBeatIds(
+export function collectRemainingMilestoneIds(
   structure: StoryStructure,
   structureState: AccumulatedStructureState
 ): string[] {
   const concludedIds = new Set(
-    structureState.beatProgressions
+    structureState.milestoneProgressions
       .filter((p) => p.status === 'concluded')
-      .map((p) => p.beatId)
+      .map((p) => p.milestoneId)
   );
 
   const remainingIds: string[] = [];
   for (let actIdx = 0; actIdx < structure.acts.length; actIdx++) {
     const act = structure.acts[actIdx]!;
-    for (let beatIdx = 0; beatIdx < act.beats.length; beatIdx++) {
-      const beatId = `${actIdx + 1}.${beatIdx + 1}`;
-      if (!concludedIds.has(beatId)) {
-        remainingIds.push(beatId);
+    for (let milestoneIdx = 0; milestoneIdx < act.milestones.length; milestoneIdx++) {
+      const milestoneId = `${actIdx + 1}.${milestoneIdx + 1}`;
+      if (!concludedIds.has(milestoneId)) {
+        remainingIds.push(milestoneId);
       }
     }
   }

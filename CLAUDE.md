@@ -547,7 +547,7 @@ When modifying interfaces like `PageWriterResult`, `StateReconciliationResult`, 
 <!-- gitnexus:start -->
 # GitNexus MCP
 
-This project is indexed by GitNexus as **one-more-branch** (5293 symbols, 13736 relationships, 300 execution flows).
+This project is indexed by GitNexus as **one-more-branch** (5431 symbols, 14074 relationships, 300 execution flows).
 
 ## Always Start Here
 

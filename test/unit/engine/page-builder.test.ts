@@ -64,11 +64,11 @@ function buildMockGenerationResult(
 
 function buildMockAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
   return {
-    beatConcluded: false,
-    beatResolution: '',
+    milestoneConcluded: false,
+    milestoneResolution: '',
     deviationDetected: false,
     deviationReason: '',
-    invalidatedBeatIds: [],
+    invalidatedMilestoneIds: [],
     sceneSummary: '',
     pacingIssueDetected: false,
     pacingIssueReason: '',
@@ -95,9 +95,9 @@ function buildMockAnalystResult(overrides?: Partial<AnalystResult>): AnalystResu
     spineDeviationDetected: false,
     spineDeviationReason: '',
     spineInvalidatedElement: null,
-    alignedBeatId: null,
-    beatAlignmentConfidence: 'LOW',
-    beatAlignmentReason: '',
+    alignedMilestoneId: null,
+    milestoneAlignmentConfidence: 'LOW',
+    milestoneAlignmentReason: '',
     thematicCharge: 'AMBIGUOUS',
     narrativeFocus: 'BALANCED',
     thematicChargeDescription: '',
@@ -150,9 +150,9 @@ describe('page-builder', () => {
       const result = buildMockGenerationResult();
       const structureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [{ beatId: '1.1', status: 'active' as const }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'active' as const }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null as string | null,
       };
       const versionId = 'sv-12345-abcdef' as StructureVersionId;
@@ -255,7 +255,7 @@ describe('page-builder', () => {
         parentAccumulatedNpcAgendas: {},
         parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
         pageActIndex: 0,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
       };
 
       const page = buildPage(result, context);
@@ -314,7 +314,7 @@ describe('page-builder', () => {
         parentAccumulatedNpcAgendas: {},
         parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
         pageActIndex: 0,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
       };
 
       const page = buildPage(result, context);
@@ -393,7 +393,7 @@ describe('page-builder', () => {
         parentAccumulatedNpcAgendas: {},
         parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
         pageActIndex: 0,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
       };
 
       const page = buildPage(result, context);
@@ -559,7 +559,7 @@ describe('page-builder', () => {
       // So age 5 > 4, SCENE promise expires. BEAT has no expiry -> survives.
       const trackedExpiring = [
         makeTrackedPromise('pr-1', 'Scene promise expiring', 4, PromiseType.FORESHADOWING, PromiseScope.SCENE),
-        makeTrackedPromise('pr-2', 'Beat promise same age', 4, PromiseType.FORESHADOWING, PromiseScope.BEAT),
+        makeTrackedPromise('pr-2', 'Milestone promise same age', 4, PromiseType.FORESHADOWING, PromiseScope.BEAT),
       ];
       const result = computeAccumulatedPromises(
         trackedExpiring,
@@ -620,7 +620,7 @@ describe('page-builder', () => {
         parentAccumulatedNpcAgendas: {},
         parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
         pageActIndex: 0,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
       };
 
       const page = buildPage(result, context);
@@ -677,7 +677,7 @@ describe('page-builder', () => {
         parentAccumulatedNpcAgendas: {},
         parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
         pageActIndex: 0,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
       };
 
       const page = buildPage(result, context);
@@ -713,7 +713,7 @@ describe('page-builder', () => {
         parentAccumulatedNpcAgendas: {},
         parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
         pageActIndex: 0,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
       };
 
       const page = buildPage(result, context);
@@ -749,7 +749,7 @@ describe('page-builder', () => {
         parentAccumulatedNpcAgendas: {},
         parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
         pageActIndex: 0,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
       };
 
       const page = buildPage(result, context);
@@ -809,7 +809,7 @@ describe('page-builder', () => {
         parentAccumulatedNpcAgendas: {},
         parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
         pageActIndex: 0,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
       };
 
       const page = buildPage(result, context);
@@ -836,11 +836,11 @@ describe('page-builder', () => {
       threadPayoffAssessments: AnalystResult['threadPayoffAssessments']
     ): AnalystResult {
       return {
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: '',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -867,9 +867,9 @@ describe('page-builder', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         thematicCharge: 'AMBIGUOUS',
         narrativeFocus: 'BALANCED',
         thematicChargeDescription: '',
@@ -960,11 +960,11 @@ rawResponse: '',
       threadPayoffAssessments: AnalystResult['threadPayoffAssessments']
     ): AnalystResult {
       return {
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: '',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -991,9 +991,9 @@ rawResponse: '',
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         thematicCharge: 'AMBIGUOUS',
         narrativeFocus: 'BALANCED',
         thematicChargeDescription: '',
@@ -1052,7 +1052,7 @@ rawResponse: '',
         parentAccumulatedNpcAgendas: {},
         parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
         pageActIndex: 0,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
       };
 
       const page = buildPage(result, context);

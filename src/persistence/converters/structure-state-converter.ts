@@ -10,13 +10,13 @@ export function structureStateToFileData(
 ): AccumulatedStructureStateFileData {
   return {
     currentActIndex: state.currentActIndex,
-    currentBeatIndex: state.currentBeatIndex,
-    beatProgressions: state.beatProgressions.map((beatProgression) => ({
-      beatId: beatProgression.beatId,
-      status: beatProgression.status,
-      resolution: beatProgression.resolution,
+    currentMilestoneIndex: state.currentMilestoneIndex,
+    milestoneProgressions: state.milestoneProgressions.map((milestoneProgression) => ({
+      milestoneId: milestoneProgression.milestoneId,
+      status: milestoneProgression.status,
+      resolution: milestoneProgression.resolution,
     })),
-    pagesInCurrentBeat: state.pagesInCurrentBeat,
+    pagesInCurrentMilestone: state.pagesInCurrentMilestone,
     pacingNudge: state.pacingNudge,
   };
 }
@@ -26,13 +26,13 @@ export function fileDataToStructureState(
 ): AccumulatedStructureState {
   return {
     currentActIndex: data.currentActIndex,
-    currentBeatIndex: data.currentBeatIndex,
-    beatProgressions: data.beatProgressions.map((beatProgression) => ({
-      beatId: beatProgression.beatId,
-      status: beatProgression.status,
-      resolution: beatProgression.resolution,
+    currentMilestoneIndex: data.currentMilestoneIndex,
+    milestoneProgressions: data.milestoneProgressions.map((milestoneProgression) => ({
+      milestoneId: milestoneProgression.milestoneId,
+      status: milestoneProgression.status,
+      resolution: milestoneProgression.resolution,
     })),
-    pagesInCurrentBeat: data.pagesInCurrentBeat,
+    pagesInCurrentMilestone: data.pagesInCurrentMilestone,
     pacingNudge: data.pacingNudge,
   };
 }

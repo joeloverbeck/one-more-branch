@@ -44,8 +44,8 @@ function createRewriteContext(
     completedBeats: [
       {
         actIndex: 0,
-        beatIndex: 0,
-        beatId: '1.1',
+        milestoneIndex: 0,
+        milestoneId: '1.1',
         name: 'Mutiny escape',
         description: 'Survive the mutiny at Blackwake Harbor',
         objective: 'Escape with command logs',
@@ -64,8 +64,8 @@ function createRewriteContext(
     plannedBeats: [],
     sceneSummary: 'The captain publicly allied with a former enemy admiral.',
     currentActIndex: 0,
-    currentBeatIndex: 1,
-    deviationReason: 'Prior rebellion beats are no longer viable after alliance reversal.',
+    currentMilestoneIndex: 1,
+    deviationReason: 'Prior rebellion milestones are no longer viable after alliance reversal.',
     originalTheme: 'Loyalty tested by survival',
     totalActCount: 3,
     ...overrides,
@@ -88,7 +88,7 @@ function createGeneratedStructure(
         objective: 'Stabilize the fragile alliance',
         stakes: 'The fleet fractures without trust',
         entryCondition: 'Alliance is announced in harbor council',
-        beats: [
+        milestones: [
           {
             name: 'Mutiny escape',
             description: 'Survive the mutiny at Blackwake Harbor',
@@ -124,7 +124,7 @@ function createGeneratedStructure(
         objective: 'Outmaneuver guild loyalists',
         stakes: 'Civil war engulfs the isles',
         entryCondition: 'Alliance fleet enters blockade corridor',
-        beats: [
+        milestones: [
           {
             name: 'Convoy interception',
             description: 'Intercept the sabotage convoy',
@@ -160,7 +160,7 @@ function createGeneratedStructure(
         objective: 'Decide who rules the fleet',
         stakes: 'The archipelago falls into tyranny',
         entryCondition: 'Stormfront closes around final harbor',
-        beats: [
+        milestones: [
           {
             name: 'Maelstrom strike',
             description: 'Lead a final strike through the maelstrom',
@@ -212,11 +212,11 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         objective: 'Objective 1',
         stakes: 'Stakes 1',
         entryCondition: 'Entry 1',
-        beats: [
+        milestones: [
           {
             id: '1.1',
-            name: 'Beat Name 1.1',
-            description: 'Beat 1.1',
+            name: 'Milestone Name 1.1',
+            description: 'Milestone 1.1',
             objective: 'Goal 1.1',
             causalLink: 'Because of prior events.',
             role: 'setup',
@@ -230,8 +230,8 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
           },
           {
             id: '1.2',
-            name: 'Beat Name 1.2',
-            description: 'Beat 1.2',
+            name: 'Milestone Name 1.2',
+            description: 'Milestone 1.2',
             objective: 'Goal 1.2',
             causalLink: 'Because of prior events.',
             role: 'turning_point',
@@ -251,11 +251,11 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         objective: 'Objective 2',
         stakes: 'Stakes 2',
         entryCondition: 'Entry 2',
-        beats: [
+        milestones: [
           {
             id: '2.1',
-            name: 'Beat Name 2.1',
-            description: 'Beat 2.1',
+            name: 'Milestone Name 2.1',
+            description: 'Milestone 2.1',
             objective: 'Goal 2.1',
             causalLink: 'Because of prior events.',
             role: 'escalation',
@@ -269,8 +269,8 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
           },
           {
             id: '2.2',
-            name: 'Beat Name 2.2',
-            description: 'Beat 2.2',
+            name: 'Milestone Name 2.2',
+            description: 'Milestone 2.2',
             objective: 'Goal 2.2',
             causalLink: 'Because of prior events.',
             role: 'turning_point',
@@ -290,11 +290,11 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
         objective: 'Objective 3',
         stakes: 'Stakes 3',
         entryCondition: 'Entry 3',
-        beats: [
+        milestones: [
           {
             id: '3.1',
-            name: 'Beat Name 3.1',
-            description: 'Beat 3.1',
+            name: 'Milestone Name 3.1',
+            description: 'Milestone 3.1',
             objective: 'Goal 3.1',
             causalLink: 'Because of prior events.',
             role: 'turning_point',
@@ -308,8 +308,8 @@ function createStoryStructure(overrides?: Partial<StoryStructure>): StoryStructu
           },
           {
             id: '3.2',
-            name: 'Beat Name 3.2',
-            description: 'Beat 3.2',
+            name: 'Milestone Name 3.2',
+            description: 'Milestone 3.2',
             objective: 'Goal 3.2',
             causalLink: 'Because of prior events.',
             role: 'resolution',
@@ -355,11 +355,11 @@ describe('structure-rewriter', () => {
         expect.any(Array)
       );
       expect(mockLogPrompt).toHaveBeenCalledTimes(1);
-      expect(result.preservedBeatIds).toEqual(['1.1']);
+      expect(result.preservedMilestoneIds).toEqual(['1.1']);
       expect(result.rawResponse).toBe('{"mock":true}');
       expect(result.structure.overallTheme).toBe(context.originalTheme);
       expect(result.structure.acts).toHaveLength(3);
-      expect(result.structure.acts[0]?.beats[0]).toEqual({
+      expect(result.structure.acts[0]?.milestones[0]).toEqual({
         id: '1.1',
         name: 'Mutiny escape',
         description: 'Survive the mutiny at Blackwake Harbor',
@@ -377,7 +377,7 @@ describe('structure-rewriter', () => {
         setpieceSourceIndex: null,
         obligatorySceneTag: null,
       });
-      expect(result.structure.acts[0]?.beats[1]).toEqual({
+      expect(result.structure.acts[0]?.milestones[1]).toEqual({
         id: '1.2',
         name: 'Neutral passage pact',
         description: 'Negotiate safe passage with neutral captains',
@@ -411,9 +411,9 @@ describe('structure-rewriter', () => {
             objective: 'Obj 1',
             stakes: 'Stakes 1',
             entryCondition: 'Entry 1',
-            beats: [
+            milestones: [
               {
-                name: 'Beat 1',
+                name: 'Milestone 1',
                 description: 'Desc 1',
                 objective: 'Goal 1',
                 role: 'setup',
@@ -423,7 +423,7 @@ describe('structure-rewriter', () => {
                 uniqueScenarioHook: null,
               },
               {
-                name: 'Beat 2',
+                name: 'Milestone 2',
                 description: 'Desc 2',
                 objective: 'Goal 2',
                 role: 'turning_point',
@@ -439,9 +439,9 @@ describe('structure-rewriter', () => {
             objective: 'Obj 2',
             stakes: 'Stakes 2',
             entryCondition: 'Entry 2',
-            beats: [
+            milestones: [
               {
-                name: 'Beat 3',
+                name: 'Milestone 3',
                 description: 'Desc 3',
                 objective: 'Goal 3',
                 role: 'escalation',
@@ -451,7 +451,7 @@ describe('structure-rewriter', () => {
                 uniqueScenarioHook: null,
               },
               {
-                name: 'Beat 4',
+                name: 'Milestone 4',
                 description: 'Desc 4',
                 objective: 'Goal 4',
                 role: 'resolution',
@@ -489,18 +489,18 @@ describe('structure-rewriter', () => {
   });
 
   describe('mergePreservedWithRegenerated', () => {
-    it('keeps preserved beats unchanged and uses sequential hierarchical beat IDs', () => {
+    it('keeps preserved milestones unchanged and uses sequential hierarchical milestone IDs', () => {
       const regenerated = createStoryStructure();
       const merged = mergePreservedWithRegenerated(
         [
           {
             actIndex: 0,
-            beatIndex: 0,
-            beatId: '1.1',
-            name: 'Preserved Beat',
+            milestoneIndex: 0,
+            milestoneId: '1.1',
+            name: 'Preserved Milestone',
             description: 'Preserved 1.1',
             objective: 'Keep original objective',
-            causalLink: 'Because this beat is already canon.',
+            causalLink: 'Because this milestone is already canon.',
             role: 'setup',
             escalationType: null,
             secondaryEscalationType: null,
@@ -519,12 +519,12 @@ describe('structure-rewriter', () => {
 
       expect(merged.overallTheme).toBe('Original theme');
       expect(merged.acts).toHaveLength(3);
-      expect(merged.acts[0]?.beats[0]).toEqual({
+      expect(merged.acts[0]?.milestones[0]).toEqual({
         id: '1.1',
-        name: 'Preserved Beat',
+        name: 'Preserved Milestone',
         description: 'Preserved 1.1',
         objective: 'Keep original objective',
-        causalLink: 'Because this beat is already canon.',
+        causalLink: 'Because this milestone is already canon.',
         role: 'setup',
         escalationType: null,
         secondaryEscalationType: null,
@@ -539,13 +539,13 @@ describe('structure-rewriter', () => {
       });
 
       for (const [actIndex, act] of merged.acts.entries()) {
-        for (const [beatIndex, beat] of act.beats.entries()) {
-          expect(beat.id).toBe(`${actIndex + 1}.${beatIndex + 1}`);
+        for (const [milestoneIndex, milestone] of act.milestones.entries()) {
+          expect(milestone.id).toBe(`${actIndex + 1}.${milestoneIndex + 1}`);
         }
       }
     });
 
-    it('retains preserved beat IDs and appends regenerated beats after the highest preserved index', () => {
+    it('retains preserved milestone IDs and appends regenerated milestones after the highest preserved index', () => {
       const regenerated = createStoryStructure({
         acts: [
           {
@@ -554,11 +554,11 @@ describe('structure-rewriter', () => {
             objective: 'Objective 1',
             stakes: 'Stakes 1',
             entryCondition: 'Entry 1',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
-                name: 'Beat Name 1.1',
-                description: 'Beat 1.1',
+                name: 'Milestone Name 1.1',
+                description: 'Milestone 1.1',
                 objective: 'Goal 1.1',
                 role: 'setup',
                 escalationType: null,
@@ -571,8 +571,8 @@ describe('structure-rewriter', () => {
               },
               {
                 id: '1.2',
-                name: 'Beat Name 1.2',
-                description: 'Beat 1.2',
+                name: 'Milestone Name 1.2',
+                description: 'Milestone 1.2',
                 objective: 'Goal 1.2',
                 role: 'turning_point',
                 escalationType: null,
@@ -591,11 +591,11 @@ describe('structure-rewriter', () => {
             objective: 'Objective 2',
             stakes: 'Stakes 2',
             entryCondition: 'Entry 2',
-            beats: [
+            milestones: [
               {
                 id: '2.1',
-                name: 'Beat Name 2.1',
-                description: 'Beat 2.1',
+                name: 'Milestone Name 2.1',
+                description: 'Milestone 2.1',
                 objective: 'Goal 2.1',
                 role: 'escalation',
                 escalationType: null,
@@ -608,8 +608,8 @@ describe('structure-rewriter', () => {
               },
               {
                 id: '2.2',
-                name: 'Beat Name 2.2',
-                description: 'Beat 2.2',
+                name: 'Milestone Name 2.2',
+                description: 'Milestone 2.2',
                 objective: 'Goal 2.2',
                 role: 'turning_point',
                 escalationType: null,
@@ -628,11 +628,11 @@ describe('structure-rewriter', () => {
             objective: 'Objective 3',
             stakes: 'Stakes 3',
             entryCondition: 'Entry 3',
-            beats: [
+            milestones: [
               {
                 id: '3.1',
-                name: 'Beat Name 3.1',
-                description: 'Beat 3.1',
+                name: 'Milestone Name 3.1',
+                description: 'Milestone 3.1',
                 objective: 'Goal 3.1',
                 role: 'turning_point',
                 escalationType: null,
@@ -645,8 +645,8 @@ describe('structure-rewriter', () => {
               },
               {
                 id: '3.2',
-                name: 'Beat Name 3.2',
-                description: 'Beat 3.2',
+                name: 'Milestone Name 3.2',
+                description: 'Milestone 3.2',
                 objective: 'Goal 3.2',
                 role: 'resolution',
                 escalationType: null,
@@ -666,12 +666,12 @@ describe('structure-rewriter', () => {
         [
           {
             actIndex: 0,
-            beatIndex: 1,
-            beatId: '1.2',
-            name: 'Preserved Beat 1.2',
+            milestoneIndex: 1,
+            milestoneId: '1.2',
+            name: 'Preserved Milestone 1.2',
             description: 'Preserved 1.2',
             objective: 'Keep original objective',
-            causalLink: 'Because this beat remains canon.',
+            causalLink: 'Because this milestone remains canon.',
             role: 'turning_point',
             escalationType: null,
             secondaryEscalationType: null,
@@ -688,12 +688,12 @@ describe('structure-rewriter', () => {
         'Original theme'
       );
 
-      expect(merged.acts[0]?.beats[0]).toEqual({
+      expect(merged.acts[0]?.milestones[0]).toEqual({
         id: '1.2',
-        name: 'Preserved Beat 1.2',
+        name: 'Preserved Milestone 1.2',
         description: 'Preserved 1.2',
         objective: 'Keep original objective',
-        causalLink: 'Because this beat remains canon.',
+        causalLink: 'Because this milestone remains canon.',
         role: 'turning_point',
         escalationType: null,
         secondaryEscalationType: null,
@@ -706,10 +706,10 @@ describe('structure-rewriter', () => {
         setpieceSourceIndex: null,
         obligatorySceneTag: null,
       });
-      expect(merged.acts[0]?.beats[1]?.id).toBe('1.3');
+      expect(merged.acts[0]?.milestones[1]?.id).toBe('1.3');
     });
 
-    it('throws when an act has neither preserved nor regenerated beats', () => {
+    it('throws when an act has neither preserved nor regenerated milestones', () => {
       const regenerated = createStoryStructure({
         acts: [
           {
@@ -718,11 +718,11 @@ describe('structure-rewriter', () => {
             objective: 'Objective 1',
             stakes: 'Stakes 1',
             entryCondition: 'Entry 1',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
-                name: 'Beat Name 1.1',
-                description: 'Beat 1.1',
+                name: 'Milestone Name 1.1',
+                description: 'Milestone 1.1',
                 objective: 'Goal 1.1',
                 role: 'setup',
                 escalationType: null,
@@ -735,8 +735,8 @@ describe('structure-rewriter', () => {
               },
               {
                 id: '1.2',
-                name: 'Beat Name 1.2',
-                description: 'Beat 1.2',
+                name: 'Milestone Name 1.2',
+                description: 'Milestone 1.2',
                 objective: 'Goal 1.2',
                 role: 'turning_point',
                 escalationType: null,
@@ -755,7 +755,7 @@ describe('structure-rewriter', () => {
             objective: 'Objective 2',
             stakes: 'Stakes 2',
             entryCondition: 'Entry 2',
-            beats: [],
+            milestones: [],
           },
           {
             id: '3',
@@ -763,11 +763,11 @@ describe('structure-rewriter', () => {
             objective: 'Objective 3',
             stakes: 'Stakes 3',
             entryCondition: 'Entry 3',
-            beats: [
+            milestones: [
               {
                 id: '3.1',
-                name: 'Beat Name 3.1',
-                description: 'Beat 3.1',
+                name: 'Milestone Name 3.1',
+                description: 'Milestone 3.1',
                 objective: 'Goal 3.1',
                 role: 'turning_point',
                 escalationType: null,
@@ -780,8 +780,8 @@ describe('structure-rewriter', () => {
               },
               {
                 id: '3.2',
-                name: 'Beat Name 3.2',
-                description: 'Beat 3.2',
+                name: 'Milestone Name 3.2',
+                description: 'Milestone 3.2',
                 objective: 'Goal 3.2',
                 role: 'resolution',
                 escalationType: null,
@@ -798,11 +798,11 @@ describe('structure-rewriter', () => {
       });
 
       expect(() => mergePreservedWithRegenerated([], regenerated, 'Original theme')).toThrow(
-        'Merged structure is missing beats for act 2'
+        'Merged structure is missing milestones for act 2'
       );
     });
 
-    it('deduplicates regenerated beats with whitespace-variant signatures', () => {
+    it('deduplicates regenerated milestones with whitespace-variant signatures', () => {
       const regenerated = createStoryStructure({
         acts: [
           {
@@ -811,10 +811,10 @@ describe('structure-rewriter', () => {
             objective: 'Objective 1',
             stakes: 'Stakes 1',
             entryCondition: 'Entry 1',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
-                name: 'New Beat',
+                name: 'New Milestone',
                 description: 'Fight  the  villain ',
                 objective: 'Defeat  evil ',
                 role: 'escalation',
@@ -834,11 +834,11 @@ describe('structure-rewriter', () => {
             objective: 'Objective 2',
             stakes: 'Stakes 2',
             entryCondition: 'Entry 2',
-            beats: [
+            milestones: [
               {
                 id: '2.1',
-                name: 'Beat 2.1',
-                description: 'Beat 2.1',
+                name: 'Milestone 2.1',
+                description: 'Milestone 2.1',
                 objective: 'Goal 2.1',
                 role: 'escalation',
                 escalationType: null,
@@ -857,11 +857,11 @@ describe('structure-rewriter', () => {
             objective: 'Objective 3',
             stakes: 'Stakes 3',
             entryCondition: 'Entry 3',
-            beats: [
+            milestones: [
               {
                 id: '3.1',
-                name: 'Beat 3.1',
-                description: 'Beat 3.1',
+                name: 'Milestone 3.1',
+                description: 'Milestone 3.1',
                 objective: 'Goal 3.1',
                 role: 'resolution',
                 escalationType: null,
@@ -881,9 +881,9 @@ describe('structure-rewriter', () => {
         [
           {
             actIndex: 0,
-            beatIndex: 0,
-            beatId: '1.1',
-            name: 'Preserved Beat',
+            milestoneIndex: 0,
+            milestoneId: '1.1',
+            name: 'Preserved Milestone',
             description: 'Fight the villain',
             objective: 'Defeat evil',
             causalLink: 'Because the climax has already been triggered.',
@@ -902,8 +902,8 @@ describe('structure-rewriter', () => {
         'Theme'
       );
 
-      expect(merged.acts[0]?.beats).toHaveLength(1);
-      expect(merged.acts[0]?.beats[0]?.name).toBe('Preserved Beat');
+      expect(merged.acts[0]?.milestones).toHaveLength(1);
+      expect(merged.acts[0]?.milestones[0]?.name).toBe('Preserved Milestone');
     });
   });
 });

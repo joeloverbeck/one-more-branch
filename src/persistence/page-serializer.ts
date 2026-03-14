@@ -119,7 +119,7 @@ export function serializePage(page: Page): PageFileData {
       page.accumulatedNpcRelationships
     ),
     pageActIndex: page.pageActIndex,
-    pageBeatIndex: page.pageBeatIndex,
+    pageMilestoneIndex: page.pageMilestoneIndex,
     isEnding: page.isEnding,
     parentPageId: page.parentPageId,
     parentChoiceIndex: page.parentChoiceIndex,
@@ -232,7 +232,7 @@ export function deserializePage(data: PageFileData): Page {
       data.accumulatedNpcRelationships
     ),
     pageActIndex: data.pageActIndex ?? data.accumulatedStructureState.currentActIndex,
-    pageBeatIndex: data.pageBeatIndex ?? data.accumulatedStructureState.currentBeatIndex,
+    pageMilestoneIndex: data.pageMilestoneIndex ?? data.accumulatedStructureState.currentMilestoneIndex,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,

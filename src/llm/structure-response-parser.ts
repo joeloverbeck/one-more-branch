@@ -86,86 +86,86 @@ export function parseStructureResponseObject(
     }
 
     if (
-      !Array.isArray(actData['beats']) ||
-      actData['beats'].length < 2 ||
-      actData['beats'].length > 4
+      !Array.isArray(actData['milestones']) ||
+      actData['milestones'].length < 2 ||
+      actData['milestones'].length > 4
     ) {
-      const received = Array.isArray(actData['beats'])
-        ? actData['beats'].length
-        : typeof actData['beats'];
+      const received = Array.isArray(actData['milestones'])
+        ? actData['milestones'].length
+        : typeof actData['milestones'];
       throw new LLMError(
-        `Structure act ${actIndex + 1} must have 2-4 beats (received: ${received})`,
+        `Structure act ${actIndex + 1} must have 2-4 milestones (received: ${received})`,
         'STRUCTURE_PARSE_ERROR',
         true
       );
     }
 
-    const beats = actData['beats'].map((beat, beatIndex) => {
-      if (typeof beat !== 'object' || beat === null || Array.isArray(beat)) {
+    const milestones = actData['milestones'].map((milestone, milestoneIndex) => {
+      if (typeof milestone !== 'object' || milestone === null || Array.isArray(milestone)) {
         throw new LLMError(
-          `Structure beat ${actIndex + 1}.${beatIndex + 1} must be an object`,
+          `Structure milestone ${actIndex + 1}.${milestoneIndex + 1} must be an object`,
           'STRUCTURE_PARSE_ERROR',
           true
         );
       }
 
-      const beatData = beat as Record<string, unknown>;
+      const milestoneData = milestone as Record<string, unknown>;
       if (
-        typeof beatData['name'] !== 'string' ||
-        typeof beatData['description'] !== 'string' ||
-        typeof beatData['objective'] !== 'string' ||
-        typeof beatData['causalLink'] !== 'string'
+        typeof milestoneData['name'] !== 'string' ||
+        typeof milestoneData['description'] !== 'string' ||
+        typeof milestoneData['objective'] !== 'string' ||
+        typeof milestoneData['causalLink'] !== 'string'
       ) {
         throw new LLMError(
-          `Structure beat ${actIndex + 1}.${beatIndex + 1} is missing required fields`,
+          `Structure milestone ${actIndex + 1}.${milestoneIndex + 1} is missing required fields`,
           'STRUCTURE_PARSE_ERROR',
           true
         );
       }
 
-      const role = typeof beatData['role'] === 'string' ? beatData['role'] : 'escalation';
+      const role = typeof milestoneData['role'] === 'string' ? milestoneData['role'] : 'escalation';
       const escalationType =
-        typeof beatData['escalationType'] === 'string' ? beatData['escalationType'] : null;
+        typeof milestoneData['escalationType'] === 'string' ? milestoneData['escalationType'] : null;
       const secondaryEscalationType =
-        typeof beatData['secondaryEscalationType'] === 'string'
-          ? beatData['secondaryEscalationType']
+        typeof milestoneData['secondaryEscalationType'] === 'string'
+          ? milestoneData['secondaryEscalationType']
           : null;
-      const crisisType = typeof beatData['crisisType'] === 'string' ? beatData['crisisType'] : null;
-      const expectedGapMagnitude = parseExpectedGapMagnitude(beatData['expectedGapMagnitude']);
-      const isMidpoint = beatData['isMidpoint'] === true;
-      const midpointType = parseMidpointType(beatData['midpointType']);
+      const crisisType = typeof milestoneData['crisisType'] === 'string' ? milestoneData['crisisType'] : null;
+      const expectedGapMagnitude = parseExpectedGapMagnitude(milestoneData['expectedGapMagnitude']);
+      const isMidpoint = milestoneData['isMidpoint'] === true;
+      const midpointType = parseMidpointType(milestoneData['midpointType']);
       const uniqueScenarioHook =
-        typeof beatData['uniqueScenarioHook'] === 'string' ? beatData['uniqueScenarioHook'] : null;
-      const approachVectors = Array.isArray(beatData['approachVectors'])
-        ? (beatData['approachVectors'] as unknown[]).filter(
+        typeof milestoneData['uniqueScenarioHook'] === 'string' ? milestoneData['uniqueScenarioHook'] : null;
+      const approachVectors = Array.isArray(milestoneData['approachVectors'])
+        ? (milestoneData['approachVectors'] as unknown[]).filter(
             (v): v is string => typeof v === 'string'
           )
         : null;
-      const setpieceSourceIndex = parseSetpieceSourceIndex(beatData['setpieceSourceIndex']);
-      const obligatorySceneTag = parseObligatorySceneTag(beatData['obligatorySceneTag']);
+      const setpieceSourceIndex = parseSetpieceSourceIndex(milestoneData['setpieceSourceIndex']);
+      const obligatorySceneTag = parseObligatorySceneTag(milestoneData['obligatorySceneTag']);
 
       if (isMidpoint) {
         midpointCount += 1;
         if (midpointType === null) {
           throw new LLMError(
-            `Structure beat ${actIndex + 1}.${beatIndex + 1} is midpoint-tagged but missing midpointType`,
+            `Structure milestone ${actIndex + 1}.${milestoneIndex + 1} is midpoint-tagged but missing midpointType`,
             'STRUCTURE_PARSE_ERROR',
             true
           );
         }
       } else if (midpointType !== null) {
         throw new LLMError(
-          `Structure beat ${actIndex + 1}.${beatIndex + 1} has midpointType but isMidpoint is false`,
+          `Structure milestone ${actIndex + 1}.${milestoneIndex + 1} has midpointType but isMidpoint is false`,
           'STRUCTURE_PARSE_ERROR',
           true
         );
       }
 
       return {
-        name: beatData['name'],
-        description: beatData['description'],
-        objective: beatData['objective'],
-        causalLink: beatData['causalLink'],
+        name: milestoneData['name'],
+        description: milestoneData['description'],
+        objective: milestoneData['objective'],
+        causalLink: milestoneData['causalLink'],
         role,
         escalationType,
         secondaryEscalationType,
@@ -185,13 +185,13 @@ export function parseStructureResponseObject(
       objective: actData['objective'],
       stakes: actData['stakes'],
       entryCondition: actData['entryCondition'],
-      beats,
+      milestones,
     };
   });
 
   if (midpointCount !== 1) {
     throw new LLMError(
-      `Structure response must flag exactly one midpoint beat (received: ${midpointCount})`,
+      `Structure response must flag exactly one midpoint milestone (received: ${midpointCount})`,
       'STRUCTURE_PARSE_ERROR',
       true
     );

@@ -99,7 +99,7 @@ export interface StoryStructureFileData {
     objective: string;
     stakes: string;
     entryCondition: string;
-    beats: Array<{
+    milestones: Array<{
       id: string;
       name: string;
       description: string;
@@ -132,7 +132,7 @@ export interface VersionedStoryStructureFileData {
   previousVersionId: string | null;
   createdAtPageId: number | null;
   rewriteReason: string | null;
-  preservedBeatIds: string[];
+  preservedMilestoneIds: string[];
   createdAt: string;
 }
 

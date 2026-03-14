@@ -35,12 +35,12 @@ function createTestStructure(acts: Array<{ id: string; name: string }>): StorySt
       objective: 'Test objective',
       stakes: 'Test stakes',
       entryCondition: 'Test entry',
-      beats: [
+      milestones: [
         {
           id: `${index + 1}.1`,
-          name: `${act.name} Beat`,
-          description: 'Test beat description',
-          objective: 'Test beat objective',
+          name: `${act.name} Milestone`,
+          description: 'Test milestone description',
+          objective: 'Test milestone objective',
           role: 'setup',
         },
       ],
@@ -72,7 +72,7 @@ function createTestVersionedStructure(
     createdAtPageId: 1,
     rewriteReason: null,
     structure,
-    preservedBeatIds: [],
+    preservedMilestoneIds: [],
   };
 }
 
@@ -119,12 +119,12 @@ describe('getActDisplayInfo', () => {
       expect(result).toEqual({
         actNumber: 1,
         actName: 'The Beginning',
-        beatId: '1.1',
-        beatName: 'The Beginning Beat',
-        displayString: 'Act 1: The Beginning - Beat 1.1: The Beginning Beat',
+        milestoneId: '1.1',
+        milestoneName: 'The Beginning Milestone',
+        displayString: 'Act 1: The Beginning - Milestone 1.1: The Beginning Milestone',
         actObjective: 'Test objective',
         actStakes: 'Test stakes',
-        beatObjective: 'Test beat objective',
+        milestoneObjective: 'Test milestone objective',
       });
     });
 
@@ -142,7 +142,7 @@ describe('getActDisplayInfo', () => {
         ...basePage,
         structureVersionId: versionId,
         pageActIndex: 1,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
         accumulatedStructureState: {
           ...createEmptyAccumulatedStructureState(),
           currentActIndex: 1,
@@ -154,12 +154,12 @@ describe('getActDisplayInfo', () => {
       expect(result).toEqual({
         actNumber: 2,
         actName: 'The Middle',
-        beatId: '2.1',
-        beatName: 'The Middle Beat',
-        displayString: 'Act 2: The Middle - Beat 2.1: The Middle Beat',
+        milestoneId: '2.1',
+        milestoneName: 'The Middle Milestone',
+        displayString: 'Act 2: The Middle - Milestone 2.1: The Middle Milestone',
         actObjective: 'Test objective',
         actStakes: 'Test stakes',
-        beatObjective: 'Test beat objective',
+        milestoneObjective: 'Test milestone objective',
       });
     });
 
@@ -177,7 +177,7 @@ describe('getActDisplayInfo', () => {
         ...basePage,
         structureVersionId: versionId,
         pageActIndex: 1,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
         accumulatedStructureState: {
           ...createEmptyAccumulatedStructureState(),
           currentActIndex: 1,
@@ -189,18 +189,18 @@ describe('getActDisplayInfo', () => {
       expect(result).toEqual({
         actNumber: 2,
         actName: 'Another Custom',
-        beatId: '2.1',
-        beatName: 'Another Custom Beat',
-        displayString: 'Act 2: Another Custom - Beat 2.1: Another Custom Beat',
+        milestoneId: '2.1',
+        milestoneName: 'Another Custom Milestone',
+        displayString: 'Act 2: Another Custom - Milestone 2.1: Another Custom Milestone',
         actObjective: 'Test objective',
         actStakes: 'Test stakes',
-        beatObjective: 'Test beat objective',
+        milestoneObjective: 'Test milestone objective',
       });
     });
   });
 
   describe('returns structure detail fields', () => {
-    it('returns actObjective, actStakes, and beatObjective from structure', () => {
+    it('returns actObjective, actStakes, and milestoneObjective from structure', () => {
       const structure: StoryStructure = {
         acts: [
           {
@@ -209,7 +209,7 @@ describe('getActDisplayInfo', () => {
             objective: 'Establish the world',
             stakes: 'Character survival',
             entryCondition: 'Story start',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
                 name: 'Discovery',
@@ -245,7 +245,7 @@ describe('getActDisplayInfo', () => {
 
       expect(result?.actObjective).toBe('Establish the world');
       expect(result?.actStakes).toBe('Character survival');
-      expect(result?.beatObjective).toBe('Find the clue');
+      expect(result?.milestoneObjective).toBe('Find the clue');
     });
 
     it('returns null for empty objective and stakes strings', () => {
@@ -257,10 +257,10 @@ describe('getActDisplayInfo', () => {
             objective: '',
             stakes: '',
             entryCondition: 'Start',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
-                name: 'Beat',
+                name: 'Milestone',
                 description: 'Desc',
                 objective: '',
                 role: 'setup',
@@ -293,7 +293,7 @@ describe('getActDisplayInfo', () => {
 
       expect(result?.actObjective).toBeNull();
       expect(result?.actStakes).toBeNull();
-      expect(result?.beatObjective).toBeNull();
+      expect(result?.milestoneObjective).toBeNull();
     });
   });
 
@@ -378,7 +378,7 @@ describe('getActDisplayInfo', () => {
         ...basePage,
         structureVersionId: versionId,
         pageActIndex: 5,
-        pageBeatIndex: 0,
+        pageMilestoneIndex: 0,
         accumulatedStructureState: {
           ...createEmptyAccumulatedStructureState(),
           currentActIndex: 5,
@@ -390,7 +390,7 @@ describe('getActDisplayInfo', () => {
       expect(result).toBeNull();
     });
 
-    it('returns null when pageBeatIndex is out of bounds', () => {
+    it('returns null when pageMilestoneIndex is out of bounds', () => {
       const structure = createTestStructure([{ id: 'act-1', name: 'Only Act' }]);
       const versionId = createTestVersionId('0001');
       const story: Story = {
@@ -401,11 +401,11 @@ describe('getActDisplayInfo', () => {
         ...basePage,
         structureVersionId: versionId,
         pageActIndex: 0,
-        pageBeatIndex: 3,
+        pageMilestoneIndex: 3,
         accumulatedStructureState: {
           ...createEmptyAccumulatedStructureState(),
           currentActIndex: 0,
-          currentBeatIndex: 3,
+          currentMilestoneIndex: 3,
         },
       };
 
@@ -991,25 +991,25 @@ describe('getMilestoneInfo', () => {
           objective: 'Establish',
           stakes: 'Survival',
           entryCondition: 'Story start',
-          beats: [
+          milestones: [
             {
               id: '1.1',
               name: 'The Sound in the Dark',
-              description: 'First beat',
+              description: 'First milestone',
               objective: 'Discover the sound',
               role: 'setup' as const,
             },
             {
               id: '1.2',
               name: 'The Face in the Shadows',
-              description: 'Second beat',
+              description: 'Second milestone',
               objective: 'Confront the shadow',
               role: 'escalation' as const,
             },
             {
               id: '1.3',
               name: 'First Blood',
-              description: 'Third beat',
+              description: 'Third milestone',
               objective: 'Survive the encounter',
               role: 'turning_point' as const,
             },
@@ -1021,11 +1021,11 @@ describe('getMilestoneInfo', () => {
           objective: 'Travel',
           stakes: 'Time',
           entryCondition: 'After act 1',
-          beats: [
+          milestones: [
             {
               id: '2.1',
               name: 'The Road Ahead',
-              description: 'First beat of act 2',
+              description: 'First milestone of act 2',
               objective: 'Set out',
               role: 'setup' as const,
             },
@@ -1041,7 +1041,7 @@ describe('getMilestoneInfo', () => {
     };
   }
 
-  it('returns null when beatConcluded is false', () => {
+  it('returns null when milestoneConcluded is false', () => {
     const structure = createMultiBeatStructure();
     const versionId = createTestVersionId('0001');
     const story: Story = {
@@ -1052,11 +1052,11 @@ describe('getMilestoneInfo', () => {
       ...basePage,
       structureVersionId: versionId,
       analystResult: {
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: '',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -1083,17 +1083,17 @@ describe('getMilestoneInfo', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: '',
       },
       accumulatedStructureState: {
         ...createEmptyAccumulatedStructureState(),
-        beatProgressions: [
-          { beatId: '1.1', status: 'active' },
-          { beatId: '1.2', status: 'pending' },
-          { beatId: '1.3', status: 'pending' },
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'active' },
+          { milestoneId: '1.2', status: 'pending' },
+          { milestoneId: '1.3', status: 'pending' },
         ],
       },
     };
@@ -1126,11 +1126,11 @@ describe('getMilestoneInfo', () => {
       ...basePage,
       structureVersionId: null,
       analystResult: {
-        beatConcluded: true,
-        beatResolution: 'Done',
+        milestoneConcluded: true,
+        milestoneResolution: 'Done',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: '',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -1157,9 +1157,9 @@ describe('getMilestoneInfo', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: '',
       },
     };
@@ -1169,11 +1169,11 @@ describe('getMilestoneInfo', () => {
 
   function createAnalystWithBeatConcluded(): Page['analystResult'] {
     return {
-      beatConcluded: true,
-      beatResolution: 'Beat resolved',
+      milestoneConcluded: true,
+      milestoneResolution: 'Milestone resolved',
       deviationDetected: false,
       deviationReason: '',
-      invalidatedBeatIds: [] as string[],
+      invalidatedMilestoneIds: [] as string[],
       sceneSummary: '',
       pacingIssueDetected: false,
       pacingIssueReason: '',
@@ -1200,14 +1200,14 @@ describe('getMilestoneInfo', () => {
       spineDeviationDetected: false,
       spineDeviationReason: '',
       spineInvalidatedElement: null,
-      alignedBeatId: null,
-      beatAlignmentConfidence: 'LOW',
-      beatAlignmentReason: '',
+      alignedMilestoneId: null,
+      milestoneAlignmentConfidence: 'LOW',
+      milestoneAlignmentReason: '',
       rawResponse: '',
     };
   }
 
-  it('returns beat type when beat concluded but not last in act', () => {
+  it('returns milestone type when milestone concluded but not last in act', () => {
     const structure = createMultiBeatStructure();
     const versionId = createTestVersionId('0001');
     const story: Story = {
@@ -1221,11 +1221,11 @@ describe('getMilestoneInfo', () => {
       accumulatedStructureState: {
         ...createEmptyAccumulatedStructureState(),
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Found the sound' },
-          { beatId: '1.2', status: 'active' },
-          { beatId: '1.3', status: 'pending' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Found the sound' },
+          { milestoneId: '1.2', status: 'active' },
+          { milestoneId: '1.3', status: 'pending' },
         ],
       },
     };
@@ -1233,12 +1233,12 @@ describe('getMilestoneInfo', () => {
     const result = getMilestoneInfo(story, page);
 
     expect(result).toEqual({
-      type: 'beat',
-      beatName: 'The Sound in the Dark',
+      type: 'milestone',
+      milestoneName: 'The Sound in the Dark',
     });
   });
 
-  it('returns act type when last beat in act concluded', () => {
+  it('returns act type when last milestone in act concluded', () => {
     const structure = createMultiBeatStructure();
     const versionId = createTestVersionId('0001');
     const story: Story = {
@@ -1252,12 +1252,12 @@ describe('getMilestoneInfo', () => {
       accumulatedStructureState: {
         ...createEmptyAccumulatedStructureState(),
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done' },
-          { beatId: '1.2', status: 'concluded', resolution: 'Done' },
-          { beatId: '1.3', status: 'concluded', resolution: 'Act complete' },
-          { beatId: '2.1', status: 'active' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Done' },
+          { milestoneId: '1.3', status: 'concluded', resolution: 'Act complete' },
+          { milestoneId: '2.1', status: 'active' },
         ],
       },
     };
@@ -1266,13 +1266,13 @@ describe('getMilestoneInfo', () => {
 
     expect(result).toEqual({
       type: 'act',
-      beatName: 'First Blood',
+      milestoneName: 'First Blood',
       actName: 'The Beginning',
       actNumber: 1,
     });
   });
 
-  it('correctly extracts beat name from structure', () => {
+  it('correctly extracts milestone name from structure', () => {
     const structure = createMultiBeatStructure();
     const versionId = createTestVersionId('0001');
     const story: Story = {
@@ -1286,11 +1286,11 @@ describe('getMilestoneInfo', () => {
       accumulatedStructureState: {
         ...createEmptyAccumulatedStructureState(),
         currentActIndex: 0,
-        currentBeatIndex: 2,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done' },
-          { beatId: '1.2', status: 'concluded', resolution: 'Done' },
-          { beatId: '1.3', status: 'active' },
+        currentMilestoneIndex: 2,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Done' },
+          { milestoneId: '1.3', status: 'active' },
         ],
       },
     };
@@ -1298,10 +1298,10 @@ describe('getMilestoneInfo', () => {
     const result = getMilestoneInfo(story, page);
 
     expect(result).not.toBeNull();
-    expect(result!.beatName).toBe('The Face in the Shadows');
+    expect(result!.milestoneName).toBe('The Face in the Shadows');
   });
 
-  it('returns null when no beat progressions have concluded status', () => {
+  it('returns null when no milestone progressions have concluded status', () => {
     const structure = createMultiBeatStructure();
     const versionId = createTestVersionId('0001');
     const story: Story = {
@@ -1314,9 +1314,9 @@ describe('getMilestoneInfo', () => {
       analystResult: createAnalystWithBeatConcluded(),
       accumulatedStructureState: {
         ...createEmptyAccumulatedStructureState(),
-        beatProgressions: [
-          { beatId: '1.1', status: 'active' },
-          { beatId: '1.2', status: 'pending' },
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'active' },
+          { milestoneId: '1.2', status: 'pending' },
         ],
       },
     };
@@ -1333,7 +1333,7 @@ describe('getMilestoneInfo', () => {
           objective: 'Begin',
           stakes: 'Life',
           entryCondition: 'Start',
-          beats: [
+          milestones: [
             { id: 'b1', name: 'Opening', description: 'Open', objective: 'Open', role: 'setup' },
           ],
         },
@@ -1356,7 +1356,7 @@ describe('getMilestoneInfo', () => {
       analystResult: createAnalystWithBeatConcluded(),
       accumulatedStructureState: {
         ...createEmptyAccumulatedStructureState(),
-        beatProgressions: [{ beatId: 'b1', status: 'concluded', resolution: 'Done' }],
+        milestoneProgressions: [{ milestoneId: 'b1', status: 'concluded', resolution: 'Done' }],
       },
     };
 
@@ -1364,7 +1364,7 @@ describe('getMilestoneInfo', () => {
 
     expect(result).toEqual({
       type: 'act',
-      beatName: 'Opening',
+      milestoneName: 'Opening',
       actName: 'Prologue',
       actNumber: 1,
     });

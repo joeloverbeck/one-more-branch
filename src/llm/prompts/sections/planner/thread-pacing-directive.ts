@@ -115,7 +115,7 @@ export function buildTrackedPromisesSection(
   }
 
   lines.push(
-    'SCENE-scoped promises auto-expire after 4 pages if unresolved. All promises are opportunities for reincorporation, not mandatory beats.'
+    'SCENE-scoped promises auto-expire after 4 pages if unresolved. All promises are opportunities for reincorporation, not mandatory milestones.'
   );
   lines.push('');
 

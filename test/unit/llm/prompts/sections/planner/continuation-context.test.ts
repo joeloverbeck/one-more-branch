@@ -6,7 +6,7 @@ import {
 } from '../../../../../../src/models/state/index.js';
 import type {
   AccumulatedStructureState,
-  BeatRole,
+  MilestoneRole,
   StoryStructure,
 } from '../../../../../../src/models/story-arc.js';
 import type { ContinuationPagePlanContext } from '../../../../../../src/llm/context-types.js';
@@ -416,7 +416,7 @@ describe('planner continuation context section', () => {
             objective: 'Setup',
             stakes: 'Failure',
             entryCondition: 'Start',
-            beats: [{ id: '1.1', name: 'Beat 1', description: 'Setup', objective: 'Setup', causalLink: 'Because setup.', role: 'setup', escalationType: null, secondaryEscalationType: null, crisisType: null, expectedGapMagnitude: null, isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: null, setpieceSourceIndex: null }],
+            milestones: [{ id: '1.1', name: 'Milestone 1', description: 'Setup', objective: 'Setup', causalLink: 'Because setup.', role: 'setup', escalationType: null, secondaryEscalationType: null, crisisType: null, expectedGapMagnitude: null, isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: null, setpieceSourceIndex: null }],
           },
           {
             id: '2',
@@ -424,7 +424,7 @@ describe('planner continuation context section', () => {
             objective: 'Escalate',
             stakes: 'Failure',
             entryCondition: 'Escalate',
-            beats: [{ id: '2.1', name: 'Beat 2', description: 'Escalate', objective: 'Escalate', causalLink: 'Because escalate.', role: 'escalation', escalationType: 'THREAT_ESCALATION', secondaryEscalationType: null, crisisType: 'BEST_BAD_CHOICE', expectedGapMagnitude: 'MODERATE', isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: ['DIRECT_FORCE', 'ANALYTICAL_REASONING'], setpieceSourceIndex: null }],
+            milestones: [{ id: '2.1', name: 'Milestone 2', description: 'Escalate', objective: 'Escalate', causalLink: 'Because escalate.', role: 'escalation', escalationType: 'THREAT_ESCALATION', secondaryEscalationType: null, crisisType: 'BEST_BAD_CHOICE', expectedGapMagnitude: 'MODERATE', isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: ['DIRECT_FORCE', 'ANALYTICAL_REASONING'], setpieceSourceIndex: null }],
           },
           {
             id: '3',
@@ -432,16 +432,16 @@ describe('planner continuation context section', () => {
             objective: 'Resolve',
             stakes: 'Collapse',
             entryCondition: 'Final',
-            beats: [{ id: '3.1', name: 'Beat 3', description: 'Resolve', objective: 'Resolve', causalLink: 'Because final.', role: 'turning_point', escalationType: 'REVELATION_SHIFT', secondaryEscalationType: null, crisisType: 'IRRECONCILABLE_GOODS', expectedGapMagnitude: 'WIDE', isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: ['ANALYTICAL_REASONING', 'PERSUASION_INFLUENCE'], setpieceSourceIndex: null }],
+            milestones: [{ id: '3.1', name: 'Milestone 3', description: 'Resolve', objective: 'Resolve', causalLink: 'Because final.', role: 'turning_point', escalationType: 'REVELATION_SHIFT', secondaryEscalationType: null, crisisType: 'IRRECONCILABLE_GOODS', expectedGapMagnitude: 'WIDE', isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: ['ANALYTICAL_REASONING', 'PERSUASION_INFLUENCE'], setpieceSourceIndex: null }],
           },
         ],
       },
       accumulatedStructureState: {
         currentActIndex: 2,
-        currentBeatIndex: 0,
-        pagesInCurrentBeat: 1,
+        currentMilestoneIndex: 0,
+        pagesInCurrentMilestone: 1,
         pacingNudge: null,
-        beatProgressions: [{ beatId: '3.1', status: 'active' }],
+        milestoneProgressions: [{ milestoneId: '3.1', status: 'active' }],
       },
     };
 
@@ -575,7 +575,7 @@ describe('planner continuation context section', () => {
             objective: 'Escape initial crackdown',
             stakes: 'Capture means execution.',
             entryCondition: 'Purge starts',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
                 description: 'Secure route through lockdown',
@@ -602,7 +602,7 @@ describe('planner continuation context section', () => {
             objective: 'Take down purge command',
             stakes: 'City falls if command survives.',
             entryCondition: 'Proof reaches resistance',
-            beats: [
+            milestones: [
               {
                 id: '2.1',
                 description: 'Raid central command',
@@ -615,14 +615,14 @@ describe('planner continuation context section', () => {
       },
       accumulatedStructureState: {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        pagesInCurrentBeat: 1,
+        currentMilestoneIndex: 1,
+        pagesInCurrentMilestone: 1,
         pacingNudge: null,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Route secured through maintenance' },
-          { beatId: '1.2', status: 'active' },
-          { beatId: '1.3', status: 'pending' },
-          { beatId: '2.1', status: 'pending' },
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Route secured through maintenance' },
+          { milestoneId: '1.2', status: 'active' },
+          { milestoneId: '1.3', status: 'pending' },
+          { milestoneId: '2.1', status: 'pending' },
         ],
       },
     };
@@ -636,7 +636,7 @@ describe('planner continuation context section', () => {
     expect(result).toContain('[ ] PENDING (turning_point): Expose the city directive');
     expect(result).toContain('REMAINING ACTS:');
     expect(result).not.toContain('Current Act Index:');
-    expect(result).not.toContain('Current Beat Index:');
+    expect(result).not.toContain('Current Milestone Index:');
   });
 
   it('renders optional sections as (none) when state is empty', () => {
@@ -1038,7 +1038,7 @@ describe('planner continuation context section', () => {
     expect(result).not.toContain('PROTAGONIST GUIDANCE');
   });
 
-  it('includes escalation directive when active beat role is escalation', () => {
+  it('includes escalation directive when active milestone role is escalation', () => {
     const context: ContinuationPagePlanContext = {
       mode: 'continuation',
       tone: 'gritty cyberpunk',
@@ -1075,7 +1075,7 @@ describe('planner continuation context section', () => {
             objective: 'Escape',
             stakes: 'Death',
             entryCondition: 'Start',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
                 name: 'Setup',
@@ -1096,12 +1096,12 @@ describe('planner continuation context section', () => {
       },
       accumulatedStructureState: {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        pagesInCurrentBeat: 1,
+        currentMilestoneIndex: 1,
+        pagesInCurrentMilestone: 1,
         pacingNudge: null,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Route secured through maintenance' },
-          { beatId: '1.2', status: 'active' },
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Route secured through maintenance' },
+          { milestoneId: '1.2', status: 'active' },
         ],
       },
     };
@@ -1109,7 +1109,7 @@ describe('planner continuation context section', () => {
     const result = buildPlannerContinuationContextSection(context);
 
     expect(result).toContain('=== ESCALATION DIRECTIVE ===');
-    expect(result).toContain('MUST raise stakes beyond the previous beat');
+    expect(result).toContain('MUST raise stakes beyond the previous milestone');
     expect(result).toContain('Route secured through maintenance');
     expect(result).toContain('"More complicated" is NOT escalation');
   });
@@ -1117,9 +1117,9 @@ describe('planner continuation context section', () => {
 
 describe('buildEscalationDirective', () => {
   const makeStructure = (
-    beatRoles: Array<{
+    milestoneRoles: Array<{
       id: string;
-      role: BeatRole;
+      role: MilestoneRole;
       escalationType?: string | null;
       secondaryEscalationType?: string | null;
       crisisType?: string | null;
@@ -1140,9 +1140,9 @@ describe('buildEscalationDirective', () => {
         objective: 'Obj',
         stakes: 'Stakes',
         entryCondition: 'Start',
-        beats: beatRoles.map((b) => ({
+        milestones: milestoneRoles.map((b) => ({
           id: b.id,
-          name: `Beat ${b.id}`,
+          name: `Milestone ${b.id}`,
           description: `Desc for ${b.id}`,
           objective: `Obj for ${b.id}`,
           role: b.role,
@@ -1160,20 +1160,20 @@ describe('buildEscalationDirective', () => {
     expect(buildEscalationDirective(undefined, undefined)).toBe('');
   });
 
-  it('returns empty string when beat role is setup', () => {
+  it('returns empty string when milestone role is setup', () => {
     const structure = makeStructure([{ id: '1.1', role: 'setup' }]);
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      pagesInCurrentBeat: 1,
+      currentMilestoneIndex: 0,
+      pagesInCurrentMilestone: 1,
       pacingNudge: null,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
     };
 
     expect(buildEscalationDirective(structure, state)).toBe('');
   });
 
-  it('returns empty string for non-final resolution beats', () => {
+  it('returns empty string for non-final resolution milestones', () => {
     const structure: StoryStructure = {
       overallTheme: 'Test',
       premise: 'Test',
@@ -1188,10 +1188,10 @@ describe('buildEscalationDirective', () => {
           objective: 'Obj',
           stakes: 'Stakes',
           entryCondition: 'Start',
-          beats: [
+          milestones: [
             {
               id: '1.1',
-              name: 'Beat 1.1',
+              name: 'Milestone 1.1',
               description: 'Desc',
               objective: 'Obj',
               causalLink: 'Because setup.',
@@ -1214,10 +1214,10 @@ describe('buildEscalationDirective', () => {
           objective: 'Obj 2',
           stakes: 'Stakes 2',
           entryCondition: 'Continue',
-          beats: [
+          milestones: [
             {
               id: '2.1',
-              name: 'Beat 2.1',
+              name: 'Milestone 2.1',
               description: 'Desc 2',
               objective: 'Obj 2',
               causalLink: 'Because continue.',
@@ -1238,23 +1238,23 @@ describe('buildEscalationDirective', () => {
     };
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      pagesInCurrentBeat: 1,
+      currentMilestoneIndex: 0,
+      pagesInCurrentMilestone: 1,
       pacingNudge: null,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
     };
 
     expect(buildEscalationDirective(structure, state)).toBe('');
   });
 
-  it('returns final resolution image directive for last beat of final act', () => {
+  it('returns final resolution image directive for last milestone of final act', () => {
     const structure = makeStructure([{ id: '1.1', role: 'resolution' }]);
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      pagesInCurrentBeat: 1,
+      currentMilestoneIndex: 0,
+      pagesInCurrentMilestone: 1,
       pacingNudge: null,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
     };
 
     const result = buildEscalationDirective(structure, state);
@@ -1263,19 +1263,19 @@ describe('buildEscalationDirective', () => {
     expect(result).toContain('mirrors or contrasts the opening image');
   });
 
-  it('returns reflection directive when beat role is reflection', () => {
+  it('returns reflection directive when milestone role is reflection', () => {
     const structure = makeStructure([
       { id: '1.1', role: 'turning_point' },
       { id: '1.2', role: 'reflection' },
     ]);
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 1,
-      pagesInCurrentBeat: 1,
+      currentMilestoneIndex: 1,
+      pagesInCurrentMilestone: 1,
       pacingNudge: null,
-      beatProgressions: [
-        { beatId: '1.1', status: 'concluded', resolution: 'Hard truth accepted' },
-        { beatId: '1.2', status: 'active' },
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'concluded', resolution: 'Hard truth accepted' },
+        { milestoneId: '1.2', status: 'active' },
       ],
     };
 
@@ -1283,46 +1283,46 @@ describe('buildEscalationDirective', () => {
 
     expect(result).toContain('=== REFLECTION DIRECTIVE ===');
     expect(result).toContain('thematic or internal deepening');
-    expect(result).toContain('Previous beat resolved: "Hard truth accepted"');
+    expect(result).toContain('Previous milestone resolved: "Hard truth accepted"');
     expect(result).toContain('Reflection is NOT recap');
   });
 
-  it('returns escalation directive with previous beat resolution', () => {
+  it('returns escalation directive with previous milestone resolution', () => {
     const structure = makeStructure([
       { id: '1.1', role: 'setup' },
       { id: '1.2', role: 'escalation' },
     ]);
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 1,
-      pagesInCurrentBeat: 1,
+      currentMilestoneIndex: 1,
+      pagesInCurrentMilestone: 1,
       pacingNudge: null,
-      beatProgressions: [
-        { beatId: '1.1', status: 'concluded', resolution: 'Safehouse secured' },
-        { beatId: '1.2', status: 'active' },
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'concluded', resolution: 'Safehouse secured' },
+        { milestoneId: '1.2', status: 'active' },
       ],
     };
 
     const result = buildEscalationDirective(structure, state);
 
     expect(result).toContain('=== ESCALATION DIRECTIVE ===');
-    expect(result).toContain('Previous beat resolved: "Safehouse secured"');
+    expect(result).toContain('Previous milestone resolved: "Safehouse secured"');
     expect(result).toContain('more costly to fail');
   });
 
-  it('returns turning point directive when beat role is turning_point', () => {
+  it('returns turning point directive when milestone role is turning_point', () => {
     const structure = makeStructure([
       { id: '1.1', role: 'setup' },
       { id: '1.2', role: 'turning_point' },
     ]);
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 1,
-      pagesInCurrentBeat: 1,
+      currentMilestoneIndex: 1,
+      pagesInCurrentMilestone: 1,
       pacingNudge: null,
-      beatProgressions: [
-        { beatId: '1.1', status: 'concluded', resolution: 'Route found' },
-        { beatId: '1.2', status: 'active' },
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'concluded', resolution: 'Route found' },
+        { milestoneId: '1.2', status: 'active' },
       ],
     };
 
@@ -1330,11 +1330,11 @@ describe('buildEscalationDirective', () => {
 
     expect(result).toContain('=== TURNING POINT DIRECTIVE ===');
     expect(result).toContain('irreversible shift');
-    expect(result).toContain('Previous beat resolved: "Route found"');
+    expect(result).toContain('Previous milestone resolved: "Route found"');
     expect(result).toContain('status quo is permanently destroyed');
   });
 
-  it('includes crisis type guidance when present on active beat', () => {
+  it('includes crisis type guidance when present on active milestone', () => {
     const structure = makeStructure([
       { id: '1.1', role: 'setup' },
       {
@@ -1346,12 +1346,12 @@ describe('buildEscalationDirective', () => {
     ]);
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 1,
-      pagesInCurrentBeat: 1,
+      currentMilestoneIndex: 1,
+      pagesInCurrentMilestone: 1,
       pacingNudge: null,
-      beatProgressions: [
-        { beatId: '1.1', status: 'concluded', resolution: 'Route found' },
-        { beatId: '1.2', status: 'active' },
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'concluded', resolution: 'Route found' },
+        { milestoneId: '1.2', status: 'active' },
       ],
     };
 
@@ -1363,7 +1363,7 @@ describe('buildEscalationDirective', () => {
     );
   });
 
-  it('includes secondary escalation guidance when present on active beat', () => {
+  it('includes secondary escalation guidance when present on active milestone', () => {
     const structure = makeStructure([
       { id: '1.1', role: 'setup' },
       {
@@ -1375,12 +1375,12 @@ describe('buildEscalationDirective', () => {
     ]);
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 1,
-      pagesInCurrentBeat: 1,
+      currentMilestoneIndex: 1,
+      pagesInCurrentMilestone: 1,
       pacingNudge: null,
-      beatProgressions: [
-        { beatId: '1.1', status: 'concluded', resolution: 'Route found' },
-        { beatId: '1.2', status: 'active' },
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'concluded', resolution: 'Route found' },
+        { milestoneId: '1.2', status: 'active' },
       ],
     };
 
@@ -1392,20 +1392,20 @@ describe('buildEscalationDirective', () => {
     );
   });
 
-  it('handles first beat in act with no previous resolution', () => {
+  it('handles first milestone in act with no previous resolution', () => {
     const structure = makeStructure([{ id: '1.1', role: 'escalation' }]);
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      pagesInCurrentBeat: 1,
+      currentMilestoneIndex: 0,
+      pagesInCurrentMilestone: 1,
       pacingNudge: null,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
     };
 
     const result = buildEscalationDirective(structure, state);
 
     expect(result).toContain('=== ESCALATION DIRECTIVE ===');
-    expect(result).not.toContain('Previous beat resolved:');
+    expect(result).not.toContain('Previous milestone resolved:');
   });
 
   it('includes midpoint directive even when role is setup', () => {
@@ -1414,10 +1414,10 @@ describe('buildEscalationDirective', () => {
     ]);
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      pagesInCurrentBeat: 1,
+      currentMilestoneIndex: 0,
+      pagesInCurrentMilestone: 1,
       pacingNudge: null,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
     };
 
     const result = buildEscalationDirective(structure, state);

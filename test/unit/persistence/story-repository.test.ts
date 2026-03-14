@@ -41,7 +41,7 @@ function buildTestStructure(): StoryStructure {
         objective: 'Start the journey',
         stakes: 'Lose your home',
         entryCondition: 'A call to action appears',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             name: 'Guide encounter',
@@ -119,7 +119,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
         objective: 'Regroup',
         stakes: 'Lose the final clue',
         entryCondition: 'The plan fails',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             name: 'Ambush escape',
@@ -171,7 +171,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
       previousVersionId: null,
       createdAtPageId: null,
       rewriteReason: null,
-      preservedBeatIds: [],
+      preservedMilestoneIds: [],
       createdAt: new Date('2025-01-01T00:00:00.000Z'),
     },
     {
@@ -180,7 +180,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
       previousVersionId: firstVersionId,
       createdAtPageId: parsePageId(4),
       rewriteReason: 'Player joined the enemy faction',
-      preservedBeatIds: ['1.1'],
+      preservedMilestoneIds: ['1.1'],
       createdAt: new Date('2025-01-01T01:00:00.000Z'),
     },
   ] as const;
@@ -233,12 +233,12 @@ describe('story-repository', () => {
 
     const loaded = await loadStory(story.id);
     expect(loaded?.structure).toEqual(story.structure);
-    expect(loaded?.structure?.acts[0]?.beats[0]?.name).toBe('Guide encounter');
+    expect(loaded?.structure?.acts[0]?.milestones[0]?.name).toBe('Guide encounter');
 
     const persisted = await fsPromises.readFile(getStoryFilePath(story.id), 'utf-8');
     const parsed = JSON.parse(persisted) as Record<string, unknown>;
-    const structure = parsed['structure'] as { acts: Array<{ beats: Array<{ name: string }> }> };
-    expect(structure.acts[0]?.beats[0]?.name).toBe('Guide encounter');
+    const structure = parsed['structure'] as { acts: Array<{ milestones: Array<{ name: string }> }> };
+    expect(structure.acts[0]?.milestones[0]?.name).toBe('Guide encounter');
     expect(parsed['structure']).toBeDefined();
   });
 
@@ -257,10 +257,10 @@ describe('story-repository', () => {
 
     const persisted = await fsPromises.readFile(getStoryFilePath(story.id), 'utf-8');
     const parsed = JSON.parse(persisted) as {
-      structureVersions: Array<{ structure: { acts: Array<{ beats: Array<{ name: string }> }> } }>;
+      structureVersions: Array<{ structure: { acts: Array<{ milestones: Array<{ name: string }> }> } }>;
     };
-    expect(parsed.structureVersions[0]?.structure.acts[0]?.beats[0]?.name).toBe('Guide encounter');
-    expect(parsed.structureVersions[1]?.structure.acts[0]?.beats[0]?.name).toBe('Ambush escape');
+    expect(parsed.structureVersions[0]?.structure.acts[0]?.milestones[0]?.name).toBe('Guide encounter');
+    expect(parsed.structureVersions[1]?.structure.acts[0]?.milestones[0]?.name).toBe('Ambush escape');
   });
 
   it('loadStory returns null when story does not exist', async () => {
@@ -396,7 +396,7 @@ describe('story-repository', () => {
     );
   });
 
-  it('loadStory throws when persisted structure beat is missing causalLink', async () => {
+  it('loadStory throws when persisted structure milestone is missing causalLink', async () => {
     const story = buildTestStory();
     createdStoryIds.add(story.id);
     await ensureDirectory(getStoryDir(story.id));
@@ -417,10 +417,10 @@ describe('story-repository', () => {
             objective: 'Objective',
             stakes: 'Stakes',
             entryCondition: 'Entry',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
-                name: 'Beat',
+                name: 'Milestone',
                 description: 'Description',
                 objective: 'Objective',
                 role: 'setup',
@@ -449,7 +449,7 @@ describe('story-repository', () => {
     });
 
     await expect(loadStory(story.id)).rejects.toThrow(
-      'Persisted story beat 1.1 is missing required causalLink'
+      'Persisted story milestone 1.1 is missing required causalLink'
     );
   });
 

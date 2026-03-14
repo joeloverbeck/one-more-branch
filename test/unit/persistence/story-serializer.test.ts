@@ -146,9 +146,9 @@ describe('story-serializer', () => {
               objective: 'Setup',
               stakes: 'Low',
               entryCondition: 'Start',
-              beats: [
+              milestones: [
                 {
-                  id: 'beat-1',
+                  id: 'milestone-1',
                   name: 'Opening',
                   description: 'The beginning',
                   objective: 'Introduce hero',
@@ -172,9 +172,9 @@ describe('story-serializer', () => {
 
       expect(result.structure).not.toBeNull();
       expect(result.structure!.acts).toHaveLength(1);
-      expect(result.structure!.acts[0].beats).toHaveLength(1);
-      expect(result.structure!.acts[0].beats[0].role).toBe('setup');
-      expect(result.structure!.acts[0].beats[0].secondaryEscalationType).toBe('REVELATION_SHIFT');
+      expect(result.structure!.acts[0].milestones).toHaveLength(1);
+      expect(result.structure!.acts[0].milestones[0].role).toBe('setup');
+      expect(result.structure!.acts[0].milestones[0].secondaryEscalationType).toBe('REVELATION_SHIFT');
       expect(result.structure!.overallTheme).toBe('Redemption');
       expect(result.structure!.generatedAt).toEqual(new Date('2025-01-01T12:00:00.000Z'));
     });
@@ -196,7 +196,7 @@ describe('story-serializer', () => {
             previousVersionId: null,
             createdAtPageId: parsePageId(3),
             rewriteReason: 'deviation',
-            preservedBeatIds: ['beat-1', 'beat-2'],
+            preservedMilestoneIds: ['milestone-1', 'milestone-2'],
             createdAt: new Date('2025-01-02T00:00:00.000Z'),
           },
         ],
@@ -207,7 +207,7 @@ describe('story-serializer', () => {
       expect(result.structureVersions).toHaveLength(1);
       expect(result.structureVersions[0].id).toBe(story.structureVersions[0].id);
       expect(result.structureVersions[0].createdAtPageId).toBe(3);
-      expect(result.structureVersions[0].preservedBeatIds).toEqual(['beat-1', 'beat-2']);
+      expect(result.structureVersions[0].preservedMilestoneIds).toEqual(['milestone-1', 'milestone-2']);
     });
 
     it('preserves decomposed characters', () => {

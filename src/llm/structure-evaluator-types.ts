@@ -20,11 +20,11 @@ export type StructuralPositionSignal =
   | 'BRIDGING_TO_NEXT_BEAT'
   | 'CLEARLY_IN_NEXT_BEAT';
 export type EntryConditionReadiness = 'NOT_READY' | 'PARTIAL' | 'READY';
-export type BeatAlignmentConfidence = 'LOW' | 'MEDIUM' | 'HIGH';
+export type MilestoneAlignmentConfidence = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export interface StructureEvaluatorResult {
-  beatConcluded: boolean;
-  beatResolution: string;
+  milestoneConcluded: boolean;
+  milestoneResolution: string;
   sceneMomentum: SceneMomentum;
   objectiveEvidenceStrength: ObjectiveEvidenceStrength;
   commitmentStrength: CommitmentStrength;
@@ -36,13 +36,13 @@ export interface StructureEvaluatorResult {
   completionGateFailureReason: string;
   deviationDetected: boolean;
   deviationReason: string;
-  invalidatedBeatIds: string[];
+  invalidatedMilestoneIds: string[];
   spineDeviationDetected: boolean;
   spineDeviationReason: string;
   spineInvalidatedElement: 'dramatic_question' | 'antagonistic_force' | 'need_want' | null;
-  alignedBeatId: string | null;
-  beatAlignmentConfidence: BeatAlignmentConfidence;
-  beatAlignmentReason: string;
+  alignedMilestoneId: string | null;
+  milestoneAlignmentConfidence: MilestoneAlignmentConfidence;
+  milestoneAlignmentReason: string;
   pacingIssueDetected: boolean;
   pacingIssueReason: string;
   recommendedAction: PacingRecommendedAction;

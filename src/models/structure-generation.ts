@@ -1,6 +1,6 @@
 import type { NpcAgenda } from './state/npc-agenda.js';
 
-export interface GeneratedBeat {
+export interface GeneratedMilestone {
   name: string;
   description: string;
   objective: string;
@@ -23,7 +23,7 @@ export interface GeneratedAct {
   objective: string;
   stakes: string;
   entryCondition: string;
-  beats: GeneratedBeat[];
+  milestones: GeneratedMilestone[];
 }
 
 export interface StructureGenerationResult {

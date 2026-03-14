@@ -94,8 +94,8 @@ function buildTrajectoryWarnings(trajectory: MomentumTrajectory): string {
   );
   if (consecutiveWeakEvidence >= 3) {
     lines.push(
-      `WARNING: The last ${consecutiveWeakEvidence} scenes produced no clear evidence of beat objective progress. ` +
-        'Plan MUST make direct progress toward the current beat objective.'
+      `WARNING: The last ${consecutiveWeakEvidence} scenes produced no clear evidence of milestone objective progress. ` +
+        'Plan MUST make direct progress toward the current milestone objective.'
     );
   }
 
@@ -350,7 +350,7 @@ function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefin
       "- Create dramatic irony opportunities: plan situations where the protagonist's inner thoughts contrast with what other characters perceive."
     );
     lines.push(
-      '- Surface via internal monologue: include a must-include beat in writerBrief for the protagonist reflecting along these lines.'
+      '- Surface via internal monologue: include a must-include milestone in writerBrief for the protagonist reflecting along these lines.'
     );
     lines.push('');
   }
@@ -362,7 +362,7 @@ function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefin
     lines.push('Incorporate this speech into your plan:');
     lines.push('- Shape the sceneIntent so the scene creates a natural moment for this speech.');
     lines.push(
-      '- Include a must-include beat in writerBrief that reflects the protagonist voicing this intent.'
+      '- Include a must-include milestone in writerBrief that reflects the protagonist voicing this intent.'
     );
     lines.push('- Consider how NPCs and the situation would react to this kind of statement.');
     lines.push("- Let the speech intent influence the scene's dramatic direction.");
@@ -385,53 +385,53 @@ export function buildEscalationDirective(
     return '';
   }
 
-  const activeBeat = currentAct.beats[accumulatedStructureState.currentBeatIndex];
-  if (!activeBeat) {
+  const activeMilestone = currentAct.milestones[accumulatedStructureState.currentMilestoneIndex];
+  if (!activeMilestone) {
     return '';
   }
 
   const isFinalResolutionBeat =
-    activeBeat.role === 'resolution' &&
+    activeMilestone.role === 'resolution' &&
     accumulatedStructureState.currentActIndex === structure.acts.length - 1 &&
-    accumulatedStructureState.currentBeatIndex === currentAct.beats.length - 1;
+    accumulatedStructureState.currentMilestoneIndex === currentAct.milestones.length - 1;
 
   const hasRoleDirective =
-    activeBeat.role === 'escalation' ||
-    activeBeat.role === 'turning_point' ||
-    activeBeat.role === 'reflection';
-  if (!hasRoleDirective && !activeBeat.isMidpoint && !isFinalResolutionBeat) {
+    activeMilestone.role === 'escalation' ||
+    activeMilestone.role === 'turning_point' ||
+    activeMilestone.role === 'reflection';
+  if (!hasRoleDirective && !activeMilestone.isMidpoint && !isFinalResolutionBeat) {
     return '';
   }
 
-  const previousResolution = findPreviousBeatResolution(
-    currentAct.beats,
+  const previousResolution = findPreviousMilestoneResolution(
+    currentAct.milestones,
     accumulatedStructureState
   );
 
   const lines: string[] = [];
 
-  if (activeBeat.role === 'escalation') {
+  if (activeMilestone.role === 'escalation') {
     lines.push('=== ESCALATION DIRECTIVE ===');
     lines.push(
-      'The active beat role is "escalation". This scene MUST raise stakes beyond the previous beat.'
+      'The active milestone role is "escalation". This scene MUST raise stakes beyond the previous milestone.'
     );
     if (previousResolution) {
-      lines.push(`Previous beat resolved: "${previousResolution}"`);
+      lines.push(`Previous milestone resolved: "${previousResolution}"`);
     }
-    if (activeBeat.escalationType) {
-      lines.push(`Escalation mechanism: ${activeBeat.escalationType} — plan a scene that delivers this specific type of escalation.`);
+    if (activeMilestone.escalationType) {
+      lines.push(`Escalation mechanism: ${activeMilestone.escalationType} — plan a scene that delivers this specific type of escalation.`);
     }
-    if (activeBeat.secondaryEscalationType) {
-      lines.push(`Secondary escalation mechanism: ${activeBeat.secondaryEscalationType} — layer this as an additional pressure axis in the same scene.`);
+    if (activeMilestone.secondaryEscalationType) {
+      lines.push(`Secondary escalation mechanism: ${activeMilestone.secondaryEscalationType} — layer this as an additional pressure axis in the same scene.`);
     }
-    if (activeBeat.crisisType) {
-      lines.push(`Crisis type: ${activeBeat.crisisType} — shape the scene so the dilemma matches this crisis form.`);
+    if (activeMilestone.crisisType) {
+      lines.push(`Crisis type: ${activeMilestone.crisisType} — shape the scene so the dilemma matches this crisis form.`);
     }
-    if (activeBeat.uniqueScenarioHook) {
-      lines.push(`Unique scenario hook: ${activeBeat.uniqueScenarioHook}`);
+    if (activeMilestone.uniqueScenarioHook) {
+      lines.push(`Unique scenario hook: ${activeMilestone.uniqueScenarioHook}`);
     }
-    if (activeBeat.approachVectors && activeBeat.approachVectors.length > 0) {
-      lines.push(`Approach vectors: ${activeBeat.approachVectors.join(', ')} — consider these when designing the scene's dramatic question.`);
+    if (activeMilestone.approachVectors && activeMilestone.approachVectors.length > 0) {
+      lines.push(`Approach vectors: ${activeMilestone.approachVectors.join(', ')} — consider these when designing the scene's dramatic question.`);
     }
     lines.push('Requirements:');
     lines.push(
@@ -443,28 +443,28 @@ export function buildEscalationDirective(
     lines.push(
       '- "More complicated" is NOT escalation — escalation means "more costly to fail"'
     );
-  } else if (activeBeat.role === 'turning_point') {
+  } else if (activeMilestone.role === 'turning_point') {
     lines.push('=== TURNING POINT DIRECTIVE ===');
     lines.push(
-      'The active beat role is "turning_point". This scene MUST deliver an irreversible shift.'
+      'The active milestone role is "turning_point". This scene MUST deliver an irreversible shift.'
     );
     if (previousResolution) {
-      lines.push(`Previous beat resolved: "${previousResolution}"`);
+      lines.push(`Previous milestone resolved: "${previousResolution}"`);
     }
-    if (activeBeat.escalationType) {
-      lines.push(`Turning point mechanism: ${activeBeat.escalationType} — plan a scene that delivers this specific type of shift.`);
+    if (activeMilestone.escalationType) {
+      lines.push(`Turning point mechanism: ${activeMilestone.escalationType} — plan a scene that delivers this specific type of shift.`);
     }
-    if (activeBeat.secondaryEscalationType) {
-      lines.push(`Secondary turning point mechanism: ${activeBeat.secondaryEscalationType} — ensure the irreversible shift lands across both escalation axes.`);
+    if (activeMilestone.secondaryEscalationType) {
+      lines.push(`Secondary turning point mechanism: ${activeMilestone.secondaryEscalationType} — ensure the irreversible shift lands across both escalation axes.`);
     }
-    if (activeBeat.crisisType) {
-      lines.push(`Crisis type: ${activeBeat.crisisType} — shape the scene so the pivotal decision matches this crisis form.`);
+    if (activeMilestone.crisisType) {
+      lines.push(`Crisis type: ${activeMilestone.crisisType} — shape the scene so the pivotal decision matches this crisis form.`);
     }
-    if (activeBeat.uniqueScenarioHook) {
-      lines.push(`Unique scenario hook: ${activeBeat.uniqueScenarioHook}`);
+    if (activeMilestone.uniqueScenarioHook) {
+      lines.push(`Unique scenario hook: ${activeMilestone.uniqueScenarioHook}`);
     }
-    if (activeBeat.approachVectors && activeBeat.approachVectors.length > 0) {
-      lines.push(`Approach vectors: ${activeBeat.approachVectors.join(', ')} — consider these when designing the scene's dramatic question.`);
+    if (activeMilestone.approachVectors && activeMilestone.approachVectors.length > 0) {
+      lines.push(`Approach vectors: ${activeMilestone.approachVectors.join(', ')} — consider these when designing the scene's dramatic question.`);
     }
     lines.push('Requirements:');
     lines.push(
@@ -476,13 +476,13 @@ export function buildEscalationDirective(
     lines.push(
       '- "More complicated" is NOT a turning point — a turning point means the status quo is permanently destroyed'
     );
-  } else if (activeBeat.role === 'reflection') {
+  } else if (activeMilestone.role === 'reflection') {
     lines.push('=== REFLECTION DIRECTIVE ===');
     lines.push(
-      'The active beat role is "reflection". This scene MUST deliver thematic or internal deepening without forced escalation.'
+      'The active milestone role is "reflection". This scene MUST deliver thematic or internal deepening without forced escalation.'
     );
     if (previousResolution) {
-      lines.push(`Previous beat resolved: "${previousResolution}"`);
+      lines.push(`Previous milestone resolved: "${previousResolution}"`);
     }
     lines.push('Requirements:');
     lines.push(
@@ -496,12 +496,12 @@ export function buildEscalationDirective(
     );
   }
 
-  if (activeBeat.isMidpoint) {
+  if (activeMilestone.isMidpoint) {
     lines.push('=== MIDPOINT DIRECTIVE ===');
     lines.push(
-      'This beat is the structural midpoint. The scene should deliver a central reversal that reorients the trajectory of the story.'
+      'This milestone is the structural midpoint. The scene should deliver a central reversal that reorients the trajectory of the story.'
     );
-    lines.push(`Midpoint type: ${activeBeat.midpointType ?? 'UNSPECIFIED'}`);
+    lines.push(`Midpoint type: ${activeMilestone.midpointType ?? 'UNSPECIFIED'}`);
     lines.push(
       '- FALSE_VICTORY: apparent success that conceals cost, instability, or strategic error'
     );
@@ -516,7 +516,7 @@ export function buildEscalationDirective(
   if (isFinalResolutionBeat) {
     lines.push('=== FINAL RESOLUTION IMAGE DIRECTIVE ===');
     lines.push(
-      `This is the final resolution beat. Plan the scene so its climactic visual lands on or clearly sets up this closing image: "${structure.closingImage}"`
+      `This is the final resolution milestone. Plan the scene so its climactic visual lands on or clearly sets up this closing image: "${structure.closingImage}"`
     );
     lines.push(
       `Ensure the closing image meaningfully mirrors or contrasts the opening image: "${structure.openingImage}".`
@@ -525,7 +525,7 @@ export function buildEscalationDirective(
       '- The scene should create pathways that can credibly converge to this ending visual.'
     );
     lines.push(
-      'Consider setting isEnding to true if this resolution beat completes the story arc and no further scenes are needed.'
+      'Consider setting isEnding to true if this resolution milestone completes the story arc and no further scenes are needed.'
     );
   }
 
@@ -533,18 +533,18 @@ export function buildEscalationDirective(
   return lines.join('\n') + '\n';
 }
 
-function findPreviousBeatResolution(
-  beats: readonly { readonly id: string }[],
+function findPreviousMilestoneResolution(
+  milestones: readonly { readonly id: string }[],
   state: AccumulatedStructureState
 ): string | null {
-  const currentBeatIndex = state.currentBeatIndex;
+  const currentMilestoneIndex = state.currentMilestoneIndex;
 
-  for (let i = currentBeatIndex - 1; i >= 0; i--) {
-    const beat = beats[i];
-    if (!beat) {
+  for (let i = currentMilestoneIndex - 1; i >= 0; i--) {
+    const milestone = milestones[i];
+    if (!milestone) {
       continue;
     }
-    const progression = state.beatProgressions.find((p) => p.beatId === beat.id);
+    const progression = state.milestoneProgressions.find((p) => p.milestoneId === milestone.id);
     if (
       progression?.status === 'concluded' &&
       progression.resolution &&

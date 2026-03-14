@@ -5,7 +5,7 @@ import {
 import { ThreatType, ThreadType, Urgency } from '../../../../src/models/state/keyed-entry';
 import type { ProtagonistAffect } from '../../../../src/models/protagonist-affect';
 import type { ActiveState } from '../../../../src/models/state';
-import type { StoryStructure, AccumulatedStructureState, StoryBeat } from '../../../../src/models/story-arc';
+import type { StoryStructure, AccumulatedStructureState, StoryMilestone } from '../../../../src/models/story-arc';
 import type { StorySpine } from '../../../../src/models/story-spine';
 import { buildMinimalDecomposedCharacter } from '../../../fixtures/decomposed';
 
@@ -29,9 +29,9 @@ function makeActiveState(overrides: Partial<ActiveState> = {}): ActiveState {
   };
 }
 
-function makeMinimalBeat(overrides: Partial<StoryBeat> = {}): StoryBeat {
+function makeMinimalBeat(overrides: Partial<StoryMilestone> = {}): StoryMilestone {
   return {
-    id: 'beat-1',
+    id: 'milestone-1',
     name: 'The Discovery',
     description: 'Finding the hidden door',
     objective: 'Introduce the mystery',
@@ -178,7 +178,7 @@ describe('buildChoiceGeneratorPrompt', () => {
     expect(messages[1].content).toContain('Can Kael overcome his past?');
   });
 
-  it('includes beat objective when structure and state are provided', () => {
+  it('includes milestone objective when structure and state are provided', () => {
     const structure: StoryStructure = {
       acts: [
         {
@@ -187,7 +187,7 @@ describe('buildChoiceGeneratorPrompt', () => {
           objective: 'Establish the world',
           stakes: 'survival',
           entryCondition: 'story begins',
-          beats: [makeMinimalBeat()],
+          milestones: [makeMinimalBeat()],
         },
       ],
       overallTheme: 'redemption',
@@ -199,9 +199,9 @@ describe('buildChoiceGeneratorPrompt', () => {
     };
     const accumulatedStructureState: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [],
-      pagesInCurrentBeat: 1,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [],
+      pagesInCurrentMilestone: 1,
       pacingNudge: null,
     };
     const messages = buildChoiceGeneratorPrompt(

@@ -222,7 +222,7 @@ function buildStructure(): StoryStructure {
         objective: 'Get inside the censors bureau',
         stakes: 'All courier cells are exposed if you fail',
         entryCondition: 'Curfew patrols intensify',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             description: 'Secure a forged transit seal',
@@ -256,7 +256,7 @@ function buildTurningPointFirstBeatStructure(): StoryStructure {
         objective: 'Force a point-of-no-return decision',
         stakes: 'Failure means the conspiracy becomes untouchable',
         entryCondition: 'Evidence is assembled',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             description: 'Make the public accusation',
@@ -626,7 +626,7 @@ describe('page-service', () => {
       expect(page.parentChoiceIndex).toBeNull();
       expect(page.accumulatedStructureState).toEqual({
         ...createInitialStructureState(structure),
-        pagesInCurrentBeat: 1,
+        pagesInCurrentMilestone: 1,
       });
       expect(page.structureVersionId).toBe(initialVersion.id);
       expect(page.choices.map((choice) => choice.text)).toEqual([
@@ -683,11 +683,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'Opening scene establishes immediate stakes.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -714,9 +714,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
@@ -941,9 +941,9 @@ describe('page-service', () => {
       );
       expect(page.accumulatedStructureState).toEqual({
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       });
       expect(updatedStory.structure).toBeNull();
@@ -1362,11 +1362,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'The protagonist recovered useful clues.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -1393,9 +1393,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
@@ -1602,7 +1602,7 @@ describe('page-service', () => {
       expect(mockedStorage.getMaxPageId).not.toHaveBeenCalled();
     });
 
-    it('advances structure state when continuation result concludes the current beat', async () => {
+    it('advances structure state when continuation result concludes the current milestone', async () => {
       const structure = buildStructure();
       const initialVersion = createInitialVersionedStructure(structure);
       const parentStructureState = createInitialStructureState(structure);
@@ -1667,11 +1667,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: true,
-        beatResolution: 'The forged transit seal got you through the checkpoint.',
+        milestoneConcluded: true,
+        milestoneResolution: 'The forged transit seal got you through the checkpoint.',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -1698,23 +1698,23 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
       expect(page.accumulatedStructureState.currentActIndex).toBe(0);
-      expect(page.accumulatedStructureState.currentBeatIndex).toBe(1);
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.1',
+      expect(page.accumulatedStructureState.currentMilestoneIndex).toBe(1);
+      expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.1',
         status: 'concluded',
         resolution: 'The forged transit seal got you through the checkpoint.',
       });
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.2',
+      expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.2',
         status: 'active',
       });
     });
@@ -1778,11 +1778,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: true,
-        beatResolution: 'The accusation scene escalates rapidly.',
+        milestoneConcluded: true,
+        milestoneResolution: 'The accusation scene escalates rapidly.',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -1809,39 +1809,39 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
-      expect(page.accumulatedStructureState.currentBeatIndex).toBe(0);
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.1',
+      expect(page.accumulatedStructureState.currentMilestoneIndex).toBe(0);
+      expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.1',
         status: 'active',
       });
       expect(mockedLogger.warn).toHaveBeenCalledWith(
-        'Turning point completion gate mismatch; forcing beatConcluded=false',
+        'Turning point completion gate mismatch; forcing milestoneConcluded=false',
         expect.objectContaining({
           storyId: story.id,
           parentPageId: parentPage.id,
-          beatId: '1.1',
-          beatRole: 'turning_point',
+          milestoneId: '1.1',
+          milestoneRole: 'turning_point',
           completionGateFailureReason: 'No explicit irrevocable commitment was made.',
         })
       );
     });
 
-    it('does not apply turning_point guardrail to non-turning_point beats', async () => {
+    it('does not apply turning_point guardrail to non-turning_point milestones', async () => {
       const structure = buildStructure();
       const initialVersion = createInitialVersionedStructure(structure);
       const parentStructureState = createInitialStructureState(structure);
       const story = buildStory({ structure, structureVersions: [initialVersion] });
       const parentPage = createPage({
         id: parsePageId(2),
-        narrativeText: 'You are still on the setup beat.',
+        narrativeText: 'You are still on the setup milestone.',
         sceneSummary: 'Test summary of the scene events and consequences.',
         choices: [createChoice('Push through checkpoint'), createChoice('Retreat')],
         inventoryChanges: { added: ['Forged papers'], removed: [] },
@@ -1894,11 +1894,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: true,
-        beatResolution: 'Checkpoint bypassed successfully.',
+        milestoneConcluded: true,
+        milestoneResolution: 'Checkpoint bypassed successfully.',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -1912,7 +1912,7 @@ describe('page-service', () => {
         objectiveAnchors: ['Gain access credentials'],
         anchorEvidence: ['Forged papers are accepted and access is granted.'],
         completionGateSatisfied: false,
-        completionGateFailureReason: 'Intentional control case for non-turning-point beat.',
+        completionGateFailureReason: 'Intentional control case for non-turning-point milestone.',
         toneAdherent: true,
         toneDriftDescription: '',
         npcCoherenceAdherent: true,
@@ -1925,17 +1925,17 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
-      expect(page.accumulatedStructureState.currentBeatIndex).toBe(1);
+      expect(page.accumulatedStructureState.currentMilestoneIndex).toBe(1);
       expect(mockedLogger.warn).not.toHaveBeenCalledWith(
-        'Turning point completion gate mismatch; forcing beatConcluded=false',
+        'Turning point completion gate mismatch; forcing milestoneConcluded=false',
         expect.anything()
       );
     });
@@ -2000,11 +2000,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: true,
-        beatResolution: 'The accusation is publicly and irreversibly committed.',
+        milestoneConcluded: true,
+        milestoneResolution: 'The accusation is publicly and irreversibly committed.',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -2031,23 +2031,23 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
       const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
-      expect(page.accumulatedStructureState.currentBeatIndex).toBe(1);
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.1',
+      expect(page.accumulatedStructureState.currentMilestoneIndex).toBe(1);
+      expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.1',
         status: 'concluded',
         resolution: 'The accusation is publicly and irreversibly committed.',
       });
     });
 
-    it('keeps structure state unchanged when continuation result does not conclude the beat', async () => {
+    it('keeps structure state unchanged when continuation result does not conclude the milestone', async () => {
       const structure = buildStructure();
       const initialVersion = createInitialVersionedStructure(structure);
       const parentStructureState = createInitialStructureState(structure);
@@ -2109,11 +2109,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -2140,9 +2140,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
@@ -2150,7 +2150,7 @@ describe('page-service', () => {
 
       expect(page.accumulatedStructureState).toEqual({
         ...parentPage.accumulatedStructureState,
-        pagesInCurrentBeat: parentPage.accumulatedStructureState.pagesInCurrentBeat + 1,
+        pagesInCurrentMilestone: parentPage.accumulatedStructureState.pagesInCurrentMilestone + 1,
       });
     });
 
@@ -2255,14 +2255,14 @@ describe('page-service', () => {
           isEnding: false,
           rawResponse: 'raw',
         });
-      // Branch 1: analyst concludes the beat; Branch 2: analyst does not
+      // Branch 1: analyst concludes the milestone; Branch 2: analyst does not
       mockedRunAnalystEvaluation
         .mockResolvedValueOnce(wrapAnalystResult({
-          beatConcluded: true,
-          beatResolution: 'Checkpoint breached with forged credentials.',
+          milestoneConcluded: true,
+          milestoneResolution: 'Checkpoint breached with forged credentials.',
           deviationDetected: false,
           deviationReason: '',
-          invalidatedBeatIds: [],
+          invalidatedMilestoneIds: [],
           sceneSummary: 'The protagonist continues the current scene.',
           pacingIssueDetected: false,
           pacingIssueReason: '',
@@ -2289,17 +2289,17 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
-          alignedBeatId: null,
-          beatAlignmentConfidence: 'LOW',
-          beatAlignmentReason: '',
+          alignedMilestoneId: null,
+          milestoneAlignmentConfidence: 'LOW',
+          milestoneAlignmentReason: '',
           rawResponse: 'raw-analyst',
         }))
         .mockResolvedValueOnce(wrapAnalystResult({
-          beatConcluded: false,
-          beatResolution: '',
+          milestoneConcluded: false,
+          milestoneResolution: '',
           deviationDetected: false,
           deviationReason: '',
-          invalidatedBeatIds: [],
+          invalidatedMilestoneIds: [],
           sceneSummary: 'The protagonist continues the current scene.',
           pacingIssueDetected: false,
           pacingIssueReason: '',
@@ -2326,21 +2326,21 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
-          alignedBeatId: null,
-          beatAlignmentConfidence: 'LOW',
-          beatAlignmentReason: '',
+          alignedMilestoneId: null,
+          milestoneAlignmentConfidence: 'LOW',
+          milestoneAlignmentReason: '',
           rawResponse: 'raw-analyst',
         }));
 
       const branchOne = await generateNextPage(story, parentPage, 0, 'test-key');
       const branchTwo = await generateNextPage(story, parentPage, 1, 'test-key');
 
-      expect(branchOne.page.accumulatedStructureState.currentBeatIndex).toBe(1);
+      expect(branchOne.page.accumulatedStructureState.currentMilestoneIndex).toBe(1);
       expect(branchTwo.page.accumulatedStructureState).toEqual({
         ...parentPage.accumulatedStructureState,
-        pagesInCurrentBeat: parentPage.accumulatedStructureState.pagesInCurrentBeat + 1,
+        pagesInCurrentMilestone: parentPage.accumulatedStructureState.pagesInCurrentMilestone + 1,
       });
-      expect(parentPage.accumulatedStructureState.currentBeatIndex).toBe(0);
+      expect(parentPage.accumulatedStructureState.currentMilestoneIndex).toBe(0);
     });
 
     it('does not trigger structure rewrite when deviation is not detected', async () => {
@@ -2406,11 +2406,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -2437,9 +2437,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
@@ -2487,7 +2487,7 @@ describe('page-service', () => {
             objective: 'Prove loyalty to the empire',
             stakes: 'Discovery means execution',
             entryCondition: 'After defection',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
                 description: 'Accept imperial posting',
@@ -2508,7 +2508,7 @@ describe('page-service', () => {
       const mockRewriter = {
         rewriteStructure: jest.fn().mockResolvedValue({
           structure: rewrittenStructure,
-          preservedBeatIds: [],
+          preservedMilestoneIds: [],
           rawResponse: 'rewritten',
         }),
       };
@@ -2558,11 +2558,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: true,
-        deviationReason: 'Current infiltration beats are invalid after defection.',
-        invalidatedBeatIds: ['1.2'],
+        deviationReason: 'Current infiltration milestones are invalid after defection.',
+        invalidatedMilestoneIds: ['1.2'],
         sceneSummary: 'Protagonist joined imperial command hierarchy.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -2589,9 +2589,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
@@ -2609,7 +2609,7 @@ describe('page-service', () => {
           decomposedCharacters: story.decomposedCharacters,
           decomposedWorld: story.decomposedWorld,
           tone: story.tone,
-          deviationReason: 'Current infiltration beats are invalid after defection.',
+          deviationReason: 'Current infiltration milestones are invalid after defection.',
           sceneSummary: 'Test summary of the scene events and consequences.',
         }),
         'test-key'
@@ -2625,7 +2625,7 @@ describe('page-service', () => {
         initialStructureVersion.id
       );
       expect(updatedStory.structureVersions?.[1]?.rewriteReason).toBe(
-        'Current infiltration beats are invalid after defection.'
+        'Current infiltration milestones are invalid after defection.'
       );
       expect(updatedStory.structureVersions?.[1]?.createdAtPageId).toBe(page.id);
       expect(updatedStory.globalCanon).toContainEqual({ text: 'Resistance branded you a traitor', factType: 'LAW' });
@@ -2681,16 +2681,16 @@ describe('page-service', () => {
             objective: 'Different objective',
             stakes: 'Different stakes',
             entryCondition: 'Different entry',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
-                description: 'Different beat 1',
+                description: 'Different milestone 1',
                 objective: 'Different obj 1',
                 role: 'setup' as const,
               },
               {
                 id: '1.2',
-                description: 'Different beat 2',
+                description: 'Different milestone 2',
                 objective: 'Different obj 2',
                 role: 'escalation' as const,
               },
@@ -2704,7 +2704,7 @@ describe('page-service', () => {
         previousVersionId: versionV1.id,
         createdAtPageId: parsePageId(99),
         rewriteReason: 'Another branch caused this rewrite',
-        preservedBeatIds: [],
+        preservedMilestoneIds: [],
         createdAt: new Date('2026-01-02T00:00:00.000Z'),
       };
 
@@ -2767,11 +2767,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -2798,9 +2798,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
@@ -2966,7 +2966,7 @@ describe('page-service', () => {
             objective: 'Follow new direction',
             stakes: 'Everything',
             entryCondition: 'After betrayal',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
                 description: 'Accept new role',
@@ -2981,7 +2981,7 @@ describe('page-service', () => {
       const mockRewriter = {
         rewriteStructure: jest.fn().mockResolvedValue({
           structure: rewrittenStructure,
-          preservedBeatIds: [],
+          preservedMilestoneIds: [],
           rawResponse: 'rewritten',
         }),
       };
@@ -3027,11 +3027,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: true,
-        deviationReason: 'Player chose to betray allies, invalidating trust-based beats.',
-        invalidatedBeatIds: ['1.1', '1.2'],
+        deviationReason: 'Player chose to betray allies, invalidating trust-based milestones.',
+        invalidatedMilestoneIds: ['1.1', '1.2'],
         sceneSummary: 'Alliance shattered after betrayal.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -3058,9 +3058,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
@@ -3069,9 +3069,9 @@ describe('page-service', () => {
       expect(deviationInfo).toBeDefined();
       expect(deviationInfo?.detected).toBe(true);
       expect(deviationInfo?.reason).toBe(
-        'Player chose to betray allies, invalidating trust-based beats.'
+        'Player chose to betray allies, invalidating trust-based milestones.'
       );
-      expect(deviationInfo?.beatsInvalidated).toBe(2);
+      expect(deviationInfo?.milestonesInvalidated).toBe(2);
     });
 
     it('returns undefined deviationInfo when no deviation detected', async () => {
@@ -3129,11 +3129,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -3160,9 +3160,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
@@ -3171,12 +3171,12 @@ describe('page-service', () => {
       expect(deviationInfo).toBeUndefined();
     });
 
-    it('passes pre-incremented pagesInCurrentBeat to analyst evaluation', async () => {
+    it('passes pre-incremented pagesInCurrentMilestone to analyst evaluation', async () => {
       const structure = buildStructure();
       const initialVersion = createInitialVersionedStructure(structure);
       const parentStructureState = {
         ...createInitialStructureState(structure),
-        pagesInCurrentBeat: 2,
+        pagesInCurrentMilestone: 2,
       };
       const parentAccumulatedPromises = [
         {
@@ -3238,11 +3238,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -3269,9 +3269,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
@@ -3291,8 +3291,8 @@ describe('page-service', () => {
       }
 
       const [analystInput] = firstAnalystCall;
-      expect(analystInput.parentStructureState.pagesInCurrentBeat).toBe(
-        parentStructureState.pagesInCurrentBeat
+      expect(analystInput.parentStructureState.pagesInCurrentMilestone).toBe(
+        parentStructureState.pagesInCurrentMilestone
       );
       expect(analystInput.activeTrackedPromises).toEqual(
         withPromiseAge(parentAccumulatedPromises, parentPage.promiseAgeEpoch)
@@ -3362,7 +3362,7 @@ describe('page-service', () => {
       expect(page.narrativeText).toBe('You follow the dusty road toward the distant village.');
     });
 
-    it('continues with default beat/deviation values when analyst call fails', async () => {
+    it('continues with default milestone/deviation values when analyst call fails', async () => {
       const structure = buildStructure();
       const initialVersion = createInitialVersionedStructure(structure);
       const parentStructureState = createInitialStructureState(structure);
@@ -3430,11 +3430,11 @@ describe('page-service', () => {
 
       const { page, metrics } = await generateNextPage(story, parentPage, 0, 'test-key');
 
-      // Page should still be generated successfully with default beat/deviation values
+      // Page should still be generated successfully with default milestone/deviation values
       expect(page.narrativeText).toBe('You burst through the door into the darkened room.');
       expect(page.accumulatedStructureState).toEqual({
         ...parentPage.accumulatedStructureState,
-        pagesInCurrentBeat: parentPage.accumulatedStructureState.pagesInCurrentBeat + 1,
+        pagesInCurrentMilestone: parentPage.accumulatedStructureState.pagesInCurrentMilestone + 1,
       });
       expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
       // Degradation is now reported via metrics, not a logger.warn call
@@ -3509,14 +3509,14 @@ describe('page-service', () => {
       it('sets pacingNudge when recommendedAction is nudge', async () => {
         const { story, parentPage } = buildPacingTestSetup();
         mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-          beatConcluded: false,
-          beatResolution: '',
+          milestoneConcluded: false,
+          milestoneResolution: '',
           deviationDetected: false,
           deviationReason: '',
-          invalidatedBeatIds: [],
+          invalidatedMilestoneIds: [],
           sceneSummary: 'The protagonist continues the current scene.',
           pacingIssueDetected: true,
-          pacingIssueReason: 'Beat stalled',
+          pacingIssueReason: 'Milestone stalled',
           recommendedAction: 'nudge',
           sceneMomentum: 'STASIS',
           objectiveEvidenceStrength: 'NONE',
@@ -3540,25 +3540,25 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
-          alignedBeatId: null,
-          beatAlignmentConfidence: 'LOW',
-          beatAlignmentReason: '',
+          alignedMilestoneId: null,
+          milestoneAlignmentConfidence: 'LOW',
+          milestoneAlignmentReason: '',
           rawResponse: 'raw-analyst',
         }));
 
         const { page } = await generateNextPage(story, parentPage, 0, 'test-key');
 
-        expect(page.accumulatedStructureState.pacingNudge).toBe('Beat stalled');
+        expect(page.accumulatedStructureState.pacingNudge).toBe('Milestone stalled');
       });
 
       it('clears pacingNudge when recommendedAction is none', async () => {
         const { story, parentPage } = buildPacingTestSetup();
         mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-          beatConcluded: false,
-          beatResolution: '',
+          milestoneConcluded: false,
+          milestoneResolution: '',
           deviationDetected: false,
           deviationReason: '',
-          invalidatedBeatIds: [],
+          invalidatedMilestoneIds: [],
           sceneSummary: 'The protagonist continues the current scene.',
           pacingIssueDetected: false,
           pacingIssueReason: '',
@@ -3585,9 +3585,9 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
-          alignedBeatId: null,
-          beatAlignmentConfidence: 'LOW',
-          beatAlignmentReason: '',
+          alignedMilestoneId: null,
+          milestoneAlignmentConfidence: 'LOW',
+          milestoneAlignmentReason: '',
           rawResponse: 'raw-analyst',
         }));
 
@@ -3599,14 +3599,14 @@ describe('page-service', () => {
       it('logs warning for rewrite but does not trigger rewrite', async () => {
         const { story, parentPage } = buildPacingTestSetup();
         mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-          beatConcluded: false,
-          beatResolution: '',
+          milestoneConcluded: false,
+          milestoneResolution: '',
           deviationDetected: false,
           deviationReason: '',
-          invalidatedBeatIds: [],
+          invalidatedMilestoneIds: [],
           sceneSummary: 'The protagonist continues the current scene.',
           pacingIssueDetected: true,
-          pacingIssueReason: 'Beat dragging on too long',
+          pacingIssueReason: 'Milestone dragging on too long',
           recommendedAction: 'rewrite',
           sceneMomentum: 'STASIS',
           objectiveEvidenceStrength: 'NONE',
@@ -3630,9 +3630,9 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
-          alignedBeatId: null,
-          beatAlignmentConfidence: 'LOW',
-          beatAlignmentReason: '',
+          alignedMilestoneId: null,
+          milestoneAlignmentConfidence: 'LOW',
+          milestoneAlignmentReason: '',
           rawResponse: 'raw-analyst',
         }));
 
@@ -3640,7 +3640,7 @@ describe('page-service', () => {
 
         expect((logger.warn as jest.Mock).mock.calls).toContainEqual([
           'Pacing issue detected: rewrite recommended (deferred)',
-          expect.objectContaining({ pacingIssueReason: 'Beat dragging on too long' }),
+          expect.objectContaining({ pacingIssueReason: 'Milestone dragging on too long' }),
         ]);
         expect(mockedCreateStructureRewriter).not.toHaveBeenCalled();
         expect(page.accumulatedStructureState.pacingNudge).toBeNull();
@@ -3678,7 +3678,7 @@ describe('page-service', () => {
               objective: 'Survive',
               stakes: 'Everything',
               entryCondition: 'After defection',
-              beats: [
+              milestones: [
                 {
                   id: '1.1',
                   description: 'New beginning',
@@ -3693,7 +3693,7 @@ describe('page-service', () => {
         const mockRewriter = {
           rewriteStructure: jest.fn().mockResolvedValue({
             structure: rewrittenStructure,
-            preservedBeatIds: [],
+            preservedMilestoneIds: [],
             rawResponse: 'rewritten',
           }),
         };
@@ -3743,14 +3743,14 @@ describe('page-service', () => {
           rawResponse: 'raw',
         });
         mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-          beatConcluded: false,
-          beatResolution: '',
+          milestoneConcluded: false,
+          milestoneResolution: '',
           deviationDetected: true,
-          deviationReason: 'Defection invalidates current beats.',
-          invalidatedBeatIds: ['1.1', '1.2'],
+          deviationReason: 'Defection invalidates current milestones.',
+          invalidatedMilestoneIds: ['1.1', '1.2'],
           sceneSummary: 'Player defected.',
           pacingIssueDetected: true,
-          pacingIssueReason: 'Beat stalled before defection',
+          pacingIssueReason: 'Milestone stalled before defection',
           recommendedAction: 'nudge',
           sceneMomentum: 'STASIS',
           objectiveEvidenceStrength: 'NONE',
@@ -3774,9 +3774,9 @@ describe('page-service', () => {
           spineDeviationDetected: false,
           spineDeviationReason: '',
           spineInvalidatedElement: null,
-          alignedBeatId: null,
-          beatAlignmentConfidence: 'LOW',
-          beatAlignmentReason: '',
+          alignedMilestoneId: null,
+          milestoneAlignmentConfidence: 'LOW',
+          milestoneAlignmentReason: '',
           rawResponse: 'raw-analyst',
         }));
 
@@ -4154,10 +4154,10 @@ describe('page-service', () => {
             objective: 'New direction',
             stakes: 'High',
             entryCondition: 'After deviation',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
-                description: 'New beat',
+                description: 'New milestone',
                 objective: 'New objective',
                 role: 'setup' as const,
               },
@@ -4169,7 +4169,7 @@ describe('page-service', () => {
       const mockRewriter = {
         rewriteStructure: jest.fn().mockResolvedValue({
           structure: rewrittenStructure,
-          preservedBeatIds: [],
+          preservedMilestoneIds: [],
           rawResponse: 'rewritten',
         }),
       };
@@ -4209,11 +4209,11 @@ describe('page-service', () => {
         rawResponse: 'raw',
       });
       mockedRunAnalystEvaluation.mockResolvedValue(wrapAnalystResult({
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: true,
-        deviationReason: 'Story deviated from planned beats.',
-        invalidatedBeatIds: ['1.1'],
+        deviationReason: 'Story deviated from planned milestones.',
+        invalidatedMilestoneIds: ['1.1'],
         sceneSummary: 'Player chose unexpected path.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -4240,9 +4240,9 @@ describe('page-service', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: 'raw-analyst',
       }));
 
@@ -4251,8 +4251,8 @@ describe('page-service', () => {
       expect(result.wasGenerated).toBe(true);
       expect(result.deviationInfo).toBeDefined();
       expect(result.deviationInfo?.detected).toBe(true);
-      expect(result.deviationInfo?.reason).toBe('Story deviated from planned beats.');
-      expect(result.deviationInfo?.beatsInvalidated).toBe(1);
+      expect(result.deviationInfo?.reason).toBe('Story deviated from planned milestones.');
+      expect(result.deviationInfo?.milestonesInvalidated).toBe(1);
     });
   });
 });

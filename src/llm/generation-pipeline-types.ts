@@ -49,8 +49,8 @@ export interface ContinuationGenerationResult
     choiceSubtype?: string;
     choiceShape?: ChoiceShape;
   }>;
-  readonly beatConcluded: boolean;
-  readonly beatResolution: string;
+  readonly milestoneConcluded: boolean;
+  readonly milestoneResolution: string;
   readonly deviation: DeviationResult;
   readonly pacingIssueDetected: boolean;
   readonly pacingIssueReason: string;

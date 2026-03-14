@@ -110,7 +110,7 @@ const mockedStructureResult = {
       objective: 'Spot the anomaly.',
       stakes: 'Failure hides the true pattern.',
       entryCondition: 'The constellation appears at dawn.',
-      beats: [
+      milestones: [
         {
           description: 'Track mirrored stars',
           objective: 'Map first pattern.',
@@ -128,7 +128,7 @@ const mockedStructureResult = {
       objective: 'Escalate investigation.',
       stakes: 'Failure loses time before festival ends.',
       entryCondition: 'The first pattern reveals hidden routes.',
-      beats: [
+      milestones: [
         {
           description: 'Test hidden route',
           objective: 'Access restricted area.',
@@ -146,7 +146,7 @@ const mockedStructureResult = {
       objective: 'Conclude the mystery.',
       stakes: 'Failure leaves Brightwater unstable.',
       entryCondition: 'All key clues align.',
-      beats: [
+      milestones: [
         {
           description: 'Choose final interpretation',
           objective: 'Commit to a theory.',
@@ -241,7 +241,7 @@ const writerResult = createMockFinalResult({
 });
 
 const defaultAnalystResult = createMockAnalystResult({
-  beatConcluded: false,
+  milestoneConcluded: false,
   sceneMomentum: 'STASIS',
   objectiveEvidenceStrength: 'NONE',
   commitmentStrength: 'NONE',

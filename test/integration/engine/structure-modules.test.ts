@@ -6,7 +6,7 @@ import { createStoryStructure } from '../../../src/engine/structure-factory';
 import {
   buildRewriteContext,
   extractCompletedBeats,
-  getPreservedBeatIds,
+  getPreservedMilestoneIds,
   validatePreservedBeats,
 } from '../../../src/engine/structure-rewrite-support';
 import {
@@ -14,14 +14,14 @@ import {
   applyStructureProgression,
 } from '../../../src/engine/structure-state';
 import {
-  getBeatOrThrow,
-  parseBeatIndices,
-  upsertBeatProgression,
-} from '../../../src/engine/beat-utils';
+  getMilestoneOrThrow,
+  parseMilestoneIndices,
+  upsertMilestoneProgression,
+} from '../../../src/engine/milestone-utils';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import { createStory } from '../../../src/models/story';
 import { createInitialVersionedStructure } from '../../../src/models/structure-version';
-import { createBeatDeviation, createInitialStructureState } from '../../../src/models/story-arc';
+import { createMilestoneDeviation, createInitialStructureState } from '../../../src/models/story-arc';
 
 function createGenerationResult(): StructureGenerationResult {
   return {
@@ -35,7 +35,7 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Accept the quest',
         stakes: 'Village destruction',
         entryCondition: 'Mysterious stranger arrives',
-        beats: [
+        milestones: [
           {
             name: 'Omen in the valley',
             description: 'Strange omens appear',
@@ -57,7 +57,7 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Reach the destination',
         stakes: 'Running out of time',
         entryCondition: 'Hero departs',
-        beats: [
+        milestones: [
           {
             name: 'Broken pass',
             description: 'First obstacle',
@@ -79,7 +79,7 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Confront the threat',
         stakes: 'Everything at risk',
         entryCondition: 'Final confrontation',
-        beats: [
+        milestones: [
           {
             name: 'Final battle',
             description: 'Final battle',
@@ -104,22 +104,22 @@ describe('structure modules integration', () => {
       const state = createInitialStructureState(structure);
 
       expect(state.currentActIndex).toBe(0);
-      expect(state.currentBeatIndex).toBe(0);
-      expect(state.beatProgressions).toHaveLength(5); // 2 + 2 + 1 beats
-      expect(state.beatProgressions[0]?.status).toBe('active');
-      expect(state.beatProgressions[1]?.status).toBe('pending');
+      expect(state.currentMilestoneIndex).toBe(0);
+      expect(state.milestoneProgressions).toHaveLength(5); // 2 + 2 + 1 milestones
+      expect(state.milestoneProgressions[0]?.status).toBe('active');
+      expect(state.milestoneProgressions[1]?.status).toBe('pending');
     });
 
-    it('beat IDs match between factory and state', () => {
+    it('milestone IDs match between factory and state', () => {
       const structure = createStoryStructure(createGenerationResult());
       const state = createInitialStructureState(structure);
 
-      // All beat IDs in state should exist in structure
-      for (const progression of state.beatProgressions) {
-        const indices = parseBeatIndices(progression.beatId);
+      // All milestone IDs in state should exist in structure
+      for (const progression of state.milestoneProgressions) {
+        const indices = parseMilestoneIndices(progression.milestoneId);
         expect(indices).not.toBeNull();
         expect(() =>
-          getBeatOrThrow(structure, indices!.actIndex, indices!.beatIndex)
+          getMilestoneOrThrow(structure, indices!.actIndex, indices!.milestoneIndex)
         ).not.toThrow();
       }
     });
@@ -139,16 +139,16 @@ describe('structure modules integration', () => {
       // Start with initial state
       let state = createInitialStructureState(structure);
 
-      // Advance through first beat
+      // Advance through first milestone
       const result1 = advanceStructureState(structure, state, 'The hero noticed the dark clouds.');
       state = result1.updatedState;
 
-      // Advance through second beat
+      // Advance through second milestone
       const result2 = advanceStructureState(structure, state, 'The challenge was accepted.');
       state = result2.updatedState;
 
-      // Now at Act 2, Beat 1 - create deviation and build context
-      const deviation = createBeatDeviation(
+      // Now at Act 2, Milestone 1 - create deviation and build context
+      const deviation = createMilestoneDeviation(
         'Unexpected plot twist',
         ['2.1', '2.2', '3.1'],
         'The ally turns out to be the villain in disguise.'
@@ -156,30 +156,30 @@ describe('structure modules integration', () => {
 
       const context = buildRewriteContext(story, structureVersion, state, deviation);
 
-      // Verify context contains completed beats
+      // Verify context contains completed milestones
       expect(context.completedBeats).toHaveLength(2);
-      expect(context.completedBeats[0]?.beatId).toBe('1.1');
-      expect(context.completedBeats[1]?.beatId).toBe('1.2');
+      expect(context.completedBeats[0]?.milestoneId).toBe('1.1');
+      expect(context.completedBeats[1]?.milestoneId).toBe('1.2');
       expect(context.currentActIndex).toBe(1);
-      expect(context.currentBeatIndex).toBe(0);
+      expect(context.currentMilestoneIndex).toBe(0);
     });
   });
 
-  describe('complete beat extraction → validation flow', () => {
-    it('extracts completed beats and validates preservation', () => {
+  describe('complete milestone extraction → validation flow', () => {
+    it('extracts completed milestones and validates preservation', () => {
       const structure = createStoryStructure(createGenerationResult());
 
-      // Simulate state after completing first two beats
+      // Simulate state after completing first two milestones
       let state = createInitialStructureState(structure);
-      state = advanceStructureState(structure, state, 'Beat 1 resolved.').updatedState;
-      state = advanceStructureState(structure, state, 'Beat 2 resolved.').updatedState;
+      state = advanceStructureState(structure, state, 'Milestone 1 resolved.').updatedState;
+      state = advanceStructureState(structure, state, 'Milestone 2 resolved.').updatedState;
 
-      // Extract completed beats
+      // Extract completed milestones
       const completedBeats = extractCompletedBeats(structure, state);
       expect(completedBeats).toHaveLength(2);
 
-      // Get preserved beat IDs
-      const preservedIds = getPreservedBeatIds(state);
+      // Get preserved milestone IDs
+      const preservedIds = getPreservedMilestoneIds(state);
       expect(preservedIds).toContain('1.1');
       expect(preservedIds).toContain('1.2');
 
@@ -195,7 +195,7 @@ describe('structure modules integration', () => {
       const structure = createStoryStructure(createGenerationResult());
       const parentState = createInitialStructureState(structure);
 
-      // Child page concludes beat
+      // Child page concludes milestone
       const childState = applyStructureProgression(
         structure,
         parentState,
@@ -204,27 +204,27 @@ describe('structure modules integration', () => {
       );
 
       expect(childState).not.toBe(parentState);
-      expect(childState.currentBeatIndex).toBe(1);
-      expect(childState.beatProgressions.find((p) => p.beatId === '1.1')?.status).toBe('concluded');
+      expect(childState.currentMilestoneIndex).toBe(1);
+      expect(childState.milestoneProgressions.find((p) => p.milestoneId === '1.1')?.status).toBe('concluded');
 
-      // Grandchild page without beat conclusion inherits state
+      // Grandchild page without milestone conclusion inherits state
       const grandchildState = applyStructureProgression(structure, childState, false, '');
 
       expect(grandchildState).toEqual({
         ...childState,
-        pagesInCurrentBeat: childState.pagesInCurrentBeat + 1,
+        pagesInCurrentMilestone: childState.pagesInCurrentMilestone + 1,
       });
     });
   });
 
-  describe('beat-utils integration with state modules', () => {
-    it('upsertBeatProgression works correctly with state machine output', () => {
+  describe('milestone-utils integration with state modules', () => {
+    it('upsertMilestoneProgression works correctly with state machine output', () => {
       const structure = createStoryStructure(createGenerationResult());
       const initialState = createInitialStructureState(structure);
 
       // Manually update a progression
-      const updatedProgressions = upsertBeatProgression(initialState.beatProgressions, {
-        beatId: '1.1',
+      const updatedProgressions = upsertMilestoneProgression(initialState.milestoneProgressions, {
+        milestoneId: '1.1',
         status: 'concluded',
         resolution: 'Manual resolution.',
       });
@@ -232,34 +232,34 @@ describe('structure modules integration', () => {
       // The updated progressions should work with advanceStructureState
       const manualState = {
         ...initialState,
-        beatProgressions: updatedProgressions,
+        milestoneProgressions: updatedProgressions,
       };
 
       // Can still advance from this state (though 1.1 is already concluded)
-      // The next beat should become active
-      expect(manualState.beatProgressions.find((p) => p.beatId === '1.1')?.status).toBe(
+      // The next milestone should become active
+      expect(manualState.milestoneProgressions.find((p) => p.milestoneId === '1.1')?.status).toBe(
         'concluded'
       );
     });
 
-    it('parseBeatIndices correctly parses IDs created by factory', () => {
+    it('parseMilestoneIndices correctly parses IDs created by factory', () => {
       const structure = createStoryStructure(createGenerationResult());
 
       for (const act of structure.acts) {
-        for (const beat of act.beats) {
-          const indices = parseBeatIndices(beat.id);
+        for (const milestone of act.milestones) {
+          const indices = parseMilestoneIndices(milestone.id);
           expect(indices).not.toBeNull();
 
-          // Verify indices point to correct beat
-          const retrievedBeat = getBeatOrThrow(structure, indices!.actIndex, indices!.beatIndex);
-          expect(retrievedBeat.id).toBe(beat.id);
+          // Verify indices point to correct milestone
+          const retrievedBeat = getMilestoneOrThrow(structure, indices!.actIndex, indices!.milestoneIndex);
+          expect(retrievedBeat.id).toBe(milestone.id);
         }
       }
     });
   });
 
   describe('full story progression flow', () => {
-    it('progresses through all beats to completion', () => {
+    it('progresses through all milestones to completion', () => {
       const structure = createStoryStructure(createGenerationResult());
       let state = createInitialStructureState(structure);
 
@@ -280,11 +280,11 @@ describe('structure modules integration', () => {
       // Story should be complete
       expect(lastResult?.isComplete).toBe(true);
 
-      // All beats should be concluded
-      const preservedIds = getPreservedBeatIds(state);
+      // All milestones should be concluded
+      const preservedIds = getPreservedMilestoneIds(state);
       expect(preservedIds).toHaveLength(5);
 
-      // Extract all completed beats
+      // Extract all completed milestones
       const completedBeats = extractCompletedBeats(structure, state);
       expect(completedBeats).toHaveLength(5);
       expect(completedBeats.map((b) => b.resolution)).toEqual(resolutions);

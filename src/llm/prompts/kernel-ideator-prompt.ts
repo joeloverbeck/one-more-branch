@@ -52,7 +52,7 @@ const PROHIBITIONS = `PROHIBITIONS:
 - Do not include genre framing.
 - Do not include setting/world details.
 - Do not include named characters or character bios.
-- Do not include plot beats or scene sequencing.
+- Do not include plot milestones or scene sequencing.
 - Do not include game mechanics or system design instructions.`;
 
 function normalize(value: string | undefined): string | undefined {

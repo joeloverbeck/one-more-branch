@@ -9,11 +9,11 @@ function buildAnalystResult(
   narrativeFocus: NarrativeFocus
 ): AnalystResult {
   return {
-    beatConcluded: false,
-    beatResolution: '',
+    milestoneConcluded: false,
+    milestoneResolution: '',
     deviationDetected: false,
     deviationReason: '',
-    invalidatedBeatIds: [],
+    invalidatedMilestoneIds: [],
     sceneSummary: '',
     pacingIssueDetected: false,
     pacingIssueReason: '',
@@ -40,9 +40,9 @@ function buildAnalystResult(
     spineDeviationDetected: false,
     spineDeviationReason: '',
     spineInvalidatedElement: null,
-    alignedBeatId: null,
-    beatAlignmentConfidence: 'LOW',
-    beatAlignmentReason: '',
+    alignedMilestoneId: null,
+    milestoneAlignmentConfidence: 'LOW',
+    milestoneAlignmentReason: '',
     thematicCharge,
     narrativeFocus,
     thematicChargeDescription: '',

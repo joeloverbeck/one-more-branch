@@ -30,7 +30,7 @@ function createTestStructure(): StoryStructure {
         objective: 'Begin',
         stakes: 'Everything',
         entryCondition: 'Start',
-        beats: [
+        milestones: [
           {
             name: 'Setup',
             description: 'Initial setup',
@@ -70,9 +70,9 @@ function createTestStructure(): StoryStructure {
 
 function createMinimalAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResult {
   return {
-    beatConcluded: false,
-    beatResolution: '',
-    deviation: { detected: false, reason: '', invalidatedBeatIds: [], sceneSummary: '' },
+    milestoneConcluded: false,
+    milestoneResolution: '',
+    deviation: { detected: false, reason: '', invalidatedMilestoneIds: [], sceneSummary: '' },
     spineDeviation: {
       detected: false,
       reason: '',
@@ -80,11 +80,11 @@ function createMinimalAnalystResult(overrides: Partial<AnalystResult> = {}): Ana
       suggestedCourseCorrection: '',
     },
     pacingIssueDetected: true,
-    pacingIssueReason: 'Beat stalling after many pages',
+    pacingIssueReason: 'Milestone stalling after many pages',
     recommendedAction: 'rewrite' as const,
     sceneMomentum: 'dragging' as const,
     sceneSummary: 'The hero is stuck.',
-    beatAlignmentConfidence: 'high' as const,
+    milestoneAlignmentConfidence: 'high' as const,
     objectiveEvidenceStrength: 'moderate' as const,
     commitmentStrength: 'moderate' as const,
     structuralPositionSignal: 'on_track' as const,
@@ -125,12 +125,12 @@ describe('rewriteStructureForPacing', () => {
 
     const structureState: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 1,
-      beatProgressions: [
-        { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
-        { beatId: '1.2', status: 'active' },
+      currentMilestoneIndex: 1,
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'concluded', resolution: 'Done.' },
+        { milestoneId: '1.2', status: 'active' },
       ],
-      pagesInCurrentBeat: 5,
+      pagesInCurrentMilestone: 5,
       pacingNudge: null,
     };
 
@@ -151,7 +151,7 @@ describe('rewriteStructureForPacing', () => {
 
     const rewriteResult: StructureRewriteResult = {
       structure: createTestStructure(),
-      preservedBeatIds: ['1.1'],
+      preservedMilestoneIds: ['1.1'],
       rawResponse: '{}',
     };
 
@@ -167,7 +167,7 @@ describe('rewriteStructureForPacing', () => {
     expect(persistence.updateStory).toHaveBeenCalledTimes(1);
     expect(result.newVersion.previousVersionId).toBe(version.id);
     expect(result.newVersion.rewriteReason).toBe(
-      'Pacing issue: Beat stalling after many pages'
+      'Pacing issue: Milestone stalling after many pages'
     );
     expect(result.updatedStory.structureVersions).toHaveLength(2);
   });

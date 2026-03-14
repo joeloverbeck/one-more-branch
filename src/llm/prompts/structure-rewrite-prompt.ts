@@ -16,15 +16,15 @@ function getActsToRegenerate(currentActIndex: number, totalActs: number): string
   }
 
   if (remainingActNumbers.length === 0) {
-    return `remaining beats in ${currentActLabel}`;
+    return `remaining milestones in ${currentActLabel}`;
   }
 
   if (remainingActNumbers.length === 1) {
-    return `remaining beats in ${currentActLabel}, plus all of Act ${remainingActNumbers[0]!}`;
+    return `remaining milestones in ${currentActLabel}, plus all of Act ${remainingActNumbers[0]!}`;
   }
 
   const numberList = `${remainingActNumbers.slice(0, -1).join(', ')} and ${remainingActNumbers[remainingActNumbers.length - 1]!}`;
-  return `remaining beats in ${currentActLabel}, plus all of Acts ${numberList}`;
+  return `remaining milestones in ${currentActLabel}, plus all of Acts ${numberList}`;
 }
 
 function formatEscalationFields(
@@ -81,10 +81,10 @@ function formatCompletedBeats(completedBeats: StructureRewriteContext['completed
   return completedBeats
     .map(
       (
-        beat
-      ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
-    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.secondaryEscalationType, beat.crisisType, beat.expectedGapMagnitude, beat.isMidpoint, beat.midpointType, beat.uniqueScenarioHook, beat.approachVectors, beat.setpieceSourceIndex, beat.obligatorySceneTag)}
-    Resolution: ${beat.resolution}`
+        milestone
+      ) => `  - Act ${milestone.actIndex + 1}, Milestone ${milestone.milestoneIndex + 1} (${milestone.milestoneId}) [${milestone.role}] "${milestone.name}": "${milestone.description}"
+    Objective: ${milestone.objective}${formatEscalationFields(milestone.causalLink, milestone.escalationType, milestone.secondaryEscalationType, milestone.crisisType, milestone.expectedGapMagnitude, milestone.isMidpoint, milestone.midpointType, milestone.uniqueScenarioHook, milestone.approachVectors, milestone.setpieceSourceIndex, milestone.obligatorySceneTag)}
+    Resolution: ${milestone.resolution}`
     )
     .join('\n');
 }
@@ -93,9 +93,9 @@ function formatPlannedBeats(plannedBeats: StructureRewriteContext['plannedBeats'
   return plannedBeats
     .map(
       (
-        beat
-      ) => `  - Act ${beat.actIndex + 1}, Beat ${beat.beatIndex + 1} (${beat.beatId}) [${beat.role}] "${beat.name}": "${beat.description}"
-    Objective: ${beat.objective}${formatEscalationFields(beat.causalLink, beat.escalationType, beat.secondaryEscalationType, beat.crisisType, beat.expectedGapMagnitude, beat.isMidpoint, beat.midpointType, beat.uniqueScenarioHook, beat.approachVectors, beat.setpieceSourceIndex, beat.obligatorySceneTag)}`
+        milestone
+      ) => `  - Act ${milestone.actIndex + 1}, Milestone ${milestone.milestoneIndex + 1} (${milestone.milestoneId}) [${milestone.role}] "${milestone.name}": "${milestone.description}"
+    Objective: ${milestone.objective}${formatEscalationFields(milestone.causalLink, milestone.escalationType, milestone.secondaryEscalationType, milestone.crisisType, milestone.expectedGapMagnitude, milestone.isMidpoint, milestone.midpointType, milestone.uniqueScenarioHook, milestone.approachVectors, milestone.setpieceSourceIndex, milestone.obligatorySceneTag)}`
     )
     .join('\n');
 }
@@ -112,7 +112,7 @@ function buildGenreObligationSection(context: StructureRewriteContext): string {
 
   const fulfilled = new Set(
     context.completedBeats
-      .map((beat) => beat.obligatorySceneTag)
+      .map((milestone) => milestone.obligatorySceneTag)
       .filter((tag): tag is string => typeof tag === 'string' && tag.trim().length > 0)
   );
   const remaining = allObligations.filter((entry) => !fulfilled.has(entry.tag));
@@ -126,10 +126,10 @@ function buildGenreObligationSection(context: StructureRewriteContext): string {
 All obligation tags:
 ${allLines}
 
-Already fulfilled in completed canon beats (must stay fulfilled):
+Already fulfilled in completed canon milestones (must stay fulfilled):
 ${fulfilledLines}
 
-Remaining obligation tags to cover in regenerated beats:
+Remaining obligation tags to cover in regenerated milestones:
 ${remainingLines}
 `;
 }
@@ -143,15 +143,15 @@ export function buildStructureRewritePrompt(
     context.plannedBeats.length > 0
       ? `
 ## ORIGINALLY PLANNED BEATS (CONTEXT ONLY — DO NOT COPY)
-The following beats were the original plan before the deviation occurred. They represent where the story WAS going, not where it IS going.
+The following milestones were the original plan before the deviation occurred. They represent where the story WAS going, not where it IS going.
 
-Use these ONLY to understand the original narrative intent. Then generate FRESH beats that:
+Use these ONLY to understand the original narrative intent. Then generate FRESH milestones that:
 - Chart a meaningfully different path from the current narrative state
 - Respond to what actually happened in the story (not what was planned)
-- May share thematic goals with planned beats but must differ substantially in events, descriptions, and dramatic approach
-- Must NOT reuse the same beat names, descriptions, or scenarios with only cosmetic rewording
+- May share thematic goals with planned milestones but must differ substantially in events, descriptions, and dramatic approach
+- Must NOT reuse the same milestone names, descriptions, or scenarios with only cosmetic rewording
 
-If the deviation was significant enough to trigger a rewrite, the new beats must reflect that significance. A structure rewrite that reproduces the original plan with minor edits is a failed rewrite.
+If the deviation was significant enough to trigger a rewrite, the new milestones must reflect that significance. A structure rewrite that reproduces the original plan with minor edits is a failed rewrite.
 
 ${formatPlannedBeats(context.plannedBeats)}
 
@@ -192,7 +192,7 @@ Each act's stakes should escalate FROM these foundations, even after the deviati
 
   const userPrompt = `Regenerate story structure for an interactive branching narrative.
 
-The story has deviated from its original plan. Generate replacement beats for invalidated future structure while preserving completed canon.
+The story has deviated from its original plan. Generate replacement milestones for invalidated future structure while preserving completed canon.
 
 ## STORY CONTEXT
 Character: ${protagonistSection}
@@ -202,36 +202,36 @@ Original Opening Image: ${context.originalOpeningImage}
 Original Closing Image: ${context.originalClosingImage}
 ${spineSection}${conceptStakesSection}${genreConventionsSection}${genreObligationSection}
 ## WHAT HAS ALREADY HAPPENED (CANON - DO NOT CHANGE)
-The following beats have been completed. Their resolutions are permanent and must be respected.
+The following milestones have been completed. Their resolutions are permanent and must be respected.
 
 ${completedBeatsSection}
 ${plannedBeatsSection}## CURRENT SITUATION
-Deviation occurred at: Act ${context.currentActIndex + 1}, Beat ${context.currentBeatIndex + 1}
+Deviation occurred at: Act ${context.currentActIndex + 1}, Milestone ${context.currentMilestoneIndex + 1}
 Reason for deviation: ${context.deviationReason}
 
 Current narrative state:
 ${context.sceneSummary}
 
 ## YOUR TASK
-Generate NEW beats to replace invalidated ones. You are regenerating: ${getActsToRegenerate(context.currentActIndex, context.totalActCount)}.
+Generate NEW milestones to replace invalidated ones. You are regenerating: ${getActsToRegenerate(context.currentActIndex, context.totalActCount)}.
 
 REQUIREMENTS (follow ALL):
-1. Preserve completed beats exactly—include them in the output with unchanged names, descriptions, objectives, and roles
-2. Maintain thematic AND tonal coherence with the original story. New beats must match the TONE/GENRE "${context.tone}" in naming, stakes, and emotional register. Do not drift toward generic default-genre conventions; remain inside the given tone/genre identity.
+1. Preserve completed milestones exactly—include them in the output with unchanged names, descriptions, objectives, and roles
+2. Maintain thematic AND tonal coherence with the original story. New milestones must match the TONE/GENRE "${context.tone}" in naming, stakes, and emotional register. Do not drift toward generic default-genre conventions; remain inside the given tone/genre identity.
 3. Build naturally from the current narrative state
 4. Follow dramatic structure principles (setup, confrontation, resolution)
-5. Keep 2-4 beats per act total (including preserved beats)
+5. Keep 2-4 milestones per act total (including preserved milestones)
 6. Beats should be flexible milestones, not rigid gates
 7. Account for branching narrative paths
-8. Design beats with clear dramatic roles:
-   - Use "setup" for establishing beats, "escalation" for rising tension, "turning_point" for irreversible changes, "reflection" for thematic/internal deepening without forced escalation, "resolution" for denouement
-   - Preserve beat roles from completed beats unchanged
+8. Design milestones with clear dramatic roles:
+   - Use "setup" for establishing milestones, "escalation" for rising tension, "turning_point" for irreversible changes, "reflection" for thematic/internal deepening without forced escalation, "resolution" for denouement
+   - Preserve milestone roles from completed milestones unchanged
 9. Write a premise: a 1-2 sentence hook capturing the core dramatic question (may evolve from original)
 10. Keep openingImage aligned with completed canon by preserving the original opening image exactly: "${context.originalOpeningImage}".
 11. Generate closingImage for the revised structure so it still mirrors or contrasts the opening image while fitting the new direction.
 12. Set a pacing budget (targetPagesMin and targetPagesMax) appropriate for the story's remaining scope
-13. For every beat, write a causalLink sentence describing what directly causes this beat's situation. Use explicit "because of" logic; avoid "and then" sequencing. For first regenerated beats in an act, reference the initiating condition from canon or current narrative state. Preserve causalLink from completed beats unchanged.
-14. For each beat with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
+13. For every milestone, write a causalLink sentence describing what directly causes this milestone's situation. Use explicit "because of" logic; avoid "and then" sequencing. For first regenerated milestones in an act, reference the initiating condition from canon or current narrative state. Preserve causalLink from completed milestones unchanged.
+14. For each milestone with role "escalation" or "turning_point", assign an escalationType describing HOW stakes rise. Choose from:
    - THREAT_ESCALATION: Opposition magnitude increases
    - REVELATION_SHIFT: Hidden truth recontextualizes everything
    - REVERSAL_OF_FORTUNE: Progress inverts into setback
@@ -241,27 +241,27 @@ REQUIREMENTS (follow ALL):
    - TEMPORAL_OR_ENVIRONMENTAL_PRESSURE: External conditions constrict
    - COMPLICATION_CASCADE: Consequences compound into crises
    - COMPETENCE_DEMAND_SPIKE: Challenge exceeds demonstrated capability
-   For "setup", "reflection", and "resolution" beats, set escalationType to null. Preserve escalationType from completed beats unchanged.
-15. For each beat with role "escalation" or "turning_point", assign a crisisType describing the dilemma shape. Choose from:
+   For "setup", "reflection", and "resolution" milestones, set escalationType to null. Preserve escalationType from completed milestones unchanged.
+15. For each milestone with role "escalation" or "turning_point", assign a crisisType describing the dilemma shape. Choose from:
    - BEST_BAD_CHOICE: all available options carry meaningful cost; the protagonist chooses the least damaging path
    - IRRECONCILABLE_GOODS: the protagonist must choose between two genuinely valuable outcomes that cannot both be preserved
-   For "setup", "reflection", and "resolution" beats, set crisisType to null. Preserve crisisType from completed beats unchanged.
+   For "setup", "reflection", and "resolution" milestones, set crisisType to null. Preserve crisisType from completed milestones unchanged.
    When choosing escalation types and crisis types together, ensure the crisis expresses a real decision pressure, not just environmental difficulty.
-16. For each beat with role "escalation" or "turning_point", you MAY assign a secondaryEscalationType when the beat escalates on two axes simultaneously. Use the same enum as escalationType. If single-axis escalation is sufficient, set secondaryEscalationType to null. For "setup", "reflection", and "resolution" beats, set secondaryEscalationType to null. Preserve secondaryEscalationType from completed beats unchanged.
-17. For each beat with role "escalation" or "turning_point", assign expectedGapMagnitude to indicate expected expectation-vs-result divergence. Choose from NARROW | MODERATE | WIDE | CHASM. Magnitudes should generally increase over the story's escalation path. For "setup", "reflection", and "resolution" beats, set expectedGapMagnitude to null. Preserve expectedGapMagnitude from completed beats unchanged.
+16. For each milestone with role "escalation" or "turning_point", you MAY assign a secondaryEscalationType when the milestone escalates on two axes simultaneously. Use the same enum as escalationType. If single-axis escalation is sufficient, set secondaryEscalationType to null. For "setup", "reflection", and "resolution" milestones, set secondaryEscalationType to null. Preserve secondaryEscalationType from completed milestones unchanged.
+17. For each milestone with role "escalation" or "turning_point", assign expectedGapMagnitude to indicate expected expectation-vs-result divergence. Choose from NARROW | MODERATE | WIDE | CHASM. Magnitudes should generally increase over the story's escalation path. For "setup", "reflection", and "resolution" milestones, set expectedGapMagnitude to null. Preserve expectedGapMagnitude from completed milestones unchanged.
 18. Midpoint invariant:
-   - Preserve midpoint fields from completed beats unchanged
-   - Ensure exactly one beat in the full output has isMidpoint: true
-   - For midpoint beat, midpointType must be FALSE_VICTORY or FALSE_DEFEAT
-   - For non-midpoint beats, set isMidpoint: false and midpointType: null
-19. For each beat with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this beat unique to THIS story. For "setup", "reflection", and "resolution" beats, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed beats unchanged.
-20. For each beat with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this beat. Choose from:
+   - Preserve midpoint fields from completed milestones unchanged
+   - Ensure exactly one milestone in the full output has isMidpoint: true
+   - For midpoint milestone, midpointType must be FALSE_VICTORY or FALSE_DEFEAT
+   - For non-midpoint milestones, set isMidpoint: false and midpointType: null
+19. For each milestone with role "escalation" or "turning_point", write a uniqueScenarioHook: one sentence describing what makes this milestone unique to THIS story. For "setup", "reflection", and "resolution" milestones, set uniqueScenarioHook to null. Preserve uniqueScenarioHook from completed milestones unchanged.
+20. For each milestone with role "escalation" or "turning_point", assign 2-3 approachVectors suggesting HOW the protagonist could tackle this milestone. Choose from:
    - DIRECT_FORCE, SWIFT_ACTION, STEALTH_SUBTERFUGE, ANALYTICAL_REASONING, CAREFUL_OBSERVATION, INTUITIVE_LEAP, PERSUASION_INFLUENCE, EMPATHIC_CONNECTION, ENDURANCE_RESILIENCE, SELF_EXPRESSION
-   For "setup", "reflection", and "resolution" beats, set approachVectors to null. Preserve approachVectors from completed beats unchanged.
+   For "setup", "reflection", and "resolution" milestones, set approachVectors to null. Preserve approachVectors from completed milestones unchanged.
 21. If a GENRE OBLIGATION CONTRACT section is present:
-   - Preserve obligatorySceneTag on completed beats unchanged.
-   - For regenerated beats, assign obligatorySceneTag using one of the listed obligation tags when a beat fulfills it; otherwise set obligatorySceneTag to null.
-   - Every tag listed under "Remaining obligation tags to cover in regenerated beats" must appear at least once in regenerated beats.
+   - Preserve obligatorySceneTag on completed milestones unchanged.
+   - For regenerated milestones, assign obligatorySceneTag using one of the listed obligation tags when a milestone fulfills it; otherwise set obligatorySceneTag to null.
+   - Every tag listed under "Remaining obligation tags to cover in regenerated milestones" must appear at least once in regenerated milestones.
 
 OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the original):
 - overallTheme: string (may evolve slightly from original, or stay the same)
@@ -275,11 +275,11 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
   - objective: main goal for the act
   - stakes: consequence of failure
   - entryCondition: what triggers transition into this act
-  - beats: 2-4 items (including any preserved beats)
-    - each beat has:
-      - name: short evocative beat title
-      - description: what should happen in this beat
-      - objective: the protagonist's specific goal for this beat. Write objectives that satisfy ALL of these criteria:
+  - milestones: 2-4 items (including any preserved milestones)
+    - each milestone has:
+      - name: short evocative milestone title
+      - description: what should happen in this milestone
+      - objective: the protagonist's specific goal for this milestone. Write objectives that satisfy ALL of these criteria:
         1. Start with a concrete action verb (decide, secure, survive, negotiate, escape, confront, choose, reveal, infiltrate, convince)
         2. Name the obstacle or constraint that makes success non-trivial
         3. Imply a verifiable outcome — something observable as achieved or failed
@@ -291,17 +291,17 @@ OUTPUT SHAPE (arc fields only — tone and NPC agendas are preserved from the or
           "Deal with the situation" (no specific action, no obstacle, nothing to verify)
           "Move the story forward" (meta-commentary, not a protagonist goal)
           "Experience the consequences" (passive, no action verb, unverifiable)
-      - causalLink: one sentence explaining the cause of this beat's situation
+      - causalLink: one sentence explaining the cause of this milestone's situation
       - role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"
-      - escalationType: one of the 9 escalation types above, or null for setup/reflection/resolution beats
+      - escalationType: one of the 9 escalation types above, or null for setup/reflection/resolution milestones
       - secondaryEscalationType: one of the 9 escalation types above when dual-axis escalation is present, else null
-      - crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null (null for setup/reflection/resolution beats)
-      - expectedGapMagnitude: NARROW | MODERATE | WIDE | CHASM | null (null for setup/reflection/resolution beats)
-      - isMidpoint: boolean (true for exactly one beat in the full structure)
+      - crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null (null for setup/reflection/resolution milestones)
+      - expectedGapMagnitude: NARROW | MODERATE | WIDE | CHASM | null (null for setup/reflection/resolution milestones)
+      - isMidpoint: boolean (true for exactly one milestone in the full structure)
       - midpointType: FALSE_VICTORY | FALSE_DEFEAT | null (non-null only when isMidpoint is true)
-      - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution beats
-      - approachVectors: 2-3 approach vector enums, or null for setup/reflection/resolution beats
-      - obligatorySceneTag: genre obligation tag when this beat fulfills one listed obligation, else null`;
+      - uniqueScenarioHook: one sentence grounded in THIS story's specifics, or null for setup/reflection/resolution milestones
+      - approachVectors: 2-3 approach vector enums, or null for setup/reflection/resolution milestones
+      - obligatorySceneTag: genre obligation tag when this milestone fulfills one listed obligation, else null`;
 
   const messages: ChatMessage[] = [
     { role: 'system', content: buildStructureSystemPrompt(context.tone) },

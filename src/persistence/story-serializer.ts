@@ -4,7 +4,7 @@
  */
 
 import {
-  BeatRole,
+  MilestoneRole,
   Story,
   StoryStructure,
   VersionedStoryStructure,
@@ -50,14 +50,14 @@ const VALID_WORLD_FACT_TYPES: ReadonlySet<string> = new Set([
   'MYSTERY',
 ]);
 
-function parsePersistedCausalLink(value: unknown, beatId: string): string {
+function parsePersistedCausalLink(value: unknown, milestoneId: string): string {
   if (typeof value === 'string') {
     const normalized = value.trim();
     if (normalized.length > 0) {
       return normalized;
     }
   }
-  throw new Error(`Persisted story beat ${beatId} is missing required causalLink`);
+  throw new Error(`Persisted story milestone ${milestoneId} is missing required causalLink`);
 }
 
 function structureToFileData(structure: StoryStructure): StoryStructureFileData {
@@ -68,23 +68,23 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
       objective: act.objective,
       stakes: act.stakes,
       entryCondition: act.entryCondition,
-      beats: act.beats.map((beat) => ({
-        id: beat.id,
-        name: beat.name,
-        description: beat.description,
-        objective: beat.objective,
-        causalLink: beat.causalLink,
-        role: beat.role,
-        escalationType: beat.escalationType,
-        secondaryEscalationType: beat.secondaryEscalationType,
-        crisisType: beat.crisisType,
-        expectedGapMagnitude: beat.expectedGapMagnitude,
-        isMidpoint: beat.isMidpoint === true,
-        midpointType: parseMidpointType(beat.midpointType) ?? null,
-        uniqueScenarioHook: beat.uniqueScenarioHook,
-        approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
-        setpieceSourceIndex: beat.setpieceSourceIndex,
-        obligatorySceneTag: beat.obligatorySceneTag,
+      milestones: act.milestones.map((milestone) => ({
+        id: milestone.id,
+        name: milestone.name,
+        description: milestone.description,
+        objective: milestone.objective,
+        causalLink: milestone.causalLink,
+        role: milestone.role,
+        escalationType: milestone.escalationType,
+        secondaryEscalationType: milestone.secondaryEscalationType,
+        crisisType: milestone.crisisType,
+        expectedGapMagnitude: milestone.expectedGapMagnitude,
+        isMidpoint: milestone.isMidpoint === true,
+        midpointType: parseMidpointType(milestone.midpointType) ?? null,
+        uniqueScenarioHook: milestone.uniqueScenarioHook,
+        approachVectors: milestone.approachVectors ? [...milestone.approachVectors] : null,
+        setpieceSourceIndex: milestone.setpieceSourceIndex,
+        obligatorySceneTag: milestone.obligatorySceneTag,
       })),
     })),
     overallTheme: structure.overallTheme,
@@ -103,43 +103,43 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
     objective: act.objective,
     stakes: act.stakes,
     entryCondition: act.entryCondition,
-    beats: act.beats.map((beat) => {
-      const midpointType = parseMidpointType(beat.midpointType);
-      const isMidpoint = beat.isMidpoint === true;
+    milestones: act.milestones.map((milestone) => {
+      const midpointType = parseMidpointType(milestone.midpointType);
+      const isMidpoint = milestone.isMidpoint === true;
       if (isMidpoint) {
         if (midpointType === null) {
           throw new Error(
-            `Persisted story beat ${beat.id} is midpoint-tagged but missing midpointType`
+            `Persisted story milestone ${milestone.id} is midpoint-tagged but missing midpointType`
           );
         }
       } else if (midpointType !== null) {
-        throw new Error(`Persisted story beat ${beat.id} has midpointType but isMidpoint is false`);
+        throw new Error(`Persisted story milestone ${milestone.id} has midpointType but isMidpoint is false`);
       }
 
       return {
-        id: beat.id,
-        name: beat.name,
-        description: beat.description,
-        objective: beat.objective,
-        causalLink: parsePersistedCausalLink(beat.causalLink, beat.id),
-        role: beat.role as BeatRole,
-        escalationType: parseEscalationType(beat.escalationType),
-        secondaryEscalationType: parseEscalationType(beat.secondaryEscalationType),
-        crisisType: parseCrisisType(beat.crisisType),
-        expectedGapMagnitude: parseGapMagnitude(beat.expectedGapMagnitude),
+        id: milestone.id,
+        name: milestone.name,
+        description: milestone.description,
+        objective: milestone.objective,
+        causalLink: parsePersistedCausalLink(milestone.causalLink, milestone.id),
+        role: milestone.role as MilestoneRole,
+        escalationType: parseEscalationType(milestone.escalationType),
+        secondaryEscalationType: parseEscalationType(milestone.secondaryEscalationType),
+        crisisType: parseCrisisType(milestone.crisisType),
+        expectedGapMagnitude: parseGapMagnitude(milestone.expectedGapMagnitude),
         isMidpoint,
         midpointType,
-        uniqueScenarioHook: beat.uniqueScenarioHook ?? null,
-        approachVectors: parseApproachVectors(beat.approachVectors) ?? null,
+        uniqueScenarioHook: milestone.uniqueScenarioHook ?? null,
+        approachVectors: parseApproachVectors(milestone.approachVectors) ?? null,
         setpieceSourceIndex:
-          typeof beat.setpieceSourceIndex === 'number' &&
-          Number.isInteger(beat.setpieceSourceIndex) &&
-          beat.setpieceSourceIndex >= 0 &&
-          beat.setpieceSourceIndex <= 5
-            ? beat.setpieceSourceIndex
+          typeof milestone.setpieceSourceIndex === 'number' &&
+          Number.isInteger(milestone.setpieceSourceIndex) &&
+          milestone.setpieceSourceIndex >= 0 &&
+          milestone.setpieceSourceIndex <= 5
+            ? milestone.setpieceSourceIndex
             : null,
-        obligatorySceneTag: isGenreObligationTag(beat.obligatorySceneTag)
-          ? beat.obligatorySceneTag
+        obligatorySceneTag: isGenreObligationTag(milestone.obligatorySceneTag)
+          ? milestone.obligatorySceneTag
           : null,
       };
     }),
@@ -165,7 +165,7 @@ function versionedStructureToFileData(
     previousVersionId: version.previousVersionId,
     createdAtPageId: version.createdAtPageId,
     rewriteReason: version.rewriteReason,
-    preservedBeatIds: [...version.preservedBeatIds],
+    preservedMilestoneIds: [...version.preservedMilestoneIds],
     createdAt: version.createdAt.toISOString(),
   };
 }
@@ -180,7 +180,7 @@ function fileDataToVersionedStructure(
       data.previousVersionId === null ? null : parseStructureVersionId(data.previousVersionId),
     createdAtPageId: data.createdAtPageId === null ? null : parsePageId(data.createdAtPageId),
     rewriteReason: data.rewriteReason,
-    preservedBeatIds: [...data.preservedBeatIds],
+    preservedMilestoneIds: [...data.preservedMilestoneIds],
     createdAt: new Date(data.createdAt),
   };
 }

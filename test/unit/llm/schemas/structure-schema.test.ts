@@ -19,22 +19,22 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       properties: {
         acts: {
           description: string;
-          items: { properties: { beats: { description: string } } };
+          items: { properties: { milestones: { description: string } } };
         };
       };
     };
 
     expect(schema.properties.acts.description).toContain('3-5 acts');
-    expect(schema.properties.acts.items.properties.beats.description).toContain('2-4');
+    expect(schema.properties.acts.items.properties.milestones.description).toContain('2-4');
   });
 
-  it('should require all act and beat fields', () => {
+  it('should require all act and milestone fields', () => {
     const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
       properties: {
         acts: {
           items: {
             required: string[];
-            properties: { beats: { items: { required: string[] } } };
+            properties: { milestones: { items: { required: string[] } } };
           };
         };
       };
@@ -56,9 +56,9 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       'objective',
       'stakes',
       'entryCondition',
-      'beats',
+      'milestones',
     ]);
-    expect(schema.properties.acts.items.properties.beats.items.required).toEqual([
+    expect(schema.properties.acts.items.properties.milestones.items.required).toEqual([
       'name',
       'description',
       'objective',
@@ -113,13 +113,13 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     expect(schema.properties.pacingBudget.properties.targetPagesMax.type).toBe('number');
   });
 
-  it('should include beat role as an enum of dramatic function values', () => {
+  it('should include milestone role as an enum of dramatic function values', () => {
     const schema = STRUCTURE_GENERATION_SCHEMA.json_schema.schema as {
       properties: {
         acts: {
           items: {
             properties: {
-              beats: {
+              milestones: {
                 items: {
                   properties: {
                     role: { type: string; enum: string[] };
@@ -132,7 +132,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
       };
     };
 
-    const roleSchema = schema.properties.acts.items.properties.beats.items.properties.role;
+    const roleSchema = schema.properties.acts.items.properties.milestones.items.properties.role;
     expect(roleSchema.type).toBe('string');
     expect(roleSchema.enum).toEqual([
       'setup',
@@ -149,7 +149,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
         acts: {
           items: {
             properties: {
-              beats: {
+              milestones: {
                 items: {
                   properties: {
                     causalLink: { type: string; description: string };
@@ -163,7 +163,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     };
 
     const causalLinkSchema =
-      schema.properties.acts.items.properties.beats.items.properties.causalLink;
+      schema.properties.acts.items.properties.milestones.items.properties.causalLink;
     expect(causalLinkSchema.type).toBe('string');
     expect(causalLinkSchema.description).toContain('cause');
   });
@@ -174,7 +174,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
         acts: {
           items: {
             properties: {
-              beats: {
+              milestones: {
                 items: {
                   properties: {
                     escalationType: {
@@ -190,7 +190,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     };
 
     const escalationTypeSchema =
-      schema.properties.acts.items.properties.beats.items.properties.escalationType;
+      schema.properties.acts.items.properties.milestones.items.properties.escalationType;
     expect(escalationTypeSchema.anyOf).toEqual([
       {
         type: 'string',
@@ -216,7 +216,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
         acts: {
           items: {
             properties: {
-              beats: {
+              milestones: {
                 items: {
                   properties: {
                     secondaryEscalationType: {
@@ -232,7 +232,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     };
 
     const secondaryEscalationTypeSchema =
-      schema.properties.acts.items.properties.beats.items.properties.secondaryEscalationType;
+      schema.properties.acts.items.properties.milestones.items.properties.secondaryEscalationType;
     expect(secondaryEscalationTypeSchema.anyOf).toEqual([
       {
         type: 'string',
@@ -258,7 +258,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
         acts: {
           items: {
             properties: {
-              beats: {
+              milestones: {
                 items: {
                   properties: {
                     setpieceSourceIndex: {
@@ -274,7 +274,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     };
 
     const setpieceSourceIndexSchema =
-      schema.properties.acts.items.properties.beats.items.properties.setpieceSourceIndex;
+      schema.properties.acts.items.properties.milestones.items.properties.setpieceSourceIndex;
 
     expect(setpieceSourceIndexSchema.anyOf).toEqual([
       { type: 'integer', enum: [0, 1, 2, 3, 4, 5] },
@@ -288,7 +288,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
         acts: {
           items: {
             properties: {
-              beats: {
+              milestones: {
                 items: {
                   properties: {
                     obligatorySceneTag: {
@@ -304,7 +304,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     };
 
     const obligatorySceneTagSchema =
-      schema.properties.acts.items.properties.beats.items.properties.obligatorySceneTag;
+      schema.properties.acts.items.properties.milestones.items.properties.obligatorySceneTag;
     expect(obligatorySceneTagSchema.anyOf).toEqual([{ type: 'string' }, { type: 'null' }]);
   });
 
@@ -314,7 +314,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
         acts: {
           items: {
             properties: {
-              beats: {
+              milestones: {
                 items: {
                   properties: {
                     crisisType: {
@@ -330,7 +330,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     };
 
     const crisisTypeSchema =
-      schema.properties.acts.items.properties.beats.items.properties.crisisType;
+      schema.properties.acts.items.properties.milestones.items.properties.crisisType;
     expect(crisisTypeSchema.anyOf).toEqual([
       {
         type: 'string',
@@ -346,7 +346,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
         acts: {
           items: {
             properties: {
-              beats: {
+              milestones: {
                 items: {
                   properties: {
                     expectedGapMagnitude: {
@@ -362,7 +362,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     };
 
     const expectedGapMagnitudeSchema =
-      schema.properties.acts.items.properties.beats.items.properties.expectedGapMagnitude;
+      schema.properties.acts.items.properties.milestones.items.properties.expectedGapMagnitude;
     expect(expectedGapMagnitudeSchema.anyOf).toEqual([
       {
         type: 'string',
@@ -378,7 +378,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
         acts: {
           items: {
             properties: {
-              beats: {
+              milestones: {
                 items: {
                   properties: {
                     isMidpoint: { type: string; description: string };
@@ -392,7 +392,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     };
 
     const isMidpointSchema =
-      schema.properties.acts.items.properties.beats.items.properties.isMidpoint;
+      schema.properties.acts.items.properties.milestones.items.properties.isMidpoint;
     expect(isMidpointSchema.type).toBe('boolean');
     expect(isMidpointSchema.description).toContain('midpoint');
   });
@@ -403,7 +403,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
         acts: {
           items: {
             properties: {
-              beats: {
+              milestones: {
                 items: {
                   properties: {
                     midpointType: {
@@ -419,7 +419,7 @@ describe('STRUCTURE_GENERATION_SCHEMA', () => {
     };
 
     const midpointTypeSchema =
-      schema.properties.acts.items.properties.beats.items.properties.midpointType;
+      schema.properties.acts.items.properties.milestones.items.properties.midpointType;
     expect(midpointTypeSchema.anyOf).toEqual([
       {
         type: 'string',

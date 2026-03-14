@@ -121,7 +121,7 @@ function createTextualPresentation(): TextualPresentation {
     },
     appearance: 'Always immaculate above the collar, no matter how wrecked the rest of her looks.',
     knowledgeBoundaries: 'Knows the admiralty codebook, suspects Tomas is compromised, misreads who ordered the purge.',
-    conflictPriority: 'Protecting the mission beats affection until guilt breaks her discipline.',
+    conflictPriority: 'Protecting the mission milestones affection until guilt breaks her discipline.',
   };
 }
 

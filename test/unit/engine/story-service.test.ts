@@ -106,7 +106,7 @@ function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateSto
         objective: 'Get pulled into the conspiracy.',
         stakes: 'Failure means imprisonment.',
         entryCondition: 'A witness vanishes.',
-        beats: [
+        milestones: [
           {
             name: 'First Contact',
             description: 'Meet an informant',
@@ -128,7 +128,7 @@ function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateSto
         objective: 'Survive while gathering allies.',
         stakes: 'Failure lets the tribunal lock down the city.',
         entryCondition: 'The files identify corrupt officials.',
-        beats: [
+        milestones: [
           {
             name: 'Rival House',
             description: 'Confront rival house',
@@ -150,7 +150,7 @@ function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateSto
         objective: 'Expose the tribunal publicly.',
         stakes: 'Failure cements authoritarian rule.',
         entryCondition: 'Public hearing is announced.',
-        beats: [
+        milestones: [
           {
             name: 'Testimony',
             description: 'Force open testimony',

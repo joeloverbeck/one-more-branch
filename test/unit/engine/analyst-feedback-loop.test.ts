@@ -85,7 +85,7 @@ describe('Analyst-to-Planner Feedback Loop', () => {
         sceneMomentum: 'STASIS',
         objectiveAnchors: ['Find the hidden cache'],
         pacingIssueDetected: true,
-        pacingIssueReason: 'Beat 1.1 stalled for 4 pages without advancing objective.',
+        pacingIssueReason: 'Milestone 1.1 stalled for 4 pages without advancing objective.',
       });
       const page = createPage({
         id: parsePageId(1),
@@ -108,7 +108,7 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       expect(deserialized.analystResult?.sceneMomentum).toBe('STASIS');
       expect(deserialized.analystResult?.objectiveEvidenceStrength).toBe('WEAK_IMPLICIT');
       expect(deserialized.analystResult?.pacingIssueReason).toBe(
-        'Beat 1.1 stalled for 4 pages without advancing objective.'
+        'Milestone 1.1 stalled for 4 pages without advancing objective.'
       );
       // rawResponse is excluded during serialization
       expect(deserialized.analystResult?.rawResponse).toBe('');
@@ -184,13 +184,13 @@ describe('Analyst-to-Planner Feedback Loop', () => {
     it('renders PACING BRIEFING with directive and nudge', () => {
       const context = makeBasePlannerContext({
         parentPacingDirective: 'The next scene should deliver a direct confrontation.',
-        parentPacingNudge: 'Beat stalled for 4 pages.',
+        parentPacingNudge: 'Milestone stalled for 4 pages.',
       });
 
       const result = buildPlannerContinuationContextSection(context);
       expect(result).toContain('=== PACING BRIEFING (from story analyst) ===');
       expect(result).toContain('The next scene should deliver a direct confrontation.');
-      expect(result).toContain('URGENT: Beat stalled for 4 pages.');
+      expect(result).toContain('URGENT: Milestone stalled for 4 pages.');
     });
 
     it('renders PACING BRIEFING with directive alone', () => {
@@ -229,12 +229,12 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       ];
 
       const context = makeBasePlannerContext({
-        parentPacingDirective: 'Accelerate toward the beat objective.',
+        parentPacingDirective: 'Accelerate toward the milestone objective.',
         momentumTrajectory: trajectory,
       });
 
       const result = buildPlannerContinuationContextSection(context);
-      expect(result).toContain('Accelerate toward the beat objective.');
+      expect(result).toContain('Accelerate toward the milestone objective.');
       expect(result).toContain('WARNING: The last 2 scenes showed no meaningful narrative progress.');
     });
   });
@@ -318,8 +318,8 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       });
 
       const result = buildPlannerContinuationContextSection(context);
-      expect(result).toContain('WARNING: The last 3 scenes produced no clear evidence of beat objective progress.');
-      expect(result).toContain('direct progress toward the current beat objective');
+      expect(result).toContain('WARNING: The last 3 scenes produced no clear evidence of milestone objective progress.');
+      expect(result).toContain('direct progress toward the current milestone objective');
     });
 
     it('does not emit weak evidence warning when evidence is strong at end', () => {

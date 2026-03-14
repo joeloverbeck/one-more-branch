@@ -18,7 +18,7 @@ describe('buildWriterStructureContext', () => {
         objective: 'Escape the first sweep',
         stakes: 'Capture means execution.',
         entryCondition: 'Emergency law declared.',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             name: 'Safehouse run',
@@ -48,7 +48,7 @@ describe('buildWriterStructureContext', () => {
         objective: 'Cross hostile territory',
         stakes: 'If lost, purge is permanent.',
         entryCondition: 'Leave the capital.',
-        beats: [
+        milestones: [
           {
             id: '2.1',
             name: 'Checkpoint breach',
@@ -71,7 +71,7 @@ describe('buildWriterStructureContext', () => {
         objective: 'Expose the planners',
         stakes: 'Silence guarantees totalitarian rule.',
         entryCondition: 'Access relay tower.',
-        beats: [
+        milestones: [
           {
             id: '3.1',
             name: 'Relay approach',
@@ -94,9 +94,9 @@ describe('buildWriterStructureContext', () => {
   it('returns empty string when structure is undefined', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -112,9 +112,9 @@ describe('buildWriterStructureContext', () => {
   it('returns empty string when currentAct is out of bounds', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 9,
-      currentBeatIndex: 0,
-      beatProgressions: [],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -125,9 +125,9 @@ describe('buildWriterStructureContext', () => {
   it('includes overall theme', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -138,9 +138,9 @@ describe('buildWriterStructureContext', () => {
   it('includes current act name, objective, and stakes', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -150,16 +150,16 @@ describe('buildWriterStructureContext', () => {
     expect(result).toContain('Stakes: Capture means execution.');
   });
 
-  it('shows beat status lines with concluded resolution, active objective, and pending', () => {
+  it('shows milestone status lines with concluded resolution, active objective, and pending', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 1,
-      beatProgressions: [
-        { beatId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
-        { beatId: '1.2', status: 'active' },
-        { beatId: '1.3', status: 'pending' },
+      currentMilestoneIndex: 1,
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
+        { milestoneId: '1.2', status: 'active' },
+        { milestoneId: '1.3', status: 'pending' },
       ],
-      pagesInCurrentBeat: 0,
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -174,9 +174,9 @@ describe('buildWriterStructureContext', () => {
   it('includes remaining acts overview', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -189,9 +189,9 @@ describe('buildWriterStructureContext', () => {
   it('shows "None" when no remaining acts', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 2,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '3.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '3.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -203,9 +203,9 @@ describe('buildWriterStructureContext', () => {
   it('includes story structure header', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -217,9 +217,9 @@ describe('buildWriterStructureContext', () => {
   it('does NOT contain "BEAT EVALUATION"', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -230,9 +230,9 @@ describe('buildWriterStructureContext', () => {
   it('does NOT contain "DEVIATION"', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -243,9 +243,9 @@ describe('buildWriterStructureContext', () => {
   it('does NOT contain "REMAINING BEATS TO EVALUATE"', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -256,9 +256,9 @@ describe('buildWriterStructureContext', () => {
   it('does NOT contain "PROGRESSION CHECK"', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -269,9 +269,9 @@ describe('buildWriterStructureContext', () => {
   it('includes premise after overall theme', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -279,15 +279,15 @@ describe('buildWriterStructureContext', () => {
     expect(result).toContain('Premise: A fugitive must broadcast evidence');
   });
 
-  it('includes beat role labels for all beat statuses', () => {
+  it('includes milestone role labels for all milestone statuses', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 1,
-      beatProgressions: [
-        { beatId: '1.1', status: 'concluded', resolution: 'Done' },
-        { beatId: '1.2', status: 'active' },
+      currentMilestoneIndex: 1,
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'concluded', resolution: 'Done' },
+        { milestoneId: '1.2', status: 'active' },
       ],
-      pagesInCurrentBeat: 0,
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
@@ -297,16 +297,16 @@ describe('buildWriterStructureContext', () => {
     expect(result).toContain('(turning_point)');
   });
 
-  it('does NOT contain "CURRENT STATE (for beat evaluation)"', () => {
+  it('does NOT contain "CURRENT STATE (for milestone evaluation)"', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [{ beatId: '1.1', status: 'active' }],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     };
 
     const result = buildWriterStructureContext(testStructure, state);
-    expect(result).not.toContain('CURRENT STATE (for beat evaluation)');
+    expect(result).not.toContain('CURRENT STATE (for milestone evaluation)');
   });
 });

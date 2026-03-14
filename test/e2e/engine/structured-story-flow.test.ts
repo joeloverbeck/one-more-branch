@@ -100,8 +100,8 @@ function extractStructureResult(
   ar: AnalystResult
 ): StructureEvaluatorResult & { rawResponse: string } {
   return {
-    beatConcluded: ar.beatConcluded,
-    beatResolution: ar.beatResolution,
+    milestoneConcluded: ar.milestoneConcluded,
+    milestoneResolution: ar.milestoneResolution,
     sceneMomentum: ar.sceneMomentum,
     objectiveEvidenceStrength: ar.objectiveEvidenceStrength,
     commitmentStrength: ar.commitmentStrength,
@@ -113,13 +113,13 @@ function extractStructureResult(
     completionGateFailureReason: ar.completionGateFailureReason,
     deviationDetected: ar.deviationDetected,
     deviationReason: ar.deviationReason,
-    invalidatedBeatIds: ar.invalidatedBeatIds,
+    invalidatedMilestoneIds: ar.invalidatedMilestoneIds,
     spineDeviationDetected: ar.spineDeviationDetected,
     spineDeviationReason: ar.spineDeviationReason,
     spineInvalidatedElement: ar.spineInvalidatedElement,
-    alignedBeatId: ar.alignedBeatId,
-    beatAlignmentConfidence: ar.beatAlignmentConfidence,
-    beatAlignmentReason: ar.beatAlignmentReason,
+    alignedMilestoneId: ar.alignedMilestoneId,
+    milestoneAlignmentConfidence: ar.milestoneAlignmentConfidence,
+    milestoneAlignmentReason: ar.milestoneAlignmentReason,
     pacingIssueDetected: ar.pacingIssueDetected,
     pacingIssueReason: ar.pacingIssueReason,
     recommendedAction: ar.recommendedAction,
@@ -196,7 +196,7 @@ const mockedStructureResult = createMockStoryStructure({
       objective: 'Prove the threat is real.',
       stakes: 'If you fail, nobody believes the danger.',
       entryCondition: 'A public anomaly forces immediate action.',
-      beats: [
+      milestones: [
         {
           id: '1.1',
           name: 'Public anomaly witness',
@@ -221,7 +221,7 @@ const mockedStructureResult = createMockStoryStructure({
       objective: 'Break into the regime network.',
       stakes: 'If you fail, the enemy controls all information.',
       entryCondition: 'Initial evidence points to coordinated control.',
-      beats: [
+      milestones: [
         {
           id: '2.1',
           name: 'Archive node infiltration',
@@ -246,7 +246,7 @@ const mockedStructureResult = createMockStoryStructure({
       objective: 'Force a decisive public outcome.',
       stakes: 'If you fail, the regime narrative becomes permanent.',
       entryCondition: 'Enough proof exists to challenge the system publicly.',
-      beats: [
+      milestones: [
         {
           id: '3.1',
           name: 'Public reveal coordination',
@@ -413,8 +413,8 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): PageWrit
 function buildAnalystResult(narrative: string, pageNumber: number): AnalystResult {
   if (narrative.includes('catch the courier')) {
     return createMockAnalystResult({
-      beatConcluded: true,
-      beatResolution: `Recovered decisive courier evidence on page ${pageNumber}.`,
+      milestoneConcluded: true,
+      milestoneResolution: `Recovered decisive courier evidence on page ${pageNumber}.`,
       sceneMomentum: 'MAJOR_PROGRESS',
       objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
       commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
@@ -424,8 +424,8 @@ function buildAnalystResult(narrative: string, pageNumber: number): AnalystResul
 
   if (narrative.includes('signal chamber')) {
     return createMockAnalystResult({
-      beatConcluded: true,
-      beatResolution: `Copied chamber logs on page ${pageNumber}.`,
+      milestoneConcluded: true,
+      milestoneResolution: `Copied chamber logs on page ${pageNumber}.`,
       sceneMomentum: 'MAJOR_PROGRESS',
       objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
       commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
@@ -547,7 +547,7 @@ describe('Structured Story E2E', () => {
     }
   });
 
-  it('creates a story with valid structure and initial active beat', async () => {
+  it('creates a story with valid structure and initial active milestone', async () => {
     const { story, page } = await storyEngine.startStory({
       title: `${TEST_PREFIX} Initial Structure`,
       characterConcept: `${TEST_PREFIX}: A skeptical archivist trying to expose a regime signal hidden in civic clocks.`,
@@ -561,24 +561,24 @@ describe('Structured Story E2E', () => {
     expect(story.structure).not.toBeNull();
     expect(story.structure?.acts).toHaveLength(3);
     for (const act of story.structure?.acts ?? []) {
-      expect(act.beats.length).toBeGreaterThanOrEqual(2);
-      expect(act.beats.length).toBeLessThanOrEqual(4);
-      for (const beat of act.beats) {
-        expect(beat.name).toBeTruthy();
+      expect(act.milestones.length).toBeGreaterThanOrEqual(2);
+      expect(act.milestones.length).toBeLessThanOrEqual(4);
+      for (const milestone of act.milestones) {
+        expect(milestone.name).toBeTruthy();
       }
     }
 
     expect(page.accumulatedStructureState.currentActIndex).toBe(0);
-    expect(page.accumulatedStructureState.currentBeatIndex).toBe(0);
+    expect(page.accumulatedStructureState.currentMilestoneIndex).toBe(0);
 
-    const firstBeatId = story.structure?.acts[0]?.beats[0]?.id;
-    expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-      beatId: firstBeatId,
+    const firstBeatId = story.structure?.acts[0]?.milestones[0]?.id;
+    expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+      milestoneId: firstBeatId,
       status: 'active',
     });
   });
 
-  it('does not advance structure state when continuation does not conclude a beat', async () => {
+  it('does not advance structure state when continuation does not conclude a milestone', async () => {
     const { story, page: firstPage } = await storyEngine.startStory({
       title: `${TEST_PREFIX} Non-Advancing Continuation`,
       characterConcept: `${TEST_PREFIX}: A civic observer trying to decode manipulated time signals without direct confrontation.`,
@@ -598,13 +598,13 @@ describe('Structured Story E2E', () => {
 
     expect(cautiousBranch.accumulatedStructureState).toEqual({
       ...firstPage.accumulatedStructureState,
-      pagesInCurrentBeat: firstPage.accumulatedStructureState.pagesInCurrentBeat + 1,
+      pagesInCurrentMilestone: firstPage.accumulatedStructureState.pagesInCurrentMilestone + 1,
     });
   });
 
-  it('persists beat advancement across multiple generated pages', async () => {
+  it('persists milestone advancement across multiple generated pages', async () => {
     const { story, page: page1 } = await storyEngine.startStory({
-      title: `${TEST_PREFIX} Beat Advancement`,
+      title: `${TEST_PREFIX} Milestone Advancement`,
       characterConcept: `${TEST_PREFIX}: An investigator pursuing regime couriers through restricted infrastructure.`,
       worldbuilding: 'Flooded archives connect every district through hidden tunnels.',
       tone: 'urgent conspiracy',
@@ -621,12 +621,12 @@ describe('Structured Story E2E', () => {
     });
 
     expect(page2.accumulatedStructureState.currentActIndex).toBe(0);
-    expect(page2.accumulatedStructureState.currentBeatIndex).toBe(1);
-    const concludedBeatOne = page2.accumulatedStructureState.beatProgressions.find(
-      (progression) => progression.beatId === '1.1'
+    expect(page2.accumulatedStructureState.currentMilestoneIndex).toBe(1);
+    const concludedBeatOne = page2.accumulatedStructureState.milestoneProgressions.find(
+      (progression) => progression.milestoneId === '1.1'
     );
     expect(concludedBeatOne).toMatchObject({
-      beatId: '1.1',
+      milestoneId: '1.1',
       status: 'concluded',
     });
     expect(concludedBeatOne?.resolution).toContain('Recovered decisive courier evidence');
@@ -639,20 +639,20 @@ describe('Structured Story E2E', () => {
     });
 
     expect(page3.accumulatedStructureState.currentActIndex).toBe(1);
-    expect(page3.accumulatedStructureState.currentBeatIndex).toBe(0);
-    const concludedBeatTwo = page3.accumulatedStructureState.beatProgressions.find(
-      (progression) => progression.beatId === '1.2'
+    expect(page3.accumulatedStructureState.currentMilestoneIndex).toBe(0);
+    const concludedBeatTwo = page3.accumulatedStructureState.milestoneProgressions.find(
+      (progression) => progression.milestoneId === '1.2'
     );
     expect(concludedBeatTwo).toMatchObject({
-      beatId: '1.2',
+      milestoneId: '1.2',
       status: 'concluded',
     });
     expect(concludedBeatTwo?.resolution).toContain('Copied chamber logs');
-    const activeBeat = page3.accumulatedStructureState.beatProgressions.find(
-      (progression) => progression.beatId === '2.1'
+    const activeMilestone = page3.accumulatedStructureState.milestoneProgressions.find(
+      (progression) => progression.milestoneId === '2.1'
     );
-    expect(activeBeat).toMatchObject({
-      beatId: '2.1',
+    expect(activeMilestone).toMatchObject({
+      milestoneId: '2.1',
       status: 'active',
     });
   });
@@ -682,14 +682,14 @@ describe('Structured Story E2E', () => {
       apiKey: 'mock-api-key',
     });
 
-    expect(branchFast.accumulatedStructureState.currentBeatIndex).toBe(1);
-    expect(branchSlow.accumulatedStructureState.currentBeatIndex).toBe(0);
+    expect(branchFast.accumulatedStructureState.currentMilestoneIndex).toBe(1);
+    expect(branchSlow.accumulatedStructureState.currentMilestoneIndex).toBe(0);
 
-    const fastConcluded = branchFast.accumulatedStructureState.beatProgressions.find(
-      (progression) => progression.beatId === '1.1'
+    const fastConcluded = branchFast.accumulatedStructureState.milestoneProgressions.find(
+      (progression) => progression.milestoneId === '1.1'
     );
-    const slowConcluded = branchSlow.accumulatedStructureState.beatProgressions.find(
-      (progression) => progression.beatId === '1.1'
+    const slowConcluded = branchSlow.accumulatedStructureState.milestoneProgressions.find(
+      (progression) => progression.milestoneId === '1.1'
     );
 
     expect(fastConcluded?.status).toBe('concluded');

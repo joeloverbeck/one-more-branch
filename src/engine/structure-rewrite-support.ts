@@ -1,4 +1,4 @@
-import type { AccumulatedStructureState, BeatDeviation, StoryStructure } from '../models/story-arc';
+import type { AccumulatedStructureState, MilestoneDeviation, StoryStructure } from '../models/story-arc';
 import type {
   CompletedBeat,
   PlannedBeat,
@@ -6,10 +6,10 @@ import type {
 } from '../llm/structure-rewrite-types';
 import type { Story } from '../models/story';
 import type { VersionedStoryStructure } from '../models/structure-version';
-import { parseBeatIndices } from './beat-utils';
+import { parseMilestoneIndices } from './milestone-utils';
 
 /**
- * Extracts completed beats with resolutions from structure state.
+ * Extracts completed milestones with resolutions from structure state.
  */
 export function extractCompletedBeats(
   structure: StoryStructure,
@@ -17,44 +17,44 @@ export function extractCompletedBeats(
 ): readonly CompletedBeat[] {
   const completedBeats: CompletedBeat[] = [];
 
-  const concludedProgressions = structureState.beatProgressions.filter(
-    (beatProgression) => beatProgression.status === 'concluded'
+  const concludedProgressions = structureState.milestoneProgressions.filter(
+    (milestoneProgression) => milestoneProgression.status === 'concluded'
   );
 
   for (const progression of concludedProgressions) {
-    const indices = parseBeatIndices(progression.beatId);
+    const indices = parseMilestoneIndices(progression.milestoneId);
     if (!indices) {
-      console.warn(`Invalid beat ID format in concluded progression: ${progression.beatId}`);
+      console.warn(`Invalid milestone ID format in concluded progression: ${progression.milestoneId}`);
       continue;
     }
 
     const act = structure.acts[indices.actIndex];
-    const beat = act?.beats[indices.beatIndex];
+    const milestone = act?.milestones[indices.milestoneIndex];
 
-    if (!act || !beat) {
-      console.warn(`Beat ${progression.beatId} not found in structure`);
+    if (!act || !milestone) {
+      console.warn(`Milestone ${progression.milestoneId} not found in structure`);
       continue;
     }
 
     completedBeats.push({
       actIndex: indices.actIndex,
-      beatIndex: indices.beatIndex,
-      beatId: progression.beatId,
-      name: beat.name,
-      description: beat.description,
-      objective: beat.objective,
-      causalLink: beat.causalLink,
-      role: beat.role,
-      escalationType: beat.escalationType,
-      secondaryEscalationType: beat.secondaryEscalationType,
-      crisisType: beat.crisisType,
-      expectedGapMagnitude: beat.expectedGapMagnitude,
-      isMidpoint: beat.isMidpoint,
-      midpointType: beat.midpointType,
-      uniqueScenarioHook: beat.uniqueScenarioHook,
-      approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
-      setpieceSourceIndex: beat.setpieceSourceIndex,
-      obligatorySceneTag: beat.obligatorySceneTag,
+      milestoneIndex: indices.milestoneIndex,
+      milestoneId: progression.milestoneId,
+      name: milestone.name,
+      description: milestone.description,
+      objective: milestone.objective,
+      causalLink: milestone.causalLink,
+      role: milestone.role,
+      escalationType: milestone.escalationType,
+      secondaryEscalationType: milestone.secondaryEscalationType,
+      crisisType: milestone.crisisType,
+      expectedGapMagnitude: milestone.expectedGapMagnitude,
+      isMidpoint: milestone.isMidpoint,
+      midpointType: milestone.midpointType,
+      uniqueScenarioHook: milestone.uniqueScenarioHook,
+      approachVectors: milestone.approachVectors ? [...milestone.approachVectors] : null,
+      setpieceSourceIndex: milestone.setpieceSourceIndex,
+      obligatorySceneTag: milestone.obligatorySceneTag,
       resolution: progression.resolution ?? '',
     });
   }
@@ -64,15 +64,15 @@ export function extractCompletedBeats(
       return a.actIndex - b.actIndex;
     }
 
-    return a.beatIndex - b.beatIndex;
+    return a.milestoneIndex - b.milestoneIndex;
   });
 
   return completedBeats;
 }
 
 /**
- * Extracts planned (not yet concluded) beats that come after the current deviation point.
- * These are beats from the original structure that the LLM has not yet reached,
+ * Extracts planned (not yet concluded) milestones that come after the current deviation point.
+ * These are milestones from the original structure that the LLM has not yet reached,
  * provided as soft context during structure rewrites.
  */
 export function extractPlannedBeats(
@@ -80,67 +80,67 @@ export function extractPlannedBeats(
   structureState: AccumulatedStructureState,
   includeCurrentBeat = false
 ): readonly PlannedBeat[] {
-  const concludedBeatIds = new Set(
-    structureState.beatProgressions.filter((p) => p.status === 'concluded').map((p) => p.beatId)
+  const concludedMilestoneIds = new Set(
+    structureState.milestoneProgressions.filter((p) => p.status === 'concluded').map((p) => p.milestoneId)
   );
 
-  const currentBeatId = `${structureState.currentActIndex + 1}.${structureState.currentBeatIndex + 1}`;
+  const currentMilestoneId = `${structureState.currentActIndex + 1}.${structureState.currentMilestoneIndex + 1}`;
 
   const plannedBeats: PlannedBeat[] = [];
 
   for (let actIdx = 0; actIdx < structure.acts.length; actIdx++) {
     const act = structure.acts[actIdx]!;
-    for (let beatIdx = 0; beatIdx < act.beats.length; beatIdx++) {
-      const beatId = `${actIdx + 1}.${beatIdx + 1}`;
+    for (let milestoneIdx = 0; milestoneIdx < act.milestones.length; milestoneIdx++) {
+      const milestoneId = `${actIdx + 1}.${milestoneIdx + 1}`;
 
-      // Skip concluded beats
-      if (concludedBeatIds.has(beatId)) {
+      // Skip concluded milestones
+      if (concludedMilestoneIds.has(milestoneId)) {
         continue;
       }
 
-      // Skip the currently active beat (where deviation occurred) unless includeCurrentBeat
-      if (!includeCurrentBeat && beatId === currentBeatId) {
+      // Skip the currently active milestone (where deviation occurred) unless includeCurrentBeat
+      if (!includeCurrentBeat && milestoneId === currentMilestoneId) {
         continue;
       }
 
-      // Only include beats that come after the current position
+      // Only include milestones that come after the current position
       // (or at the current position when includeCurrentBeat is true)
       if (actIdx < structureState.currentActIndex) {
         continue;
       }
       if (includeCurrentBeat) {
-        if (actIdx === structureState.currentActIndex && beatIdx < structureState.currentBeatIndex) {
+        if (actIdx === structureState.currentActIndex && milestoneIdx < structureState.currentMilestoneIndex) {
           continue;
         }
       } else {
         if (
           actIdx === structureState.currentActIndex &&
-          beatIdx <= structureState.currentBeatIndex
+          milestoneIdx <= structureState.currentMilestoneIndex
         ) {
           continue;
         }
       }
 
-      const beat = act.beats[beatIdx]!;
+      const milestone = act.milestones[milestoneIdx]!;
       plannedBeats.push({
         actIndex: actIdx,
-        beatIndex: beatIdx,
-        beatId,
-        name: beat.name,
-        description: beat.description,
-        objective: beat.objective,
-        causalLink: beat.causalLink,
-        role: beat.role,
-        escalationType: beat.escalationType,
-        secondaryEscalationType: beat.secondaryEscalationType,
-        crisisType: beat.crisisType,
-        expectedGapMagnitude: beat.expectedGapMagnitude,
-        isMidpoint: beat.isMidpoint,
-        midpointType: beat.midpointType,
-        uniqueScenarioHook: beat.uniqueScenarioHook,
-        approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
-        setpieceSourceIndex: beat.setpieceSourceIndex,
-        obligatorySceneTag: beat.obligatorySceneTag,
+        milestoneIndex: milestoneIdx,
+        milestoneId,
+        name: milestone.name,
+        description: milestone.description,
+        objective: milestone.objective,
+        causalLink: milestone.causalLink,
+        role: milestone.role,
+        escalationType: milestone.escalationType,
+        secondaryEscalationType: milestone.secondaryEscalationType,
+        crisisType: milestone.crisisType,
+        expectedGapMagnitude: milestone.expectedGapMagnitude,
+        isMidpoint: milestone.isMidpoint,
+        midpointType: milestone.midpointType,
+        uniqueScenarioHook: milestone.uniqueScenarioHook,
+        approachVectors: milestone.approachVectors ? [...milestone.approachVectors] : null,
+        setpieceSourceIndex: milestone.setpieceSourceIndex,
+        obligatorySceneTag: milestone.obligatorySceneTag,
       });
     }
   }
@@ -155,7 +155,7 @@ export function buildRewriteContext(
   story: Story,
   structureVersion: VersionedStoryStructure,
   structureState: AccumulatedStructureState,
-  deviation: BeatDeviation
+  deviation: MilestoneDeviation
 ): StructureRewriteContext {
   const structure = structureVersion.structure;
   const completedBeats = extractCompletedBeats(structure, structureState);
@@ -173,7 +173,7 @@ export function buildRewriteContext(
     plannedBeats,
     sceneSummary: deviation.sceneSummary,
     currentActIndex: structureState.currentActIndex,
-    currentBeatIndex: structureState.currentBeatIndex,
+    currentMilestoneIndex: structureState.currentMilestoneIndex,
     deviationReason: deviation.reason,
     originalTheme: structure.overallTheme,
     originalOpeningImage: structure.openingImage,
@@ -183,35 +183,35 @@ export function buildRewriteContext(
 }
 
 /**
- * Gets beat IDs that should be preserved (concluded beats).
+ * Gets milestone IDs that should be preserved (concluded milestones).
  */
-export function getPreservedBeatIds(structureState: AccumulatedStructureState): readonly string[] {
-  return structureState.beatProgressions
-    .filter((beatProgression) => beatProgression.status === 'concluded')
-    .map((beatProgression) => beatProgression.beatId);
+export function getPreservedMilestoneIds(structureState: AccumulatedStructureState): readonly string[] {
+  return structureState.milestoneProgressions
+    .filter((milestoneProgression) => milestoneProgression.status === 'concluded')
+    .map((milestoneProgression) => milestoneProgression.milestoneId);
 }
 
 /**
- * Validates that a new structure preserves all completed beats.
- * Returns true if all completed beats exist unchanged in new structure.
+ * Validates that a new structure preserves all completed milestones.
+ * Returns true if all completed milestones exist unchanged in new structure.
  */
 export function validatePreservedBeats(
   originalStructure: StoryStructure,
   newStructure: StoryStructure,
   structureState: AccumulatedStructureState
 ): boolean {
-  const concludedProgressions = structureState.beatProgressions.filter(
-    (beatProgression) => beatProgression.status === 'concluded'
+  const concludedProgressions = structureState.milestoneProgressions.filter(
+    (milestoneProgression) => milestoneProgression.status === 'concluded'
   );
 
   for (const progression of concludedProgressions) {
-    const indices = parseBeatIndices(progression.beatId);
+    const indices = parseMilestoneIndices(progression.milestoneId);
     if (!indices) {
       return false;
     }
 
-    const originalBeat = originalStructure.acts[indices.actIndex]?.beats[indices.beatIndex];
-    const newBeat = newStructure.acts[indices.actIndex]?.beats[indices.beatIndex];
+    const originalBeat = originalStructure.acts[indices.actIndex]?.milestones[indices.milestoneIndex];
+    const newBeat = newStructure.acts[indices.actIndex]?.milestones[indices.milestoneIndex];
 
     if (!originalBeat || !newBeat) {
       return false;
@@ -232,7 +232,7 @@ export function validatePreservedBeats(
 
 /**
  * Builds context for a pacing-triggered structure rewrite.
- * Unlike `buildRewriteContext`, this includes the current beat in planned beats
+ * Unlike `buildRewriteContext`, this includes the current milestone in planned milestones
  * (since it hasn't deviated, just stalled) and uses the analyst's narrative summary.
  */
 export function buildPacingRewriteContext(
@@ -258,7 +258,7 @@ export function buildPacingRewriteContext(
     plannedBeats,
     sceneSummary,
     currentActIndex: structureState.currentActIndex,
-    currentBeatIndex: structureState.currentBeatIndex,
+    currentMilestoneIndex: structureState.currentMilestoneIndex,
     deviationReason: `Pacing issue: ${pacingIssueReason}`,
     originalTheme: structure.overallTheme,
     originalOpeningImage: structure.openingImage,

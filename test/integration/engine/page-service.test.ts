@@ -199,7 +199,7 @@ function buildStructure(): StoryStructure {
         objective: 'Uncover the conspiracy',
         stakes: 'Ignorance means death',
         entryCondition: 'Arrived in the city',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             name: 'First clue',
@@ -224,7 +224,7 @@ function buildStructure(): StoryStructure {
         objective: 'Confront the conspirators',
         stakes: 'Allies at risk',
         entryCondition: 'Evidence gathered',
-        beats: [
+        milestones: [
           {
             id: '2.1',
             name: 'Enemy territory infiltration',
@@ -340,11 +340,11 @@ function buildContinuationResult(overrides?: Partial<PageWriterResult>): Reconci
 
 function buildAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
   return createMockAnalystResult({
-    beatConcluded: false,
-    beatResolution: '',
+    milestoneConcluded: false,
+    milestoneResolution: '',
     deviationDetected: false,
     deviationReason: '',
-    invalidatedBeatIds: [],
+    invalidatedMilestoneIds: [],
     sceneSummary: 'The protagonist continues the current scene.',
     pacingIssueDetected: false,
     pacingIssueReason: '',
@@ -370,9 +370,9 @@ function buildAnalystResult(overrides?: Partial<AnalystResult>): AnalystResult {
     spineDeviationDetected: false,
     spineDeviationReason: '',
     spineInvalidatedElement: null,
-    alignedBeatId: null,
-    beatAlignmentConfidence: 'LOW',
-    beatAlignmentReason: '',
+    alignedMilestoneId: null,
+    milestoneAlignmentConfidence: 'LOW',
+    milestoneAlignmentReason: '',
     rawResponse: 'analyst-raw',
     ...overrides,
   });
@@ -445,7 +445,7 @@ function createRewriteFetchResponse(): Response {
         objective: 'Escape the hunters.',
         stakes: 'Capture means execution.',
         entryCondition: 'Cover blown.',
-        beats: [
+        milestones: [
           {
             name: 'Emergency shelter',
             description: 'Find emergency shelter',
@@ -469,7 +469,7 @@ function createRewriteFetchResponse(): Response {
         objective: 'Build new network.',
         stakes: 'Isolation means death.',
         entryCondition: 'New identity secured.',
-        beats: [
+        milestones: [
           {
             name: 'Underground contact',
             description: 'Find underground contact',
@@ -493,7 +493,7 @@ function createRewriteFetchResponse(): Response {
         objective: 'Strike back.',
         stakes: 'Final chance.',
         entryCondition: 'Network ready.',
-        beats: [
+        milestones: [
           {
             name: 'Plan execution',
             description: 'Execute plan',
@@ -704,8 +704,8 @@ describe('page-service integration', () => {
 
       const { page, updatedStory } = await generateFirstPage(storyWithStructure, 'test-api-key');
       for (const act of storyWithStructure.structure?.acts ?? []) {
-        for (const beat of act.beats) {
-          expect(beat.name).toBeTruthy();
+        for (const milestone of act.milestones) {
+          expect(milestone.name).toBeTruthy();
         }
       }
 
@@ -718,9 +718,9 @@ describe('page-service integration', () => {
 
       // Verify structure state initialization
       expect(page.accumulatedStructureState.currentActIndex).toBe(0);
-      expect(page.accumulatedStructureState.currentBeatIndex).toBe(0);
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.1',
+      expect(page.accumulatedStructureState.currentMilestoneIndex).toBe(0);
+      expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.1',
         status: 'active',
       });
 
@@ -839,9 +839,9 @@ describe('page-service integration', () => {
       // Verify empty structure state for unstructured story
       expect(page.accumulatedStructureState).toEqual({
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       });
       expect(page.structureVersionId).toBeNull();
@@ -1370,8 +1370,8 @@ describe('page-service integration', () => {
       mockedRunAnalystEvaluation.mockResolvedValue(
         wrapAnalystResult({
           deviationDetected: true,
-          deviationReason: 'Betrayal invalidates trust-based beats.',
-          invalidatedBeatIds: ['1.2', '2.1'],
+          deviationReason: 'Betrayal invalidates trust-based milestones.',
+          invalidatedMilestoneIds: ['1.2', '2.1'],
           sceneSummary: 'The protagonist chose betrayal.',
         })
       );
@@ -1387,7 +1387,7 @@ describe('page-service integration', () => {
       expect(updatedStory.structureVersions).toHaveLength(2);
       const newVersion = updatedStory.structureVersions?.[1];
       expect(newVersion?.previousVersionId).toBe(initialVersionId);
-      expect(newVersion?.rewriteReason).toBe('Betrayal invalidates trust-based beats.');
+      expect(newVersion?.rewriteReason).toBe('Betrayal invalidates trust-based milestones.');
       expect(newVersion?.createdAtPageId).toBe(page.id);
 
       // Verify page uses new version
@@ -1397,15 +1397,15 @@ describe('page-service integration', () => {
       // Verify deviationInfo is returned
       expect(deviationInfo).toBeDefined();
       expect(deviationInfo?.detected).toBe(true);
-      expect(deviationInfo?.reason).toBe('Betrayal invalidates trust-based beats.');
-      expect(deviationInfo?.beatsInvalidated).toBe(2);
+      expect(deviationInfo?.reason).toBe('Betrayal invalidates trust-based milestones.');
+      expect(deviationInfo?.milestonesInvalidated).toBe(2);
     });
 
-    it('advances structure state when beat is concluded', async () => {
+    it('advances structure state when milestone is concluded', async () => {
       const structure = buildStructure();
       const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
-        characterConcept: `${TEST_PREFIX} beat-advancement`,
+        characterConcept: `${TEST_PREFIX} milestone-advancement`,
         worldbuilding: 'A progressing world.',
         tone: 'epic',
       });
@@ -1415,10 +1415,10 @@ describe('page-service integration', () => {
 
       const parentPage = createPage({
         id: parsePageId(1),
-        narrativeText: 'Working on the first beat.',
+        narrativeText: 'Working on the first milestone.',
         sceneSummary: 'Test summary of the scene events and consequences.',
-        choices: [createChoice('Complete the beat'), createChoice('Wait for opportunity')],
-        stateChanges: { added: ['Working on beat'], removed: [] },
+        choices: [createChoice('Complete the milestone'), createChoice('Wait for opportunity')],
+        stateChanges: { added: ['Working on milestone'], removed: [] },
         isEnding: false,
         parentPageId: null,
         parentChoiceIndex: null,
@@ -1430,8 +1430,8 @@ describe('page-service integration', () => {
       mockedGenerateWriterPage.mockResolvedValue(buildContinuationResult());
       mockedRunAnalystEvaluation.mockResolvedValue(
         wrapAnalystResult({
-          beatConcluded: true,
-          beatResolution: 'The first clue was found successfully.',
+          milestoneConcluded: true,
+          milestoneResolution: 'The first clue was found successfully.',
           objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
           completionGateSatisfied: true,
           objectiveAnchors: ['Establish the mystery'],
@@ -1441,20 +1441,20 @@ describe('page-service integration', () => {
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
-      // Verify beat advancement
-      expect(page.accumulatedStructureState.currentBeatIndex).toBe(1);
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.1',
+      // Verify milestone advancement
+      expect(page.accumulatedStructureState.currentMilestoneIndex).toBe(1);
+      expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.1',
         status: 'concluded',
         resolution: 'The first clue was found successfully.',
       });
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.2',
+      expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.2',
         status: 'active',
       });
     });
 
-    it('action-heavy scene without explicit objective evidence does not conclude beat', async () => {
+    it('action-heavy scene without explicit objective evidence does not conclude milestone', async () => {
       const structure = buildStructure();
       const baseStory = createTestStory({
         title: `${TEST_PREFIX} Title`,
@@ -1488,7 +1488,7 @@ describe('page-service integration', () => {
       );
       mockedRunAnalystEvaluation.mockResolvedValue(
         wrapAnalystResult({
-          beatConcluded: false,
+          milestoneConcluded: false,
           sceneMomentum: 'MAJOR_PROGRESS',
           objectiveEvidenceStrength: 'WEAK_IMPLICIT',
           commitmentStrength: 'TENTATIVE',
@@ -1505,30 +1505,30 @@ describe('page-service integration', () => {
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
       expect(page.accumulatedStructureState.currentActIndex).toBe(0);
-      expect(page.accumulatedStructureState.currentBeatIndex).toBe(0);
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.1',
+      expect(page.accumulatedStructureState.currentMilestoneIndex).toBe(0);
+      expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.1',
         status: 'active',
       });
-      expect(page.accumulatedStructureState.beatProgressions).not.toContainEqual(
-        expect.objectContaining({ beatId: '1.1', status: 'concluded' })
+      expect(page.accumulatedStructureState.milestoneProgressions).not.toContainEqual(
+        expect.objectContaining({ milestoneId: '1.1', status: 'concluded' })
       );
     });
 
-    it('turning_point with explicit commitment and anchor evidence can conclude beat', async () => {
+    it('turning_point with explicit commitment and anchor evidence can conclude milestone', async () => {
       const baseStructure = buildStructure();
       const structure: StoryStructure = {
         ...baseStructure,
         acts: [
           {
             ...baseStructure.acts[0],
-            beats: [
+            milestones: [
               {
-                ...baseStructure.acts[0]!.beats[0]!,
+                ...baseStructure.acts[0]!.milestones[0]!,
                 role: 'turning_point',
                 objective: 'Publicly commit to exposing the conspiracy',
               },
-              baseStructure.acts[0]!.beats[1]!,
+              baseStructure.acts[0]!.milestones[1]!,
             ],
           },
           baseStructure.acts[1]!,
@@ -1569,8 +1569,8 @@ describe('page-service integration', () => {
       );
       mockedRunAnalystEvaluation.mockResolvedValue(
         wrapAnalystResult({
-          beatConcluded: true,
-          beatResolution:
+          milestoneConcluded: true,
+          milestoneResolution:
             'The protagonist publicly commits to exposing the conspiracy despite irreversible consequences.',
           sceneMomentum: 'MAJOR_PROGRESS',
           objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
@@ -1587,15 +1587,15 @@ describe('page-service integration', () => {
 
       const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
-      expect(page.accumulatedStructureState.currentBeatIndex).toBe(1);
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.1',
+      expect(page.accumulatedStructureState.currentMilestoneIndex).toBe(1);
+      expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.1',
         status: 'concluded',
         resolution:
           'The protagonist publicly commits to exposing the conspiracy despite irreversible consequences.',
       });
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.2',
+      expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.2',
         status: 'active',
       });
     });
@@ -1661,7 +1661,7 @@ describe('page-service integration', () => {
         );
         mockedRunAnalystEvaluation.mockResolvedValue(
           wrapAnalystResult({
-            beatConcluded: false,
+            milestoneConcluded: false,
             sceneMomentum: 'MAJOR_PROGRESS',
             objectiveEvidenceStrength: 'WEAK_IMPLICIT',
             commitmentStrength: 'TENTATIVE',
@@ -1678,13 +1678,13 @@ describe('page-service integration', () => {
         const { page } = await generateNextPage(storyWithStructure, parentPage, 0, 'test-api-key');
 
         expect(page.accumulatedStructureState.currentActIndex).toBe(0);
-        expect(page.accumulatedStructureState.currentBeatIndex).toBe(0);
-        expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-          beatId: '1.1',
+        expect(page.accumulatedStructureState.currentMilestoneIndex).toBe(0);
+        expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+          milestoneId: '1.1',
           status: 'active',
         });
-        expect(page.accumulatedStructureState.beatProgressions).not.toContainEqual(
-          expect.objectContaining({ beatId: '1.1', status: 'concluded' })
+        expect(page.accumulatedStructureState.milestoneProgressions).not.toContainEqual(
+          expect.objectContaining({ milestoneId: '1.1', status: 'concluded' })
         );
       }
     );
@@ -1723,13 +1723,13 @@ describe('page-service integration', () => {
       expect(page.narrativeText).toBe('The whispers lead you deeper into the maze of alleys.');
       expect(page.choices).toHaveLength(2);
 
-      // Beat should NOT be concluded (no analyst data)
-      expect(page.accumulatedStructureState.beatProgressions).toContainEqual({
-        beatId: '1.1',
+      // Milestone should NOT be concluded (no analyst data)
+      expect(page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.1',
         status: 'active',
       });
-      expect(page.accumulatedStructureState.beatProgressions).not.toContainEqual(
-        expect.objectContaining({ beatId: '1.1', status: 'concluded' })
+      expect(page.accumulatedStructureState.milestoneProgressions).not.toContainEqual(
+        expect.objectContaining({ milestoneId: '1.1', status: 'concluded' })
       );
 
       // No structure rewrite should occur
@@ -1864,7 +1864,7 @@ describe('page-service integration', () => {
         wrapAnalystResult({
           deviationDetected: true,
           deviationReason: 'Betrayal breaks trust arc.',
-          invalidatedBeatIds: ['1.2'],
+          invalidatedMilestoneIds: ['1.2'],
           sceneSummary: 'The protagonist betrayed the group.',
           recommendedAction: 'nudge',
           pacingIssueDetected: true,
@@ -2209,13 +2209,13 @@ describe('page-service integration', () => {
       expect(updatedStory.spine?.storySpineType).toBe('REBELLION');
     });
 
-    it('spine deviation with concurrent beat deviation enriches deviation info', async () => {
+    it('spine deviation with concurrent milestone deviation enriches deviation info', async () => {
       const structure = buildStructure();
       const spine = createSpine();
       const baseStory: Story = {
         ...createTestStory({
           title: `${TEST_PREFIX} Title`,
-          characterConcept: `${TEST_PREFIX} spine-beat-concurrent`,
+          characterConcept: `${TEST_PREFIX} spine-milestone-concurrent`,
           worldbuilding: 'A city of layered intrigue.',
           tone: 'dramatic thriller',
         }),
@@ -2227,7 +2227,7 @@ describe('page-service integration', () => {
 
       const parentPage = createPage({
         id: parsePageId(1),
-        narrativeText: 'Both spine and beat are disrupted.',
+        narrativeText: 'Both spine and milestone are disrupted.',
         sceneSummary: 'Everything changes.',
         choices: [createChoice('Face the chaos'), createChoice('Retreat')],
         isEnding: false,
@@ -2245,8 +2245,8 @@ describe('page-service integration', () => {
           spineDeviationReason: 'Spine shifted to rebellion.',
           spineInvalidatedElement: 'storySpineType',
           deviationDetected: true,
-          deviationReason: 'Beat-level deviation also detected.',
-          invalidatedBeatIds: ['1.2'],
+          deviationReason: 'Milestone-level deviation also detected.',
+          invalidatedMilestoneIds: ['1.2'],
           sceneSummary: 'Major story pivot.',
         })
       );

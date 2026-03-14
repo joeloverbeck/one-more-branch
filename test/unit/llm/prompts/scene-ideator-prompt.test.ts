@@ -378,7 +378,7 @@ describe('formatPendingPromisesSection', () => {
     });
     const beatPromise = mkPromise({
       id: 'pr-3',
-      description: 'Beat scope',
+      description: 'Milestone scope',
       scope: PromiseScope.BEAT,
       suggestedUrgency: Urgency.HIGH,
       age: 3,
@@ -386,10 +386,10 @@ describe('formatPendingPromisesSection', () => {
 
     const result = formatPendingPromisesSection([storyPromise, scenePromise, beatPromise]);
     const sceneIdx = result.indexOf('Scene scope');
-    const beatIdx = result.indexOf('Beat scope');
+    const milestoneIdx = result.indexOf('Milestone scope');
     const storyIdx = result.indexOf('Story scope');
-    expect(sceneIdx).toBeLessThan(beatIdx);
-    expect(beatIdx).toBeLessThan(storyIdx);
+    expect(sceneIdx).toBeLessThan(milestoneIdx);
+    expect(milestoneIdx).toBeLessThan(storyIdx);
   });
 
   it('within same scope, sorts by age descending', () => {

@@ -1,6 +1,6 @@
-export type BeatStatus = 'pending' | 'active' | 'concluded';
+export type MilestoneStatus = 'pending' | 'active' | 'concluded';
 
-export const BEAT_ROLES = [
+export const MILESTONE_ROLES = [
   'setup',
   'escalation',
   'turning_point',
@@ -8,7 +8,7 @@ export const BEAT_ROLES = [
   'resolution',
 ] as const;
 
-export type BeatRole = (typeof BEAT_ROLES)[number];
+export type MilestoneRole = (typeof MILESTONE_ROLES)[number];
 
 export const ESCALATION_TYPES = [
   'THREAT_ESCALATION',
@@ -51,13 +51,13 @@ export const APPROACH_VECTORS = [
 
 export type ApproachVector = (typeof APPROACH_VECTORS)[number];
 
-export interface StoryBeat {
+export interface StoryMilestone {
   readonly id: string;
   readonly name: string;
   readonly description: string;
   readonly objective: string;
   readonly causalLink: string;
-  readonly role: BeatRole;
+  readonly role: MilestoneRole;
   readonly escalationType: EscalationType | null;
   readonly secondaryEscalationType: EscalationType | null;
   readonly crisisType: CrisisType | null;
@@ -76,7 +76,7 @@ export interface StoryAct {
   readonly objective: string;
   readonly stakes: string;
   readonly entryCondition: string;
-  readonly beats: readonly StoryBeat[];
+  readonly milestones: readonly StoryMilestone[];
 }
 
 export interface PacingBudget {
@@ -94,42 +94,42 @@ export interface StoryStructure {
   readonly generatedAt: Date;
 }
 
-export interface BeatProgression {
-  readonly beatId: string;
-  readonly status: BeatStatus;
+export interface MilestoneProgression {
+  readonly milestoneId: string;
+  readonly status: MilestoneStatus;
   readonly resolution?: string;
 }
 
 export interface AccumulatedStructureState {
   readonly currentActIndex: number;
-  readonly currentBeatIndex: number;
-  readonly beatProgressions: readonly BeatProgression[];
-  readonly pagesInCurrentBeat: number;
+  readonly currentMilestoneIndex: number;
+  readonly milestoneProgressions: readonly MilestoneProgression[];
+  readonly pagesInCurrentMilestone: number;
   readonly pacingNudge: string | null;
 }
 
 export function createEmptyAccumulatedStructureState(): AccumulatedStructureState {
   return {
     currentActIndex: 0,
-    currentBeatIndex: 0,
-    beatProgressions: [],
-    pagesInCurrentBeat: 0,
+    currentMilestoneIndex: 0,
+    milestoneProgressions: [],
+    pagesInCurrentMilestone: 0,
     pacingNudge: null,
   };
 }
 
 /**
  * Creates initial AccumulatedStructureState for first page.
- * Sets first beat of first act as 'active', all others 'pending'.
+ * Sets first milestone of first act as 'active', all others 'pending'.
  */
 export function createInitialStructureState(structure: StoryStructure): AccumulatedStructureState {
-  const beatProgressions: BeatProgression[] = [];
+  const milestoneProgressions: MilestoneProgression[] = [];
 
   structure.acts.forEach((act, actIdx) => {
-    act.beats.forEach((beat, beatIdx) => {
-      const isFirst = actIdx === 0 && beatIdx === 0;
-      beatProgressions.push({
-        beatId: beat.id,
+    act.milestones.forEach((milestone, milestoneIdx) => {
+      const isFirst = actIdx === 0 && milestoneIdx === 0;
+      milestoneProgressions.push({
+        milestoneId: milestone.id,
         status: isFirst ? 'active' : 'pending',
       });
     });
@@ -137,9 +137,9 @@ export function createInitialStructureState(structure: StoryStructure): Accumula
 
   return {
     currentActIndex: 0,
-    currentBeatIndex: 0,
-    beatProgressions,
-    pagesInCurrentBeat: 0,
+    currentMilestoneIndex: 0,
+    milestoneProgressions,
+    pagesInCurrentMilestone: 0,
     pacingNudge: null,
   };
 }
@@ -151,30 +151,32 @@ export function getCurrentAct(
   return structure.acts[state.currentActIndex];
 }
 
-export function getCurrentBeat(
+export function getCurrentMilestone(
   structure: StoryStructure,
   state: AccumulatedStructureState
-): StoryBeat | undefined {
-  return getCurrentAct(structure, state)?.beats[state.currentBeatIndex];
+): StoryMilestone | undefined {
+  return getCurrentAct(structure, state)?.milestones[state.currentMilestoneIndex];
 }
 
-export function getBeatProgression(
+export function getMilestoneProgression(
   state: AccumulatedStructureState,
-  beatId: string
-): BeatProgression | undefined {
-  return state.beatProgressions.find((beatProgression) => beatProgression.beatId === beatId);
+  milestoneId: string
+): MilestoneProgression | undefined {
+  return state.milestoneProgressions.find(
+    (milestoneProgression) => milestoneProgression.milestoneId === milestoneId
+  );
 }
 
-export function isLastBeatOfAct(
+export function isLastMilestoneOfAct(
   structure: StoryStructure,
   state: AccumulatedStructureState
 ): boolean {
   const currentAct = getCurrentAct(structure, state);
-  if (!currentAct || currentAct.beats.length === 0) {
+  if (!currentAct || currentAct.milestones.length === 0) {
     return false;
   }
 
-  return state.currentBeatIndex === currentAct.beats.length - 1;
+  return state.currentMilestoneIndex === currentAct.milestones.length - 1;
 }
 
 export function isLastAct(structure: StoryStructure, state: AccumulatedStructureState): boolean {
@@ -185,10 +187,10 @@ export function isLastAct(structure: StoryStructure, state: AccumulatedStructure
   return state.currentActIndex === structure.acts.length - 1;
 }
 
-export interface BeatDeviation {
+export interface MilestoneDeviation {
   readonly detected: true;
   readonly reason: string;
-  readonly invalidatedBeatIds: readonly string[];
+  readonly invalidatedMilestoneIds: readonly string[];
   readonly sceneSummary: string;
 }
 
@@ -196,9 +198,9 @@ export interface NoDeviation {
   readonly detected: false;
 }
 
-export type DeviationResult = BeatDeviation | NoDeviation;
+export type DeviationResult = MilestoneDeviation | NoDeviation;
 
-export function isDeviation(result: DeviationResult): result is BeatDeviation {
+export function isDeviation(result: DeviationResult): result is MilestoneDeviation {
   return result.detected === true;
 }
 
@@ -206,19 +208,19 @@ export function isNoDeviation(result: DeviationResult): result is NoDeviation {
   return result.detected === false;
 }
 
-export function createBeatDeviation(
+export function createMilestoneDeviation(
   reason: string,
-  invalidatedBeatIds: readonly string[],
+  invalidatedMilestoneIds: readonly string[],
   sceneSummary: string
-): BeatDeviation {
-  if (invalidatedBeatIds.length === 0) {
-    throw new Error('BeatDeviation must have at least one invalidated beat ID');
+): MilestoneDeviation {
+  if (invalidatedMilestoneIds.length === 0) {
+    throw new Error('MilestoneDeviation must have at least one invalidated milestone ID');
   }
 
   return {
     detected: true,
     reason,
-    invalidatedBeatIds,
+    invalidatedMilestoneIds,
     sceneSummary,
   };
 }
@@ -228,14 +230,14 @@ export function createNoDeviation(): NoDeviation {
 }
 
 export function validateDeviationTargets(
-  deviation: BeatDeviation,
+  deviation: MilestoneDeviation,
   structureState: AccumulatedStructureState
 ): boolean {
   const concludedIds = new Set(
-    structureState.beatProgressions
-      .filter((beatProgression) => beatProgression.status === 'concluded')
-      .map((beatProgression) => beatProgression.beatId)
+    structureState.milestoneProgressions
+      .filter((milestoneProgression) => milestoneProgression.status === 'concluded')
+      .map((milestoneProgression) => milestoneProgression.milestoneId)
   );
 
-  return deviation.invalidatedBeatIds.every((beatId) => !concludedIds.has(beatId));
+  return deviation.invalidatedMilestoneIds.every((milestoneId) => !concludedIds.has(milestoneId));
 }

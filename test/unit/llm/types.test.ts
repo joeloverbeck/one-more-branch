@@ -24,7 +24,7 @@ import type {
 import type { PagePlan, PagePlanGenerationResult } from '../../../src/llm/planner-types';
 import { LLMError } from '../../../src/llm/llm-client-types';
 import {
-  createBeatDeviation,
+  createMilestoneDeviation,
   createNoDeviation,
   type StoryStructure,
 } from '../../../src/models/story-arc';
@@ -566,8 +566,8 @@ describe('LLM types', () => {
     it('should extend PageWriterResult with analyst fields (NoDeviation)', () => {
       const result: ContinuationGenerationResult = {
         ...buildBaseWriterResult(),
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviation: createNoDeviation(),
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -577,13 +577,13 @@ describe('LLM types', () => {
       expect(result.deviation.detected).toBe(false);
     });
 
-    it('should extend PageWriterResult with analyst fields (BeatDeviation)', () => {
+    it('should extend PageWriterResult with analyst fields (MilestoneDeviation)', () => {
       const result: ContinuationGenerationResult = {
         ...buildBaseWriterResult(),
-        beatConcluded: true,
-        beatResolution: 'The allies turned against each other',
-        deviation: createBeatDeviation(
-          'Future beats no longer fit',
+        milestoneConcluded: true,
+        milestoneResolution: 'The allies turned against each other',
+        deviation: createMilestoneDeviation(
+          'Future milestones no longer fit',
           ['2.2', '2.3'],
           'Allies joined enemy'
         ),
@@ -594,7 +594,7 @@ describe('LLM types', () => {
 
       expect(result.deviation.detected).toBe(true);
       if (result.deviation.detected) {
-        expect(result.deviation.invalidatedBeatIds).toEqual(['2.2', '2.3']);
+        expect(result.deviation.invalidatedMilestoneIds).toEqual(['2.2', '2.3']);
       }
     });
   });
@@ -750,7 +750,7 @@ describe('LLM types', () => {
       expect('newCanonFacts' in result).toBe(false);
     });
 
-    it('should NOT include beatConcluded, beatResolution, or deviation fields', () => {
+    it('should NOT include milestoneConcluded, milestoneResolution, or deviation fields', () => {
       const result: PageWriterResult = {
         narrative: 'Test',
         choices: [
@@ -785,8 +785,8 @@ describe('LLM types', () => {
       };
 
       // Verify these fields do NOT exist on PageWriterResult
-      expect('beatConcluded' in result).toBe(false);
-      expect('beatResolution' in result).toBe(false);
+      expect('milestoneConcluded' in result).toBe(false);
+      expect('milestoneResolution' in result).toBe(false);
       expect('deviation' in result).toBe(false);
     });
   });
@@ -794,11 +794,11 @@ describe('LLM types', () => {
   describe('AnalystResult (compile-time)', () => {
     it('should allow creating AnalystResult with all required fields', () => {
       const result: AnalystResult = {
-        beatConcluded: true,
-        beatResolution: 'The protagonist escaped the dungeon',
+        milestoneConcluded: true,
+        milestoneResolution: 'The protagonist escaped the dungeon',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'The protagonist continues the current scene.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -825,9 +825,9 @@ describe('LLM types', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         thematicCharge: 'AMBIGUOUS',
         narrativeFocus: 'BALANCED',
         thematicChargeDescription: '',
@@ -836,21 +836,21 @@ describe('LLM types', () => {
         delayedConsequencesTriggered: [],
 knowledgeAsymmetryDetected: [],
 dramaticIronyOpportunities: [],
-rawResponse: '{"beatConcluded":true}',
+rawResponse: '{"milestoneConcluded":true}',
       };
 
-      expect(result.beatConcluded).toBe(true);
-      expect(result.beatResolution).toContain('escaped');
+      expect(result.milestoneConcluded).toBe(true);
+      expect(result.milestoneResolution).toContain('escaped');
       expect(result.deviationDetected).toBe(false);
     });
 
     it('should allow creating AnalystResult with deviation detected', () => {
       const result: AnalystResult = {
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: true,
         deviationReason: 'Protagonist allied with the antagonist',
-        invalidatedBeatIds: ['2.2', '2.3'],
+        invalidatedMilestoneIds: ['2.2', '2.3'],
         sceneSummary: 'The hero joined forces with the villain',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -877,9 +877,9 @@ rawResponse: '{"beatConcluded":true}',
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         thematicCharge: 'ANTITHESIS_SUPPORTING',
         narrativeFocus: 'BALANCED',
         thematicChargeDescription: 'The protagonist embraces coercive control to restore order.',
@@ -892,7 +892,7 @@ rawResponse: '{"deviationDetected":true}',
       };
 
       expect(result.deviationDetected).toBe(true);
-      expect(result.invalidatedBeatIds).toEqual(['2.2', '2.3']);
+      expect(result.invalidatedMilestoneIds).toEqual(['2.2', '2.3']);
       expect(result.sceneSummary).toContain('villain');
     });
   });
@@ -909,7 +909,7 @@ rawResponse: '{"deviationDetected":true}',
               objective: 'Reach the gate',
               stakes: 'Failure means capture',
               entryCondition: 'Story begins',
-              beats: [
+              milestones: [
                 {
                   id: '1.1',
                   name: 'Gate approach',
@@ -929,9 +929,9 @@ rawResponse: '{"deviationDetected":true}',
         },
         accumulatedStructureState: {
           currentActIndex: 0,
-          currentBeatIndex: 0,
-          beatProgressions: [],
-          pagesInCurrentBeat: 0,
+          currentMilestoneIndex: 0,
+          milestoneProgressions: [],
+          pagesInCurrentMilestone: 0,
           pacingNudge: null,
         },
         activeState: {
@@ -963,7 +963,7 @@ rawResponse: '{"deviationDetected":true}',
           objective: 'Start',
           stakes: 'Failure means immediate danger',
           entryCondition: 'Story begins',
-          beats: [
+          milestones: [
             {
               id: '1.1',
               description: 'Inciting incident',
@@ -984,7 +984,7 @@ rawResponse: '{"deviationDetected":true}',
           objective: 'Escalate',
           stakes: 'Failure means loss of allies',
           entryCondition: 'Protagonist commits',
-          beats: [
+          milestones: [
             {
               id: '2.1',
               name: 'Complication',
@@ -1007,7 +1007,7 @@ rawResponse: '{"deviationDetected":true}',
           objective: 'Resolve',
           stakes: 'Failure means catastrophe',
           entryCondition: 'Final confrontation begins',
-          beats: [
+          milestones: [
             {
               id: '3.1',
               name: 'Climax',
@@ -1036,8 +1036,8 @@ rawResponse: '{"deviationDetected":true}',
     it('should allow creating CompletedBeat with all required fields', () => {
       const completedBeat: CompletedBeat = {
         actIndex: 0,
-        beatIndex: 1,
-        beatId: '1.2',
+        milestoneIndex: 1,
+        milestoneId: '1.2',
         name: 'Decision point',
         description: 'Decision point',
         objective: 'Choose direction',
@@ -1045,7 +1045,7 @@ rawResponse: '{"deviationDetected":true}',
         resolution: 'Chose to trust the rebel faction',
       };
 
-      expect(completedBeat.beatId).toBe('1.2');
+      expect(completedBeat.milestoneId).toBe('1.2');
       expect(completedBeat.resolution).toContain('rebel');
     });
 
@@ -1072,7 +1072,7 @@ rawResponse: '{"deviationDetected":true}',
         plannedBeats: [],
         sceneSummary: 'The protagonist now controls a key evacuation route.',
         currentActIndex: 1,
-        currentBeatIndex: 0,
+        currentMilestoneIndex: 0,
         deviationReason: 'Player allied with former rivals',
         originalTheme: 'Duty versus survival',
         totalActCount: 3,
@@ -1083,15 +1083,15 @@ rawResponse: '{"deviationDetected":true}',
       expect(context.totalActCount).toBe(3);
     });
 
-    it('should allow creating StructureRewriteResult with structure and preservedBeatIds', () => {
+    it('should allow creating StructureRewriteResult with structure and preservedMilestoneIds', () => {
       const result: StructureRewriteResult = {
         structure,
-        preservedBeatIds: ['1.1', '1.2'],
+        preservedMilestoneIds: ['1.1', '1.2'],
         rawResponse: 'REGENERATED_ACTS:\n...',
       };
 
       expect(result.structure.acts).toHaveLength(3);
-      expect(result.preservedBeatIds).toEqual(['1.1', '1.2']);
+      expect(result.preservedMilestoneIds).toEqual(['1.1', '1.2']);
     });
   });
 });
