@@ -236,7 +236,7 @@ describe('runCharacterStage', () => {
       rawResponse: 'stage-1-raw',
     });
 
-    const events: Array<{ stage: string; status: string; attempt: number }> = [];
+    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
     const result = await runCharacterStage(
       {
         character: createCharacter(),
@@ -258,7 +258,12 @@ describe('runCharacterStage', () => {
     );
     expect(events).toEqual([
       { stage: 'GENERATING_CHAR_KERNEL', status: 'started', attempt: 1 },
-      { stage: 'GENERATING_CHAR_KERNEL', status: 'completed', attempt: 1 },
+      expect.objectContaining({
+        stage: 'GENERATING_CHAR_KERNEL',
+        status: 'completed',
+        attempt: 1,
+        durationMs: 0,
+      }),
     ]);
     expect(result.rawResponse).toBe('stage-1-raw');
     expect(result.updatedCharacter.characterKernel).toEqual(characterKernel);

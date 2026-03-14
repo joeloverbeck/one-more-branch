@@ -38,6 +38,19 @@ export function emitGenerationStage(
   onGenerationStage?.(event);
 }
 
+export async function runGenerationStage<T>(
+  onGenerationStage: GenerationStageCallback | undefined,
+  stage: GenerationStage,
+  operation: () => Promise<T>,
+  attempt = 1
+): Promise<T> {
+  const startedAt = Date.now();
+  emitGenerationStage(onGenerationStage, stage, 'started', attempt);
+  const result = await operation();
+  emitGenerationStage(onGenerationStage, stage, 'completed', attempt, Date.now() - startedAt);
+  return result;
+}
+
 export function resolveWriterStage(mode: PagePlanContext['mode']): GenerationStage {
   return mode === 'opening' ? 'WRITING_OPENING_PAGE' : 'WRITING_CONTINUING_PAGE';
 }

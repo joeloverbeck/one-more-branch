@@ -1,6 +1,6 @@
 import { getConfig } from '../config/index.js';
 import { getStageMaxTokens } from '../config/stage-model.js';
-import { emitGenerationStage } from '../engine/generation-pipeline-helpers.js';
+import { runGenerationStage } from '../engine/generation-pipeline-helpers.js';
 import type { GenerationStage, GenerationStageCallback } from '../engine/types.js';
 import type {
   MacroArchitectureResult,
@@ -29,19 +29,6 @@ const STRUCTURE_PIPELINE_STAGES = {
   milestoneGeneration: 'GENERATING_MILESTONES',
   validation: 'VALIDATING_STRUCTURE',
 } satisfies Record<'macroArchitecture' | 'milestoneGeneration' | 'validation', GenerationStage>;
-
-async function runStructureStage<T>(
-  onGenerationStage: GenerationStageCallback | undefined,
-  stage: GenerationStage,
-  operation: () => Promise<T>
-): Promise<T> {
-  const attempt = 1;
-  const startedAt = Date.now();
-  emitGenerationStage(onGenerationStage, stage, 'started', attempt);
-  const result = await operation();
-  emitGenerationStage(onGenerationStage, stage, 'completed', attempt, Date.now() - startedAt);
-  return result;
-}
 
 async function generateMacroArchitecture(
   context: StructureContext,
@@ -135,7 +122,7 @@ export async function generateStoryStructure(
   const temperature = options?.temperature ?? config.temperature;
   const macroMaxTokens = options?.maxTokens ?? getStageMaxTokens('macroArchitecture');
   const milestoneMaxTokens = options?.maxTokens ?? getStageMaxTokens('milestoneGeneration');
-  const macroArchitecture = await runStructureStage(
+  const macroArchitecture = await runGenerationStage(
     options?.onGenerationStage,
     STRUCTURE_PIPELINE_STAGES.macroArchitecture,
     () =>
@@ -147,7 +134,7 @@ export async function generateStoryStructure(
       })
   );
 
-  const result = await runStructureStage(
+  const result = await runGenerationStage(
     options?.onGenerationStage,
     STRUCTURE_PIPELINE_STAGES.milestoneGeneration,
     () =>
@@ -159,7 +146,7 @@ export async function generateStoryStructure(
       })
   );
 
-  const validated = await runStructureStage(
+  const validated = await runGenerationStage(
     options?.onGenerationStage,
     STRUCTURE_PIPELINE_STAGES.validation,
     () => validateAndRepairStructure(result, context, apiKey, resolvedOptions)
