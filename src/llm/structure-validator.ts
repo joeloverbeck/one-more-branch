@@ -1,5 +1,5 @@
-import { getStageMaxTokens, getStageModel } from '../config/stage-model.js';
-import { logger, logPrompt, logResponse } from '../logging/index.js';
+import { getStageMaxTokens } from '../config/stage-model.js';
+import { logger } from '../logging/index.js';
 import { getGenreObligationTags, isGenreObligationTag } from '../models/genre-obligations.js';
 import type {
   GeneratedAct,
@@ -14,16 +14,13 @@ import {
   MIDPOINT_TYPES,
   MILESTONE_ROLES,
 } from '../models/story-arc.js';
-import { OPENROUTER_API_URL, extractResponseContent, parseMessageJsonContent, readErrorDetails, readJsonResponse } from './http-client.js';
 import type { GenerationOptions, PromptOptions } from './generation-pipeline-types.js';
-import type { JsonSchema } from './llm-client-types.js';
-import { LLMError, type ChatMessage } from './llm-client-types.js';
-import { withModelFallback } from './model-fallback.js';
+import { LLMError } from './llm-client-types.js';
+import { runLlmStage } from './llm-stage-runner.js';
 import { resolvePromptOptions } from './options.js';
 import { buildStructureRepairPrompt } from './prompts/structure-repair-prompt.js';
 import type { StructureContext } from './prompts/milestone-generation-prompt.js';
 import { STRUCTURE_REPAIR_SCHEMA } from './schemas/structure-repair-schema.js';
-import { withRetry } from './retry.js';
 
 const MIN_UNIQUE_TRACED_SETPIECES = 4;
 
@@ -274,7 +271,7 @@ function parseStructureRepairResponseObject(
     ) {
       throw new LLMError(`repairedActs[${index}].actIndex must reference a valid act`, 'STRUCTURE_PARSE_ERROR', true);
     }
-    const actIndex = rawActIndex as number;
+    const actIndex = rawActIndex;
     if (seen.has(actIndex)) {
       throw new LLMError(`repairedActs contains duplicate actIndex ${actIndex}`, 'STRUCTURE_PARSE_ERROR', true);
     }
@@ -554,63 +551,6 @@ function mergeRepairedActs(
   };
 }
 
-async function callStructuredRepairStage<T>(
-  apiKey: string,
-  model: string,
-  messages: ChatMessage[],
-  schema: JsonSchema,
-  temperature: number,
-  maxTokens: number,
-  parse: (parsed: unknown, rawText: string) => T
-): Promise<T> {
-  logPrompt(logger, 'structureRepair', messages);
-
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'http://localhost:3000',
-      'X-Title': 'One More Branch',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      max_tokens: maxTokens,
-      response_format: schema,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await readErrorDetails(response);
-    const retryable = response.status === 429 || response.status >= 500;
-    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-      httpStatus: response.status,
-      model,
-      rawErrorBody: errorDetails.rawBody,
-      parsedError: errorDetails.parsedError,
-    });
-  }
-
-  const data = await readJsonResponse(response);
-  const content = extractResponseContent(data, 'structureRepair', model, maxTokens);
-  const parsedMessage = parseMessageJsonContent(content);
-  const responseText = parsedMessage.rawText;
-  logResponse(logger, 'structureRepair', responseText);
-
-  try {
-    return parse(parsedMessage.parsed, responseText);
-  } catch (error) {
-    if (error instanceof LLMError) {
-      throw new LLMError(error.message, error.code, error.retryable, {
-        rawContent: responseText,
-      });
-    }
-    throw error;
-  }
-}
-
 export async function validateAndRepairStructure(
   result: StructureGenerationResult,
   context: StructureContext,
@@ -648,29 +588,20 @@ export async function validateAndRepairStructure(
     promptOptions
   );
 
-  const repair = await withRetry(() =>
-    withModelFallback(
-      (model) =>
-        callStructuredRepairStage(
-          apiKey,
-          model,
-          repairMessages,
-          STRUCTURE_REPAIR_SCHEMA,
-          temperature,
-          maxTokens,
-          (parsed, rawText) => ({
-            parsed: parseStructureRepairResponseObject(
-              parsed,
-              result.acts.length,
-              verifiedSetpieceCount
-            ),
-            rawResponse: rawText,
-          })
-        ),
-      options?.model ?? getStageModel('structureRepair'),
-      'structureRepair'
-    )
-  );
+  const repair = await runLlmStage({
+    stageModel: 'structureRepair',
+    promptType: 'structureRepair',
+    apiKey,
+    options: {
+      ...(options?.model ? { model: options.model } : {}),
+      temperature,
+      maxTokens,
+    },
+    schema: STRUCTURE_REPAIR_SCHEMA,
+    messages: repairMessages,
+    parseResponse: (parsed) =>
+      parseStructureRepairResponseObject(parsed, result.acts.length, verifiedSetpieceCount),
+  });
 
   const merged = mergeRepairedActs(result, repair.parsed);
   const repairedRawResponse = `${result.rawResponse}\n\n[structureRepair]\n${repair.rawResponse}`;

@@ -437,12 +437,6 @@ describe('structure-rewriter', () => {
         [expect.objectContaining({ role: 'system' }), expect.objectContaining({ role: 'user' })],
         'test-api-key'
       );
-      expect(mockLogPrompt).toHaveBeenCalledWith(
-        mockLogger,
-        'structureRewrite',
-        expect.any(Array)
-      );
-      expect(mockLogPrompt).toHaveBeenCalledTimes(1);
       expect(result.preservedMilestoneIds).toEqual(['1.1']);
       expect(result.rawResponse).toBe('{"mock":true}');
       expect(result.structure.overallTheme).toBe(context.originalTheme);

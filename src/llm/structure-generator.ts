@@ -1,116 +1,52 @@
 import { getConfig } from '../config/index.js';
-import { getStageMaxTokens, getStageModel, type LlmStage } from '../config/stage-model.js';
-import { logger, logPrompt, logResponse } from '../logging/index.js';
+import { getStageMaxTokens } from '../config/stage-model.js';
 import type {
   MacroArchitectureResult,
   StructureGenerationResult,
 } from '../models/structure-generation.js';
-import {
-  OPENROUTER_API_URL,
-  extractResponseContent,
-  parseMessageJsonContent,
-  readErrorDetails,
-  readJsonResponse,
-} from './http-client.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
-import type { ChatMessage, JsonSchema } from './llm-client-types.js';
-import { LLMError } from './llm-client-types.js';
+import { runLlmStage } from './llm-stage-runner.js';
 import { parseMacroArchitectureResponseObject } from './macro-architecture-response-parser.js';
 import { parseMilestoneGenerationResponseObject } from './milestone-generation-response-parser.js';
-import { withModelFallback } from './model-fallback.js';
 import { resolvePromptOptions } from './options.js';
 import { buildMacroArchitecturePrompt } from './prompts/macro-architecture-prompt.js';
 import {
   buildMilestoneGenerationPrompt,
   type StructureContext,
 } from './prompts/milestone-generation-prompt.js';
-import { withRetry } from './retry.js';
 import { MACRO_ARCHITECTURE_SCHEMA } from './schemas/macro-architecture-schema.js';
 import { MILESTONE_GENERATION_SCHEMA } from './schemas/milestone-generation-schema.js';
 import { validateAndRepairStructure } from './structure-validator.js';
-
-async function callStructuredStage<T>(
-  stage: LlmStage,
-  apiKey: string,
-  model: string,
-  messages: ChatMessage[],
-  schema: JsonSchema,
-  temperature: number,
-  maxTokens: number,
-  parse: (parsed: unknown, rawText: string) => T
-): Promise<T> {
-  logPrompt(logger, stage, messages);
-
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'http://localhost:3000',
-      'X-Title': 'One More Branch',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      max_tokens: maxTokens,
-      response_format: schema,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorDetails = await readErrorDetails(response);
-    const retryable = response.status === 429 || response.status >= 500;
-    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-      httpStatus: response.status,
-      model,
-      rawErrorBody: errorDetails.rawBody,
-      parsedError: errorDetails.parsedError,
-    });
-  }
-
-  const data = await readJsonResponse(response);
-  const content = extractResponseContent(data, stage, model, maxTokens);
-  const parsedMessage = parseMessageJsonContent(content);
-  const responseText = parsedMessage.rawText;
-  logResponse(logger, stage, responseText);
-
-  try {
-    return parse(parsedMessage.parsed, responseText);
-  } catch (error) {
-    if (error instanceof LLMError) {
-      throw new LLMError(error.message, error.code, error.retryable, {
-        rawContent: responseText,
-      });
-    }
-    throw error;
-  }
-}
 
 async function generateMacroArchitecture(
   context: StructureContext,
   apiKey: string,
   options: {
-    model: string;
+    model?: string;
     temperature: number;
     maxTokens: number;
     promptOptions: ReturnType<typeof resolvePromptOptions>;
   }
 ): Promise<MacroArchitectureResult> {
   const messages = buildMacroArchitecturePrompt(context, options.promptOptions);
-  return callStructuredStage(
-    'macroArchitecture',
+  const result = await runLlmStage({
+    stageModel: 'macroArchitecture',
+    promptType: 'macroArchitecture',
     apiKey,
-    options.model,
+    options: {
+      ...(options.model ? { model: options.model } : {}),
+      temperature: options.temperature,
+      maxTokens: options.maxTokens,
+    },
+    schema: MACRO_ARCHITECTURE_SCHEMA,
     messages,
-    MACRO_ARCHITECTURE_SCHEMA,
-    options.temperature,
-    options.maxTokens,
-    (parsed, rawText) => ({
-      ...parseMacroArchitectureResponseObject(parsed),
-      rawResponse: rawText,
-    })
-  );
+    parseResponse: (parsed) => parseMacroArchitectureResponseObject(parsed),
+  });
+
+  return {
+    ...result.parsed,
+    rawResponse: result.rawResponse,
+  };
 }
 
 async function generateMilestones(
@@ -118,28 +54,29 @@ async function generateMilestones(
   macroArchitecture: MacroArchitectureResult,
   apiKey: string,
   options: {
-    model: string;
+    model?: string;
     temperature: number;
     maxTokens: number;
     promptOptions: ReturnType<typeof resolvePromptOptions>;
   }
 ): Promise<StructureGenerationResult> {
   const messages = buildMilestoneGenerationPrompt(context, macroArchitecture, options.promptOptions);
-  const milestoneStageResult = await callStructuredStage(
-    'milestoneGeneration',
+  const milestoneStageResult = await runLlmStage({
+    stageModel: 'milestoneGeneration',
+    promptType: 'milestoneGeneration',
     apiKey,
-    options.model,
+    options: {
+      ...(options.model ? { model: options.model } : {}),
+      temperature: options.temperature,
+      maxTokens: options.maxTokens,
+    },
+    schema: MILESTONE_GENERATION_SCHEMA,
     messages,
-    MILESTONE_GENERATION_SCHEMA,
-    options.temperature,
-    options.maxTokens,
-    (parsed, rawText) => ({
-      parsed: parseMilestoneGenerationResponseObject(parsed, macroArchitecture, {
+    parseResponse: (parsed) =>
+      parseMilestoneGenerationResponseObject(parsed, macroArchitecture, {
         verifiedSetpieceCount: context.conceptVerification?.escalatingSetpieces.length ?? 0,
       }),
-      rawResponse: rawText,
-    })
-  );
+  });
   const milestoneResult = milestoneStageResult.parsed;
 
   return {
@@ -173,33 +110,19 @@ export async function generateStoryStructure(
   const temperature = options?.temperature ?? config.temperature;
   const macroMaxTokens = options?.maxTokens ?? getStageMaxTokens('macroArchitecture');
   const milestoneMaxTokens = options?.maxTokens ?? getStageMaxTokens('milestoneGeneration');
-  const macroArchitecture = await withRetry(() =>
-    withModelFallback(
-      (model) =>
-        generateMacroArchitecture(context, apiKey, {
-          model,
-          temperature,
-          maxTokens: macroMaxTokens,
-          promptOptions,
-        }),
-      overrideModel ?? getStageModel('macroArchitecture'),
-      'macroArchitecture'
-    )
-  );
+  const macroArchitecture = await generateMacroArchitecture(context, apiKey, {
+    ...(overrideModel ? { model: overrideModel } : {}),
+    temperature,
+    maxTokens: macroMaxTokens,
+    promptOptions,
+  });
 
-  const result = await withRetry(() =>
-    withModelFallback(
-      (model) =>
-        generateMilestones(context, macroArchitecture, apiKey, {
-          model,
-          temperature,
-          maxTokens: milestoneMaxTokens,
-          promptOptions,
-        }),
-      overrideModel ?? getStageModel('milestoneGeneration'),
-      'milestoneGeneration'
-    )
-  );
+  const result = await generateMilestones(context, macroArchitecture, apiKey, {
+    ...(overrideModel ? { model: overrideModel } : {}),
+    temperature,
+    maxTokens: milestoneMaxTokens,
+    promptOptions,
+  });
 
   const validated = await validateAndRepairStructure(result, context, apiKey, resolvedOptions);
   return validated.result;

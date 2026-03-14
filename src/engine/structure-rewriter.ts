@@ -1,15 +1,7 @@
-import { getConfig } from '../config';
-import { getStageModel, getStageMaxTokens } from '../config/stage-model';
-import { logger, logPrompt, logResponse } from '../logging';
-import {
-  OPENROUTER_API_URL,
-  parseMessageJsonContent,
-  readErrorDetails,
-  readJsonResponse,
-} from '../llm/http-client';
+import { runLlmStage } from '../llm/llm-stage-runner';
 import { buildStructureRewritePrompt } from '../llm/prompts/structure-rewrite-prompt';
 import { STRUCTURE_GENERATION_SCHEMA } from '../llm/schemas/structure-schema';
-import { ChatMessage, LLMError } from '../llm/llm-client-types';
+import { ChatMessage } from '../llm/llm-client-types';
 import { parseStructureResponseObject } from '../llm/structure-response-parser';
 import type {
   CompletedBeat,
@@ -73,7 +65,6 @@ export function createStructureRewriter(
       apiKey: string
     ): Promise<StructureRewriteResult> {
       const messages = buildStructureRewritePrompt(context);
-      logPrompt(logger, 'structureRewrite', messages);
       const regenerated = await generator(messages, apiKey);
       const regeneratedStructure = createStoryStructure(regenerated);
       const structure = mergePreservedWithRegenerated(
@@ -232,57 +223,17 @@ async function generateRewrittenStructure(
   messages: ChatMessage[],
   apiKey: string
 ): Promise<StructureGenerationResult> {
-  const model = getStageModel('structureRewrite');
-  const maxTokens = getStageMaxTokens('structureRewrite');
-  const temperature = getConfig().llm.temperature;
-
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-      'HTTP-Referer': 'http://localhost:3000',
-      'X-Title': 'One More Branch',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature,
-      max_tokens: maxTokens,
-      response_format: STRUCTURE_GENERATION_SCHEMA,
-    }),
+  const result = await runLlmStage({
+    stageModel: 'structureRewrite',
+    promptType: 'structureRewrite',
+    apiKey,
+    schema: STRUCTURE_GENERATION_SCHEMA,
+    messages,
+    parseResponse: (parsed) => parseStructureResponseObject(parsed),
   });
 
-  if (!response.ok) {
-    const errorDetails = await readErrorDetails(response);
-    const retryable = response.status === 429 || response.status >= 500;
-    throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-      httpStatus: response.status,
-      model,
-      rawErrorBody: errorDetails.rawBody,
-      parsedError: errorDetails.parsedError,
-    });
-  }
-
-  const data = await readJsonResponse(response);
-  const content = data.choices[0]?.message?.content;
-
-  if (!content) {
-    throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-  }
-
-  const parsedMessage = parseMessageJsonContent(content);
-  const responseText = parsedMessage.rawText;
-  logResponse(logger, 'structureRewrite', responseText);
-  try {
-    const parsed = parseStructureResponseObject(parsedMessage.parsed);
-    return { ...parsed, rawResponse: responseText };
-  } catch (error) {
-    if (error instanceof LLMError) {
-      throw new LLMError(error.message, error.code, error.retryable, {
-        rawContent: responseText,
-      });
-    }
-    throw error;
-  }
+  return {
+    ...result.parsed,
+    rawResponse: result.rawResponse,
+  };
 }

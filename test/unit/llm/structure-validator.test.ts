@@ -237,6 +237,20 @@ function findCheck(
   return match;
 }
 
+function createErrorResponse(status: number, message: string): Response {
+  return {
+    ok: false,
+    status,
+    json: jest.fn(),
+    text: jest.fn().mockResolvedValue(message),
+  } as unknown as Response;
+}
+
+async function advanceRetryDelays(): Promise<void> {
+  await jest.advanceTimersByTimeAsync(1000);
+  await jest.advanceTimersByTimeAsync(2000);
+}
+
 describe('structure-validator', () => {
   const originalFetch = global.fetch;
 
@@ -344,5 +358,27 @@ describe('structure-validator', () => {
     expect(validated.result.acts[1]?.actQuestion).toBe('Can procedure become a weapon?');
     expect(validated.diagnostics.every((entry) => entry.passed)).toBe(true);
     expect(validated.result.rawResponse).toContain('[structureRepair]');
+  });
+
+  it('retries retryable structure repair failures through the shared runner', async () => {
+    jest.useFakeTimers();
+    const broken = createValidResult();
+    broken.acts[1]!.actQuestion = broken.acts[0]!.actQuestion;
+
+    global.fetch = jest.fn().mockResolvedValue(createErrorResponse(429, 'rate limited')) as typeof fetch;
+
+    const pending = validateAndRepairStructure(broken, createContext(), 'test-api-key', {
+      promptOptions: {},
+    });
+    const expectation = expect(pending).rejects.toMatchObject({
+      code: 'HTTP_429',
+      retryable: true,
+    });
+
+    await advanceRetryDelays();
+    await expectation;
+
+    expect(global.fetch).toHaveBeenCalledTimes(3);
+    jest.useRealTimers();
   });
 });
