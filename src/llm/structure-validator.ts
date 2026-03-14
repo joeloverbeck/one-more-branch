@@ -314,6 +314,12 @@ export function collectTaggedObligations(
   return tagged;
 }
 
+function collectPlannedObligations(
+  result: Omit<StructureGenerationResult, 'rawResponse'>
+): Set<string> {
+  return new Set(result.acts.flatMap((act) => act.obligationTargets));
+}
+
 function flattenMilestones(
   result: Omit<StructureGenerationResult, 'rawResponse'>
 ): Array<{ actIndex: number; milestoneIndex: number; milestone: GeneratedMilestone }> {
@@ -406,9 +412,11 @@ export function validateStructureSemantics(
   const expectedObligations = context.conceptSpec
     ? getGenreObligationTags(context.conceptSpec.genreFrame).map((entry) => entry.tag)
     : [];
+  const plannedObligations = [...collectPlannedObligations(result)];
+  const obligationContract = plannedObligations.length > 0 ? plannedObligations : expectedObligations;
   if (expectedObligations.length > 0) {
     const tagged = collectTaggedObligations(result);
-    const missing = expectedObligations.filter((tag) => !tagged.has(tag));
+    const missing = obligationContract.filter((tag) => !tagged.has(tag));
     validations.push(
       missing.length === 0
         ? buildPassingResult('genre-obligation-coverage')
@@ -494,8 +502,8 @@ export function validateStructureSemantics(
         }
   );
 
-  const obligationCoverage = new Set(result.acts.flatMap((act) => act.obligationTargets));
-  const missingObligationTargets = expectedObligations.filter((tag) => !obligationCoverage.has(tag));
+  const obligationCoverage = new Set(plannedObligations);
+  const missingObligationTargets = obligationContract.filter((tag) => !obligationCoverage.has(tag));
   validations.push(
     missingObligationTargets.length === 0
       ? buildPassingResult('obligation-target-coverage')

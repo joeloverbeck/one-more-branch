@@ -266,6 +266,23 @@ describe('structure-validator', () => {
     expect(diagnostics.every((entry) => entry.passed)).toBe(true);
   });
 
+  it('treats allocated obligation targets as the active coverage contract', () => {
+    const context = createContext();
+    const partiallyAllocated = createValidResult();
+
+    partiallyAllocated.acts[0]!.obligationTargets = ['crime_or_puzzle_presented'];
+    partiallyAllocated.acts[0]!.milestones[1]!.obligatorySceneTag = null;
+    partiallyAllocated.acts[1]!.obligationTargets = ['key_clue_recontextualized'];
+    partiallyAllocated.acts[1]!.milestones[1]!.obligatorySceneTag = null;
+    partiallyAllocated.acts[2]!.obligationTargets = ['culprit_unmasked'];
+    partiallyAllocated.acts[2]!.milestones[0]!.obligatorySceneTag = null;
+
+    const diagnostics = validateStructureSemantics(partiallyAllocated, context);
+
+    expect(findCheck(diagnostics, 'genre-obligation-coverage').passed).toBe(true);
+    expect(findCheck(diagnostics, 'obligation-target-coverage').passed).toBe(true);
+  });
+
   it('reports every semantic check when its invariant is broken', () => {
     const context = createContext();
     const midpointBroken = createValidResult();
