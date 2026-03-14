@@ -53,7 +53,19 @@ function createInput(overrides: Partial<EvolveKernelsInput> = {}): EvolveKernels
   };
 }
 
+function expectCompletedStage(
+  event: { stage: string; status: string; attempt: number; durationMs?: number },
+  stage: string,
+): void {
+  expect(event).toMatchObject({ stage, status: 'completed', attempt: 1 });
+  expect(typeof event.durationMs).toBe('number');
+}
+
 describe('kernel-evolution-service', () => {
+  beforeEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('evolveKernels', () => {
     it('calls evolver then evaluator with expected inputs', async () => {
       const callOrder: string[] = [];
@@ -125,7 +137,7 @@ describe('kernel-evolution-service', () => {
     });
 
     it('emits stage callbacks for evolve and evaluate in order', async () => {
-      const events: Array<{ stage: string; status: string; attempt: number }> = [];
+      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
       const service = createKernelEvolutionService({
         evolveKernels: jest.fn().mockResolvedValue({
           kernels: Array.from({ length: 6 }, (_, index) => createKernel(index + 1)),
@@ -145,16 +157,61 @@ describe('kernel-evolution-service', () => {
               stage: event.stage,
               status: event.status,
               attempt: event.attempt,
+              durationMs: event.durationMs,
             });
           },
         }),
       );
 
-      expect(events).toEqual([
-        { stage: 'EVOLVING_KERNELS', status: 'started', attempt: 1 },
-        { stage: 'EVOLVING_KERNELS', status: 'completed', attempt: 1 },
-        { stage: 'EVALUATING_KERNELS', status: 'started', attempt: 1 },
-        { stage: 'EVALUATING_KERNELS', status: 'completed', attempt: 1 },
+      expect(events).toHaveLength(4);
+      expect(events[0]).toEqual({ stage: 'EVOLVING_KERNELS', status: 'started', attempt: 1 });
+      expectCompletedStage(
+        events[1] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'EVOLVING_KERNELS',
+      );
+      expect(events[2]).toEqual({ stage: 'EVALUATING_KERNELS', status: 'started', attempt: 1 });
+      expectCompletedStage(
+        events[3] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'EVALUATING_KERNELS',
+      );
+    });
+
+    it('emits deterministic completion durations when time is controlled', async () => {
+      const dateNowSpy = jest
+        .spyOn(Date, 'now')
+        .mockReturnValueOnce(100)
+        .mockReturnValueOnce(118)
+        .mockReturnValueOnce(200)
+        .mockReturnValueOnce(245);
+      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+      const service = createKernelEvolutionService({
+        evolveKernels: jest.fn().mockResolvedValue({
+          kernels: Array.from({ length: 6 }, (_, index) => createKernel(index + 1)),
+          rawResponse: 'raw-evolution',
+        }),
+        evaluateKernels: jest.fn().mockResolvedValue({
+          scoredKernels: [],
+          evaluatedKernels: [createEvaluatedKernel(1)],
+          rawResponse: 'raw-evaluation',
+        }),
+      });
+
+      await service.evolveKernels(
+        createInput({
+          onGenerationStage: (event) => {
+            events.push(event);
+          },
+        }),
+      );
+
+      expect(dateNowSpy).toHaveBeenCalledTimes(4);
+      const completedEvents = events.filter(
+        (event) => event.status === 'completed',
+      ) as Array<{ stage: string; status: string; attempt: number; durationMs: number }>;
+
+      expect(completedEvents).toEqual([
+        { stage: 'EVOLVING_KERNELS', status: 'completed', attempt: 1, durationMs: 18 },
+        { stage: 'EVALUATING_KERNELS', status: 'completed', attempt: 1, durationMs: 45 },
       ]);
     });
 
