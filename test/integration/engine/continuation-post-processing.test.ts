@@ -9,18 +9,18 @@ import {
   generateNpcIntelligenceEvaluation,
 } from '../../../src/llm';
 import { runAnalystEvaluation } from '../../../src/engine/analyst-evaluation';
-import { resolveActiveBeat } from '../../../src/engine/beat-utils';
-import { resolveBeatAlignmentSkip } from '../../../src/engine/beat-alignment';
-import { resolveBeatConclusion } from '../../../src/engine/beat-conclusion';
+import { resolveActiveMilestone } from '../../../src/engine/milestone-utils';
+import { resolveMilestoneAlignmentSkip } from '../../../src/engine/milestone-alignment';
+import { resolveMilestoneConclusion } from '../../../src/engine/milestone-conclusion';
 import { handleDeviationIfDetected } from '../../../src/engine/deviation-processing';
 import { applyPacingResponse } from '../../../src/engine/pacing-response';
 import {
   handleSpineDeviationIfDetected,
-  collectRemainingBeatIds,
+  collectRemainingMilestoneIds,
 } from '../../../src/engine/spine-deviation-processing';
 import { resolveStructureProgression } from '../../../src/engine/structure-state';
 import { isActualDeviation, handleDeviation } from '../../../src/engine/deviation-handler';
-import { rewriteSpine } from '../../../src/engine/spine-rewriter';
+import { rewriteSpine } from '../../../src/llm/spine-rewriter';
 import { createMockAnalystResult, createMockStoryStructure } from '../../fixtures/llm-results';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
 import type { ContinuationGenerationResult } from '../../../src/llm/generation-pipeline-types';
@@ -52,7 +52,7 @@ jest.mock('../../../src/models', () => {
   };
 });
 
-jest.mock('../../../src/engine/spine-rewriter', () => ({
+jest.mock('../../../src/llm/spine-rewriter', () => ({
   rewriteSpine: jest.fn(),
 }));
 
@@ -79,9 +79,9 @@ beforeEach(() => {
 
 const baseStructureState: AccumulatedStructureState = {
   currentActIndex: 0,
-  currentBeatIndex: 0,
-  beatProgressions: [{ beatId: '1.1', status: 'active' }],
-  pagesInCurrentBeat: 2,
+  currentMilestoneIndex: 0,
+  milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+  pagesInCurrentMilestone: 2,
   pacingNudge: null,
 };
 
@@ -115,8 +115,8 @@ describe('runAnalystEvaluation', () => {
 
   it('returns result and duration on success', async () => {
     mockedGenerateStructureEvaluation.mockResolvedValue({
-      beatConcluded: false,
-      beatResolution: '',
+      milestoneConcluded: false,
+      milestoneResolution: '',
       sceneMomentum: 'INCREMENTAL_PROGRESS',
       objectiveEvidenceStrength: 'WEAK_IMPLICIT',
       commitmentStrength: 'TENTATIVE',
@@ -128,13 +128,13 @@ describe('runAnalystEvaluation', () => {
       completionGateFailureReason: '',
       deviationDetected: false,
       deviationReason: '',
-      invalidatedBeatIds: [],
+      invalidatedMilestoneIds: [],
       spineDeviationDetected: false,
       spineDeviationReason: '',
       spineInvalidatedElement: null,
-      alignedBeatId: null,
-      beatAlignmentConfidence: 'LOW',
-      beatAlignmentReason: '',
+      alignedMilestoneId: null,
+      milestoneAlignmentConfidence: 'LOW',
+      milestoneAlignmentReason: '',
       pacingIssueDetected: false,
       pacingIssueReason: '',
       recommendedAction: 'none',
@@ -207,9 +207,9 @@ describe('handleDeviationIfDetected', () => {
   };
 
   const baseResult = {
-    deviation: { detected: true, reason: 'test', invalidatedBeatIds: ['1.1'], sceneSummary: '' },
-    beatConcluded: false,
-    beatResolution: '',
+    deviation: { detected: true, reason: 'test', invalidatedMilestoneIds: ['1.1'], sceneSummary: '' },
+    milestoneConcluded: false,
+    milestoneResolution: '',
   } as unknown as ContinuationGenerationResult;
 
   it('returns no-op when no deviation detected', async () => {
@@ -238,7 +238,7 @@ describe('handleDeviationIfDetected', () => {
     mockedHandleDeviation.mockResolvedValue({
       updatedStory,
       activeVersion: newVersion,
-      deviationInfo: { detected: true, reason: 'test deviation', beatsInvalidated: 1 },
+      deviationInfo: { detected: true, reason: 'test deviation', milestonesInvalidated: 1 },
     });
 
     const result = await handleDeviationIfDetected({
@@ -256,7 +256,7 @@ describe('handleDeviationIfDetected', () => {
     expect(result.deviationInfo).toEqual({
       detected: true,
       reason: 'test deviation',
-      beatsInvalidated: 1,
+      milestonesInvalidated: 1,
     });
     expect(result.structureRewriteDurationMs).toBeGreaterThanOrEqual(0);
   });
@@ -341,9 +341,9 @@ describe('handleSpineDeviationIfDetected', () => {
   });
 });
 
-// ---- collectRemainingBeatIds ----
+// ---- collectRemainingMilestoneIds ----
 
-describe('collectRemainingBeatIds', () => {
+describe('collectRemainingMilestoneIds', () => {
   const multiActStructure: StoryStructure = {
     ...baseStructure,
     acts: [
@@ -353,7 +353,7 @@ describe('collectRemainingBeatIds', () => {
         objective: 'o',
         stakes: 's',
         entryCondition: 'e',
-        beats: [
+        milestones: [
           { id: '1.1', name: 'b1', description: 'd', objective: 'o', role: 'setup', escalationType: null, uniqueScenarioHook: null, approachVectors: null },
           { id: '1.2', name: 'b2', description: 'd', objective: 'o', role: 'escalation', escalationType: null, uniqueScenarioHook: null, approachVectors: null },
         ],
@@ -364,91 +364,91 @@ describe('collectRemainingBeatIds', () => {
         objective: 'o',
         stakes: 's',
         entryCondition: 'e',
-        beats: [
+        milestones: [
           { id: '2.1', name: 'b3', description: 'd', objective: 'o', role: 'setup', escalationType: null, uniqueScenarioHook: null, approachVectors: null },
         ],
       },
     ],
   };
 
-  it('returns non-concluded beat IDs from multi-act structure', () => {
+  it('returns non-concluded milestone IDs from multi-act structure', () => {
     const state: AccumulatedStructureState = {
       ...baseStructureState,
-      beatProgressions: [{ beatId: '1.1', status: 'concluded', resolution: 'Done.' }],
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'concluded', resolution: 'Done.' }],
     };
 
-    const result = collectRemainingBeatIds(multiActStructure, state);
+    const result = collectRemainingMilestoneIds(multiActStructure, state);
 
     expect(result).toEqual(['1.2', '2.1']);
   });
 
-  it('returns empty when all beats concluded', () => {
+  it('returns empty when all milestones concluded', () => {
     const state: AccumulatedStructureState = {
       ...baseStructureState,
-      beatProgressions: [
-        { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
-        { beatId: '1.2', status: 'concluded', resolution: 'Done.' },
-        { beatId: '2.1', status: 'concluded', resolution: 'Done.' },
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'concluded', resolution: 'Done.' },
+        { milestoneId: '1.2', status: 'concluded', resolution: 'Done.' },
+        { milestoneId: '2.1', status: 'concluded', resolution: 'Done.' },
       ],
     };
 
-    const result = collectRemainingBeatIds(multiActStructure, state);
+    const result = collectRemainingMilestoneIds(multiActStructure, state);
 
     expect(result).toEqual([]);
   });
 });
 
-// ---- resolveBeatConclusion ----
+// ---- resolveMilestoneConclusion ----
 
-describe('resolveBeatConclusion', () => {
+describe('resolveMilestoneConclusion', () => {
   const baseCtx = {
     storyId: 's1',
     parentPageId: 1 as unknown as import('../../../src/models').PageId,
   };
 
   it('resolves standard conclusion from result fields', () => {
-    const result = resolveBeatConclusion({
+    const result = resolveMilestoneConclusion({
       ...baseCtx,
       result: {
-        beatConcluded: true,
-        beatResolution: 'Hero prevailed.',
+        milestoneConcluded: true,
+        milestoneResolution: 'Hero prevailed.',
       } as unknown as ContinuationGenerationResult,
-      activeBeat: undefined,
+      activeMilestone: undefined,
       analystResult: null,
     });
 
-    expect(result.beatConcluded).toBe(true);
-    expect(result.beatResolution).toBe('Hero prevailed.');
+    expect(result.milestoneConcluded).toBe(true);
+    expect(result.milestoneResolution).toBe('Hero prevailed.');
   });
 
   it('turning-point gate blocks conclusion when gate not satisfied', () => {
-    const result = resolveBeatConclusion({
+    const result = resolveMilestoneConclusion({
       ...baseCtx,
       result: {
-        beatConcluded: true,
-        beatResolution: 'Tried to conclude.',
+        milestoneConcluded: true,
+        milestoneResolution: 'Tried to conclude.',
       } as unknown as ContinuationGenerationResult,
-      activeBeat: { id: '1.2', name: 'TP', description: 'd', objective: 'o', role: 'turning_point', escalationType: null, uniqueScenarioHook: null, approachVectors: null },
+      activeMilestone: { id: '1.2', name: 'TP', description: 'd', objective: 'o', role: 'turning_point', escalationType: null, uniqueScenarioHook: null, approachVectors: null },
       analystResult: createMockAnalystResult({
-        beatConcluded: true,
+        milestoneConcluded: true,
         completionGateSatisfied: false,
         completionGateFailureReason: 'Not enough tension.',
       }),
     });
 
-    expect(result.beatConcluded).toBe(false);
+    expect(result.milestoneConcluded).toBe(false);
   });
 
   it('defaults missing fields to false and empty string', () => {
-    const result = resolveBeatConclusion({
+    const result = resolveMilestoneConclusion({
       ...baseCtx,
       result: {} as unknown as ContinuationGenerationResult,
-      activeBeat: undefined,
+      activeMilestone: undefined,
       analystResult: null,
     });
 
-    expect(result.beatConcluded).toBe(false);
-    expect(result.beatResolution).toBe('');
+    expect(result.milestoneConcluded).toBe(false);
+    expect(result.milestoneResolution).toBe('');
   });
 });
 
@@ -457,7 +457,7 @@ describe('resolveBeatConclusion', () => {
 describe('applyPacingResponse', () => {
   it('skips pacing when deviation present', () => {
     const result = applyPacingResponse({
-      deviationInfo: { detected: true, reason: 'test', beatsInvalidated: 1 },
+      deviationInfo: { detected: true, reason: 'test', milestonesInvalidated: 1 },
       structureState: { ...baseStructureState, pacingNudge: 'old nudge' },
       recommendedAction: 'nudge',
       pacingIssueReason: 'too fast',
@@ -471,10 +471,10 @@ describe('applyPacingResponse', () => {
       deviationInfo: undefined,
       structureState: baseStructureState,
       recommendedAction: 'nudge',
-      pacingIssueReason: 'rushing the beat',
+      pacingIssueReason: 'rushing the milestone',
     });
 
-    expect(result.pacingNudge).toBe('rushing the beat');
+    expect(result.pacingNudge).toBe('rushing the milestone');
   });
 
   it('defers rewrite and clears nudge', () => {
@@ -508,24 +508,24 @@ describe('resolveStructureProgression', () => {
       activeStructureVersion: null,
       storyStructure: null,
       parentStructureState: baseStructureState,
-      beatConcluded: false,
-      beatResolution: '',
+      milestoneConcluded: false,
+      milestoneResolution: '',
     });
 
     expect(result).toBe(baseStructureState);
   });
 
-  it('delegates with beat concluded', () => {
+  it('delegates with milestone concluded', () => {
     const result = resolveStructureProgression({
       activeStructureVersion: null,
       storyStructure: baseStructure,
       parentStructureState: baseStructureState,
-      beatConcluded: true,
-      beatResolution: 'Quest accepted.',
+      milestoneConcluded: true,
+      milestoneResolution: 'Quest accepted.',
     });
 
-    expect(result.currentBeatIndex).toBe(1);
-    expect(result.pagesInCurrentBeat).toBe(0);
+    expect(result.currentMilestoneIndex).toBe(1);
+    expect(result.pagesInCurrentMilestone).toBe(0);
   });
 
   it('delegates with alignment skip', () => {
@@ -537,7 +537,7 @@ describe('resolveStructureProgression', () => {
           objective: 'o',
           stakes: 's',
           entryCondition: 'e',
-          beats: [
+          milestones: [
             { id: '1.1', name: 'b1', description: 'd', objective: 'o', role: 'setup', escalationType: null, uniqueScenarioHook: null, approachVectors: null },
             { id: '1.2', name: 'b2', description: 'd', objective: 'o', role: 'escalation', escalationType: null, uniqueScenarioHook: null, approachVectors: null },
             { id: '1.3', name: 'b3', description: 'd', objective: 'o', role: 'turning_point', escalationType: null, uniqueScenarioHook: null, approachVectors: null },
@@ -550,57 +550,57 @@ describe('resolveStructureProgression', () => {
       activeStructureVersion: null,
       storyStructure: threeBeatsStructure,
       parentStructureState: baseStructureState,
-      beatConcluded: true,
-      beatResolution: 'Done with setup.',
-      alignmentSkip: { targetBeatId: '1.3', bridgedResolution: 'Skipped via narrative leap' },
+      milestoneConcluded: true,
+      milestoneResolution: 'Done with setup.',
+      alignmentSkip: { targetMilestoneId: '1.3', bridgedResolution: 'Skipped via narrative leap' },
     });
 
-    expect(result.currentBeatIndex).toBe(2);
+    expect(result.currentMilestoneIndex).toBe(2);
   });
 });
 
-// ---- resolveActiveBeat ----
+// ---- resolveActiveMilestone ----
 
-describe('resolveActiveBeat', () => {
-  it('returns beat from structure', () => {
-    const beat = resolveActiveBeat(null, baseStructure, baseStructureState);
+describe('resolveActiveMilestone', () => {
+  it('returns milestone from structure', () => {
+    const milestone = resolveActiveMilestone(null, baseStructure, baseStructureState);
 
-    expect(beat).toBeDefined();
-    expect(beat!.id).toBe('1.1');
+    expect(milestone).toBeDefined();
+    expect(milestone!.id).toBe('1.1');
   });
 
   it('returns undefined when no structure', () => {
-    const beat = resolveActiveBeat(null, null, baseStructureState);
+    const milestone = resolveActiveMilestone(null, null, baseStructureState);
 
-    expect(beat).toBeUndefined();
+    expect(milestone).toBeUndefined();
   });
 });
 
-// ---- resolveBeatAlignmentSkip (integration-level) ----
+// ---- resolveMilestoneAlignmentSkip (integration-level) ----
 
-describe('resolveBeatAlignmentSkip (integration)', () => {
-  it('returns skip info for multi-beat jump scenario', () => {
+describe('resolveMilestoneAlignmentSkip (integration)', () => {
+  it('returns skip info for multi-milestone jump scenario', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [
-        { beatId: '1.1', status: 'active' },
-        { beatId: '1.2', status: 'pending' },
-        { beatId: '1.3', status: 'pending' },
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'active' },
+        { milestoneId: '1.2', status: 'pending' },
+        { milestoneId: '1.3', status: 'pending' },
       ],
-      pagesInCurrentBeat: 3,
+      pagesInCurrentMilestone: 3,
       pacingNudge: null,
     };
 
     const analyst = createMockAnalystResult({
-      alignedBeatId: '1.3',
-      beatAlignmentConfidence: 'HIGH',
-      beatAlignmentReason: 'Narrative leaped ahead.',
+      alignedMilestoneId: '1.3',
+      milestoneAlignmentConfidence: 'HIGH',
+      milestoneAlignmentReason: 'Narrative leaped ahead.',
     });
 
-    const result = resolveBeatAlignmentSkip(analyst, true, state);
+    const result = resolveMilestoneAlignmentSkip(analyst, true, state);
 
     expect(result).toBeDefined();
-    expect(result!.targetBeatId).toBe('1.3');
+    expect(result!.targetMilestoneId).toBe('1.3');
   });
 });

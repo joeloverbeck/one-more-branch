@@ -73,7 +73,7 @@ export interface Page {
   readonly npcRelationshipUpdates: readonly NpcRelationship[];
   readonly accumulatedNpcRelationships: AccumulatedNpcRelationships;
   readonly pageActIndex: number;
-  readonly pageBeatIndex: number;
+  readonly pageMilestoneIndex: number;
   readonly isEnding: boolean;
   readonly parentPageId: PageId | null;
   readonly parentChoiceIndex: number | null;
@@ -112,7 +112,7 @@ export interface CreatePageData {
   npcRelationshipUpdates?: readonly NpcRelationship[];
   parentAccumulatedNpcRelationships?: AccumulatedNpcRelationships;
   pageActIndex?: number;
-  pageBeatIndex?: number;
+  pageMilestoneIndex?: number;
 }
 
 export function createPage(data: CreatePageData): Page {
@@ -186,7 +186,7 @@ export function createPage(data: CreatePageData): Page {
       data.npcRelationshipUpdates ?? []
     ),
     pageActIndex: data.pageActIndex ?? parentStructureState.currentActIndex,
-    pageBeatIndex: data.pageBeatIndex ?? parentStructureState.currentBeatIndex,
+    pageMilestoneIndex: data.pageMilestoneIndex ?? parentStructureState.currentMilestoneIndex,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId,
     parentChoiceIndex: data.parentChoiceIndex,
@@ -203,10 +203,10 @@ function isAccumulatedStructureState(value: unknown): value is AccumulatedStruct
     typeof obj['currentActIndex'] === 'number' &&
     Number.isInteger(obj['currentActIndex']) &&
     obj['currentActIndex'] >= 0 &&
-    typeof obj['currentBeatIndex'] === 'number' &&
-    Number.isInteger(obj['currentBeatIndex']) &&
-    obj['currentBeatIndex'] >= 0 &&
-    Array.isArray(obj['beatProgressions'])
+    typeof obj['currentMilestoneIndex'] === 'number' &&
+    Number.isInteger(obj['currentMilestoneIndex']) &&
+    obj['currentMilestoneIndex'] >= 0 &&
+    Array.isArray(obj['milestoneProgressions'])
   );
 }
 

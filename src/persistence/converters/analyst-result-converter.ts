@@ -21,11 +21,11 @@ export function analystResultToFileData(
     return null;
   }
   return {
-    beatConcluded: analystResult.beatConcluded,
-    beatResolution: analystResult.beatResolution,
+    milestoneConcluded: analystResult.milestoneConcluded,
+    milestoneResolution: analystResult.milestoneResolution,
     deviationDetected: analystResult.deviationDetected,
     deviationReason: analystResult.deviationReason,
-    invalidatedBeatIds: [...analystResult.invalidatedBeatIds],
+    invalidatedMilestoneIds: [...analystResult.invalidatedMilestoneIds],
     pacingIssueDetected: analystResult.pacingIssueDetected,
     pacingIssueReason: analystResult.pacingIssueReason,
     recommendedAction: analystResult.recommendedAction,
@@ -72,9 +72,9 @@ export function analystResultToFileData(
     spineDeviationDetected: analystResult.spineDeviationDetected,
     spineDeviationReason: analystResult.spineDeviationReason,
     spineInvalidatedElement: analystResult.spineInvalidatedElement,
-    alignedBeatId: analystResult.alignedBeatId,
-    beatAlignmentConfidence: analystResult.beatAlignmentConfidence,
-    beatAlignmentReason: analystResult.beatAlignmentReason,
+    alignedMilestoneId: analystResult.alignedMilestoneId,
+    milestoneAlignmentConfidence: analystResult.milestoneAlignmentConfidence,
+    milestoneAlignmentReason: analystResult.milestoneAlignmentReason,
     thematicCharge: analystResult.thematicCharge,
     narrativeFocus: analystResult.narrativeFocus,
     thematicChargeDescription: analystResult.thematicChargeDescription,
@@ -104,11 +104,11 @@ export function fileDataToAnalystResult(
     return null;
   }
   return {
-    beatConcluded: data.beatConcluded,
-    beatResolution: data.beatResolution,
+    milestoneConcluded: data.milestoneConcluded,
+    milestoneResolution: data.milestoneResolution,
     deviationDetected: data.deviationDetected,
     deviationReason: data.deviationReason,
-    invalidatedBeatIds: [...data.invalidatedBeatIds],
+    invalidatedMilestoneIds: [...data.invalidatedMilestoneIds],
     pacingIssueDetected: data.pacingIssueDetected,
     pacingIssueReason: data.pacingIssueReason,
     recommendedAction: data.recommendedAction as AnalystResult['recommendedAction'],
@@ -162,10 +162,10 @@ export function fileDataToAnalystResult(
     spineDeviationReason: data.spineDeviationReason ?? '',
     spineInvalidatedElement:
       (data.spineInvalidatedElement as AnalystResult['spineInvalidatedElement']) ?? null,
-    alignedBeatId: (data.alignedBeatId as AnalystResult['alignedBeatId']) ?? null,
-    beatAlignmentConfidence:
-      (data.beatAlignmentConfidence as AnalystResult['beatAlignmentConfidence']) ?? 'LOW',
-    beatAlignmentReason: (data.beatAlignmentReason as string) ?? '',
+    alignedMilestoneId: (data.alignedMilestoneId as AnalystResult['alignedMilestoneId']) ?? null,
+    milestoneAlignmentConfidence:
+      (data.milestoneAlignmentConfidence as AnalystResult['milestoneAlignmentConfidence']) ?? 'LOW',
+    milestoneAlignmentReason: (data.milestoneAlignmentReason as string) ?? '',
     thematicCharge:
       (data.thematicCharge as AnalystResult['thematicCharge']) ?? 'AMBIGUOUS',
     narrativeFocus: parseNarrativeFocus(data.narrativeFocus),

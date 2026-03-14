@@ -1,5 +1,5 @@
 import {
-  createBeatDeviation,
+  createMilestoneDeviation,
   createEmptyAccumulatedStructureState,
   createNoDeviation,
   createStory,
@@ -27,15 +27,15 @@ function createTestStructure(): StoryStructure {
     acts: [
       {
         title: 'Act 1',
-        beats: [{ id: '1.1', description: 'Opening', objective: 'Start' }],
+        milestones: [{ id: '1.1', description: 'Opening', objective: 'Start' }],
       },
       {
         title: 'Act 2',
-        beats: [{ id: '2.1', description: 'Rising', objective: 'Build' }],
+        milestones: [{ id: '2.1', description: 'Rising', objective: 'Build' }],
       },
       {
         title: 'Act 3',
-        beats: [{ id: '3.1', description: 'Resolution', objective: 'End' }],
+        milestones: [{ id: '3.1', description: 'Resolution', objective: 'End' }],
       },
     ],
   };
@@ -76,11 +76,11 @@ function createMockResult(hasDeviation: boolean): ContinuationGenerationResult {
       dominantMotivation: 'test',
     },
     isEnding: false,
-    beatConcluded: false,
-    beatResolution: '',
+    milestoneConcluded: false,
+    milestoneResolution: '',
     rawResponse: 'raw',
     deviation: hasDeviation
-      ? createBeatDeviation('Player chose unexpected path', ['1.1'], 'Summary')
+      ? createMilestoneDeviation('Player chose unexpected path', ['1.1'], 'Summary')
       : createNoDeviation(),
   };
 }
@@ -142,7 +142,7 @@ describe('deviation-handler', () => {
       const mockRewriter = {
         rewriteStructure: jest.fn().mockResolvedValue({
           structure: createTestStructure(),
-          preservedBeatIds: ['1.1'],
+          preservedMilestoneIds: ['1.1'],
           rawResponse: 'raw',
         }),
       };
@@ -152,7 +152,7 @@ describe('deviation-handler', () => {
         story,
         currentVersion,
         parentStructureState: createEmptyAccumulatedStructureState(),
-        deviation: createBeatDeviation('Test deviation', ['1.1'], 'Summary'),
+        deviation: createMilestoneDeviation('Test deviation', ['1.1'], 'Summary'),
         newPageId: parsePageId(5),
       };
 
@@ -172,7 +172,7 @@ describe('deviation-handler', () => {
       const mockRewriter = {
         rewriteStructure: jest.fn().mockResolvedValue({
           structure: createTestStructure(),
-          preservedBeatIds: ['1.1', '2.1'],
+          preservedMilestoneIds: ['1.1', '2.1'],
           rawResponse: 'raw',
         }),
       };
@@ -182,7 +182,7 @@ describe('deviation-handler', () => {
         story,
         currentVersion,
         parentStructureState: createEmptyAccumulatedStructureState(),
-        deviation: createBeatDeviation('Unexpected choice', ['3.1'], 'Summary'),
+        deviation: createMilestoneDeviation('Unexpected choice', ['3.1'], 'Summary'),
         newPageId: parsePageId(10),
       };
 
@@ -191,7 +191,7 @@ describe('deviation-handler', () => {
       expect(result.activeVersion.previousVersionId).toBe(currentVersion.id);
       expect(result.activeVersion.rewriteReason).toBe('Unexpected choice');
       expect(result.activeVersion.createdAtPageId).toBe(10);
-      expect(result.activeVersion.preservedBeatIds).toEqual(['1.1', '2.1']);
+      expect(result.activeVersion.preservedMilestoneIds).toEqual(['1.1', '2.1']);
     });
 
     it('adds new version to story', async () => {
@@ -201,7 +201,7 @@ describe('deviation-handler', () => {
       const mockRewriter = {
         rewriteStructure: jest.fn().mockResolvedValue({
           structure: createTestStructure(),
-          preservedBeatIds: [],
+          preservedMilestoneIds: [],
           rawResponse: 'raw',
         }),
       };
@@ -211,7 +211,7 @@ describe('deviation-handler', () => {
         story,
         currentVersion,
         parentStructureState: createEmptyAccumulatedStructureState(),
-        deviation: createBeatDeviation('Test', ['1.1'], 'Summary'),
+        deviation: createMilestoneDeviation('Test', ['1.1'], 'Summary'),
         newPageId: parsePageId(3),
       };
 
@@ -226,7 +226,7 @@ describe('deviation-handler', () => {
       const mockRewriter = {
         rewriteStructure: jest.fn().mockResolvedValue({
           structure: createTestStructure(),
-          preservedBeatIds: [],
+          preservedMilestoneIds: [],
           rawResponse: 'raw',
         }),
       };
@@ -236,7 +236,7 @@ describe('deviation-handler', () => {
         story,
         currentVersion,
         parentStructureState: createEmptyAccumulatedStructureState(),
-        deviation: createBeatDeviation('Major deviation', ['1.1', '2.1', '3.1'], 'Summary'),
+        deviation: createMilestoneDeviation('Major deviation', ['1.1', '2.1', '3.1'], 'Summary'),
         newPageId: parsePageId(7),
       };
 
@@ -244,7 +244,7 @@ describe('deviation-handler', () => {
 
       expect(result.deviationInfo.detected).toBe(true);
       expect(result.deviationInfo.reason).toBe('Major deviation');
-      expect(result.deviationInfo.beatsInvalidated).toBe(3);
+      expect(result.deviationInfo.milestonesInvalidated).toBe(3);
     });
   });
 });

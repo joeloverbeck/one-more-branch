@@ -3,6 +3,7 @@ import { generateSparks } from '../../llm/content-sparkstormer-generation.js';
 import { generateContentPackets } from '../../llm/content-packeter-generation.js';
 import { evaluateContentPackets } from '../../llm/content-evaluator-generation.js';
 import { generateContentOneShot } from '../../llm/content-one-shot-generation.js';
+import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
 import type {
   ContentEvaluation,
@@ -169,9 +170,9 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         kernelBlock: input.kernelBlock?.trim() ?? undefined,
       };
 
-      onGenerationStage?.({ stage: 'GENERATING_CONTENT', status: 'started', attempt: 1 });
-      const result = await deps.generateContentOneShot(context, apiKey);
-      onGenerationStage?.({ stage: 'GENERATING_CONTENT', status: 'completed', attempt: 1 });
+      const result = await runGenerationStage(onGenerationStage, 'GENERATING_CONTENT', () =>
+        deps.generateContentOneShot(context, apiKey),
+      );
 
       return { packets: result.packets, rawResponse: result.rawResponse };
     },
@@ -188,9 +189,9 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         contentPreferences: input.contentPreferences?.trim() ?? undefined,
       };
 
-      onGenerationStage?.({ stage: 'DISTILLING_TASTE', status: 'started', attempt: 1 });
-      const tasteResult = await deps.generateTasteProfile(tasteContext, apiKey);
-      onGenerationStage?.({ stage: 'DISTILLING_TASTE', status: 'completed', attempt: 1 });
+      const tasteResult = await runGenerationStage(onGenerationStage, 'DISTILLING_TASTE', () =>
+        deps.generateTasteProfile(tasteContext, apiKey),
+      );
 
       // Stage 2: Sparkstormer
       const sparkContext: SparkstormerContext = {
@@ -199,9 +200,9 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         contentPreferences: input.contentPreferences?.trim() ?? undefined,
       };
 
-      onGenerationStage?.({ stage: 'GENERATING_SPARKS', status: 'started', attempt: 1 });
-      const sparkResult = await deps.generateSparks(sparkContext, apiKey);
-      onGenerationStage?.({ stage: 'GENERATING_SPARKS', status: 'completed', attempt: 1 });
+      const sparkResult = await runGenerationStage(onGenerationStage, 'GENERATING_SPARKS', () =>
+        deps.generateSparks(sparkContext, apiKey),
+      );
 
       // Stage 3: Content Packeter
       const packeterContext: ContentPacketerContext = {
@@ -210,9 +211,9 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         kernelBlock: input.kernelBlock?.trim() ?? undefined,
       };
 
-      onGenerationStage?.({ stage: 'PACKAGING_CONTENT', status: 'started', attempt: 1 });
-      const packeterResult = await deps.generateContentPackets(packeterContext, apiKey);
-      onGenerationStage?.({ stage: 'PACKAGING_CONTENT', status: 'completed', attempt: 1 });
+      const packeterResult = await runGenerationStage(onGenerationStage, 'PACKAGING_CONTENT', () =>
+        deps.generateContentPackets(packeterContext, apiKey),
+      );
 
       // Stage 4: Content Evaluator
       const evaluatorContext: ContentEvaluatorContext = {
@@ -220,9 +221,9 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         tasteProfile: tasteResult.tasteProfile,
       };
 
-      onGenerationStage?.({ stage: 'EVALUATING_CONTENT', status: 'started', attempt: 1 });
-      const evaluatorResult = await deps.evaluateContentPackets(evaluatorContext, apiKey);
-      onGenerationStage?.({ stage: 'EVALUATING_CONTENT', status: 'completed', attempt: 1 });
+      const evaluatorResult = await runGenerationStage(onGenerationStage, 'EVALUATING_CONTENT', () =>
+        deps.evaluateContentPackets(evaluatorContext, apiKey),
+      );
 
       return {
         tasteProfile: tasteResult.tasteProfile,
@@ -243,9 +244,9 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         contentPreferences: input.contentPreferences?.trim() ?? undefined,
       };
 
-      onGenerationStage?.({ stage: 'DISTILLING_TASTE', status: 'started', attempt: 1 });
-      const result = await deps.generateTasteProfile(context, apiKey);
-      onGenerationStage?.({ stage: 'DISTILLING_TASTE', status: 'completed', attempt: 1 });
+      const result = await runGenerationStage(onGenerationStage, 'DISTILLING_TASTE', () =>
+        deps.generateTasteProfile(context, apiKey),
+      );
 
       return { tasteProfile: result.tasteProfile };
     },
@@ -260,9 +261,9 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         contentPreferences: input.contentPreferences?.trim() ?? undefined,
       };
 
-      onGenerationStage?.({ stage: 'GENERATING_SPARKS', status: 'started', attempt: 1 });
-      const result = await deps.generateSparks(context, apiKey);
-      onGenerationStage?.({ stage: 'GENERATING_SPARKS', status: 'completed', attempt: 1 });
+      const result = await runGenerationStage(onGenerationStage, 'GENERATING_SPARKS', () =>
+        deps.generateSparks(context, apiKey),
+      );
 
       return { sparks: result.sparks };
     },
@@ -277,9 +278,9 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         kernelBlock: input.kernelBlock?.trim() ?? undefined,
       };
 
-      onGenerationStage?.({ stage: 'PACKAGING_CONTENT', status: 'started', attempt: 1 });
-      const result = await deps.generateContentPackets(context, apiKey);
-      onGenerationStage?.({ stage: 'PACKAGING_CONTENT', status: 'completed', attempt: 1 });
+      const result = await runGenerationStage(onGenerationStage, 'PACKAGING_CONTENT', () =>
+        deps.generateContentPackets(context, apiKey),
+      );
 
       return { packets: result.packets };
     },
@@ -293,9 +294,9 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         tasteProfile: input.tasteProfile,
       };
 
-      onGenerationStage?.({ stage: 'EVALUATING_CONTENT', status: 'started', attempt: 1 });
-      const result = await deps.evaluateContentPackets(context, apiKey);
-      onGenerationStage?.({ stage: 'EVALUATING_CONTENT', status: 'completed', attempt: 1 });
+      const result = await runGenerationStage(onGenerationStage, 'EVALUATING_CONTENT', () =>
+        deps.evaluateContentPackets(context, apiKey),
+      );
 
       return { evaluations: result.evaluations };
     },

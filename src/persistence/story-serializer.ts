@@ -4,7 +4,6 @@
  */
 
 import {
-  BeatRole,
   Story,
   StoryStructure,
   VersionedStoryStructure,
@@ -13,13 +12,11 @@ import {
   parseStructureVersionId,
 } from '../models';
 import {
-  parseApproachVectors,
-  parseCrisisType,
-  parseEscalationType,
-  parseGapMagnitude,
+  materializeStoryMilestone,
+  normalizeAnchorMoments,
+  normalizeStructureActFields,
   parseMidpointType,
-} from '../engine/structure-factory';
-import { isGenreObligationTag } from '../models/genre-obligations';
+} from '../models/story-structure-normalization';
 import type { CanonFact } from '../models/state/canon';
 import type { DecomposedCharacter } from '../models/decomposed-character';
 import { isEmotionSalience, isStoryFunction } from '../models/character-enums';
@@ -50,43 +47,59 @@ const VALID_WORLD_FACT_TYPES: ReadonlySet<string> = new Set([
   'MYSTERY',
 ]);
 
-function parsePersistedCausalLink(value: unknown, beatId: string): string {
-  if (typeof value === 'string') {
-    const normalized = value.trim();
-    if (normalized.length > 0) {
-      return normalized;
-    }
-  }
-  throw new Error(`Persisted story beat ${beatId} is missing required causalLink`);
+function parsePersistedAnchorMoments(data: StoryStructureFileData): StoryStructure['anchorMoments'] {
+  return normalizeAnchorMoments(data.anchorMoments, data.acts.length);
 }
 
 function structureToFileData(structure: StoryStructure): StoryStructureFileData {
+  const anchorMoments = normalizeAnchorMoments(
+    (structure as StoryStructure & { anchorMoments?: unknown }).anchorMoments,
+    structure.acts.length
+  );
+
   return {
-    acts: structure.acts.map((act) => ({
-      id: act.id,
-      name: act.name,
-      objective: act.objective,
-      stakes: act.stakes,
-      entryCondition: act.entryCondition,
-      beats: act.beats.map((beat) => ({
-        id: beat.id,
-        name: beat.name,
-        description: beat.description,
-        objective: beat.objective,
-        causalLink: beat.causalLink,
-        role: beat.role,
-        escalationType: beat.escalationType,
-        secondaryEscalationType: beat.secondaryEscalationType,
-        crisisType: beat.crisisType,
-        expectedGapMagnitude: beat.expectedGapMagnitude,
-        isMidpoint: beat.isMidpoint === true,
-        midpointType: parseMidpointType(beat.midpointType) ?? null,
-        uniqueScenarioHook: beat.uniqueScenarioHook,
-        approachVectors: beat.approachVectors ? [...beat.approachVectors] : null,
-        setpieceSourceIndex: beat.setpieceSourceIndex,
-        obligatorySceneTag: beat.obligatorySceneTag,
-      })),
-    })),
+    anchorMoments: {
+      incitingIncident: { ...anchorMoments.incitingIncident },
+      midpoint: { ...anchorMoments.midpoint },
+      climax: { ...anchorMoments.climax },
+      signatureScenarioPlacement: anchorMoments.signatureScenarioPlacement
+        ? { ...anchorMoments.signatureScenarioPlacement }
+        : null,
+    },
+    acts: structure.acts.map((act) => {
+      const normalizedActFields = normalizeStructureActFields(act);
+
+      return {
+        id: act.id,
+        name: act.name,
+        objective: act.objective,
+        stakes: act.stakes,
+        entryCondition: act.entryCondition,
+        actQuestion: normalizedActFields.actQuestion,
+        exitReversal: normalizedActFields.exitReversal,
+        promiseTargets: [...normalizedActFields.promiseTargets],
+        obligationTargets: [...normalizedActFields.obligationTargets],
+        milestones: act.milestones.map((milestone) => ({
+        id: milestone.id,
+        name: milestone.name,
+        description: milestone.description,
+        objective: milestone.objective,
+        causalLink: milestone.causalLink,
+        exitCondition: milestone.exitCondition,
+        role: milestone.role,
+        escalationType: milestone.escalationType,
+        secondaryEscalationType: milestone.secondaryEscalationType,
+        crisisType: milestone.crisisType,
+        expectedGapMagnitude: milestone.expectedGapMagnitude,
+        isMidpoint: milestone.isMidpoint === true,
+        midpointType: parseMidpointType(milestone.midpointType) ?? null,
+        uniqueScenarioHook: milestone.uniqueScenarioHook,
+        approachVectors: milestone.approachVectors ? [...milestone.approachVectors] : null,
+        setpieceSourceIndex: milestone.setpieceSourceIndex,
+        obligatorySceneTag: milestone.obligatorySceneTag,
+        })),
+      };
+    }),
     overallTheme: structure.overallTheme,
     premise: structure.premise,
     openingImage: structure.openingImage,
@@ -103,46 +116,31 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
     objective: act.objective,
     stakes: act.stakes,
     entryCondition: act.entryCondition,
-    beats: act.beats.map((beat) => {
-      const midpointType = parseMidpointType(beat.midpointType);
-      const isMidpoint = beat.isMidpoint === true;
-      if (isMidpoint) {
-        if (midpointType === null) {
-          throw new Error(
-            `Persisted story beat ${beat.id} is midpoint-tagged but missing midpointType`
-          );
-        }
-      } else if (midpointType !== null) {
-        throw new Error(`Persisted story beat ${beat.id} has midpointType but isMidpoint is false`);
-      }
-
-      return {
-        id: beat.id,
-        name: beat.name,
-        description: beat.description,
-        objective: beat.objective,
-        causalLink: parsePersistedCausalLink(beat.causalLink, beat.id),
-        role: beat.role as BeatRole,
-        escalationType: parseEscalationType(beat.escalationType),
-        secondaryEscalationType: parseEscalationType(beat.secondaryEscalationType),
-        crisisType: parseCrisisType(beat.crisisType),
-        expectedGapMagnitude: parseGapMagnitude(beat.expectedGapMagnitude),
-        isMidpoint,
-        midpointType,
-        uniqueScenarioHook: beat.uniqueScenarioHook ?? null,
-        approachVectors: parseApproachVectors(beat.approachVectors) ?? null,
-        setpieceSourceIndex:
-          typeof beat.setpieceSourceIndex === 'number' &&
-          Number.isInteger(beat.setpieceSourceIndex) &&
-          beat.setpieceSourceIndex >= 0 &&
-          beat.setpieceSourceIndex <= 5
-            ? beat.setpieceSourceIndex
-            : null,
-        obligatorySceneTag: isGenreObligationTag(beat.obligatorySceneTag)
-          ? beat.obligatorySceneTag
-          : null,
-      };
-    }),
+    ...normalizeStructureActFields(act),
+    milestones: act.milestones.map((milestone) =>
+      materializeStoryMilestone(
+        {
+          id: milestone.id,
+          name: milestone.name,
+          description: milestone.description,
+          objective: milestone.objective,
+          causalLink: milestone.causalLink,
+          exitCondition: milestone.exitCondition,
+          role: milestone.role,
+          escalationType: milestone.escalationType,
+          secondaryEscalationType: milestone.secondaryEscalationType,
+          crisisType: milestone.crisisType,
+          expectedGapMagnitude: milestone.expectedGapMagnitude,
+          isMidpoint: milestone.isMidpoint,
+          midpointType: milestone.midpointType,
+          uniqueScenarioHook: milestone.uniqueScenarioHook,
+          approachVectors: milestone.approachVectors,
+          setpieceSourceIndex: milestone.setpieceSourceIndex,
+          obligatorySceneTag: milestone.obligatorySceneTag,
+        },
+        'Persisted story milestone'
+      )
+    ),
   }));
 
   return {
@@ -152,6 +150,7 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
     openingImage: data.openingImage,
     closingImage: data.closingImage,
     pacingBudget: data.pacingBudget,
+    anchorMoments: parsePersistedAnchorMoments(data),
     generatedAt: new Date(data.generatedAt),
   };
 }
@@ -165,7 +164,7 @@ function versionedStructureToFileData(
     previousVersionId: version.previousVersionId,
     createdAtPageId: version.createdAtPageId,
     rewriteReason: version.rewriteReason,
-    preservedBeatIds: [...version.preservedBeatIds],
+    preservedMilestoneIds: [...version.preservedMilestoneIds],
     createdAt: version.createdAt.toISOString(),
   };
 }
@@ -180,7 +179,7 @@ function fileDataToVersionedStructure(
       data.previousVersionId === null ? null : parseStructureVersionId(data.previousVersionId),
     createdAtPageId: data.createdAtPageId === null ? null : parsePageId(data.createdAtPageId),
     rewriteReason: data.rewriteReason,
-    preservedBeatIds: [...data.preservedBeatIds],
+    preservedMilestoneIds: [...data.preservedMilestoneIds],
     createdAt: new Date(data.createdAt),
   };
 }

@@ -14,18 +14,29 @@ function createGenerationResult(): StructureGenerationResult {
     openingImage: 'A rain-soaked throne room with a broken crown on the steps.',
     closingImage: 'The restored crown held aloft in first light over a united court.',
     pacingBudget: { targetPagesMin: 18, targetPagesMax: 42 },
+    anchorMoments: {
+      incitingIncident: { actIndex: 0, description: 'A warning arrives at court.' },
+      midpoint: { actIndex: 0, milestoneSlot: 1, midpointType: 'FALSE_DEFEAT' },
+      climax: { actIndex: 1, description: 'The final stand at the capital.' },
+      signatureScenarioPlacement: null,
+    },
     acts: [
       {
         name: 'Act One',
         objective: 'Accept the quest',
         stakes: 'Home is at risk',
         entryCondition: 'A messenger arrives',
-        beats: [
+        actQuestion: 'Will the heir leave home behind?',
+        exitReversal: 'The heir is forced onto the road.',
+        promiseTargets: ['The kingdom can still be saved'],
+        obligationTargets: ['call_to_adventure'],
+        milestones: [
           {
             name: 'Messenger warning',
             description: 'A warning arrives',
             objective: 'Hear the warning',
             causalLink: 'Because the messenger reaches the heir in time.',
+            exitCondition: 'The heir understands the threat is real.',
             role: 'setup',
             isMidpoint: false,
             midpointType: null,
@@ -35,6 +46,7 @@ function createGenerationResult(): StructureGenerationResult {
             description: 'A difficult choice',
             objective: 'Leave home',
             causalLink: 'Because the warning reveals immediate danger at court.',
+            exitCondition: 'The heir commits to the campaign.',
             role: 'turning_point',
             isMidpoint: true,
             midpointType: 'FALSE_DEFEAT',
@@ -46,12 +58,17 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Survive the campaign',
         stakes: 'The kingdom may fall',
         entryCondition: 'The journey begins',
-        beats: [
+        actQuestion: 'Can the heir survive long enough to rally allies?',
+        exitReversal: '',
+        promiseTargets: ['The kingdom can still be saved'],
+        obligationTargets: ['final_confrontation'],
+        milestones: [
           {
             name: 'First major setback',
             description: 'First major setback',
             objective: 'Recover from loss',
             causalLink: 'Because the heir departs without securing enough allies.',
+            exitCondition: 'The heir regains a path forward.',
             role: 'escalation',
             isMidpoint: false,
             midpointType: null,
@@ -65,7 +82,7 @@ function createGenerationResult(): StructureGenerationResult {
 
 describe('structure-factory', () => {
   describe('createStoryStructure', () => {
-    it('creates structure from generation result with hierarchical beat IDs', () => {
+    it('creates structure from generation result with hierarchical milestone IDs', () => {
       const result = createStoryStructure(createGenerationResult());
 
       expect(result.overallTheme).toBe('Restore the broken kingdom');
@@ -73,12 +90,12 @@ describe('structure-factory', () => {
       expect(result.closingImage).toContain('first light');
       expect(result.acts[0]?.id).toBe('1');
       expect(result.acts[1]?.id).toBe('2');
-      expect(result.acts[0]?.beats[0]?.id).toBe('1.1');
-      expect(result.acts[0]?.beats[1]?.id).toBe('1.2');
-      expect(result.acts[1]?.beats[0]?.id).toBe('2.1');
+      expect(result.acts[0]?.milestones[0]?.id).toBe('1.1');
+      expect(result.acts[0]?.milestones[1]?.id).toBe('1.2');
+      expect(result.acts[1]?.milestones[0]?.id).toBe('2.1');
       expect(result.acts[0]?.name).toBe('Act One');
-      expect(result.acts[0]?.beats[0]?.name).toBe('Messenger warning');
-      expect(result.acts[0]?.beats[0]?.description).toBe('A warning arrives');
+      expect(result.acts[0]?.milestones[0]?.name).toBe('Messenger warning');
+      expect(result.acts[0]?.milestones[0]?.description).toBe('A warning arrives');
     });
 
     it('sets generatedAt to current date', () => {
@@ -97,73 +114,112 @@ describe('structure-factory', () => {
       expect(result.acts[0]?.objective).toBe('Accept the quest');
       expect(result.acts[0]?.stakes).toBe('Home is at risk');
       expect(result.acts[0]?.entryCondition).toBe('A messenger arrives');
+      expect(result.acts[0]?.actQuestion).toBe('Will the heir leave home behind?');
+      expect(result.acts[0]?.promiseTargets).toEqual(['The kingdom can still be saved']);
     });
 
-    it('preserves beat metadata', () => {
+    it('preserves milestone metadata', () => {
       const result = createStoryStructure(createGenerationResult());
 
-      expect(result.acts[0]?.beats[0]?.objective).toBe('Hear the warning');
-      expect(result.acts[0]?.beats[1]?.objective).toBe('Leave home');
-      expect(result.acts[0]?.beats[0]?.causalLink).toBe(
+      expect(result.acts[0]?.milestones[0]?.objective).toBe('Hear the warning');
+      expect(result.acts[0]?.milestones[1]?.objective).toBe('Leave home');
+      expect(result.acts[0]?.milestones[0]?.causalLink).toBe(
         'Because the messenger reaches the heir in time.'
       );
+      expect(result.acts[0]?.milestones[0]?.exitCondition).toBe(
+        'The heir understands the threat is real.'
+      );
+    });
+
+    it('preserves anchor moments when provided', () => {
+      const result = createStoryStructure(createGenerationResult());
+
+      expect(result.anchorMoments).toEqual({
+        incitingIncident: { actIndex: 0, description: 'A warning arrives at court.' },
+        midpoint: { actIndex: 0, milestoneSlot: 1, midpointType: 'FALSE_DEFEAT' },
+        climax: { actIndex: 1, description: 'The final stand at the capital.' },
+        signatureScenarioPlacement: null,
+      });
+    });
+
+    it('defaults new fields when generation result omits them', () => {
+      const genResult = createGenerationResult();
+      delete (genResult as Partial<StructureGenerationResult>).anchorMoments;
+      delete genResult.acts[0]!.actQuestion;
+      delete genResult.acts[0]!.exitReversal;
+      delete genResult.acts[0]!.promiseTargets;
+      delete genResult.acts[0]!.obligationTargets;
+      delete genResult.acts[0]!.milestones[0]!.exitCondition;
+
+      const result = createStoryStructure(genResult);
+
+      expect(result.anchorMoments.midpoint).toEqual({
+        actIndex: 1,
+        milestoneSlot: 0,
+        midpointType: 'FALSE_DEFEAT',
+      });
+      expect(result.acts[0]?.actQuestion).toBe('');
+      expect(result.acts[0]?.exitReversal).toBe('');
+      expect(result.acts[0]?.promiseTargets).toEqual([]);
+      expect(result.acts[0]?.obligationTargets).toEqual([]);
+      expect(result.acts[0]?.milestones[0]?.exitCondition).toBe('');
     });
 
     it('sets approachVectors to null when not provided', () => {
       const result = createStoryStructure(createGenerationResult());
 
-      expect(result.acts[0]?.beats[0]?.approachVectors).toBeNull();
-      expect(result.acts[0]?.beats[1]?.approachVectors).toBeNull();
+      expect(result.acts[0]?.milestones[0]?.approachVectors).toBeNull();
+      expect(result.acts[0]?.milestones[1]?.approachVectors).toBeNull();
     });
 
     it('sets setpieceSourceIndex to null when not provided', () => {
       const result = createStoryStructure(createGenerationResult());
 
-      expect(result.acts[0]?.beats[0]?.setpieceSourceIndex).toBeNull();
-      expect(result.acts[0]?.beats[1]?.setpieceSourceIndex).toBeNull();
+      expect(result.acts[0]?.milestones[0]?.setpieceSourceIndex).toBeNull();
+      expect(result.acts[0]?.milestones[1]?.setpieceSourceIndex).toBeNull();
     });
 
     it('maps valid crisisType and coerces invalid values to null', () => {
       const genResult = createGenerationResult();
-      genResult.acts[0]!.beats[1]!.crisisType = 'BEST_BAD_CHOICE';
-      genResult.acts[1]!.beats[0]!.crisisType = 'INVALID_CRISIS';
+      genResult.acts[0]!.milestones[1]!.crisisType = 'BEST_BAD_CHOICE';
+      genResult.acts[1]!.milestones[0]!.crisisType = 'INVALID_CRISIS';
       const result = createStoryStructure(genResult);
 
-      expect(result.acts[0]?.beats[1]?.crisisType).toBe('BEST_BAD_CHOICE');
-      expect(result.acts[1]?.beats[0]?.crisisType).toBeNull();
+      expect(result.acts[0]?.milestones[1]?.crisisType).toBe('BEST_BAD_CHOICE');
+      expect(result.acts[1]?.milestones[0]?.crisisType).toBeNull();
     });
 
     it('maps valid secondaryEscalationType and coerces invalid values to null', () => {
       const genResult = createGenerationResult();
-      genResult.acts[0]!.beats[1]!.secondaryEscalationType = 'REVELATION_SHIFT';
-      genResult.acts[1]!.beats[0]!.secondaryEscalationType = 'INVALID_ESCALATION';
+      genResult.acts[0]!.milestones[1]!.secondaryEscalationType = 'REVELATION_SHIFT';
+      genResult.acts[1]!.milestones[0]!.secondaryEscalationType = 'INVALID_ESCALATION';
 
       const result = createStoryStructure(genResult);
 
-      expect(result.acts[0]?.beats[1]?.secondaryEscalationType).toBe('REVELATION_SHIFT');
-      expect(result.acts[1]?.beats[0]?.secondaryEscalationType).toBeNull();
+      expect(result.acts[0]?.milestones[1]?.secondaryEscalationType).toBe('REVELATION_SHIFT');
+      expect(result.acts[1]?.milestones[0]?.secondaryEscalationType).toBeNull();
     });
 
     it('maps valid expectedGapMagnitude and coerces invalid values to null', () => {
       const genResult = createGenerationResult();
-      genResult.acts[0]!.beats[1]!.expectedGapMagnitude = 'WIDE';
-      genResult.acts[1]!.beats[0]!.expectedGapMagnitude = 'IMPOSSIBLE';
+      genResult.acts[0]!.milestones[1]!.expectedGapMagnitude = 'WIDE';
+      genResult.acts[1]!.milestones[0]!.expectedGapMagnitude = 'IMPOSSIBLE';
 
       const result = createStoryStructure(genResult);
 
-      expect(result.acts[0]?.beats[1]?.expectedGapMagnitude).toBe('WIDE');
-      expect(result.acts[1]?.beats[0]?.expectedGapMagnitude).toBeNull();
+      expect(result.acts[0]?.milestones[1]?.expectedGapMagnitude).toBe('WIDE');
+      expect(result.acts[1]?.milestones[0]?.expectedGapMagnitude).toBeNull();
     });
 
     it('parses valid approachVectors from generation result', () => {
       const genResult = createGenerationResult();
-      genResult.acts[1]!.beats[0]!.approachVectors = [
+      genResult.acts[1]!.milestones[0]!.approachVectors = [
         'DIRECT_FORCE',
         'ANALYTICAL_REASONING',
       ];
       const result = createStoryStructure(genResult);
 
-      expect(result.acts[1]?.beats[0]?.approachVectors).toEqual([
+      expect(result.acts[1]?.milestones[0]?.approachVectors).toEqual([
         'DIRECT_FORCE',
         'ANALYTICAL_REASONING',
       ]);
@@ -171,14 +227,14 @@ describe('structure-factory', () => {
 
     it('filters out invalid approachVectors', () => {
       const genResult = createGenerationResult();
-      genResult.acts[1]!.beats[0]!.approachVectors = [
+      genResult.acts[1]!.milestones[0]!.approachVectors = [
         'DIRECT_FORCE',
         'INVALID_VECTOR',
         'STEALTH_SUBTERFUGE',
       ];
       const result = createStoryStructure(genResult);
 
-      expect(result.acts[1]?.beats[0]?.approachVectors).toEqual([
+      expect(result.acts[1]?.milestones[0]?.approachVectors).toEqual([
         'DIRECT_FORCE',
         'STEALTH_SUBTERFUGE',
       ]);
@@ -186,55 +242,55 @@ describe('structure-factory', () => {
 
     it('maps valid setpieceSourceIndex values', () => {
       const genResult = createGenerationResult();
-      genResult.acts[1]!.beats[0]!.setpieceSourceIndex = 4;
+      genResult.acts[1]!.milestones[0]!.setpieceSourceIndex = 4;
       const result = createStoryStructure(genResult);
 
-      expect(result.acts[1]?.beats[0]?.setpieceSourceIndex).toBe(4);
+      expect(result.acts[1]?.milestones[0]?.setpieceSourceIndex).toBe(4);
     });
 
     it('coerces invalid setpieceSourceIndex to null', () => {
       const genResult = createGenerationResult();
-      genResult.acts[1]!.beats[0]!.setpieceSourceIndex = 99;
+      genResult.acts[1]!.milestones[0]!.setpieceSourceIndex = 99;
       const result = createStoryStructure(genResult);
 
-      expect(result.acts[1]?.beats[0]?.setpieceSourceIndex).toBeNull();
+      expect(result.acts[1]?.milestones[0]?.setpieceSourceIndex).toBeNull();
     });
 
-    it('maps midpoint fields and preserves midpoint type for midpoint beat', () => {
+    it('maps midpoint fields and preserves midpoint type for midpoint milestone', () => {
       const result = createStoryStructure(createGenerationResult());
 
-      expect(result.acts[0]?.beats[0]?.isMidpoint).toBe(false);
-      expect(result.acts[0]?.beats[0]?.midpointType).toBeNull();
-      expect(result.acts[0]?.beats[1]?.isMidpoint).toBe(true);
-      expect(result.acts[0]?.beats[1]?.midpointType).toBe('FALSE_DEFEAT');
+      expect(result.acts[0]?.milestones[0]?.isMidpoint).toBe(false);
+      expect(result.acts[0]?.milestones[0]?.midpointType).toBeNull();
+      expect(result.acts[0]?.milestones[1]?.isMidpoint).toBe(true);
+      expect(result.acts[0]?.milestones[1]?.midpointType).toBe('FALSE_DEFEAT');
     });
 
     it('throws when causalLink is blank', () => {
       const genResult = createGenerationResult();
-      genResult.acts[1]!.beats[0]!.causalLink = '   ';
+      genResult.acts[1]!.milestones[0]!.causalLink = '   ';
 
       expect(() => createStoryStructure(genResult)).toThrow(
-        'Structure beat 2.1 must include a non-empty causalLink'
+        'Structure milestone 2.1 must include a non-empty causalLink'
       );
     });
 
-    it('throws when midpoint beat is missing midpointType', () => {
+    it('throws when midpoint milestone is missing midpointType', () => {
       const genResult = createGenerationResult();
-      genResult.acts[0]!.beats[1]!.isMidpoint = true;
-      genResult.acts[0]!.beats[1]!.midpointType = null;
+      genResult.acts[0]!.milestones[1]!.isMidpoint = true;
+      genResult.acts[0]!.milestones[1]!.midpointType = null;
 
       expect(() => createStoryStructure(genResult)).toThrow(
-        'Structure beat 1.2 is midpoint-tagged but missing midpointType'
+        'Structure milestone 1.2 is midpoint-tagged but missing midpointType'
       );
     });
 
-    it('throws when non-midpoint beat includes midpointType', () => {
+    it('throws when non-midpoint milestone includes midpointType', () => {
       const genResult = createGenerationResult();
-      genResult.acts[1]!.beats[0]!.isMidpoint = false;
-      genResult.acts[1]!.beats[0]!.midpointType = 'FALSE_VICTORY';
+      genResult.acts[1]!.milestones[0]!.isMidpoint = false;
+      genResult.acts[1]!.milestones[0]!.midpointType = 'FALSE_VICTORY';
 
       expect(() => createStoryStructure(genResult)).toThrow(
-        'Structure beat 2.1 has midpointType but isMidpoint is false'
+        'Structure milestone 2.1 has midpointType but isMidpoint is false'
       );
     });
   });

@@ -9,8 +9,8 @@ export {
   buildThreadsSection,
 } from './active-state-sections.js';
 
-// Story structure section (beat evaluation, deviation detection)
+// Story structure section (milestone evaluation, deviation detection)
 export {
-  buildWriterStructureContext,
+  buildSharedStructureContext,
   buildAnalystStructureEvaluation,
 } from './story-structure-section.js';

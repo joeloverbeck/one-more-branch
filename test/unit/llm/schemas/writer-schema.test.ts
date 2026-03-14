@@ -76,17 +76,17 @@ describe('WRITER_GENERATION_SCHEMA', () => {
     });
   });
 
-  it('should not contain analyst fields (beat/deviation)', () => {
+  it('should not contain analyst fields (milestone/deviation)', () => {
     const schema = WRITER_GENERATION_SCHEMA.json_schema.schema as {
       properties: Record<string, unknown>;
       required: string[];
     };
 
-    expect(schema.properties.beatConcluded).toBeUndefined();
-    expect(schema.properties.beatResolution).toBeUndefined();
+    expect(schema.properties.milestoneConcluded).toBeUndefined();
+    expect(schema.properties.milestoneResolution).toBeUndefined();
     expect(schema.properties.deviationDetected).toBeUndefined();
     expect(schema.properties.deviationReason).toBeUndefined();
-    expect(schema.properties.invalidatedBeatIds).toBeUndefined();
+    expect(schema.properties.invalidatedMilestoneIds).toBeUndefined();
     expect(schema.properties.narrativeSummary).toBeUndefined();
   });
 });

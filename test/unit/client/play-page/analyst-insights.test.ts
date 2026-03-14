@@ -96,10 +96,14 @@ describe('analyst insights modal', () => {
     });
   });
 
-  it('displays beat info subtitle when actDisplayInfo is provided', async () => {
+  it('displays milestone info subtitle when actDisplayInfo is provided', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       analystResult: createMockAnalystResult(),
-      actDisplayInfo: { displayString: 'Act 1: The Setup - Beat 1.2: The Discovery' },
+      actDisplayInfo: {
+        displayString: 'Act 1: The Setup - Milestone 1.2: The Discovery',
+        actQuestion: 'Will the team survive first contact?',
+        exitCondition: 'The team escapes the breach alive.',
+      },
     });
     loadAppAndInit();
 
@@ -108,9 +112,31 @@ describe('analyst insights modal', () => {
     await jest.advanceTimersByTimeAsync(0);
 
     const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
-    const subtitle = modalBody.querySelector('.insights-beat-subtitle');
+    const subtitle = modalBody.querySelector('.insights-milestone-subtitle');
     expect(subtitle).not.toBeNull();
-    expect(subtitle?.textContent).toBe('Act 1: The Setup - Beat 1.2: The Discovery');
+    expect(subtitle?.textContent).toBe('Act 1: The Setup - Milestone 1.2: The Discovery');
+  });
+
+  it('displays act question and milestone exit criteria in the structure tab', async () => {
+    document.body.innerHTML = buildPlayPageHtml({
+      analystResult: createMockAnalystResult(),
+      actDisplayInfo: {
+        displayString: 'Act 1: The Setup - Milestone 1.2: The Discovery',
+        actQuestion: 'Will the team survive first contact?',
+        exitCondition: 'The team escapes the breach alive.',
+      },
+    });
+    loadAppAndInit();
+
+    const button = document.getElementById('insights-btn') as HTMLButtonElement;
+    button.click();
+    await jest.advanceTimersByTimeAsync(0);
+
+    const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
+    expect(modalBody.textContent).toContain("Act's Dramatic Question:");
+    expect(modalBody.textContent).toContain('Will the team survive first contact?');
+    expect(modalBody.textContent).toContain('Milestone Exit Criteria:');
+    expect(modalBody.textContent).toContain('The team escapes the breach alive.');
   });
 
   it('displays scene summary when provided', async () => {
@@ -212,8 +238,8 @@ describe('analyst insights modal', () => {
 
     const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
     // Should have a gauge row for Completion Gate
-    const gaugeRows = modalBody.querySelectorAll('.beat-gauge__row');
-    const labels = Array.from(gaugeRows).map((r) => r.querySelector('.beat-gauge__label')?.textContent);
+    const gaugeRows = modalBody.querySelectorAll('.milestone-gauge__row');
+    const labels = Array.from(gaugeRows).map((r) => r.querySelector('.milestone-gauge__label')?.textContent);
     expect(labels).toContain('Completion Gate');
     // Should NOT have old completion-gate paragraph
     expect(modalBody.querySelector('.completion-gate')).toBeNull();
@@ -237,12 +263,12 @@ describe('analyst insights modal', () => {
     await jest.advanceTimersByTimeAsync(0);
 
     const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
-    const gaugeRows = modalBody.querySelectorAll('.beat-gauge__row');
+    const gaugeRows = modalBody.querySelectorAll('.milestone-gauge__row');
     const gateRow = Array.from(gaugeRows).find(
-      (r) => r.querySelector('.beat-gauge__label')?.textContent === 'Completion Gate'
+      (r) => r.querySelector('.milestone-gauge__label')?.textContent === 'Completion Gate'
     );
     expect(gateRow).not.toBeNull();
-    const fill = gateRow?.querySelector('.beat-gauge__fill') as HTMLElement;
+    const fill = gateRow?.querySelector('.milestone-gauge__fill') as HTMLElement;
     expect(fill.style.width).toBe('100%');
     // No reason text when satisfied with empty reason
     expect(modalBody.querySelector('.completion-gate-reason')).toBeNull();
@@ -430,7 +456,7 @@ describe('analyst insights modal', () => {
             trackedPromisesOverflowSummary: null,
           },
           wasGenerated: true,
-          actDisplayInfo: { displayString: 'Act 2: Rising Action - Beat 2.1: Confrontation' },
+          actDisplayInfo: { displayString: 'Act 2: Rising Action - Milestone 2.1: Confrontation' },
           deviationInfo: null,
         })
       );
@@ -447,7 +473,7 @@ describe('analyst insights modal', () => {
 
     const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
     expect(modalBody.textContent).toContain('\uD83D\uDE80 Major Progress');
-    expect(modalBody.textContent).toContain('Act 2: Rising Action - Beat 2.1: Confrontation');
+    expect(modalBody.textContent).toContain('Act 2: Rising Action - Milestone 2.1: Confrontation');
     expect(modalBody.textContent).toContain('The scene unfolded dramatically.');
   });
 });

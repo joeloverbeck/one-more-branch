@@ -91,6 +91,11 @@ function createOneShotPacket(): ContentOneShotPacket {
 const VALID_API_KEY = 'sk-test-key-1234567890';
 const EXEMPLAR_IDEAS = ['A city where gravity reverses at midnight'];
 
+function expectCompletedStage(event: GenerationStageEvent, stage: GenerationStageEvent['stage']): void {
+  expect(event).toMatchObject({ stage, status: 'completed', attempt: 1 });
+  expect(typeof event.durationMs).toBe('number');
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function createMockDeps() {
   const tasteProfile = createTasteProfile();
@@ -176,10 +181,9 @@ describe('ContentService', () => {
         onGenerationStage: (event: GenerationStageEvent) => stages.push(event),
       });
 
-      expect(stages).toEqual([
-        { stage: 'GENERATING_CONTENT', status: 'started', attempt: 1 },
-        { stage: 'GENERATING_CONTENT', status: 'completed', attempt: 1 },
-      ]);
+      expect(stages).toHaveLength(2);
+      expect(stages[0]).toEqual({ stage: 'GENERATING_CONTENT', status: 'started', attempt: 1 });
+      expectCompletedStage(stages[1]!, 'GENERATING_CONTENT');
     });
   });
 
@@ -278,16 +282,15 @@ describe('ContentService', () => {
         onGenerationStage: (event: GenerationStageEvent) => stages.push(event),
       });
 
-      expect(stages).toEqual([
-        { stage: 'DISTILLING_TASTE', status: 'started', attempt: 1 },
-        { stage: 'DISTILLING_TASTE', status: 'completed', attempt: 1 },
-        { stage: 'GENERATING_SPARKS', status: 'started', attempt: 1 },
-        { stage: 'GENERATING_SPARKS', status: 'completed', attempt: 1 },
-        { stage: 'PACKAGING_CONTENT', status: 'started', attempt: 1 },
-        { stage: 'PACKAGING_CONTENT', status: 'completed', attempt: 1 },
-        { stage: 'EVALUATING_CONTENT', status: 'started', attempt: 1 },
-        { stage: 'EVALUATING_CONTENT', status: 'completed', attempt: 1 },
-      ]);
+      expect(stages).toHaveLength(8);
+      expect(stages[0]).toEqual({ stage: 'DISTILLING_TASTE', status: 'started', attempt: 1 });
+      expectCompletedStage(stages[1]!, 'DISTILLING_TASTE');
+      expect(stages[2]).toEqual({ stage: 'GENERATING_SPARKS', status: 'started', attempt: 1 });
+      expectCompletedStage(stages[3]!, 'GENERATING_SPARKS');
+      expect(stages[4]).toEqual({ stage: 'PACKAGING_CONTENT', status: 'started', attempt: 1 });
+      expectCompletedStage(stages[5]!, 'PACKAGING_CONTENT');
+      expect(stages[6]).toEqual({ stage: 'EVALUATING_CONTENT', status: 'started', attempt: 1 });
+      expectCompletedStage(stages[7]!, 'EVALUATING_CONTENT');
     });
 
     it('returns combined result from all stages', async () => {
@@ -340,10 +343,9 @@ describe('ContentService', () => {
         onGenerationStage: (event: GenerationStageEvent) => stages.push(event),
       });
 
-      expect(stages).toEqual([
-        { stage: 'DISTILLING_TASTE', status: 'started', attempt: 1 },
-        { stage: 'DISTILLING_TASTE', status: 'completed', attempt: 1 },
-      ]);
+      expect(stages).toHaveLength(2);
+      expect(stages[0]).toEqual({ stage: 'DISTILLING_TASTE', status: 'started', attempt: 1 });
+      expectCompletedStage(stages[1]!, 'DISTILLING_TASTE');
     });
   });
 
@@ -382,10 +384,9 @@ describe('ContentService', () => {
         onGenerationStage: (event: GenerationStageEvent) => stages.push(event),
       });
 
-      expect(stages).toEqual([
-        { stage: 'GENERATING_SPARKS', status: 'started', attempt: 1 },
-        { stage: 'GENERATING_SPARKS', status: 'completed', attempt: 1 },
-      ]);
+      expect(stages).toHaveLength(2);
+      expect(stages[0]).toEqual({ stage: 'GENERATING_SPARKS', status: 'started', attempt: 1 });
+      expectCompletedStage(stages[1]!, 'GENERATING_SPARKS');
     });
   });
 
@@ -402,10 +403,9 @@ describe('ContentService', () => {
         onGenerationStage: (event: GenerationStageEvent) => stages.push(event),
       });
 
-      expect(stages).toEqual([
-        { stage: 'PACKAGING_CONTENT', status: 'started', attempt: 1 },
-        { stage: 'PACKAGING_CONTENT', status: 'completed', attempt: 1 },
-      ]);
+      expect(stages).toHaveLength(2);
+      expect(stages[0]).toEqual({ stage: 'PACKAGING_CONTENT', status: 'started', attempt: 1 });
+      expectCompletedStage(stages[1]!, 'PACKAGING_CONTENT');
     });
   });
 
@@ -421,10 +421,9 @@ describe('ContentService', () => {
         onGenerationStage: (event: GenerationStageEvent) => stages.push(event),
       });
 
-      expect(stages).toEqual([
-        { stage: 'EVALUATING_CONTENT', status: 'started', attempt: 1 },
-        { stage: 'EVALUATING_CONTENT', status: 'completed', attempt: 1 },
-      ]);
+      expect(stages).toHaveLength(2);
+      expect(stages[0]).toEqual({ stage: 'EVALUATING_CONTENT', status: 'started', attempt: 1 });
+      expectCompletedStage(stages[1]!, 'EVALUATING_CONTENT');
     });
   });
 

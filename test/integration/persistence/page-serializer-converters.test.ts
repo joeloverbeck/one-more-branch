@@ -45,9 +45,9 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     accumulatedCharacterState: {},
     accumulatedStructureState: {
       currentActIndex: 0,
-      currentBeatIndex: 0,
-      beatProgressions: [],
-      pagesInCurrentBeat: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [],
+      pagesInCurrentMilestone: 0,
       pacingNudge: null,
     },
     structureVersionId: null,
@@ -65,7 +65,7 @@ function buildTestPage(overrides?: Partial<Page>): Page {
     npcRelationshipUpdates: [],
     accumulatedNpcRelationships: {},
     pageActIndex: 0,
-    pageBeatIndex: 0,
+    pageMilestoneIndex: 0,
     isEnding: false,
     parentPageId: null,
     parentChoiceIndex: null,
@@ -75,11 +75,11 @@ function buildTestPage(overrides?: Partial<Page>): Page {
 
 function buildFullAnalystResult(): AnalystResult {
   return {
-    beatConcluded: true,
-    beatResolution: 'The hero found the key.',
+    milestoneConcluded: true,
+    milestoneResolution: 'The hero found the key.',
     deviationDetected: false,
     deviationReason: '',
-    invalidatedBeatIds: ['1.2'],
+    invalidatedMilestoneIds: ['1.2'],
     pacingIssueDetected: false,
     pacingIssueReason: '',
     recommendedAction: 'none',
@@ -111,7 +111,7 @@ function buildFullAnalystResult(): AnalystResult {
         promiseId: 'pr-1',
         description: 'The prophecy fulfilled',
         satisfactionLevel: 'WELL_EARNED',
-        reasoning: 'Built up over several beats',
+        reasoning: 'Built up over several milestones',
       },
     ],
     threadPayoffAssessments: [
@@ -134,9 +134,9 @@ function buildFullAnalystResult(): AnalystResult {
     spineDeviationDetected: true,
     spineDeviationReason: 'Dramatic question shifted',
     spineInvalidatedElement: 'dramatic_question',
-    alignedBeatId: '1.3',
-    beatAlignmentConfidence: 'HIGH',
-    beatAlignmentReason: 'Clear evidence of progression',
+    alignedMilestoneId: '1.3',
+    milestoneAlignmentConfidence: 'HIGH',
+    milestoneAlignmentReason: 'Clear evidence of progression',
     thematicCharge: 'AMBIGUOUS',
     narrativeFocus: 'BALANCED',
     thematicChargeDescription: '',
@@ -236,7 +236,7 @@ describe('page-serializer converter extraction integration', () => {
     expect(loaded!.analystResult!.threadPayoffAssessments).toHaveLength(1);
     expect(loaded!.analystResult!.relationshipShiftsDetected).toHaveLength(1);
     expect(loaded!.analystResult!.spineDeviationDetected).toBe(true);
-    expect(loaded!.analystResult!.alignedBeatId).toBe('1.3');
+    expect(loaded!.analystResult!.alignedMilestoneId).toBe('1.3');
   });
 
   it('null analyst result round-trip', async () => {
@@ -270,9 +270,9 @@ describe('page-serializer converter extraction integration', () => {
     expect(loaded!.analystResult!.spineDeviationDetected).toBe(true);
     expect(loaded!.analystResult!.spineDeviationReason).toBe('Dramatic question shifted');
     expect(loaded!.analystResult!.spineInvalidatedElement).toBe('dramatic_question');
-    expect(loaded!.analystResult!.alignedBeatId).toBe('1.3');
-    expect(loaded!.analystResult!.beatAlignmentConfidence).toBe('HIGH');
-    expect(loaded!.analystResult!.beatAlignmentReason).toBe('Clear evidence of progression');
+    expect(loaded!.analystResult!.alignedMilestoneId).toBe('1.3');
+    expect(loaded!.analystResult!.milestoneAlignmentConfidence).toBe('HIGH');
+    expect(loaded!.analystResult!.milestoneAlignmentReason).toBe('Clear evidence of progression');
   });
 
   it('NPC relationship updates and accumulated relationships round-trip', async () => {

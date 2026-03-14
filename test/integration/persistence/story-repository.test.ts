@@ -2,6 +2,7 @@ import {
   Story,
   StoryId,
   StoryStructure,
+  createDefaultAnchorMoments,
   createInitialVersionedStructure,
   createRewrittenVersionedStructure,
   createChoice,
@@ -31,7 +32,7 @@ function buildStructure(): StoryStructure {
         objective: 'Investigate the signal',
         stakes: 'City falls to chaos',
         entryCondition: 'Signal is detected',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             name: 'Signal triangulation',
@@ -98,6 +99,33 @@ function buildStory(overrides?: Partial<Story>): Story {
   };
 }
 
+function normalizeExpectedStructure(structure: StoryStructure | null): StoryStructure | null {
+  if (!structure) {
+    return null;
+  }
+
+  const maybeStructure = structure as StoryStructure & {
+    anchorMoments?: StoryStructure['anchorMoments'];
+  };
+
+  return {
+    ...structure,
+    anchorMoments:
+      maybeStructure.anchorMoments ?? createDefaultAnchorMoments(structure.acts.length),
+    acts: structure.acts.map((act) => ({
+      ...act,
+      actQuestion: act.actQuestion ?? '',
+      exitReversal: act.exitReversal ?? '',
+      promiseTargets: act.promiseTargets ?? [],
+      obligationTargets: act.obligationTargets ?? [],
+      milestones: act.milestones.map((milestone) => ({
+        ...milestone,
+        exitCondition: milestone.exitCondition ?? '',
+      })),
+    })),
+  };
+}
+
 function expectLoadedStoryToMatchPersistedFields(loaded: Story | null, expected: Story): void {
   expect(loaded).not.toBeNull();
   expect(loaded?.id).toBe(expected.id);
@@ -107,7 +135,7 @@ function expectLoadedStoryToMatchPersistedFields(loaded: Story | null, expected:
   expect(loaded?.tone).toBe(expected.tone);
   expect(loaded?.globalCanon).toEqual(expected.globalCanon);
   expect(loaded?.globalCharacterCanon).toEqual(expected.globalCharacterCanon);
-  expect(loaded?.structure).toEqual(expected.structure);
+  expect(loaded?.structure).toEqual(normalizeExpectedStructure(expected.structure));
   expect(loaded?.createdAt).toEqual(expected.createdAt);
   expect(loaded?.updatedAt).toEqual(expected.updatedAt);
   expect(loaded?.structureVersions).toEqual(expected.structureVersions ?? []);
@@ -175,7 +203,7 @@ describe('story-repository integration', () => {
           objective: 'Open with conflict',
           stakes: 'Trust collapses',
           entryCondition: 'Crisis begins',
-          beats: [
+          milestones: [
             {
               id: '1.1',
               name: 'City blackout',
@@ -220,7 +248,7 @@ describe('story-repository integration', () => {
           objective: 'Escalate pressure',
           stakes: 'Allies fracture',
           entryCondition: 'The threat adapts',
-          beats: [
+          milestones: [
             {
               id: '2.1',
               name: 'Counterintelligence push',
@@ -265,7 +293,7 @@ describe('story-repository integration', () => {
           objective: 'Resolve the conflict',
           stakes: 'Future order is decided',
           entryCondition: 'A final opening appears',
-          beats: [
+          milestones: [
             {
               id: '3.1',
               name: 'Broadcast the proof',
@@ -317,7 +345,7 @@ describe('story-repository integration', () => {
       ...initialStructure,
       acts: initialStructure.acts.map((act) => ({
         ...act,
-        beats: act.beats.map((beat) => ({ ...beat })),
+        milestones: act.milestones.map((milestone) => ({ ...milestone })),
       })),
       overallTheme: 'Integrity under pressure',
       generatedAt: new Date('2025-02-03T01:00:00.000Z'),
@@ -350,7 +378,7 @@ describe('story-repository integration', () => {
     expect(loaded?.structureVersions?.[1]?.rewriteReason).toBe(
       'Deviation invalidated infiltration path.'
     );
-    expect(loaded?.structureVersions?.[1]?.preservedBeatIds).toEqual(['1.1']);
+    expect(loaded?.structureVersions?.[1]?.preservedMilestoneIds).toEqual(['1.1']);
   });
 
   it('story lifecycle create save update load delete transitions correctly', async () => {

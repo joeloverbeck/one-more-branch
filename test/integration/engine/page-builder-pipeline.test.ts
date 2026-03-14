@@ -61,7 +61,7 @@ function makeOpeningContext(overrides: Partial<PageBuildContext> = {}): PageBuil
     parentAccumulatedNpcAgendas: {},
     parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
     pageActIndex: 0,
-    pageBeatIndex: 0,
+    pageMilestoneIndex: 0,
     ...overrides,
   };
 }
@@ -92,7 +92,7 @@ function makeContinuationContext(
     parentAccumulatedNpcAgendas: parentPage.accumulatedNpcAgendas,
     parentAccumulatedNpcRelationships: parentPage.accumulatedNpcRelationships,
     pageActIndex: 0,
-    pageBeatIndex: 0,
+    pageMilestoneIndex: 0,
     ...overrides,
   };
 }
@@ -351,8 +351,8 @@ describe('page-builder pipeline integration', () => {
 
       const analystResult: AnalystResult = createMockAnalystResult({
         sceneSummary: 'The protagonist confronted the bartender about the locked room.',
-        beatConcluded: true,
-        beatResolution: 'Trust established',
+        milestoneConcluded: true,
+        milestoneResolution: 'Trust established',
       });
 
       const page = buildPage(
@@ -368,7 +368,7 @@ describe('page-builder pipeline integration', () => {
       expect(page.analystResult!.sceneSummary).toBe(
         'The protagonist confronted the bartender about the locked room.'
       );
-      expect(page.analystResult!.beatConcluded).toBe(true);
+      expect(page.analystResult!.milestoneConcluded).toBe(true);
     });
   });
 
@@ -453,17 +453,17 @@ describe('page-builder pipeline integration', () => {
   });
 
   describe('page structural position fields', () => {
-    it('stores pageActIndex and pageBeatIndex from context', () => {
+    it('stores pageActIndex and pageMilestoneIndex from context', () => {
       const page = buildPage(
         createMockFinalResult(),
         makeOpeningContext({
           pageActIndex: 2,
-          pageBeatIndex: 3,
+          pageMilestoneIndex: 3,
         })
       );
 
       expect(page.pageActIndex).toBe(2);
-      expect(page.pageBeatIndex).toBe(3);
+      expect(page.pageMilestoneIndex).toBe(3);
     });
 
     it('preserves structural position through continuation', () => {
@@ -473,12 +473,12 @@ describe('page-builder pipeline integration', () => {
         createMockFinalResult(),
         makeContinuationContext(2, page1, {
           pageActIndex: 1,
-          pageBeatIndex: 2,
+          pageMilestoneIndex: 2,
         })
       );
 
       expect(page2.pageActIndex).toBe(1);
-      expect(page2.pageBeatIndex).toBe(2);
+      expect(page2.pageMilestoneIndex).toBe(2);
     });
   });
 });

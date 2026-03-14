@@ -38,5 +38,5 @@ export interface PromiseTrackerContext {
   readonly premisePromises: readonly string[];
   readonly fulfilledPremisePromises: readonly string[];
   readonly delayedConsequencesEligible: readonly DelayedConsequence[];
-  readonly activeBeatObligationTag?: string;
+  readonly activeMilestoneObligationTag?: string;
 }

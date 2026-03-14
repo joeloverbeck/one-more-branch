@@ -18,18 +18,18 @@ function createTestStructure(): StoryStructure {
         objective: 'Start',
         stakes: 'Fail to begin',
         entryCondition: 'Quest accepted',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             name: 'First move',
-            description: 'Beat 1',
+            description: 'Milestone 1',
             objective: 'Do first thing',
             role: 'setup',
           },
           {
             id: '1.2',
             name: 'Second move',
-            description: 'Beat 2',
+            description: 'Milestone 2',
             objective: 'Do second thing',
             role: 'escalation',
           },
@@ -41,18 +41,18 @@ function createTestStructure(): StoryStructure {
         objective: 'Escalate',
         stakes: 'Fall behind',
         entryCondition: 'Hero commits',
-        beats: [
+        milestones: [
           {
             id: '2.1',
             name: 'Risk taken',
-            description: 'Beat 1',
+            description: 'Milestone 1',
             objective: 'Take a risk',
             role: 'escalation',
           },
           {
             id: '2.2',
             name: 'Recovery',
-            description: 'Beat 2',
+            description: 'Milestone 2',
             objective: 'Recover losses',
             role: 'turning_point',
           },
@@ -64,18 +64,18 @@ function createTestStructure(): StoryStructure {
         objective: 'Resolve',
         stakes: 'Everything is lost',
         entryCondition: 'Final chance',
-        beats: [
+        milestones: [
           {
             id: '3.1',
             name: 'Final clash',
-            description: 'Beat 1',
+            description: 'Milestone 1',
             objective: 'End conflict',
             role: 'turning_point',
           },
           {
             id: '3.2',
             name: 'Aftermath',
-            description: 'Beat 2',
+            description: 'Milestone 2',
             objective: 'Land ending',
             role: 'resolution',
           },
@@ -139,7 +139,7 @@ describe('StructureVersion', () => {
       expect(version.previousVersionId).toBeNull();
       expect(version.createdAtPageId).toBeNull();
       expect(version.rewriteReason).toBeNull();
-      expect(version.preservedBeatIds).toEqual([]);
+      expect(version.preservedMilestoneIds).toEqual([]);
       expect(version.createdAt).toBeInstanceOf(Date);
       expect(version.createdAt.getTime()).toBeGreaterThanOrEqual(before);
       expect(version.createdAt.getTime()).toBeLessThanOrEqual(after);
@@ -150,13 +150,13 @@ describe('StructureVersion', () => {
     it('creates a rewritten version linked to previous version', () => {
       const previousVersion = createInitialVersionedStructure(createTestStructure());
       const pageId = parsePageId(7);
-      const preservedBeatIds = ['1.1', '1.2'];
+      const preservedMilestoneIds = ['1.1', '1.2'];
       const newStructure = createTestStructure();
       const before = Date.now();
       const version = createRewrittenVersionedStructure(
         previousVersion,
         newStructure,
-        preservedBeatIds,
+        preservedMilestoneIds,
         'Player joined the enemy',
         pageId
       );
@@ -168,25 +168,25 @@ describe('StructureVersion', () => {
       expect(version.previousVersionId).toBe(previousVersion.id);
       expect(version.createdAtPageId).toBe(pageId);
       expect(version.rewriteReason).toBe('Player joined the enemy');
-      expect(version.preservedBeatIds).toEqual(['1.1', '1.2']);
+      expect(version.preservedMilestoneIds).toEqual(['1.1', '1.2']);
       expect(version.createdAt).toBeInstanceOf(Date);
       expect(version.createdAt.getTime()).toBeGreaterThanOrEqual(before);
       expect(version.createdAt.getTime()).toBeLessThanOrEqual(after);
     });
 
-    it('copies preservedBeatIds to avoid external mutation', () => {
+    it('copies preservedMilestoneIds to avoid external mutation', () => {
       const previousVersion = createInitialVersionedStructure(createTestStructure());
-      const preservedBeatIds = ['1.1'];
+      const preservedMilestoneIds = ['1.1'];
       const version = createRewrittenVersionedStructure(
         previousVersion,
         createTestStructure(),
-        preservedBeatIds,
+        preservedMilestoneIds,
         'Rewrite',
         parsePageId(2)
       );
 
-      preservedBeatIds.push('2.1');
-      expect(version.preservedBeatIds).toEqual(['1.1']);
+      preservedMilestoneIds.push('2.1');
+      expect(version.preservedMilestoneIds).toEqual(['1.1']);
     });
   });
 
@@ -203,7 +203,7 @@ describe('StructureVersion', () => {
           previousVersionId: null,
           createdAtPageId: null,
           rewriteReason: null,
-          preservedBeatIds: [],
+          preservedMilestoneIds: [],
           createdAt: new Date(),
         })
       ).toBe(false);
@@ -219,7 +219,7 @@ describe('StructureVersion', () => {
           previousVersionId: null,
           createdAtPageId: null,
           rewriteReason: null,
-          preservedBeatIds: [],
+          preservedMilestoneIds: [],
           createdAt: new Date(),
         })
       ).toBe(false);
@@ -230,7 +230,7 @@ describe('StructureVersion', () => {
           previousVersionId: null,
           createdAtPageId: null,
           rewriteReason: 123,
-          preservedBeatIds: [],
+          preservedMilestoneIds: [],
           createdAt: new Date(),
         })
       ).toBe(false);
@@ -241,7 +241,7 @@ describe('StructureVersion', () => {
           previousVersionId: null,
           createdAtPageId: null,
           rewriteReason: null,
-          preservedBeatIds: ['1.1', 2],
+          preservedMilestoneIds: ['1.1', 2],
           createdAt: new Date(),
         })
       ).toBe(false);

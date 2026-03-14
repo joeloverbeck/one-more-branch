@@ -44,16 +44,16 @@ function buildStructurePositionSection(
 
   const state = context.accumulatedStructureState;
   const actIndex = state.currentActIndex;
-  const beatIndex = state.currentBeatIndex;
+  const milestoneIndex = state.currentMilestoneIndex;
   const act = context.structure.acts[actIndex];
-  const beat = act?.beats[beatIndex];
+  const milestone = act?.milestones[milestoneIndex];
 
   const lines: string[] = ['CURRENT STRUCTURE POSITION:'];
   if (act) {
     lines.push(`Act ${actIndex + 1}/${context.structure.acts.length}: ${act.objective}`);
   }
-  if (beat) {
-    lines.push(`Beat: ${beat.name} (${beat.role}) — ${beat.description}`);
+  if (milestone) {
+    lines.push(`Milestone: ${milestone.name} (${milestone.role}) — ${milestone.description}`);
   }
   lines.push('');
 

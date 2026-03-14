@@ -25,7 +25,7 @@ const EntryConditionReadinessSchema = z
   .catch('NOT_READY')
   .default('NOT_READY');
 
-const BeatAlignmentConfidenceSchema = z
+const MilestoneAlignmentConfidenceSchema = z
   .enum(['LOW', 'MEDIUM', 'HIGH'])
   .catch('LOW')
   .default('LOW');
@@ -33,8 +33,8 @@ const BeatAlignmentConfidenceSchema = z
 const SafeStringArraySchema = z.array(z.string()).catch([]).default([]);
 
 export const StructureEvaluatorResultSchema = z.object({
-  beatConcluded: z.boolean().default(false),
-  beatResolution: z.string().default(''),
+  milestoneConcluded: z.boolean().default(false),
+  milestoneResolution: z.string().default(''),
   sceneMomentum: SceneMomentumSchema,
   objectiveEvidenceStrength: ObjectiveEvidenceStrengthSchema,
   commitmentStrength: CommitmentStrengthSchema,
@@ -46,7 +46,7 @@ export const StructureEvaluatorResultSchema = z.object({
   completionGateFailureReason: z.string().catch('').default(''),
   deviationDetected: z.boolean().default(false),
   deviationReason: z.string().default(''),
-  invalidatedBeatIds: z.array(z.string()).optional().default([]),
+  invalidatedMilestoneIds: z.array(z.string()).optional().default([]),
   spineDeviationDetected: z.boolean().catch(false).default(false),
   spineDeviationReason: z.string().catch('').default(''),
   spineInvalidatedElement: z
@@ -54,9 +54,9 @@ export const StructureEvaluatorResultSchema = z.object({
     .nullable()
     .catch(null)
     .default(null),
-  alignedBeatId: z.string().nullable().catch(null).default(null),
-  beatAlignmentConfidence: BeatAlignmentConfidenceSchema,
-  beatAlignmentReason: z.string().catch('').default(''),
+  alignedMilestoneId: z.string().nullable().catch(null).default(null),
+  milestoneAlignmentConfidence: MilestoneAlignmentConfidenceSchema,
+  milestoneAlignmentReason: z.string().catch('').default(''),
   pacingIssueDetected: z.boolean().default(false),
   pacingIssueReason: z.string().default(''),
   recommendedAction: z.enum(['none', 'nudge', 'rewrite']).catch('none').default('none'),

@@ -16,6 +16,9 @@ import {
 import type { StoryKernel } from '@/models/story-kernel';
 import {
   createConceptSpecFixture,
+  createConceptSeedFixture,
+  createConceptCharacterWorldFixture,
+  createConceptEngineFixture,
   createConceptVerificationFixture,
 } from '../../../fixtures/concept-generator';
 
@@ -85,19 +88,69 @@ function createScoredConcept(index = 1): ScoredConcept {
   };
 }
 
+function expectCompletedStage(
+  event: { stage: string; status: string; attempt: number; durationMs?: number },
+  stage: string,
+): void {
+  expect(event).toMatchObject({ stage, status: 'completed', attempt: 1 });
+  expect(typeof event.durationMs).toBe('number');
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+function createConceptStageDeps() {
+  const generatedSeeds = [createConceptSeedFixture(1), createConceptSeedFixture(2)];
+  const generatedCharacterWorlds = [
+    createConceptCharacterWorldFixture(1),
+    createConceptCharacterWorldFixture(2),
+  ];
+  const generatedEngines = [createConceptEngineFixture(1), createConceptEngineFixture(2)];
+
+  return {
+    generatedSeeds,
+    generatedCharacterWorlds,
+    generatedEngines,
+    generateConceptSeeds: jest.fn().mockResolvedValue({
+      seeds: generatedSeeds,
+      rawResponse: 'raw-seeds',
+    }),
+    generateConceptCharacterWorlds: jest.fn().mockResolvedValue({
+      characterWorlds: generatedCharacterWorlds,
+      rawResponse: 'raw-character-worlds',
+    }),
+    generateConceptEngines: jest.fn().mockResolvedValue({
+      engines: generatedEngines,
+      rawResponse: 'raw-engines',
+    }),
+  };
+}
+
 describe('concept-service', () => {
   describe('generateConcepts', () => {
     it('calls ideator then evaluator then verifier with normalized inputs', async () => {
       const callOrder: string[] = [];
-      const ideationConcepts = [createConceptSpec(1), createConceptSpec(2)];
       const evaluated = [createEvaluatedConcept(1)];
       const scored = [createScoredConcept(1), createScoredConcept(2)];
       const verifications: ConceptVerification[] = [createConceptVerificationFixture(1)];
-      const generateConceptIdeas = jest.fn(() => {
-        callOrder.push('ideator');
+      const deps = createConceptStageDeps();
+      deps.generateConceptSeeds.mockImplementation(() => {
+        callOrder.push('seeder');
         return Promise.resolve({
-          concepts: ideationConcepts,
-          rawResponse: 'raw-ideas',
+          seeds: deps.generatedSeeds,
+          rawResponse: 'raw-seeds',
+        });
+      });
+      deps.generateConceptCharacterWorlds.mockImplementation(() => {
+        callOrder.push('architect');
+        return Promise.resolve({
+          characterWorlds: deps.generatedCharacterWorlds,
+          rawResponse: 'raw-character-worlds',
+        });
+      });
+      deps.generateConceptEngines.mockImplementation(() => {
+        callOrder.push('engineer');
+        return Promise.resolve({
+          engines: deps.generatedEngines,
+          rawResponse: 'raw-engines',
         });
       });
       const evaluateConcepts = jest.fn(() => {
@@ -117,7 +170,7 @@ describe('concept-service', () => {
       });
       const stressTestConcept = jest.fn();
       const service = createConceptService({
-        generateConceptIdeas,
+        ...deps,
         evaluateConcepts,
         stressTestConcept,
         verifyConcepts,
@@ -134,9 +187,32 @@ describe('concept-service', () => {
 
       const result = await service.generateConcepts(input);
 
-      expect(callOrder).toEqual(['ideator', 'evaluator', 'verifier']);
-      expect(generateConceptIdeas).toHaveBeenCalledWith(
+      expect(callOrder).toEqual(['seeder', 'architect', 'engineer', 'evaluator', 'verifier']);
+      expect(deps.generateConceptSeeds).toHaveBeenCalledWith(
         {
+          protagonistDetails: 'a disgraced surgeon',
+          genreVibes: 'noir',
+          moodKeywords: 'tense',
+          contentPreferences: 'no romance',
+          kernel: createStoryKernel(),
+        },
+        'valid-key-12345',
+      );
+      expect(deps.generateConceptCharacterWorlds).toHaveBeenCalledWith(
+        {
+          seeds: deps.generatedSeeds,
+          protagonistDetails: 'a disgraced surgeon',
+          genreVibes: 'noir',
+          moodKeywords: 'tense',
+          contentPreferences: 'no romance',
+          kernel: createStoryKernel(),
+        },
+        'valid-key-12345',
+      );
+      expect(deps.generateConceptEngines).toHaveBeenCalledWith(
+        {
+          seeds: deps.generatedSeeds,
+          characterWorlds: deps.generatedCharacterWorlds,
           protagonistDetails: 'a disgraced surgeon',
           genreVibes: 'noir',
           moodKeywords: 'tense',
@@ -147,7 +223,7 @@ describe('concept-service', () => {
       );
       expect(evaluateConcepts).toHaveBeenCalledWith(
         {
-          concepts: ideationConcepts,
+          concepts: [createConceptSpec(1), createConceptSpec(2)],
           userSeeds: {
             genreVibes: 'noir',
             moodKeywords: 'tense',
@@ -162,7 +238,7 @@ describe('concept-service', () => {
         'valid-key-12345',
       );
       expect(result).toEqual({
-        ideatedConcepts: ideationConcepts,
+        ideatedConcepts: [createConceptSpec(1), createConceptSpec(2)],
         scoredConcepts: scored,
         evaluatedConcepts: evaluated,
         verifications,
@@ -172,7 +248,7 @@ describe('concept-service', () => {
 
     it('rejects all-empty seeds', async () => {
       const service = createConceptService({
-        generateConceptIdeas: jest.fn(),
+        ...createConceptStageDeps(),
         evaluateConcepts: jest.fn(),
         stressTestConcept: jest.fn(),
         verifyConcepts: jest.fn(),
@@ -192,7 +268,7 @@ describe('concept-service', () => {
 
     it('rejects missing apiKey', async () => {
       const service = createConceptService({
-        generateConceptIdeas: jest.fn(),
+        ...createConceptStageDeps(),
         evaluateConcepts: jest.fn(),
         stressTestConcept: jest.fn(),
         verifyConcepts: jest.fn(),
@@ -211,7 +287,8 @@ describe('concept-service', () => {
     it('propagates LLMError from stage calls', async () => {
       const llmError = new LLMError('Rate limited', 'HTTP_429', true);
       const service = createConceptService({
-        generateConceptIdeas: jest.fn().mockRejectedValue(llmError),
+        ...createConceptStageDeps(),
+        generateConceptSeeds: jest.fn().mockRejectedValue(llmError),
         evaluateConcepts: jest.fn(),
         stressTestConcept: jest.fn(),
         verifyConcepts: jest.fn(),
@@ -229,12 +306,10 @@ describe('concept-service', () => {
 
     it('wraps evaluation failures with ideated concepts for partial persistence', async () => {
       const llmError = new LLMError('Scored concept 4 has invalid scores', 'STRUCTURE_PARSE_ERROR', true);
+      const deps = createConceptStageDeps();
       const ideationConcepts = [createConceptSpec(1), createConceptSpec(2)];
       const service = createConceptService({
-        generateConceptIdeas: jest.fn().mockResolvedValue({
-          concepts: ideationConcepts,
-          rawResponse: 'raw-ideas',
-        }),
+        ...deps,
         evaluateConcepts: jest.fn().mockRejectedValue(llmError),
         stressTestConcept: jest.fn(),
         verifyConcepts: jest.fn(),
@@ -259,12 +334,10 @@ describe('concept-service', () => {
     });
 
     it('emits stage callbacks for ideation, evaluation, and verification in order', async () => {
-      const events: Array<{ stage: string; status: string; attempt: number }> = [];
+      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+      const deps = createConceptStageDeps();
       const service = createConceptService({
-        generateConceptIdeas: jest.fn().mockResolvedValue({
-          concepts: [createConceptSpec(1)],
-          rawResponse: 'raw-ideas',
-        }),
+        ...deps,
         evaluateConcepts: jest.fn().mockResolvedValue({
           scoredConcepts: [createScoredConcept(1)],
           evaluatedConcepts: [createEvaluatedConcept(1)],
@@ -283,29 +356,26 @@ describe('concept-service', () => {
         kernel: createStoryKernel(),
         apiKey: 'valid-key-12345',
         onGenerationStage: (event) => {
-          events.push({
-            stage: event.stage,
-            status: event.status,
-            attempt: event.attempt,
-          });
+          events.push(event);
         },
       });
 
-      expect(events).toEqual([
-        { stage: 'SEEDING_CONCEPTS', status: 'started', attempt: 1 },
-        { stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 },
-        { stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 },
-        { stage: 'ENGINEERING_CONCEPTS', status: 'completed', attempt: 1 },
-        { stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 },
-        { stage: 'EVALUATING_CONCEPTS', status: 'completed', attempt: 1 },
-        { stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 },
-        { stage: 'GENERATING_SCENARIOS', status: 'completed', attempt: 1 },
-      ]);
+      expect(events).toHaveLength(10);
+      expect(events[0]).toEqual({ stage: 'SEEDING_CONCEPTS', status: 'started', attempt: 1 });
+      expectCompletedStage(events[1] as { stage: string; status: string; attempt: number; durationMs?: number }, 'SEEDING_CONCEPTS');
+      expect(events[2]).toEqual({ stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 });
+      expectCompletedStage(events[3] as { stage: string; status: string; attempt: number; durationMs?: number }, 'ARCHITECTING_CONCEPTS');
+      expect(events[4]).toEqual({ stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 });
+      expectCompletedStage(events[5] as { stage: string; status: string; attempt: number; durationMs?: number }, 'ENGINEERING_CONCEPTS');
+      expect(events[6]).toEqual({ stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 });
+      expectCompletedStage(events[7] as { stage: string; status: string; attempt: number; durationMs?: number }, 'EVALUATING_CONCEPTS');
+      expect(events[8]).toEqual({ stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 });
+      expectCompletedStage(events[9] as { stage: string; status: string; attempt: number; durationMs?: number }, 'ANALYZING_SPECIFICITY');
     });
 
     it('rejects missing kernel', async () => {
       const service = createConceptService({
-        generateConceptIdeas: jest.fn(),
+        ...createConceptStageDeps(),
         evaluateConcepts: jest.fn(),
         stressTestConcept: jest.fn(),
         verifyConcepts: jest.fn(),
@@ -344,7 +414,7 @@ describe('concept-service', () => {
       };
       const stressTester = jest.fn().mockResolvedValue(output);
       const service = createConceptService({
-        generateConceptIdeas: jest.fn(),
+        ...createConceptStageDeps(),
         evaluateConcepts: jest.fn(),
         stressTestConcept: stressTester,
         verifyConcepts: jest.fn(),
@@ -372,7 +442,7 @@ describe('concept-service', () => {
 
     it('rejects invalid stress-test input payloads', async () => {
       const service = createConceptService({
-        generateConceptIdeas: jest.fn(),
+        ...createConceptStageDeps(),
         evaluateConcepts: jest.fn(),
         stressTestConcept: jest.fn(),
         verifyConcepts: jest.fn(),
@@ -407,7 +477,7 @@ describe('concept-service', () => {
     });
 
     it('emits stress-test stage callbacks in order', async () => {
-      const events: Array<{ stage: string; status: string; attempt: number }> = [];
+      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
       const output: ConceptStressTestResult = {
         hardenedConcept: createConceptSpec(9),
         driftRisks: [],
@@ -427,18 +497,13 @@ describe('concept-service', () => {
         weaknesses: ['Weak urgency'],
         apiKey: 'valid-key-12345',
         onGenerationStage: (event) => {
-          events.push({
-            stage: event.stage,
-            status: event.status,
-            attempt: event.attempt,
-          });
+          events.push(event);
         },
       });
 
-      expect(events).toEqual([
-        { stage: 'STRESS_TESTING_CONCEPT', status: 'started', attempt: 1 },
-        { stage: 'STRESS_TESTING_CONCEPT', status: 'completed', attempt: 1 },
-      ]);
+      expect(events).toHaveLength(2);
+      expect(events[0]).toEqual({ stage: 'STRESS_TESTING_CONCEPT', status: 'started', attempt: 1 });
+      expectCompletedStage(events[1] as { stage: string; status: string; attempt: number; durationMs?: number }, 'STRESS_TESTING_CONCEPT');
     });
   });
 });

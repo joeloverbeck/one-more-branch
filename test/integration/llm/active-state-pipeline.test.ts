@@ -158,7 +158,7 @@ describe('Active state pipeline integration', () => {
   });
 
   it('should populate active state through the writer pipeline', () => {
-    // Writer responses don't include beat/deviation fields or choices
+    // Writer responses don't include milestone/deviation fields or choices
     const writerLlmResponse = {
       narrative:
         'You step into the burning tavern. Flames lick the wooden beams above as the innkeeper screams for help. The heat is unbearable.',

@@ -72,8 +72,8 @@ export type { DeviationContext, DeviationHandlingResult } from './deviation-hand
 // Structure types
 export type { StructureProgressionResult, StructureGenerationResult } from './structure-types';
 
-// Beat utilities
-export { parseBeatIndices, getBeatOrThrow, upsertBeatProgression } from './beat-utils';
+// Milestone utilities
+export { parseMilestoneIndices, getMilestoneOrThrow, upsertMilestoneProgression } from './milestone-utils';
 
 // Structure factory
 export {
@@ -93,7 +93,7 @@ export {
 export {
   extractCompletedBeats,
   buildRewriteContext,
-  getPreservedBeatIds,
+  getPreservedMilestoneIds,
   validatePreservedBeats,
 } from './structure-rewrite-support';
 export { createStructureRewriter, mergePreservedWithRegenerated } from './structure-rewriter';

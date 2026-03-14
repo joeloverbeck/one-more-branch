@@ -6,12 +6,13 @@ import type { StorySpine } from '../models/story-spine.js';
 
 export interface CompletedBeat {
   readonly actIndex: number;
-  readonly beatIndex: number;
-  readonly beatId: string;
+  readonly milestoneIndex: number;
+  readonly milestoneId: string;
   readonly name: string;
   readonly description: string;
   readonly objective: string;
   readonly causalLink: string;
+  readonly exitCondition: string;
   readonly role: string;
   readonly escalationType: string | null;
   readonly secondaryEscalationType: string | null;
@@ -28,12 +29,13 @@ export interface CompletedBeat {
 
 export interface PlannedBeat {
   readonly actIndex: number;
-  readonly beatIndex: number;
-  readonly beatId: string;
+  readonly milestoneIndex: number;
+  readonly milestoneId: string;
   readonly name: string;
   readonly description: string;
   readonly objective: string;
   readonly causalLink: string;
+  readonly exitCondition: string;
   readonly role: string;
   readonly escalationType: string | null;
   readonly secondaryEscalationType: string | null;
@@ -59,7 +61,7 @@ export interface StructureRewriteContext {
   readonly plannedBeats: readonly PlannedBeat[];
   readonly sceneSummary: string;
   readonly currentActIndex: number;
-  readonly currentBeatIndex: number;
+  readonly currentMilestoneIndex: number;
   readonly deviationReason: string;
   readonly originalTheme: string;
   readonly originalOpeningImage: string;
@@ -69,6 +71,6 @@ export interface StructureRewriteContext {
 
 export interface StructureRewriteResult {
   readonly structure: StoryStructure;
-  readonly preservedBeatIds: readonly string[];
+  readonly preservedMilestoneIds: readonly string[];
   readonly rawResponse: string;
 }

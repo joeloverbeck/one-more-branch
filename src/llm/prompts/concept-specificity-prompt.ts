@@ -11,7 +11,7 @@ const SPECIFICITY_DIRECTIVES = `SPECIFICITY DIRECTIVES:
 - For each concept, produce evidence that the concept is irreducibly unique — or expose that it collapses into genre.
 - The signature scenario must describe the single most iconic interactive decision moment — where the player's choice ONLY exists because of this concept's premise (both its conflict engine and its world-specific elements).
 - logline compression test: assess whether the full concept compresses into a compelling <=27-word logline. Set loglineCompressible and provide the compressed logline text in logline.
-- premise promises are audience expectations: list 3-5 specific scenarios this premise promises the reader will experience. These are not structure beats.
+- premise promises are audience expectations: list 3-5 specific scenarios this premise promises the reader will experience. These are not structure milestones.
 - The inevitability statement captures what kind of story MUST happen given this premise — not what could happen, but what is forced by internal logic.
 - The load-bearing check is a negative test: remove the conflict engine (genreSubversion + coreFlaw + coreConflictLoop) and determine whether the story collapses into generic genre.`;
 
@@ -94,7 +94,7 @@ export function buildConceptSpecificityPrompt(context: ConceptVerifierContext): 
   - signatureScenario: string (the single most iconic interactive decision moment unique to this concept)
   - loglineCompressible: boolean (true iff concept can compress to a compelling <=27-word logline)
   - logline: string (the compressed logline itself, <=27 words)
-  - premisePromises: string[] (exactly 3-5 specific audience expectations; not beat names)
+  - premisePromises: string[] (exactly 3-5 specific audience expectations; not milestone names)
   - inevitabilityStatement: string (what kind of story MUST happen given the premise's internal logic)
   - loadBearingCheck: { passes: boolean, reasoning: string, genericCollapse: string }
     - passes: true if the concept is genuinely load-bearing (removing differentiator DOES collapse it)

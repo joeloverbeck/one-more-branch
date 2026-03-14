@@ -15,12 +15,17 @@ import {
 export interface ActDisplayInfo {
   readonly actNumber: number;
   readonly actName: string;
-  readonly beatId: string;
-  readonly beatName: string;
+  readonly milestoneId: string;
+  readonly milestoneName: string;
   readonly displayString: string;
   readonly actObjective: string | null;
   readonly actStakes: string | null;
-  readonly beatObjective: string | null;
+  readonly milestoneObjective: string | null;
+  readonly actQuestion: string | null;
+  readonly exitCondition: string | null;
+  readonly exitReversal: string | null;
+  readonly promiseTargets: readonly string[];
+  readonly obligationTargets: readonly string[];
 }
 
 export interface OpenThreadPanelRow {
@@ -115,6 +120,14 @@ function extractActNumber(actId: string, fallbackIndex: number): number {
   return match?.[1] ? parseInt(match[1], 10) : fallbackIndex + 1;
 }
 
+function normalizeDisplayText(value: string | null | undefined): string | null {
+  if (typeof value !== 'string' || value.length === 0) {
+    return null;
+  }
+
+  return value;
+}
+
 export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | null {
   if (!page.structureVersionId) return null;
 
@@ -125,24 +138,29 @@ export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | nu
   if (!structureVersion) return null;
 
   const displayActIndex = page.pageActIndex;
-  const displayBeatIndex = page.pageBeatIndex;
+  const displayMilestoneIndex = page.pageMilestoneIndex;
 
   const currentAct: StoryAct | undefined = structureVersion.structure.acts[displayActIndex];
   if (!currentAct) return null;
 
   const actNumber = extractActNumber(currentAct.id, displayActIndex);
-  const currentBeat = currentAct.beats[displayBeatIndex];
-  if (!currentBeat) return null;
+  const currentMilestone = currentAct.milestones[displayMilestoneIndex];
+  if (!currentMilestone) return null;
 
   return {
     actNumber,
     actName: currentAct.name,
-    beatId: currentBeat.id,
-    beatName: currentBeat.name,
-    displayString: `Act ${actNumber}: ${currentAct.name} - Beat ${currentBeat.id}: ${currentBeat.name}`,
-    actObjective: currentAct.objective || null,
-    actStakes: currentAct.stakes || null,
-    beatObjective: currentBeat.objective || null,
+    milestoneId: currentMilestone.id,
+    milestoneName: currentMilestone.name,
+    displayString: `Act ${actNumber}: ${currentAct.name} - Milestone ${currentMilestone.id}: ${currentMilestone.name}`,
+    actObjective: normalizeDisplayText(currentAct.objective),
+    actStakes: normalizeDisplayText(currentAct.stakes),
+    milestoneObjective: normalizeDisplayText(currentMilestone.objective),
+    actQuestion: normalizeDisplayText(currentAct.actQuestion),
+    exitCondition: normalizeDisplayText(currentMilestone.exitCondition),
+    exitReversal: normalizeDisplayText(currentAct.exitReversal),
+    promiseTargets: currentAct.promiseTargets,
+    obligationTargets: currentAct.obligationTargets,
   };
 }
 
@@ -416,30 +434,30 @@ export function getKnowledgeStatePanelData(
 }
 
 export interface MilestoneInfo {
-  readonly type: 'beat' | 'act';
-  readonly beatName: string;
+  readonly type: 'milestone' | 'act';
+  readonly milestoneName: string;
   readonly actName?: string;
   readonly actNumber?: number;
 }
 
-function isLastBeatInAct(structure: StoryStructure, beatId: string): boolean {
+function isLastMilestoneInAct(structure: StoryStructure, milestoneId: string): boolean {
   for (const act of structure.acts) {
-    const lastBeat = act.beats[act.beats.length - 1];
-    if (lastBeat?.id === beatId) {
+    const lastBeat = act.milestones[act.milestones.length - 1];
+    if (lastBeat?.id === milestoneId) {
       return true;
     }
   }
   return false;
 }
 
-function findActForBeat(
+function findActForMilestone(
   structure: StoryStructure,
-  beatId: string
+  milestoneId: string
 ): { act: StoryAct; actIndex: number } | null {
   for (let actIndex = 0; actIndex < structure.acts.length; actIndex++) {
     const act = structure.acts[actIndex]!;
-    for (const beat of act.beats) {
-      if (beat.id === beatId) {
+    for (const milestone of act.milestones) {
+      if (milestone.id === milestoneId) {
         return { act, actIndex };
       }
     }
@@ -448,7 +466,7 @@ function findActForBeat(
 }
 
 export function getMilestoneInfo(story: Story, page: Page): MilestoneInfo | null {
-  if (!page.analystResult?.beatConcluded) {
+  if (!page.analystResult?.milestoneConcluded) {
     return null;
   }
 
@@ -461,37 +479,37 @@ export function getMilestoneInfo(story: Story, page: Page): MilestoneInfo | null
     return null;
   }
 
-  const progressions = page.accumulatedStructureState.beatProgressions;
-  let concludedBeatId: string | null = null;
+  const progressions = page.accumulatedStructureState.milestoneProgressions;
+  let concludedMilestoneId: string | null = null;
   for (let i = progressions.length - 1; i >= 0; i--) {
     if (progressions[i]!.status === 'concluded') {
-      concludedBeatId = progressions[i]!.beatId;
+      concludedMilestoneId = progressions[i]!.milestoneId;
       break;
     }
   }
 
-  if (!concludedBeatId) {
+  if (!concludedMilestoneId) {
     return null;
   }
 
   const structure = structureVersion.structure;
-  let beatName = concludedBeatId;
+  let milestoneName = concludedMilestoneId;
   for (const act of structure.acts) {
-    for (const beat of act.beats) {
-      if (beat.id === concludedBeatId) {
-        beatName = beat.name;
+    for (const milestone of act.milestones) {
+      if (milestone.id === concludedMilestoneId) {
+        milestoneName = milestone.name;
         break;
       }
     }
   }
 
-  if (isLastBeatInAct(structure, concludedBeatId)) {
-    const actInfo = findActForBeat(structure, concludedBeatId);
+  if (isLastMilestoneInAct(structure, concludedMilestoneId)) {
+    const actInfo = findActForMilestone(structure, concludedMilestoneId);
     if (actInfo) {
       const actNumber = extractActNumber(actInfo.act.id, actInfo.actIndex);
       return {
         type: 'act',
-        beatName,
+        milestoneName,
         actName: actInfo.act.name,
         actNumber,
       };
@@ -499,7 +517,7 @@ export function getMilestoneInfo(story: Story, page: Page): MilestoneInfo | null
   }
 
   return {
-    type: 'beat',
-    beatName,
+    type: 'milestone',
+    milestoneName,
   };
 }

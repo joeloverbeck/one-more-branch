@@ -33,8 +33,8 @@ export function validateStructureEvaluatorResponse(
   const completionGateSatisfied = validated.completionGateSatisfied;
 
   return {
-    beatConcluded: validated.beatConcluded && completionGateSatisfied,
-    beatResolution: validated.beatResolution.trim(),
+    milestoneConcluded: validated.milestoneConcluded && completionGateSatisfied,
+    milestoneResolution: validated.milestoneResolution.trim(),
     sceneMomentum: validated.sceneMomentum,
     objectiveEvidenceStrength: validated.objectiveEvidenceStrength,
     commitmentStrength: validated.commitmentStrength,
@@ -46,19 +46,19 @@ export function validateStructureEvaluatorResponse(
     completionGateFailureReason: validated.completionGateFailureReason.trim(),
     deviationDetected: validated.deviationDetected,
     deviationReason: validated.deviationReason.trim(),
-    invalidatedBeatIds: validated.invalidatedBeatIds
+    invalidatedMilestoneIds: validated.invalidatedMilestoneIds
       .map((id: string) => id.trim())
       .filter((id: string) => BEAT_ID_PATTERN.test(id)),
     spineDeviationDetected: validated.spineDeviationDetected,
     spineDeviationReason: validated.spineDeviationReason.trim(),
     spineInvalidatedElement: validated.spineInvalidatedElement,
-    alignedBeatId: validated.alignedBeatId
-      ? BEAT_ID_PATTERN.test(validated.alignedBeatId.trim())
-        ? validated.alignedBeatId.trim()
+    alignedMilestoneId: validated.alignedMilestoneId
+      ? BEAT_ID_PATTERN.test(validated.alignedMilestoneId.trim())
+        ? validated.alignedMilestoneId.trim()
         : null
       : null,
-    beatAlignmentConfidence: validated.beatAlignmentConfidence,
-    beatAlignmentReason: validated.beatAlignmentReason.trim(),
+    milestoneAlignmentConfidence: validated.milestoneAlignmentConfidence,
+    milestoneAlignmentReason: validated.milestoneAlignmentReason.trim(),
     pacingIssueDetected: validated.pacingIssueDetected,
     pacingIssueReason: validated.pacingIssueReason.trim(),
     recommendedAction: validated.recommendedAction,

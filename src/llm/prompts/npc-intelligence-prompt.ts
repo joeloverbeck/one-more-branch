@@ -7,7 +7,7 @@ import { buildGenreConventionsSection } from './sections/shared/genre-convention
 const NPC_INTELLIGENCE_ROLE = `You are an NPC intelligence evaluator for interactive fiction. Your SINGLE responsibility is to evaluate NPC behavioral consistency, relationship shifts, knowledge asymmetry, and dramatic irony opportunities.
 
 You do NOT evaluate tone, thematic charge, narrative focus, or prose quality. Those are handled by another evaluator.
-You do NOT evaluate story structure, beat completion, deviation, pacing, or narrative promises. Those are handled by other evaluators.`;
+You do NOT evaluate story structure, milestone completion, deviation, pacing, or narrative promises. Those are handled by other evaluators.`;
 
 const NPC_INTELLIGENCE_RULES = `NPC AGENDA COHERENCE:
 - If NPC agendas are provided, evaluate whether NPC behavior in the scene aligns with their stated goals and fears.

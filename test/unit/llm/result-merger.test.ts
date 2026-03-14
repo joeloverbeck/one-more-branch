@@ -21,8 +21,8 @@ describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
       ],
     });
     const analyst = createMockAnalystResult({
-      beatConcluded: true,
-      beatResolution: 'The scene stabilizes',
+      milestoneConcluded: true,
+      milestoneResolution: 'The scene stabilizes',
     });
     const choices = [
       { text: 'Go left', choiceType: ChoiceType.INTERVENE, primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE },
@@ -45,8 +45,8 @@ describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
         threatType: ThreatType.ENVIRONMENTAL,
       },
     ]);
-    expect(result.beatConcluded).toBe(true);
-    expect(result.beatResolution).toBe('The scene stabilizes');
+    expect(result.milestoneConcluded).toBe(true);
+    expect(result.milestoneResolution).toBe('The scene stabilizes');
   });
 
   it('uses writer rawResponse and preserves reconciliation diagnostics', () => {
@@ -76,7 +76,7 @@ describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
       ...createMockAnalystResult({
         deviationDetected: true,
         deviationReason: 'Plan no longer matches events.',
-        invalidatedBeatIds: ['1.2'],
+        invalidatedMilestoneIds: ['1.2'],
       }),
       sceneSummary: 'Analyst summary should be ignored.',
     } as unknown as AnalystResult;
@@ -90,7 +90,7 @@ describe('mergePageWriterAndReconciledStateWithAnalystResults', () => {
     expect(result.deviation).toEqual({
       detected: true,
       reason: 'Plan no longer matches events.',
-      invalidatedBeatIds: ['1.2'],
+      invalidatedMilestoneIds: ['1.2'],
       sceneSummary: 'Writer summary is canonical.',
     });
   });

@@ -4,7 +4,7 @@ import * as path from 'path';
 import {
   AccumulatedStructureState,
   addStructureVersion,
-  createBeatDeviation,
+  createMilestoneDeviation,
   createInitialVersionedStructure,
   createRewrittenVersionedStructure,
   createStory,
@@ -27,7 +27,7 @@ function createLargeStructure(): StoryStructure {
         objective: 'Set up conflict',
         stakes: 'Home is at risk',
         entryCondition: 'Story start',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             description: 'Ordinary world',
@@ -60,7 +60,7 @@ function createLargeStructure(): StoryStructure {
         objective: 'Escalate conflict',
         stakes: 'Allies can be lost',
         entryCondition: 'New world entered',
-        beats: [
+        milestones: [
           {
             id: '2.1',
             description: 'Tests and allies',
@@ -93,7 +93,7 @@ function createLargeStructure(): StoryStructure {
         objective: 'Resolve conflict',
         stakes: 'Future of the realm',
         entryCondition: 'Final approach',
-        beats: [
+        milestones: [
           {
             id: '3.1',
             description: 'Final confrontation',
@@ -129,12 +129,12 @@ function createLargeStructure(): StoryStructure {
 function createStateWithProgress(): AccumulatedStructureState {
   return {
     currentActIndex: 1,
-    currentBeatIndex: 1,
-    beatProgressions: [
-      { beatId: '1.1', status: 'concluded' as const, resolution: 'Hero accepted the call' },
-      { beatId: '1.2', status: 'concluded' as const, resolution: 'Hero left home' },
-      { beatId: '2.1', status: 'concluded' as const, resolution: 'Alliance formed' },
-      { beatId: '2.2', status: 'active' as const },
+    currentMilestoneIndex: 1,
+    milestoneProgressions: [
+      { milestoneId: '1.1', status: 'concluded' as const, resolution: 'Hero accepted the call' },
+      { milestoneId: '1.2', status: 'concluded' as const, resolution: 'Hero left home' },
+      { milestoneId: '2.1', status: 'concluded' as const, resolution: 'Alliance formed' },
+      { milestoneId: '2.2', status: 'active' as const },
     ],
   };
 }
@@ -245,7 +245,7 @@ describe('Structure Rewriting Performance', () => {
   });
 
   describe('rewrite helper operations', () => {
-    it('extracts completed beats, builds context, and merges with low latency', () => {
+    it('extracts completed milestones, builds context, and merges with low latency', () => {
       const story = createStory({
         title: 'Helper Performance Story',
         characterConcept: 'An archivist-hero',
@@ -255,7 +255,7 @@ describe('Structure Rewriting Performance', () => {
       const structure = createLargeStructure();
       const version = createInitialVersionedStructure(structure);
       const state = createStateWithProgress();
-      const deviation = createBeatDeviation(
+      const deviation = createMilestoneDeviation(
         'The hero allied with the former enemy',
         ['2.2', '2.3', '2.4', '3.1', '3.2', '3.3', '3.4'],
         'Alliance politics now drive the conflict'
@@ -284,7 +284,7 @@ describe('Structure Rewriting Performance', () => {
       expect(contextAvgMs).toBeLessThan(0.5);
       expect(mergeAvgMs).toBeLessThan(0.75);
       expect(merged.acts).toHaveLength(3);
-      expect(merged.acts.every((act) => act.beats.length > 0)).toBe(true);
+      expect(merged.acts.every((act) => act.milestones.length > 0)).toBe(true);
     });
   });
 

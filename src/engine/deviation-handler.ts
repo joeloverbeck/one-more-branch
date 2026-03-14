@@ -1,7 +1,7 @@
 import {
   AccumulatedStructureState,
   addStructureVersion,
-  BeatDeviation,
+  MilestoneDeviation,
   createRewrittenVersionedStructure,
   isDeviation,
   PageId,
@@ -20,7 +20,7 @@ export interface DeviationContext {
   readonly story: Story;
   readonly currentVersion: VersionedStoryStructure;
   readonly parentStructureState: AccumulatedStructureState;
-  readonly deviation: BeatDeviation;
+  readonly deviation: MilestoneDeviation;
   readonly newPageId: PageId;
 }
 
@@ -70,7 +70,7 @@ export async function handleDeviation(
   const newVersion = createRewrittenVersionedStructure(
     context.currentVersion,
     rewriteResult.structure,
-    rewriteResult.preservedBeatIds,
+    rewriteResult.preservedMilestoneIds,
     context.deviation.reason,
     context.newPageId
   );
@@ -80,7 +80,7 @@ export async function handleDeviation(
   const deviationInfo: DeviationInfo = {
     detected: true,
     reason: context.deviation.reason,
-    beatsInvalidated: context.deviation.invalidatedBeatIds.length,
+    milestonesInvalidated: context.deviation.invalidatedMilestoneIds.length,
   };
 
   return {

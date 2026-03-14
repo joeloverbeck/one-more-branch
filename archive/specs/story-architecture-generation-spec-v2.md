@@ -2,13 +2,17 @@
 
 ## Status
 
-**Status**: IN PROGRESS
+**Status**: COMPLETED
 
 ## Decision
 
 Replace the current one-shot `Structure` generation with a **3-call pipeline** (Enriched Split). Rename `beat` to `milestone` throughout the codebase. Add 7 new high-signal fields that directly address the observed weaknesses of generic milestones and insignificant act breaks.
 
 Do **not** implement the full 6-stage pipeline from the ChatGPT review. Stages 0 (Architecture Brief), 4 (Branch Topology), and 5 (NPC Agenda Seeder) are overengineered for current needs. The core insight is valid: **macro architecture should be designed before milestone details**.
+
+Rename status note:
+- The `beat` -> `milestone` vocabulary migration has already been completed as a single end-to-end change under archived ticket `STOARCGEN-001`.
+- The earlier staged rename plan was rejected because it would have left mixed terminology and temporary compatibility debt in the codebase.
 
 ## Problem Statement
 
@@ -71,6 +75,7 @@ Functions to rename:
 - `upsertBeatProgression()` -> `upsertMilestoneProgression()`
 
 All prompt text, schema keys, parser functions, and test files follow the same rename pattern. The `StoryAct.beats` property becomes `StoryAct.milestones`.
+No backward-compatibility aliases or dual-read persistence mappings should be introduced for this rename.
 
 ---
 
@@ -281,19 +286,18 @@ export interface GeneratedAct {
 }
 ```
 
-### Persistence Backward Compatibility
+### Persistence Direction
 
-The `parseEntity` hook on page and story deserialization handles backward compatibility:
-- Missing `exitCondition` on milestones defaults to `''`
-- Missing `actQuestion` on acts defaults to `''`
-- Missing `exitReversal` on acts defaults to `''`
-- Missing `promiseTargets`/`obligationTargets` on acts defaults to `[]`
-- Missing `anchorMoments` on structure gets a sensible default
-- `beats` key in serialized JSON translates to `milestones` on load
-- `currentBeatIndex` translates to `currentMilestoneIndex`
-- `pagesInCurrentBeat` translates to `pagesInCurrentMilestone`
-- `beatProgressions` translates to `milestoneProgressions`
-- `invalidatedBeatIds` translates to `invalidatedMilestoneIds`
+For the completed rename, persistence now uses canonical `milestone` terminology only.
+
+For the future new fields in this spec:
+- Missing `exitCondition` on milestones may default to `''` only if this field is introduced in a separate migration.
+- Missing `actQuestion` on acts may default to `''` only if this field is introduced in a separate migration.
+- Missing `exitReversal` on acts may default to `''` only if this field is introduced in a separate migration.
+- Missing `promiseTargets`/`obligationTargets` on acts may default to `[]` only if this field is introduced in a separate migration.
+- Missing `anchorMoments` on structure may get a sensible default only if this field is introduced in a separate migration.
+
+Do not reintroduce `beat`-named persistence keys or translation hooks as part of later work on this spec.
 
 ---
 
@@ -417,11 +421,11 @@ Currently shows: Theme, Premise, Pacing Budget. **Add**:
 - `src/llm/generation-pipeline-types.ts` — rename
 
 ### Persistence
-- `src/persistence/page-serializer.ts` — handle new fields + backward compat
+- `src/persistence/page-serializer.ts` — handle new fields
 - `src/persistence/page-serializer-types.ts` — rename
 - `src/persistence/story-serializer.ts` — rename + new fields
 - `src/persistence/story-serializer-types.ts` — rename
-- `src/persistence/converters/structure-state-converter.ts` — rename + backward compat
+- `src/persistence/converters/structure-state-converter.ts` — rename
 - `src/persistence/converters/analyst-result-converter.ts` — rename
 
 ### UI
@@ -502,3 +506,20 @@ A structure is valid only if:
 6. **Lint**: `npm run lint` passes
 7. **Coverage**: `npm run test:coverage` maintains 70% thresholds
 8. **Manual test**: Create a story and verify the structure has distinct act questions, meaningful exit reversals, concrete exit conditions, and specific (non-generic) milestone hooks
+
+## Outcome
+
+- Completion date: 2026-03-14
+- What was actually changed:
+  - Landed the macro-architecture, milestone-generation, and validation split with the new structure fields (`anchorMoments`, `actQuestion`, `exitReversal`, `promiseTargets`, `obligationTargets`, `exitCondition`)
+  - Completed the downstream consumer and UI surfaces needed to expose those fields in the play page, briefing page, and analyst insights modal
+  - Preserved canonical `milestone` terminology without reintroducing `beat` aliases
+- Deviations from the original plan:
+  - The compact act indicator was preserved; richer structure context was added to the existing expandable details panel and analyst insights modal instead of turning the indicator into a denser multi-line component
+  - The briefing route remained co-located in `src/server/routes/play.ts` rather than moving to a separate route module
+- Verification results:
+  - `npm run concat:js`
+  - `npm run test:unit -- --coverage=false --runTestsByPath test/unit/server/utils/view-helpers.test.ts test/unit/server/routes/play.test.ts test/unit/server/views/play.test.ts test/unit/server/views/briefing.test.ts`
+  - `npm run test:client`
+  - `npm run typecheck`
+  - `npm run lint`

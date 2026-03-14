@@ -51,6 +51,8 @@ export type { StructureGenerationResult } from '../models/structure-generation.j
 
 export { generateStorySpines } from './spine-generator.js';
 export type { SpineOption, SpineGenerationResult } from './spine-generator.js';
+export { rewriteSpine } from './spine-rewriter.js';
+export type { SpineRewriteResult } from './spine-rewriter.js';
 
 export {
   WRITER_GENERATION_SCHEMA,

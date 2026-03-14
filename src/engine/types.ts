@@ -32,7 +32,7 @@ export interface PrepareStoryResult {
 export interface DeviationInfo {
   readonly detected: boolean;
   readonly reason: string;
-  readonly beatsInvalidated: number;
+  readonly milestonesInvalidated: number;
   readonly spineRewritten?: boolean;
   readonly spineInvalidatedElement?: string;
 }

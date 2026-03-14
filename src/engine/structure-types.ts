@@ -7,7 +7,7 @@ import type { StructureGenerationResult } from '../models/structure-generation';
 export interface StructureProgressionResult {
   updatedState: AccumulatedStructureState;
   actAdvanced: boolean;
-  beatAdvanced: boolean;
+  milestoneAdvanced: boolean;
   isComplete: boolean;
 }
 

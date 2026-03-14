@@ -101,35 +101,55 @@ export type {
 export { normalizeCharacterName, normalizeForComparison } from './normalize.js';
 
 export {
+  AnchorMomentPlacement,
+  MidpointAnchorMoment,
+  AnchorMoments,
   ApproachVector,
-  BeatStatus,
-  BeatRole,
+  MilestoneStatus,
+  MilestoneRole,
   ESCALATION_TYPES,
   CRISIS_TYPES,
   APPROACH_VECTORS,
   EscalationType,
   CrisisType,
   PacingBudget,
-  StoryBeat,
+  StoryMilestone,
   StoryAct,
   StoryStructure,
-  BeatProgression,
+  MilestoneProgression,
   AccumulatedStructureState,
-  BeatDeviation,
+  MilestoneDeviation,
   NoDeviation,
   DeviationResult,
+  createDefaultAnchorMoments,
   createEmptyAccumulatedStructureState,
   getCurrentAct,
-  getCurrentBeat,
-  getBeatProgression,
-  isLastBeatOfAct,
+  getCurrentMilestone,
+  getMilestoneProgression,
+  isLastMilestoneOfAct,
   isLastAct,
   isDeviation,
   isNoDeviation,
-  createBeatDeviation,
+  createMilestoneDeviation,
   createNoDeviation,
   validateDeviationTargets,
 } from './story-arc';
+
+export {
+  materializeStoryMilestone,
+  normalizeAnchorMoments,
+  normalizeGeneratedMilestoneFields,
+  normalizeStructureActFields,
+  parseApproachVectors,
+  parseCrisisType,
+  parseEscalationType,
+  parseGapMagnitude,
+  parseMidpointType,
+  parseMilestoneRole,
+  parseObligatorySceneTag,
+  parseSetpieceSourceIndex,
+  parseStringArray,
+} from './story-structure-normalization';
 
 export {
   StructureVersionId,
@@ -142,8 +162,10 @@ export {
   isVersionedStoryStructure,
 } from './structure-version';
 export type {
-  GeneratedBeat,
+  GeneratedMilestone,
   GeneratedAct,
+  MacroAct,
+  MacroArchitectureResult,
   StructureGenerationResult,
 } from './structure-generation';
 

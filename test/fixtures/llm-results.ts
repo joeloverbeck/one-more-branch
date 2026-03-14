@@ -37,11 +37,11 @@ export function createMockProtagonistAffect(
  */
 export function createMockAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResult {
   return {
-    beatConcluded: false,
-    beatResolution: '',
+    milestoneConcluded: false,
+    milestoneResolution: '',
     deviationDetected: false,
     deviationReason: '',
-    invalidatedBeatIds: [],
+    invalidatedMilestoneIds: [],
     pacingIssueDetected: false,
     pacingIssueReason: '',
     recommendedAction: 'none',
@@ -67,9 +67,9 @@ export function createMockAnalystResult(overrides: Partial<AnalystResult> = {}):
     spineDeviationDetected: false,
     spineDeviationReason: '',
     spineInvalidatedElement: null,
-    alignedBeatId: null,
-    beatAlignmentConfidence: 'LOW',
-    beatAlignmentReason: '',
+    alignedMilestoneId: null,
+    milestoneAlignmentConfidence: 'LOW',
+    milestoneAlignmentReason: '',
     thematicCharge: 'AMBIGUOUS',
     narrativeFocus: 'BALANCED',
     thematicChargeDescription: '',
@@ -150,7 +150,7 @@ export function createMockFinalResult(
 }
 
 /**
- * Creates a mock StoryStructure with a single act and two beats.
+ * Creates a mock StoryStructure with a single act and two milestones.
  */
 export function createMockStoryStructure(
   overrides: Partial<StoryStructure> = {}
@@ -163,7 +163,7 @@ export function createMockStoryStructure(
         objective: 'Begin the journey',
         stakes: 'Lose the opportunity forever',
         entryCondition: 'The call to action arrives',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             name: 'The call',

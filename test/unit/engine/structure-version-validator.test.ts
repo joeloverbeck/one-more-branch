@@ -22,15 +22,15 @@ function createTestStructure(): StoryStructure {
     acts: [
       {
         title: 'Act 1',
-        beats: [{ id: '1.1', description: 'Opening', objective: 'Start' }],
+        milestones: [{ id: '1.1', description: 'Opening', objective: 'Start' }],
       },
       {
         title: 'Act 2',
-        beats: [{ id: '2.1', description: 'Rising', objective: 'Build' }],
+        milestones: [{ id: '2.1', description: 'Rising', objective: 'Build' }],
       },
       {
         title: 'Act 3',
-        beats: [{ id: '3.1', description: 'Resolution', objective: 'End' }],
+        milestones: [{ id: '3.1', description: 'Resolution', objective: 'End' }],
       },
     ],
   };

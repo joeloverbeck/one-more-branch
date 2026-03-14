@@ -105,6 +105,16 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/lorekeeper-prompt.md',
   },
   {
+    promptType: 'macroArchitecture',
+    sourcePath: 'src/llm/prompts/macro-architecture-prompt.ts',
+    docPath: 'prompts/macro-architecture-prompt.md',
+  },
+  {
+    promptType: 'milestoneGeneration',
+    sourcePath: 'src/llm/prompts/milestone-generation-prompt.ts',
+    docPath: 'prompts/milestone-generation-prompt.md',
+  },
+  {
     promptType: 'structure',
     sourcePath: 'src/llm/prompts/structure-prompt.ts',
     docPath: 'prompts/structure-prompt.md',
@@ -113,6 +123,11 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     promptType: 'structureRewrite',
     sourcePath: 'src/llm/prompts/structure-rewrite-prompt.ts',
     docPath: 'prompts/structure-rewrite-prompt.md',
+  },
+  {
+    promptType: 'structureRepair',
+    sourcePath: 'src/llm/prompts/structure-repair-prompt.ts',
+    docPath: 'prompts/structure-repair-prompt.md',
   },
   {
     promptType: 'spine',

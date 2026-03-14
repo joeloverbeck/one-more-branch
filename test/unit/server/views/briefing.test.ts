@@ -20,4 +20,13 @@ describe('briefing page template', () => {
     expect(template).toContain('id="api-key-form"');
     expect(template).toContain('id="cancel-api-key"');
   });
+
+  it('contains key turning points section for anchor moments', () => {
+    const template = fs.readFileSync(briefingPath, 'utf8');
+
+    expect(template).toContain('Key Turning Points');
+    expect(template).toContain('Inciting Incident: Act');
+    expect(template).toContain('Midpoint: Act');
+    expect(template).toContain('Signature Scenario: Act');
+  });
 });

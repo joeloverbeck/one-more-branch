@@ -23,7 +23,7 @@ function createTestStructure(): StoryStructure {
         objective: 'Find the clue',
         stakes: 'Lose the trail forever',
         entryCondition: 'Hero accepts the quest',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             name: 'Inciting alarm',
@@ -49,7 +49,7 @@ function createTestStructure(): StoryStructure {
         objective: 'Confront the enemy',
         stakes: 'Allies are at risk',
         entryCondition: 'Trail leads to enemy base',
-        beats: [
+        milestones: [
           {
             id: '2.1',
             name: 'Fortress breach',
@@ -75,7 +75,7 @@ function createTestStructure(): StoryStructure {
         objective: 'Resolve the conflict',
         stakes: 'The world falls into chaos',
         entryCondition: 'Enemy launches final ritual',
-        beats: [
+        milestones: [
           {
             id: '3.1',
             name: 'Ritual collapse',

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import type { GenerationStage, GenerationStageCallback } from '../engine/types.js';
+import { runGenerationStage } from '../engine/generation-pipeline-helpers.js';
+import type { GenerationStageCallback } from '../engine/types.js';
 import type { SavedWorldbuilding } from '../models/saved-worldbuilding.js';
 import type { WorldbuildingPipelineInputs } from '../models/worldbuilding-pipeline-types.js';
 import {
@@ -13,13 +14,6 @@ import { generateWorldSeed } from '../llm/worldbuilding-seed-generation.js';
 import { generateWorldElaboration } from '../llm/worldbuilding-elaboration-generation.js';
 import { decomposeWorldbuilding } from '../llm/worldbuilding-decomposer.js';
 import { canonicalizeDecomposedWorld } from './worldbuilding-canonicalizer.js';
-
-function emitStage(
-  onStage: GenerationStageCallback | undefined,
-  stage: GenerationStage,
-): void {
-  onStage?.({ stage, status: 'started', attempt: 1 });
-}
 
 export async function createWorldbuilding(
   name: string,
@@ -54,26 +48,26 @@ export async function runWorldSeedGeneration(
   const wb = await loadWorldbuilding(id);
   if (!wb) throw new Error(`Worldbuilding not found: ${id}`);
 
-  emitStage(onStage, 'GENERATING_WORLD_SEED');
+  return runGenerationStage(onStage, 'GENERATING_WORLD_SEED', async () => {
+    const result = await generateWorldSeed(
+      {
+        userNotes: wb.inputs.userNotes,
+        contentPreferences: wb.inputs.contentPreferences,
+        startingSituation: wb.inputs.startingSituation,
+        tone: wb.inputs.tone,
+      },
+      apiKey,
+    );
 
-  const result = await generateWorldSeed(
-    {
-      userNotes: wb.inputs.userNotes,
-      contentPreferences: wb.inputs.contentPreferences,
-      startingSituation: wb.inputs.startingSituation,
-      tone: wb.inputs.tone,
-    },
-    apiKey,
-  );
-
-  return updateWorldbuilding(id, (existing) => ({
-    ...existing,
-    worldSeed: result.worldSeed,
-    rawWorldMarkdown: null,
-    decomposedWorld: null,
-    completedStages: [1],
-    updatedAt: new Date().toISOString(),
-  }));
+    return updateWorldbuilding(id, (existing) => ({
+      ...existing,
+      worldSeed: result.worldSeed,
+      rawWorldMarkdown: null,
+      decomposedWorld: null,
+      completedStages: [1],
+      updatedAt: new Date().toISOString(),
+    }));
+  });
 }
 
 export async function runWorldElaborationGeneration(
@@ -84,27 +78,28 @@ export async function runWorldElaborationGeneration(
   const wb = await loadWorldbuilding(id);
   if (!wb) throw new Error(`Worldbuilding not found: ${id}`);
   if (!wb.worldSeed) throw new Error('World seed must be generated before elaboration');
+  const worldSeed = wb.worldSeed;
 
-  emitStage(onStage, 'ELABORATING_WORLD');
+  return runGenerationStage(onStage, 'ELABORATING_WORLD', async () => {
+    const result = await generateWorldElaboration(
+      {
+        worldSeed,
+        userNotes: wb.inputs.userNotes,
+        tone: wb.inputs.tone,
+      },
+      apiKey,
+    );
 
-  const result = await generateWorldElaboration(
-    {
-      worldSeed: wb.worldSeed,
-      userNotes: wb.inputs.userNotes,
-      tone: wb.inputs.tone,
-    },
-    apiKey,
-  );
+    const canonicalized = canonicalizeDecomposedWorld(result.decomposedWorld);
 
-  const canonicalized = canonicalizeDecomposedWorld(result.decomposedWorld);
-
-  return updateWorldbuilding(id, (existing) => ({
-    ...existing,
-    rawWorldMarkdown: result.rawWorldMarkdown,
-    decomposedWorld: canonicalized,
-    completedStages: [1, 2],
-    updatedAt: new Date().toISOString(),
-  }));
+    return updateWorldbuilding(id, (existing) => ({
+      ...existing,
+      rawWorldMarkdown: result.rawWorldMarkdown,
+      decomposedWorld: canonicalized,
+      completedStages: [1, 2],
+      updatedAt: new Date().toISOString(),
+    }));
+  });
 }
 
 export async function decomposeRawWorldbuilding(
@@ -116,31 +111,31 @@ export async function decomposeRawWorldbuilding(
 ): Promise<SavedWorldbuilding> {
   const now = new Date().toISOString();
 
-  emitStage(onStage, 'DECOMPOSING_WORLD');
+  return runGenerationStage(onStage, 'DECOMPOSING_WORLD', async () => {
+    const result = await decomposeWorldbuilding(
+      { worldbuilding: rawText, tone },
+      apiKey,
+    );
 
-  const result = await decomposeWorldbuilding(
-    { worldbuilding: rawText, tone },
-    apiKey,
-  );
+    const canonicalized = canonicalizeDecomposedWorld(result.decomposedWorld);
 
-  const canonicalized = canonicalizeDecomposedWorld(result.decomposedWorld);
+    const wb: SavedWorldbuilding = {
+      id: randomUUID(),
+      name,
+      sourceKind: 'RAW_DECOMPOSED',
+      createdAt: now,
+      updatedAt: now,
+      inputs: {},
+      worldSeed: null,
+      rawWorldMarkdown: null,
+      rawSourceText: rawText,
+      decomposedWorld: canonicalized,
+      completedStages: [],
+    };
 
-  const wb: SavedWorldbuilding = {
-    id: randomUUID(),
-    name,
-    sourceKind: 'RAW_DECOMPOSED',
-    createdAt: now,
-    updatedAt: now,
-    inputs: {},
-    worldSeed: null,
-    rawWorldMarkdown: null,
-    rawSourceText: rawText,
-    decomposedWorld: canonicalized,
-    completedStages: [],
-  };
-
-  await saveWorldbuilding(wb);
-  return wb;
+    await saveWorldbuilding(wb);
+    return wb;
+  });
 }
 
 export async function loadWorldbuildingById(

@@ -23,8 +23,8 @@ ${context.pagePlan.continuityAnchors.map((anchor) => `- ${anchor}`).join('\n') |
 
 Writer Brief:
 - Opening line directive: ${context.pagePlan.writerBrief.openingLineDirective}
-- Must include beats:
-${context.pagePlan.writerBrief.mustIncludeBeats.map((beat) => `  - ${beat}`).join('\n') || '  - (none)'}
+- Must include milestones:
+${context.pagePlan.writerBrief.mustIncludeBeats.map((milestone) => `  - ${milestone}`).join('\n') || '  - (none)'}
 - Forbidden recaps:
 ${context.pagePlan.writerBrief.forbiddenRecaps.map((item) => `  - ${item}`).join('\n') || '  - (none)'}
 

@@ -23,7 +23,7 @@ function formatReducedPlanForAccountant(plan: ReducedPagePlanResult): string {
       ? plan.continuityAnchors.map((a) => `- ${a}`).join('\n')
       : '- (none)';
 
-  const beats =
+  const milestones =
     plan.writerBrief.mustIncludeBeats.length > 0
       ? plan.writerBrief.mustIncludeBeats.map((b) => `  - ${b}`).join('\n')
       : '  - (none)';
@@ -40,8 +40,8 @@ ${anchors}
 
 Writer Brief:
 - Opening line directive: ${plan.writerBrief.openingLineDirective}
-- Must include beats:
-${beats}
+- Must include milestones:
+${milestones}
 - Forbidden recaps:
 ${recaps}
 

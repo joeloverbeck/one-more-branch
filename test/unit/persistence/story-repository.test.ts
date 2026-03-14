@@ -4,6 +4,7 @@ import {
   StoryId,
   StoryStructure,
   VersionedStoryStructure,
+  createDefaultAnchorMoments,
   createStory,
   parsePageId,
   parseStoryId,
@@ -41,13 +42,18 @@ function buildTestStructure(): StoryStructure {
         objective: 'Start the journey',
         stakes: 'Lose your home',
         entryCondition: 'A call to action appears',
-        beats: [
+        actQuestion: 'Will the protagonist answer the call?',
+        exitReversal: 'Home is no longer safe.',
+        promiseTargets: ['A sheltered survivor must leave home'],
+        obligationTargets: ['call_to_adventure'],
+        milestones: [
           {
             id: '1.1',
             name: 'Guide encounter',
             description: 'Meet the guide',
             objective: 'Find an ally',
             causalLink: 'Because a call to action appears at the village gate.',
+            exitCondition: 'The guide agrees to help.',
             role: 'setup',
             escalationType: null,
             secondaryEscalationType: null,
@@ -66,6 +72,7 @@ function buildTestStructure(): StoryStructure {
             description: 'Cross the threshold',
             objective: 'Leave safety',
             causalLink: 'Because the guide exposes the cost of staying behind.',
+            exitCondition: 'The protagonist leaves home behind.',
             role: 'turning_point',
             escalationType: null,
             secondaryEscalationType: null,
@@ -86,6 +93,7 @@ function buildTestStructure(): StoryStructure {
     openingImage: 'An opening image placeholder.',
     closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 15, targetPagesMax: 35 },
+    anchorMoments: createDefaultAnchorMoments(1),
     generatedAt: new Date('2025-01-01T00:00:00.000Z'),
   };
 }
@@ -119,13 +127,18 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
         objective: 'Regroup',
         stakes: 'Lose the final clue',
         entryCondition: 'The plan fails',
-        beats: [
+        actQuestion: 'Can the protagonist recover after the plan fails?',
+        exitReversal: 'The ambush reveals a new path.',
+        promiseTargets: ['A sheltered survivor must leave home'],
+        obligationTargets: ['midpoint_reversal'],
+        milestones: [
           {
             id: '1.1',
             name: 'Ambush escape',
             description: 'Escape the ambush',
             objective: 'Survive',
             causalLink: 'Because the original route is compromised by betrayal.',
+            exitCondition: 'The protagonist survives the ambush.',
             role: 'setup',
             escalationType: null,
             secondaryEscalationType: null,
@@ -144,6 +157,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
             description: 'Find a new lead',
             objective: 'Regain momentum',
             causalLink: 'Because the ambush reveals an alternate conspirator.',
+            exitCondition: 'A credible new lead is secured.',
             role: 'escalation',
             escalationType: null,
             secondaryEscalationType: null,
@@ -171,7 +185,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
       previousVersionId: null,
       createdAtPageId: null,
       rewriteReason: null,
-      preservedBeatIds: [],
+      preservedMilestoneIds: [],
       createdAt: new Date('2025-01-01T00:00:00.000Z'),
     },
     {
@@ -180,7 +194,7 @@ function buildVersionedStructureChain(): readonly VersionedStoryStructure[] {
       previousVersionId: firstVersionId,
       createdAtPageId: parsePageId(4),
       rewriteReason: 'Player joined the enemy faction',
-      preservedBeatIds: ['1.1'],
+      preservedMilestoneIds: ['1.1'],
       createdAt: new Date('2025-01-01T01:00:00.000Z'),
     },
   ] as const;
@@ -233,12 +247,12 @@ describe('story-repository', () => {
 
     const loaded = await loadStory(story.id);
     expect(loaded?.structure).toEqual(story.structure);
-    expect(loaded?.structure?.acts[0]?.beats[0]?.name).toBe('Guide encounter');
+    expect(loaded?.structure?.acts[0]?.milestones[0]?.name).toBe('Guide encounter');
 
     const persisted = await fsPromises.readFile(getStoryFilePath(story.id), 'utf-8');
     const parsed = JSON.parse(persisted) as Record<string, unknown>;
-    const structure = parsed['structure'] as { acts: Array<{ beats: Array<{ name: string }> }> };
-    expect(structure.acts[0]?.beats[0]?.name).toBe('Guide encounter');
+    const structure = parsed['structure'] as { acts: Array<{ milestones: Array<{ name: string }> }> };
+    expect(structure.acts[0]?.milestones[0]?.name).toBe('Guide encounter');
     expect(parsed['structure']).toBeDefined();
   });
 
@@ -257,10 +271,10 @@ describe('story-repository', () => {
 
     const persisted = await fsPromises.readFile(getStoryFilePath(story.id), 'utf-8');
     const parsed = JSON.parse(persisted) as {
-      structureVersions: Array<{ structure: { acts: Array<{ beats: Array<{ name: string }> }> } }>;
+      structureVersions: Array<{ structure: { acts: Array<{ milestones: Array<{ name: string }> }> } }>;
     };
-    expect(parsed.structureVersions[0]?.structure.acts[0]?.beats[0]?.name).toBe('Guide encounter');
-    expect(parsed.structureVersions[1]?.structure.acts[0]?.beats[0]?.name).toBe('Ambush escape');
+    expect(parsed.structureVersions[0]?.structure.acts[0]?.milestones[0]?.name).toBe('Guide encounter');
+    expect(parsed.structureVersions[1]?.structure.acts[0]?.milestones[0]?.name).toBe('Ambush escape');
   });
 
   it('loadStory returns null when story does not exist', async () => {
@@ -396,7 +410,7 @@ describe('story-repository', () => {
     );
   });
 
-  it('loadStory throws when persisted structure beat is missing causalLink', async () => {
+  it('loadStory throws when persisted structure milestone is missing causalLink', async () => {
     const story = buildTestStory();
     createdStoryIds.add(story.id);
     await ensureDirectory(getStoryDir(story.id));
@@ -417,10 +431,10 @@ describe('story-repository', () => {
             objective: 'Objective',
             stakes: 'Stakes',
             entryCondition: 'Entry',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
-                name: 'Beat',
+                name: 'Milestone',
                 description: 'Description',
                 objective: 'Objective',
                 role: 'setup',
@@ -449,8 +463,22 @@ describe('story-repository', () => {
     });
 
     await expect(loadStory(story.id)).rejects.toThrow(
-      'Persisted story beat 1.1 is missing required causalLink'
+      'Persisted story milestone 1.1 must include a non-empty causalLink'
     );
+  });
+
+  it('saveStory normalizes missing anchorMoments on in-memory structures before persisting', async () => {
+    const structureWithoutAnchorMoments = {
+      ...buildTestStructure(),
+      anchorMoments: undefined,
+    } as unknown as StoryStructure;
+    const story = buildTestStory({ structure: structureWithoutAnchorMoments });
+    createdStoryIds.add(story.id);
+
+    await saveStory(story);
+    const loaded = await loadStory(story.id);
+
+    expect(loaded?.structure?.anchorMoments).toEqual(createDefaultAnchorMoments(1));
   });
 
   it('saveStory/loadStory preserves npcs field', async () => {

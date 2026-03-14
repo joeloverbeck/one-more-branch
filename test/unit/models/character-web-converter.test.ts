@@ -77,7 +77,7 @@ function createCharacter(
     characterKernel: {
       characterName: 'Mara Voss',
       superObjective: 'Claim the route before the protagonist can legitimize it.',
-      immediateObjectives: ['Beat Iria to the archive', 'Keep Pell indebted'],
+      immediateObjectives: ['Milestone Iria to the archive', 'Keep Pell indebted'],
       primaryOpposition: 'Iria Vale forcing cooperation',
       stakes: ['Lose the route', 'Lose control of her crew'],
       constraints: ['Cannot expose how deep her debt runs'],

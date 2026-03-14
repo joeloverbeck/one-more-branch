@@ -334,7 +334,10 @@ describe('character-web-service', () => {
 
   it('generateWeb derives inputs from concept+kernel, persists protagonist identity, and emits progress', async () => {
     deps.loadCharacterWeb.mockResolvedValue(createWeb({ protagonistName: '', assignments: [] }));
-    const onStage = jest.fn();
+    const onStage = jest.fn<
+      void,
+      [{ stage: string; status: string; attempt: number; durationMs?: number }]
+    >();
 
     const result = await service.generateWeb(' web-1 ', ' valid-api-key-12345 ', onStage);
 
@@ -362,11 +365,13 @@ describe('character-web-service', () => {
       status: 'started',
       attempt: 1,
     });
-    expect(onStage).toHaveBeenNthCalledWith(2, {
+    const completedEvent = onStage.mock.calls[1]?.[0];
+    expect(completedEvent).toMatchObject({
       stage: 'GENERATING_CHARACTER_WEB',
       status: 'completed',
       attempt: 1,
     });
+    expect(typeof completedEvent.durationMs).toBe('number');
     expect(result.protagonistName).toBe('Iria Vale');
   });
 

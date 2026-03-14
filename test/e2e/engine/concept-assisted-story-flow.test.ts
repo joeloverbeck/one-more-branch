@@ -258,10 +258,10 @@ describe('Concept Assisted Story Flow (E2E)', () => {
           objective: 'Begin',
           stakes: 'Failure costs everything',
           entryCondition: 'The story starts',
-          beats: [
+          milestones: [
             {
               id: '1.1',
-              name: 'Opening beat',
+              name: 'Opening milestone',
               description: 'Initial pressure appears',
               objective: 'Stabilize',
               causalLink: 'Because of prior events.',

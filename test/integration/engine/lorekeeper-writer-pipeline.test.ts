@@ -201,7 +201,7 @@ describe('createContinuationWriterWithLorekeeper', () => {
     expect(getLastStoryBible()).toBeNull();
   });
 
-  it('emits CURATING_CONTEXT and WRITING_CONTINUING_PAGE stages in order', async () => {
+  it('emits only CURATING_CONTEXT stages and leaves writer-stage ownership to the caller', async () => {
     mockedGenerateLorekeeperBible.mockResolvedValue(mockLorekeeperResult);
     mockedGeneratePageWriterOutput.mockResolvedValue(mockWriterResult);
     const stageCallback: GenerationStageCallback = jest.fn();
@@ -211,7 +211,7 @@ describe('createContinuationWriterWithLorekeeper', () => {
     );
     await generateWriter(mockPagePlan);
 
-    expect(stageCallback).toHaveBeenCalledTimes(3);
+    expect(stageCallback).toHaveBeenCalledTimes(2);
     expect(stageCallback).toHaveBeenNthCalledWith(1, {
       stage: 'CURATING_CONTEXT',
       status: 'started',
@@ -220,11 +220,6 @@ describe('createContinuationWriterWithLorekeeper', () => {
     expect(stageCallback).toHaveBeenNthCalledWith(2, {
       stage: 'CURATING_CONTEXT',
       status: 'completed',
-      attempt: 1,
-    });
-    expect(stageCallback).toHaveBeenNthCalledWith(3, {
-      stage: 'WRITING_CONTINUING_PAGE',
-      status: 'started',
       attempt: 1,
     });
   });

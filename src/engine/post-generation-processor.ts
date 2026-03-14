@@ -5,7 +5,7 @@ import type { StoryBible } from '../llm/lorekeeper-types';
 import type { PageWriterResult } from '../llm/writer-types';
 import { getDefaultPromptOptions } from '../llm/options.js';
 import {
-  createBeatDeviation,
+  createMilestoneDeviation,
   createEmptyAccumulatedStructureState,
   generatePageId,
   getLatestStructureVersion,
@@ -25,14 +25,14 @@ import { withPromiseAge } from '../models/state/index.js';
 import type { StateReconciliationResult } from './state-reconciler-types';
 import { updateStoryWithAllCanon } from './canon-manager';
 import { runAnalystEvaluation } from './analyst-evaluation';
-import { resolveActiveBeat } from './beat-utils';
-import { resolveBeatAlignmentSkip } from './beat-alignment';
-import { resolveBeatConclusion } from './beat-conclusion';
+import { resolveActiveMilestone } from './milestone-utils';
+import { resolveMilestoneAlignmentSkip } from './milestone-alignment';
+import { resolveMilestoneConclusion } from './milestone-conclusion';
 import { handleDeviationIfDetected } from './deviation-processing';
 import { applyPacingResponse } from './pacing-response';
 import {
   handleSpineDeviationIfDetected,
-  collectRemainingBeatIds,
+  collectRemainingMilestoneIds,
 } from './spine-deviation-processing';
 import { resolveStructureProgression } from './structure-state';
 import { resolveNpcAgendas } from './npc-agenda-pipeline';
@@ -250,7 +250,7 @@ export async function processPostGeneration(
     context.isEnding
   );
 
-  // --- Handle spine deviation (two-tier: spine then beats) ---
+  // --- Handle spine deviation (two-tier: spine then milestones) ---
   const spineDeviationResult = await handleSpineDeviationIfDetected({
     analystResult,
     sceneSummary: writerResult.sceneSummary,
@@ -264,25 +264,25 @@ export async function processPostGeneration(
     degradedStages.push(spineDeviationResult.degradation);
   }
 
-  // If spine was rewritten but no beat deviation was detected, force a
+  // If spine was rewritten but no milestone deviation was detected, force a
   // structure rewrite by injecting a synthetic deviation with all remaining
-  // beat IDs invalidated.
+  // milestone IDs invalidated.
   if (
     spineDeviationResult.spineRewritten &&
     !isDeviation(result.deviation) &&
     currentStructureVersion &&
     parentStructureState
   ) {
-    const remainingBeatIds = collectRemainingBeatIds(
+    const remainingMilestoneIds = collectRemainingMilestoneIds(
       currentStructureVersion.structure,
       parentStructureState
     );
-    if (remainingBeatIds.length > 0) {
+    if (remainingMilestoneIds.length > 0) {
       result = {
         ...result,
-        deviation: createBeatDeviation(
-          `Spine rewritten (${spineDeviationResult.spineInvalidatedElement ?? 'unknown'} invalidated) — all remaining beats need restructuring`,
-          remainingBeatIds,
+        deviation: createMilestoneDeviation(
+          `Spine rewritten (${spineDeviationResult.spineInvalidatedElement ?? 'unknown'} invalidated) — all remaining milestones need restructuring`,
+          remainingMilestoneIds,
           writerResult.sceneSummary
         ),
       };
@@ -319,30 +319,30 @@ export async function processPostGeneration(
       ? {
           detected: true,
           reason: `Spine rewritten: ${spineDeviationResult.spineInvalidatedElement ?? 'unknown'} invalidated`,
-          beatsInvalidated: 0,
+          milestonesInvalidated: 0,
           spineRewritten: true,
           spineInvalidatedElement: spineDeviationResult.spineInvalidatedElement,
         }
       : undefined;
 
-  // --- Resolve beat conclusion ---
-  const activeBeat = resolveActiveBeat(
+  // --- Resolve milestone conclusion ---
+  const activeMilestone = resolveActiveMilestone(
     activeStructureVersion,
     story.structure,
     parentStructureState
   );
-  const { beatConcluded, beatResolution } = resolveBeatConclusion({
+  const { milestoneConcluded, milestoneResolution } = resolveMilestoneConclusion({
     result,
-    activeBeat,
+    activeMilestone,
     analystResult,
     storyId: story.id,
     parentPageId: parentPage?.id ?? parsePageId(1),
   });
 
-  // --- Beat alignment skip ---
-  const alignmentSkip = resolveBeatAlignmentSkip(
+  // --- Milestone alignment skip ---
+  const alignmentSkip = resolveMilestoneAlignmentSkip(
     analystResult,
-    beatConcluded,
+    milestoneConcluded,
     parentStructureState
   );
 
@@ -351,8 +351,8 @@ export async function processPostGeneration(
     activeStructureVersion,
     storyStructure: story.structure,
     parentStructureState,
-    beatConcluded,
-    beatResolution,
+    milestoneConcluded,
+    milestoneResolution,
     alignmentSkip,
   });
 
@@ -387,11 +387,11 @@ export async function processPostGeneration(
       deviationInfo?.detected && activeStructureVersion
         ? {
             reason: deviationInfo.reason,
-            newBeats: activeStructureVersion.structure.acts.flatMap((act) =>
-              act.beats.map((beat) => ({
-                name: beat.name,
-                objective: beat.objective,
-                role: beat.role,
+            newMilestones: activeStructureVersion.structure.acts.flatMap((act) =>
+              act.milestones.map((milestone) => ({
+                name: milestone.name,
+                objective: milestone.objective,
+                role: milestone.role,
               }))
             ),
           }
@@ -447,7 +447,7 @@ export async function processPostGeneration(
     parentAccumulatedNpcRelationships,
     npcRelationshipUpdates: agendaResolverResult?.updatedRelationships,
     pageActIndex: parentStructureState.currentActIndex,
-    pageBeatIndex: parentStructureState.currentBeatIndex,
+    pageMilestoneIndex: parentStructureState.currentMilestoneIndex,
   });
 
   const pageBuildDurationMs = Date.now() - pageBuildStart;

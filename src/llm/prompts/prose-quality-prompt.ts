@@ -8,7 +8,7 @@ import { buildToneDirective } from './sections/shared/tone-block.js';
 const PROSE_QUALITY_ROLE = `You are a prose quality evaluator for interactive fiction. Your SINGLE responsibility is to evaluate narrative quality, tone adherence, and thematic coherence.
 
 You do NOT evaluate NPC behavior, relationship shifts, knowledge asymmetry, or dramatic irony. Those are handled by another evaluator.
-You do NOT evaluate story structure, beat completion, deviation, pacing, or narrative promises. Those are handled by other evaluators.`;
+You do NOT evaluate story structure, milestone completion, deviation, pacing, or narrative promises. Those are handled by other evaluators.`;
 
 const PROSE_QUALITY_RULES = `TONE EVALUATION:
 - Set toneAdherent to true if the narrative's mood, vocabulary, and emotional register match the target tone.

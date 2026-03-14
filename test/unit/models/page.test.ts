@@ -189,10 +189,10 @@ describe('Page', () => {
     it('inherits provided parentAccumulatedStructureState', () => {
       const parentAccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
           {
-            beatId: '1.1',
+            milestoneId: '1.1',
             status: 'concluded' as const,
             resolution: 'Resolved the first milestone',
           },
@@ -334,9 +334,9 @@ describe('Page', () => {
         ...page,
         accumulatedStructureState: {
           currentActIndex: -1,
-          currentBeatIndex: 0,
-          beatProgressions: [],
-          pagesInCurrentBeat: 0,
+          currentMilestoneIndex: 0,
+          milestoneProgressions: [],
+          pagesInCurrentMilestone: 0,
           pacingNudge: null,
         },
       };

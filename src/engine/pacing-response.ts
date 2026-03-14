@@ -18,7 +18,7 @@ export function applyPacingResponse(context: PacingContext): AccumulatedStructur
   if (context.recommendedAction === 'rewrite') {
     logger.warn('Pacing issue detected: rewrite recommended (deferred)', {
       pacingIssueReason: context.pacingIssueReason,
-      pagesInCurrentBeat: context.structureState.pagesInCurrentBeat,
+      pagesInCurrentMilestone: context.structureState.pagesInCurrentMilestone,
     });
     return { ...context.structureState, pacingNudge: null };
   }
@@ -26,7 +26,7 @@ export function applyPacingResponse(context: PacingContext): AccumulatedStructur
   if (context.recommendedAction === 'nudge') {
     logger.info('Pacing nudge applied', {
       pacingIssueReason: context.pacingIssueReason,
-      pagesInCurrentBeat: context.structureState.pagesInCurrentBeat,
+      pagesInCurrentMilestone: context.structureState.pagesInCurrentMilestone,
     });
     return { ...context.structureState, pacingNudge: context.pacingIssueReason };
   }

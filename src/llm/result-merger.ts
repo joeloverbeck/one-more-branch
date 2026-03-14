@@ -1,4 +1,4 @@
-import { createBeatDeviation, createNoDeviation } from '../models/story-arc.js';
+import { createMilestoneDeviation, createNoDeviation } from '../models/story-arc.js';
 import type { ChoiceType, ChoiceShape, PrimaryDelta } from '../models/choice-enums.js';
 import type { StateReconciliationResult } from '../engine/state-reconciler-types.js';
 import type { AnalystResult } from './analyst-types.js';
@@ -10,30 +10,30 @@ function buildAnalystFields(
   analyst: AnalystResult | null
 ): Pick<
   ContinuationGenerationResult,
-  | 'beatConcluded'
-  | 'beatResolution'
+  | 'milestoneConcluded'
+  | 'milestoneResolution'
   | 'deviation'
   | 'pacingIssueDetected'
   | 'pacingIssueReason'
   | 'recommendedAction'
 > {
-  const beatConcluded = analyst?.beatConcluded ?? false;
-  const beatResolution = analyst?.beatResolution ?? '';
+  const milestoneConcluded = analyst?.milestoneConcluded ?? false;
+  const milestoneResolution = analyst?.milestoneResolution ?? '';
   const deviationReason = analyst?.deviationReason?.trim() ?? '';
   const canonicalSceneSummary = sceneSummary.trim();
-  const invalidatedBeatIds = analyst?.invalidatedBeatIds ?? [];
+  const invalidatedMilestoneIds = analyst?.invalidatedMilestoneIds ?? [];
 
   const deviation =
     analyst?.deviationDetected &&
     deviationReason &&
     canonicalSceneSummary &&
-    invalidatedBeatIds.length > 0
-      ? createBeatDeviation(deviationReason, invalidatedBeatIds, canonicalSceneSummary)
+    invalidatedMilestoneIds.length > 0
+      ? createMilestoneDeviation(deviationReason, invalidatedMilestoneIds, canonicalSceneSummary)
       : createNoDeviation();
 
   return {
-    beatConcluded,
-    beatResolution,
+    milestoneConcluded,
+    milestoneResolution,
     deviation,
     pacingIssueDetected: analyst?.pacingIssueDetected ?? false,
     pacingIssueReason: analyst?.pacingIssueReason ?? '',

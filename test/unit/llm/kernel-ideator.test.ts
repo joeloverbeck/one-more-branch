@@ -165,7 +165,7 @@ describe('kernel-ideator', () => {
     expect(systemMessage).toContain('Do not include genre framing');
     expect(systemMessage).toContain('Do not include setting/world details');
     expect(systemMessage).toContain('Do not include named characters');
-    expect(systemMessage).toContain('Do not include plot beats');
+    expect(systemMessage).toContain('Do not include plot milestones');
     expect(systemMessage).toContain('strongest credible counter-argument');
     expect(systemMessage).toContain(
       'CRITICAL: Diversity means different dramatic propositions',

@@ -1,7 +1,7 @@
 import { createStoryStructure } from '../../../src/engine/structure-factory';
 import {
   advanceStructureState,
-  advanceWithBeatSkip,
+  advanceWithMilestoneSkip,
   applyStructureProgression,
 } from '../../../src/engine/structure-state';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
@@ -23,7 +23,7 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Accept the quest',
         stakes: 'Home is at risk',
         entryCondition: 'A messenger arrives',
-        beats: [
+        milestones: [
           {
             name: 'Messenger arrives',
             description: 'A warning arrives',
@@ -45,7 +45,7 @@ function createGenerationResult(): StructureGenerationResult {
         objective: 'Survive the campaign',
         stakes: 'The kingdom may fall',
         entryCondition: 'The journey begins',
-        beats: [
+        milestones: [
           {
             name: 'First setback',
             description: 'First major setback',
@@ -66,85 +66,85 @@ function createStructure(): StoryStructure {
 
 describe('structure-state', () => {
   describe('createInitialStructureState', () => {
-    it('creates first beat as active and all remaining beats as pending', () => {
+    it('creates first milestone as active and all remaining milestones as pending', () => {
       const structure = createStructure();
       const state = createInitialStructureState(structure);
 
       expect(state.currentActIndex).toBe(0);
-      expect(state.currentBeatIndex).toBe(0);
-      expect(state.beatProgressions).toHaveLength(3);
-      expect(state.beatProgressions[0]).toEqual({ beatId: '1.1', status: 'active' });
-      expect(state.beatProgressions[1]).toEqual({ beatId: '1.2', status: 'pending' });
-      expect(state.beatProgressions[2]).toEqual({ beatId: '2.1', status: 'pending' });
+      expect(state.currentMilestoneIndex).toBe(0);
+      expect(state.milestoneProgressions).toHaveLength(3);
+      expect(state.milestoneProgressions[0]).toEqual({ milestoneId: '1.1', status: 'active' });
+      expect(state.milestoneProgressions[1]).toEqual({ milestoneId: '1.2', status: 'pending' });
+      expect(state.milestoneProgressions[2]).toEqual({ milestoneId: '2.1', status: 'pending' });
     });
   });
 
   describe('advanceStructureState', () => {
-    it('advances to the next beat in the same act', () => {
+    it('advances to the next milestone in the same act', () => {
       const structure = createStructure();
       const state = createInitialStructureState(structure);
 
       const result = advanceStructureState(structure, state, 'The hero agrees to leave.');
 
       expect(result.actAdvanced).toBe(false);
-      expect(result.beatAdvanced).toBe(true);
+      expect(result.milestoneAdvanced).toBe(true);
       expect(result.isComplete).toBe(false);
       expect(result.updatedState.currentActIndex).toBe(0);
-      expect(result.updatedState.currentBeatIndex).toBe(1);
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '1.1',
+      expect(result.updatedState.currentMilestoneIndex).toBe(1);
+      expect(result.updatedState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.1',
         status: 'concluded',
         resolution: 'The hero agrees to leave.',
       });
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '1.2',
+      expect(result.updatedState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.2',
         status: 'active',
       });
     });
 
-    it('advances to the next act when the last beat of current act concludes', () => {
+    it('advances to the next act when the last milestone of current act concludes', () => {
       const structure = createStructure();
       const currentState: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'He heard the warning.' },
-          { beatId: '1.2', status: 'active' },
-          { beatId: '2.1', status: 'pending' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'He heard the warning.' },
+          { milestoneId: '1.2', status: 'active' },
+          { milestoneId: '2.1', status: 'pending' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
       const result = advanceStructureState(structure, currentState, 'The hero leaves home.');
 
       expect(result.actAdvanced).toBe(true);
-      expect(result.beatAdvanced).toBe(true);
+      expect(result.milestoneAdvanced).toBe(true);
       expect(result.isComplete).toBe(false);
       expect(result.updatedState.currentActIndex).toBe(1);
-      expect(result.updatedState.currentBeatIndex).toBe(0);
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '1.2',
+      expect(result.updatedState.currentMilestoneIndex).toBe(0);
+      expect(result.updatedState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.2',
         status: 'concluded',
         resolution: 'The hero leaves home.',
       });
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '2.1',
+      expect(result.updatedState.milestoneProgressions).toContainEqual({
+        milestoneId: '2.1',
         status: 'active',
       });
     });
 
-    it('marks the story complete when the last beat of the last act concludes', () => {
+    it('marks the story complete when the last milestone of the last act concludes', () => {
       const structure = createStructure();
       const currentState: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'He heard the warning.' },
-          { beatId: '1.2', status: 'concluded', resolution: 'He left home.' },
-          { beatId: '2.1', status: 'active' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'He heard the warning.' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'He left home.' },
+          { milestoneId: '2.1', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -156,11 +156,11 @@ describe('structure-state', () => {
 
       expect(result.isComplete).toBe(true);
       expect(result.actAdvanced).toBe(false);
-      expect(result.beatAdvanced).toBe(false);
+      expect(result.milestoneAdvanced).toBe(false);
       expect(result.updatedState.currentActIndex).toBe(1);
-      expect(result.updatedState.currentBeatIndex).toBe(0);
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '2.1',
+      expect(result.updatedState.currentMilestoneIndex).toBe(0);
+      expect(result.updatedState.milestoneProgressions).toContainEqual({
+        milestoneId: '2.1',
         status: 'concluded',
         resolution: 'The hero recovers and rallies.',
       });
@@ -174,31 +174,31 @@ describe('structure-state', () => {
       const result = advanceStructureState(structure, currentState, 'A decision is made.');
 
       expect(result.updatedState).not.toBe(currentState);
-      expect(result.updatedState.beatProgressions).not.toBe(currentState.beatProgressions);
+      expect(result.updatedState.milestoneProgressions).not.toBe(currentState.milestoneProgressions);
       expect(currentState).toEqual(before);
     });
 
-    it('throws for empty beat resolution', () => {
+    it('throws for empty milestone resolution', () => {
       const structure = createStructure();
       const state = createInitialStructureState(structure);
 
       expect(() => advanceStructureState(structure, state, '')).toThrow(
-        'Cannot advance structure without a non-empty beat resolution'
+        'Cannot advance structure without a non-empty milestone resolution'
       );
     });
 
-    it('throws for whitespace-only beat resolution', () => {
+    it('throws for whitespace-only milestone resolution', () => {
       const structure = createStructure();
       const state = createInitialStructureState(structure);
 
       expect(() => advanceStructureState(structure, state, '   ')).toThrow(
-        'Cannot advance structure without a non-empty beat resolution'
+        'Cannot advance structure without a non-empty milestone resolution'
       );
     });
   });
 
   describe('applyStructureProgression', () => {
-    it('increments pagesInCurrentBeat when beatConcluded is false', () => {
+    it('increments pagesInCurrentMilestone when milestoneConcluded is false', () => {
       const structure = createStructure();
       const parentState = createInitialStructureState(structure);
 
@@ -207,11 +207,11 @@ describe('structure-state', () => {
       expect(result).not.toBe(parentState);
       expect(result).toEqual({
         ...parentState,
-        pagesInCurrentBeat: parentState.pagesInCurrentBeat + 1,
+        pagesInCurrentMilestone: parentState.pagesInCurrentMilestone + 1,
       });
     });
 
-    it('advances state with resolution when beatConcluded is true', () => {
+    it('advances state with resolution when milestoneConcluded is true', () => {
       const structure = createStructure();
       const parentState = createInitialStructureState(structure);
 
@@ -223,24 +223,24 @@ describe('structure-state', () => {
       );
 
       expect(result.currentActIndex).toBe(0);
-      expect(result.currentBeatIndex).toBe(1);
-      expect(result.beatProgressions).toContainEqual({
-        beatId: '1.1',
+      expect(result.currentMilestoneIndex).toBe(1);
+      expect(result.milestoneProgressions).toContainEqual({
+        milestoneId: '1.1',
         status: 'concluded',
         resolution: 'The warning is accepted.',
       });
     });
 
-    it('throws when beatConcluded is true and beatResolution is blank', () => {
+    it('throws when milestoneConcluded is true and milestoneResolution is blank', () => {
       const structure = createStructure();
       const parentState = createInitialStructureState(structure);
 
       expect(() => applyStructureProgression(structure, parentState, true, '   ')).toThrow(
-        'Cannot advance structure without a non-empty beat resolution'
+        'Cannot advance structure without a non-empty milestone resolution'
       );
     });
 
-    it('accumulates pagesInCurrentBeat across successive non-concluded progressions', () => {
+    it('accumulates pagesInCurrentMilestone across successive non-concluded progressions', () => {
       const structure = createStructure();
       const initial = createInitialStructureState(structure);
 
@@ -248,25 +248,25 @@ describe('structure-state', () => {
       const page2 = applyStructureProgression(structure, page1, false, '');
       const page3 = applyStructureProgression(structure, page2, false, '');
 
-      expect(initial.pagesInCurrentBeat).toBe(0);
-      expect(page1.pagesInCurrentBeat).toBe(1);
-      expect(page2.pagesInCurrentBeat).toBe(2);
-      expect(page3.pagesInCurrentBeat).toBe(3);
+      expect(initial.pagesInCurrentMilestone).toBe(0);
+      expect(page1.pagesInCurrentMilestone).toBe(1);
+      expect(page2.pagesInCurrentMilestone).toBe(2);
+      expect(page3.pagesInCurrentMilestone).toBe(3);
     });
 
-    it('resets pagesInCurrentBeat to 0 when beat is concluded', () => {
+    it('resets pagesInCurrentMilestone to 0 when milestone is concluded', () => {
       const structure = createStructure();
       const initial = createInitialStructureState(structure);
 
       const page1 = applyStructureProgression(structure, initial, false, '');
       const page2 = applyStructureProgression(structure, page1, false, '');
-      expect(page2.pagesInCurrentBeat).toBe(2);
+      expect(page2.pagesInCurrentMilestone).toBe(2);
 
-      const advanced = applyStructureProgression(structure, page2, true, 'Beat resolved.');
-      expect(advanced.pagesInCurrentBeat).toBe(0);
+      const advanced = applyStructureProgression(structure, page2, true, 'Milestone resolved.');
+      expect(advanced.pagesInCurrentMilestone).toBe(0);
     });
 
-    it('initializes pacingNudge as null and resets on beat advancement', () => {
+    it('initializes pacingNudge as null and resets on milestone advancement', () => {
       const structure = createStructure();
       const initial = createInitialStructureState(structure);
       expect(initial.pacingNudge).toBeNull();
@@ -285,25 +285,25 @@ describe('structure-state', () => {
       const branchA = applyStructureProgression(structure, parentState, false, '');
       const branchB = applyStructureProgression(structure, parentState, false, '');
 
-      expect(parentState.pagesInCurrentBeat).toBe(0);
-      expect(branchA.pagesInCurrentBeat).toBe(1);
-      expect(branchB.pagesInCurrentBeat).toBe(1);
+      expect(parentState.pagesInCurrentMilestone).toBe(0);
+      expect(branchA.pagesInCurrentMilestone).toBe(1);
+      expect(branchB.pagesInCurrentMilestone).toBe(1);
       expect(branchA).not.toBe(branchB);
       expect(branchA).toEqual(branchB);
     });
   });
 
   describe('createInitialStructureState paging fields', () => {
-    it('starts with pagesInCurrentBeat 0 and pacingNudge null', () => {
+    it('starts with pagesInCurrentMilestone 0 and pacingNudge null', () => {
       const structure = createStructure();
       const state = createInitialStructureState(structure);
 
-      expect(state.pagesInCurrentBeat).toBe(0);
+      expect(state.pagesInCurrentMilestone).toBe(0);
       expect(state.pacingNudge).toBeNull();
     });
   });
 
-  describe('advanceWithBeatSkip', () => {
+  describe('advanceWithMilestoneSkip', () => {
     function createMultiBeatStructure(): StoryStructure {
       return createStoryStructure({
         overallTheme: 'Epic journey',
@@ -317,7 +317,7 @@ describe('structure-state', () => {
             objective: 'Begin journey',
             stakes: 'Miss the chance',
             entryCondition: 'Call arrives',
-            beats: [
+            milestones: [
               {
                 name: 'Call',
                 description: 'Hear the call',
@@ -353,7 +353,7 @@ describe('structure-state', () => {
             objective: 'Survive',
             stakes: 'Kingdom falls',
             entryCondition: 'Enter the wilds',
-            beats: [
+            milestones: [
               {
                 name: 'Ally',
                 description: 'Meet ally',
@@ -375,12 +375,12 @@ describe('structure-state', () => {
       });
     }
 
-    it('skips intermediate beats to reach the target beat within the same act', () => {
+    it('skips intermediate milestones to reach the target milestone within the same act', () => {
       const structure = createMultiBeatStructure();
       const state = createInitialStructureState(structure);
 
-      // At beat 1.1, skip to beat 1.4
-      const result = advanceWithBeatSkip(
+      // At milestone 1.1, skip to milestone 1.4
+      const result = advanceWithMilestoneSkip(
         structure,
         state,
         'Call answered.',
@@ -390,27 +390,27 @@ describe('structure-state', () => {
 
       expect(result.isComplete).toBe(false);
       expect(result.updatedState.currentActIndex).toBe(0);
-      expect(result.updatedState.currentBeatIndex).toBe(3);
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '1.1',
+      expect(result.updatedState.currentMilestoneIndex).toBe(3);
+      expect(result.updatedState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.1',
         status: 'concluded',
         resolution: 'Call answered.',
       });
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '1.2',
+      expect(result.updatedState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.2',
         status: 'concluded',
         resolution: 'Implicitly resolved by narrative advancement',
       });
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '1.3',
+      expect(result.updatedState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.3',
         status: 'concluded',
         resolution: 'Implicitly resolved by narrative advancement',
       });
-      expect(result.updatedState.beatProgressions).toContainEqual({
-        beatId: '1.4',
+      expect(result.updatedState.milestoneProgressions).toContainEqual({
+        milestoneId: '1.4',
         status: 'active',
       });
-      expect(result.beatAdvanced).toBe(true);
+      expect(result.milestoneAdvanced).toBe(true);
       expect(result.actAdvanced).toBe(false);
     });
 
@@ -418,8 +418,8 @@ describe('structure-state', () => {
       const structure = createMultiBeatStructure();
       const state = createInitialStructureState(structure);
 
-      // At beat 1.1, skip to beat 2.1
-      const result = advanceWithBeatSkip(
+      // At milestone 1.1, skip to milestone 2.1
+      const result = advanceWithMilestoneSkip(
         structure,
         state,
         'Call answered.',
@@ -429,31 +429,31 @@ describe('structure-state', () => {
 
       expect(result.isComplete).toBe(false);
       expect(result.updatedState.currentActIndex).toBe(1);
-      expect(result.updatedState.currentBeatIndex).toBe(0);
+      expect(result.updatedState.currentMilestoneIndex).toBe(0);
       expect(result.actAdvanced).toBe(true);
-      expect(result.beatAdvanced).toBe(true);
+      expect(result.milestoneAdvanced).toBe(true);
     });
 
-    it('returns complete when the target is the last beat and it gets concluded along the way', () => {
+    it('returns complete when the target is the last milestone and it gets concluded along the way', () => {
       const structure = createMultiBeatStructure();
-      // Start at beat 2.1 (last act, first beat)
+      // Start at milestone 2.1 (last act, first milestone)
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
-          { beatId: '1.2', status: 'concluded', resolution: 'Done.' },
-          { beatId: '1.3', status: 'concluded', resolution: 'Done.' },
-          { beatId: '1.4', status: 'concluded', resolution: 'Done.' },
-          { beatId: '2.1', status: 'active' },
-          { beatId: '2.2', status: 'pending' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '1.3', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '1.4', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '2.1', status: 'active' },
+          { milestoneId: '2.2', status: 'pending' },
         ],
-        pagesInCurrentBeat: 2,
+        pagesInCurrentMilestone: 2,
         pacingNudge: null,
       };
 
-      // Skip from 2.1 past 2.2 — since 2.2 is the last beat, this triggers completion
-      const result = advanceWithBeatSkip(
+      // Skip from 2.1 past 2.2 — since 2.2 is the last milestone, this triggers completion
+      const result = advanceWithMilestoneSkip(
         structure,
         state,
         'Trust gained.',
@@ -463,15 +463,15 @@ describe('structure-state', () => {
 
       // Should land on 2.2 as active (not complete, since target reached)
       expect(result.updatedState.currentActIndex).toBe(1);
-      expect(result.updatedState.currentBeatIndex).toBe(1);
+      expect(result.updatedState.currentMilestoneIndex).toBe(1);
       expect(result.isComplete).toBe(false);
     });
 
-    it('falls back to normal advancement for invalid beat ID format', () => {
+    it('falls back to normal advancement for invalid milestone ID format', () => {
       const structure = createMultiBeatStructure();
       const state = createInitialStructureState(structure);
 
-      const result = advanceWithBeatSkip(
+      const result = advanceWithMilestoneSkip(
         structure,
         state,
         'Call answered.',
@@ -480,8 +480,8 @@ describe('structure-state', () => {
       );
 
       // Should just do a normal single advance
-      expect(result.updatedState.currentBeatIndex).toBe(1);
-      expect(result.beatAdvanced).toBe(true);
+      expect(result.updatedState.currentMilestoneIndex).toBe(1);
+      expect(result.milestoneAdvanced).toBe(true);
     });
   });
 
@@ -494,14 +494,14 @@ describe('structure-state', () => {
         structure,
         parentState,
         true,
-        'Beat resolved.',
+        'Milestone resolved.',
         undefined
       );
 
-      expect(result.currentBeatIndex).toBe(1);
+      expect(result.currentMilestoneIndex).toBe(1);
     });
 
-    it('uses beat skip when alignmentSkip is provided', () => {
+    it('uses milestone skip when alignmentSkip is provided', () => {
       const multiStructure = createStoryStructure({
         overallTheme: 'Journey',
         premise: 'A hero.',
@@ -514,7 +514,7 @@ describe('structure-state', () => {
             objective: 'Begin',
             stakes: 'Fail',
             entryCondition: 'Start',
-            beats: [
+            milestones: [
               {
                 name: 'B1',
                 description: 'First',
@@ -547,13 +547,13 @@ describe('structure-state', () => {
         multiStructure,
         parentState,
         true,
-        'First beat resolved.',
-        { targetBeatId: '1.3', bridgedResolution: 'Skipped' }
+        'First milestone resolved.',
+        { targetMilestoneId: '1.3', bridgedResolution: 'Skipped' }
       );
 
-      expect(result.currentBeatIndex).toBe(2);
-      expect(result.beatProgressions).toContainEqual({
-        beatId: '1.2',
+      expect(result.currentMilestoneIndex).toBe(2);
+      expect(result.milestoneProgressions).toContainEqual({
+        milestoneId: '1.2',
         status: 'concluded',
         resolution: 'Skipped',
       });
@@ -561,34 +561,34 @@ describe('structure-state', () => {
   });
 
   describe('advanceStructureState paging fields', () => {
-    it('resets pagesInCurrentBeat and pacingNudge on normal advancement', () => {
+    it('resets pagesInCurrentMilestone and pacingNudge on normal advancement', () => {
       const structure = createStructure();
       const state = createInitialStructureState(structure);
 
       const result = advanceStructureState(structure, state, 'The hero agrees.');
 
-      expect(result.updatedState.pagesInCurrentBeat).toBe(0);
+      expect(result.updatedState.pagesInCurrentMilestone).toBe(0);
       expect(result.updatedState.pacingNudge).toBeNull();
     });
 
-    it('resets pagesInCurrentBeat and pacingNudge on story completion', () => {
+    it('resets pagesInCurrentMilestone and pacingNudge on story completion', () => {
       const structure = createStructure();
       const currentState: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done.' },
-          { beatId: '1.2', status: 'concluded', resolution: 'Done.' },
-          { beatId: '2.1', status: 'active' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Done.' },
+          { milestoneId: '2.1', status: 'active' },
         ],
-        pagesInCurrentBeat: 5,
+        pagesInCurrentMilestone: 5,
         pacingNudge: null,
       };
 
       const result = advanceStructureState(structure, currentState, 'Final resolution.');
 
       expect(result.isComplete).toBe(true);
-      expect(result.updatedState.pagesInCurrentBeat).toBe(0);
+      expect(result.updatedState.pagesInCurrentMilestone).toBe(0);
       expect(result.updatedState.pacingNudge).toBeNull();
     });
   });

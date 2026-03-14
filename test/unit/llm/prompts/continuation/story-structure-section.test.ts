@@ -6,7 +6,7 @@ import type { ActiveState } from '../../../../../src/models/state';
 import { ThreadType, Urgency } from '../../../../../src/models/state/keyed-entry';
 import {
   getRemainingBeats,
-  buildActiveStateForBeatEvaluation,
+  buildActiveStateForMilestoneEvaluation,
   buildEscalationCheckSection,
   DEVIATION_DETECTION_SECTION,
 } from '../../../../../src/llm/prompts/continuation/story-structure-section';
@@ -25,7 +25,7 @@ describe('story-structure-section', () => {
         objective: 'Escape the first sweep',
         stakes: 'Capture means execution.',
         entryCondition: 'Emergency law declared.',
-        beats: [
+        milestones: [
           {
             id: '1.1',
             description: 'Reach safehouse',
@@ -62,7 +62,7 @@ describe('story-structure-section', () => {
         objective: 'Cross hostile territory',
         stakes: 'If lost, purge is permanent.',
         entryCondition: 'Leave the capital.',
-        beats: [
+        milestones: [
           {
             id: '2.1',
             description: 'Break through checkpoints',
@@ -87,7 +87,7 @@ describe('story-structure-section', () => {
         objective: 'Expose the planners',
         stakes: 'Silence guarantees totalitarian rule.',
         entryCondition: 'Access relay tower.',
-        beats: [
+        milestones: [
           {
             id: '3.1',
             description: 'Reach relay core',
@@ -117,12 +117,12 @@ describe('story-structure-section', () => {
   };
 
   describe('getRemainingBeats', () => {
-    it('returns all beats when none concluded', () => {
+    it('returns all milestones when none concluded', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        beatProgressions: [{ beatId: '1.1', status: 'active' }],
-        pagesInCurrentBeat: 0,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -133,15 +133,15 @@ describe('story-structure-section', () => {
       expect(remaining.map((b) => b.id)).toContain('3.2');
     });
 
-    it('excludes concluded beats', () => {
+    it('excludes concluded milestones', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
-          { beatId: '1.2', status: 'active' },
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
+          { milestoneId: '1.2', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -155,14 +155,14 @@ describe('story-structure-section', () => {
     it('handles multi-act structures', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
-        currentBeatIndex: 0,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done' },
-          { beatId: '1.2', status: 'concluded', resolution: 'Done' },
-          { beatId: '1.3', status: 'concluded', resolution: 'Done' },
-          { beatId: '2.1', status: 'active' },
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Done' },
+          { milestoneId: '1.3', status: 'concluded', resolution: 'Done' },
+          { milestoneId: '2.1', status: 'active' },
         ],
-        pagesInCurrentBeat: 0,
+        pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
 
@@ -172,9 +172,9 @@ describe('story-structure-section', () => {
     });
   });
 
-  describe('buildActiveStateForBeatEvaluation', () => {
+  describe('buildActiveStateForMilestoneEvaluation', () => {
     it('returns empty string when all fields empty', () => {
-      const result = buildActiveStateForBeatEvaluation(emptyActiveState);
+      const result = buildActiveStateForMilestoneEvaluation(emptyActiveState);
       expect(result).toBe('');
     });
 
@@ -184,7 +184,7 @@ describe('story-structure-section', () => {
         currentLocation: 'Hidden bunker',
       };
 
-      const result = buildActiveStateForBeatEvaluation(state);
+      const result = buildActiveStateForMilestoneEvaluation(state);
 
       expect(result).toContain('Location: Hidden bunker');
     });
@@ -198,7 +198,7 @@ describe('story-structure-section', () => {
         ],
       };
 
-      const result = buildActiveStateForBeatEvaluation(state);
+      const result = buildActiveStateForMilestoneEvaluation(state);
 
       expect(result).toContain('Active threats: Guard patrolling the area, Dog trained to attack');
       expect(result).not.toContain('Active threats: th-2, th-5');
@@ -210,7 +210,7 @@ describe('story-structure-section', () => {
         activeConstraints: [{ id: 'cn-8', text: 'Broken arm - cannot climb' }],
       };
 
-      const result = buildActiveStateForBeatEvaluation(state);
+      const result = buildActiveStateForMilestoneEvaluation(state);
 
       expect(result).toContain('Constraints: Broken arm - cannot climb');
       expect(result).not.toContain('Constraints: cn-8');
@@ -229,7 +229,7 @@ describe('story-structure-section', () => {
         ],
       };
 
-      const result = buildActiveStateForBeatEvaluation(state);
+      const result = buildActiveStateForMilestoneEvaluation(state);
 
       expect(result).toContain('Open threads:');
       expect(result).toContain('[td-3] (QUEST/HIGH) Missing key - need to find it');
@@ -249,64 +249,64 @@ describe('story-structure-section', () => {
   });
 
   describe('buildEscalationCheckSection', () => {
-    it('returns empty string when beat role is setup', () => {
+    it('returns empty string when milestone role is setup', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        pagesInCurrentBeat: 1,
+        currentMilestoneIndex: 0,
+        pagesInCurrentMilestone: 1,
         pacingNudge: null,
-        beatProgressions: [{ beatId: '1.1', status: 'active' }],
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
       };
 
-      expect(buildEscalationCheckSection('setup', testStructure.acts[0]!.beats, state)).toBe('');
+      expect(buildEscalationCheckSection('setup', testStructure.acts[0]!.milestones, state)).toBe('');
     });
 
-    it('returns empty string when beat role is resolution', () => {
+    it('returns empty string when milestone role is resolution', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        pagesInCurrentBeat: 1,
+        currentMilestoneIndex: 0,
+        pagesInCurrentMilestone: 1,
         pacingNudge: null,
-        beatProgressions: [{ beatId: '1.1', status: 'active' }],
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
       };
 
-      expect(buildEscalationCheckSection('resolution', testStructure.acts[0]!.beats, state)).toBe(
+      expect(buildEscalationCheckSection('resolution', testStructure.acts[0]!.milestones, state)).toBe(
         ''
       );
     });
 
-    it('returns empty string when beat role is undefined', () => {
+    it('returns empty string when milestone role is undefined', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        pagesInCurrentBeat: 1,
+        currentMilestoneIndex: 0,
+        pagesInCurrentMilestone: 1,
         pacingNudge: null,
-        beatProgressions: [],
+        milestoneProgressions: [],
       };
 
-      expect(buildEscalationCheckSection(undefined, testStructure.acts[0]!.beats, state)).toBe('');
+      expect(buildEscalationCheckSection(undefined, testStructure.acts[0]!.milestones, state)).toBe('');
     });
 
     it('returns escalation check with previous resolution for escalation role', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        pagesInCurrentBeat: 1,
+        currentMilestoneIndex: 1,
+        pagesInCurrentMilestone: 1,
         pacingNudge: null,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
-          { beatId: '1.2', status: 'active' },
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
+          { milestoneId: '1.2', status: 'active' },
         ],
       };
 
       const result = buildEscalationCheckSection(
         'escalation',
-        testStructure.acts[0]!.beats,
+        testStructure.acts[0]!.milestones,
         state
       );
 
       expect(result).toContain('=== ESCALATION QUALITY CHECK ===');
-      expect(result).toContain('Previous beat resolved: "Reached safehouse"');
+      expect(result).toContain('Previous milestone resolved: "Reached safehouse"');
       expect(result).toContain('The expected crisis type is BEST_BAD_CHOICE');
       expect(result).toContain('The expected gap magnitude is WIDE');
       expect(result).toContain('delivered divergence does not match expected gap magnitude WIDE');
@@ -317,25 +317,25 @@ describe('story-structure-section', () => {
     it('returns turning point check for turning_point role', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 2,
-        pagesInCurrentBeat: 1,
+        currentMilestoneIndex: 2,
+        pagesInCurrentMilestone: 1,
         pacingNudge: null,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done' },
-          { beatId: '1.2', status: 'concluded', resolution: 'Evidence protected' },
-          { beatId: '1.3', status: 'active' },
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Evidence protected' },
+          { milestoneId: '1.3', status: 'active' },
         ],
       };
 
       const result = buildEscalationCheckSection(
         'turning_point',
-        testStructure.acts[0]!.beats,
+        testStructure.acts[0]!.milestones,
         state
       );
 
       expect(result).toContain('=== TURNING POINT QUALITY CHECK ===');
       expect(result).toContain('irreversible shift');
-      expect(result).toContain('Previous beat resolved: "Evidence protected"');
+      expect(result).toContain('Previous milestone resolved: "Evidence protected"');
       expect(result).toContain('The expected crisis type is IRRECONCILABLE_GOODS');
       expect(result).toContain('The expected gap magnitude is CHASM');
       expect(result).toContain(
@@ -347,13 +347,13 @@ describe('story-structure-section', () => {
     it('returns reflection check for reflection role', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 2,
-        pagesInCurrentBeat: 1,
+        currentMilestoneIndex: 2,
+        pagesInCurrentMilestone: 1,
         pacingNudge: null,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Done' },
-          { beatId: '1.2', status: 'concluded', resolution: 'Evidence protected' },
-          { beatId: '1.3', status: 'active' },
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Evidence protected' },
+          { milestoneId: '1.3', status: 'active' },
         ],
       };
 
@@ -362,10 +362,10 @@ describe('story-structure-section', () => {
         acts: [
           {
             ...testStructure.acts[0]!,
-            beats: [
-              { ...testStructure.acts[0]!.beats[0]! },
-              { ...testStructure.acts[0]!.beats[1]! },
-              { ...testStructure.acts[0]!.beats[2]!, role: 'reflection' as const },
+            milestones: [
+              { ...testStructure.acts[0]!.milestones[0]! },
+              { ...testStructure.acts[0]!.milestones[1]! },
+              { ...testStructure.acts[0]!.milestones[2]!, role: 'reflection' as const },
             ],
           },
           ...testStructure.acts.slice(1),
@@ -374,32 +374,32 @@ describe('story-structure-section', () => {
 
       const result = buildEscalationCheckSection(
         'reflection',
-        reflectionStructure.acts[0]!.beats,
+        reflectionStructure.acts[0]!.milestones,
         state
       );
 
       expect(result).toContain('=== REFLECTION QUALITY CHECK ===');
       expect(result).toContain('thematic or internal deepening');
-      expect(result).toContain('Previous beat resolved: "Evidence protected"');
+      expect(result).toContain('Previous milestone resolved: "Evidence protected"');
       expect(result).toContain('Reflection is NOT recap');
     });
 
-    it('omits previous resolution when first beat in act', () => {
+    it('omits previous resolution when first milestone in act', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 0,
-        pagesInCurrentBeat: 1,
+        currentMilestoneIndex: 0,
+        pagesInCurrentMilestone: 1,
         pacingNudge: null,
-        beatProgressions: [{ beatId: '1.1', status: 'active' }],
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
       };
 
-      // Use a structure where the first beat is escalation
+      // Use a structure where the first milestone is escalation
       const escalationFirstStructure = {
         ...testStructure,
         acts: [
           {
             ...testStructure.acts[0]!,
-            beats: [
+            milestones: [
               {
                 id: '1.1',
                 name: 'Esc',
@@ -416,27 +416,27 @@ describe('story-structure-section', () => {
 
       const result = buildEscalationCheckSection(
         'escalation',
-        escalationFirstStructure.acts[0]!.beats,
+        escalationFirstStructure.acts[0]!.milestones,
         state
       );
 
       expect(result).toContain('=== ESCALATION QUALITY CHECK ===');
-      expect(result).not.toContain('Previous beat resolved:');
+      expect(result).not.toContain('Previous milestone resolved:');
     });
 
-    it('adds midpoint quality guidance when the active beat is midpoint-tagged', () => {
+    it('adds midpoint quality guidance when the active milestone is midpoint-tagged', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
-        currentBeatIndex: 1,
-        pagesInCurrentBeat: 1,
+        currentMilestoneIndex: 1,
+        pagesInCurrentMilestone: 1,
         pacingNudge: null,
-        beatProgressions: [
-          { beatId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
-          { beatId: '1.2', status: 'active' },
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
+          { milestoneId: '1.2', status: 'active' },
         ],
       };
 
-      const result = buildEscalationCheckSection('escalation', testStructure.acts[0]!.beats, state);
+      const result = buildEscalationCheckSection('escalation', testStructure.acts[0]!.milestones, state);
 
       expect(result).toContain('=== MIDPOINT QUALITY CHECK ===');
       expect(result).toContain('Expected midpoint type: FALSE_VICTORY');

@@ -33,8 +33,8 @@
       return;
     }
 
-    const beatsText = deviationInfo.beatsInvalidated
-      ? ` (${deviationInfo.beatsInvalidated} story beat${deviationInfo.beatsInvalidated > 1 ? 's' : ''} replanned)`
+    const milestonesText = deviationInfo.milestonesInvalidated
+      ? ` (${deviationInfo.milestonesInvalidated} story milestone${deviationInfo.milestonesInvalidated > 1 ? 's' : ''} replanned)`
       : '';
 
     const banner = document.createElement('aside');
@@ -44,7 +44,7 @@
         <div class="deviation-icon">&#x1F504;</div>
         <div class="deviation-content">
           <h4>Story Path Shifted</h4>
-          <p>${escapeHtml(deviationInfo.reason)}${beatsText}</p>
+          <p>${escapeHtml(deviationInfo.reason)}${milestonesText}</p>
         </div>
       `;
 
@@ -73,10 +73,9 @@
         + '<div class="milestone-banner__act-name">' + escapeHtml(milestoneInfo.actName || '') + '</div>';
     } else {
       banner.innerHTML =
-        '<div class="milestone-banner__beat-label">Beat Concluded</div>'
-        + '<div class="milestone-banner__beat-name">' + escapeHtml(milestoneInfo.beatName || '') + '</div>';
+        '<div class="milestone-banner__beat-label">Milestone Concluded</div>'
+        + '<div class="milestone-banner__beat-name">' + escapeHtml(milestoneInfo.milestoneName || '') + '</div>';
     }
 
     narrativeElement.after(banner);
   }
-

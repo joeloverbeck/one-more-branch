@@ -119,7 +119,9 @@ describe('public client script', () => {
     expect(script).toContain('TRACKING_PROMISES: [');
     expect(script).toContain('ASSESSING_PROSE: [');
     expect(script).toContain('EVALUATING_NPC_INTELLIGENCE: [');
-    expect(script).toContain('STRUCTURING_STORY: [');
+    expect(script).toContain('DESIGNING_ARCHITECTURE: [');
+    expect(script).toContain('GENERATING_MILESTONES: [');
+    expect(script).toContain('VALIDATING_STRUCTURE: [');
     expect(script).toContain('RESTRUCTURING_STORY: [');
   });
 
@@ -136,6 +138,9 @@ describe('public client script', () => {
     expect(script).toContain("STRESS_TESTING_CONCEPT: 'HARDENING'");
     expect(script).toContain("ANALYZING_SPECIFICITY: 'ANALYZING'");
     expect(script).toContain("GENERATING_SCENARIOS: 'ENVISIONING'");
+    expect(script).toContain("DESIGNING_ARCHITECTURE: 'ARCHITECTING'");
+    expect(script).toContain("GENERATING_MILESTONES: 'STRUCTURING'");
+    expect(script).toContain("VALIDATING_STRUCTURE: 'VALIDATING'");
   });
 
   it('ships 20+ phrase variants for each concept stage pool', () => {

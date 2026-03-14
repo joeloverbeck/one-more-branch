@@ -93,18 +93,42 @@ export interface SpineFileData {
 }
 
 export interface StoryStructureFileData {
+  anchorMoments?: {
+    incitingIncident: {
+      actIndex: number;
+      description: string;
+    };
+    midpoint: {
+      actIndex: number;
+      milestoneSlot: number;
+      midpointType: string;
+    };
+    climax: {
+      actIndex: number;
+      description: string;
+    };
+    signatureScenarioPlacement: {
+      actIndex: number;
+      description: string;
+    } | null;
+  };
   acts: Array<{
     id: string;
     name: string;
     objective: string;
     stakes: string;
     entryCondition: string;
-    beats: Array<{
+    actQuestion?: string;
+    exitReversal?: string;
+    promiseTargets?: string[];
+    obligationTargets?: string[];
+    milestones: Array<{
       id: string;
       name: string;
       description: string;
       objective: string;
       causalLink: string;
+      exitCondition?: string;
       role: string;
       escalationType?: string | null;
       secondaryEscalationType?: string | null;
@@ -132,7 +156,7 @@ export interface VersionedStoryStructureFileData {
   previousVersionId: string | null;
   createdAtPageId: number | null;
   rewriteReason: string | null;
-  preservedBeatIds: string[];
+  preservedMilestoneIds: string[];
   createdAt: string;
 }
 

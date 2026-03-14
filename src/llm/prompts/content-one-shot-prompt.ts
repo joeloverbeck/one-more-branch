@@ -17,9 +17,9 @@ const QUALITY_RULES = `QUALITY RULES:
   7. an unforgettable image
 - Weirdness must be load-bearing, not decorative.
 - Prefer specific nouns and mechanisms over abstract adjectives.
-- Dangerous sincerity beats glib parody.
+- Dangerous sincerity milestones glib parody.
 - Do not output generic scaffolding: chosen one, secret order, ancient prophecy, dark lord, mysterious artifact, hidden conspiracy, save the world, magical empire, forbidden power.
-- Do not copy the exemplar ideas' surface nouns, creatures, jobs, countries, or plot beats. Extrapolate the deeper taste behind them.
+- Do not copy the exemplar ideas' surface nouns, creatures, jobs, countries, or plot milestones. Extrapolate the deeper taste behind them.
 - At least half the items should contain structural irony.`;
 
 const DIVERSITY_RULES = `DIVERSITY:

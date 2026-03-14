@@ -35,7 +35,7 @@ export const PROMISE_TRACKER_SCHEMA: JsonSchema = {
                 type: 'string',
                 enum: ['SCENE', 'BEAT', 'ACT', 'STORY'],
                 description:
-                  'Structural scope matching the weight of the setup. SCENE = resolve within 1-3 pages, BEAT = resolve within current beat, ACT = resolve within current act, STORY = resolve at climax/ending.',
+                  'Structural scope matching the weight of the setup. SCENE = resolve within 1-3 pages, BEAT = resolve within current milestone, ACT = resolve within current act, STORY = resolve at climax/ending.',
               },
               resolutionHint: {
                 type: 'string',
@@ -127,7 +127,7 @@ export const PROMISE_TRACKER_SCHEMA: JsonSchema = {
         obligatorySceneFulfilled: {
           anyOf: [{ type: 'string' }, { type: 'null' }],
           description:
-            'Exact obligatorySceneTag fulfilled by this scene for the active beat, or null when no obligatory scene obligation was fulfilled.',
+            'Exact obligatorySceneTag fulfilled by this scene for the active milestone, or null when no obligatory scene obligation was fulfilled.',
         },
         delayedConsequencesTriggered: {
           type: 'array',

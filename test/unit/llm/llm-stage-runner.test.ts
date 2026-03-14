@@ -20,6 +20,7 @@ jest.mock('../../../src/logging/index.js', () => ({
 
 import type { LlmStageRunnerParams } from '../../../src/llm/llm-stage-runner';
 import { runLlmStage, runTwoPhaseLlmStage } from '../../../src/llm/llm-stage-runner';
+import { getConfig } from '../../../src/config';
 import { LLMError } from '../../../src/llm/llm-client-types';
 import { CONCEPT_IDEATION_SCHEMA } from '../../../src/llm/schemas/concept-ideator-schema';
 
@@ -180,6 +181,43 @@ describe('llm-stage-runner', () => {
     await expectation;
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('falls back to the default model on HTTP_429 before retrying the whole stage', async () => {
+    const fallbackContent = JSON.stringify({ ok: true, source: 'fallback' });
+    fetchMock
+      .mockResolvedValueOnce(createErrorResponse(429, 'rate limited'))
+      .mockResolvedValueOnce(responseWithMessageContent(fallbackContent));
+
+    const result = await runLlmStage({
+      stageModel: 'conceptSeeder',
+      promptType: 'conceptSeeder',
+      apiKey: 'test-api-key',
+      options: {
+        model: 'z-ai/glm-5',
+      },
+      schema: CONCEPT_IDEATION_SCHEMA,
+      messages: [{ role: 'user', content: 'test message' }],
+      parseResponse: (parsed) => parsed as { ok: boolean; source: string },
+    });
+
+    expect(result).toEqual({
+      parsed: { ok: true, source: 'fallback' },
+      rawResponse: fallbackContent,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const firstCallBody = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string) as Record<
+      string,
+      unknown
+    >;
+    const secondCallBody = JSON.parse(fetchMock.mock.calls[1]?.[1]?.body as string) as Record<
+      string,
+      unknown
+    >;
+
+    expect(firstCallBody['model']).toBe('z-ai/glm-5');
+    expect(secondCallBody['model']).toBe(getConfig().llm.defaultModel);
   });
 
   it('runs two-phase stages sequentially and combines parsed/raw outputs', async () => {

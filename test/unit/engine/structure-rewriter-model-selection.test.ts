@@ -27,6 +27,11 @@ jest.mock('../../../src/config', () => ({
   getConfig: jest.fn().mockReturnValue({
     llm: {
       temperature: 0.8,
+      defaultModel: 'test-model/structure-rewrite-v1',
+      retry: {
+        maxRetries: 2,
+        baseDelayMs: 1000,
+      },
     },
   }),
 }));
@@ -51,8 +56,8 @@ function createRewriteContext(
     completedBeats: [
       {
         actIndex: 0,
-        beatIndex: 0,
-        beatId: '1.1',
+        milestoneIndex: 0,
+        milestoneId: '1.1',
         name: 'Mutiny escape',
         description: 'Survive the mutiny at Blackwake Harbor',
         objective: 'Escape with command logs',
@@ -74,8 +79,8 @@ function createRewriteContext(
     plannedBeats: [],
     sceneSummary: 'The captain publicly allied with a former enemy admiral.',
     currentActIndex: 0,
-    currentBeatIndex: 1,
-    deviationReason: 'Prior rebellion beats are no longer viable after alliance reversal.',
+    currentMilestoneIndex: 1,
+    deviationReason: 'Prior rebellion milestones are no longer viable after alliance reversal.',
     originalTheme: 'Loyalty tested by survival',
     originalOpeningImage: 'A harbor at dawn.',
     originalClosingImage: 'A fleet sailing into sunset.',
@@ -97,7 +102,7 @@ function createValidStructureResponse(): Record<string, unknown> {
         objective: 'Stabilize the fragile alliance',
         stakes: 'The fleet fractures',
         entryCondition: 'Alliance is announced',
-        beats: [
+        milestones: [
           {
             name: 'Mutiny escape',
             description: 'Survive the mutiny at Blackwake Harbor',
@@ -119,7 +124,7 @@ function createValidStructureResponse(): Record<string, unknown> {
         objective: 'Outmaneuver loyalists',
         stakes: 'Civil war',
         entryCondition: 'Fleet enters blockade',
-        beats: [
+        milestones: [
           {
             name: 'Convoy interception',
             description: 'Intercept the sabotage convoy',
@@ -143,7 +148,7 @@ function createValidStructureResponse(): Record<string, unknown> {
         objective: 'Decide who rules',
         stakes: 'Tyranny',
         entryCondition: 'Stormfront closes',
-        beats: [
+        milestones: [
           {
             name: 'Maelstrom strike',
             description: 'Lead a final strike',
@@ -164,10 +169,25 @@ function createValidStructureResponse(): Record<string, unknown> {
   };
 }
 
+function createErrorResponse(status: number, message: string): Response {
+  return {
+    ok: false,
+    status,
+    json: jest.fn(),
+    text: jest.fn().mockResolvedValue(message),
+  } as unknown as Response;
+}
+
+async function advanceRetryDelays(): Promise<void> {
+  await jest.advanceTimersByTimeAsync(1000);
+  await jest.advanceTimersByTimeAsync(2000);
+}
+
 describe('structure-rewriter default generator model selection', () => {
   let fetchSpy: jest.SpyInstance;
 
   beforeEach(() => {
+    jest.useFakeTimers();
     mockLogPrompt.mockReset();
     (getStageModel as jest.Mock).mockReturnValue('test-model/structure-rewrite-v1');
     (getStageMaxTokens as jest.Mock).mockReturnValue(32768);
@@ -187,6 +207,7 @@ describe('structure-rewriter default generator model selection', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     fetchSpy.mockRestore();
   });
 
@@ -218,6 +239,14 @@ describe('structure-rewriter default generator model selection', () => {
     expect(body['max_tokens']).toBe(32768);
   });
 
+  it('logs the rewrite prompt through the shared runner', async () => {
+    const rewriter = createStructureRewriter();
+    const context = createRewriteContext();
+    await rewriter.rewriteStructure(context, 'test-api-key');
+
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'structureRewrite', expect.any(Array));
+  });
+
   it('uses a custom stage model when configured differently', async () => {
     (getStageModel as jest.Mock).mockReturnValue('custom/structure-model');
     (getStageMaxTokens as jest.Mock).mockReturnValue(16384);
@@ -230,5 +259,22 @@ describe('structure-rewriter default generator model selection', () => {
     const body = JSON.parse(fetchCall[1].body as string) as Record<string, unknown>;
     expect(body['model']).toBe('custom/structure-model');
     expect(body['max_tokens']).toBe(16384);
+  });
+
+  it('retries retryable rewrite failures through the shared runner policy', async () => {
+    fetchSpy.mockReset();
+    fetchSpy.mockResolvedValue(createErrorResponse(429, 'rate limited'));
+
+    const rewriter = createStructureRewriter();
+    const pending = rewriter.rewriteStructure(createRewriteContext(), 'test-api-key');
+    const expectation = expect(pending).rejects.toMatchObject({
+      code: 'HTTP_429',
+      retryable: true,
+    });
+
+    await advanceRetryDelays();
+    await expectation;
+
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 });

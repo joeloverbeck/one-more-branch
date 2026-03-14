@@ -333,12 +333,17 @@ describe('playRoutes', () => {
             objective: 'Start the journey',
             stakes: 'High',
             entryCondition: 'Always',
-            beats: [
+            actQuestion: 'Will the hero leave home behind?',
+            exitReversal: 'The safe road collapses.',
+            promiseTargets: ['The hero can still save the kingdom'],
+            obligationTargets: ['call_to_adventure'],
+            milestones: [
               {
                 id: '1.1',
                 name: 'The Setup',
                 description: 'Introduce the journey.',
                 objective: 'Start moving.',
+                exitCondition: 'The hero commits to the road.',
                 role: 'setup',
               },
             ],
@@ -406,12 +411,17 @@ describe('playRoutes', () => {
           actDisplayInfo: {
             actNumber: 1,
             actName: 'The Beginning',
-            beatId: '1.1',
-            beatName: 'The Setup',
-            displayString: 'Act 1: The Beginning - Beat 1.1: The Setup',
+            milestoneId: '1.1',
+            milestoneName: 'The Setup',
+            displayString: 'Act 1: The Beginning - Milestone 1.1: The Setup',
             actObjective: 'Start the journey',
             actStakes: 'High',
-            beatObjective: 'Start moving.',
+            milestoneObjective: 'Start moving.',
+            actQuestion: 'Will the hero leave home behind?',
+            exitCondition: 'The hero commits to the road.',
+            exitReversal: 'The safe road collapses.',
+            promiseTargets: ['The hero can still save the kingdom'],
+            obligationTargets: ['call_to_adventure'],
           },
         })
       );
@@ -471,6 +481,15 @@ describe('playRoutes', () => {
           openingImage: 'An opening image placeholder.',
           closingImage: 'A closing image placeholder.',
           pacingBudget: { targetPagesMin: 10, targetPagesMax: 20 },
+          anchorMoments: {
+            incitingIncident: { actIndex: 0, description: 'The treaty is stolen.' },
+            midpoint: { actIndex: 1, milestoneSlot: 1, midpointType: 'FALSE_VICTORY' },
+            climax: { actIndex: 2, description: 'The summit vote turns into open accusation.' },
+            signatureScenarioPlacement: {
+              actIndex: 1,
+              description: 'A public negotiation becomes a trap.',
+            },
+          },
           generatedAt: new Date(),
         },
         decomposedCharacters: [
@@ -521,6 +540,18 @@ describe('playRoutes', () => {
         expect.objectContaining({
           theme: 'Trust is a weapon',
           premise: 'Forge alliances before the summit collapses',
+          anchorMoments: {
+            incitingIncident: { actIndex: 0, description: 'The treaty is stolen.' },
+            midpoint: { actIndex: 1, milestoneSlot: 1, midpointType: 'FALSE_VICTORY' },
+            climax: {
+              actIndex: 2,
+              description: 'The summit vote turns into open accusation.',
+            },
+            signatureScenarioPlacement: {
+              actIndex: 1,
+              description: 'A public negotiation becomes a trap.',
+            },
+          },
         })
       );
     });
@@ -1248,8 +1279,8 @@ describe('playRoutes', () => {
       });
       const deviationInfo = {
         detected: true,
-        reason: 'Player action invalidated planned story beats.',
-        beatsInvalidated: 2,
+        reason: 'Player action invalidated planned story milestones.',
+        milestonesInvalidated: 2,
       };
       jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({ ...story, id: storyId });
       jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
@@ -1275,8 +1306,8 @@ describe('playRoutes', () => {
           success: true,
           deviationInfo: {
             detected: true,
-            reason: 'Player action invalidated planned story beats.',
-            beatsInvalidated: 2,
+            reason: 'Player action invalidated planned story milestones.',
+            milestonesInvalidated: 2,
           },
         })
       );
@@ -1332,11 +1363,11 @@ describe('playRoutes', () => {
         tone: 'Adventure',
       });
       const analystResult = {
-        beatConcluded: false,
-        beatResolution: '',
+        milestoneConcluded: false,
+        milestoneResolution: '',
         deviationDetected: false,
         deviationReason: '',
-        invalidatedBeatIds: [],
+        invalidatedMilestoneIds: [],
         sceneSummary: 'Summary.',
         pacingIssueDetected: false,
         pacingIssueReason: '',
@@ -1363,9 +1394,9 @@ describe('playRoutes', () => {
         spineDeviationDetected: false,
         spineDeviationReason: '',
         spineInvalidatedElement: null,
-        alignedBeatId: null,
-        beatAlignmentConfidence: 'LOW',
-        beatAlignmentReason: '',
+        alignedMilestoneId: null,
+        milestoneAlignmentConfidence: 'LOW',
+        milestoneAlignmentReason: '',
         rawResponse: '{}',
       };
       const resultPage = createPage({
@@ -1412,12 +1443,17 @@ describe('playRoutes', () => {
             objective: 'Begin the journey',
             stakes: 'High',
             entryCondition: 'Always',
-            beats: [
+            actQuestion: 'Will the hero answer the call?',
+            exitReversal: 'The mentor is taken off the board.',
+            promiseTargets: ['The hero can still save the kingdom'],
+            obligationTargets: ['call_to_adventure'],
+            milestones: [
               {
                 id: '1.1',
                 name: 'Opening Move',
                 description: 'Start the story.',
                 objective: 'Launch act one.',
+                exitCondition: 'The hero abandons the old routine.',
                 role: 'setup',
               },
             ],
@@ -1428,12 +1464,17 @@ describe('playRoutes', () => {
             objective: 'Face challenges',
             stakes: 'Higher',
             entryCondition: 'After act one',
-            beats: [
+            actQuestion: 'Can the hero hold the alliance together?',
+            exitReversal: 'The alliance fractures under pressure.',
+            promiseTargets: ['The hero can still save the kingdom'],
+            obligationTargets: ['midpoint_reversal'],
+            milestones: [
               {
                 id: '2.1',
                 name: 'Rising Pressure',
                 description: 'Pressure escalates.',
                 objective: 'Force commitment.',
+                exitCondition: 'The alliance chooses a side in public.',
                 role: 'escalation',
               },
             ],
@@ -1509,12 +1550,17 @@ describe('playRoutes', () => {
           actDisplayInfo: {
             actNumber: 2,
             actName: 'Act Two',
-            beatId: '2.1',
-            beatName: 'Rising Pressure',
-            displayString: 'Act 2: Act Two - Beat 2.1: Rising Pressure',
+            milestoneId: '2.1',
+            milestoneName: 'Rising Pressure',
+            displayString: 'Act 2: Act Two - Milestone 2.1: Rising Pressure',
             actObjective: 'Face challenges',
             actStakes: 'Higher',
-            beatObjective: 'Force commitment.',
+            milestoneObjective: 'Force commitment.',
+            actQuestion: 'Can the hero hold the alliance together?',
+            exitCondition: 'The alliance chooses a side in public.',
+            exitReversal: 'The alliance fractures under pressure.',
+            promiseTargets: ['The hero can still save the kingdom'],
+            obligationTargets: ['midpoint_reversal'],
           },
         })
       );

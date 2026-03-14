@@ -1,19 +1,10 @@
-import { getConfig } from '../config/index.js';
-import { getStageModel, getStageMaxTokens } from '../config/stage-model.js';
-import { logger, logPrompt, logResponse } from '../logging/index.js';
-import {
-  OPENROUTER_API_URL,
-  parseMessageJsonContent,
-  readErrorDetails,
-  readJsonResponse,
-} from '../llm/http-client.js';
+import { runLlmStage } from './llm-stage-runner.js';
 import {
   buildSpineRewritePrompt,
   type SpineRewriteContext,
-} from '../llm/prompts/spine-rewrite-prompt.js';
-import { withRetry } from '../llm/retry.js';
-import { SPINE_REWRITE_SCHEMA } from '../llm/schemas/spine-rewrite-schema.js';
-import { LLMError } from '../llm/llm-client-types.js';
+} from './prompts/spine-rewrite-prompt.js';
+import { SPINE_REWRITE_SCHEMA } from './schemas/spine-rewrite-schema.js';
+import { LLMError } from './llm-client-types.js';
 import type { StorySpine } from '../models/story-spine.js';
 import {
   isStorySpineType,
@@ -162,61 +153,18 @@ export async function rewriteSpine(
   context: SpineRewriteContext,
   apiKey: string
 ): Promise<SpineRewriteResult> {
-  const model = getStageModel('spineRewrite');
-  const maxTokens = getStageMaxTokens('spineRewrite');
-  const temperature = getConfig().llm.temperature;
-
   const messages = buildSpineRewritePrompt(context);
-  logPrompt(logger, 'spineRewrite', messages);
-
-  return withRetry(async () => {
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'HTTP-Referer': 'http://localhost:3000',
-        'X-Title': 'One More Branch',
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens: maxTokens,
-        response_format: SPINE_REWRITE_SCHEMA,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorDetails = await readErrorDetails(response);
-      const retryable = response.status === 429 || response.status >= 500;
-      throw new LLMError(errorDetails.message, `HTTP_${response.status}`, retryable, {
-        httpStatus: response.status,
-        model,
-        rawErrorBody: errorDetails.rawBody,
-        parsedError: errorDetails.parsedError,
-      });
-    }
-
-    const data = await readJsonResponse(response);
-    const content = data.choices[0]?.message?.content;
-    if (!content) {
-      throw new LLMError('Empty response from OpenRouter', 'EMPTY_RESPONSE', true);
-    }
-
-    const parsedMessage = parseMessageJsonContent(content);
-    const responseText = parsedMessage.rawText;
-    logResponse(logger, 'spineRewrite', responseText);
-    try {
-      const spine = parseSpineRewriteResponse(parsedMessage.parsed);
-      return { spine, rawResponse: responseText };
-    } catch (error) {
-      if (error instanceof LLMError) {
-        throw new LLMError(error.message, error.code, error.retryable, {
-          rawContent: responseText,
-        });
-      }
-      throw error;
-    }
+  const result = await runLlmStage({
+    stageModel: 'spineRewrite',
+    promptType: 'spineRewrite',
+    apiKey,
+    schema: SPINE_REWRITE_SCHEMA,
+    messages,
+    parseResponse: parseSpineRewriteResponse,
   });
+
+  return {
+    spine: result.parsed,
+    rawResponse: result.rawResponse,
+  };
 }

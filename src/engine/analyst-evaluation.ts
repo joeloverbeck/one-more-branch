@@ -18,7 +18,7 @@ import type {
   StoryStructure,
   AgedTrackedPromise,
 } from '../models';
-import { getCurrentBeat } from '../models';
+import { getCurrentMilestone } from '../models';
 import type { GenreFrame } from '../models/concept-generator';
 import type { StorySpine } from '../models/story-spine';
 import type { AccumulatedNpcAgendas } from '../models/state/npc-agenda';
@@ -77,8 +77,8 @@ function mergeEvaluatorResults(
   if (npcResult?.rawResponse) rawParts.push(npcResult.rawResponse);
 
   const defaultStructure: StructureEvaluatorResult = {
-    beatConcluded: false,
-    beatResolution: '',
+    milestoneConcluded: false,
+    milestoneResolution: '',
     sceneMomentum: 'STASIS',
     objectiveEvidenceStrength: 'NONE',
     commitmentStrength: 'NONE',
@@ -90,13 +90,13 @@ function mergeEvaluatorResults(
     completionGateFailureReason: 'Structure evaluator failed',
     deviationDetected: false,
     deviationReason: '',
-    invalidatedBeatIds: [],
+    invalidatedMilestoneIds: [],
     spineDeviationDetected: false,
     spineDeviationReason: '',
     spineInvalidatedElement: null,
-    alignedBeatId: null,
-    beatAlignmentConfidence: 'LOW',
-    beatAlignmentReason: '',
+    alignedMilestoneId: null,
+    milestoneAlignmentConfidence: 'LOW',
+    milestoneAlignmentReason: '',
     pacingIssueDetected: false,
     pacingIssueReason: '',
     recommendedAction: 'none',
@@ -156,11 +156,11 @@ export async function runAnalystEvaluation(
 ): Promise<AnalystEvaluationResult> {
   const analystStructureState: AccumulatedStructureState = {
     ...context.parentStructureState,
-    pagesInCurrentBeat: context.parentStructureState.pagesInCurrentBeat + 1,
+    pagesInCurrentMilestone: context.parentStructureState.pagesInCurrentMilestone + 1,
   };
 
-  const activeBeat = getCurrentBeat(context.activeStructure, context.parentStructureState);
-  const activeBeatObligationTag = activeBeat?.obligatorySceneTag ?? undefined;
+  const activeMilestone = getCurrentMilestone(context.activeStructure, context.parentStructureState);
+  const activeMilestoneObligationTag = activeMilestone?.obligatorySceneTag ?? undefined;
 
   logger.info('Generation stage started', {
     ...context.logContext,
@@ -194,7 +194,7 @@ export async function runAnalystEvaluation(
     premisePromises: context.premisePromises,
     fulfilledPremisePromises: context.fulfilledPremisePromises,
     delayedConsequencesEligible: context.delayedConsequencesEligible,
-    activeBeatObligationTag,
+    activeMilestoneObligationTag,
   };
 
   const proseCtx = {

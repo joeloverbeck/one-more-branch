@@ -1,5 +1,6 @@
 import { evolveKernels as runEvolveKernels } from '../../llm/kernel-evolver.js';
 import { evaluateKernels as runEvaluateKernels } from '../../llm/kernel-evaluator.js';
+import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
 import type {
   EvaluatedKernel,
@@ -68,41 +69,31 @@ export function createKernelEvolutionService(
       const userSeeds = input.userSeeds;
       const onGenerationStage = input.onGenerationStage;
 
-      onGenerationStage?.({
-        stage: 'EVOLVING_KERNELS',
-        status: 'started',
-        attempt: 1,
-      });
-      const evolution: KernelEvolutionResult = await deps.evolveKernels(
-        { parentKernels, userSeeds },
-        apiKey,
-      );
-      onGenerationStage?.({
-        stage: 'EVOLVING_KERNELS',
-        status: 'completed',
-        attempt: 1,
-      });
-
-      onGenerationStage?.({
-        stage: 'EVALUATING_KERNELS',
-        status: 'started',
-        attempt: 1,
-      });
-      const evaluation: KernelEvaluationResult = await deps.evaluateKernels(
-        {
-          kernels: evolution.kernels,
-          userSeeds: {
+      const evolution: KernelEvolutionResult = await runGenerationStage(
+        onGenerationStage,
+        'EVOLVING_KERNELS',
+        () =>
+          deps.evolveKernels(
+            { parentKernels, userSeeds },
             apiKey,
-            ...userSeeds,
-          },
-        },
-        apiKey,
+          ),
       );
-      onGenerationStage?.({
-        stage: 'EVALUATING_KERNELS',
-        status: 'completed',
-        attempt: 1,
-      });
+
+      const evaluation: KernelEvaluationResult = await runGenerationStage(
+        onGenerationStage,
+        'EVALUATING_KERNELS',
+        () =>
+          deps.evaluateKernels(
+            {
+              kernels: evolution.kernels,
+              userSeeds: {
+                apiKey,
+                ...userSeeds,
+              },
+            },
+            apiKey,
+          ),
+      );
 
       return {
         evolvedKernels: evolution.kernels,

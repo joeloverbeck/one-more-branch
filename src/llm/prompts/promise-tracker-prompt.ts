@@ -4,7 +4,7 @@ import { CONTENT_POLICY } from '../content-policy.js';
 
 const PROMISE_TRACKER_ROLE = `You are a narrative promise and thread tracker for interactive fiction. Your SINGLE responsibility is to track all forward-looking narrative obligations and their lifecycle — detecting new promises, resolving existing ones, assessing payoff quality, and identifying delayed consequences.
 
-You do NOT evaluate story structure, beat completion, deviation, tone, or NPC behavior. Those are handled by other evaluators.`;
+You do NOT evaluate story structure, milestone completion, deviation, tone, or NPC behavior. Those are handled by other evaluators.`;
 
 const PROMISE_TRACKER_RULES = `PROMISE EVALUATION:
 - A narrative promise is a forward-looking obligation the reader expects answered.
@@ -15,7 +15,7 @@ const PROMISE_TRACKER_RULES = `PROMISE EVALUATION:
 - Detect at most 2 new promises in promisesDetected.
 - Each promise MUST include:
   - promiseType: CHEKHOV_GUN (concrete object/ability/rule with narrative emphasis), FORESHADOWING (hint at a specific future event), UNRESOLVED_TENSION (emotional/relational setup demanding closure), DRAMATIC_QUESTION (story/act-level question reader expects answered), MYSTERY_HOOK (deliberate information gap), TICKING_CLOCK (time-bound urgency constraint).
-  - scope: SCENE (resolve within 1-3 pages), BEAT (resolve within current beat), ACT (resolve within current act), STORY (resolve at climax/ending). Match the weight of the setup.
+  - scope: SCENE (resolve within 1-3 pages), BEAT (resolve within current milestone), ACT (resolve within current act), STORY (resolve at climax/ending). Match the weight of the setup.
   - resolutionHint: A specific question (e.g., "Will the attacker return?", "What is inside the locked box?").
 - RESOLUTION: Only include a promise in promisesResolved when the resolutionHint question has been ANSWERED, not merely referenced.
 - Use exact pr-N IDs from ACTIVE TRACKED PROMISES when populating promisesResolved.
@@ -38,9 +38,9 @@ PREMISE PROMISE FULFILLMENT:
 
 OBLIGATORY SCENE FULFILLMENT:
 - If ACTIVE BEAT OBLIGATION context is present, evaluate whether this scene fulfills that exact obligatory scene tag.
-- Set obligatorySceneFulfilled to the EXACT obligation tag only when scene events satisfy the active beat's obligation in substance.
+- Set obligatorySceneFulfilled to the EXACT obligation tag only when scene events satisfy the active milestone's obligation in substance.
 - If the scene does not fulfill the active obligation, set obligatorySceneFulfilled to null.
-- If no active beat obligation context is provided, always set obligatorySceneFulfilled to null.
+- If no active milestone obligation context is provided, always set obligatorySceneFulfilled to null.
 
 DELAYED CONSEQUENCE TRIGGERING:
 - Evaluate only consequences listed in TRIGGER-ELIGIBLE DELAYED CONSEQUENCES.
@@ -54,7 +54,7 @@ DELAYED CONSEQUENCE CREATION:
 - Identify at most 2 delayed consequences per page.
 - Each must have a clear triggerCondition that can be evaluated against future narrative events.
 - Set reasonable delay windows (typically minPagesDelay: 2-3, maxPagesDelay: 5-8).
-- Do NOT create consequences for trivial details or routine narrative beats.
+- Do NOT create consequences for trivial details or routine narrative milestones.
 - Only flag consequences that would feel like a broken promise if they never materialized.`;
 
 function buildActivePromisesSection(context: PromiseTrackerContext): string {
@@ -109,12 +109,12 @@ function buildPremisePromiseSection(context: PromiseTrackerContext): string {
 }
 
 function buildObligatorySceneSection(context: PromiseTrackerContext): string {
-  if (!context.activeBeatObligationTag) {
+  if (!context.activeMilestoneObligationTag) {
     return '';
   }
 
   return `ACTIVE BEAT OBLIGATION:
-ACTIVE BEAT OBLIGATION TAG: ${context.activeBeatObligationTag}
+ACTIVE BEAT OBLIGATION TAG: ${context.activeMilestoneObligationTag}
 Set obligatorySceneFulfilled to this exact tag only if this scene fulfills it; otherwise set obligatorySceneFulfilled to null.
 
 `;

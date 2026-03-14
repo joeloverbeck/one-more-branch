@@ -25,8 +25,8 @@ describe('buildStructureRewritePrompt', () => {
     completedBeats: [
       {
         actIndex: 0,
-        beatIndex: 0,
-        beatId: '1.1',
+        milestoneIndex: 0,
+        milestoneId: '1.1',
         name: 'Sluice Flight',
         description: 'Escape the tribunal ambush in the port quarter',
         objective: 'Survive and recover a smuggled ledger',
@@ -43,7 +43,7 @@ describe('buildStructureRewritePrompt', () => {
     plannedBeats: [],
     sceneSummary: 'The protagonist has publicly aligned with a rival flotilla.',
     currentActIndex: 1,
-    currentBeatIndex: 0,
+    currentMilestoneIndex: 0,
     deviationReason: 'The prior allies now treat the protagonist as a traitor.',
     originalTheme: 'Duty versus chosen loyalty',
     totalActCount: 3,
@@ -75,11 +75,11 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain(baseContext.sceneSummary);
   });
 
-  it('lists completed beats as canon with act/beat numbering, beat id, role, and resolution', () => {
+  it('lists completed milestones as canon with act/milestone numbering, milestone id, role, and resolution', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
     expect(user).toContain('CANON - DO NOT CHANGE');
-    expect(user).toContain('Act 1, Beat 1 (1.1) [setup] "Sluice Flight"');
+    expect(user).toContain('Act 1, Milestone 1 (1.1) [setup] "Sluice Flight"');
     expect(user).toContain('Causal link: Because the protagonist leaked evidence in the prior hearing.');
     expect(user).toContain('Expected gap magnitude: WIDE');
     expect(user).toContain(
@@ -130,14 +130,14 @@ describe('buildStructureRewritePrompt', () => {
     );
 
     expect(user).toContain('GENRE OBLIGATION CONTRACT (for MYSTERY)');
-    expect(user).toContain('Already fulfilled in completed canon beats');
+    expect(user).toContain('Already fulfilled in completed canon milestones');
     expect(user).toContain('- crime_or_puzzle_presented');
-    expect(user).toContain('Remaining obligation tags to cover in regenerated beats');
-    expect(user).toContain('Preserve obligatorySceneTag on completed beats unchanged');
+    expect(user).toContain('Remaining obligation tags to cover in regenerated milestones');
+    expect(user).toContain('Preserve obligatorySceneTag on completed milestones unchanged');
     expect(user).toContain('obligatorySceneTag: genre obligation tag');
   });
 
-  it('shows explicit None text when no completed beats exist', () => {
+  it('shows explicit None text when no completed milestones exist', () => {
     const user = getUserMessage(
       buildStructureRewritePrompt({
         ...baseContext,
@@ -156,13 +156,13 @@ describe('buildStructureRewritePrompt', () => {
       })
     );
 
-    expect(user).toContain('remaining beats in Act 1, plus all of Acts 2 and 3');
+    expect(user).toContain('remaining milestones in Act 1, plus all of Acts 2 and 3');
   });
 
   it('uses Act 2 scope when deviation occurs in Act 2', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
-    expect(user).toContain('remaining beats in Act 2, plus all of Act 3');
+    expect(user).toContain('remaining milestones in Act 2, plus all of Act 3');
   });
 
   it('uses Act 3-only scope when deviation occurs in Act 3', () => {
@@ -173,7 +173,7 @@ describe('buildStructureRewritePrompt', () => {
       })
     );
 
-    expect(user).toContain('remaining beats in Act 3');
+    expect(user).toContain('remaining milestones in Act 3');
   });
 
   it('handles 4-act stories correctly', () => {
@@ -185,7 +185,7 @@ describe('buildStructureRewritePrompt', () => {
       })
     );
 
-    expect(user).toContain('remaining beats in Act 1, plus all of Acts 2, 3 and 4');
+    expect(user).toContain('remaining milestones in Act 1, plus all of Acts 2, 3 and 4');
   });
 
   it('handles 5-act stories correctly', () => {
@@ -197,7 +197,7 @@ describe('buildStructureRewritePrompt', () => {
       })
     );
 
-    expect(user).toContain('remaining beats in Act 2, plus all of Acts 3, 4 and 5');
+    expect(user).toContain('remaining milestones in Act 2, plus all of Acts 3, 4 and 5');
   });
 
   it('handles last-act deviation in 4-act story', () => {
@@ -209,10 +209,10 @@ describe('buildStructureRewritePrompt', () => {
       })
     );
 
-    expect(user).toContain('remaining beats in Act 4');
+    expect(user).toContain('remaining milestones in Act 4');
   });
 
-  it('includes JSON-compatible output shape description with premise, pacingBudget, beat name, and role', () => {
+  it('includes JSON-compatible output shape description with premise, pacingBudget, milestone name, and role', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
     // Now uses JSON output shape matching the schema
@@ -227,9 +227,9 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain('objective: main goal for the act');
     expect(user).toContain('stakes: consequence of failure');
     expect(user).toContain('entryCondition:');
-    expect(user).toContain('beats: 2-4 items');
-    expect(user).toContain('name: short evocative beat title');
-    expect(user).toContain('description: what should happen in this beat');
+    expect(user).toContain('milestones: 2-4 items');
+    expect(user).toContain('name: short evocative milestone title');
+    expect(user).toContain('description: what should happen in this milestone');
     expect(user).toContain('causalLink: one sentence explaining the cause');
     expect(user).toContain(
       'role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"'
@@ -240,15 +240,15 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain('expectedGapMagnitude: NARROW | MODERATE | WIDE | CHASM | null');
   });
 
-  it('includes causal linkage requirement for regenerated beats', () => {
+  it('includes causal linkage requirement for regenerated milestones', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
     expect(user).toContain('write a causalLink sentence');
     expect(user).toContain('avoid "and then" sequencing');
-    expect(user).toContain('Preserve causalLink from completed beats unchanged');
+    expect(user).toContain('Preserve causalLink from completed milestones unchanged');
   });
 
-  it('instructs to preserve completed beats in the output', () => {
+  it('instructs to preserve completed milestones in the output', () => {
     const user = getUserMessage(
       buildStructureRewritePrompt({
         ...baseContext,
@@ -256,18 +256,18 @@ describe('buildStructureRewritePrompt', () => {
       })
     );
 
-    expect(user).toContain('Preserve completed beats exactly');
+    expect(user).toContain('Preserve completed milestones exactly');
     expect(user).toContain('include them in the output');
   });
 
-  it('includes planned beats section when planned beats exist', () => {
+  it('includes planned milestones section when planned milestones exist', () => {
     const contextWithPlanned: StructureRewriteContext = {
       ...baseContext,
       plannedBeats: [
         {
           actIndex: 1,
-          beatIndex: 1,
-          beatId: '2.2',
+          milestoneIndex: 1,
+          milestoneId: '2.2',
           name: 'Betrayal Revealed',
           description: 'A hidden betrayal comes to light',
           objective: 'Confront the traitor and decide their fate',
@@ -280,8 +280,8 @@ describe('buildStructureRewritePrompt', () => {
         },
         {
           actIndex: 2,
-          beatIndex: 0,
-          beatId: '3.1',
+          milestoneIndex: 0,
+          milestoneId: '3.1',
           name: 'Final Gambit',
           description: 'The last move before everything changes',
           objective: 'Set up the endgame',
@@ -297,25 +297,25 @@ describe('buildStructureRewritePrompt', () => {
     const user = getUserMessage(buildStructureRewritePrompt(contextWithPlanned));
 
     expect(user).toContain('ORIGINALLY PLANNED BEATS (CONTEXT ONLY — DO NOT COPY)');
-    expect(user).toContain('Act 2, Beat 2 (2.2) [turning_point] "Betrayal Revealed"');
+    expect(user).toContain('Act 2, Milestone 2 (2.2) [turning_point] "Betrayal Revealed"');
     expect(user).toContain('Confront the traitor and decide their fate');
-    expect(user).toContain('Act 3, Beat 1 (3.1) [escalation] "Final Gambit"');
+    expect(user).toContain('Act 3, Milestone 1 (3.1) [escalation] "Final Gambit"');
   });
 
-  it('omits planned beats section when no planned beats exist', () => {
+  it('omits planned milestones section when no planned milestones exist', () => {
     const user = getUserMessage(buildStructureRewritePrompt(baseContext));
 
     expect(user).not.toContain('ORIGINALLY PLANNED BEATS');
   });
 
-  it('places planned beats section between completed beats and current situation', () => {
+  it('places planned milestones section between completed milestones and current situation', () => {
     const contextWithPlanned: StructureRewriteContext = {
       ...baseContext,
       plannedBeats: [
         {
           actIndex: 2,
-          beatIndex: 0,
-          beatId: '3.1',
+          milestoneIndex: 0,
+          milestoneId: '3.1',
           name: 'Endgame',
           description: 'The final confrontation',
           objective: 'Resolve the conflict',
@@ -348,7 +348,7 @@ describe('buildStructureRewritePrompt - minimal system prompt', () => {
     plannedBeats: [],
     sceneSummary: 'The protagonist has publicly aligned with a rival flotilla.',
     currentActIndex: 1,
-    currentBeatIndex: 0,
+    currentMilestoneIndex: 0,
     deviationReason: 'The prior allies now treat the protagonist as a traitor.',
     originalTheme: 'Duty versus chosen loyalty',
     totalActCount: 3,
@@ -389,7 +389,7 @@ describe('buildStructureRewritePrompt - minimal system prompt', () => {
     const systemMessage = getSystemMessage(messages);
 
     expect(systemMessage).toContain('dramatic structures');
-    expect(systemMessage).toContain('beats');
+    expect(systemMessage).toContain('milestones');
     expect(systemMessage).toContain('stakes');
   });
 });

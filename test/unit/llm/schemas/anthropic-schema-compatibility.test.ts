@@ -43,6 +43,7 @@ import { SPINE_REWRITE_SCHEMA } from '../../../../src/llm/schemas/spine-rewrite-
 import { SPINE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/spine-schema';
 import { STATE_ACCOUNTANT_SCHEMA } from '../../../../src/llm/schemas/state-accountant-schema';
 import { STRUCTURE_EVALUATOR_SCHEMA } from '../../../../src/llm/schemas/structure-evaluator-schema';
+import { STRUCTURE_REPAIR_SCHEMA } from '../../../../src/llm/schemas/structure-repair-schema';
 import { STRUCTURE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/structure-schema';
 import { WRITER_GENERATION_SCHEMA } from '../../../../src/llm/schemas/writer-schema';
 import { CHARACTER_WEB_GENERATION_SCHEMA } from '../../../../src/llm/schemas/character-web-schema';
@@ -51,6 +52,8 @@ import { CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA } from '../../../../src/llm/schem
 import { CHAR_AGENCY_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-agency-schema';
 import { CHAR_RELATIONSHIPS_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-relationships-schema';
 import { CHAR_PRESENTATION_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-presentation-schema';
+import { MACRO_ARCHITECTURE_SCHEMA } from '../../../../src/llm/schemas/macro-architecture-schema';
+import { MILESTONE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/milestone-generation-schema';
 import type { JsonSchema } from '../../../../src/llm/llm-client-types';
 
 type SchemaIssue = {
@@ -232,6 +235,8 @@ describe('Anthropic schema compatibility', () => {
   const llmResponseSchemas: Array<{ name: string; schema: JsonSchema }> = [
     { name: 'WRITER_GENERATION_SCHEMA', schema: WRITER_GENERATION_SCHEMA },
     { name: 'STRUCTURE_GENERATION_SCHEMA', schema: STRUCTURE_GENERATION_SCHEMA },
+    { name: 'MACRO_ARCHITECTURE_SCHEMA', schema: MACRO_ARCHITECTURE_SCHEMA },
+    { name: 'MILESTONE_GENERATION_SCHEMA', schema: MILESTONE_GENERATION_SCHEMA },
     { name: 'PAGE_PLANNER_GENERATION_SCHEMA', schema: PAGE_PLANNER_GENERATION_SCHEMA },
     { name: 'STATE_ACCOUNTANT_SCHEMA', schema: STATE_ACCOUNTANT_SCHEMA },
     { name: 'LOREKEEPER_SCHEMA', schema: LOREKEEPER_SCHEMA },
@@ -267,6 +272,7 @@ describe('Anthropic schema compatibility', () => {
     { name: 'PROSE_QUALITY_SCHEMA', schema: PROSE_QUALITY_SCHEMA },
     { name: 'SCENE_IDEATOR_SCHEMA', schema: SCENE_IDEATOR_SCHEMA },
     { name: 'STRUCTURE_EVALUATOR_SCHEMA', schema: STRUCTURE_EVALUATOR_SCHEMA },
+    { name: 'STRUCTURE_REPAIR_SCHEMA', schema: STRUCTURE_REPAIR_SCHEMA },
     { name: 'CHARACTER_WEB_GENERATION_SCHEMA', schema: CHARACTER_WEB_GENERATION_SCHEMA },
     { name: 'CHAR_KERNEL_GENERATION_SCHEMA', schema: CHAR_KERNEL_GENERATION_SCHEMA },
     { name: 'CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA', schema: CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA },

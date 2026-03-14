@@ -1,37 +1,10 @@
 import type { StructureGenerationResult } from '../models/structure-generation.js';
-import { isGenreObligationTag } from '../models/genre-obligations.js';
+import {
+  normalizeAnchorMoments,
+  normalizeGeneratedMilestoneFields,
+  normalizeStructureActFields,
+} from '../models/story-structure-normalization.js';
 import { LLMError } from './llm-client-types.js';
-
-function parseMidpointType(value: unknown): 'FALSE_VICTORY' | 'FALSE_DEFEAT' | null {
-  if (value === 'FALSE_VICTORY' || value === 'FALSE_DEFEAT') {
-    return value;
-  }
-  return null;
-}
-
-function parseSetpieceSourceIndex(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 5) {
-    return value;
-  }
-  return null;
-}
-
-function parseExpectedGapMagnitude(
-  value: unknown
-): 'NARROW' | 'MODERATE' | 'WIDE' | 'CHASM' | null {
-  if (value === 'NARROW' || value === 'MODERATE' || value === 'WIDE' || value === 'CHASM') {
-    return value;
-  }
-  return null;
-}
-
-function parseObligatorySceneTag(value: unknown): string | null {
-  if (!isGenreObligationTag(value)) {
-    return null;
-  }
-
-  return value;
-}
 
 export function parseStructureResponseObject(
   parsed: unknown
@@ -86,112 +59,84 @@ export function parseStructureResponseObject(
     }
 
     if (
-      !Array.isArray(actData['beats']) ||
-      actData['beats'].length < 2 ||
-      actData['beats'].length > 4
+      !Array.isArray(actData['milestones']) ||
+      actData['milestones'].length < 2 ||
+      actData['milestones'].length > 4
     ) {
-      const received = Array.isArray(actData['beats'])
-        ? actData['beats'].length
-        : typeof actData['beats'];
+      const received = Array.isArray(actData['milestones'])
+        ? actData['milestones'].length
+        : typeof actData['milestones'];
       throw new LLMError(
-        `Structure act ${actIndex + 1} must have 2-4 beats (received: ${received})`,
+        `Structure act ${actIndex + 1} must have 2-4 milestones (received: ${received})`,
         'STRUCTURE_PARSE_ERROR',
         true
       );
     }
 
-    const beats = actData['beats'].map((beat, beatIndex) => {
-      if (typeof beat !== 'object' || beat === null || Array.isArray(beat)) {
+    const milestones = actData['milestones'].map((milestone, milestoneIndex) => {
+      if (typeof milestone !== 'object' || milestone === null || Array.isArray(milestone)) {
         throw new LLMError(
-          `Structure beat ${actIndex + 1}.${beatIndex + 1} must be an object`,
+          `Structure milestone ${actIndex + 1}.${milestoneIndex + 1} must be an object`,
           'STRUCTURE_PARSE_ERROR',
           true
         );
       }
 
-      const beatData = beat as Record<string, unknown>;
+      const milestoneData = milestone as Record<string, unknown>;
       if (
-        typeof beatData['name'] !== 'string' ||
-        typeof beatData['description'] !== 'string' ||
-        typeof beatData['objective'] !== 'string' ||
-        typeof beatData['causalLink'] !== 'string'
+        typeof milestoneData['name'] !== 'string' ||
+        typeof milestoneData['description'] !== 'string' ||
+        typeof milestoneData['objective'] !== 'string' ||
+        typeof milestoneData['causalLink'] !== 'string'
       ) {
         throw new LLMError(
-          `Structure beat ${actIndex + 1}.${beatIndex + 1} is missing required fields`,
+          `Structure milestone ${actIndex + 1}.${milestoneIndex + 1} is missing required fields`,
           'STRUCTURE_PARSE_ERROR',
           true
         );
       }
 
-      const role = typeof beatData['role'] === 'string' ? beatData['role'] : 'escalation';
-      const escalationType =
-        typeof beatData['escalationType'] === 'string' ? beatData['escalationType'] : null;
-      const secondaryEscalationType =
-        typeof beatData['secondaryEscalationType'] === 'string'
-          ? beatData['secondaryEscalationType']
-          : null;
-      const crisisType = typeof beatData['crisisType'] === 'string' ? beatData['crisisType'] : null;
-      const expectedGapMagnitude = parseExpectedGapMagnitude(beatData['expectedGapMagnitude']);
-      const isMidpoint = beatData['isMidpoint'] === true;
-      const midpointType = parseMidpointType(beatData['midpointType']);
-      const uniqueScenarioHook =
-        typeof beatData['uniqueScenarioHook'] === 'string' ? beatData['uniqueScenarioHook'] : null;
-      const approachVectors = Array.isArray(beatData['approachVectors'])
-        ? (beatData['approachVectors'] as unknown[]).filter(
-            (v): v is string => typeof v === 'string'
-          )
-        : null;
-      const setpieceSourceIndex = parseSetpieceSourceIndex(beatData['setpieceSourceIndex']);
-      const obligatorySceneTag = parseObligatorySceneTag(beatData['obligatorySceneTag']);
-
-      if (isMidpoint) {
+      if (milestoneData['isMidpoint'] === true) {
         midpointCount += 1;
-        if (midpointType === null) {
-          throw new LLMError(
-            `Structure beat ${actIndex + 1}.${beatIndex + 1} is midpoint-tagged but missing midpointType`,
-            'STRUCTURE_PARSE_ERROR',
-            true
-          );
-        }
-      } else if (midpointType !== null) {
+      }
+
+      let normalizedMilestoneFields;
+      try {
+        normalizedMilestoneFields = normalizeGeneratedMilestoneFields(
+          milestoneData,
+          `${actIndex + 1}.${milestoneIndex + 1}`
+        );
+      } catch (error) {
         throw new LLMError(
-          `Structure beat ${actIndex + 1}.${beatIndex + 1} has midpointType but isMidpoint is false`,
+          error instanceof Error ? error.message : 'Failed to normalize structure milestone',
           'STRUCTURE_PARSE_ERROR',
           true
         );
       }
 
       return {
-        name: beatData['name'],
-        description: beatData['description'],
-        objective: beatData['objective'],
-        causalLink: beatData['causalLink'],
-        role,
-        escalationType,
-        secondaryEscalationType,
-        crisisType,
-        expectedGapMagnitude,
-        isMidpoint,
-        midpointType,
-        uniqueScenarioHook,
-        approachVectors: approachVectors && approachVectors.length > 0 ? approachVectors : null,
-        setpieceSourceIndex,
-        obligatorySceneTag,
+        name: milestoneData['name'],
+        description: milestoneData['description'],
+        objective: milestoneData['objective'],
+        causalLink: milestoneData['causalLink'],
+        ...normalizedMilestoneFields,
       };
     });
+    const actFields = normalizeStructureActFields(actData);
 
     return {
       name: actData['name'],
       objective: actData['objective'],
       stakes: actData['stakes'],
       entryCondition: actData['entryCondition'],
-      beats,
+      ...actFields,
+      milestones,
     };
   });
 
   if (midpointCount !== 1) {
     throw new LLMError(
-      `Structure response must flag exactly one midpoint beat (received: ${midpointCount})`,
+      `Structure response must flag exactly one midpoint milestone (received: ${midpointCount})`,
       'STRUCTURE_PARSE_ERROR',
       true
     );
@@ -251,6 +196,7 @@ export function parseStructureResponseObject(
     openingImage: data['openingImage'],
     closingImage: data['closingImage'],
     pacingBudget,
+    anchorMoments: normalizeAnchorMoments(data['anchorMoments'], acts.length),
     acts,
     ...(initialNpcAgendas.length > 0 ? { initialNpcAgendas } : {}),
   };

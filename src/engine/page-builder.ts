@@ -65,7 +65,7 @@ export interface PageBuildContext {
   readonly parentAccumulatedNpcRelationships: AccumulatedNpcRelationships;
   readonly npcRelationshipUpdates?: readonly NpcRelationship[];
   readonly pageActIndex: number;
-  readonly pageBeatIndex: number;
+  readonly pageMilestoneIndex: number;
 }
 
 /**
@@ -187,7 +187,7 @@ export function buildPage(result: PageBuildResult, context: PageBuildContext): P
     npcRelationshipUpdates: context.npcRelationshipUpdates,
     parentAccumulatedNpcRelationships: context.parentAccumulatedNpcRelationships,
     pageActIndex: context.pageActIndex,
-    pageBeatIndex: context.pageBeatIndex,
+    pageMilestoneIndex: context.pageMilestoneIndex,
   });
 }
 
@@ -231,7 +231,7 @@ export function buildFirstPage(result: PageBuildResult, context: FirstPageBuildC
     parentAccumulatedNpcAgendas: agendaRecord,
     parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
     pageActIndex: 0,
-    pageBeatIndex: 0,
+    pageMilestoneIndex: 0,
   });
 }
 
@@ -269,7 +269,7 @@ export function buildContinuationPage(
     npcAgendaUpdates: context.npcAgendaUpdates,
     parentAccumulatedNpcRelationships: createEmptyAccumulatedNpcRelationships(),
     pageActIndex: context.structureState.currentActIndex,
-    pageBeatIndex: context.structureState.currentBeatIndex,
+    pageMilestoneIndex: context.structureState.currentMilestoneIndex,
   });
 }
 

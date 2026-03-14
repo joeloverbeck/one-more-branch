@@ -107,8 +107,8 @@ function extractStructureResult(
   ar: AnalystResult
 ): StructureEvaluatorResult & { rawResponse: string } {
   return {
-    beatConcluded: ar.beatConcluded,
-    beatResolution: ar.beatResolution,
+    milestoneConcluded: ar.milestoneConcluded,
+    milestoneResolution: ar.milestoneResolution,
     sceneMomentum: ar.sceneMomentum,
     objectiveEvidenceStrength: ar.objectiveEvidenceStrength,
     commitmentStrength: ar.commitmentStrength,
@@ -120,13 +120,13 @@ function extractStructureResult(
     completionGateFailureReason: ar.completionGateFailureReason,
     deviationDetected: ar.deviationDetected,
     deviationReason: ar.deviationReason,
-    invalidatedBeatIds: ar.invalidatedBeatIds,
+    invalidatedMilestoneIds: ar.invalidatedMilestoneIds,
     spineDeviationDetected: ar.spineDeviationDetected,
     spineDeviationReason: ar.spineDeviationReason,
     spineInvalidatedElement: ar.spineInvalidatedElement,
-    alignedBeatId: ar.alignedBeatId,
-    beatAlignmentConfidence: ar.beatAlignmentConfidence,
-    beatAlignmentReason: ar.beatAlignmentReason,
+    alignedMilestoneId: ar.alignedMilestoneId,
+    milestoneAlignmentConfidence: ar.milestoneAlignmentConfidence,
+    milestoneAlignmentReason: ar.milestoneAlignmentReason,
     pacingIssueDetected: ar.pacingIssueDetected,
     pacingIssueReason: ar.pacingIssueReason,
     recommendedAction: ar.recommendedAction,
@@ -204,7 +204,7 @@ const mockedStructureResult = {
       objective: 'Establish the threat.',
       stakes: 'Failure leaves the hero blind to danger.',
       entryCondition: 'A disturbing event forces involvement.',
-      beats: [
+      milestones: [
         {
           description: 'Find first clue',
           objective: 'Confirm the mystery is real.',
@@ -222,7 +222,7 @@ const mockedStructureResult = {
       objective: 'Escalate conflict.',
       stakes: 'Failure strengthens the antagonist.',
       entryCondition: 'The first clues reveal a wider network.',
-      beats: [
+      milestones: [
         {
           description: 'Infiltrate hostile zone',
           objective: 'Collect decisive evidence.',
@@ -240,7 +240,7 @@ const mockedStructureResult = {
       objective: 'Resolve final confrontation.',
       stakes: 'Failure causes irreversible loss.',
       entryCondition: 'Evidence is strong enough to act publicly.',
-      beats: [
+      milestones: [
         {
           description: 'Commit final plan',
           objective: 'Coordinate allies.',
@@ -347,8 +347,8 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
 function buildAnalystResult(narrative: string): AnalystResult {
   if (narrative.includes('embers down alleys')) {
     return createMockAnalystResult({
-      beatConcluded: true,
-      beatResolution: 'The first clue clearly ties the fires to the harbor cartel.',
+      milestoneConcluded: true,
+      milestoneResolution: 'The first clue clearly ties the fires to the harbor cartel.',
       sceneMomentum: 'MAJOR_PROGRESS',
       objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
       commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
@@ -356,7 +356,7 @@ function buildAnalystResult(narrative: string): AnalystResult {
   }
 
   return createMockAnalystResult({
-    beatConcluded: false,
+    milestoneConcluded: false,
     sceneMomentum: 'STASIS',
     objectiveEvidenceStrength: 'NONE',
     commitmentStrength: 'NONE',
@@ -374,7 +374,7 @@ function createRewriteFetchResponse(): Response {
         objective: 'Recover footing after a public betrayal.',
         stakes: 'Failure leaves the hero isolated.',
         entryCondition: 'The old alliances are broken.',
-        beats: [
+        milestones: [
           {
             name: 'Trust rebuild',
             description: 'Rebuild trust with one key ally',
@@ -398,7 +398,7 @@ function createRewriteFetchResponse(): Response {
         objective: 'Pressure the regime through targeted wins.',
         stakes: 'Failure cements authoritarian control.',
         entryCondition: 'New network is operational.',
-        beats: [
+        milestones: [
           {
             name: 'Supply disruption',
             description: 'Disrupt supply chains feeding the regime',
@@ -422,7 +422,7 @@ function createRewriteFetchResponse(): Response {
         objective: 'Resolve the conflict and define the new order.',
         stakes: 'Failure normalizes permanent repression.',
         entryCondition: 'Public sentiment has shifted.',
-        beats: [
+        milestones: [
           {
             name: 'Public reckoning',
             description: 'Force a public reckoning',
@@ -589,15 +589,15 @@ describe('story-engine integration', () => {
 
     expect(result.story.characterConcept).toContain('create-first-page');
     expect(result.story.structure?.acts).toHaveLength(3);
-    expect(result.story.structure?.acts[0]?.beats[0]?.id).toBe('1.1');
+    expect(result.story.structure?.acts[0]?.milestones[0]?.id).toBe('1.1');
     expect(result.page.id).toBe(1);
     expect(result.page.narrativeText.length).toBeGreaterThan(50);
     expect(result.page.choices.length).toBeGreaterThanOrEqual(2);
     expect(result.page.isEnding).toBe(false);
     expect(result.page.accumulatedStructureState.currentActIndex).toBe(0);
-    expect(result.page.accumulatedStructureState.currentBeatIndex).toBe(0);
-    expect(result.page.accumulatedStructureState.beatProgressions).toContainEqual({
-      beatId: '1.1',
+    expect(result.page.accumulatedStructureState.currentMilestoneIndex).toBe(0);
+    expect(result.page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+      milestoneId: '1.1',
       status: 'active',
     });
     expect(mockedGenerateOpeningPage).toHaveBeenCalledTimes(1);
@@ -626,20 +626,20 @@ describe('story-engine integration', () => {
     expect(result.page.parentPageId).toBe(1);
     expect(result.page.parentChoiceIndex).toBe(0);
     expect(result.page.accumulatedStructureState.currentActIndex).toBe(0);
-    expect(result.page.accumulatedStructureState.currentBeatIndex).toBe(1);
-    expect(result.page.accumulatedStructureState.beatProgressions).toContainEqual({
-      beatId: '1.1',
+    expect(result.page.accumulatedStructureState.currentMilestoneIndex).toBe(1);
+    expect(result.page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+      milestoneId: '1.1',
       status: 'concluded',
       resolution: 'The first clue clearly ties the fires to the harbor cartel.',
     });
-    expect(result.page.accumulatedStructureState.beatProgressions).toContainEqual({
-      beatId: '1.2',
+    expect(result.page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+      milestoneId: '1.2',
       status: 'active',
     });
     expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(1);
   });
 
-  it('should advance to the next act when the final beat in the current act is concluded', async () => {
+  it('should advance to the next act when the final milestone in the current act is concluded', async () => {
     mockedGenerateWriterPage
       .mockResolvedValueOnce({
         ...buildWriterResult('Investigate the ember trail'),
@@ -647,11 +647,11 @@ describe('story-engine integration', () => {
       .mockResolvedValueOnce({
         ...buildWriterResult('Enter the ash-marked chapel'),
       });
-    // Opening page analyst result (no beat conclusion)
+    // Opening page analyst result (no milestone conclusion)
     const openingAnalyst = createMockAnalystResult({ rawResponse: 'analyst-raw' });
     const analystResult1 = createMockAnalystResult({
-      beatConcluded: true,
-      beatResolution: 'The first clue clearly ties the fires to the harbor cartel.',
+      milestoneConcluded: true,
+      milestoneResolution: 'The first clue clearly ties the fires to the harbor cartel.',
       sceneSummary: 'The protagonist continues the current scene.',
       sceneMomentum: 'STASIS',
       objectiveEvidenceStrength: 'NONE',
@@ -659,8 +659,8 @@ describe('story-engine integration', () => {
       rawResponse: 'analyst-raw',
     });
     const analystResult2 = createMockAnalystResult({
-      beatConcluded: true,
-      beatResolution: 'Local allies joined and the setup arc closed.',
+      milestoneConcluded: true,
+      milestoneResolution: 'Local allies joined and the setup arc closed.',
       sceneSummary: 'The protagonist continues the current scene.',
       sceneMomentum: 'STASIS',
       objectiveEvidenceStrength: 'NONE',
@@ -709,14 +709,14 @@ describe('story-engine integration', () => {
     });
 
     expect(page3.page.accumulatedStructureState.currentActIndex).toBe(1);
-    expect(page3.page.accumulatedStructureState.currentBeatIndex).toBe(0);
-    expect(page3.page.accumulatedStructureState.beatProgressions).toContainEqual({
-      beatId: '1.2',
+    expect(page3.page.accumulatedStructureState.currentMilestoneIndex).toBe(0);
+    expect(page3.page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+      milestoneId: '1.2',
       status: 'concluded',
       resolution: 'Local allies joined and the setup arc closed.',
     });
-    expect(page3.page.accumulatedStructureState.beatProgressions).toContainEqual({
-      beatId: '2.1',
+    expect(page3.page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+      milestoneId: '2.1',
       status: 'active',
     });
   });
@@ -784,15 +784,15 @@ describe('story-engine integration', () => {
     expect(branchB.page.parentPageId).toBe(1);
     expect(branchA.page.parentChoiceIndex).toBe(0);
     expect(branchB.page.parentChoiceIndex).toBe(1);
-    expect(branchA.page.accumulatedStructureState.currentBeatIndex).toBe(1);
-    expect(branchB.page.accumulatedStructureState.currentBeatIndex).toBe(0);
-    expect(branchA.page.accumulatedStructureState.beatProgressions).toContainEqual({
-      beatId: '1.1',
+    expect(branchA.page.accumulatedStructureState.currentMilestoneIndex).toBe(1);
+    expect(branchB.page.accumulatedStructureState.currentMilestoneIndex).toBe(0);
+    expect(branchA.page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+      milestoneId: '1.1',
       status: 'concluded',
       resolution: 'The first clue clearly ties the fires to the harbor cartel.',
     });
-    expect(branchB.page.accumulatedStructureState.beatProgressions).toContainEqual({
-      beatId: '1.1',
+    expect(branchB.page.accumulatedStructureState.milestoneProgressions).toContainEqual({
+      milestoneId: '1.1',
       status: 'active',
     });
     expect(mockedGenerateWriterPage).toHaveBeenCalledTimes(2);
@@ -807,7 +807,7 @@ describe('story-engine integration', () => {
         ...buildWriterResult('Enter the ash-marked chapel'),
       });
     const rewriteAnalyst1 = createMockAnalystResult({
-      // Opening page analyst - no beat conclusion, no deviation
+      // Opening page analyst - no milestone conclusion, no deviation
       sceneSummary: 'The protagonist arrives on the scene.',
       sceneMomentum: 'STASIS',
       objectiveEvidenceStrength: 'NONE',
@@ -815,8 +815,8 @@ describe('story-engine integration', () => {
       rawResponse: 'analyst-raw',
     });
     const rewriteAnalyst2 = createMockAnalystResult({
-      beatConcluded: true,
-      beatResolution: 'The harbor cartel link is proven beyond doubt.',
+      milestoneConcluded: true,
+      milestoneResolution: 'The harbor cartel link is proven beyond doubt.',
       sceneSummary: 'The protagonist continues the current scene.',
       sceneMomentum: 'STASIS',
       objectiveEvidenceStrength: 'NONE',
@@ -825,8 +825,8 @@ describe('story-engine integration', () => {
     });
     const rewriteAnalyst3 = createMockAnalystResult({
       deviationDetected: true,
-      deviationReason: 'The protagonist publicly defects, invalidating infiltration beats.',
-      invalidatedBeatIds: ['2.1', '2.2', '3.1', '3.2'],
+      deviationReason: 'The protagonist publicly defects, invalidating infiltration milestones.',
+      invalidatedMilestoneIds: ['2.1', '2.2', '3.1', '3.2'],
       sceneSummary: 'The city now sees the protagonist as aligned with the regime on paper.',
       sceneMomentum: 'STASIS',
       objectiveEvidenceStrength: 'NONE',
@@ -887,7 +887,7 @@ describe('story-engine integration', () => {
     expect(rewrittenVersion?.previousVersionId).toBe(initialVersion?.id);
     expect(rewrittenVersion?.createdAtPageId).toBe(page3.page.id);
     expect(rewrittenVersion?.rewriteReason).toBe(
-      'The protagonist publicly defects, invalidating infiltration beats.'
+      'The protagonist publicly defects, invalidating infiltration milestones.'
     );
 
     expect(page2.page.structureVersionId).toBe(initialVersion?.id ?? null);

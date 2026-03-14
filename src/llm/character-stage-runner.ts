@@ -1,5 +1,5 @@
 import type { GenerationStageCallback, GenerationStage } from '../engine/types.js';
-import { emitGenerationStage } from '../engine/generation-pipeline-helpers.js';
+import { runGenerationStage } from '../engine/generation-pipeline-helpers.js';
 import { EngineError } from '../engine/types.js';
 import type {
   CastPipelineInputs,
@@ -108,21 +108,20 @@ export async function runCharacterStage(
 
   validateStagePreconditions(character, stage);
 
-  const attempt = 1;
   const stageEvent = STAGE_EVENTS[stage];
-  emitGenerationStage(onGenerationStage, stageEvent, 'started', attempt);
 
   switch (stage) {
     case 1: {
-      const result = await deps.generateCharKernel(
-        {
-          webContext: webContext,
-          ...inputs,
-        },
-        apiKey,
+      const result = await runGenerationStage(onGenerationStage, stageEvent, () =>
+        deps.generateCharKernel(
+          {
+            webContext,
+            ...inputs,
+          },
+          apiKey,
+        ),
       );
 
-      emitGenerationStage(onGenerationStage, stageEvent, 'completed', attempt);
       return {
         updatedCharacter: {
           ...character,
@@ -141,16 +140,17 @@ export async function runCharacterStage(
         'character kernel',
       );
 
-      const result = await deps.generateCharTridimensional(
-        {
-          webContext: webContext,
-          characterKernel,
-          ...inputs,
-        },
-        apiKey,
+      const result = await runGenerationStage(onGenerationStage, stageEvent, () =>
+        deps.generateCharTridimensional(
+          {
+            webContext,
+            characterKernel,
+            ...inputs,
+          },
+          apiKey,
+        ),
       );
 
-      emitGenerationStage(onGenerationStage, stageEvent, 'completed', attempt);
       return {
         updatedCharacter: {
           ...character,
@@ -174,17 +174,18 @@ export async function runCharacterStage(
         'tridimensional profile',
       );
 
-      const result = await deps.generateCharAgency(
-        {
-          webContext: webContext,
-          characterKernel,
-          tridimensionalProfile,
-          ...inputs,
-        },
-        apiKey,
+      const result = await runGenerationStage(onGenerationStage, stageEvent, () =>
+        deps.generateCharAgency(
+          {
+            webContext,
+            characterKernel,
+            tridimensionalProfile,
+            ...inputs,
+          },
+          apiKey,
+        ),
       );
 
-      emitGenerationStage(onGenerationStage, stageEvent, 'completed', attempt);
       return {
         updatedCharacter: {
           ...character,
@@ -213,19 +214,20 @@ export async function runCharacterStage(
         'agency model',
       );
 
-      const result = await deps.generateCharRelationships(
-        {
-          webContext: webContext,
-          characterKernel,
-          tridimensionalProfile,
-          agencyModel,
-          otherDevelopedCharacters,
-          ...inputs,
-        },
-        apiKey,
+      const result = await runGenerationStage(onGenerationStage, stageEvent, () =>
+        deps.generateCharRelationships(
+          {
+            webContext,
+            characterKernel,
+            tridimensionalProfile,
+            agencyModel,
+            otherDevelopedCharacters,
+            ...inputs,
+          },
+          apiKey,
+        ),
       );
 
-      emitGenerationStage(onGenerationStage, stageEvent, 'completed', attempt);
       return {
         updatedCharacter: {
           ...character,
@@ -259,19 +261,20 @@ export async function runCharacterStage(
         'deep relationships',
       );
 
-      const result = await deps.generateCharPresentation(
-        {
-          webContext: webContext,
-          characterKernel,
-          tridimensionalProfile,
-          agencyModel,
-          deepRelationships,
-          ...inputs,
-        },
-        apiKey,
+      const result = await runGenerationStage(onGenerationStage, stageEvent, () =>
+        deps.generateCharPresentation(
+          {
+            webContext,
+            characterKernel,
+            tridimensionalProfile,
+            agencyModel,
+            deepRelationships,
+            ...inputs,
+          },
+          apiKey,
+        ),
       );
 
-      emitGenerationStage(onGenerationStage, stageEvent, 'completed', attempt);
       return {
         updatedCharacter: {
           ...character,

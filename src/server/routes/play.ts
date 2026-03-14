@@ -106,6 +106,7 @@ playRoutes.get(
         briefing: {
           theme: story.structure.overallTheme,
           premise: story.structure.premise,
+          anchorMoments: story.structure.anchorMoments ?? null,
           protagonist: extractProtagonistBriefing(story.decomposedCharacters),
           npcs: extractNpcBriefings(story.decomposedCharacters, story.initialNpcAgendas),
           worldFacts: groupWorldFacts(story.decomposedWorld),

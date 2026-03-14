@@ -10,11 +10,11 @@ import { buildInsightsPromiseMeta, buildInsightsThreadMeta } from '@/server/util
 
 function makeAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResult {
   return {
-    beatConcluded: false,
-    beatResolution: '',
+    milestoneConcluded: false,
+    milestoneResolution: '',
     deviationDetected: false,
     deviationReason: '',
-    invalidatedBeatIds: [],
+    invalidatedMilestoneIds: [],
     sceneSummary: '',
     pacingIssueDetected: false,
     pacingIssueReason: '',
@@ -41,9 +41,9 @@ function makeAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResul
     spineDeviationDetected: false,
     spineDeviationReason: '',
     spineInvalidatedElement: null,
-    alignedBeatId: null,
-    beatAlignmentConfidence: 'LOW',
-    beatAlignmentReason: '',
+    alignedMilestoneId: null,
+    milestoneAlignmentConfidence: 'LOW',
+    milestoneAlignmentReason: '',
     thematicCharge: 'AMBIGUOUS',
     narrativeFocus: 'BALANCED',
     thematicChargeDescription: '',

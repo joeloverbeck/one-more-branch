@@ -5,17 +5,17 @@
 
 import type { ConstraintType, ThreatType, ThreadType, Urgency } from '../models';
 
-export interface BeatProgressionFileData {
-  beatId: string;
+export interface MilestoneProgressionFileData {
+  milestoneId: string;
   status: 'pending' | 'active' | 'concluded';
   resolution?: string;
 }
 
 export interface AccumulatedStructureStateFileData {
   currentActIndex: number;
-  currentBeatIndex: number;
-  beatProgressions: BeatProgressionFileData[];
-  pagesInCurrentBeat: number;
+  currentMilestoneIndex: number;
+  milestoneProgressions: MilestoneProgressionFileData[];
+  pagesInCurrentMilestone: number;
   pacingNudge: string | null;
 }
 
@@ -136,11 +136,11 @@ export interface KnowledgeAsymmetryFileData {
 }
 
 export interface AnalystResultFileData {
-  beatConcluded: boolean;
-  beatResolution: string;
+  milestoneConcluded: boolean;
+  milestoneResolution: string;
   deviationDetected: boolean;
   deviationReason: string;
-  invalidatedBeatIds: string[];
+  invalidatedMilestoneIds: string[];
   pacingIssueDetected: boolean;
   pacingIssueReason: string;
   recommendedAction: string;
@@ -166,9 +166,9 @@ export interface AnalystResultFileData {
   spineDeviationDetected?: boolean;
   spineDeviationReason?: string;
   spineInvalidatedElement?: string | null;
-  alignedBeatId?: string | null;
-  beatAlignmentConfidence?: string;
-  beatAlignmentReason?: string;
+  alignedMilestoneId?: string | null;
+  milestoneAlignmentConfidence?: string;
+  milestoneAlignmentReason?: string;
   thematicCharge: string;
   narrativeFocus: string;
   thematicChargeDescription: string;
@@ -246,7 +246,7 @@ export interface PageFileData {
   npcRelationshipUpdates: NpcRelationshipFileData[];
   accumulatedNpcRelationships: Record<string, NpcRelationshipFileData>;
   pageActIndex?: number;
-  pageBeatIndex?: number;
+  pageMilestoneIndex?: number;
   isEnding: boolean;
   parentPageId: number | null;
   parentChoiceIndex: number | null;

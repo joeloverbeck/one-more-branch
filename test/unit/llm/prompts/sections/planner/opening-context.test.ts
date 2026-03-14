@@ -88,7 +88,7 @@ describe('planner opening context section', () => {
     expect(result).not.toContain('CHARACTER: Voss\nPROTAGONIST');
   });
 
-  it('renders rich structure context with active and pending beats', () => {
+  it('renders rich structure context with active and pending milestones', () => {
     const context: OpeningPagePlanContext = {
       mode: 'opening',
       tone: 'sci-fi suspense',
@@ -109,7 +109,7 @@ describe('planner opening context section', () => {
             objective: 'Reach the relay core',
             stakes: 'Failure buries the evidence forever.',
             entryCondition: 'The station enters hard lockdown.',
-            beats: [
+            milestones: [
               {
                 id: '1.1',
                 description: 'Break through maintenance sectors',
@@ -130,7 +130,7 @@ describe('planner opening context section', () => {
             objective: 'Transmit evidence',
             stakes: 'Conspiracy survives if transmission fails.',
             entryCondition: 'Courier reaches relay core',
-            beats: [
+            milestones: [
               {
                 id: '2.1',
                 description: 'Fight signal jamming',

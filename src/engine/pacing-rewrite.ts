@@ -55,7 +55,7 @@ export async function rewriteStructureForPacing(
   const newVersion = createRewrittenVersionedStructure(
     currentVersion,
     rewriteResult.structure,
-    rewriteResult.preservedBeatIds,
+    rewriteResult.preservedMilestoneIds,
     `Pacing issue: ${analystResult.pacingIssueReason}`,
     page.id
   );

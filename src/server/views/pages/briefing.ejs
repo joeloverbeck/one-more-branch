@@ -30,6 +30,19 @@
           <span class="briefing-label">Premise</span>
           <p><%= briefing.premise %></p>
         </div>
+        <% if (briefing.anchorMoments) { %>
+        <div class="briefing-field">
+          <span class="briefing-label">Key Turning Points</span>
+          <ul class="briefing-chip-list">
+            <li>Inciting Incident: Act <%= briefing.anchorMoments.incitingIncident.actIndex + 1 %> - <%= briefing.anchorMoments.incitingIncident.description %></li>
+            <li>Midpoint: Act <%= briefing.anchorMoments.midpoint.actIndex + 1 %>, Milestone <%= briefing.anchorMoments.midpoint.milestoneSlot + 1 %> - <%= briefing.anchorMoments.midpoint.midpointType %></li>
+            <li>Climax: Act <%= briefing.anchorMoments.climax.actIndex + 1 %> - <%= briefing.anchorMoments.climax.description %></li>
+            <% if (briefing.anchorMoments.signatureScenarioPlacement) { %>
+            <li>Signature Scenario: Act <%= briefing.anchorMoments.signatureScenarioPlacement.actIndex + 1 %> - <%= briefing.anchorMoments.signatureScenarioPlacement.description %></li>
+            <% } %>
+          </ul>
+        </div>
+        <% } %>
         <% if (story.startingSituation) { %>
         <div class="briefing-field">
           <span class="briefing-label">Starting Situation</span>

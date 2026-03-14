@@ -41,6 +41,14 @@ describe('play page template', () => {
         /<div class="story-title-section">[\s\S]*<h2><%=\s*story\.title\s*%><\/h2>[\s\S]*class="act-indicator act-indicator--clickable"/
       );
     });
+
+    it('includes the new structure detail labels in the expandable panel', () => {
+      const template = fs.readFileSync(playPath, 'utf8');
+
+      expect(template).toContain('Act Question');
+      expect(template).toContain('Milestone Exit Condition');
+      expect(template).toContain('Exit Reversal');
+    });
   });
 
   describe('open threads panel', () => {
@@ -119,6 +127,7 @@ describe('play page template', () => {
       expect(template).toContain('actDisplayInfo');
       expect(template).toContain('sceneSummary');
       expect(template).toContain('resolvedThreadMeta');
+      expect(template).not.toContain('actDisplayInfo ? actDisplayInfo.displayString : null');
     });
 
     it('contains insights modal scaffold and actions strip slot', () => {
