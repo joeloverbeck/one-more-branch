@@ -6,7 +6,7 @@ import type {
   Story,
   StoryStructure,
 } from '../models';
-import { rewriteSpine } from './spine-rewriter';
+import { rewriteSpine } from '../llm/spine-rewriter.js';
 
 export interface SpineDeviationContext {
   readonly analystResult: AnalystResult | null;

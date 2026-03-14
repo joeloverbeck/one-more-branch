@@ -32,7 +32,7 @@ Replace the current monolithic structure rewrite with a tiered rewrite system th
 - Run Call 3 (validate)
 
 **Tier 3 — Spine-level deviation** (existing flow):
-- Spine rewrite first (existing `spine-rewriter.ts` flow, unchanged)
+- Spine rewrite first (existing `src/llm/spine-rewriter.ts` flow, unchanged)
 - Then Tier 2 rewrite (full 3-call pipeline for all acts)
 
 ### `deviation-handler.ts` changes

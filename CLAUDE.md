@@ -98,7 +98,6 @@ src/
 │   ├── reconciliation-retry-pipeline.ts # Planner→accountant→writer→reconciler retry loop
 │   ├── structure-state.ts           # Beat/act progression state machine
 │   ├── structure-rewriter.ts        # Rewrites story structure on deviation
-│   ├── spine-rewriter.ts            # Rewrites story spine on spine-level deviation
 │   ├── deviation-handler.ts         # Detects and handles story deviations
 │   ├── analyst-evaluation.ts             # Analyst LLM evaluation orchestration
 │   ├── deviation-processing.ts          # Beat-level deviation detection + rewrite
@@ -401,7 +400,7 @@ Completed specs are archived in `archive/specs/`.
   6. **Choice Generator prompt** (`choice-generator-generation.ts`): Generates 2-4 typed choices from the written scene, using planner's dramaticQuestion as thematic anchor. Skipped when planner sets `isEnding === true`.
   7. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, spine deviation, pacing, NPC coherence, relationship shifts
   8. **Agenda resolver prompt** (`agenda-resolver-generation.ts`): Updates NPC agendas and relationships based on scene events
-- **Conditional**: **Spine rewrite prompt** (`spine-rewriter.ts`): Rewrites spine on spine-level deviation
+- **Conditional**: **Spine rewrite prompt** (`llm/spine-rewriter.ts`): Rewrites spine on spine-level deviation
 - **Conditional**: **Structure rewrite prompt** (`structure-generator.ts`): Rewrites structure on beat-level deviation (or forced by spine rewrite)
 - All prompts use JSON Schema structured output via OpenRouter's `response_format`
 - For Anthropic/Bedrock compatibility, represent nullable enums with `anyOf`/`oneOf` branches:

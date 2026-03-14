@@ -20,7 +20,7 @@ import {
 } from '../../../src/engine/spine-deviation-processing';
 import { resolveStructureProgression } from '../../../src/engine/structure-state';
 import { isActualDeviation, handleDeviation } from '../../../src/engine/deviation-handler';
-import { rewriteSpine } from '../../../src/engine/spine-rewriter';
+import { rewriteSpine } from '../../../src/llm/spine-rewriter';
 import { createMockAnalystResult, createMockStoryStructure } from '../../fixtures/llm-results';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
 import type { ContinuationGenerationResult } from '../../../src/llm/generation-pipeline-types';
@@ -52,7 +52,7 @@ jest.mock('../../../src/models', () => {
   };
 });
 
-jest.mock('../../../src/engine/spine-rewriter', () => ({
+jest.mock('../../../src/llm/spine-rewriter', () => ({
   rewriteSpine: jest.fn(),
 }));
 

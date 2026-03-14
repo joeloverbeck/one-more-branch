@@ -3,8 +3,9 @@
 - Source: `src/llm/prompts/spine-rewrite-prompt.ts`
 - Spine section builder source: `src/llm/prompts/sections/shared/spine-section.ts`
 - Output schema source: `src/llm/schemas/spine-rewrite-schema.ts`
-- Rewriter source: `src/engine/spine-rewriter.ts`
-- Model selection: Per-stage via `getStageModel('spineRewrite')` / `getStageMaxTokens('spineRewrite')` from `src/config/stage-model.ts` (default: `anthropic/claude-sonnet-4.6`)
+- Rewriter source: `src/llm/spine-rewriter.ts`
+- Stage execution: `src/llm/spine-rewriter.ts` delegates to `runLlmStage()` in `src/llm/llm-stage-runner.ts`
+- Model selection: Per-stage via the shared runner using `getStageModel('spineRewrite')` / `getStageMaxTokens('spineRewrite')` from `src/config/stage-model.ts` (default: `anthropic/claude-sonnet-4.6`)
 
 ## Pipeline Position
 
@@ -136,5 +137,5 @@ The current spine is formatted by `buildSpineSection()` from `src/llm/prompts/se
   - `antagonistic_force` -- the primary antagonistic force has been destroyed, neutralized, or made irrelevant
   - `need_want` -- the protagonist's need-want dynamic has collapsed (e.g., they already got what they wanted, or their need was fulfilled prematurely)
 - Fields not tied to the invalidated element may remain unchanged if they still serve the story.
-- The parser in `spine-rewriter.ts` validates all enum values using the same type guards (`isStorySpineType`, `isConflictType`, `isCharacterArcType`, `isNeedWantDynamic`) as the initial spine generator.
+- The parser in `src/llm/spine-rewriter.ts` validates all enum values using the same type guards (`isStorySpineType`, `isConflictType`, `isCharacterArcType`, `isNeedWantDynamic`) as the initial spine generator.
 - The `narrativeSummary` is provided by the analyst's `narrativeSummary` field from the scene that triggered the deviation.
