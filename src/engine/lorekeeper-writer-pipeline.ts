@@ -162,7 +162,6 @@ export function createWriterWithLorekeeper(context: WriterWithLorekeeperContext)
     emitGenerationStage(context.onGenerationStage, 'CURATING_CONTEXT', 'completed', 1);
 
     if (context.mode === 'opening') {
-      emitGenerationStage(context.onGenerationStage, 'WRITING_OPENING_PAGE', 'started', 1);
       return generateOpeningPage(
         {
           ...context.openingContext,
@@ -180,7 +179,6 @@ export function createWriterWithLorekeeper(context: WriterWithLorekeeperContext)
       );
     }
 
-    emitGenerationStage(context.onGenerationStage, 'WRITING_CONTINUING_PAGE', 'started', 1);
     return generatePageWriterOutput(
       {
         ...context.continuationContext,

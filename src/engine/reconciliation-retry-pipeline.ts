@@ -9,25 +9,16 @@ import type {
 } from '../llm';
 import { logger } from '../logging/index.js';
 import {
-  emitGenerationStage,
   createSuccessPipelineMetrics,
+  EngineStageAttemptError,
   resolveWriterStage,
+  runEngineStageAttempt,
   toReconciliationFailureReasons,
 } from './generation-pipeline-helpers';
 import type { ReconciliationRetryGenerationOptions } from './generation-pipeline-helpers';
 import { StateReconciliationError } from './state-reconciler-errors';
 import { reconcileState } from './state-reconciler';
 import type { StateReconciliationResult } from './state-reconciler-types';
-
-function countValidationIssues(error: unknown): number {
-  if (typeof error !== 'object' || error === null || !('context' in error)) {
-    return 0;
-  }
-
-  const context = (error as { context?: Record<string, unknown> }).context;
-  const issues = context?.['validationIssues'];
-  return Array.isArray(issues) ? issues.length : 0;
-}
 
 function mergeReducedPlanAndAccountant(
   reducedPlan: ReducedPagePlanGenerationResult,
@@ -79,23 +70,33 @@ export async function generateWithReconciliationRetry({
   let reconcilerRetried = false;
 
   for (let attempt = 1; attempt <= 2; attempt += 1) {
-    emitGenerationStage(onGenerationStage, 'PLANNING_PAGE', 'started', attempt);
-    logger.info('Generation stage started', { ...baseLogContext, attempt, stage: 'planner' });
-    const plannerStart = Date.now();
     let reducedPlan: Awaited<ReturnType<typeof generatePagePlan>>;
     try {
-      reducedPlan = await generatePagePlan(buildPlanContext(failureReasons), {
-        apiKey,
-        observability: {
-          storyId,
-          pageId,
-          requestId,
+      const plannerAttempt = await runEngineStageAttempt(
+        {
+          publicStage: 'PLANNING_PAGE',
+          logStage: 'planner',
+          attempt,
+          onGenerationStage,
+          logContext: baseLogContext,
         },
-      });
+        () =>
+          generatePagePlan(buildPlanContext(failureReasons), {
+            apiKey,
+            observability: {
+              storyId,
+              pageId,
+              requestId,
+            },
+          })
+      );
+      reducedPlan = plannerAttempt.result;
+      plannerDurationMs += plannerAttempt.durationMs;
     } catch (error) {
-      const durationMs = Date.now() - plannerStart;
-      plannerDurationMs += durationMs;
-      plannerValidationIssueCount += countValidationIssues(error);
+      if (error instanceof EngineStageAttemptError) {
+        plannerDurationMs += error.durationMs;
+        plannerValidationIssueCount += error.validationIssueCount;
+      }
       const metrics = createSuccessPipelineMetrics(
         plannerDurationMs,
         accountantDurationMs,
@@ -108,44 +109,37 @@ export async function generateWithReconciliationRetry({
         reconcilerRetried,
         'hard_error'
       );
-      logger.error('Generation stage failed', {
-        ...baseLogContext,
-        attempt,
-        stage: 'planner',
-        durationMs,
-        validationIssueCount: countValidationIssues(error),
-        error,
-      });
       logger.error('Generation pipeline failed', { ...baseLogContext, metrics });
-      throw error;
+      throw error instanceof EngineStageAttemptError ? error.cause : error;
     }
-    const plannerDuration = Date.now() - plannerStart;
-    plannerDurationMs += plannerDuration;
-    emitGenerationStage(onGenerationStage, 'PLANNING_PAGE', 'completed', attempt, plannerDuration);
-    logger.info('Generation stage completed', {
-      ...baseLogContext,
-      attempt,
-      stage: 'planner',
-      durationMs: plannerDuration,
-    });
 
-    emitGenerationStage(onGenerationStage, 'ACCOUNTING_STATE', 'started', attempt);
-    logger.info('Generation stage started', { ...baseLogContext, attempt, stage: 'accountant' });
-    const accountantStart = Date.now();
     let accountantResult: Awaited<ReturnType<typeof generateStateAccountant>>;
     try {
-      accountantResult = await generateStateAccountant(buildPlanContext(failureReasons), reducedPlan, {
-        apiKey,
-        observability: {
-          storyId,
-          pageId,
-          requestId,
+      const accountantAttempt = await runEngineStageAttempt(
+        {
+          publicStage: 'ACCOUNTING_STATE',
+          logStage: 'accountant',
+          attempt,
+          onGenerationStage,
+          logContext: baseLogContext,
         },
-      });
+        () =>
+          generateStateAccountant(buildPlanContext(failureReasons), reducedPlan, {
+            apiKey,
+            observability: {
+              storyId,
+              pageId,
+              requestId,
+            },
+          })
+      );
+      accountantResult = accountantAttempt.result;
+      accountantDurationMs += accountantAttempt.durationMs;
     } catch (error) {
-      const durationMs = Date.now() - accountantStart;
-      accountantDurationMs += durationMs;
-      accountantValidationIssueCount += countValidationIssues(error);
+      if (error instanceof EngineStageAttemptError) {
+        accountantDurationMs += error.durationMs;
+        accountantValidationIssueCount += error.validationIssueCount;
+      }
       const metrics = createSuccessPipelineMetrics(
         plannerDurationMs,
         accountantDurationMs,
@@ -158,46 +152,32 @@ export async function generateWithReconciliationRetry({
         reconcilerRetried,
         'hard_error'
       );
-      logger.error('Generation stage failed', {
-        ...baseLogContext,
-        attempt,
-        stage: 'accountant',
-        durationMs,
-        validationIssueCount: countValidationIssues(error),
-        error,
-      });
       logger.error('Generation pipeline failed', { ...baseLogContext, metrics });
-      throw error;
+      throw error instanceof EngineStageAttemptError ? error.cause : error;
     }
-    const accountantDuration = Date.now() - accountantStart;
-    accountantDurationMs += accountantDuration;
-    emitGenerationStage(
-      onGenerationStage,
-      'ACCOUNTING_STATE',
-      'completed',
-      attempt,
-      accountantDuration
-    );
-    logger.info('Generation stage completed', {
-      ...baseLogContext,
-      attempt,
-      stage: 'accountant',
-      durationMs: accountantDuration,
-    });
 
     const pagePlan = mergeReducedPlanAndAccountant(reducedPlan, accountantResult);
 
     const writerStage = resolveWriterStage(mode);
-    emitGenerationStage(onGenerationStage, writerStage, 'started', attempt);
-    logger.info('Generation stage started', { ...baseLogContext, attempt, stage: 'writer' });
-    const writerStart = Date.now();
     let writerResult: PageWriterResult;
     try {
-      writerResult = await generateWriter(pagePlan, failureReasons);
+      const writerAttempt = await runEngineStageAttempt(
+        {
+          publicStage: writerStage,
+          logStage: 'writer',
+          attempt,
+          onGenerationStage,
+          logContext: baseLogContext,
+        },
+        () => generateWriter(pagePlan, failureReasons)
+      );
+      writerResult = writerAttempt.result;
+      writerDurationMs += writerAttempt.durationMs;
     } catch (error) {
-      const durationMs = Date.now() - writerStart;
-      writerDurationMs += durationMs;
-      writerValidationIssueCount += countValidationIssues(error);
+      if (error instanceof EngineStageAttemptError) {
+        writerDurationMs += error.durationMs;
+        writerValidationIssueCount += error.validationIssueCount;
+      }
       const metrics = createSuccessPipelineMetrics(
         plannerDurationMs,
         accountantDurationMs,
@@ -210,26 +190,9 @@ export async function generateWithReconciliationRetry({
         reconcilerRetried,
         'hard_error'
       );
-      logger.error('Generation stage failed', {
-        ...baseLogContext,
-        attempt,
-        stage: 'writer',
-        durationMs,
-        validationIssueCount: countValidationIssues(error),
-        error,
-      });
       logger.error('Generation pipeline failed', { ...baseLogContext, metrics });
-      throw error;
+      throw error instanceof EngineStageAttemptError ? error.cause : error;
     }
-    const writerDuration = Date.now() - writerStart;
-    writerDurationMs += writerDuration;
-    emitGenerationStage(onGenerationStage, writerStage, 'completed', attempt, writerDuration);
-    logger.info('Generation stage completed', {
-      ...baseLogContext,
-      attempt,
-      stage: 'writer',
-      durationMs: writerDuration,
-    });
 
     logger.info('Generation stage started', { ...baseLogContext, attempt, stage: 'reconciler' });
     const reconcilerStart = Date.now();

@@ -545,7 +545,6 @@ describe('page-service', () => {
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
-        [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
         [{ stage: 'PLANNING_PAGE', status: 'started', attempt: 2 }],
         [{ stage: 'PLANNING_PAGE', status: 'completed', attempt: 2, durationMs: expect.any(Number) }],
@@ -554,7 +553,6 @@ describe('page-service', () => {
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 2 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
-        [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'WRITING_OPENING_PAGE', status: 'completed', attempt: 2, durationMs: expect.any(Number) }],
         [{ stage: 'GENERATING_CHOICES', status: 'started', attempt: 1 }],
         [{ stage: 'GENERATING_CHOICES', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
@@ -1412,7 +1410,6 @@ describe('page-service', () => {
           [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
           [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
           [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
-          [{ stage: 'WRITING_CONTINUING_PAGE', status: 'started', attempt: 1 }],
           [{ stage: 'WRITING_CONTINUING_PAGE', status: 'completed', attempt: 1, durationMs: expect.any(Number) }],
         ])
       );
