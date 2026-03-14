@@ -136,6 +136,22 @@ export {
 } from './story-arc';
 
 export {
+  materializeStoryMilestone,
+  normalizeAnchorMoments,
+  normalizeGeneratedMilestoneFields,
+  normalizeStructureActFields,
+  parseApproachVectors,
+  parseCrisisType,
+  parseEscalationType,
+  parseGapMagnitude,
+  parseMidpointType,
+  parseMilestoneRole,
+  parseObligatorySceneTag,
+  parseSetpieceSourceIndex,
+  parseStringArray,
+} from './story-structure-normalization';
+
+export {
   StructureVersionId,
   VersionedStoryStructure,
   createStructureVersionId,

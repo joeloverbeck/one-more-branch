@@ -16,14 +16,13 @@ import type {
   StructureRewriteContext,
   StructureRewriteResult,
 } from '../llm/structure-rewrite-types';
-import { MILESTONE_ROLES, MilestoneRole, StoryAct, StoryMilestone, StoryStructure } from '../models/story-arc';
+import { StoryAct, StoryMilestone, StoryStructure } from '../models/story-arc';
+import {
+  materializeStoryMilestone,
+  normalizeStructureActFields,
+} from '../models/story-structure-normalization';
 import {
   createStoryStructure,
-  parseApproachVectors,
-  parseCrisisType,
-  parseEscalationType,
-  parseGapMagnitude,
-  parseMidpointType,
 } from './structure-factory';
 import type { StructureGenerationResult } from './structure-types';
 
@@ -38,13 +37,6 @@ export type StructureRewriteGenerator = (
   messages: ChatMessage[],
   apiKey: string
 ) => Promise<StructureGenerationResult>;
-
-function parseMilestoneRole(role: string): MilestoneRole {
-  if (MILESTONE_ROLES.includes(role as MilestoneRole)) {
-    return role as MilestoneRole;
-  }
-  return 'escalation';
-}
 
 function parseMilestoneNumber(milestoneId: string, actIndex: number): number | null {
   const match = /^(\d+)\.(\d+)$/.exec(milestoneId);
@@ -121,38 +113,30 @@ export function mergePreservedWithRegenerated(
       return a.milestoneIndex - b.milestoneIndex;
     });
 
-    const mergedMilestones: StoryMilestone[] = preservedInAct.map((milestone) => {
-      const isMidpoint = milestone.isMidpoint === true;
-      const midpointType = parseMidpointType(milestone.midpointType);
-      if (isMidpoint && midpointType === null) {
-        throw new Error(
-          `Preserved milestone ${milestone.milestoneId} is midpoint-tagged but missing midpointType`
-        );
-      }
-      if (!isMidpoint && midpointType !== null) {
-        throw new Error(`Preserved milestone ${milestone.milestoneId} has midpointType but isMidpoint is false`);
-      }
-
-      return {
-        id: milestone.milestoneId,
-        name: milestone.name,
-        description: milestone.description,
-        objective: milestone.objective,
-        causalLink: milestone.causalLink,
-        exitCondition: milestone.exitCondition ?? '',
-        role: parseMilestoneRole(milestone.role),
-        escalationType: parseEscalationType(milestone.escalationType),
-        secondaryEscalationType: parseEscalationType(milestone.secondaryEscalationType),
-        crisisType: parseCrisisType(milestone.crisisType),
-        expectedGapMagnitude: parseGapMagnitude(milestone.expectedGapMagnitude),
-        isMidpoint,
-        midpointType,
-        uniqueScenarioHook: milestone.uniqueScenarioHook,
-        approachVectors: parseApproachVectors(milestone.approachVectors),
-        setpieceSourceIndex: milestone.setpieceSourceIndex,
-        obligatorySceneTag: milestone.obligatorySceneTag,
-      };
-    });
+    const mergedMilestones: StoryMilestone[] = preservedInAct.map((milestone) =>
+      materializeStoryMilestone(
+        {
+          id: milestone.milestoneId,
+          name: milestone.name,
+          description: milestone.description,
+          objective: milestone.objective,
+          causalLink: milestone.causalLink,
+          exitCondition: milestone.exitCondition,
+          role: milestone.role,
+          escalationType: milestone.escalationType,
+          secondaryEscalationType: milestone.secondaryEscalationType,
+          crisisType: milestone.crisisType,
+          expectedGapMagnitude: milestone.expectedGapMagnitude,
+          isMidpoint: milestone.isMidpoint,
+          midpointType: milestone.midpointType,
+          uniqueScenarioHook: milestone.uniqueScenarioHook,
+          approachVectors: milestone.approachVectors,
+          setpieceSourceIndex: milestone.setpieceSourceIndex,
+          obligatorySceneTag: milestone.obligatorySceneTag,
+        },
+        'Preserved milestone'
+      )
+    );
 
     let nextMilestoneNumber = mergedMilestones.reduce((max, milestone) => {
       const milestoneNumber = parseMilestoneNumber(milestone.id, actIndex);
@@ -204,16 +188,20 @@ export function mergePreservedWithRegenerated(
       throw new Error(`Merged act ${actIndex + 1} has multiple midpoint milestones`);
     }
 
+    const actFields = normalizeStructureActFields({
+      actQuestion: regeneratedAct?.actQuestion,
+      exitReversal: regeneratedAct?.exitReversal,
+      promiseTargets: regeneratedAct?.promiseTargets,
+      obligationTargets: regeneratedAct?.obligationTargets,
+    });
+
     mergedActs.push({
       id: String(actIndex + 1),
       name: regeneratedAct?.name ?? `Act ${actIndex + 1}`,
       objective: regeneratedAct?.objective ?? '',
       stakes: regeneratedAct?.stakes ?? '',
       entryCondition: regeneratedAct?.entryCondition ?? 'Continuing from prior act',
-      actQuestion: regeneratedAct?.actQuestion ?? '',
-      exitReversal: regeneratedAct?.exitReversal ?? '',
-      promiseTargets: regeneratedAct?.promiseTargets ?? [],
-      obligationTargets: regeneratedAct?.obligationTargets ?? [],
+      ...actFields,
       milestones: mergedMilestones,
     });
   }

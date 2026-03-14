@@ -4,8 +4,6 @@
  */
 
 import {
-  createDefaultAnchorMoments,
-  MilestoneRole,
   Story,
   StoryStructure,
   VersionedStoryStructure,
@@ -14,13 +12,11 @@ import {
   parseStructureVersionId,
 } from '../models';
 import {
-  parseApproachVectors,
-  parseCrisisType,
-  parseEscalationType,
-  parseGapMagnitude,
+  materializeStoryMilestone,
+  normalizeAnchorMoments,
+  normalizeStructureActFields,
   parseMidpointType,
-} from '../engine/structure-factory';
-import { isGenreObligationTag } from '../models/genre-obligations';
+} from '../models/story-structure-normalization';
 import type { CanonFact } from '../models/state/canon';
 import type { DecomposedCharacter } from '../models/decomposed-character';
 import { isEmotionSalience, isStoryFunction } from '../models/character-enums';
@@ -51,53 +47,8 @@ const VALID_WORLD_FACT_TYPES: ReadonlySet<string> = new Set([
   'MYSTERY',
 ]);
 
-function parsePersistedCausalLink(value: unknown, milestoneId: string): string {
-  if (typeof value === 'string') {
-    const normalized = value.trim();
-    if (normalized.length > 0) {
-      return normalized;
-    }
-  }
-  throw new Error(`Persisted story milestone ${milestoneId} is missing required causalLink`);
-}
-
-function parseStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.filter((entry): entry is string => typeof entry === 'string');
-}
-
 function parsePersistedAnchorMoments(data: StoryStructureFileData): StoryStructure['anchorMoments'] {
-  const defaults = createDefaultAnchorMoments(data.acts.length);
-  const anchorMoments = data.anchorMoments;
-
-  if (anchorMoments === undefined) {
-    return defaults;
-  }
-
-  return {
-    incitingIncident: {
-      actIndex: anchorMoments.incitingIncident?.actIndex ?? defaults.incitingIncident.actIndex,
-      description: anchorMoments.incitingIncident?.description ?? defaults.incitingIncident.description,
-    },
-    midpoint: {
-      actIndex: anchorMoments.midpoint?.actIndex ?? defaults.midpoint.actIndex,
-      milestoneSlot: anchorMoments.midpoint?.milestoneSlot ?? defaults.midpoint.milestoneSlot,
-      midpointType: parseMidpointType(anchorMoments.midpoint?.midpointType) ?? defaults.midpoint.midpointType,
-    },
-    climax: {
-      actIndex: anchorMoments.climax?.actIndex ?? defaults.climax.actIndex,
-      description: anchorMoments.climax?.description ?? defaults.climax.description,
-    },
-    signatureScenarioPlacement: anchorMoments.signatureScenarioPlacement
-      ? {
-          actIndex: anchorMoments.signatureScenarioPlacement.actIndex,
-          description: anchorMoments.signatureScenarioPlacement.description,
-        }
-      : null,
-  };
+  return normalizeAnchorMoments(data.anchorMoments, data.acts.length);
 }
 
 function structureToFileData(structure: StoryStructure): StoryStructureFileData {
@@ -156,51 +107,31 @@ function fileDataToStructure(data: StoryStructureFileData): StoryStructure {
     objective: act.objective,
     stakes: act.stakes,
     entryCondition: act.entryCondition,
-    actQuestion: act.actQuestion ?? '',
-    exitReversal: act.exitReversal ?? '',
-    promiseTargets: parseStringArray(act.promiseTargets),
-    obligationTargets: parseStringArray(act.obligationTargets),
-    milestones: act.milestones.map((milestone) => {
-      const midpointType = parseMidpointType(milestone.midpointType);
-      const isMidpoint = milestone.isMidpoint === true;
-      if (isMidpoint) {
-        if (midpointType === null) {
-          throw new Error(
-            `Persisted story milestone ${milestone.id} is midpoint-tagged but missing midpointType`
-          );
-        }
-      } else if (midpointType !== null) {
-        throw new Error(`Persisted story milestone ${milestone.id} has midpointType but isMidpoint is false`);
-      }
-
-      return {
-        id: milestone.id,
-        name: milestone.name,
-        description: milestone.description,
-        objective: milestone.objective,
-        causalLink: parsePersistedCausalLink(milestone.causalLink, milestone.id),
-        exitCondition: milestone.exitCondition ?? '',
-        role: milestone.role as MilestoneRole,
-        escalationType: parseEscalationType(milestone.escalationType),
-        secondaryEscalationType: parseEscalationType(milestone.secondaryEscalationType),
-        crisisType: parseCrisisType(milestone.crisisType),
-        expectedGapMagnitude: parseGapMagnitude(milestone.expectedGapMagnitude),
-        isMidpoint,
-        midpointType,
-        uniqueScenarioHook: milestone.uniqueScenarioHook ?? null,
-        approachVectors: parseApproachVectors(milestone.approachVectors) ?? null,
-        setpieceSourceIndex:
-          typeof milestone.setpieceSourceIndex === 'number' &&
-          Number.isInteger(milestone.setpieceSourceIndex) &&
-          milestone.setpieceSourceIndex >= 0 &&
-          milestone.setpieceSourceIndex <= 5
-            ? milestone.setpieceSourceIndex
-            : null,
-        obligatorySceneTag: isGenreObligationTag(milestone.obligatorySceneTag)
-          ? milestone.obligatorySceneTag
-          : null,
-      };
-    }),
+    ...normalizeStructureActFields(act),
+    milestones: act.milestones.map((milestone) =>
+      materializeStoryMilestone(
+        {
+          id: milestone.id,
+          name: milestone.name,
+          description: milestone.description,
+          objective: milestone.objective,
+          causalLink: milestone.causalLink,
+          exitCondition: milestone.exitCondition,
+          role: milestone.role,
+          escalationType: milestone.escalationType,
+          secondaryEscalationType: milestone.secondaryEscalationType,
+          crisisType: milestone.crisisType,
+          expectedGapMagnitude: milestone.expectedGapMagnitude,
+          isMidpoint: milestone.isMidpoint,
+          midpointType: milestone.midpointType,
+          uniqueScenarioHook: milestone.uniqueScenarioHook,
+          approachVectors: milestone.approachVectors,
+          setpieceSourceIndex: milestone.setpieceSourceIndex,
+          obligatorySceneTag: milestone.obligatorySceneTag,
+        },
+        'Persisted story milestone'
+      )
+    ),
   }));
 
   return {

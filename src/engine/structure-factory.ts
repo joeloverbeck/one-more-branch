@@ -1,189 +1,18 @@
-import type {
-  AnchorMoments,
-  ApproachVector,
-  MilestoneRole,
-  CrisisType,
-  EscalationType,
-  GapMagnitude,
-  MidpointType,
-  StoryAct,
-  StoryMilestone,
-  StoryStructure,
-} from '../models/story-arc';
+import type { StoryAct, StoryStructure } from '../models/story-arc';
 import {
-  APPROACH_VECTORS,
-  MILESTONE_ROLES,
-  CRISIS_TYPES,
-  ESCALATION_TYPES,
-  GAP_MAGNITUDES,
-  MIDPOINT_TYPES,
-  createDefaultAnchorMoments,
-} from '../models/story-arc';
-import { isGenreObligationTag } from '../models/genre-obligations';
+  materializeStoryMilestone,
+  normalizeAnchorMoments,
+  normalizeStructureActFields,
+} from '../models/story-structure-normalization';
 import type { StructureGenerationResult } from './structure-types';
 
-function parseMilestoneRole(role: string): MilestoneRole {
-  if (MILESTONE_ROLES.includes(role as MilestoneRole)) {
-    return role as MilestoneRole;
-  }
-  return 'escalation';
-}
-
-export function parseEscalationType(value: string | null | undefined): EscalationType | null {
-  if (value == null) {
-    return null;
-  }
-  if (ESCALATION_TYPES.includes(value as EscalationType)) {
-    return value as EscalationType;
-  }
-  return null;
-}
-
-export function parseCrisisType(value: string | null | undefined): CrisisType | null {
-  if (value == null) {
-    return null;
-  }
-  if (CRISIS_TYPES.includes(value as CrisisType)) {
-    return value as CrisisType;
-  }
-  return null;
-}
-
-export function parseMidpointType(value: string | null | undefined): MidpointType | null {
-  if (value == null) {
-    return null;
-  }
-  if (MIDPOINT_TYPES.includes(value as MidpointType)) {
-    return value as MidpointType;
-  }
-  return null;
-}
-
-export function parseGapMagnitude(value: string | null | undefined): GapMagnitude | null {
-  if (value == null) {
-    return null;
-  }
-  if (GAP_MAGNITUDES.includes(value as GapMagnitude)) {
-    return value as GapMagnitude;
-  }
-  return null;
-}
-
-export function parseApproachVectors(value: unknown): readonly ApproachVector[] | null {
-  if (!Array.isArray(value)) {
-    return null;
-  }
-  const valid = value.filter(
-    (v): v is string => typeof v === 'string' && APPROACH_VECTORS.includes(v as ApproachVector)
-  ) as ApproachVector[];
-  return valid.length > 0 ? valid : null;
-}
-
-function parseSetpieceSourceIndex(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 5) {
-    return value;
-  }
-  return null;
-}
-
-function parseObligatorySceneTag(value: unknown): string | null {
-  if (!isGenreObligationTag(value)) {
-    return null;
-  }
-
-  return value;
-}
-
-function parseCausalLink(value: unknown, milestoneId: string): string {
-  if (typeof value === 'string') {
-    const normalized = value.trim();
-    if (normalized.length > 0) {
-      return normalized;
-    }
-  }
-  throw new Error(`Structure milestone ${milestoneId} must include a non-empty causalLink`);
-}
-
-function parseString(value: unknown, fallback = ''): string {
-  return typeof value === 'string' ? value : fallback;
-}
-
-function parseStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.filter((entry): entry is string => typeof entry === 'string');
-}
-
-function normalizeAnchorMoments(value: unknown, actCount: number): AnchorMoments {
-  const defaults = createDefaultAnchorMoments(actCount);
-  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return defaults;
-  }
-
-  const data = value as Record<string, unknown>;
-  const incitingIncident =
-    typeof data['incitingIncident'] === 'object' &&
-    data['incitingIncident'] !== null &&
-    !Array.isArray(data['incitingIncident'])
-      ? (data['incitingIncident'] as Record<string, unknown>)
-      : null;
-  const midpoint =
-    typeof data['midpoint'] === 'object' && data['midpoint'] !== null && !Array.isArray(data['midpoint'])
-      ? (data['midpoint'] as Record<string, unknown>)
-      : null;
-  const climax =
-    typeof data['climax'] === 'object' && data['climax'] !== null && !Array.isArray(data['climax'])
-      ? (data['climax'] as Record<string, unknown>)
-      : null;
-  const signatureScenarioPlacement =
-    typeof data['signatureScenarioPlacement'] === 'object' &&
-    data['signatureScenarioPlacement'] !== null &&
-    !Array.isArray(data['signatureScenarioPlacement'])
-      ? (data['signatureScenarioPlacement'] as Record<string, unknown>)
-      : null;
-
-  return {
-    incitingIncident: {
-      actIndex:
-        typeof incitingIncident?.['actIndex'] === 'number'
-          ? incitingIncident['actIndex']
-          : defaults.incitingIncident.actIndex,
-      description: parseString(
-        incitingIncident?.['description'],
-        defaults.incitingIncident.description
-      ),
-    },
-    midpoint: {
-      actIndex:
-        typeof midpoint?.['actIndex'] === 'number'
-          ? midpoint['actIndex']
-          : defaults.midpoint.actIndex,
-      milestoneSlot:
-        typeof midpoint?.['milestoneSlot'] === 'number'
-          ? midpoint['milestoneSlot']
-          : defaults.midpoint.milestoneSlot,
-      midpointType:
-        parseMidpointType((midpoint?.['midpointType'] as string | null | undefined) ?? null) ??
-        defaults.midpoint.midpointType,
-    },
-    climax: {
-      actIndex:
-        typeof climax?.['actIndex'] === 'number' ? climax['actIndex'] : defaults.climax.actIndex,
-      description: parseString(climax?.['description'], defaults.climax.description),
-    },
-    signatureScenarioPlacement: signatureScenarioPlacement
-      ? {
-          actIndex:
-            typeof signatureScenarioPlacement['actIndex'] === 'number'
-              ? signatureScenarioPlacement['actIndex']
-              : defaults.incitingIncident.actIndex,
-          description: parseString(signatureScenarioPlacement['description']),
-        }
-      : null,
-  };
-}
+export {
+  parseApproachVectors,
+  parseCrisisType,
+  parseEscalationType,
+  parseGapMagnitude,
+  parseMidpointType,
+} from '../models/story-structure-normalization';
 
 /**
  * Creates StoryStructure from raw generation result.
@@ -192,39 +21,32 @@ function normalizeAnchorMoments(value: unknown, actCount: number): AnchorMoments
 export function createStoryStructure(result: StructureGenerationResult): StoryStructure {
   const acts: StoryAct[] = result.acts.map((actData, actIndex) => {
     const actId = String(actIndex + 1);
-    const milestones: StoryMilestone[] = actData.milestones.map((milestoneData, milestoneIndex) => {
+    const milestones = actData.milestones.map((milestoneData, milestoneIndex) => {
       const milestoneId = `${actId}.${milestoneIndex + 1}`;
-      const midpointType = parseMidpointType(milestoneData.midpointType);
-      const isMidpoint = milestoneData.isMidpoint === true;
-
-      if (isMidpoint && midpointType === null) {
-        throw new Error(`Structure milestone ${milestoneId} is midpoint-tagged but missing midpointType`);
-      }
-      if (!isMidpoint && midpointType !== null) {
-        throw new Error(`Structure milestone ${milestoneId} has midpointType but isMidpoint is false`);
-      }
-
-      return {
-        id: milestoneId,
-        name: milestoneData.name,
-        description: milestoneData.description,
-        objective: milestoneData.objective,
-        causalLink: parseCausalLink(milestoneData.causalLink, milestoneId),
-        exitCondition: parseString(milestoneData.exitCondition),
-        role: parseMilestoneRole(milestoneData.role),
-        escalationType: parseEscalationType(milestoneData.escalationType),
-        secondaryEscalationType: parseEscalationType(milestoneData.secondaryEscalationType),
-        crisisType: parseCrisisType(milestoneData.crisisType),
-        expectedGapMagnitude: parseGapMagnitude(milestoneData.expectedGapMagnitude),
-        isMidpoint,
-        midpointType,
-        uniqueScenarioHook:
-          typeof milestoneData.uniqueScenarioHook === 'string' ? milestoneData.uniqueScenarioHook : null,
-        approachVectors: parseApproachVectors(milestoneData.approachVectors),
-        setpieceSourceIndex: parseSetpieceSourceIndex(milestoneData.setpieceSourceIndex),
-        obligatorySceneTag: parseObligatorySceneTag(milestoneData.obligatorySceneTag),
-      };
+      return materializeStoryMilestone(
+        {
+          id: milestoneId,
+          name: milestoneData.name,
+          description: milestoneData.description,
+          objective: milestoneData.objective,
+          causalLink: milestoneData.causalLink,
+          exitCondition: milestoneData.exitCondition,
+          role: milestoneData.role,
+          escalationType: milestoneData.escalationType,
+          secondaryEscalationType: milestoneData.secondaryEscalationType,
+          crisisType: milestoneData.crisisType,
+          expectedGapMagnitude: milestoneData.expectedGapMagnitude,
+          isMidpoint: milestoneData.isMidpoint,
+          midpointType: milestoneData.midpointType,
+          uniqueScenarioHook: milestoneData.uniqueScenarioHook,
+          approachVectors: milestoneData.approachVectors,
+          setpieceSourceIndex: milestoneData.setpieceSourceIndex,
+          obligatorySceneTag: milestoneData.obligatorySceneTag,
+        },
+        'Structure milestone'
+      );
     });
+    const actFields = normalizeStructureActFields(actData);
 
     return {
       id: actId,
@@ -232,10 +54,7 @@ export function createStoryStructure(result: StructureGenerationResult): StorySt
       objective: actData.objective,
       stakes: actData.stakes,
       entryCondition: actData.entryCondition,
-      actQuestion: parseString(actData.actQuestion),
-      exitReversal: parseString(actData.exitReversal),
-      promiseTargets: parseStringArray(actData.promiseTargets),
-      obligationTargets: parseStringArray(actData.obligationTargets),
+      ...actFields,
       milestones,
     };
   });
