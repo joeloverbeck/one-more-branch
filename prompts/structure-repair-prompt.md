@@ -25,6 +25,8 @@ It must return only targeted act rewrites, not a full regenerated structure.
   - premise promise / genre obligation target coverage
   - milestone obligation-tag coverage
   - minimum traced setpiece coverage when verified setpieces exist
+- `obligationTargets` define the active genre-obligation coverage contract for the structure being repaired.
+- Milestone `obligatorySceneTag` coverage must satisfy the obligations allocated via `obligationTargets`. If no obligations are allocated anywhere, the full genre obligation list is the fallback contract.
 
 ## Output Shape
 

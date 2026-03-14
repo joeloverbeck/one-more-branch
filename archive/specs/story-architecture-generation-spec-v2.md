@@ -186,12 +186,12 @@ interface GeneratedMilestone {
 2. 2-4 milestones per act
 3. `escalationType` non-null for escalation/turning_point milestones
 4. Setpiece coverage >= 4 (when `conceptVerification` provided)
-5. Genre obligation coverage (all expected tags present)
+5. Genre obligation coverage (all allocated tags present; fall back to the full genre list only when no obligations were allocated)
 6. `exitCondition` non-empty for every milestone
 7. `actQuestion` distinct across acts
 8. `exitReversal` present for all non-final acts
 9. `promiseTargets` cover all premise promises
-10. `obligationTargets` cover all genre obligations
+10. `obligationTargets` define the structure's active genre-obligation coverage contract
 
 **LLM repair**: Only when checks fail. Targeted repair of failing milestones/acts, not full regeneration.
 
@@ -490,7 +490,7 @@ A structure is valid only if:
 - Every milestone has a non-empty `exitCondition`
 - Every milestone is caused by prior state (non-empty `causalLink`)
 - Every premise promise is mapped via `promiseTargets` to at least one act
-- Every genre obligation is covered via `obligationTargets`
+- The active genre-obligation contract is represented via `obligationTargets`; if no obligations are allocated, the full genre list remains the fallback contract
 - Signature scenario has explicit placement (when `conceptVerification` provided)
 - Setpiece coverage >= 4 unique traced setpieces (when `conceptVerification` provided)
 - `escalationType` is non-null for all escalation/turning_point milestones

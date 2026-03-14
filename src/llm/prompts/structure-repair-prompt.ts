@@ -95,8 +95,8 @@ CANONICAL EXPECTATIONS:
 - Non-final acts must end with a non-empty exitReversal. The final act must use an empty exitReversal.
 - actQuestion values must remain distinct across acts.
 - promiseTargets across all acts must cover every premise promise.
-- obligationTargets across all acts must cover every genre obligation.
-- milestone obligatorySceneTag coverage must satisfy the genre obligation contract.
+- obligationTargets define the active genre-obligation coverage contract for this structure.
+- milestone obligatorySceneTag coverage must satisfy the obligations allocated via obligationTargets. If no obligations are allocated anywhere, fall back to the full genre obligation list.
 - When verified setpieces exist, maintain at least 4 unique traced setpieces across the full structure.
 - For escalation and turning_point milestones, escalationType must be non-null.
 - Keep the repaired output tightly aligned to the existing architecture instead of inventing a new macro plan.
