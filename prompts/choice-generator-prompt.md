@@ -75,8 +75,12 @@ STORY SPINE (invariant narrative backbone):
 
 {{#if structure && accumulatedStructureState}}
 CURRENT BEAT: "{{beat.name}}" ({{beat.role}})
-Beat Objective: {{beat.objective}}
+Milestone Objective: {{beat.objective}}
+{{#if beat.exitCondition}}Exit Condition: {{beat.exitCondition}}{{/if}}
 Act Objective: {{act.objective}}
+{{#if act.actQuestion}}Act Question: {{act.actQuestion}}{{/if}}
+{{#if beat.escalationType}}Escalation Type: {{beat.escalationType}}{{/if}}
+{{#if beat.crisisType && beat.role === 'turning_point'}}Crisis Type: {{beat.crisisType}}{{/if}}
 {{/if}}
 
 DRAMATIC QUESTION: {{dramaticQuestion}}
@@ -112,6 +116,14 @@ REQUIREMENTS:
 8. Choices must be in-character for the protagonist given their personality and emotional state
 9. Optionally provide choiceSubtype (free-text like "CONFESSION", "BARGAIN") for nuance
 10. Optionally provide choiceShape (RELAXED|OBVIOUS|TRADEOFF|DILEMMA|GAMBLE|TEMPTATION|SACRIFICE|FLAVOR) for pressure type
+
+{{#if structure has exitCondition, actQuestion, escalationType, or crisisType}}
+STRUCTURE-AWARE CHOICE DESIGN:
+- When an Exit Condition is shown: at least one choice should move toward satisfying it and at least one should complicate or delay it.
+- When an Act Question is shown: choices should offer divergent answers to this question.
+- When an Escalation Type is shown: choice intensity and consequences should reflect the escalation flavor (e.g., BETRAYAL_OR_ALLIANCE_SHIFT choices involve trust/loyalty pressure).
+- When a Crisis Type is shown for a turning_point: shape choices to present that specific dilemma shape (BEST_BAD_CHOICE = all options have costs; IRRECONCILABLE_GOODS = choosing one worthy path excludes another).
+{{/if}}
 
 WHEN IN CONFLICT, PRIORITIZE:
 1. Choices answer the dramatic question with divergent tags
@@ -164,3 +176,4 @@ On failure, the choice generator uses the same repair pipelines previously used 
 - **Anti-pattern detection**: Instructions to avoid choices that repeat scene events
 - **Thread awareness**: Active state (threats, constraints, threads) provided for situational grounding
 - **Dramatic arc awareness**: Beat objective and structure position inform choice design
+- **Structure-aware design**: Exit conditions, act questions, escalation types, and crisis types guide choice intensity and divergence when present

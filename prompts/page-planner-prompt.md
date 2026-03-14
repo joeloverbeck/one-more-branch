@@ -98,6 +98,46 @@ Return JSON only.
 }
 ```
 
+## Story Structure Context
+
+When a story structure is present, the planner receives a STORY STRUCTURE block built by `buildSharedStructureContext()` in `src/llm/prompts/continuation/story-structure-section.ts`:
+
+```text
+=== STORY STRUCTURE ===
+Overall Theme: {{structure.overallTheme}}
+Premise: {{structure.premise}}
+Opening image: {{structure.openingImage}}
+Closing image: {{structure.closingImage}}
+
+CURRENT ACT: {{act.name}} (Act {{actIndex + 1}} of {{structure.acts.length}})
+Objective: {{act.objective}}
+Stakes: {{act.stakes}}
+{{#if act.actQuestion}}Act Question: {{act.actQuestion}}{{/if}}
+{{#if act.exitReversal}}Expected Exit Reversal: {{act.exitReversal}}{{/if}}
+{{#if act.promiseTargets}}Promise Targets: {{act.promiseTargets joined by ', '}}{{/if}}
+
+BEATS IN THIS ACT:
+  [x] CONCLUDED ({{beat.role}}): {{beat.description}}
+    Resolution: {{beatProgression.resolution}}
+  [>] ACTIVE ({{beat.role}}): {{beat.description}}
+    Objective: {{beat.objective}}
+    {{#if beat.exitCondition}}Exit condition: {{beat.exitCondition}}{{/if}}
+    {{#if beat.escalationType}}Escalation mechanism: {{beat.escalationType}}{{/if}}
+    {{#if beat.crisisType}}Crisis type: {{beat.crisisType}}{{/if}}
+    {{#if beat.expectedGapMagnitude}}Expected gap magnitude: {{beat.expectedGapMagnitude}}{{/if}}
+    {{#if beat.isMidpoint}}Midpoint: true ({{beat.midpointType}}){{/if}}
+    {{#if beat.uniqueScenarioHook}}Scenario hook: {{beat.uniqueScenarioHook}}{{/if}}
+    {{#if beat.approachVectors}}Approach vectors: {{beat.approachVectors joined by ', '}}{{/if}}
+  [ ] PENDING ({{beat.role}}): {{beat.description}}
+    Objective: {{beat.objective}}
+    {{#if beat.exitCondition}}Exit condition: {{beat.exitCondition}}{{/if}}
+
+REMAINING ACTS:
+  - Act {{N}}: {{act.name}} - {{act.objective}}
+```
+
+Act-level fields `actQuestion`, `exitReversal`, and `promiseTargets` are rendered defensively — only when non-empty. Active milestones show all architecture v2 fields when present.
+
 ## Protagonist Identity Directive
 
 A `PROTAGONIST IDENTITY` directive is always injected into the user message (both opening and continuation contexts), since decomposed characters are required on planner context types:

@@ -103,14 +103,18 @@ Premise: {{structure.premise}}
 CURRENT ACT: {{currentAct.name}} (Act {{currentActIndex + 1}} of {{structure.acts.length}})
 Objective: {{currentAct.objective}}
 Stakes: {{currentAct.stakes}}
+{{#if currentAct.actQuestion}}Act Question: {{currentAct.actQuestion}}{{/if}}
+{{#if currentAct.exitReversal}}Expected Exit Reversal: {{currentAct.exitReversal}}{{/if}}
 
 BEATS IN THIS ACT:
   [x] CONCLUDED ({{beat.role}}): {{beat.description}}
     Resolution: {{beatProgression.resolution}}
   [>] ACTIVE ({{beat.role}}): {{beat.description}}
     Objective: {{beat.objective}}
+    {{#if beat.exitCondition}}Exit condition: {{beat.exitCondition}}{{/if}}
     {{#if beat.escalationType}}Escalation mechanism: {{beat.escalationType}}{{/if}}
     {{#if beat.crisisType}}Crisis type: {{beat.crisisType}}{{/if}}
+    {{#if beat.expectedGapMagnitude}}Expected gap magnitude: {{beat.expectedGapMagnitude}}{{/if}}
     {{#if beat.uniqueScenarioHook}}Scenario hook: {{beat.uniqueScenarioHook}}{{/if}}
   [ ] PENDING ({{beat.role}}): {{beat.description}}
     Objective: {{beat.objective}}
@@ -142,7 +146,7 @@ Classify the narrative before deciding beatConcluded:
 Set beatConcluded: true only when the gate is satisfied.
 
 Base gate for all beat roles (must satisfy at least one):
-1. objectiveEvidenceStrength is CLEAR_EXPLICIT for the active beat objective
+1. objectiveEvidenceStrength is CLEAR_EXPLICIT for the active beat objective (when `exitCondition` is present on the active beat, objective anchors are extracted from `exitCondition` preferentially over the beat objective)
 2. structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the active beat objective is no longer the primary unresolved objective
 
 Additional gate for turning_point:
@@ -180,6 +184,7 @@ The active beat role is "escalation". When evaluating this beat:
 {{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
 {{#if activeBeat.escalationType}}The expected escalation mechanism is {{activeBeat.escalationType}}. Assess whether the narrative delivered this specific type of escalation — not just any stakes increase.{{/if}}
 {{#if activeBeat.crisisType}}The expected crisis type is {{activeBeat.crisisType}}. Assess whether choices created this dilemma shape.{{/if}}
+{{#if activeBeat.expectedGapMagnitude}}The expected gap magnitude is {{activeBeat.expectedGapMagnitude}}. Assess whether outcome divergence from protagonist expectations matches this scale.{{/if}}
 {{#if activeBeat.uniqueScenarioHook}}The scene should reflect this unique scenario hook: "{{activeBeat.uniqueScenarioHook}}". Assess whether the scene leveraged this story's specific elements.{{/if}}
 - Assess whether the narrative actually raised stakes beyond the previous beat
 - Stakes are raised when new consequences, threats, or costs were introduced that did not exist before
@@ -187,6 +192,7 @@ The active beat role is "escalation". When evaluating this beat:
 - If beatConcluded is true but stakes were not genuinely raised, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without genuine escalation — scene added complexity but did not raise the cost of failure"
 {{#if activeBeat.escalationType}}- If the escalation type does not match what actually happened (e.g., expected {{activeBeat.escalationType}} but got generic tension), note the mismatch in pacingIssueReason{{/if}}
 {{#if activeBeat.crisisType}}- If choice pressure does not match crisis type {{activeBeat.crisisType}}, note the mismatch in pacingIssueReason{{/if}}
+{{#if activeBeat.expectedGapMagnitude}}- If delivered divergence does not match expected gap magnitude {{activeBeat.expectedGapMagnitude}}, note the mismatch in pacingIssueReason{{/if}}
 {{/if}}
 
 {{#if activeBeatRole === 'turning_point'}}
@@ -195,6 +201,7 @@ The active beat role is "turning_point". When evaluating this beat:
 {{#if previousBeatResolution}}Previous beat resolved: "{{previousBeatResolution}}"{{/if}}
 {{#if activeBeat.escalationType}}The expected turning point mechanism is {{activeBeat.escalationType}}. Assess whether the narrative delivered this specific type of shift — not just any irreversible change.{{/if}}
 {{#if activeBeat.crisisType}}The expected crisis type is {{activeBeat.crisisType}}. Assess whether the turning-point decision pressure matched this dilemma shape.{{/if}}
+{{#if activeBeat.expectedGapMagnitude}}The expected gap magnitude is {{activeBeat.expectedGapMagnitude}}. Assess whether the turning-point outcome diverged from expectations at this scale.{{/if}}
 {{#if activeBeat.uniqueScenarioHook}}The scene should reflect this unique scenario hook: "{{activeBeat.uniqueScenarioHook}}". Assess whether the scene leveraged this story's specific elements.{{/if}}
 - Assess whether the narrative delivered an irreversible shift
 - An irreversible shift means a decision, revelation, or consequence that permanently changes available options
@@ -202,6 +209,7 @@ The active beat role is "turning_point". When evaluating this beat:
 - If beatConcluded is true but no irreversible shift occurred, set pacingIssueDetected: true with pacingIssueReason: "Beat concluded without irreversible shift — status quo was not permanently altered"
 {{#if activeBeat.escalationType}}- If the turning point type does not match what actually happened (e.g., expected {{activeBeat.escalationType}} but got generic change), note the mismatch in pacingIssueReason{{/if}}
 {{#if activeBeat.crisisType}}- If turning-point choices do not reflect crisis type {{activeBeat.crisisType}}, note the mismatch in pacingIssueReason{{/if}}
+{{#if activeBeat.expectedGapMagnitude}}- If turning-point divergence does not reflect expected gap magnitude {{activeBeat.expectedGapMagnitude}}, note the mismatch in pacingIssueReason{{/if}}
 {{/if}}
 
 {{#if activeBeatRole === 'reflection'}}

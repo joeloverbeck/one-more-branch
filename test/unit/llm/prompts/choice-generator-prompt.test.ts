@@ -5,7 +5,7 @@ import {
 import { ThreatType, ThreadType, Urgency } from '../../../../src/models/state/keyed-entry';
 import type { ProtagonistAffect } from '../../../../src/models/protagonist-affect';
 import type { ActiveState } from '../../../../src/models/state';
-import type { StoryStructure, AccumulatedStructureState, StoryMilestone } from '../../../../src/models/story-arc';
+import type { StoryStructure, StoryAct, AccumulatedStructureState, StoryMilestone } from '../../../../src/models/story-arc';
 import type { StorySpine } from '../../../../src/models/story-spine';
 import { buildMinimalDecomposedCharacter } from '../../../fixtures/decomposed';
 
@@ -36,6 +36,7 @@ function makeMinimalBeat(overrides: Partial<StoryMilestone> = {}): StoryMileston
     description: 'Finding the hidden door',
     objective: 'Introduce the mystery',
     causalLink: 'follows from opening',
+    exitCondition: '',
     role: 'setup',
     escalationType: null,
     secondaryEscalationType: null,
@@ -187,6 +188,10 @@ describe('buildChoiceGeneratorPrompt', () => {
           objective: 'Establish the world',
           stakes: 'survival',
           entryCondition: 'story begins',
+          actQuestion: '',
+          exitReversal: '',
+          promiseTargets: [],
+          obligationTargets: [],
           milestones: [makeMinimalBeat()],
         },
       ],
@@ -195,6 +200,12 @@ describe('buildChoiceGeneratorPrompt', () => {
       openingImage: 'A dark cell',
       closingImage: 'Sunlight breaking through',
       pacingBudget: { targetPagesMin: 8, targetPagesMax: 12 },
+      anchorMoments: {
+        incitingIncident: { actIndex: 0, description: '' },
+        midpoint: { actIndex: 0, milestoneSlot: 0, midpointType: 'FALSE_DEFEAT' },
+        climax: { actIndex: 0, description: '' },
+        signatureScenarioPlacement: null,
+      },
       generatedAt: new Date(),
     };
     const accumulatedStructureState: AccumulatedStructureState = {
@@ -225,5 +236,144 @@ describe('buildChoiceGeneratorPrompt', () => {
 
     expect(messages[0].content).not.toContain('interactive fiction storyteller');
     expect(messages[0].content).toContain('choice architect');
+  });
+
+  function makeStructureWithAct(
+    actOverrides: Partial<StoryAct> = {},
+    milestoneOverrides: Partial<StoryMilestone> = {}
+  ): { structure: StoryStructure; accumulatedStructureState: AccumulatedStructureState } {
+    const structure: StoryStructure = {
+      acts: [
+        {
+          id: 'act-1',
+          name: 'Act I',
+          objective: 'Establish the world',
+          stakes: 'survival',
+          entryCondition: 'story begins',
+          actQuestion: '',
+          exitReversal: '',
+          promiseTargets: [],
+          obligationTargets: [],
+          milestones: [makeMinimalBeat(milestoneOverrides)],
+          ...actOverrides,
+        },
+      ],
+      overallTheme: 'redemption',
+      premise: 'A fallen knight seeks redemption',
+      openingImage: 'A dark cell',
+      closingImage: 'Sunlight breaking through',
+      pacingBudget: { targetPagesMin: 8, targetPagesMax: 12 },
+      anchorMoments: {
+        incitingIncident: { actIndex: 0, description: '' },
+        midpoint: { actIndex: 0, milestoneSlot: 0, midpointType: 'FALSE_DEFEAT' },
+        climax: { actIndex: 0, description: '' },
+        signatureScenarioPlacement: null,
+      },
+      generatedAt: new Date(),
+    };
+    const accumulatedStructureState: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [],
+      pagesInCurrentMilestone: 1,
+      pacingNudge: null,
+    };
+    return { structure, accumulatedStructureState };
+  }
+
+  it('includes exitCondition when milestone has one', () => {
+    const { structure, accumulatedStructureState } = makeStructureWithAct(
+      {},
+      { exitCondition: 'The hero reaches the gate' }
+    );
+    const messages = buildChoiceGeneratorPrompt(
+      makeContext({ structure, accumulatedStructureState })
+    );
+
+    expect(messages[1].content).toContain('Exit Condition: The hero reaches the gate');
+  });
+
+  it('includes actQuestion when act has one', () => {
+    const { structure, accumulatedStructureState } = makeStructureWithAct({
+      actQuestion: 'Can trust survive betrayal?',
+    });
+    const messages = buildChoiceGeneratorPrompt(
+      makeContext({ structure, accumulatedStructureState })
+    );
+
+    expect(messages[1].content).toContain('Act Question: Can trust survive betrayal?');
+  });
+
+  it('includes escalationType when milestone has one', () => {
+    const { structure, accumulatedStructureState } = makeStructureWithAct(
+      {},
+      { escalationType: 'BETRAYAL_OR_ALLIANCE_SHIFT' }
+    );
+    const messages = buildChoiceGeneratorPrompt(
+      makeContext({ structure, accumulatedStructureState })
+    );
+
+    expect(messages[1].content).toContain('Escalation Type: BETRAYAL_OR_ALLIANCE_SHIFT');
+  });
+
+  it('includes crisisType for turning_point milestones', () => {
+    const { structure, accumulatedStructureState } = makeStructureWithAct(
+      {},
+      { role: 'turning_point', crisisType: 'BEST_BAD_CHOICE' }
+    );
+    const messages = buildChoiceGeneratorPrompt(
+      makeContext({ structure, accumulatedStructureState })
+    );
+
+    expect(messages[1].content).toContain('Crisis Type: BEST_BAD_CHOICE');
+  });
+
+  it('omits crisisType for non-turning_point milestones', () => {
+    const { structure, accumulatedStructureState } = makeStructureWithAct(
+      {},
+      { role: 'escalation', crisisType: 'BEST_BAD_CHOICE' }
+    );
+    const messages = buildChoiceGeneratorPrompt(
+      makeContext({ structure, accumulatedStructureState })
+    );
+
+    expect(messages[1].content).not.toContain('Crisis Type:');
+  });
+
+  it('omits new fields gracefully for older stories without them', () => {
+    const { structure, accumulatedStructureState } = makeStructureWithAct();
+    const messages = buildChoiceGeneratorPrompt(
+      makeContext({ structure, accumulatedStructureState })
+    );
+    const content = messages[1].content;
+
+    expect(content).toContain('CURRENT BEAT:');
+    expect(content).not.toContain('Exit Condition:');
+    expect(content).not.toContain('Act Question:');
+    expect(content).not.toContain('Escalation Type:');
+    expect(content).not.toContain('Crisis Type:');
+    expect(content).not.toContain('STRUCTURE-AWARE CHOICE DESIGN');
+  });
+
+  it('includes structure-aware choice design instructions when structure fields present', () => {
+    const { structure, accumulatedStructureState } = makeStructureWithAct(
+      { actQuestion: 'Will the alliance hold?' },
+      {
+        exitCondition: 'The pact is sealed or broken',
+        role: 'turning_point',
+        escalationType: 'BETRAYAL_OR_ALLIANCE_SHIFT',
+        crisisType: 'IRRECONCILABLE_GOODS',
+      }
+    );
+    const messages = buildChoiceGeneratorPrompt(
+      makeContext({ structure, accumulatedStructureState })
+    );
+    const content = messages[1].content;
+
+    expect(content).toContain('STRUCTURE-AWARE CHOICE DESIGN');
+    expect(content).toContain('Exit Condition is shown');
+    expect(content).toContain('Act Question is shown');
+    expect(content).toContain('Escalation Type is shown');
+    expect(content).toContain('Crisis Type is shown');
   });
 });
