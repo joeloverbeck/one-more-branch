@@ -10,11 +10,11 @@ You do NOT evaluate tone, NPC coherence, narrative promises, or quality. Those a
 
 const STRUCTURE_EVALUATOR_RULES = `Use this strict sequence:
 Step A: Classify scene signals using the provided enums.
-Step B: Apply the completion gate against the active milestone objective before deciding milestoneConcluded.
+Step B: Apply the completion gate against the active milestone exit condition when present; otherwise use the active milestone objective before deciding milestoneConcluded.
 
-Before setting milestoneConcluded, extract 1-3 objective anchors from activeMilestone.objective and map each anchor to concrete evidence.
+Before setting milestoneConcluded, extract 1-3 completion anchors from activeMilestone.exitCondition when it is non-empty; otherwise extract them from activeMilestone.objective, then map each anchor to concrete evidence.
 
-An objective anchor is a distinct verifiable condition embedded in the milestone objective text. Each anchor represents one thing the protagonist must accomplish for the milestone to be complete. Multi-part objectives yield multiple anchors.
+A completion anchor is a distinct verifiable condition embedded in the active completion target. Each anchor represents one thing that must be true for the milestone to be complete. Multi-part exit conditions or objectives yield multiple anchors.
 
 Example 1 — Objective: "Secure evidence before the tribunal can destroy it"
   Anchors:

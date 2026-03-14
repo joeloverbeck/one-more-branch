@@ -2,9 +2,9 @@ import type {
   AccumulatedStructureState,
   StoryStructure,
 } from '../../../../../src/models/story-arc';
-import { buildWriterStructureContext } from '../../../../../src/llm/prompts/continuation/story-structure-section';
+import { buildSharedStructureContext } from '../../../../../src/llm/prompts/continuation/story-structure-section';
 
-describe('buildWriterStructureContext', () => {
+describe('buildSharedStructureContext', () => {
   const testStructure: StoryStructure = {
     overallTheme: 'Stop the city purge before dawn.',
     premise:
@@ -100,12 +100,12 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(undefined, state);
+    const result = buildSharedStructureContext(undefined, state);
     expect(result).toBe('');
   });
 
   it('returns empty string when accumulatedStructureState is undefined', () => {
-    const result = buildWriterStructureContext(testStructure, undefined);
+    const result = buildSharedStructureContext(testStructure, undefined);
     expect(result).toBe('');
   });
 
@@ -118,7 +118,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).toBe('');
   });
 
@@ -131,7 +131,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).toContain('Overall Theme: Stop the city purge before dawn.');
   });
 
@@ -144,7 +144,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).toContain('CURRENT ACT: The Crackdown');
     expect(result).toContain('Objective: Escape the first sweep');
     expect(result).toContain('Stakes: Capture means execution.');
@@ -163,7 +163,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).toContain('[x] CONCLUDED (setup): Reach safehouse');
     expect(result).toContain('Resolution: Reached safehouse');
     expect(result).toContain('[>] ACTIVE (escalation): Secure evidence');
@@ -180,7 +180,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).toContain('REMAINING ACTS:');
     expect(result).toContain('Act 2: The Hunt - Cross hostile territory');
     expect(result).toContain('Act 3: The Broadcast - Expose the planners');
@@ -195,7 +195,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).toContain('REMAINING ACTS:');
     expect(result).toContain('- None');
   });
@@ -209,7 +209,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).toContain('=== STORY STRUCTURE ===');
   });
 
@@ -223,7 +223,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).not.toContain('BEAT EVALUATION');
   });
 
@@ -236,7 +236,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).not.toContain('DEVIATION');
   });
 
@@ -249,7 +249,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).not.toContain('REMAINING BEATS TO EVALUATE');
   });
 
@@ -262,7 +262,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).not.toContain('PROGRESSION CHECK');
   });
 
@@ -275,7 +275,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).toContain('Premise: A fugitive must broadcast evidence');
   });
 
@@ -291,7 +291,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).toContain('(setup)');
     expect(result).toContain('(escalation)');
     expect(result).toContain('(turning_point)');
@@ -306,7 +306,7 @@ describe('buildWriterStructureContext', () => {
       pacingNudge: null,
     };
 
-    const result = buildWriterStructureContext(testStructure, state);
+    const result = buildSharedStructureContext(testStructure, state);
     expect(result).not.toContain('CURRENT STATE (for milestone evaluation)');
   });
 });

@@ -5,7 +5,7 @@ import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-wo
 import { createInitialStructureState } from '../../../../models/story-arc.js';
 import type { StoryKernel } from '../../../../models/story-kernel.js';
 import type { OpeningPagePlanContext } from '../../../context-types.js';
-import { buildWriterStructureContext } from '../../continuation/story-structure-section.js';
+import { buildSharedStructureContext } from '../../continuation/story-structure-section.js';
 import type { PlannerContextOptions } from './continuation-context.js';
 
 function buildOpeningValueSpectrumSection(storyKernel: StoryKernel | undefined): string {
@@ -52,7 +52,7 @@ ${context.startingSituation}
     : '';
 
   const structureSection = context.structure
-    ? buildWriterStructureContext(context.structure, createInitialStructureState(context.structure))
+    ? buildSharedStructureContext(context.structure, createInitialStructureState(context.structure))
     : '';
 
   const initialAgendas = context.initialNpcAgendas ?? [];

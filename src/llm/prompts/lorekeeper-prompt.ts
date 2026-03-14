@@ -5,7 +5,7 @@ import { CONTENT_POLICY } from '../content-policy.js';
 import type { LorekeeperContext } from '../context-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { LOREKEEPER_CURATION_PRINCIPLES } from '../lorekeeper-contract.js';
-import { buildWriterStructureContext } from './continuation/index.js';
+import { buildSharedStructureContext } from './continuation/index.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
@@ -168,7 +168,7 @@ ${locationLine}${threatsLine}${constraintsLine}${threadsLine}
 `
       : '';
 
-  const structureSection = buildWriterStructureContext(
+  const structureSection = buildSharedStructureContext(
     context.structure,
     context.accumulatedStructureState
   );

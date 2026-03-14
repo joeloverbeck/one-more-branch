@@ -568,6 +568,12 @@ describe('planner continuation context section', () => {
         closingImage: 'A closing image placeholder.',
         pacingBudget: { targetPagesMin: 20, targetPagesMax: 30 },
         generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+        anchorMoments: {
+          incitingIncident: { actIndex: 0, description: 'The purge order hits the streets.' },
+          midpoint: { actIndex: 0, milestoneSlot: 1, midpointType: 'FALSE_VICTORY' },
+          climax: { actIndex: 1, description: 'The proof reaches the public.' },
+          signatureScenarioPlacement: null,
+        },
         acts: [
           {
             id: '1',
@@ -575,24 +581,67 @@ describe('planner continuation context section', () => {
             objective: 'Escape initial crackdown',
             stakes: 'Capture means execution.',
             entryCondition: 'Purge starts',
+            actQuestion: 'Can the smuggler keep the proof alive long enough to matter?',
+            exitReversal: 'Escaping the crackdown exposes how high the conspiracy reaches.',
+            promiseTargets: ['The citywide purge can be exposed'],
+            obligationTargets: [],
             milestones: [
               {
                 id: '1.1',
+                name: 'Route secured',
                 description: 'Secure route through lockdown',
                 objective: 'Reach safe passage',
+                causalLink: 'The purge seals normal routes.',
+                exitCondition: 'A reliable path through the lockdown is secured.',
                 role: 'setup',
+                escalationType: null,
+                secondaryEscalationType: null,
+                crisisType: null,
+                expectedGapMagnitude: null,
+                isMidpoint: false,
+                midpointType: null,
+                uniqueScenarioHook: null,
+                approachVectors: null,
+                setpieceSourceIndex: null,
+                obligatorySceneTag: null,
               },
               {
                 id: '1.2',
+                name: 'Compromised ally',
                 description: 'Confront compromised ally',
                 objective: 'Prevent betrayal',
+                causalLink: 'The ally controls the only covert route.',
+                exitCondition: 'The ally either recommits or is neutralized before they can betray the route.',
                 role: 'escalation',
+                escalationType: null,
+                secondaryEscalationType: null,
+                crisisType: null,
+                expectedGapMagnitude: null,
+                isMidpoint: false,
+                midpointType: null,
+                uniqueScenarioHook: null,
+                approachVectors: null,
+                setpieceSourceIndex: null,
+                obligatorySceneTag: null,
               },
               {
                 id: '1.3',
+                name: 'Directive exposed',
                 description: 'Expose the city directive',
                 objective: 'Broadcast proof',
+                causalLink: 'Proof of the directive changes what resistance cells can do.',
+                exitCondition: 'The directive is public enough that the resistance can mobilize around it.',
                 role: 'turning_point',
+                escalationType: null,
+                secondaryEscalationType: null,
+                crisisType: null,
+                expectedGapMagnitude: null,
+                isMidpoint: false,
+                midpointType: null,
+                uniqueScenarioHook: null,
+                approachVectors: null,
+                setpieceSourceIndex: null,
+                obligatorySceneTag: null,
               },
             ],
           },
@@ -602,12 +651,29 @@ describe('planner continuation context section', () => {
             objective: 'Take down purge command',
             stakes: 'City falls if command survives.',
             entryCondition: 'Proof reaches resistance',
+            actQuestion: 'What does it take to turn survival into offense?',
+            exitReversal: '',
+            promiseTargets: ['The citywide purge can be exposed'],
+            obligationTargets: [],
             milestones: [
               {
                 id: '2.1',
+                name: 'Command raid',
                 description: 'Raid central command',
                 objective: 'Neutralize command hub',
+                causalLink: 'The proof reveals where command is vulnerable.',
+                exitCondition: 'Purge command loses control of the city response grid.',
                 role: 'resolution',
+                escalationType: null,
+                secondaryEscalationType: null,
+                crisisType: null,
+                expectedGapMagnitude: null,
+                isMidpoint: false,
+                midpointType: null,
+                uniqueScenarioHook: null,
+                approachVectors: null,
+                setpieceSourceIndex: null,
+                obligatorySceneTag: null,
               },
             ],
           },
@@ -634,9 +700,107 @@ describe('planner continuation context section', () => {
     expect(result).toContain('[x] CONCLUDED (setup): Secure route through lockdown');
     expect(result).toContain('[>] ACTIVE (escalation): Confront compromised ally');
     expect(result).toContain('[ ] PENDING (turning_point): Expose the city directive');
+    expect(result).toContain(
+      'Act Question: Can the smuggler keep the proof alive long enough to matter?'
+    );
+    expect(result).toContain(
+      'Expected Exit Reversal: Escaping the crackdown exposes how high the conspiracy reaches.'
+    );
+    expect(result).toContain('Promise Targets: The citywide purge can be exposed');
+    expect(result).toContain(
+      'Exit condition: The ally either recommits or is neutralized before they can betray the route.'
+    );
     expect(result).toContain('REMAINING ACTS:');
     expect(result).not.toContain('Current Act Index:');
     expect(result).not.toContain('Current Milestone Index:');
+  });
+
+  it('omits empty structural guidance fields when they are unavailable', () => {
+    const context: ContinuationPagePlanContext = {
+      mode: 'continuation',
+      tone: 'gritty cyberpunk',
+      decomposedCharacters: [buildMinimalDecomposedCharacter('A biotech smuggler')],
+      decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
+      globalCanon: [],
+      globalCharacterCanon: {},
+      previousNarrative: 'A silent corridor stretches ahead.',
+      selectedChoice: 'Advance to the elevator shaft',
+      accumulatedInventory: [],
+      accumulatedHealth: [],
+      accumulatedCharacterState: {},
+      activeState: {
+        currentLocation: '',
+        activeThreats: [],
+        activeConstraints: [],
+        openThreads: [],
+      },
+      grandparentNarrative: null,
+      ancestorSummaries: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
+      structure: {
+        overallTheme: 'Pressure reveals loyalties',
+        premise: 'A courier runs proof through a siege.',
+        openingImage: 'Lights die in a civic square.',
+        closingImage: 'Emergency beacons rise over the city.',
+        pacingBudget: { targetPagesMin: 12, targetPagesMax: 18 },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+        anchorMoments: {
+          incitingIncident: { actIndex: 0, description: 'The siege begins.' },
+          midpoint: { actIndex: 0, milestoneSlot: 0, midpointType: 'FALSE_DEFEAT' },
+          climax: { actIndex: 0, description: 'The proof reaches the public archive.' },
+          signatureScenarioPlacement: null,
+        },
+        acts: [
+          {
+            id: '1',
+            name: 'Siege Run',
+            objective: 'Carry proof across the district.',
+            stakes: 'Capture means disappearance.',
+            entryCondition: 'The courier is identified.',
+            actQuestion: '',
+            exitReversal: '',
+            promiseTargets: [],
+            obligationTargets: [],
+            milestones: [
+              {
+                id: '1.1',
+                name: 'Break contact',
+                description: 'Get out of the marked street',
+                objective: 'Break contact',
+                causalLink: 'A checkpoint seals the main route.',
+                exitCondition: '',
+                role: 'setup',
+                escalationType: null,
+                secondaryEscalationType: null,
+                crisisType: null,
+                expectedGapMagnitude: null,
+                isMidpoint: false,
+                midpointType: null,
+                uniqueScenarioHook: null,
+                approachVectors: null,
+                setpieceSourceIndex: null,
+                obligatorySceneTag: null,
+              },
+            ],
+          },
+        ],
+      },
+      accumulatedStructureState: {
+        currentActIndex: 0,
+        currentMilestoneIndex: 0,
+        pagesInCurrentMilestone: 0,
+        pacingNudge: null,
+        milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      },
+    };
+
+    const result = buildPlannerContinuationContextSection(context);
+
+    expect(result).not.toContain('Act Question:');
+    expect(result).not.toContain('Expected Exit Reversal:');
+    expect(result).not.toContain('Promise Targets:');
+    expect(result).not.toContain('Exit condition:');
   });
 
   it('renders optional sections as (none) when state is empty', () => {

@@ -11,6 +11,6 @@ export {
 
 // Story structure section (milestone evaluation, deviation detection)
 export {
-  buildWriterStructureContext,
+  buildSharedStructureContext,
   buildAnalystStructureEvaluation,
 } from './story-structure-section.js';

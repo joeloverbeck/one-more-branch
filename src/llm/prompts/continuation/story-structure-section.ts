@@ -89,7 +89,7 @@ ${parts.map((p) => `- ${p}`).join('\n')}
 `;
 }
 
-export function buildWriterStructureContext(
+export function buildSharedStructureContext(
   structure: StoryStructure | undefined,
   accumulatedStructureState: AccumulatedStructureState | undefined
 ): string {
@@ -107,6 +107,12 @@ export function buildWriterStructureContext(
   const milestoneLines = currentAct.milestones
     .map((milestone) => {
       const progression = state.milestoneProgressions.find((item) => item.milestoneId === milestone.id);
+      const exitCondition =
+        typeof milestone.exitCondition === 'string' ? milestone.exitCondition : '';
+      const exitConditionLine =
+        exitCondition.trim().length > 0
+          ? `\n    Exit condition: ${exitCondition}`
+          : '';
       if (progression?.status === 'concluded') {
         const resolution =
           progression.resolution && progression.resolution.trim().length > 0
@@ -136,9 +142,10 @@ export function buildWriterStructureContext(
             ? `\n    Approach vectors: ${milestone.approachVectors.join(', ')}`
             : '';
         return `  [>] ACTIVE (${milestone.role}): ${milestone.description}
-    Objective: ${milestone.objective}${escalationLine}${crisisLine}${gapLine}${midpointLine}${hookLine}${approachLine}`;
+    Objective: ${milestone.objective}${exitConditionLine}${escalationLine}${crisisLine}${gapLine}${midpointLine}${hookLine}${approachLine}`;
       }
-      return `  [ ] PENDING (${milestone.role}): ${milestone.description}`;
+      return `  [ ] PENDING (${milestone.role}): ${milestone.description}
+    Objective: ${milestone.objective}${exitConditionLine}`;
     })
     .join('\n');
 
@@ -148,6 +155,23 @@ export function buildWriterStructureContext(
       (act, index) => `  - Act ${state.currentActIndex + 2 + index}: ${act.name} - ${act.objective}`
     )
     .join('\n');
+  const actQuestion =
+    typeof currentAct.actQuestion === 'string' ? currentAct.actQuestion : '';
+  const exitReversal =
+    typeof currentAct.exitReversal === 'string' ? currentAct.exitReversal : '';
+  const promiseTargets = Array.isArray(currentAct.promiseTargets)
+    ? currentAct.promiseTargets.filter((target): target is string => typeof target === 'string')
+    : [];
+  const actQuestionLine =
+    actQuestion.trim().length > 0 ? `\nAct Question: ${actQuestion}` : '';
+  const exitReversalLine =
+    exitReversal.trim().length > 0
+      ? `\nExpected Exit Reversal: ${exitReversal}`
+      : '';
+  const promiseTargetsLine =
+    promiseTargets.length > 0
+      ? `\nPromise Targets: ${promiseTargets.join(', ')}`
+      : '';
 
   return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
@@ -157,7 +181,7 @@ Closing image: ${structure.closingImage}
 
 CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of ${structure.acts.length})
 Objective: ${currentAct.objective}
-Stakes: ${currentAct.stakes}
+Stakes: ${currentAct.stakes}${actQuestionLine}${exitReversalLine}${promiseTargetsLine}
 
 BEATS IN THIS ACT:
 ${milestoneLines}
@@ -388,6 +412,12 @@ export function buildAnalystStructureEvaluation(
   const milestoneLines = currentAct.milestones
     .map((milestone) => {
       const progression = state.milestoneProgressions.find((item) => item.milestoneId === milestone.id);
+      const exitCondition =
+        typeof milestone.exitCondition === 'string' ? milestone.exitCondition : '';
+      const exitConditionLine =
+        exitCondition.trim().length > 0
+          ? `\n    Exit condition: ${exitCondition}`
+          : '';
       if (progression?.status === 'concluded') {
         const resolution =
           progression.resolution && progression.resolution.trim().length > 0
@@ -398,10 +428,10 @@ export function buildAnalystStructureEvaluation(
       }
       if (progression?.status === 'active') {
         return `  [>] ACTIVE (${milestone.role}): ${milestone.description}
-    Objective: ${milestone.objective}`;
+    Objective: ${milestone.objective}${exitConditionLine}`;
       }
       return `  [ ] PENDING (${milestone.role}): ${milestone.description}
-    Objective: ${milestone.objective}`;
+    Objective: ${milestone.objective}${exitConditionLine}`;
     })
     .join('\n');
 
@@ -484,11 +514,35 @@ Populate threadPayoffAssessments for each resolved thread.
     : '';
 
   const activeMilestone = currentAct.milestones[state.currentMilestoneIndex];
+  const activeMilestoneExitCondition =
+    typeof activeMilestone?.exitCondition === 'string' ? activeMilestone.exitCondition : '';
+  const activeCompletionTarget =
+    activeMilestoneExitCondition.trim().length > 0
+      ? 'active milestone exit condition'
+      : 'active milestone objective';
   const escalationCheckSection = buildEscalationCheckSection(
     activeMilestone?.role,
     currentAct.milestones,
     state
   );
+  const actQuestion =
+    typeof currentAct.actQuestion === 'string' ? currentAct.actQuestion : '';
+  const exitReversal =
+    typeof currentAct.exitReversal === 'string' ? currentAct.exitReversal : '';
+  const actQuestionLine =
+    actQuestion.trim().length > 0 ? `Act Question: ${actQuestion}\n` : '';
+  const exitReversalLine =
+    exitReversal.trim().length > 0
+      ? `Expected Exit Reversal: ${exitReversal}\n`
+      : '';
+  const activeMilestoneExitLine =
+    activeMilestoneExitCondition.trim().length > 0
+      ? `Active Milestone Exit Condition: ${activeMilestoneExitCondition}\n`
+      : '';
+  const actTrajectorySection =
+    actQuestionLine || exitReversalLine || activeMilestoneExitLine
+      ? `=== ACT TRAJECTORY CHECK ===\n${actQuestionLine}${exitReversalLine}${activeMilestoneExitLine}- Use the act question to judge whether the narrative is advancing or drifting from the act's dramatic center.\n- If the scene appears to transition out of this act, assess whether it earns the expected exit reversal.\n\n`
+      : '';
 
   return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
@@ -497,6 +551,7 @@ Premise: ${structure.premise}
 CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of ${structure.acts.length})
 Objective: ${currentAct.objective}
 Stakes: ${currentAct.stakes}
+${actQuestionLine}${exitReversalLine}
 
 BEATS IN THIS ACT:
 ${milestoneLines}
@@ -508,7 +563,7 @@ ${activeStateSummary}${foreshadowingSection}
 ${payoffSection}=== BEAT EVALUATION ===
 Evaluate the following narrative against this structure to determine milestone completion.
 
-=== SCENE SIGNAL CLASSIFICATION ===
+${actTrajectorySection}=== SCENE SIGNAL CLASSIFICATION ===
 Classify the narrative before deciding milestoneConcluded:
 - sceneMomentum: STASIS | INCREMENTAL_PROGRESS | MAJOR_PROGRESS | REVERSAL_OR_SETBACK | SCOPE_SHIFT
 - objectiveEvidenceStrength: NONE | WEAK_IMPLICIT | CLEAR_EXPLICIT
@@ -520,16 +575,16 @@ Classify the narrative before deciding milestoneConcluded:
 Set milestoneConcluded: true only when the gate is satisfied.
 
 Base gate for all milestone roles (must satisfy at least one):
-1. objectiveEvidenceStrength is CLEAR_EXPLICIT for the active milestone objective
-2. structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the active milestone objective is no longer the primary unresolved objective
+1. objectiveEvidenceStrength is CLEAR_EXPLICIT for the ${activeCompletionTarget}
+2. structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the ${activeCompletionTarget} is no longer the primary unresolved objective
 
 Additional gate for turning_point:
 - commitmentStrength must be EXPLICIT_REVERSIBLE or EXPLICIT_IRREVERSIBLE
 - If commitmentStrength is EXPLICIT_REVERSIBLE, require an explicit forward consequence that materially changes available next actions
 
 Negative guards:
-- Intensity/action escalation alone is insufficient without CLEAR_EXPLICIT objective evidence
-- SCOPE_SHIFT alone cannot conclude a milestone without objective resolution or explicit structural supersession evidence
+- Intensity/action escalation alone is insufficient without CLEAR_EXPLICIT evidence for the ${activeCompletionTarget}
+- SCOPE_SHIFT alone cannot conclude a milestone without satisfying the ${activeCompletionTarget} or explicit structural supersession evidence
 
 If the completion gate is not satisfied, set milestoneConcluded: false.
 

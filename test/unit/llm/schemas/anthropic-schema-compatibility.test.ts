@@ -43,6 +43,7 @@ import { SPINE_REWRITE_SCHEMA } from '../../../../src/llm/schemas/spine-rewrite-
 import { SPINE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/spine-schema';
 import { STATE_ACCOUNTANT_SCHEMA } from '../../../../src/llm/schemas/state-accountant-schema';
 import { STRUCTURE_EVALUATOR_SCHEMA } from '../../../../src/llm/schemas/structure-evaluator-schema';
+import { STRUCTURE_REPAIR_SCHEMA } from '../../../../src/llm/schemas/structure-repair-schema';
 import { STRUCTURE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/structure-schema';
 import { WRITER_GENERATION_SCHEMA } from '../../../../src/llm/schemas/writer-schema';
 import { CHARACTER_WEB_GENERATION_SCHEMA } from '../../../../src/llm/schemas/character-web-schema';
@@ -271,6 +272,7 @@ describe('Anthropic schema compatibility', () => {
     { name: 'PROSE_QUALITY_SCHEMA', schema: PROSE_QUALITY_SCHEMA },
     { name: 'SCENE_IDEATOR_SCHEMA', schema: SCENE_IDEATOR_SCHEMA },
     { name: 'STRUCTURE_EVALUATOR_SCHEMA', schema: STRUCTURE_EVALUATOR_SCHEMA },
+    { name: 'STRUCTURE_REPAIR_SCHEMA', schema: STRUCTURE_REPAIR_SCHEMA },
     { name: 'CHARACTER_WEB_GENERATION_SCHEMA', schema: CHARACTER_WEB_GENERATION_SCHEMA },
     { name: 'CHAR_KERNEL_GENERATION_SCHEMA', schema: CHAR_KERNEL_GENERATION_SCHEMA },
     { name: 'CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA', schema: CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA },

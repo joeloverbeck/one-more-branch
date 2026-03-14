@@ -19,18 +19,30 @@ describe('buildAnalystStructureEvaluation', () => {
         objective: 'Escape the first sweep',
         stakes: 'Capture means execution.',
         entryCondition: 'Emergency law declared.',
+        actQuestion: 'Can the fugitive stay ahead of the purge long enough to matter?',
+        exitReversal: 'The evidence survives, but exposing it reveals the scale of the conspiracy.',
+        promiseTargets: ['The purge can be exposed'],
+        obligationTargets: [],
         milestones: [
-          { id: '1.1', description: 'Reach safehouse', objective: 'Get inside', role: 'setup' },
+          {
+            id: '1.1',
+            description: 'Reach safehouse',
+            objective: 'Get inside',
+            exitCondition: 'The fugitive reaches sealed cover inside the safehouse.',
+            role: 'setup',
+          },
           {
             id: '1.2',
             description: 'Secure evidence',
             objective: 'Protect evidence',
+            exitCondition: 'The evidence is secured somewhere the purge cannot immediately destroy it.',
             role: 'escalation',
           },
           {
             id: '1.3',
             description: 'Choose ally',
             objective: 'Commit to ally',
+            exitCondition: 'The fugitive commits to a partner whose resources change the escape route.',
             role: 'turning_point',
           },
         ],
@@ -41,17 +53,23 @@ describe('buildAnalystStructureEvaluation', () => {
         objective: 'Cross hostile territory',
         stakes: 'If lost, purge is permanent.',
         entryCondition: 'Leave the capital.',
+        actQuestion: 'What price buys enough leverage to keep moving?',
+        exitReversal: 'Escape from the capital turns into a wider war.',
+        promiseTargets: ['The purge can be exposed'],
+        obligationTargets: [],
         milestones: [
           {
             id: '2.1',
             description: 'Break through checkpoints',
             objective: 'Find route north',
+            exitCondition: 'A viable route north is secured beyond the checkpoint net.',
             role: 'escalation',
           },
           {
             id: '2.2',
             description: 'Defend witnesses',
             objective: 'Keep witnesses alive',
+            exitCondition: 'The witnesses survive long enough to testify.',
             role: 'turning_point',
           },
         ],
@@ -62,22 +80,34 @@ describe('buildAnalystStructureEvaluation', () => {
         objective: 'Expose the planners',
         stakes: 'Silence guarantees totalitarian rule.',
         entryCondition: 'Access relay tower.',
+        actQuestion: 'Can the truth land before the regime closes every channel?',
+        exitReversal: '',
+        promiseTargets: ['The purge can be exposed'],
+        obligationTargets: [],
         milestones: [
           {
             id: '3.1',
             description: 'Reach relay core',
             objective: 'Seize control room',
+            exitCondition: 'Control of the relay core shifts to the fugitive and allies.',
             role: 'escalation',
           },
           {
             id: '3.2',
             description: 'Deliver proof',
             objective: 'Transmit evidence',
+            exitCondition: 'The evidence is broadcast beyond the regime’s ability to suppress it.',
             role: 'resolution',
           },
         ],
       },
     ],
+    anchorMoments: {
+      incitingIncident: { actIndex: 0, description: 'The purge begins.' },
+      midpoint: { actIndex: 1, milestoneSlot: 0, midpointType: 'FALSE_VICTORY' },
+      climax: { actIndex: 2, description: 'The broadcast goes live.' },
+      signatureScenarioPlacement: null,
+    },
   };
 
   const emptyActiveState: ActiveState = {
@@ -113,6 +143,12 @@ describe('buildAnalystStructureEvaluation', () => {
     expect(result).toContain('CURRENT ACT: The Crackdown');
     expect(result).toContain('Objective: Escape the first sweep');
     expect(result).toContain('Stakes: Capture means execution.');
+    expect(result).toContain(
+      'Act Question: Can the fugitive stay ahead of the purge long enough to matter?'
+    );
+    expect(result).toContain(
+      'Expected Exit Reversal: The evidence survives, but exposing it reveals the scale of the conspiracy.'
+    );
   });
 
   it('shows milestone status lines with concluded, active, and pending', () => {
@@ -133,6 +169,9 @@ describe('buildAnalystStructureEvaluation', () => {
     expect(result).toContain('Resolution: Reached safehouse');
     expect(result).toContain('[>] ACTIVE (escalation): Secure evidence');
     expect(result).toContain('Objective: Protect evidence');
+    expect(result).toContain(
+      'Exit condition: The evidence is secured somewhere the purge cannot immediately destroy it.'
+    );
     expect(result).toContain('[ ] PENDING (turning_point): Choose ally');
   });
 
@@ -201,10 +240,10 @@ describe('buildAnalystStructureEvaluation', () => {
     expect(result).toContain('=== COMPLETION GATE ===');
     expect(result).toContain('Base gate for all milestone roles (must satisfy at least one):');
     expect(result).toContain(
-      'objectiveEvidenceStrength is CLEAR_EXPLICIT for the active milestone objective'
+      'objectiveEvidenceStrength is CLEAR_EXPLICIT for the active milestone exit condition'
     );
     expect(result).toContain(
-      'structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the active milestone objective is no longer the primary unresolved objective'
+      'structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the active milestone exit condition is no longer the primary unresolved objective'
     );
     expect(result).toContain('Additional gate for turning_point:');
     expect(result).toContain(
@@ -214,11 +253,50 @@ describe('buildAnalystStructureEvaluation', () => {
       'If commitmentStrength is EXPLICIT_REVERSIBLE, require an explicit forward consequence that materially changes available next actions'
     );
     expect(result).toContain(
-      'Intensity/action escalation alone is insufficient without CLEAR_EXPLICIT objective evidence'
+      'Intensity/action escalation alone is insufficient without CLEAR_EXPLICIT evidence for the active milestone exit condition'
     );
     expect(result).toContain(
-      'SCOPE_SHIFT alone cannot conclude a milestone without objective resolution or explicit structural supersession evidence'
+      'SCOPE_SHIFT alone cannot conclude a milestone without satisfying the active milestone exit condition or explicit structural supersession evidence'
     );
+  });
+
+  it('falls back to milestone objective when exitCondition is empty', () => {
+    const structureWithoutExitCondition: StoryStructure = {
+      ...testStructure,
+      acts: testStructure.acts.map((act, actIndex) =>
+        actIndex !== 0
+          ? act
+          : {
+              ...act,
+              milestones: act.milestones.map((milestone, milestoneIndex) =>
+                milestoneIndex !== 0
+                  ? milestone
+                  : {
+                      ...milestone,
+                      exitCondition: '',
+                    }
+              ),
+            }
+      ),
+    };
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentMilestoneIndex: 0,
+      milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+      pagesInCurrentMilestone: 0,
+      pacingNudge: null,
+    };
+
+    const result = buildAnalystStructureEvaluation(
+      structureWithoutExitCondition,
+      state,
+      emptyActiveState
+    );
+
+    expect(result).toContain(
+      'objectiveEvidenceStrength is CLEAR_EXPLICIT for the active milestone objective'
+    );
+    expect(result).not.toContain('Active Milestone Exit Condition:');
   });
 
   it('includes DEVIATION section', () => {

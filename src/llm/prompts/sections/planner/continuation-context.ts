@@ -14,7 +14,7 @@ import type {
   ThematicValenceTrajectory,
 } from '../../../generation-pipeline-types.js';
 import { buildProtagonistAffectSection } from '../../continuation/context-sections.js';
-import { buildWriterStructureContext } from '../../continuation/story-structure-section.js';
+import { buildSharedStructureContext } from '../../continuation/story-structure-section.js';
 import {
   buildThreadAgingSection,
   buildTrackedPromisesSection,
@@ -610,7 +610,7 @@ ${context.decomposedCharacters.map((c, i) => formatDecomposedCharacterForPrompt(
 `
     : '';
 
-  const structureSection = buildWriterStructureContext(
+  const structureSection = buildSharedStructureContext(
     context.structure,
     context.accumulatedStructureState
   );
