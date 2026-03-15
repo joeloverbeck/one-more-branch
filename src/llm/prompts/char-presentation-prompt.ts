@@ -22,10 +22,9 @@ export interface CharPresentationPromptContext extends CharacterDevPromptContext
   readonly deepRelationships: DeepRelationshipResult;
 }
 
-const ROLE_INTRO = `You are a character psychologist for interactive branching fiction. Your job is to synthesize a character's full build into textual presentation guidance a writer can immediately use: voice register, speech fingerprint, appearance, knowledge boundaries, and conflict priority.`;
+const ROLE_INTRO = `You are a character psychologist for interactive branching fiction. Your job is to synthesize a character's full build into textual presentation guidance a writer can immediately use: speech fingerprint, appearance, knowledge boundaries, and conflict priority.`;
 
 const DESIGN_GUIDELINES = `TEXTUAL PRESENTATION DESIGN GUIDELINES:
-- Voice register is the broad tonal lane the character defaults to: formal, neutral, colloquial, ceremonial, technical, vulgar, or poetic.
 - Speech fingerprint must be specific enough that a writer can reliably produce distinct dialogue without drifting into generic voice.
 - Dialogue samples should sound like this exact character in action, not generic exposition.
 - Anti-examples should define the edges of the voice by showing lines this character would never say in this way.
@@ -119,21 +118,19 @@ export function buildCharPresentationPrompt(
 - Physiology: ${tridimensionalProfile.physiology}
 - Sociology: ${tridimensionalProfile.sociology}
 - Psychology: ${tridimensionalProfile.psychology}
-- Derivation Chain: ${tridimensionalProfile.derivationChain}
 - Core Traits: ${formatStringList(tridimensionalProfile.coreTraits)}
 - Formative Wound: ${tridimensionalProfile.formativeWound}
 - Protective Mask: ${tridimensionalProfile.protectiveMask}
-- Misbelief: ${tridimensionalProfile.misbelief}
-- Stress Tells: ${formatStringList(tridimensionalProfile.stressTells)}`);
+- Misbelief: ${tridimensionalProfile.misbelief}`);
 
   userSections.push(`AGENCY MODEL (from Stage 3):
-- Replanning Policy: ${agencyModel.replanningPolicy}
 - Emotion Salience: ${agencyModel.emotionSalience}
 - Core Beliefs: ${formatStringList(agencyModel.coreBeliefs)}
 - Desires: ${formatStringList(agencyModel.desires)}
 - Current Intentions: ${formatStringList(agencyModel.currentIntentions)}
 - False Beliefs: ${formatStringList(agencyModel.falseBeliefs)}
 - Decision Pattern: ${agencyModel.decisionPattern}
+- Focalization Filter: Notices first: ${agencyModel.focalizationFilter.noticesFirst}; Systematically misses: ${agencyModel.focalizationFilter.systematicallyMisses}; Misreads as: ${agencyModel.focalizationFilter.misreadsAs}
 - Escalation Ladder: ${formatStringList(agencyModel.escalationLadder)}`);
 
   userSections.push(`DEEP RELATIONSHIPS (from Stage 4):
@@ -173,7 +170,6 @@ Personal Dilemmas: ${formatStringList(deepRelationships.personalDilemmas)}`);
 
   userSections.push(`FIELD INSTRUCTIONS:
 - characterName: Must be "${assignment.characterName}".
-- voiceRegister: One of FORMAL, NEUTRAL, COLLOQUIAL, CEREMONIAL, TECHNICAL, VULGAR, POETIC.
 - speechFingerprint.catchphrases: Array of signature repeated phrases.
 - speechFingerprint.vocabularyProfile: The character's word-choice profile, level of formality, jargon, and diction habits.
 - speechFingerprint.sentencePatterns: Typical sentence structure and cadence.

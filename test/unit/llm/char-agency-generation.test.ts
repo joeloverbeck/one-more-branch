@@ -38,7 +38,6 @@ import {
   CharacterDepth,
   PipelineRelationshipType,
   RelationshipValence,
-  ReplanningPolicy,
   EmotionSalience,
 } from '../../../src/models/character-enums';
 
@@ -85,13 +84,7 @@ function createCharacterKernel(overrides?: Partial<CharacterKernel>): CharacterK
     pressurePoint:
       'His sister is held hostage by the king - any overt action risks her life.',
     moralLine: 'Will not harm innocents even to reclaim the throne.',
-    unacceptableCost: 'Losing his sister in the process of gaining power.',
     worstFear: 'Becoming the same tyrant who murdered his father.',
-    sceneObjectivePatterns: [
-      'Gather intelligence through casual conversation',
-      'Test loyalty before revealing anything',
-      'Secure escape routes before committing',
-    ],
     ...overrides,
   };
 }
@@ -107,8 +100,6 @@ function createTridimensionalProfile(
       'Raised as a prince but living as a blacksmith among people he was taught to rule.',
     psychology:
       'Hypervigilant, proud, and morally strained by the lies he believes justice requires.',
-    derivationChain:
-      'Hidden heir + forced disguise -> commoner life -> shame, caution, and strategic patience.',
     coreTraits: [
       'Patient fury',
       'Strategic restraint',
@@ -119,23 +110,6 @@ function createTridimensionalProfile(
     formativeWound: 'Witnessing his father\'s murder as a child and being powerless to stop it.',
     protectiveMask: 'The humble blacksmith who wants nothing more than a quiet life.',
     misbelief: 'That reclaiming the throne will heal the wound of his father\'s death.',
-    credibleSurprises: [
-      'Showing genuine mercy to a defeated enemy',
-      'Revealing his identity to save a stranger',
-    ],
-    implausibleMoves: [
-      'Publicly announcing his claim without allies',
-      'Trusting the king\'s inner circle at face value',
-    ],
-    stressTells: [
-      'Clenches his jaw and grips the nearest object',
-      'Reverts to formal court speech patterns',
-    ],
-    attachmentStyle: 'Dismissive-avoidant, keeping emotional distance to protect himself and others.',
-    traitToSceneAffordances: [
-      'Patient fury -> can sustain a tense negotiation without breaking',
-      'Hypervigilance -> notices small environmental details others miss',
-    ],
     ...overrides,
   };
 }
@@ -145,7 +119,6 @@ function validAgencyResponseRaw(
 ): Record<string, unknown> {
   return {
     characterName: 'Kael',
-    replanningPolicy: 'ON_NEW_INFORMATION',
     emotionSalience: 'HIGH',
     coreBeliefs: [
       'Power belongs to those with the will to reclaim it.',
@@ -257,7 +230,6 @@ describe('CHAR_AGENCY_GENERATION_SCHEMA', () => {
     expect(schema['type']).toBe('object');
     expect(schema['required']).toEqual([
       'characterName',
-      'replanningPolicy',
       'emotionSalience',
       'coreBeliefs',
       'desires',
@@ -272,14 +244,6 @@ describe('CHAR_AGENCY_GENERATION_SCHEMA', () => {
   it('uses anyOf for enum properties and string-array items for list fields', () => {
     const schema = CHAR_AGENCY_GENERATION_SCHEMA.json_schema.schema as Record<string, unknown>;
     const properties = schema['properties'] as Record<string, unknown>;
-
-    const replanningPolicy = properties['replanningPolicy'] as Record<string, unknown>;
-    expect(replanningPolicy['anyOf']).toEqual([
-      {
-        type: 'string',
-        enum: ['NEVER', 'ON_FAILURE', 'ON_NEW_INFORMATION', 'PERIODIC'],
-      },
-    ]);
 
     const emotionSalience = properties['emotionSalience'] as Record<string, unknown>;
     expect(emotionSalience['anyOf']).toEqual([
@@ -330,31 +294,12 @@ describe('generateCharAgency', () => {
     expect(body['model']).toBeDefined();
 
     expect(result.agencyModel.characterName).toBe('Kael');
-    expect(result.agencyModel.replanningPolicy).toBe(ReplanningPolicy.ON_NEW_INFORMATION);
     expect(result.agencyModel.emotionSalience).toBe(EmotionSalience.HIGH);
     expect(result.agencyModel.currentIntentions).toEqual([
       'Maintain his cover at court',
       'Recruit nobles who hate the king',
     ]);
     expect(result.rawResponse).toBeDefined();
-  });
-
-  it('rejects invalid replanningPolicy enum values', async () => {
-    global.fetch = jest
-      .fn()
-      .mockResolvedValue(createMockResponse(validAgencyResponseRaw({ replanningPolicy: 'SOMETIMES' })));
-
-    await expect(
-      generateCharAgency(
-        {
-          webContext: createWebContext(),
-          characterKernel: createCharacterKernel(),
-          tridimensionalProfile: createTridimensionalProfile(),
-          worldbuilding: '',
-        },
-        'test-api-key'
-      )
-    ).rejects.toThrow(/invalid replanningPolicy/);
   });
 
   it('rejects invalid emotionSalience enum values', async () => {

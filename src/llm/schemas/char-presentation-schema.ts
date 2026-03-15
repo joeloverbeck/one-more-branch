@@ -41,7 +41,6 @@ export const CHAR_PRESENTATION_GENERATION_SCHEMA: JsonSchema = {
       additionalProperties: false,
       required: [
         'characterName',
-        'voiceRegister',
         'speechFingerprint',
         'appearance',
         'knowledgeBoundaries',
@@ -53,23 +52,6 @@ export const CHAR_PRESENTATION_GENERATION_SCHEMA: JsonSchema = {
         characterName: {
           type: 'string',
           description: "The character's name, matching the name from the character web assignment.",
-        },
-        voiceRegister: {
-          anyOf: [
-            {
-              type: 'string',
-              enum: [
-                'FORMAL',
-                'NEUTRAL',
-                'COLLOQUIAL',
-                'CEREMONIAL',
-                'TECHNICAL',
-                'VULGAR',
-                'POETIC',
-              ],
-            },
-          ],
-          description: 'The broad default register this character speaks in.',
         },
         speechFingerprint: {
           type: 'object',

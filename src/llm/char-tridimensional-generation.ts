@@ -56,14 +56,6 @@ function parseCharTridimensionalResponse(parsed: unknown): TridimensionalProfile
     );
   }
 
-  if (typeof data['derivationChain'] !== 'string' || data['derivationChain'].trim().length === 0) {
-    throw new LLMError(
-      'Tridimensional profile response missing derivationChain',
-      'STRUCTURE_PARSE_ERROR',
-      true
-    );
-  }
-
   if (!Array.isArray(data['coreTraits']) || data['coreTraits'].length === 0) {
     throw new LLMError(
       'Tridimensional profile response missing or empty coreTraits',
@@ -101,35 +93,15 @@ function parseCharTridimensionalResponse(parsed: unknown): TridimensionalProfile
     );
   }
 
-  if (typeof data['attachmentStyle'] !== 'string' || data['attachmentStyle'].trim().length === 0) {
-    throw new LLMError(
-      'Tridimensional profile response missing attachmentStyle',
-      'STRUCTURE_PARSE_ERROR',
-      true
-    );
-  }
-
-  const parseStringArray = (key: string): string[] =>
-    (Array.isArray(data[key]) ? (data[key] as unknown[]) : [])
-      .filter((item): item is string => typeof item === 'string')
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-
   return {
-    characterName: (data['characterName']).trim(),
-    physiology: (data['physiology']).trim(),
-    sociology: (data['sociology']).trim(),
-    psychology: (data['psychology']).trim(),
-    derivationChain: (data['derivationChain']).trim(),
+    characterName: data['characterName'].trim(),
+    physiology: data['physiology'].trim(),
+    sociology: data['sociology'].trim(),
+    psychology: data['psychology'].trim(),
     coreTraits,
-    formativeWound: (data['formativeWound']).trim(),
-    protectiveMask: (data['protectiveMask']).trim(),
-    misbelief: (data['misbelief']).trim(),
-    credibleSurprises: parseStringArray('credibleSurprises'),
-    implausibleMoves: parseStringArray('implausibleMoves'),
-    stressTells: parseStringArray('stressTells'),
-    attachmentStyle: (data['attachmentStyle']).trim(),
-    traitToSceneAffordances: parseStringArray('traitToSceneAffordances'),
+    formativeWound: data['formativeWound'].trim(),
+    protectiveMask: data['protectiveMask'].trim(),
+    misbelief: data['misbelief'].trim(),
   };
 }
 

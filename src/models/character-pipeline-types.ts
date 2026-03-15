@@ -7,11 +7,9 @@
 import {
   type StoryFunction,
   type CharacterDepth,
-  type ReplanningPolicy,
   type EmotionSalience,
   type PipelineRelationshipType,
   type RelationshipValence,
-  type VoiceRegister,
   isPipelineRelationshipType,
   isRelationshipValence,
 } from './character-enums.js';
@@ -64,9 +62,7 @@ export interface CharacterKernel {
   readonly constraints: readonly string[];
   readonly pressurePoint: string;
   readonly moralLine: string;
-  readonly unacceptableCost: string;
   readonly worstFear: string;
-  readonly sceneObjectivePatterns: readonly string[];
 }
 
 // --- Stage 3: Tridimensional Profiles ---
@@ -76,23 +72,16 @@ export interface TridimensionalProfile {
   readonly physiology: string;
   readonly sociology: string;
   readonly psychology: string;
-  readonly derivationChain: string;
   readonly coreTraits: readonly string[];
   readonly formativeWound: string;
   readonly protectiveMask: string;
   readonly misbelief: string;
-  readonly credibleSurprises: readonly string[];
-  readonly implausibleMoves: readonly string[];
-  readonly stressTells: readonly string[];
-  readonly attachmentStyle: string;
-  readonly traitToSceneAffordances: readonly string[];
 }
 
 // --- Stage 4: Agency Models ---
 
 export interface AgencyModel {
   readonly characterName: string;
-  readonly replanningPolicy: ReplanningPolicy;
   readonly emotionSalience: EmotionSalience;
   readonly coreBeliefs: readonly string[];
   readonly desires: readonly string[];
@@ -139,7 +128,6 @@ export interface RelationSpecificVariant {
 
 export interface TextualPresentation {
   readonly characterName: string;
-  readonly voiceRegister: VoiceRegister;
   readonly speechFingerprint: SpeechFingerprint;
   readonly appearance: string;
   readonly knowledgeBoundaries: string;

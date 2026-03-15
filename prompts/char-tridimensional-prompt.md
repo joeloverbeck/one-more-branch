@@ -15,7 +15,7 @@ Build a three-dimensional character profile using Lajos Egri's method: physiolog
 
 **Pipeline position**: Kernel -> Concept -> Character Web -> Stage 1 (Kernel) -> **Stage 2 (Tridimensional)** -> Stage 3 -> Stage 4 -> Stage 5 -> Story Preparation
 
-**Why it exists**: Egri's method ensures character depth isn't decorative — every physical, social, and psychological detail serves the drama. The derivation chain forces the LLM to show its reasoning from kernel to traits, preventing arbitrary detail invention.
+**Why it exists**: Egri's method ensures character depth isn't decorative — every physical, social, and psychological detail serves the drama.
 
 ## Context Provided
 
@@ -53,7 +53,6 @@ TRIDIMENSIONAL PROFILE DESIGN GUIDELINES:
 - PHYSIOLOGY: The character's body — age, sex, height, weight, posture, appearance, defects, heredity, health. Choose physical traits that CREATE DRAMATIC FRICTION with their objectives or role. A spy with a conspicuous scar. A warrior with a chronic injury. A seducer with an unsettling feature.
 - SOCIOLOGY: The character's environment — class, occupation, education, home life, religion, race, nationality, political affiliation, community standing, amusements, hobbies. These shape HOW the character pursues their super-objective and WHAT they consider acceptable.
 - PSYCHOLOGY: The character's mind — moral standards, personal premise, ambition, frustrations, temperament, attitude toward life, complexes, extrovert/introvert/ambivert, abilities, qualities, IQ. The psychology must LOGICALLY FOLLOW from the physiology and sociology — it is the product of the other two dimensions interacting.
-- DERIVATION CHAIN: Explicitly show HOW you derived each dimension from the kernel. For example: "Super-objective (reclaim throne) + constraint (must hide identity) → sociology (adopted common tradesman persona) → psychology (deep shame about deception contradicting noble upbringing)."
 - CORE TRAITS: 5-8 defining traits that emerge from the three dimensions. These are the behavioral tendencies a writer would need to portray this character consistently.
 - Every detail must serve the drama. No arbitrary traits — each physical, social, and psychological detail should create tension, reveal character, or enable/constrain action.
 ```
@@ -89,9 +88,7 @@ CHARACTER KERNEL (from Stage 1):
 - Constraints: {{characterKernel.constraints | join '; '}}
 - Pressure Point: {{characterKernel.pressurePoint}}
 - Moral Line: {{characterKernel.moralLine}}
-- Unacceptable Cost: {{characterKernel.unacceptableCost}}
 - Worst Fear: {{characterKernel.worstFear}}
-- Scene Objective Patterns: {{characterKernel.sceneObjectivePatterns | join '; '}}
 
 {{#if conceptSpec}}
 CONCEPT ANALYSIS (use to ground character decomposition):
@@ -130,21 +127,13 @@ FIELD INSTRUCTIONS:
 - physiology: The character's physical dimension — body, appearance, health, heredity. Choose traits that create dramatic friction.
 - sociology: The character's environmental dimension — class, occupation, education, community. These shape how they pursue their super-objective.
 - psychology: The character's mental dimension — morals, temperament, complexes, abilities. Must logically follow from physiology + sociology.
-- derivationChain: Show explicitly how you derived each dimension from the kernel and cast role. Chain of reasoning from dramatic needs to character details.
 - coreTraits: Array of 5-8 defining behavioral traits that emerge from the three dimensions.
 - formativeWound: The defining early experience that shaped this character's defenses. 1-2 sentences.
 - protectiveMask: The persona this character projects to hide or compensate for their wound. 1 sentence.
 - misbelief: The false conclusion the character drew from their wound that distorts their worldview. 1 sentence.
-- credibleSurprises: Array of 2-3 actions that initially seem out of pattern but become inevitable in light of wound + need + pressure.
-- implausibleMoves: Array of 2-3 actions that would break character integrity — the outer boundary.
-- stressTells: Array of 2-4 physical/behavioral tells when under pressure.
-- attachmentStyle: How this character forms and maintains bonds. 1 sentence.
-- traitToSceneAffordances: Array of 2-4 entries linking a core trait to what it enables or blocks in scenes.
 
 GENERATION RULES:
 - formativeWound must generate the protectiveMask and misbelief as logical consequences.
-- credibleSurprises must be actions that initially seem out of pattern but become inevitable in light of wound, need, and pressure.
-- implausibleMoves define the outer boundary of character integrity — these are actions this character could NEVER do without becoming a different person.
 ```
 
 ## JSON Response Shape
@@ -155,16 +144,10 @@ GENERATION RULES:
   "physiology": "{{body — age, appearance, health, heredity}}",
   "sociology": "{{environment — class, occupation, education, community}}",
   "psychology": "{{mind — morals, temperament, complexes, abilities}}",
-  "derivationChain": "{{explicit reasoning from kernel to each dimension}}",
   "coreTraits": ["{{trait1}}", "{{trait2}}", "...5-8 traits"],
   "formativeWound": "{{defining early experience that shaped defenses}}",
   "protectiveMask": "{{persona projected to hide or compensate for wound}}",
-  "misbelief": "{{false conclusion drawn from wound}}",
-  "credibleSurprises": ["{{action that seems out of pattern but is inevitable}}"],
-  "implausibleMoves": ["{{action that would break character integrity}}"],
-  "stressTells": ["{{physical/behavioral tell under pressure}}"],
-  "attachmentStyle": "{{how this character forms and maintains bonds}}",
-  "traitToSceneAffordances": ["{{core trait -> scene enablement/blockage}}"]
+  "misbelief": "{{false conclusion drawn from wound}}"
 }
 ```
 

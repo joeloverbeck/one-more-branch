@@ -3,9 +3,7 @@ import {
   EmotionSalience,
   PipelineRelationshipType,
   RelationshipValence,
-  ReplanningPolicy,
   StoryFunction,
-  VoiceRegister,
 } from '../../../src/models/character-enums.js';
 import type {
   CastRoleAssignment,
@@ -88,12 +86,10 @@ function createCharacter(
       physiology: 'Lean, sleepless, and always half a step ahead of collapse.',
       sociology: 'Raised in dockside debt rings and taught to price affection as leverage.',
       psychology: 'Competitive, suspicious, and incapable of accepting grace without testing it.',
-      derivationChain: 'Scarcity taught her to confuse dependence with defeat.',
       coreTraits: ['competitive', 'wary', 'resourceful'],
     },
     agencyModel: {
       characterName: 'Mara Voss',
-      replanningPolicy: ReplanningPolicy.ON_NEW_INFORMATION,
       emotionSalience: EmotionSalience.MEDIUM,
       coreBeliefs: ['Control is safer than trust', 'Debt always gets collected'],
       desires: ['Own the route', 'Stay indispensable'],
@@ -119,7 +115,6 @@ function createCharacter(
     },
     textualPresentation: {
       characterName: 'Mara Voss',
-      voiceRegister: VoiceRegister.COLLOQUIAL,
       speechFingerprint: {
         catchphrases: ['Price it properly.'],
         vocabularyProfile: 'Dockside trader slang sharpened into precise threats.',

@@ -127,14 +127,8 @@ FIELD INSTRUCTIONS:
 - stakes: Array of what the character stands to lose or gain.
 - constraints: Array of internal or external limitations restricting the character.
 - pressurePoint: The specific vulnerability that forces the character to act against their interests when pressed.
-- moralLine: The line this character will not cross. 1 sentence.
-- unacceptableCost: The price this character refuses to pay, even for their super-objective. 1 sentence.
+- moralLine: The line this character will not cross — including personal costs they refuse to pay, even for their super-objective. 1 sentence.
 - worstFear: What would psychologically destroy this character. 1 sentence.
-- sceneObjectivePatterns: Array of 2-4 patterns describing how this character typically pursues goals in concrete interactions. E.g. "Opens with flattery, then applies incremental pressure."
-
-GENERATION RULES:
-- moralLine and unacceptableCost must not be duplicates — one is ethical, the other is personal.
-- sceneObjectivePatterns must describe observable tactics, not abstract strategy.
 ```
 
 ## JSON Response Shape
@@ -149,9 +143,7 @@ GENERATION RULES:
   "constraints": ["{{internal or external limitation}}"],
   "pressurePoint": "{{vulnerability that forces action against own interests}}",
   "moralLine": "{{the line this character will not cross}}",
-  "unacceptableCost": "{{the price this character refuses to pay}}",
-  "worstFear": "{{what would psychologically destroy this character}}",
-  "sceneObjectivePatterns": ["{{observable tactic pattern 1}}", "{{observable tactic pattern 2}}"]
+  "worstFear": "{{what would psychologically destroy this character}}"
 }
 ```
 

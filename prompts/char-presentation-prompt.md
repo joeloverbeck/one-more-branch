@@ -11,7 +11,7 @@
 
 ## Purpose
 
-Synthesize all prior stages into concrete textual presentation guidance a writer can immediately use: voice register, speech fingerprint, appearance, knowledge boundaries, and conflict priority.
+Synthesize all prior stages into concrete textual presentation guidance a writer can immediately use: speech fingerprint, appearance, knowledge boundaries, and conflict priority.
 
 **Pipeline position**: Kernel -> Concept -> Character Web -> Stage 1 (Kernel) -> Stage 2 (Tridimensional) -> Stage 3 (Agency) -> Stage 4 (Relationships) -> **Stage 5 (Presentation)** -> Story Preparation
 
@@ -48,12 +48,11 @@ When typed `conceptSpec` and `storyKernel` objects are available, the prompt bui
 ### 1) System Message
 
 ```text
-You are a character psychologist for interactive branching fiction. Your job is to synthesize a character's full build into textual presentation guidance a writer can immediately use: voice register, speech fingerprint, appearance, knowledge boundaries, and conflict priority.
+You are a character psychologist for interactive branching fiction. Your job is to synthesize a character's full build into textual presentation guidance a writer can immediately use: speech fingerprint, appearance, knowledge boundaries, and conflict priority.
 
 {{CONTENT_POLICY}}
 
 TEXTUAL PRESENTATION DESIGN GUIDELINES:
-- Voice register is the broad tonal lane the character defaults to: formal, neutral, colloquial, ceremonial, technical, vulgar, or poetic.
 - Speech fingerprint must be specific enough that a writer can reliably produce distinct dialogue without drifting into generic voice.
 - Dialogue samples should sound like this exact character in action, not generic exposition.
 - Anti-examples should define the edges of the voice by showing lines this character would never say in this way.
@@ -100,21 +99,19 @@ TRIDIMENSIONAL PROFILE (from Stage 2):
 - Physiology: {{tridimensionalProfile.physiology}}
 - Sociology: {{tridimensionalProfile.sociology}}
 - Psychology: {{tridimensionalProfile.psychology}}
-- Derivation Chain: {{tridimensionalProfile.derivationChain}}
 - Core Traits: {{tridimensionalProfile.coreTraits | join '; '}}
 - Formative Wound: {{tridimensionalProfile.formativeWound}}
 - Protective Mask: {{tridimensionalProfile.protectiveMask}}
 - Misbelief: {{tridimensionalProfile.misbelief}}
-- Stress Tells: {{tridimensionalProfile.stressTells | join '; '}}
 
 AGENCY MODEL (from Stage 3):
-- Replanning Policy: {{agencyModel.replanningPolicy}}
 - Emotion Salience: {{agencyModel.emotionSalience}}
 - Core Beliefs: {{agencyModel.coreBeliefs | join '; '}}
 - Desires: {{agencyModel.desires | join '; '}}
 - Current Intentions: {{agencyModel.currentIntentions | join '; '}}
 - False Beliefs: {{agencyModel.falseBeliefs | join '; '}}
 - Decision Pattern: {{agencyModel.decisionPattern}}
+- Focalization Filter: Notices first: {{agencyModel.focalizationFilter.noticesFirst}}; Systematically misses: {{agencyModel.focalizationFilter.systematicallyMisses}}; Misreads as: {{agencyModel.focalizationFilter.misreadsAs}}
 - Escalation Ladder: {{agencyModel.escalationLadder | join '; '}}
 
 DEEP RELATIONSHIPS (from Stage 4):
@@ -162,7 +159,6 @@ USER NOTES:
 
 FIELD INSTRUCTIONS:
 - characterName: Must be "{{characterName}}".
-- voiceRegister: One of FORMAL, NEUTRAL, COLLOQUIAL, CEREMONIAL, TECHNICAL, VULGAR, POETIC.
 - speechFingerprint.catchphrases: Array of signature repeated phrases.
 - speechFingerprint.vocabularyProfile: The character's word-choice profile, level of formality, jargon, and diction habits.
 - speechFingerprint.sentencePatterns: Typical sentence structure and cadence.
@@ -184,7 +180,6 @@ FIELD INSTRUCTIONS:
 ```json
 {
   "characterName": "{{name}}",
-  "voiceRegister": "FORMAL",
   "speechFingerprint": {
     "catchphrases": ["{{signature phrase}}"],
     "vocabularyProfile": "{{word-choice profile, formality, jargon}}",
@@ -215,9 +210,6 @@ FIELD INSTRUCTIONS:
   ]
 }
 ```
-
-### Enum Values
-- **voiceRegister**: `FORMAL`, `NEUTRAL`, `COLLOQUIAL`, `CEREMONIAL`, `TECHNICAL`, `VULGAR`, `POETIC`
 
 ## Generation Stage
 

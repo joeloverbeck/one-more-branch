@@ -31,17 +31,7 @@ function requireEnum(record: Record<string, unknown>, field: string, allowed: re
   }
 }
 
-const REPLANNING_POLICY_VALUES = ['NEVER', 'ON_FAILURE', 'ON_NEW_INFORMATION', 'PERIODIC'] as const;
 const EMOTION_SALIENCE_VALUES = ['LOW', 'MEDIUM', 'HIGH'] as const;
-const VOICE_REGISTER_VALUES = [
-  'FORMAL',
-  'NEUTRAL',
-  'COLLOQUIAL',
-  'CEREMONIAL',
-  'TECHNICAL',
-  'VULGAR',
-  'POETIC',
-] as const;
 const PIPELINE_RELATIONSHIP_TYPE_VALUES = [
   'KIN',
   'ALLY',
@@ -80,7 +70,6 @@ function validateTridimensionalProfilePayload(payload: unknown): void {
   requireString(payload, 'physiology');
   requireString(payload, 'sociology');
   requireString(payload, 'psychology');
-  requireString(payload, 'derivationChain');
   requireStringArray(payload, 'coreTraits');
 }
 
@@ -89,7 +78,6 @@ function validateAgencyModelPayload(payload: unknown): void {
     throw new EngineError('Agency model payload must be an object', 'VALIDATION_FAILED');
   }
 
-  requireEnum(payload, 'replanningPolicy', REPLANNING_POLICY_VALUES);
   requireEnum(payload, 'emotionSalience', EMOTION_SALIENCE_VALUES);
   requireStringArray(payload, 'coreBeliefs');
   requireStringArray(payload, 'desires');
@@ -173,7 +161,6 @@ function validateTextualPresentationPayload(payload: unknown): void {
     );
   }
 
-  requireEnum(payload, 'voiceRegister', VOICE_REGISTER_VALUES);
   validateSpeechFingerprint(payload['speechFingerprint']);
   requireString(payload, 'appearance');
   requireString(payload, 'knowledgeBoundaries');

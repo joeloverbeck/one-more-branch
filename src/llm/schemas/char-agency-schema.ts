@@ -10,7 +10,6 @@ export const CHAR_AGENCY_GENERATION_SCHEMA: JsonSchema = {
       additionalProperties: false,
       required: [
         'characterName',
-        'replanningPolicy',
         'emotionSalience',
         'coreBeliefs',
         'desires',
@@ -24,15 +23,6 @@ export const CHAR_AGENCY_GENERATION_SCHEMA: JsonSchema = {
         characterName: {
           type: 'string',
           description: "The character's name, matching the name from the character web assignment.",
-        },
-        replanningPolicy: {
-          anyOf: [
-            {
-              type: 'string',
-              enum: ['NEVER', 'ON_FAILURE', 'ON_NEW_INFORMATION', 'PERIODIC'],
-            },
-          ],
-          description: 'When this character changes course in response to pressure or new developments.',
         },
         emotionSalience: {
           anyOf: [

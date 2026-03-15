@@ -138,19 +138,19 @@ export function buildCharRelationshipsPrompt(
 - Physiology: ${tridimensionalProfile.physiology}
 - Sociology: ${tridimensionalProfile.sociology}
 - Psychology: ${tridimensionalProfile.psychology}
-- Derivation Chain: ${tridimensionalProfile.derivationChain}
 - Core Traits: ${formatStringList(tridimensionalProfile.coreTraits)}
 - Formative Wound: ${tridimensionalProfile.formativeWound}
+- Protective Mask: ${tridimensionalProfile.protectiveMask}
 - Misbelief: ${tridimensionalProfile.misbelief}`);
 
   userSections.push(`AGENCY MODEL (from Stage 3):
-- Replanning Policy: ${agencyModel.replanningPolicy}
 - Emotion Salience: ${agencyModel.emotionSalience}
 - Core Beliefs: ${formatStringList(agencyModel.coreBeliefs)}
 - Desires: ${formatStringList(agencyModel.desires)}
 - Current Intentions: ${formatStringList(agencyModel.currentIntentions)}
 - False Beliefs: ${formatStringList(agencyModel.falseBeliefs)}
 - Decision Pattern: ${agencyModel.decisionPattern}
+- Focalization Filter: Notices first: ${agencyModel.focalizationFilter.noticesFirst}; Systematically misses: ${agencyModel.focalizationFilter.systematicallyMisses}; Misreads as: ${agencyModel.focalizationFilter.misreadsAs}
 - Escalation Ladder: ${formatStringList(agencyModel.escalationLadder)}`);
 
   const counterpartSection = formatOtherDevelopedCharacters(

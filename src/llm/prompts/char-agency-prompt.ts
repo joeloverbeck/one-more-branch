@@ -18,7 +18,6 @@ export interface CharAgencyPromptContext extends CharacterDevPromptContext {
 const ROLE_INTRO = `You are a character psychologist for interactive branching fiction. Your job is to model a character's agency: how they update plans, how strongly emotions steer behavior, what beliefs they act on, what they want right now, which false beliefs distort their choices, and the decision pattern a writer should expect under pressure.`;
 
 const DESIGN_GUIDELINES = `AGENCY MODEL DESIGN GUIDELINES:
-- Replanning policy captures WHEN this character changes course: never, on failure, on new information, or periodically.
 - Emotion salience captures HOW MUCH their emotional state changes what they do in the moment.
 - Core beliefs are the convictions the character uses to justify action. They should emerge from role, kernel, and tridimensional profile.
 - Desires are enduring wants active in the current story situation.
@@ -89,19 +88,16 @@ export function buildCharAgencyPrompt(context: CharAgencyPromptContext): ChatMes
 - Constraints: ${characterKernel.constraints.join('; ')}
 - Pressure Point: ${characterKernel.pressurePoint}
 - Moral Line: ${characterKernel.moralLine}
-- Worst Fear: ${characterKernel.worstFear}
-- Scene Objective Patterns: ${characterKernel.sceneObjectivePatterns.join('; ')}`);
+- Worst Fear: ${characterKernel.worstFear}`);
 
   userSections.push(`TRIDIMENSIONAL PROFILE (from Stage 2):
 - Physiology: ${tridimensionalProfile.physiology}
 - Sociology: ${tridimensionalProfile.sociology}
 - Psychology: ${tridimensionalProfile.psychology}
-- Derivation Chain: ${tridimensionalProfile.derivationChain}
 - Core Traits: ${tridimensionalProfile.coreTraits.join('; ')}
 - Formative Wound: ${tridimensionalProfile.formativeWound}
 - Protective Mask: ${tridimensionalProfile.protectiveMask}
-- Misbelief: ${tridimensionalProfile.misbelief}
-- Attachment Style: ${tridimensionalProfile.attachmentStyle}`);
+- Misbelief: ${tridimensionalProfile.misbelief}`);
 
   const conceptSection = buildAgencyConceptSection(context.conceptSpec);
   const kernelSection = buildAgencyKernelSection(context.storyKernel);
@@ -134,7 +130,6 @@ export function buildCharAgencyPrompt(context: CharAgencyPromptContext): ChatMes
 
   userSections.push(`FIELD INSTRUCTIONS:
 - characterName: Must be "${assignment.characterName}".
-- replanningPolicy: One of NEVER, ON_FAILURE, ON_NEW_INFORMATION, PERIODIC.
 - emotionSalience: One of LOW, MEDIUM, HIGH.
 - coreBeliefs: Array of the convictions or assumptions this character treats as true.
 - desires: Array of enduring wants shaping the character's behavior.

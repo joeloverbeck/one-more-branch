@@ -34,9 +34,7 @@ import {
   EmotionSalience,
   PipelineRelationshipType,
   RelationshipValence,
-  ReplanningPolicy,
   StoryFunction,
-  VoiceRegister,
 } from '../../../src/models/character-enums';
 
 function createWebContext(overrides?: Partial<CharacterWebContext>): CharacterWebContext {
@@ -80,12 +78,7 @@ function createContext(
       constraints: ['His sister is hidden among civilians', 'He refuses to become a butcher'],
       pressurePoint: 'Any threat to his sister makes him reckless.',
       moralLine: 'He will not sacrifice civilians to win the throne.',
-      unacceptableCost: 'Losing his sister to gain the crown.',
       worstFear: 'Becoming the tyrant he set out to overthrow.',
-      sceneObjectivePatterns: [
-        'Test loyalty before revealing plans',
-        'Secure retreat options before committing',
-      ],
     },
     tridimensionalProfile: {
       characterName: 'Kael',
@@ -94,21 +87,13 @@ function createContext(
         'Raised in a deposed royal household, then hardened among smugglers and deserters.',
       psychology:
         'Hypervigilant, proud, and incapable of separating mercy from strategic weakness.',
-      derivationChain:
-        'Dispossession plus concealment produced a man who performs calm while expecting betrayal.',
       coreTraits: ['controlled', 'vindictive', 'protective', 'strategic', 'ashamed'],
       formativeWound: 'Witnessing his family executed while hiding behind a false wall.',
       protectiveMask: 'Cold strategic composure that keeps everyone at a safe distance.',
       misbelief: 'That showing vulnerability will always be punished.',
-      stressTells: ['jaw clenching', 'speaking in clipped imperatives', 'touching his scar'],
-      credibleSurprises: ['Showing genuine mercy to a defeated enemy'],
-      implausibleMoves: ['Publicly trusting the king at face value'],
-      attachmentStyle: 'Dismissive-avoidant, keeping emotional distance.',
-      traitToSceneAffordances: ['Hypervigilance → notices hidden threats first'],
     },
     agencyModel: {
       characterName: 'Kael',
-      replanningPolicy: ReplanningPolicy.ON_NEW_INFORMATION,
       emotionSalience: EmotionSalience.HIGH,
       coreBeliefs: ['Mercy without leverage invites ruin', 'The throne is a duty, not a prize'],
       desires: ['Restore his house', 'Keep his sister alive'],
@@ -155,7 +140,6 @@ function validPresentationResponseRaw(
 ): Record<string, unknown> {
   return {
     characterName: 'Kael',
-    voiceRegister: 'FORMAL',
     speechFingerprint: {
       catchphrases: ['Be precise.', 'Name the cost.'],
       vocabularyProfile:
@@ -224,7 +208,6 @@ describe('buildCharPresentationPrompt', () => {
     expect(messages[1].content).toContain('TRIDIMENSIONAL PROFILE (from Stage 2):');
     expect(messages[1].content).toContain('AGENCY MODEL (from Stage 3):');
     expect(messages[1].content).toContain('DEEP RELATIONSHIPS (from Stage 4):');
-    expect(messages[1].content).toContain('Replanning Policy: ON_NEW_INFORMATION');
     expect(messages[1].content).toContain('Personal Dilemmas: If he tells Mira the truth');
   });
 
@@ -260,28 +243,12 @@ describe('CHAR_PRESENTATION_GENERATION_SCHEMA', () => {
     expect(schema['type']).toBe('object');
     expect(schema['required']).toEqual([
       'characterName',
-      'voiceRegister',
       'speechFingerprint',
       'appearance',
       'knowledgeBoundaries',
       'conflictPriority',
       'stressVariants',
       'relationSpecificVariants',
-    ]);
-  });
-
-  it('defines the VoiceRegister enum correctly', () => {
-    const schema = CHAR_PRESENTATION_GENERATION_SCHEMA.json_schema.schema as Record<
-      string,
-      unknown
-    >;
-    const properties = schema['properties'] as Record<string, unknown>;
-
-    expect((properties['voiceRegister'] as Record<string, unknown>)['anyOf']).toEqual([
-      {
-        type: 'string',
-        enum: ['FORMAL', 'NEUTRAL', 'COLLOQUIAL', 'CEREMONIAL', 'TECHNICAL', 'VULGAR', 'POETIC'],
-      },
     ]);
   });
 
@@ -338,22 +305,11 @@ describe('generateCharPresentation', () => {
     expect(body['model']).toBeDefined();
 
     expect(result.textualPresentation.characterName).toBe('Kael');
-    expect(result.textualPresentation.voiceRegister).toBe(VoiceRegister.FORMAL);
     expect(result.textualPresentation.speechFingerprint.dialogueSamples).toHaveLength(3);
     expect(result.textualPresentation.appearance).toContain('old cheek scar');
     expect(result.textualPresentation.knowledgeBoundaries).toContain('does not know');
     expect(result.textualPresentation.conflictPriority).toContain('protects his sister first');
     expect(result.rawResponse).toBeDefined();
-  });
-
-  it('rejects invalid VoiceRegister enum values', async () => {
-    global.fetch = jest.fn().mockResolvedValue(
-      createMockResponse(validPresentationResponseRaw({ voiceRegister: 'CASUAL' }))
-    );
-
-    await expect(generateCharPresentation(createContext(), 'test-api-key')).rejects.toThrow(
-      /invalid voiceRegister/
-    );
   });
 
   it('rejects malformed nested speech fingerprint data', async () => {
