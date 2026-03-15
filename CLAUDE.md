@@ -117,7 +117,7 @@ src/
 │   ├── prompts/              # Prompt builders (opening, continuation, planner,
 │   │   │                     #   accountant, lorekeeper, analyst, structure,
 │   │   │                     #   structure-rewrite, spine-rewrite, agenda-resolver,
-│   │   │                     #   entity-decomposer, spine)
+│   │   │                     #   spine)
 │   │   └── sections/         # Shared prompt sections (opening/, continuation/,
 │   │                         #   planner/, shared/, structure-generation/)
 │   ├── schemas/              # JSON Schema definitions for structured LLM output
@@ -132,7 +132,6 @@ src/
 │   ├── lorekeeper-generation.ts  # Story bible curation
 │   ├── agenda-resolver-generation.ts # NPC agenda + relationship resolution
 │   ├── spine-generator.ts        # Spine option generation
-│   ├── entity-decomposer.ts      # Entity decomposition (characters + world)
 │   └── result-merger.ts          # Merges writer + reconciler + analyst results
 ├── logging/            # Structured logging: console, file-based prompt sink,
 │   │                   #   browser injector
@@ -148,8 +147,8 @@ src/
 │   ├── story-spine.ts        # StorySpine, StorySpineType, ConflictType, CharacterArcType
 │   ├── protagonist-affect.ts # Emotional state snapshots per page
 │   ├── protagonist-guidance.ts # Player guidance (emotions, thoughts, speech)
-│   ├── decomposed-character.ts # Decomposed character profiles from entity decomposer
-│   ├── decomposed-world.ts   # Decomposed world facts from entity decomposer
+│   ├── decomposed-character.ts # Decomposed character profiles
+│   ├── decomposed-world.ts   # Decomposed world facts
 │   ├── choice-enums.ts       # ChoiceType and PrimaryDelta enums
 │   ├── npc.ts                # NPC definitions
 │   └── structure-version.ts  # Versioned structure tracking
@@ -183,7 +182,7 @@ archive/specs/      # Archived completed specifications
 ## Core Data Flow
 
 1. **Story Creation**: User provides title + character concept + worldbuilding + tone + NPCs + starting situation + spine (with toneFeel/toneAvoid) + API key
-2. **Entity Decomposition**: LLM decomposes raw worldbuilding and NPCs into structured character profiles and world facts, guided by spine, conceptSpec, storyKernel, startingSituation, and tone feel
+2. **Character Contextualization + World Decomposition**: Pre-decomposed standalone characters are contextualized with story-specific fields (thematicStance, protagonistRelationship). Worldbuilding is decomposed into structured world facts. Both run in parallel
 3. **Structure Generation**: LLM generates a StoryStructure using spine + decomposed data (acts, beats, pacing budget, theme, NPC agendas). Shared structure-generation context lives in `src/llm/prompts/sections/structure-generation/shared-context.ts`; prompt-local files compose that seam instead of importing reusable helpers from each other.
 4. **Page Planning** (Planner prompt): LLM creates a reduced PagePlan with scene intent, continuity anchors, writer brief, dramatic question, and isEnding. The planner is the SOLE authority on whether a page is an ending (`isEnding: true` => no choices generated). Continuation planner also receives thread ages, overdue-thread pressure directives, accumulated tracked promises (`accumulatedPromises`, oldest-first opportunities), and payoff quality feedback
 5. **State Accounting** (Accountant prompt): LLM generates state intents (what state changes to target) separately from the planner. The accountant receives the reduced plan and produces structured state mutation intents
@@ -205,7 +204,8 @@ The engine reports progress through these stages (used by the spinner UI):
 
 Story preparation stages (run once on story creation):
 - `GENERATING_SPINE` - Spine option generation LLM call (separate pre-creation step)
-- `DECOMPOSING_ENTITIES` - Entity decomposition LLM call (characters + world facts)
+- `CONTEXTUALIZING_CHARACTERS` - Character contextualization LLM call (story-specific fields)
+- `DECOMPOSING_WORLD` - Worldbuilding decomposition LLM call (world facts)
 - `STRUCTURING_STORY` - Story structure generation LLM call (uses spine + decomposed data)
 
 Per-page generation stages:
@@ -245,7 +245,7 @@ Abstract dramatic proposition: `dramaticThesis`, `antithesis`, `valueAtStake`, `
 Multi-act story arc with beats. Each act has an objective, stakes, entry condition, and beats. Each beat has a name, description, objective, and role (setup/escalation/turning_point/resolution). `AccumulatedStructureState` tracks progression through acts/beats with `BeatProgression` records.
 
 ### Story
-Metadata plus mutable fields: `globalCanon`, `globalCharacterCanon`, `structure`, `structureVersions`. Also stores: `spine` (StorySpine with dramatic question, need/want, antagonistic force, story pattern, thematic conflict axis, structural conflict type, and arc type), `toneFeel`/`toneAvoid` (tone keywords), `decomposedCharacters` (structured character profiles from entity decomposer), `decomposedWorld` (structured world facts), `initialNpcAgendas`, `initialNpcRelationships`. Supports NPCs and starting situation. Note: `decomposedCharacters` and `decomposedWorld` are required on all downstream context types (OpeningContext, ContinuationContext, LorekeeperContext, StructureContext, AgendaResolverPromptContext, StructureRewriteContext, SpineRewriteContext) — raw `characterConcept`/`worldbuilding`/`npcs` fields are no longer passed to any prompt stage.
+Metadata plus mutable fields: `globalCanon`, `globalCharacterCanon`, `structure`, `structureVersions`. Also stores: `spine` (StorySpine with dramatic question, need/want, antagonistic force, story pattern, thematic conflict axis, structural conflict type, and arc type), `toneFeel`/`toneAvoid` (tone keywords), `decomposedCharacters` (structured character profiles from character contextualizer), `decomposedWorld` (structured world facts from worldbuilding decomposer), `initialNpcAgendas`, `initialNpcRelationships`. Story creation requires pre-decomposed standalone characters (via `protagonistCharacterId` and `npcCharacterIds`). Note: `decomposedCharacters` and `decomposedWorld` are required on all downstream context types (OpeningContext, ContinuationContext, LorekeeperContext, StructureContext, AgendaResolverPromptContext, StructureRewriteContext, SpineRewriteContext) — raw `characterConcept`/`worldbuilding` fields are no longer passed to any prompt stage.
 
 ## Prompt Logging
 
@@ -387,10 +387,11 @@ Completed specs are archived in `archive/specs/`.
 
 - Uses OpenRouter API exclusively via `src/llm/client.ts`
 - Default model: `anthropic/claude-sonnet-4.5`
-- **Story preparation** (run once at story creation, 3 LLM calls):
+- **Story preparation** (run once at story creation, 4 LLM calls):
   1. **Spine prompt** (`spine-generator.ts`): Generates spine options with tone keywords (separate pre-creation step)
-  2. **Entity decomposition prompt** (`entity-decomposer.ts`): Decomposes raw worldbuilding/NPCs into structured profiles and world facts, enriched with spine, conceptSpec, storyKernel, and startingSituation context
-  3. **Structure prompt** (`structure-generator.ts`): Generates story arc using spine + decomposed data. Shared context rendering for structure and macro-architecture prompts lives under `src/llm/prompts/sections/structure-generation/`
+  2. **Character contextualization** (`character-contextualizer.ts`): Adds story-specific context (thematicStance, protagonistRelationship) to pre-decomposed standalone characters
+  3. **Worldbuilding decomposition** (`worldbuilding-decomposer.ts`): Decomposes raw worldbuilding into structured world facts
+  4. **Structure prompt** (`structure-generator.ts`): Generates story arc using spine + decomposed data. Shared context rendering for structure and macro-architecture prompts lives under `src/llm/prompts/sections/structure-generation/`
 - **Per-page generation** (up to 8 stages: 6 LLM calls + 2 engine-side):
   1. **Planner prompt** (`planner-generation.ts`): Creates reduced page plan with scene intent, dramatic question, isEnding (no state intents). Sole authority on endings
   2. **State accountant prompt** (`accountant-generation.ts`): Generates state intents from reduced plan

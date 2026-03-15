@@ -55,7 +55,6 @@ storyRoutes.post(
       characterConcept: input.characterConcept,
       worldbuilding: input.worldbuilding,
       tone: input.tone,
-      npcs: input.npcs ?? [],
       startingSituation: input.startingSituation,
     };
 
@@ -116,7 +115,6 @@ storyRoutes.post(
       worldbuilding?: string;
       worldbuildingId?: string;
       tone?: string;
-      npcs?: Array<{ name?: string; description?: string }>;
       protagonistCharacterId?: string;
       npcCharacterIds?: string[];
       startingSituation?: string;
@@ -152,13 +150,6 @@ storyRoutes.post(
     }
 
     try {
-      const validNpcs = body.npcs
-        ?.map((npc) => ({
-          name: (npc.name ?? '').trim(),
-          description: (npc.description ?? '').trim(),
-        }))
-        .filter((npc) => npc.name.length > 0 && npc.description.length > 0);
-
       const validatedConceptSpec: ConceptSpec | undefined =
         isConceptSpec(body.conceptSpec) ? body.conceptSpec : undefined;
       const validatedKernel: StoryKernel | undefined =
@@ -214,7 +205,6 @@ storyRoutes.post(
           worldbuilding: body.worldbuilding?.trim() ?? undefined,
           decomposedWorld,
           tone: body.tone?.trim() ?? 'fantasy adventure',
-          npcs: validNpcs && validNpcs.length > 0 ? validNpcs : undefined,
           decomposedCharacters:
             decomposedCharacters && decomposedCharacters.length > 0
               ? decomposedCharacters

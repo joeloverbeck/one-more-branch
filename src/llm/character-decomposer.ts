@@ -1,6 +1,10 @@
 import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
-import type { SpeechFingerprint } from '../models/decomposed-character.js';
+import type {
+  FocalizationFilter,
+  SpeechFingerprint,
+  StressVariants,
+} from '../models/decomposed-character.js';
 import { isEmotionSalience } from '../models/character-enums.js';
 import type { StandaloneDecomposedCharacter } from '../models/standalone-decomposed-character.js';
 import { logger, logPrompt, logResponse } from '../logging/index.js';
@@ -33,6 +37,40 @@ function parseStringArrayField(raw: Record<string, unknown>, key: string): strin
   return Array.isArray(raw[key])
     ? (raw[key] as unknown[]).filter((s): s is string => typeof s === 'string')
     : [];
+}
+
+function parseStressVariants(raw: unknown): StressVariants | null {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    return null;
+  }
+  const data = raw as Record<string, unknown>;
+  const underThreat = typeof data['underThreat'] === 'string' ? data['underThreat'] : '';
+  const inIntimacy = typeof data['inIntimacy'] === 'string' ? data['inIntimacy'] : '';
+  const whenLying = typeof data['whenLying'] === 'string' ? data['whenLying'] : '';
+  const whenAshamed = typeof data['whenAshamed'] === 'string' ? data['whenAshamed'] : '';
+  const whenWinning = typeof data['whenWinning'] === 'string' ? data['whenWinning'] : '';
+  if (!underThreat && !inIntimacy && !whenLying && !whenAshamed && !whenWinning) {
+    return null;
+  }
+  return { underThreat, inIntimacy, whenLying, whenAshamed, whenWinning };
+}
+
+function parseFocalizationFilter(raw: unknown): FocalizationFilter | null {
+  if (raw === null || raw === undefined) {
+    return null;
+  }
+  if (typeof raw !== 'object' || Array.isArray(raw)) {
+    return null;
+  }
+  const data = raw as Record<string, unknown>;
+  const noticesFirst = typeof data['noticesFirst'] === 'string' ? data['noticesFirst'] : '';
+  const systematicallyMisses =
+    typeof data['systematicallyMisses'] === 'string' ? data['systematicallyMisses'] : '';
+  const misreadsAs = typeof data['misreadsAs'] === 'string' ? data['misreadsAs'] : '';
+  if (!noticesFirst && !systematicallyMisses && !misreadsAs) {
+    return null;
+  }
+  return { noticesFirst, systematicallyMisses, misreadsAs };
 }
 
 function parseSpeechFingerprint(raw: Record<string, unknown>): SpeechFingerprint {
@@ -85,6 +123,13 @@ function parseCharacterDecompositionResponse(
   const stakes = parseStringArrayField(data, 'stakes');
   const personalDilemmas = parseStringArrayField(data, 'personalDilemmas');
   const rawEmotionSalience = data['emotionSalience'];
+  const moralLine = parseStringField(data, 'moralLine');
+  const worstFear = parseStringField(data, 'worstFear');
+  const formativeWound = parseStringField(data, 'formativeWound');
+  const misbelief = parseStringField(data, 'misbelief');
+  const stressVariants = parseStressVariants(data['stressVariants']);
+  const focalizationFilter = parseFocalizationFilter(data['focalizationFilter']);
+  const escalationLadder = parseStringArrayField(data, 'escalationLadder');
 
   return {
     character: {
@@ -104,6 +149,13 @@ function parseCharacterDecompositionResponse(
       ...(pressurePoint ? { pressurePoint } : {}),
       ...(personalDilemmas.length > 0 ? { personalDilemmas } : {}),
       ...(isEmotionSalience(rawEmotionSalience) ? { emotionSalience: rawEmotionSalience } : {}),
+      ...(moralLine ? { moralLine } : {}),
+      ...(worstFear ? { worstFear } : {}),
+      ...(formativeWound ? { formativeWound } : {}),
+      ...(misbelief ? { misbelief } : {}),
+      ...(stressVariants ? { stressVariants } : {}),
+      ...(focalizationFilter ? { focalizationFilter } : {}),
+      ...(escalationLadder.length > 0 ? { escalationLadder } : {}),
     },
   };
 }

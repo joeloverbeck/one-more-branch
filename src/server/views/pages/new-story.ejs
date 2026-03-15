@@ -393,43 +393,6 @@
             <p class="form-help" id="npc-character-help">Select additional characters to include as NPCs.</p>
           </div>
 
-          <!-- Legacy NPCs (raw text) -->
-          <details class="form-section-collapsible">
-            <summary>Manual NPCs (raw text)</summary>
-            <div class="form-section-collapsible__body">
-              <p class="form-help">Use this if you prefer to describe NPCs as free text instead of selecting decomposed characters.</p>
-              <div class="form-group">
-                <div id="npc-entries">
-                  <% const npcList = values.npcs || []; %>
-                  <% for (let i = 0; i < npcList.length; i++) { %>
-                  <div class="npc-entry" data-index="<%= i %>">
-                    <div class="npc-entry-header">
-                      <strong><%= npcList[i].name %></strong>
-                      <button type="button" class="btn btn-small btn-danger npc-remove-btn">&times;</button>
-                    </div>
-                    <p class="npc-entry-description"><%= npcList[i].description %></p>
-                  </div>
-                  <% } %>
-                </div>
-                <div class="npc-add-form">
-                  <input
-                    type="text"
-                    id="npc-name-input"
-                    placeholder="NPC name"
-                    maxlength="100"
-                  >
-                  <textarea
-                    id="npc-desc-input"
-                    rows="2"
-                    placeholder="Describe this character: personality, role, relationship to the protagonist."
-                  ></textarea>
-                  <button type="button" id="npc-add-btn" class="btn btn-secondary btn-small">Add NPC</button>
-                </div>
-                <input type="hidden" id="npcs-json" name="npcsJson" value="">
-              </div>
-            </div>
-          </details>
-
           <!-- Starting Situation -->
           <div class="form-group">
             <label for="startingSituation">Starting Situation</label>

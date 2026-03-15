@@ -120,7 +120,6 @@ describe('storyRoutes', () => {
           characterConcept: '',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -154,7 +153,6 @@ describe('storyRoutes', () => {
           characterConcept: '   too short   ',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -187,7 +185,6 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -221,7 +218,6 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -326,7 +322,6 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -367,7 +362,6 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -407,7 +401,6 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -447,7 +440,6 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -488,7 +480,6 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -531,7 +522,6 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -574,7 +564,6 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -614,7 +603,6 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -651,7 +639,6 @@ describe('storyRoutes', () => {
           characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
-          npcs: [],
           startingSituation: undefined,
         },
       });
@@ -1078,7 +1065,7 @@ describe('storyRoutes', () => {
       });
     });
 
-    it('passes npcs and startingSituation through to prepareStory when provided', async () => {
+    it('passes startingSituation through to prepareStory when provided', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
       const storyId = parseStoryId('550e8400-e29b-41d4-a716-446655440000');
@@ -1109,7 +1096,6 @@ describe('storyRoutes', () => {
             characterConcept: 'Test Concept Here',
             worldbuilding: 'World',
             tone: 'Epic',
-            npcs: [{ name: '  Gandalf the Grey  ', description: '  wise wizard  ' }],
             startingSituation: '  You awaken in a dark cave  ',
             apiKey: 'valid-key-12345',
             spine: mockSpine,
@@ -1124,7 +1110,6 @@ describe('storyRoutes', () => {
         characterConcept: 'Test Concept Here',
         worldbuilding: 'World',
         tone: 'Epic',
-        npcs: [{ name: 'Gandalf the Grey', description: 'wise wizard' }],
         startingSituation: 'You awaken in a dark cave',
         apiKey: 'valid-key-12345',
         spine: mockSpine,

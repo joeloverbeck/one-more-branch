@@ -1,4 +1,5 @@
 import {
+  CHARACTER_SCHEMA_FIELDS,
   SPEECH_REQUIRED_FIELDS,
   SPEECH_SCHEMA_FIELDS,
 } from '../entity-decomposition-contract.js';
@@ -75,6 +76,13 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
         'pressurePoint',
         'personalDilemmas',
         'emotionSalience',
+        'moralLine',
+        'worstFear',
+        'formativeWound',
+        'misbelief',
+        'stressVariants',
+        'focalizationFilter',
+        'escalationLadder',
         'speechFingerprint',
       ],
       properties: {
@@ -157,6 +165,79 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
           description:
             'Things this character knows but actively conceals from others. ' +
             'Empty array if no notable secrets.',
+          items: { type: 'string' },
+        },
+        moralLine: {
+          type: 'string',
+          description: CHARACTER_SCHEMA_FIELDS.moralLine.description,
+        },
+        worstFear: {
+          type: 'string',
+          description: CHARACTER_SCHEMA_FIELDS.worstFear.description,
+        },
+        formativeWound: {
+          type: 'string',
+          description: CHARACTER_SCHEMA_FIELDS.formativeWound.description,
+        },
+        misbelief: {
+          type: 'string',
+          description: CHARACTER_SCHEMA_FIELDS.misbelief.description,
+        },
+        stressVariants: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['underThreat', 'inIntimacy', 'whenLying', 'whenAshamed', 'whenWinning'],
+          properties: {
+            underThreat: {
+              type: 'string',
+              description: 'How this character\'s voice and behavior change when threatened.',
+            },
+            inIntimacy: {
+              type: 'string',
+              description: 'How this character\'s voice and behavior change in intimate moments.',
+            },
+            whenLying: {
+              type: 'string',
+              description: 'How this character\'s voice and behavior change when lying.',
+            },
+            whenAshamed: {
+              type: 'string',
+              description: 'How this character\'s voice and behavior change when ashamed.',
+            },
+            whenWinning: {
+              type: 'string',
+              description: 'How this character\'s voice and behavior change when winning.',
+            },
+          },
+        },
+        focalizationFilter: {
+          anyOf: [
+            {
+              type: 'object',
+              additionalProperties: false,
+              required: ['noticesFirst', 'systematicallyMisses', 'misreadsAs'],
+              properties: {
+                noticesFirst: {
+                  type: 'string',
+                  description: 'What this character notices first in any scene or interaction.',
+                },
+                systematicallyMisses: {
+                  type: 'string',
+                  description: 'What this character consistently overlooks or fails to perceive.',
+                },
+                misreadsAs: {
+                  type: 'string',
+                  description: 'How this character misinterprets ambiguous signals.',
+                },
+              },
+            },
+            { type: 'null' },
+          ],
+          description: CHARACTER_SCHEMA_FIELDS.focalizationFilter.description,
+        },
+        escalationLadder: {
+          type: 'array',
+          description: CHARACTER_SCHEMA_FIELDS.escalationLadder.description,
           items: { type: 'string' },
         },
         speechFingerprint: {
