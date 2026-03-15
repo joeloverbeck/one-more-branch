@@ -76,6 +76,7 @@ export interface CharacterWebService {
     payload: unknown,
   ): Promise<SavedDevelopedCharacter>;
   patchWeb(webId: string, payload: unknown): Promise<SavedCharacterWeb>;
+  removeAssignment(webId: string, characterName: string): Promise<SavedCharacterWeb>;
 }
 
 interface CharacterWebServiceDeps {
@@ -704,6 +705,61 @@ export function createCharacterWebService(
       };
 
       await deps.saveCharacterWeb(updatedWeb);
+      return updatedWeb;
+    },
+
+    async removeAssignment(
+      webId: string,
+      characterName: string,
+    ): Promise<SavedCharacterWeb> {
+      const trimmedWebId = trimRequired('Character web id', webId);
+      const trimmedName = trimRequired('Character name', characterName);
+      const web = requireWeb(trimmedWebId, await deps.loadCharacterWeb(trimmedWebId));
+
+      const assignment = web.assignments.find(
+        (candidate) => normalizeName(candidate.characterName) === normalizeName(trimmedName),
+      );
+
+      if (assignment === undefined) {
+        throw new EngineError(
+          `Character ${trimmedName} not found in web ${trimmedWebId} assignments`,
+          'VALIDATION_FAILED',
+        );
+      }
+
+      if (assignment.isProtagonist) {
+        throw new EngineError(
+          `Cannot remove protagonist ${assignment.characterName} from web`,
+          'VALIDATION_FAILED',
+        );
+      }
+
+      const normalizedTarget = normalizeName(assignment.characterName);
+
+      const updatedWeb: SavedCharacterWeb = {
+        ...web,
+        updatedAt: deps.now(),
+        assignments: web.assignments.filter(
+          (entry) => normalizeName(entry.characterName) !== normalizedTarget,
+        ),
+        relationshipArchetypes: web.relationshipArchetypes.filter(
+          (entry) =>
+            normalizeName(entry.fromCharacter) !== normalizedTarget &&
+            normalizeName(entry.toCharacter) !== normalizedTarget,
+        ),
+      };
+
+      await deps.saveCharacterWeb(updatedWeb);
+
+      const developedCharacters = await deps.listDevelopedCharactersByWebId(trimmedWebId);
+      const matching = developedCharacters.find(
+        (candidate) => normalizeName(candidate.characterName) === normalizedTarget,
+      );
+
+      if (matching !== undefined) {
+        await deps.deleteDevelopedCharacter(matching.id);
+      }
+
       return updatedWeb;
     },
   };

@@ -22,15 +22,14 @@ describe('Validation', () => {
       expect(result.errors).toEqual([]);
     });
 
-    it('returns valid=false with short-length error for < 10 chars', () => {
+    it('returns valid=true for undefined characterConcept', () => {
       const story = {
-        ...createStory({ title: 'Test Story', characterConcept: 'Valid enough' }),
-        characterConcept: 'short',
+        ...createStory({ title: 'Test Story' }),
+        characterConcept: undefined,
       };
 
       const result = validateStory(story);
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Character concept is too short (minimum 10 characters)');
+      expect(result.valid).toBe(true);
     });
 
     it('returns valid=false with long-length error for > 5000 chars', () => {

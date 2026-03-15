@@ -32,6 +32,7 @@ describe('story-creation-service', () => {
         tone: '  Epic  ',
         apiKey: '  sk-valid-api-key-12345  ',
         storyKernel: VALID_KERNEL,
+        protagonistCharacterId: 'char-1',
       });
 
       expect(result.valid).toBe(true);
@@ -43,6 +44,7 @@ describe('story-creation-service', () => {
           tone: 'Epic',
           apiKey: 'sk-valid-api-key-12345',
           storyKernel: VALID_KERNEL,
+          protagonistCharacterId: 'char-1',
         });
       }
     });
@@ -72,7 +74,7 @@ describe('story-creation-service', () => {
       }
     });
 
-    it('returns error for missing character concept', () => {
+    it('returns error for missing protagonistCharacterId', () => {
       const result = validateStoryInput({
         title: 'My Story',
         apiKey: 'sk-valid-api-key-12345',
@@ -80,20 +82,20 @@ describe('story-creation-service', () => {
 
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('Character concept must be at least 10 characters');
+        expect(result.error).toBe('Protagonist character selection is required');
       }
     });
 
-    it('returns error for short character concept after trim', () => {
+    it('returns error for empty protagonistCharacterId after trim', () => {
       const result = validateStoryInput({
         title: 'My Story',
-        characterConcept: '   short   ',
+        protagonistCharacterId: '   ',
         apiKey: 'sk-valid-api-key-12345',
       });
 
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('Character concept must be at least 10 characters');
+        expect(result.error).toBe('Protagonist character selection is required');
       }
     });
 
@@ -101,6 +103,7 @@ describe('story-creation-service', () => {
       const result = validateStoryInput({
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
+        protagonistCharacterId: 'char-1',
       });
 
       expect(result.valid).toBe(false);
@@ -113,6 +116,7 @@ describe('story-creation-service', () => {
       const result = validateStoryInput({
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
+        protagonistCharacterId: 'char-1',
         apiKey: '   short   ',
       });
 
@@ -128,6 +132,7 @@ describe('story-creation-service', () => {
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
         storyKernel: VALID_KERNEL,
+        protagonistCharacterId: 'char-1',
       });
 
       expect(result.valid).toBe(true);
@@ -145,6 +150,7 @@ describe('story-creation-service', () => {
         tone: '  Dark  ',
         apiKey: 'sk-valid-api-key-12345',
         storyKernel: VALID_KERNEL,
+        protagonistCharacterId: 'char-1',
       });
 
       expect(result.valid).toBe(true);
@@ -160,6 +166,7 @@ describe('story-creation-service', () => {
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
         storyKernel: VALID_KERNEL,
+        protagonistCharacterId: 'char-1',
       });
 
       expect(result.valid).toBe(true);
@@ -176,6 +183,7 @@ describe('story-creation-service', () => {
         startingSituation: '  In a dark tavern  ',
         apiKey: 'sk-valid-api-key-12345',
         storyKernel: VALID_KERNEL,
+        protagonistCharacterId: 'char-1',
       });
 
       expect(result.valid).toBe(true);
@@ -192,6 +200,7 @@ describe('story-creation-service', () => {
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
         storyKernel: VALID_KERNEL,
+        protagonistCharacterId: 'char-1',
         conceptSpec,
       });
 
@@ -207,6 +216,7 @@ describe('story-creation-service', () => {
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
         storyKernel: VALID_KERNEL,
+        protagonistCharacterId: 'char-1',
         conceptSpec: {
           oneLineHook: 'Only one field',
         },
@@ -224,6 +234,7 @@ describe('story-creation-service', () => {
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
         storyKernel: VALID_KERNEL,
+        protagonistCharacterId: 'char-1',
         conceptSpec: {
           oneLineHook: 'A hook',
           coreConflictLoop: '',
@@ -242,6 +253,7 @@ describe('story-creation-service', () => {
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
+        protagonistCharacterId: 'char-1',
       });
 
       expect(result.valid).toBe(false);
@@ -255,6 +267,7 @@ describe('story-creation-service', () => {
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
         apiKey: 'sk-valid-api-key-12345',
+        protagonistCharacterId: 'char-1',
         storyKernel: { dramaticThesis: 'incomplete' },
       });
 
@@ -264,7 +277,7 @@ describe('story-creation-service', () => {
       }
     });
 
-    it('validates in correct priority order: title, characterConcept, apiKey, storyKernel', () => {
+    it('validates in correct priority order: title, protagonistCharacterId, apiKey, storyKernel', () => {
       // All invalid - should fail on title first
       let result = validateStoryInput({});
       expect(result.valid).toBe(false);
@@ -272,27 +285,27 @@ describe('story-creation-service', () => {
         expect(result.error).toBe('Story title is required');
       }
 
-      // Title valid, rest invalid - should fail on characterConcept
+      // Title valid, rest invalid - should fail on protagonistCharacterId
       result = validateStoryInput({ title: 'Valid' });
       expect(result.valid).toBe(false);
       if (!result.valid) {
-        expect(result.error).toBe('Character concept must be at least 10 characters');
+        expect(result.error).toBe('Protagonist character selection is required');
       }
 
-      // Title and characterConcept valid - should fail on apiKey
+      // Title and protagonistCharacterId valid - should fail on apiKey
       result = validateStoryInput({
         title: 'Valid',
-        characterConcept: 'Long enough concept',
+        protagonistCharacterId: 'char-1',
       });
       expect(result.valid).toBe(false);
       if (!result.valid) {
         expect(result.error).toBe('OpenRouter API key is required');
       }
 
-      // Title, characterConcept, apiKey valid - should fail on storyKernel
+      // Title, protagonistCharacterId, apiKey valid - should fail on storyKernel
       result = validateStoryInput({
         title: 'Valid',
-        characterConcept: 'Long enough concept',
+        protagonistCharacterId: 'char-1',
         apiKey: 'sk-valid-api-key-12345',
       });
       expect(result.valid).toBe(false);

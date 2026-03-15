@@ -52,12 +52,12 @@ export interface PlaySession {
 
 export interface StartStoryOptions {
   readonly title: string;
-  readonly characterConcept: string;
+  readonly characterConcept?: string;
   readonly worldbuilding?: string;
   readonly worldbuildingId?: string;
   readonly tone?: string;
   readonly npcs?: readonly Npc[];
-  readonly protagonistCharacterId?: string;
+  readonly protagonistCharacterId: string;
   readonly npcCharacterIds?: readonly string[];
   readonly startingSituation?: string;
   readonly conceptSpec?: ConceptSpec;

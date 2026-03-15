@@ -32,6 +32,7 @@ import type { SpinePromptContext } from './prompts/spine-prompt.js';
 import { buildSpineFoundationPrompt } from './prompts/spine-foundation-prompt.js';
 import { buildSpineArcEnginePrompt } from './prompts/spine-arc-engine-prompt.js';
 import { buildSpineSynthesisPrompt } from './prompts/spine-synthesis-prompt.js';
+import { formatStandaloneCharacterSummary } from '../models/standalone-decomposed-character.js';
 import { SPINE_FOUNDATION_SCHEMA } from './schemas/spine-foundation-schema.js';
 import { SPINE_ARC_ENGINE_SCHEMA } from './schemas/spine-arc-engine-schema.js';
 import { SPINE_SYNTHESIS_SCHEMA } from './schemas/spine-synthesis-schema.js';
@@ -454,6 +455,11 @@ export async function generateStorySpines(
   const maxTokens = options?.maxTokens ?? config.maxTokens;
   const rawResponses: string[] = [];
 
+  // Compute protagonist summary once for downstream stages
+  const protagonistSummary = context.decomposedCharacters?.[0]
+    ? formatStandaloneCharacterSummary(context.decomposedCharacters[0])
+    : context.characterConcept ?? '';
+
   // --- Stage 1: Thematic Foundation Ideation ---
   callbacks?.onStageStarted?.('GENERATING_SPINE_FOUNDATION');
   const foundationModel = options?.model ?? getStageModel('spineFoundation');
@@ -487,6 +493,7 @@ export async function generateStorySpines(
   const arcEngineModel = options?.model ?? getStageModel('spineArcEngine');
   const arcEngineMessages = buildSpineArcEnginePrompt({
     characterConcept: context.characterConcept,
+    protagonistSummary,
     tone: context.tone,
     foundations,
     conceptSpec: context.conceptSpec,
@@ -522,6 +529,7 @@ export async function generateStorySpines(
   const spineArcEngines = foundations.map((f, i) => mergeFoundationAndArcEngine(f, arcEngines[i]!));
   const synthesisMessages = buildSpineSynthesisPrompt({
     characterConcept: context.characterConcept,
+    protagonistSummary,
     tone: context.tone,
     arcEngines: spineArcEngines,
     storyKernel: context.storyKernel,

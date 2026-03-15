@@ -52,7 +52,6 @@ storyRoutes.post(
     const validation = validateStoryInput(input);
     const formValues = {
       title: input.title,
-      characterConcept: input.characterConcept,
       worldbuilding: input.worldbuilding,
       tone: input.tone,
       startingSituation: input.startingSituation,
@@ -126,13 +125,13 @@ storyRoutes.post(
       progressId?: unknown;
     };
 
-    const characterConcept = body.characterConcept?.trim();
     const apiKey = body.apiKey?.trim();
+    const protagonistCharacterId = body.protagonistCharacterId?.trim();
 
-    if (!characterConcept || characterConcept.length < 10) {
+    if (!protagonistCharacterId) {
       return res.status(400).json({
         success: false,
-        error: 'Character concept must be at least 10 characters',
+        error: 'Protagonist character selection is required',
       });
     }
 
@@ -198,9 +197,14 @@ storyRoutes.post(
         }
       }
 
+      // Derive characterConcept from protagonist's rawDescription
+      const derivedCharacterConcept = decomposedCharacters?.[0]?.rawDescription
+        ?? body.characterConcept?.trim()
+        ?? '';
+
       const result = await generateStorySpines(
         {
-          characterConcept,
+          characterConcept: derivedCharacterConcept || undefined,
           worldbuilding: body.worldbuilding?.trim() ?? undefined,
           decomposedWorld,
           tone: body.tone?.trim() ?? 'fantasy adventure',

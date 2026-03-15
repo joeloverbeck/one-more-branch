@@ -100,9 +100,16 @@ export function buildSpineFoundationPrompt(context: SpinePromptContext): ChatMes
       ? `WORLDBUILDING:\n${context.worldbuilding}\n\n`
       : '';
 
+  const protagonistSection = context.decomposedCharacters?.[0]
+    ? `PROTAGONIST CHARACTER:\n${formatStandaloneCharacterSummary(context.decomposedCharacters[0])}\n\n`
+    : context.characterConcept
+      ? `CHARACTER CONCEPT:\n${context.characterConcept}\n\n`
+      : '';
+
+  const npcCharacters = context.decomposedCharacters?.slice(1);
   const npcsSection =
-    context.decomposedCharacters && context.decomposedCharacters.length > 0
-      ? `CHARACTERS (Pre-Decomposed Profiles):\n${context.decomposedCharacters.map(formatStandaloneCharacterSummary).join('\n\n')}\n\n`
+    npcCharacters && npcCharacters.length > 0
+      ? `NPC CHARACTERS (Pre-Decomposed Profiles):\n${npcCharacters.map(formatStandaloneCharacterSummary).join('\n\n')}\n\n`
       : context.npcs && context.npcs.length > 0
         ? `NPCS (Available Characters):\n${formatNpcsForPrompt(context.npcs)}\n\n`
         : '';
@@ -122,10 +129,7 @@ export function buildSpineFoundationPrompt(context: SpinePromptContext): ChatMes
 
   const userPrompt = `Generate 5-6 thematic foundations for the following story setup.
 
-CHARACTER CONCEPT:
-${context.characterConcept}
-
-${worldSection}${npcsSection}${startingSituationSection}${contentPreferencesSection}${conceptSection}${kernelSection}TONE/GENRE: ${context.tone}
+${protagonistSection}${worldSection}${npcsSection}${startingSituationSection}${contentPreferencesSection}${conceptSection}${kernelSection}TONE/GENRE: ${context.tone}
 ${conflictAxisConstraint}
 
 DIVERGENCE CONSTRAINTS:

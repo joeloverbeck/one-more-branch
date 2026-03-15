@@ -4,7 +4,8 @@ import type { SpineFoundation } from '../../models/spine-foundation.js';
 import type { ConceptSpec, ConceptVerification } from '../../models/concept-generator.js';
 
 export interface SpineArcEnginePromptContext {
-  readonly characterConcept: string;
+  readonly characterConcept?: string;
+  readonly protagonistSummary?: string;
   readonly tone: string;
   readonly foundations: readonly SpineFoundation[];
   readonly conceptSpec?: ConceptSpec;
@@ -73,10 +74,15 @@ export function buildSpineArcEnginePrompt(context: SpineArcEnginePromptContext):
 
   const conceptSection = buildConceptConstraints(context.conceptSpec);
 
+  const characterSection = context.protagonistSummary
+    ? `PROTAGONIST CHARACTER:\n${context.protagonistSummary}`
+    : context.characterConcept
+      ? `CHARACTER CONCEPT:\n${context.characterConcept}`
+      : '';
+
   const userPrompt = `Elaborate arc engines for ALL ${context.foundations.length} locked foundations below.
 
-CHARACTER CONCEPT:
-${context.characterConcept}
+${characterSection}
 
 TONE/GENRE: ${context.tone}
 

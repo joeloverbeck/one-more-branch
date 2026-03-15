@@ -201,7 +201,7 @@ export function serializeStory(story: Story): StoryFileData {
   return {
     id: story.id,
     title: story.title,
-    characterConcept: story.characterConcept,
+    characterConcept: story.characterConcept ?? '',
     worldbuilding: story.worldbuilding,
     tone: story.tone,
     ...(story.toneFeel ? { toneFeel: [...story.toneFeel] } : {}),

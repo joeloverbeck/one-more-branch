@@ -6,7 +6,7 @@ import type { StandaloneDecomposedCharacter } from '../../models/standalone-deco
 import type { StoryKernel } from '../../models/story-kernel.js';
 
 export interface SpinePromptContext {
-  characterConcept: string;
+  characterConcept?: string;
   worldbuilding?: string;
   decomposedWorld?: DecomposedWorld;
   tone: string;

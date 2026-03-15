@@ -17,6 +17,7 @@ jest.mock('@/server/services', () => ({
     regenerateCharacterStage: jest.fn(),
     loadCharacter: jest.fn(),
     deleteCharacter: jest.fn(),
+    removeAssignment: jest.fn(),
   },
   generationProgressService: {
     start: jest.fn(),
@@ -551,11 +552,45 @@ describe('character-web routes', () => {
     expect(characterRes.end).toHaveBeenCalledTimes(1);
   });
 
+  it('DELETE /api/:webId/assignments/:characterName returns 200 with updated web', async () => {
+    const web = createWeb();
+    (characterWebService.removeAssignment as jest.Mock).mockResolvedValue(web);
+
+    const handler = getRouteHandler('delete', '/api/:webId/assignments/:characterName');
+    const req = mockReq({ params: { webId: 'web-1', characterName: 'Mara%20Voss' } });
+    const res = mockRes();
+
+    void handler(req, res);
+    await flushPromises();
+
+    expect(characterWebService.removeAssignment).toHaveBeenCalledWith('web-1', 'Mara Voss');
+    expect(res.json).toHaveBeenCalledWith({ success: true, web });
+  });
+
+  it('DELETE /api/:webId/assignments/:characterName returns 400 for validation errors', async () => {
+    (characterWebService.removeAssignment as jest.Mock).mockRejectedValue(
+      new EngineError('Cannot remove protagonist Iria Vale from web', 'VALIDATION_FAILED')
+    );
+
+    const handler = getRouteHandler('delete', '/api/:webId/assignments/:characterName');
+    const req = mockReq({ params: { webId: 'web-1', characterName: 'Iria%20Vale' } });
+    const res = mockRes();
+
+    void handler(req, res);
+    await flushPromises();
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: 'Cannot remove protagonist Iria Vale from web',
+    });
+  });
+
   it('registers the full character-web API surface through wrapAsyncRoute handlers', () => {
     const routeLayers = (characterWebRoutes.stack as unknown as RouteLayer[]).filter(
       (layer) => layer.route
     );
 
-    expect(routeLayers.length).toBe(15);
+    expect(routeLayers.length).toBe(16);
   });
 });

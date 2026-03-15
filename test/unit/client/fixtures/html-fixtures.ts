@@ -413,26 +413,10 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
 
 export interface NewStoryPageOptions {
   error?: string;
-  npcs?: Array<{ name: string; description: string }>;
 }
 
 export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string {
-  const npcs = options.npcs ?? [];
   const errorHtml = options.error ? `<div class="alert alert-error">${options.error}</div>` : '';
-
-  const npcEntriesHtml = npcs
-    .map(
-      (npc, i) => `
-    <div class="npc-entry" data-index="${i}">
-      <div class="npc-entry-header">
-        <strong>${npc.name}</strong>
-        <button type="button" class="btn btn-small btn-danger npc-remove-btn">&times;</button>
-      </div>
-      <p class="npc-entry-description">${npc.description}</p>
-    </div>
-  `
-    )
-    .join('');
 
   return `
     <main class="container">
@@ -482,10 +466,6 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
             </div>
           </section>
           <section class="wizard-step" data-step="3" style="display:none">
-            <div class="form-group">
-              <label for="characterConcept">Character Concept *</label>
-              <textarea id="characterConcept" name="characterConcept" rows="4" required></textarea>
-            </div>
           </section>
           <section class="wizard-step" data-step="4" style="display:none">
           </section>
@@ -495,13 +475,15 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
               <textarea id="worldbuilding" name="worldbuilding" rows="3"></textarea>
             </div>
             <div class="form-group">
-              <label>NPCs (Optional)</label>
-              <div id="npc-entries">${npcEntriesHtml}</div>
-              <div class="npc-add-form">
-                <input type="text" id="npc-name-input" placeholder="NPC name" maxlength="100">
-                <textarea id="npc-desc-input" rows="2" placeholder="Describe this character"></textarea>
-                <button type="button" id="npc-add-btn" class="btn btn-secondary btn-small">Add NPC</button>
-              </div>
+              <label for="protagonist-character-selector">Protagonist (from Character Profiles) *</label>
+              <select id="protagonist-character-selector" required>
+                <option value="">-- Select protagonist --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>NPC Characters (from Character Profiles)</label>
+              <div id="npc-character-selector-wrap"></div>
+              <div id="npc-character-pills" class="npc-pills-container"></div>
             </div>
             <div class="form-group">
               <label for="startingSituation">Starting Situation</label>

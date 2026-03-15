@@ -717,10 +717,11 @@ function initNewStoryPage() {
 
   // Character selector for decomposed characters
   var protagonistSelectEl = document.getElementById('protagonist-character-selector');
-  var npcCheckboxContainer = document.getElementById('npc-character-checkboxes');
+  var npcSelectorWrap = document.getElementById('npc-character-selector-wrap');
+  var npcPillsContainer = document.getElementById('npc-character-pills');
   var characterSelector =
-    protagonistSelectEl && npcCheckboxContainer
-      ? createCharacterSelector(protagonistSelectEl, npcCheckboxContainer)
+    protagonistSelectEl && npcSelectorWrap && npcPillsContainer
+      ? createCharacterSelector(protagonistSelectEl, npcSelectorWrap, npcPillsContainer)
       : null;
   if (characterSelector) {
     characterSelector.init();
@@ -758,7 +759,7 @@ function initNewStoryPage() {
     : null;
 
   // Field-to-step mapping for validation navigation
-  var FIELD_STEP_MAP = { title: 1, apiKey: 1, characterConcept: 3, 'kernel-selector-story': 1 };
+  var FIELD_STEP_MAP = { title: 1, apiKey: 1, 'protagonist-character-selector': 5, 'kernel-selector-story': 1 };
 
   function setValueById(id, value) {
     var field = document.getElementById(id);
@@ -807,13 +808,6 @@ function initNewStoryPage() {
     setValueById('protagonistRole', conceptSpec.protagonistRole || '');
     setValueById('coreCompetence', conceptSpec.coreCompetence || '');
     setValueById('coreFlaw', conceptSpec.coreFlaw || '');
-    var role = toTrimmedString(conceptSpec.protagonistRole);
-    var competence = toTrimmedString(conceptSpec.coreCompetence);
-    var flaw = toTrimmedString(conceptSpec.coreFlaw);
-    setValueById(
-      'characterConcept',
-      'Role: ' + role + '. Competence: ' + competence + '. Flaw: ' + flaw + '.'
-    );
     populateDynamicList('actionVerbs', conceptSpec.actionVerbs);
 
     // Conflict Engine
@@ -962,9 +956,6 @@ function initNewStoryPage() {
     var formData = new FormData(form);
     var npcs = collectNpcEntries();
 
-    // Build characterConcept from structured fields if the free-text is the default prefill
-    var characterConcept = toTrimmedString(formData.get('characterConcept'));
-
     // Build worldbuilding — merge free text with structured lists
     var worldbuildingFreeText = toTrimmedString(formData.get('worldbuilding'));
 
@@ -973,7 +964,6 @@ function initNewStoryPage() {
 
     return {
       title: toTrimmedString(formData.get('title')),
-      characterConcept: characterConcept,
       worldbuilding: worldbuildingFreeText,
       tone: toneFreeText,
       npcs: npcs.length > 0 ? npcs : undefined,
@@ -991,8 +981,8 @@ function initNewStoryPage() {
     hideExistingError();
 
     var titleInput = document.getElementById('title');
-    var characterConceptInput = document.getElementById('characterConcept');
     var apiKeyInput = document.getElementById('apiKey');
+    var protagonistSelector = document.getElementById('protagonist-character-selector');
 
     if (
       titleInput &&
@@ -1004,13 +994,9 @@ function initNewStoryPage() {
       return false;
     }
 
-    if (
-      characterConceptInput &&
-      typeof characterConceptInput.checkValidity === 'function' &&
-      !characterConceptInput.checkValidity()
-    ) {
-      navigateToStepForField('characterConcept');
-      characterConceptInput.reportValidity();
+    if (!protagonistSelector || !protagonistSelector.value) {
+      navigateToStepForField('protagonist-character-selector');
+      showFormError('Protagonist character selection is required');
       return false;
     }
 
@@ -1204,7 +1190,6 @@ function initNewStoryPage() {
       var formValues = collectFormData();
       var conceptSpecFromFields = buildConceptSpecFromFields();
       var spineBody = {
-        characterConcept: formValues.characterConcept,
         worldbuilding: formValues.worldbuilding,
         tone: formValues.tone,
         npcs: formValues.npcs,
@@ -1286,7 +1271,6 @@ function initNewStoryPage() {
       var conceptSpecFromFields = buildConceptSpecFromFields();
       var createBody = {
         title: formValues.title,
-        characterConcept: formValues.characterConcept,
         worldbuilding: formValues.worldbuilding,
         tone: formValues.tone,
         npcs: formValues.npcs,
