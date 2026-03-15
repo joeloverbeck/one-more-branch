@@ -1,5 +1,4 @@
 import type { MacroArchitectureResult } from '../../models/structure-generation.js';
-import type { ConceptVerification } from '../../models/concept-generator.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
@@ -17,12 +16,12 @@ import {
   type StructureContext,
 } from './sections/structure-generation/shared-context.js';
 
-function buildSetpieceBankSection(verification?: ConceptVerification): string {
-  if (!verification || verification.escalatingSetpieces.length === 0) {
+function buildSetpieceBankSection(setpieceBank: readonly string[]): string {
+  if (setpieceBank.length === 0) {
     return '';
   }
 
-  const numbered = verification.escalatingSetpieces
+  const numbered = setpieceBank
     .map((setpiece, index) => `${index}. ${setpiece}`)
     .join('\n');
 
@@ -76,7 +75,7 @@ export function buildMilestoneGenerationPrompt(
     guidanceText:
       'Use the kernel to sharpen milestone-level reversals, crises, and value pressure rather than re-planning the macro act sequence.',
   });
-  const setpieceBankSection = buildSetpieceBankSection(context.conceptVerification);
+  const setpieceBankSection = buildSetpieceBankSection(macroArchitecture.setpieceBank);
   const macroArchitectureSection = buildMacroArchitectureSection(macroArchitecture);
 
   const userPrompt = `Generate milestones for a locked macro architecture.

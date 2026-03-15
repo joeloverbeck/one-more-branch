@@ -38,6 +38,7 @@ function createMacroPayload(): {
     climax: { actIndex: number; description: string };
     signatureScenarioPlacement: { actIndex: number; description: string };
   };
+  setpieceBank: readonly string[];
   initialNpcAgendas: Array<{
     npcName: string;
     currentGoal: string;
@@ -69,6 +70,7 @@ function createMacroPayload(): {
       climax: { actIndex: 2, description: 'The harbor court loses control of the verdict.' },
       signatureScenarioPlacement: { actIndex: 1, description: 'A ritual hearing becomes a public trap.' },
     },
+    setpieceBank: ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3', 'setpiece 4', 'setpiece 5'],
     initialNpcAgendas: [
       {
         npcName: 'Judge Corven',
@@ -347,9 +349,7 @@ describe('structure-generator', () => {
       loglineCompressible: true,
       logline: 'A disgraced guard weaponizes public ritual against a tribunal cover-up.',
       premisePromises: ['Public ritual becomes a weapon'],
-      escalatingSetpieces: ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3'],
       setpieceCausalChainBroken: false,
-      setpieceCausalLinks: ['0->1', '1->2', '2->3'],
       inevitabilityStatement: 'The ritual machinery will eventually turn on itself.',
       loadBearingCheck: {
         passes: true,

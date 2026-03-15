@@ -43,9 +43,7 @@ function createContext(): StructureContext {
       loglineCompressible: true,
       logline: 'A disgraced guard weaponizes public ritual against a tribunal cover-up.',
       premisePromises: ['Public ritual becomes a weapon'],
-      escalatingSetpieces: ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3'],
       setpieceCausalChainBroken: false,
-      setpieceCausalLinks: ['0->1', '1->2', '2->3'],
       inevitabilityStatement: 'The ritual machinery will turn on itself.',
       loadBearingCheck: {
         passes: true,
@@ -61,6 +59,8 @@ function createContext(): StructureContext {
     },
   };
 }
+
+const TEST_SETPIECE_BANK: readonly string[] = ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3'];
 
 function createValidResult(): StructureGenerationResult {
   return {
@@ -260,7 +260,7 @@ describe('structure-validator', () => {
   });
 
   it('passes all semantic checks for a valid merged structure', () => {
-    const diagnostics = validateStructureSemantics(createValidResult(), createContext());
+    const diagnostics = validateStructureSemantics(createValidResult(), createContext(), { setpieceBank: TEST_SETPIECE_BANK });
 
     expect(diagnostics).toHaveLength(10);
     expect(diagnostics.every((entry) => entry.passed)).toBe(true);
@@ -277,7 +277,7 @@ describe('structure-validator', () => {
     partiallyAllocated.acts[2]!.obligationTargets = ['culprit_unmasked'];
     partiallyAllocated.acts[2]!.milestones[0]!.obligatorySceneTag = null;
 
-    const diagnostics = validateStructureSemantics(partiallyAllocated, context);
+    const diagnostics = validateStructureSemantics(partiallyAllocated, context, { setpieceBank: TEST_SETPIECE_BANK });
 
     expect(findCheck(diagnostics, 'genre-obligation-coverage').passed).toBe(true);
     expect(findCheck(diagnostics, 'obligation-target-coverage').passed).toBe(true);
@@ -288,49 +288,49 @@ describe('structure-validator', () => {
     const midpointBroken = createValidResult();
     midpointBroken.acts[1]!.milestones[1]!.isMidpoint = false;
     midpointBroken.acts[1]!.milestones[1]!.midpointType = null;
-    expect(findCheck(validateStructureSemantics(midpointBroken, context), 'midpoint-uniqueness').passed).toBe(false);
+    expect(findCheck(validateStructureSemantics(midpointBroken, context, { setpieceBank: TEST_SETPIECE_BANK }), 'midpoint-uniqueness').passed).toBe(false);
 
     const milestoneCountBroken = createValidResult();
     milestoneCountBroken.acts[0]!.milestones = [milestoneCountBroken.acts[0]!.milestones[0]!];
-    expect(findCheck(validateStructureSemantics(milestoneCountBroken, context), 'milestone-count').passed).toBe(false);
+    expect(findCheck(validateStructureSemantics(milestoneCountBroken, context, { setpieceBank: TEST_SETPIECE_BANK }), 'milestone-count').passed).toBe(false);
 
     const escalationBroken = createValidResult();
     escalationBroken.acts[1]!.milestones[0]!.escalationType = null;
-    expect(findCheck(validateStructureSemantics(escalationBroken, context), 'escalation-type-required').passed).toBe(false);
+    expect(findCheck(validateStructureSemantics(escalationBroken, context, { setpieceBank: TEST_SETPIECE_BANK }), 'escalation-type-required').passed).toBe(false);
 
     const setpieceBroken = createValidResult();
     setpieceBroken.acts[1]!.milestones[0]!.setpieceSourceIndex = 0;
     setpieceBroken.acts[1]!.milestones[1]!.setpieceSourceIndex = 1;
     setpieceBroken.acts[2]!.milestones[0]!.setpieceSourceIndex = 1;
-    expect(findCheck(validateStructureSemantics(setpieceBroken, context), 'setpiece-coverage').passed).toBe(false);
+    expect(findCheck(validateStructureSemantics(setpieceBroken, context, { setpieceBank: TEST_SETPIECE_BANK }), 'setpiece-coverage').passed).toBe(false);
 
     const tagBroken = createValidResult();
     tagBroken.acts[2]!.milestones[1]!.obligatorySceneTag = null;
-    expect(findCheck(validateStructureSemantics(tagBroken, context), 'genre-obligation-coverage').passed).toBe(false);
+    expect(findCheck(validateStructureSemantics(tagBroken, context, { setpieceBank: TEST_SETPIECE_BANK }), 'genre-obligation-coverage').passed).toBe(false);
 
     const exitConditionBroken = createValidResult();
     exitConditionBroken.acts[0]!.milestones[0]!.exitCondition = '';
-    expect(findCheck(validateStructureSemantics(exitConditionBroken, context), 'exit-condition-non-empty').passed).toBe(false);
+    expect(findCheck(validateStructureSemantics(exitConditionBroken, context, { setpieceBank: TEST_SETPIECE_BANK }), 'exit-condition-non-empty').passed).toBe(false);
 
     const questionBroken = createValidResult();
     questionBroken.acts[1]!.actQuestion = questionBroken.acts[0]!.actQuestion;
-    expect(findCheck(validateStructureSemantics(questionBroken, context), 'act-question-distinct').passed).toBe(false);
+    expect(findCheck(validateStructureSemantics(questionBroken, context, { setpieceBank: TEST_SETPIECE_BANK }), 'act-question-distinct').passed).toBe(false);
 
     const reversalBroken = createValidResult();
     reversalBroken.acts[1]!.exitReversal = '';
-    expect(findCheck(validateStructureSemantics(reversalBroken, context), 'exit-reversal-present').passed).toBe(false);
+    expect(findCheck(validateStructureSemantics(reversalBroken, context, { setpieceBank: TEST_SETPIECE_BANK }), 'exit-reversal-present').passed).toBe(false);
 
     const promiseBroken = createValidResult();
     promiseBroken.acts.forEach((act) => {
       act.promiseTargets = [];
     });
-    expect(findCheck(validateStructureSemantics(promiseBroken, context), 'promise-target-coverage').passed).toBe(false);
+    expect(findCheck(validateStructureSemantics(promiseBroken, context, { setpieceBank: TEST_SETPIECE_BANK }), 'promise-target-coverage').passed).toBe(false);
 
     const obligationBroken = createValidResult();
     obligationBroken.acts.forEach((act) => {
       act.obligationTargets = [];
     });
-    expect(findCheck(validateStructureSemantics(obligationBroken, context), 'obligation-target-coverage').passed).toBe(false);
+    expect(findCheck(validateStructureSemantics(obligationBroken, context, { setpieceBank: TEST_SETPIECE_BANK }), 'obligation-target-coverage').passed).toBe(false);
   });
 
   it('repairs failing acts once and returns the repaired structure', async () => {
@@ -368,7 +368,8 @@ describe('structure-validator', () => {
       broken,
       createContext(),
       'test-api-key',
-      { promptOptions: {} }
+      { promptOptions: {} },
+      TEST_SETPIECE_BANK
     );
 
     expect(validated.repaired).toBe(true);
@@ -386,7 +387,7 @@ describe('structure-validator', () => {
 
     const pending = validateAndRepairStructure(broken, createContext(), 'test-api-key', {
       promptOptions: {},
-    });
+    }, TEST_SETPIECE_BANK);
     const expectation = expect(pending).rejects.toMatchObject({
       code: 'HTTP_429',
       retryable: true,

@@ -32,6 +32,7 @@ export const MACRO_ARCHITECTURE_SCHEMA: JsonSchema = {
         'pacingBudget',
         'anchorMoments',
         'initialNpcAgendas',
+        'setpieceBank',
         'acts',
       ],
       properties: {
@@ -102,6 +103,13 @@ export const MACRO_ARCHITECTURE_SCHEMA: JsonSchema = {
               offScreenBehavior: { type: 'string' },
             },
           },
+        },
+        setpieceBank: {
+          type: 'array',
+          description: '6 concept-specific escalating situations in rising intensity, forming a causal chain from opening to climax.',
+          minItems: 6,
+          maxItems: 6,
+          items: { type: 'string' },
         },
         acts: {
           type: 'array',

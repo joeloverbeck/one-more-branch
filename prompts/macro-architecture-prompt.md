@@ -14,6 +14,7 @@ This prompt designs the locked macro frame for story structure:
 - pacing budget
 - anchor moments
 - act-level objectives, stakes, entry conditions, questions, reversals, promise targets, and obligation targets
+- **setpiece bank**: 6 concept-specific escalating situations in rising intensity forming a causal chain (previously sourced from concept verification, now generated here with full context)
 - initial NPC agendas
 
 It does not generate milestones. Milestone realization happens in the dedicated Call 2 prompt.

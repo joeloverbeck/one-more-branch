@@ -17,16 +17,16 @@ export interface StructureRepairPromptInput {
   readonly result: Omit<StructureGenerationResult, 'rawResponse'>;
   readonly diagnostics: readonly ValidationResult[];
   readonly targetActIndices: readonly number[];
+  readonly setpieceBank?: readonly string[];
 }
 
-function buildSetpieceBankSection(context: StructureContext): string {
-  const setpieces = context.conceptVerification?.escalatingSetpieces ?? [];
-  if (setpieces.length === 0) {
+function buildSetpieceBankSection(setpieceBank: readonly string[]): string {
+  if (setpieceBank.length === 0) {
     return '';
   }
 
   return `VERIFIED SETPIECE BANK (zero-based indices):
-${setpieces.map((setpiece, index) => `${index}. ${setpiece}`).join('\n')}
+${setpieceBank.map((setpiece, index) => `${index}. ${setpiece}`).join('\n')}
 
 `;
 }
@@ -67,7 +67,7 @@ export function buildStructureRepairPrompt(
     'Ensure repaired acts still deliver these premise promises concretely.'
   );
   const genreObligationsSection = buildStructureGenerationGenreObligationsSection(context.conceptSpec);
-  const setpieceBankSection = buildSetpieceBankSection(context);
+  const setpieceBankSection = buildSetpieceBankSection(input.setpieceBank ?? []);
   const allObligations = context.conceptSpec
     ? getGenreObligationTags(context.conceptSpec.genreFrame).map((entry) => entry.tag)
     : [];

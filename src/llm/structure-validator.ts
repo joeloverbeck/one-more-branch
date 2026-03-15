@@ -334,7 +334,8 @@ function buildPassingResult(check: string): ValidationResult {
 
 export function validateStructureSemantics(
   result: Omit<StructureGenerationResult, 'rawResponse'>,
-  context: StructureContext
+  context: StructureContext,
+  options?: { setpieceBank?: readonly string[] }
 ): ValidationResult[] {
   const validations: ValidationResult[] = [];
   const flatMilestones = flattenMilestones(result);
@@ -385,7 +386,7 @@ export function validateStructureSemantics(
         }
   );
 
-  const verifiedSetpieces = context.conceptVerification?.escalatingSetpieces ?? [];
+  const verifiedSetpieces = options?.setpieceBank ?? [];
   if (verifiedSetpieces.length > 0) {
     const uniqueSetpieces = countUniqueSetpieceIndices(result);
     const actsMissingTrace = result.acts
@@ -563,9 +564,10 @@ export async function validateAndRepairStructure(
   result: StructureGenerationResult,
   context: StructureContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>
+  options?: Partial<GenerationOptions>,
+  setpieceBank?: readonly string[]
 ): Promise<{ result: StructureGenerationResult; repaired: boolean; diagnostics: ValidationResult[] }> {
-  const initialDiagnostics = validateStructureSemantics(result, context);
+  const initialDiagnostics = validateStructureSemantics(result, context, { setpieceBank });
   const failures = failingDiagnostics(initialDiagnostics);
   if (failures.length === 0) {
     return { result, repaired: false, diagnostics: initialDiagnostics };
@@ -575,7 +577,7 @@ export async function validateAndRepairStructure(
   const maxTokens = options?.maxTokens ?? getStageMaxTokens('structureRepair');
   const temperature = options?.temperature ?? 0.2;
   const targetActIndices = targetActIndicesForDiagnostics(failures, result.acts.length);
-  const verifiedSetpieceCount = context.conceptVerification?.escalatingSetpieces.length ?? 0;
+  const verifiedSetpieceCount = setpieceBank?.length ?? 0;
   const resultWithoutRawResponse: Omit<StructureGenerationResult, 'rawResponse'> = {
     overallTheme: result.overallTheme,
     premise: result.premise,
@@ -592,6 +594,7 @@ export async function validateAndRepairStructure(
       result: resultWithoutRawResponse,
       diagnostics: failures,
       targetActIndices,
+      setpieceBank,
     },
     promptOptions
   );
@@ -614,7 +617,7 @@ export async function validateAndRepairStructure(
   const merged = mergeRepairedActs(result, repair.parsed);
   const repairedRawResponse = `${result.rawResponse}\n\n[structureRepair]\n${repair.rawResponse}`;
   const mergedWithRaw = { ...merged, rawResponse: repairedRawResponse };
-  const finalDiagnostics = validateStructureSemantics(mergedWithRaw, context);
+  const finalDiagnostics = validateStructureSemantics(mergedWithRaw, context, { setpieceBank });
   const remainingFailures = failingDiagnostics(finalDiagnostics);
 
   if (remainingFailures.length > 0) {

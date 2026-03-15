@@ -658,7 +658,7 @@ describe('concept-verifier', () => {
       expect(result.verifications).toHaveLength(2);
       expect(result.verifications[0].conceptId).toBe('concept_1');
       expect(result.verifications[0].signatureScenario).toBe('Signature scenario 1');
-      expect(result.verifications[0].escalatingSetpieces).toHaveLength(6);
+      expect(result.verifications[0].setpieceCausalChainBroken).toBe(false);
       expect(result.verifications[1].conceptIntegrityScore).toBe(85);
       expect(fetchMock).toHaveBeenCalledTimes(2);
       expect(mockLogPrompt).toHaveBeenCalledWith(
@@ -750,9 +750,7 @@ describe('concept-verifier', () => {
       expect(typeof fixture.loglineCompressible).toBe('boolean');
       expect(fixture.logline).toBeTruthy();
       expect(fixture.premisePromises).toHaveLength(3);
-      expect(fixture.escalatingSetpieces).toHaveLength(6);
       expect(fixture.setpieceCausalChainBroken).toBe(false);
-      expect(fixture.setpieceCausalLinks).toHaveLength(5);
       expect(fixture.inevitabilityStatement).toBeTruthy();
       expect(fixture.loadBearingCheck.passes).toBe(true);
       expect(fixture.kernelFidelityCheck.passes).toBe(true);

@@ -23,14 +23,8 @@ function buildSignatureScenarioSection(verification?: ConceptVerification): stri
     return '';
   }
 
-  const setpieces = verification.escalatingSetpieces
-    .map((setpiece, index) => `${index + 1}. ${setpiece}`)
-    .join('\n');
-
   return `CONCEPT VERIFICATION:
 Signature scenario: ${verification.signatureScenario}
-Escalating setpieces:
-${setpieces}
 
 If concept verification is present, anchorMoments.signatureScenarioPlacement must be explicit and should position the signature scenario where it delivers maximum concept-specific dramatic force.
 
@@ -100,6 +94,11 @@ REQUIREMENTS (follow ALL):
 13. Use worldbuilding, character pressure, and the thematic kernel to make the act frames specific rather than generic.
 14. ${buildDirectionalGuidanceSection(context.storyKernel)}
 15. ${buildMacroNpcAgendaInstructions(context.decomposedCharacters)}
+16. Generate a setpieceBank of exactly 6 concept-unique situations in rising intensity from opening to climax:
+   - Each must exploit concept-specific elements (setting axioms, conflict engine, constraints, character capabilities)
+   - Each must form a causal chain — each setpiece's outcome causes the next setup (Pixar's "because of that" chain)
+   - Use the concept's signatureScenario, premisePromises, and incitingDisruption as constraints
+   - These will be consumed by the milestone generation stage as a verified setpiece bank
 
 OUTPUT SHAPE:
 - overallTheme: string
@@ -121,6 +120,7 @@ OUTPUT SHAPE:
     - actIndex: integer
     - description: string
   - signatureScenarioPlacement: { actIndex: integer, description: string } | null
+- setpieceBank: array of exactly 6 concept-specific escalating situations
 - initialNpcAgendas: array
   - each agenda has:
     - npcName: exact NPC name

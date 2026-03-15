@@ -200,15 +200,8 @@
               </div>
               <% } %>
               <% if (Number.isFinite(Number(vr.conceptIntegrityScore))) { %><div class="spine-field"><span class="spine-label">Integrity Score:</span> <%= Math.max(0, Math.min(100, Math.round(Number(vr.conceptIntegrityScore)))) %>/100</div><% } %>
-              <% if (Array.isArray(vr.escalatingSetpieces) && vr.escalatingSetpieces.length > 0) { %>
-              <div class="spine-field"><span class="spine-label">Escalating Setpieces:</span>
-                <ol style="margin: 0.25rem 0 0 1.25rem; padding: 0;"><% vr.escalatingSetpieces.forEach(function(sp) { %><li><%= sp %></li><% }); %></ol>
-              </div>
-              <% } %>
-              <% if (Array.isArray(vr.setpieceCausalLinks) && vr.setpieceCausalLinks.length > 0) { %>
-              <div class="spine-field"><span class="spine-label">Causal Links:</span><% if (typeof vr.setpieceCausalChainBroken === 'boolean') { %> <span class="spine-badge <%= vr.setpieceCausalChainBroken ? 'spine-badge-fail' : 'spine-badge-pass' %>" style="font-size: 0.75rem;"><%= vr.setpieceCausalChainBroken ? 'BROKEN' : 'PASS' %></span><% } %>
-                <ol style="margin: 0.25rem 0 0 1.25rem; padding: 0;"><% vr.setpieceCausalLinks.forEach(function(link) { %><li><%= link %></li><% }); %></ol>
-              </div>
+              <% if (typeof vr.setpieceCausalChainBroken === 'boolean') { %>
+              <div class="spine-field"><span class="spine-label">Causal Chain:</span> <span class="spine-badge <%= vr.setpieceCausalChainBroken ? 'spine-badge-fail' : 'spine-badge-pass' %>" style="font-size: 0.75rem;"><%= vr.setpieceCausalChainBroken ? 'BROKEN' : 'PASS' %></span></div>
               <% } %>
               <% if (vr.loadBearingCheck && typeof vr.loadBearingCheck === 'object') { %>
               <% const lbc = vr.loadBearingCheck; %>
