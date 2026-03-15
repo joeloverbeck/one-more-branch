@@ -180,9 +180,9 @@ export function isConceptSpec(value: unknown): value is ConceptSpec {
     isNonEmptyString(concept['stakesPersonal']) &&
     isNonEmptyString(concept['stakesSystemic']) &&
     isNonEmptyString(concept['deadlineMechanism']) &&
-    isStringArrayWithinBounds(concept['settingAxioms'], 2, 5) &&
-    isStringArrayWithinBounds(concept['constraintSet'], 2, 5) &&
-    isStringArrayWithinBounds(concept['keyInstitutions'], 2, 4) &&
+    isStringArrayWithinBounds(concept['settingAxioms'], 2) &&
+    isStringArrayWithinBounds(concept['constraintSet'], 2) &&
+    isStringArrayWithinBounds(concept['keyInstitutions'], 2) &&
     isSettingScale(concept['settingScale']) &&
     isNonEmptyString(concept['whatIfQuestion']) &&
     isNonEmptyString(concept['ironicTwist']) &&

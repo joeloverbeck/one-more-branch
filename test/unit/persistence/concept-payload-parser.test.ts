@@ -34,13 +34,13 @@ describe('parseSavedConcept', () => {
 
   it('throws for completely invalid payload', () => {
     expect(() => parseSavedConcept({ id: 'x' }, '/bad/path.json')).toThrow(
-      'Invalid SavedConcept payload at /bad/path.json'
+      /Invalid SavedConcept payload at \/bad\/path\.json/
     );
   });
 
   it.each([null, 42, 'string', undefined])('throws for non-object input: %p', (value) => {
     expect(() => parseSavedConcept(value, '/bad/path.json')).toThrow(
-      'Invalid SavedConcept payload at /bad/path.json'
+      /Invalid SavedConcept payload at \/bad\/path\.json/
     );
   });
 
@@ -88,5 +88,27 @@ describe('parseSavedConcept', () => {
     expect(result.evaluatedConcept.scores.contentCharge).toBe(
       modern.evaluatedConcept.scores.contentCharge
     );
+  });
+
+  it('accepts a SavedConcept whose concept has oversized arrays from seed passthrough', () => {
+    const fixture = createSavedConceptFixture();
+    const oversized = {
+      ...fixture,
+      evaluatedConcept: {
+        ...fixture.evaluatedConcept,
+        concept: {
+          ...fixture.evaluatedConcept.concept,
+          settingAxioms: ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'],
+          constraintSet: ['C1', 'C2', 'C3', 'C4', 'C5', 'C6'],
+          keyInstitutions: ['I1', 'I2', 'I3', 'I4', 'I5', 'I6'],
+        },
+      },
+    };
+
+    const result = parseSavedConcept(oversized, '/test/path.json');
+
+    expect(result.evaluatedConcept.concept.settingAxioms).toHaveLength(6);
+    expect(result.evaluatedConcept.concept.constraintSet).toHaveLength(6);
+    expect(result.evaluatedConcept.concept.keyInstitutions).toHaveLength(6);
   });
 });

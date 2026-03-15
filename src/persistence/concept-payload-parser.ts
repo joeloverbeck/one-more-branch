@@ -1,7 +1,28 @@
 import { isSavedConcept, type SavedConcept } from '../models/saved-concept.js';
+import { isConceptSpec } from '../models/concept-generator.js';
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function diagnoseSavedConceptFailure(value: unknown): string {
+  if (!isObjectRecord(value)) {
+    return 'payload is not an object';
+  }
+  const fields = ['id', 'name', 'createdAt', 'updatedAt', 'sourceKernelId', 'seeds'];
+  const missing = fields.filter((f) => !(f in value) || value[f] === undefined || value[f] === '');
+  if (missing.length > 0) {
+    return `missing top-level fields: ${missing.join(', ')}`;
+  }
+  const ec = value['evaluatedConcept'];
+  if (isObjectRecord(ec)) {
+    const concept = ec['concept'];
+    if (!isObjectRecord(concept) || !isConceptSpec(concept)) {
+      return 'evaluatedConcept.concept failed isConceptSpec validation';
+    }
+    return 'evaluatedConcept failed validation (scores, passes, or evidence fields)';
+  }
+  return 'evaluatedConcept is missing or not an object';
 }
 
 function upcastScores(scores: Record<string, unknown>): Record<string, unknown> {
@@ -55,5 +76,6 @@ export function parseSavedConcept(value: unknown, sourcePath: string): SavedConc
     return upcasted;
   }
 
-  throw new Error(`Invalid SavedConcept payload at ${sourcePath}`);
+  const diagnosis = diagnoseSavedConceptFailure(upcasted);
+  throw new Error(`Invalid SavedConcept payload at ${sourcePath}: ${diagnosis}`);
 }

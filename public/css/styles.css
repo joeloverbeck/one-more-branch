@@ -682,8 +682,22 @@ main {
   color: var(--color-primary-hover);
 }
 
-.form-section-collapsible > .collapsible-body {
+.form-section-collapsible > .collapsible-body,
+.form-section-collapsible > .form-section-collapsible__body {
   padding: 0 1rem 1rem;
+}
+
+/* ── Character detail bullet lists ─────────────────────────────── */
+.char-detail-list {
+  list-style: disc;
+  margin: 0.25rem 0 0.5rem 1.25rem;
+  padding: 0;
+}
+
+.char-detail-list li {
+  margin-bottom: 0.25rem;
+  color: var(--color-text);
+  line-height: 1.5;
 }
 
 /* ── Form-group select dropdowns ────────────────────────────────── */
