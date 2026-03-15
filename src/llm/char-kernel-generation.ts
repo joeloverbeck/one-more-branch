@@ -105,14 +105,6 @@ function parseCharKernelResponse(parsed: unknown): CharacterKernel {
     );
   }
 
-  if (typeof data['unacceptableCost'] !== 'string' || data['unacceptableCost'].trim().length === 0) {
-    throw new LLMError(
-      'Character kernel response missing unacceptableCost',
-      'STRUCTURE_PARSE_ERROR',
-      true
-    );
-  }
-
   if (typeof data['worstFear'] !== 'string' || data['worstFear'].trim().length === 0) {
     throw new LLMError(
       'Character kernel response missing worstFear',
@@ -120,19 +112,6 @@ function parseCharKernelResponse(parsed: unknown): CharacterKernel {
       true
     );
   }
-
-  if (!Array.isArray(data['sceneObjectivePatterns']) || data['sceneObjectivePatterns'].length === 0) {
-    throw new LLMError(
-      'Character kernel response missing or empty sceneObjectivePatterns',
-      'STRUCTURE_PARSE_ERROR',
-      true
-    );
-  }
-
-  const sceneObjectivePatterns = (data['sceneObjectivePatterns'] as unknown[])
-    .filter((item): item is string => typeof item === 'string')
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
 
   return {
     characterName: data['characterName'].trim(),
@@ -143,9 +122,7 @@ function parseCharKernelResponse(parsed: unknown): CharacterKernel {
     constraints,
     pressurePoint: data['pressurePoint'].trim(),
     moralLine: data['moralLine'].trim(),
-    unacceptableCost: data['unacceptableCost'].trim(),
     worstFear: data['worstFear'].trim(),
-    sceneObjectivePatterns,
   };
 }
 

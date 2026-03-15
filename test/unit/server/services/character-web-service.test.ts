@@ -5,7 +5,6 @@ import {
   PipelineRelationshipType,
   RelationshipValence,
   StoryFunction,
-  VoiceRegister,
 } from '@/models/character-enums';
 import type {
   CastPipelineInputs,
@@ -124,12 +123,10 @@ function createCompletedCharacter(
       physiology: 'Sea-worn and sleepless.',
       sociology: 'Raised in naval privilege, now surviving among smugglers.',
       psychology: 'Hypervigilant, proud, and unable to forgive dependence.',
-      derivationChain: 'Exile turned competence into armor.',
       coreTraits: ['guarded', 'precise', 'resourceful'],
     },
     agencyModel: {
       characterName: 'Iria Vale',
-      replanningPolicy: 'ON_NEW_INFORMATION',
       emotionSalience: 'HIGH',
       coreBeliefs: ['Competence is the only safe currency'],
       desires: ['Reclaim command'],
@@ -144,7 +141,6 @@ function createCompletedCharacter(
     },
     textualPresentation: {
       characterName: 'Iria Vale',
-      voiceRegister: VoiceRegister.FORMAL,
       speechFingerprint: {
         catchphrases: [],
         vocabularyProfile: 'Controlled naval diction.',

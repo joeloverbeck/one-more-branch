@@ -3,7 +3,7 @@ import { CHAR_AGENCY_GENERATION_SCHEMA } from './schemas/char-agency-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import type { AgencyModel } from '../models/character-pipeline-types.js';
-import { isEmotionSalience, isReplanningPolicy } from '../models/character-enums.js';
+import { isEmotionSalience } from '../models/character-enums.js';
 import { runLlmStage } from './llm-stage-runner.js';
 
 export interface CharAgencyGenerationResult {
@@ -60,14 +60,6 @@ function parseCharAgencyResponse(parsed: unknown): AgencyModel {
     );
   }
 
-  if (!isReplanningPolicy(data['replanningPolicy'])) {
-    throw new LLMError(
-      `Agency model response invalid replanningPolicy: ${String(data['replanningPolicy'])}`,
-      'STRUCTURE_PARSE_ERROR',
-      true
-    );
-  }
-
   if (!isEmotionSalience(data['emotionSalience'])) {
     throw new LLMError(
       `Agency model response invalid emotionSalience: ${String(data['emotionSalience'])}`,
@@ -116,7 +108,6 @@ function parseCharAgencyResponse(parsed: unknown): AgencyModel {
 
   return {
     characterName: data['characterName'].trim(),
-    replanningPolicy: data['replanningPolicy'],
     emotionSalience: data['emotionSalience'],
     coreBeliefs: parseRequiredStringArray(data, 'coreBeliefs'),
     desires: parseRequiredStringArray(data, 'desires'),

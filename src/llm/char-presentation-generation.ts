@@ -3,7 +3,6 @@ import type {
   RelationSpecificVariant,
   TextualPresentation,
 } from '../models/character-pipeline-types.js';
-import { isVoiceRegister } from '../models/character-enums.js';
 import {
   SPEECH_ARRAY_FIELDS,
   SPEECH_STRING_FIELDS,
@@ -81,14 +80,6 @@ function parseCharPresentationResponse(parsed: unknown): TextualPresentation {
 
   const data = parsed as Record<string, unknown>;
 
-  if (!isVoiceRegister(data['voiceRegister'])) {
-    throw new LLMError(
-      `Textual presentation response invalid voiceRegister: ${String(data['voiceRegister'])}`,
-      'STRUCTURE_PARSE_ERROR',
-      true
-    );
-  }
-
   const rawStress = data['stressVariants'];
   if (typeof rawStress !== 'object' || rawStress === null || Array.isArray(rawStress)) {
     throw new LLMError(
@@ -120,7 +111,6 @@ function parseCharPresentationResponse(parsed: unknown): TextualPresentation {
 
   return {
     characterName: parseRequiredString(data['characterName'], 'characterName'),
-    voiceRegister: data['voiceRegister'],
     speechFingerprint: parseSpeechFingerprint(data['speechFingerprint']),
     appearance: parseRequiredString(data['appearance'], 'appearance'),
     knowledgeBoundaries: parseRequiredString(data['knowledgeBoundaries'], 'knowledgeBoundaries'),

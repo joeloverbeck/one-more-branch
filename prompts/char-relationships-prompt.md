@@ -100,19 +100,19 @@ TRIDIMENSIONAL PROFILE (from Stage 2):
 - Physiology: {{tridimensionalProfile.physiology}}
 - Sociology: {{tridimensionalProfile.sociology}}
 - Psychology: {{tridimensionalProfile.psychology}}
-- Derivation Chain: {{tridimensionalProfile.derivationChain}}
 - Core Traits: {{tridimensionalProfile.coreTraits | join '; '}}
 - Formative Wound: {{tridimensionalProfile.formativeWound}}
+- Protective Mask: {{tridimensionalProfile.protectiveMask}}
 - Misbelief: {{tridimensionalProfile.misbelief}}
 
 AGENCY MODEL (from Stage 3):
-- Replanning Policy: {{agencyModel.replanningPolicy}}
 - Emotion Salience: {{agencyModel.emotionSalience}}
 - Core Beliefs: {{agencyModel.coreBeliefs | join '; '}}
 - Desires: {{agencyModel.desires | join '; '}}
 - Current Intentions: {{agencyModel.currentIntentions | join '; '}}
 - False Beliefs: {{agencyModel.falseBeliefs | join '; '}}
 - Decision Pattern: {{agencyModel.decisionPattern}}
+- Focalization Filter: Notices first: {{agencyModel.focalizationFilter.noticesFirst}}; Systematically misses: {{agencyModel.focalizationFilter.systematicallyMisses}}; Misreads as: {{agencyModel.focalizationFilter.misreadsAs}}
 - Escalation Ladder: {{agencyModel.escalationLadder | join '; '}}
 
 {{#if otherDevelopedCharacters}}

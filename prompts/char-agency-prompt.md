@@ -11,7 +11,7 @@
 
 ## Purpose
 
-Model the character's decision-making agency: replanning policy, emotion salience, beliefs, desires, intentions, false beliefs, and decision pattern.
+Model the character's decision-making agency: emotion salience, beliefs, desires, intentions, false beliefs, and decision pattern.
 
 **Pipeline position**: Kernel -> Concept -> Character Web -> Stage 1 (Kernel) -> Stage 2 (Tridimensional) -> **Stage 3 (Agency)** -> Stage 4 -> Stage 5 -> Story Preparation
 
@@ -46,12 +46,11 @@ When typed `conceptSpec` and `storyKernel` objects are available, the prompt bui
 ### 1) System Message
 
 ```text
-You are a character psychologist for interactive branching fiction. Your job is to model a character's agency: how they update plans, how strongly emotions steer behavior, what beliefs they act on, what they want right now, which false beliefs distort their choices, and the decision pattern a writer should expect under pressure.
+You are a character psychologist for interactive branching fiction. Your job is to model a character's agency: how strongly emotions steer behavior, what beliefs they act on, what they want right now, which false beliefs distort their choices, and the decision pattern a writer should expect under pressure.
 
 {{CONTENT_POLICY}}
 
 AGENCY MODEL DESIGN GUIDELINES:
-- Replanning policy captures WHEN this character changes course: never, on failure, on new information, or periodically.
 - Emotion salience captures HOW MUCH their emotional state changes what they do in the moment.
 - Core beliefs are the convictions the character uses to justify action. They should emerge from role, kernel, and tridimensional profile.
 - Desires are enduring wants active in the current story situation.
@@ -93,18 +92,15 @@ CHARACTER KERNEL (from Stage 1):
 - Pressure Point: {{characterKernel.pressurePoint}}
 - Moral Line: {{characterKernel.moralLine}}
 - Worst Fear: {{characterKernel.worstFear}}
-- Scene Objective Patterns: {{characterKernel.sceneObjectivePatterns | join '; '}}
 
 TRIDIMENSIONAL PROFILE (from Stage 2):
 - Physiology: {{tridimensionalProfile.physiology}}
 - Sociology: {{tridimensionalProfile.sociology}}
 - Psychology: {{tridimensionalProfile.psychology}}
-- Derivation Chain: {{tridimensionalProfile.derivationChain}}
 - Core Traits: {{tridimensionalProfile.coreTraits | join '; '}}
 - Formative Wound: {{tridimensionalProfile.formativeWound}}
 - Protective Mask: {{tridimensionalProfile.protectiveMask}}
 - Misbelief: {{tridimensionalProfile.misbelief}}
-- Attachment Style: {{tridimensionalProfile.attachmentStyle}}
 
 {{#if conceptSpec}}
 CONCEPT ANALYSIS (use to ground character decomposition):
@@ -140,7 +136,6 @@ USER NOTES:
 
 FIELD INSTRUCTIONS:
 - characterName: Must be "{{characterName}}".
-- replanningPolicy: One of NEVER, ON_FAILURE, ON_NEW_INFORMATION, PERIODIC.
 - emotionSalience: One of LOW, MEDIUM, HIGH.
 - coreBeliefs: Array of the convictions or assumptions this character treats as true.
 - desires: Array of enduring wants shaping the character's behavior.
@@ -160,7 +155,6 @@ GENERATION RULES:
 ```json
 {
   "characterName": "{{name}}",
-  "replanningPolicy": "ON_NEW_INFORMATION",
   "emotionSalience": "HIGH",
   "coreBeliefs": ["{{conviction the character acts on}}"],
   "desires": ["{{enduring want}}"],
@@ -177,7 +171,6 @@ GENERATION RULES:
 ```
 
 ### Enum Values
-- **replanningPolicy**: `NEVER`, `ON_FAILURE`, `ON_NEW_INFORMATION`, `PERIODIC`
 - **emotionSalience**: `LOW`, `MEDIUM`, `HIGH`
 
 ## Generation Stage

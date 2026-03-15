@@ -17,9 +17,7 @@ export const CHAR_KERNEL_GENERATION_SCHEMA: JsonSchema = {
         'constraints',
         'pressurePoint',
         'moralLine',
-        'unacceptableCost',
         'worstFear',
-        'sceneObjectivePatterns',
       ],
       properties: {
         characterName: {
@@ -61,22 +59,12 @@ export const CHAR_KERNEL_GENERATION_SCHEMA: JsonSchema = {
         },
         moralLine: {
           type: 'string',
-          description: 'The line this character will not cross. 1 sentence.',
-        },
-        unacceptableCost: {
-          type: 'string',
           description:
-            'The price this character refuses to pay, even for their super-objective. 1 sentence.',
+            'The line this character will not cross — including personal costs they refuse to pay, even for their super-objective. 1 sentence.',
         },
         worstFear: {
           type: 'string',
           description: 'What would psychologically destroy this character. 1 sentence.',
-        },
-        sceneObjectivePatterns: {
-          type: 'array',
-          description:
-            '2-4 patterns describing how this character typically pursues goals in concrete interactions. E.g. "Opens with flattery, then applies incremental pressure."',
-          items: { type: 'string' },
         },
       },
     },

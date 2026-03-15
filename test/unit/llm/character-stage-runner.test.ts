@@ -20,9 +20,7 @@ import {
   EmotionSalience,
   PipelineRelationshipType,
   RelationshipValence,
-  ReplanningPolicy,
   StoryFunction,
-  VoiceRegister,
 } from '../../../src/models/character-enums';
 
 function createWebContext(): CharacterWebContext {
@@ -67,7 +65,6 @@ function createTridimensionalProfile(): TridimensionalProfile {
     physiology: 'Sea-worn and sleepless, with a limp that flares in cold weather.',
     sociology: 'Raised in naval privilege, now surviving among smugglers.',
     psychology: 'Hypervigilant, proud, and unable to forgive dependence.',
-    derivationChain: 'Exile and injury hardened her into brittle self-reliance.',
     coreTraits: ['guarded', 'precise', 'vindictive', 'resourceful', 'loyal'],
   };
 }
@@ -75,7 +72,6 @@ function createTridimensionalProfile(): TridimensionalProfile {
 function createAgencyModel(): AgencyModel {
   return {
     characterName: 'Iria Vale',
-    replanningPolicy: ReplanningPolicy.ON_NEW_INFORMATION,
     emotionSalience: EmotionSalience.HIGH,
     coreBeliefs: ['Competence is the only safe currency'],
     desires: ['Reclaim command', 'Protect her brother'],
@@ -107,7 +103,6 @@ function createDeepRelationships(): DeepRelationshipResult {
 function createTextualPresentation(): TextualPresentation {
   return {
     characterName: 'Iria Vale',
-    voiceRegister: VoiceRegister.FORMAL,
     speechFingerprint: {
       catchphrases: ['Stay on bearing.'],
       vocabularyProfile: 'Controlled naval diction with clipped commands.',

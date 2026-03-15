@@ -47,12 +47,10 @@ describe('isSavedDevelopedCharacter', () => {
         physiology: 'Tall',
         sociology: 'Noble',
         psychology: 'Ruthless',
-        derivationChain: 'Chain',
         coreTraits: ['Ambitious'],
       },
       agencyModel: {
         characterName: 'Test',
-        replanningPolicy: 'STUBBORN',
         emotionSalience: 'LOW',
         coreBeliefs: ['Power'],
         desires: ['Control'],
@@ -67,7 +65,6 @@ describe('isSavedDevelopedCharacter', () => {
       },
       textualPresentation: {
         characterName: 'Test',
-        voiceRegister: 'FORMAL',
         speechFingerprint: {
           lexicon: 'archaic',
           cadence: 'measured',

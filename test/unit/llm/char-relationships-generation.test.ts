@@ -42,7 +42,6 @@ import {
   EmotionSalience,
   PipelineRelationshipType,
   RelationshipValence,
-  ReplanningPolicy,
   StoryFunction,
 } from '../../../src/models/character-enums';
 
@@ -89,12 +88,7 @@ function createCharacterKernel(overrides?: Partial<CharacterKernel>): CharacterK
     pressurePoint:
       'His sister is held hostage by the king - any overt action risks her life.',
     moralLine: 'He will not harm children, no matter the strategic gain.',
-    unacceptableCost: 'Losing his sister in the process of gaining power.',
     worstFear: 'Becoming the tyrant his father was rumoured to be.',
-    sceneObjectivePatterns: [
-      'Gather intelligence through casual conversation',
-      'Test loyalty before revealing anything',
-    ],
     ...overrides,
   };
 }
@@ -110,8 +104,6 @@ function createTridimensionalProfile(
       'Raised as a prince but living as a blacksmith among people he was taught to rule.',
     psychology:
       'Hypervigilant, proud, and morally strained by the lies he believes justice requires.',
-    derivationChain:
-      'Hidden heir + forced disguise -> commoner life -> shame, caution, and strategic patience.',
     coreTraits: [
       'Patient fury',
       'Strategic restraint',
@@ -122,11 +114,6 @@ function createTridimensionalProfile(
     formativeWound: 'Witnessing his father\'s murder as a child.',
     protectiveMask: 'The stoic blacksmith who never asks questions.',
     misbelief: 'Only violence can restore what violence destroyed.',
-    credibleSurprises: ['Showing mercy to a captured enemy'],
-    implausibleMoves: ['Openly trusting the king'],
-    stressTells: ['Clenches his jaw', 'Avoids eye contact'],
-    attachmentStyle: 'Avoidant — keeps allies at arm\'s length.',
-    traitToSceneAffordances: ['Hypervigilance → notices hidden threats first'],
     ...overrides,
   };
 }
@@ -134,7 +121,6 @@ function createTridimensionalProfile(
 function createAgencyModel(overrides?: Partial<AgencyModel>): AgencyModel {
   return {
     characterName: 'Kael',
-    replanningPolicy: ReplanningPolicy.ON_NEW_INFORMATION,
     emotionSalience: EmotionSalience.HIGH,
     coreBeliefs: [
       'Power belongs to those with the will to reclaim it.',
@@ -181,32 +167,20 @@ function createOtherDevelopedCharacter(
       constraints: ['Cannot expose her hidden lineage yet'],
       pressurePoint: 'She still loves the version of Kael who no longer exists.',
       moralLine: 'Will not sacrifice civilians for political gain.',
-      unacceptableCost: 'Losing her moral authority by sanctioning atrocities.',
       worstFear: 'That peace is impossible and she has been naive all along.',
-      sceneObjectivePatterns: [
-        'Build rapport before making requests',
-        'Frame demands as mutual benefits',
-      ],
     },
     tridimensionalProfile: {
       characterName: 'Mira',
       physiology: 'Graceful, injured, and visibly sleep-deprived.',
       sociology: 'Raised in exile among diplomats and smugglers.',
       psychology: 'Empathic, controlling, and desperate to avert mass bloodshed.',
-      derivationChain: 'Exile + duty -> mediation instincts and secret ruthlessness.',
       coreTraits: ['Diplomatic', 'Guarded', 'Stubborn compassion'],
       formativeWound: 'Watching her homeland burn while diplomats debated.',
       protectiveMask: 'The calm mediator who never shows fear.',
       misbelief: 'That she can prevent all violence through negotiation.',
-      credibleSurprises: ['Resorting to blackmail when diplomacy fails'],
-      implausibleMoves: ['Publicly endorsing violence as a solution'],
-      stressTells: ['Picks at her nails', 'Speaks too quickly'],
-      attachmentStyle: 'Anxious-preoccupied, over-investing in alliances.',
-      traitToSceneAffordances: ['Diplomatic → reads social cues before others'],
     },
     agencyModel: {
       characterName: 'Mira',
-      replanningPolicy: ReplanningPolicy.ON_NEW_INFORMATION,
       emotionSalience: EmotionSalience.MEDIUM,
       coreBeliefs: ['Survival without legitimacy still corrodes the realm.'],
       desires: ['Keep the realm intact'],
@@ -298,7 +272,7 @@ describe('buildCharRelationshipsPrompt', () => {
     expect(messages[1].content).toContain('CHARACTER KERNEL (from Stage 1):');
     expect(messages[1].content).toContain('TRIDIMENSIONAL PROFILE (from Stage 2):');
     expect(messages[1].content).toContain('AGENCY MODEL (from Stage 3):');
-    expect(messages[1].content).toContain('Replanning Policy: ON_NEW_INFORMATION');
+    expect(messages[1].content).toContain('Emotion Salience: HIGH');
     expect(messages[1].content).toContain('Current Intentions: Maintain his cover at court');
   });
 

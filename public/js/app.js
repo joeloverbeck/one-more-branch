@@ -11490,27 +11490,10 @@ if (document.readyState === 'loading') {
 
 // ── Stage Renderers for Character Development ──────────────────────
 
-var REPLANNING_POLICY_OPTIONS = [
-  { value: 'NEVER', label: 'Never' },
-  { value: 'ON_FAILURE', label: 'On Failure' },
-  { value: 'ON_NEW_INFORMATION', label: 'On New Information' },
-  { value: 'PERIODIC', label: 'Periodic' },
-];
-
 var EMOTION_SALIENCE_OPTIONS = [
   { value: 'LOW', label: 'Low' },
   { value: 'MEDIUM', label: 'Medium' },
   { value: 'HIGH', label: 'High' },
-];
-
-var VOICE_REGISTER_OPTIONS = [
-  { value: 'FORMAL', label: 'Formal' },
-  { value: 'NEUTRAL', label: 'Neutral' },
-  { value: 'COLLOQUIAL', label: 'Colloquial' },
-  { value: 'CEREMONIAL', label: 'Ceremonial' },
-  { value: 'TECHNICAL', label: 'Technical' },
-  { value: 'VULGAR', label: 'Vulgar' },
-  { value: 'POETIC', label: 'Poetic' },
 ];
 
 var RELATIONSHIP_TYPE_OPTIONS = [
@@ -11612,14 +11595,12 @@ function renderStage2(data) {
     renderLabeledLongText('Physiology', data.physiology) +
     renderLabeledLongText('Sociology', data.sociology) +
     renderLabeledLongText('Psychology', data.psychology) +
-    renderLabeledLongText('Derivation Chain', data.derivationChain) +
     renderBulletList('Core Traits', data.coreTraits)
   );
 }
 
 function renderStage3(data) {
   return (
-    renderEnumBadge('Replanning Policy', data.replanningPolicy) +
     renderEnumBadge('Emotion Salience', data.emotionSalience) +
     renderBulletList('Core Beliefs', data.coreBeliefs) +
     renderBulletList('Desires', data.desires) +
@@ -11678,7 +11659,6 @@ function renderSpeechFingerprintSection(fp) {
 
 function renderStage5(data) {
   return (
-    renderEnumBadge('Voice Register', data.voiceRegister) +
     renderSpeechFingerprintSection(data.speechFingerprint) +
     renderLabeledLongText('Appearance', data.appearance) +
     renderLabeledLongText('Knowledge Boundaries', data.knowledgeBoundaries) +
@@ -11735,14 +11715,10 @@ function stageToMarkdown(stageNumber, payload, characterName) {
       lines.push('');
       lines.push('**Psychology:** ' + (payload.psychology || ''));
       lines.push('');
-      lines.push('**Derivation Chain:** ' + (payload.derivationChain || ''));
-      lines.push('');
       lines.push(bulletListToMarkdown('Core Traits', payload.coreTraits));
       break;
 
     case 3:
-      lines.push('**Replanning Policy:** ' + formatEnumLabel(payload.replanningPolicy));
-      lines.push('');
       lines.push('**Emotion Salience:** ' + formatEnumLabel(payload.emotionSalience));
       lines.push('');
       lines.push(bulletListToMarkdown('Core Beliefs', payload.coreBeliefs));
@@ -11770,8 +11746,6 @@ function stageToMarkdown(stageNumber, payload, characterName) {
       break;
 
     case 5:
-      lines.push('**Voice Register:** ' + formatEnumLabel(payload.voiceRegister));
-      lines.push('');
       if (payload.speechFingerprint) {
         var fp = payload.speechFingerprint;
         lines.push('### Speech Fingerprint');
@@ -11955,13 +11929,11 @@ function buildStage2EditForm(data) {
   var physiology = buildTextarea(data.physiology);
   var sociology = buildTextarea(data.sociology);
   var psychology = buildTextarea(data.psychology);
-  var derivationChain = buildTextarea(data.derivationChain);
   var coreTraits = buildListEditor(data.coreTraits);
 
   form.appendChild(buildEditField('Physiology', physiology));
   form.appendChild(buildEditField('Sociology', sociology));
   form.appendChild(buildEditField('Psychology', psychology));
-  form.appendChild(buildEditField('Derivation Chain', derivationChain));
   form.appendChild(buildEditField('Core Traits', coreTraits));
 
   form.collectValues = function () {
@@ -11970,7 +11942,6 @@ function buildStage2EditForm(data) {
       physiology: physiology.value.trim(),
       sociology: sociology.value.trim(),
       psychology: psychology.value.trim(),
-      derivationChain: derivationChain.value.trim(),
       coreTraits: coreTraits.getValues(),
     };
   };
@@ -11982,7 +11953,6 @@ function buildStage3EditForm(data) {
   var form = document.createElement('div');
   form.className = 'stage-edit-form';
 
-  var replanningPolicy = buildSelect(data.replanningPolicy, REPLANNING_POLICY_OPTIONS);
   var emotionSalience = buildSelect(data.emotionSalience, EMOTION_SALIENCE_OPTIONS);
   var coreBeliefs = buildListEditor(data.coreBeliefs);
   var desires = buildListEditor(data.desires);
@@ -11990,7 +11960,6 @@ function buildStage3EditForm(data) {
   var falseBeliefs = buildListEditor(data.falseBeliefs);
   var decisionPattern = buildTextarea(data.decisionPattern);
 
-  form.appendChild(buildEditField('Replanning Policy', replanningPolicy));
   form.appendChild(buildEditField('Emotion Salience', emotionSalience));
   form.appendChild(buildEditField('Core Beliefs', coreBeliefs));
   form.appendChild(buildEditField('Desires', desires));
@@ -12001,7 +11970,6 @@ function buildStage3EditForm(data) {
   form.collectValues = function () {
     return {
       characterName: data.characterName,
-      replanningPolicy: replanningPolicy.value,
       emotionSalience: emotionSalience.value,
       coreBeliefs: coreBeliefs.getValues(),
       desires: desires.getValues(),
@@ -12139,13 +12107,11 @@ function buildStage5EditForm(data) {
   var form = document.createElement('div');
   form.className = 'stage-edit-form';
 
-  var voiceRegister = buildSelect(data.voiceRegister, VOICE_REGISTER_OPTIONS);
   var speechFp = buildSpeechFingerprintEditForm(data.speechFingerprint || {});
   var appearance = buildTextarea(data.appearance);
   var knowledgeBoundaries = buildTextarea(data.knowledgeBoundaries);
   var conflictPriority = buildTextarea(data.conflictPriority);
 
-  form.appendChild(buildEditField('Voice Register', voiceRegister));
   form.appendChild(speechFp);
   form.appendChild(buildEditField('Appearance', appearance));
   form.appendChild(buildEditField('Knowledge Boundaries', knowledgeBoundaries));
@@ -12154,7 +12120,6 @@ function buildStage5EditForm(data) {
   form.collectValues = function () {
     return {
       characterName: data.characterName,
-      voiceRegister: voiceRegister.value,
       speechFingerprint: speechFp.collectValues(),
       appearance: appearance.value.trim(),
       knowledgeBoundaries: knowledgeBoundaries.value.trim(),
