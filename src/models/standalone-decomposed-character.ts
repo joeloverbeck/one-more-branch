@@ -31,6 +31,11 @@ export interface StandaloneDecomposedCharacter {
   readonly stressVariants?: StressVariants;
   readonly focalizationFilter?: FocalizationFilter;
   readonly escalationLadder?: readonly string[];
+  readonly immediateObjectives?: readonly string[];
+  readonly constraints?: readonly string[];
+  readonly desires?: readonly string[];
+  readonly currentIntentions?: readonly string[];
+  readonly sociology?: string;
 }
 
 export function isStandaloneDecomposedCharacter(
@@ -103,6 +108,26 @@ export function formatStandaloneCharacterSummary(char: StandaloneDecomposedChara
 
   if (char.escalationLadder && char.escalationLadder.length > 0) {
     lines.push(`  Escalation Ladder: ${char.escalationLadder.join(' → ')}`);
+  }
+
+  if (char.immediateObjectives && char.immediateObjectives.length > 0) {
+    lines.push(`  Immediate Objectives: ${char.immediateObjectives.join('; ')}`);
+  }
+
+  if (char.constraints && char.constraints.length > 0) {
+    lines.push(`  Constraints: ${char.constraints.join('; ')}`);
+  }
+
+  if (char.desires && char.desires.length > 0) {
+    lines.push(`  Desires: ${char.desires.join('; ')}`);
+  }
+
+  if (char.currentIntentions && char.currentIntentions.length > 0) {
+    lines.push(`  Current Intentions: ${char.currentIntentions.join('; ')}`);
+  }
+
+  if (char.sociology) {
+    lines.push(`  Sociology: ${char.sociology}`);
   }
 
   return lines.join('\n');

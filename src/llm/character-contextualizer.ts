@@ -87,6 +87,11 @@ function mergeContextIntoCharacter(
     ...(standalone.stressVariants ? { stressVariants: standalone.stressVariants } : {}),
     ...(standalone.focalizationFilter ? { focalizationFilter: standalone.focalizationFilter } : {}),
     ...(standalone.escalationLadder ? { escalationLadder: standalone.escalationLadder } : {}),
+    ...(standalone.immediateObjectives ? { immediateObjectives: standalone.immediateObjectives } : {}),
+    ...(standalone.constraints ? { constraints: standalone.constraints } : {}),
+    ...(standalone.desires ? { desires: standalone.desires } : {}),
+    ...(standalone.currentIntentions ? { currentIntentions: standalone.currentIntentions } : {}),
+    ...(standalone.sociology ? { sociology: standalone.sociology } : {}),
   };
 }
 

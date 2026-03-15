@@ -130,6 +130,11 @@ function parseCharacterDecompositionResponse(
   const stressVariants = parseStressVariants(data['stressVariants']);
   const focalizationFilter = parseFocalizationFilter(data['focalizationFilter']);
   const escalationLadder = parseStringArrayField(data, 'escalationLadder');
+  const immediateObjectives = parseStringArrayField(data, 'immediateObjectives');
+  const constraints = parseStringArrayField(data, 'constraints');
+  const desires = parseStringArrayField(data, 'desires');
+  const currentIntentions = parseStringArrayField(data, 'currentIntentions');
+  const sociology = parseStringField(data, 'sociology');
 
   return {
     character: {
@@ -156,6 +161,11 @@ function parseCharacterDecompositionResponse(
       ...(stressVariants ? { stressVariants } : {}),
       ...(focalizationFilter ? { focalizationFilter } : {}),
       ...(escalationLadder.length > 0 ? { escalationLadder } : {}),
+      ...(immediateObjectives.length > 0 ? { immediateObjectives } : {}),
+      ...(constraints.length > 0 ? { constraints } : {}),
+      ...(desires.length > 0 ? { desires } : {}),
+      ...(currentIntentions.length > 0 ? { currentIntentions } : {}),
+      ...(sociology ? { sociology } : {}),
     },
   };
 }

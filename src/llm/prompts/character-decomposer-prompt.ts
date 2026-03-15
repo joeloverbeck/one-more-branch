@@ -41,7 +41,17 @@ ${formatBullets(SPEECH_EXTRACTION_BULLETS)}
 
 13. FOCALIZATION FILTER: Identify what this character notices first, systematically misses, and misreads. null if there is not enough information to determine this.
 
-14. ESCALATION LADDER: List 3-5 ordered steps showing how this character escalates when blocked, from mildest response to most extreme.`;
+14. ESCALATION LADDER: List 3-5 ordered steps showing how this character escalates when blocked, from mildest response to most extreme.
+
+15. IMMEDIATE OBJECTIVES: Extract 2-5 concrete, time-bound tactical goals the character is actively pursuing. These are NOT the super-objective — they are specific, actionable targets that drive scene-level behavior.
+
+16. CONSTRAINTS: Identify 2-4 external limitations that restrict what this character can do. These create dramatic tension by defining boundaries the character must work within or around.
+
+17. DESIRES: Extract 3-6 granular wants beyond the super-objective. Each desire should be concrete enough to generate a story beat or scene conflict on its own.
+
+18. CURRENT INTENTIONS: Identify 2-4 active plans this character is executing or about to execute. These represent what the character would DO in the next scene they appear in.
+
+19. SOCIOLOGY: Ground the character in material reality — class, family structure, economic circumstances, and social world. This prevents characters from floating in psychological abstraction without social context.`;
 
 export interface CharacterDecomposerPromptContext {
   readonly characterName: string;
@@ -77,7 +87,12 @@ INSTRUCTIONS:
 16. misbelief: The false conclusion drawn from their wound that distorts how they see the world (distinct from falseBeliefs which are factual misconceptions)
 17. stressVariants: How the character's voice and behavior shift under five conditions: underThreat, inIntimacy, whenLying, whenAshamed, whenWinning
 18. focalizationFilter: What the character notices first, systematically misses, and misreads. null if uncertain
-19. escalationLadder: 3-5 ordered steps showing how this character escalates when blocked, from mildest to most extreme`;
+19. escalationLadder: 3-5 ordered steps showing how this character escalates when blocked, from mildest to most extreme
+20. immediateObjectives: 2-5 concrete tactical goals the character is actively pursuing right now — specific and time-bound, not abstract
+21. constraints: 2-4 external limitations on what the character can do — physical, social, economic, or political barriers
+22. desires: 3-6 concrete wants beyond the super-objective — each specific enough to drive a scene
+23. currentIntentions: 2-4 active plans the character is executing — what they would DO in the next scene
+24. sociology: The character's social position — class, family, economic situation, social world. 2-4 sentences grounding them in material reality`;
 
   return [
     { role: 'system', content: CHARACTER_DECOMPOSER_SYSTEM_PROMPT },
