@@ -2,7 +2,9 @@
 // Do not edit manually; update src/config/generation-stage-metadata.json instead.
 
 export const GENERATION_STAGES = [
-  'GENERATING_SPINE',
+  'GENERATING_SPINE_FOUNDATION',
+  'GENERATING_SPINE_ARC_ENGINE',
+  'SYNTHESIZING_SPINE',
   'IDEATING_SCENE',
   'PLANNING_PAGE',
   'ACCOUNTING_STATE',

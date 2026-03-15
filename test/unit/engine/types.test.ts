@@ -39,7 +39,9 @@ describe('Engine types', () => {
   describe('type compatibility (compile-time)', () => {
     it('defines shared generation stage IDs exactly once and in order', () => {
       const expectedStages: GenerationStage[] = [
-        'GENERATING_SPINE',
+        'GENERATING_SPINE_FOUNDATION',
+        'GENERATING_SPINE_ARC_ENGINE',
+        'SYNTHESIZING_SPINE',
         'IDEATING_SCENE',
         'PLANNING_PAGE',
         'ACCOUNTING_STATE',

@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import { storyEngine } from '../../engine';
-import { EngineError, type GenerationStageEvent } from '../../engine';
+import { EngineError, type GenerationStage, type GenerationStageEvent } from '../../engine';
 import { generateStorySpines } from '../../llm/spine-generator.js';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
@@ -146,7 +146,6 @@ storyRoutes.post(
     const progressId = parseProgressId(body.progressId);
     if (progressId) {
       generationProgressService.start(progressId, 'new-story');
-      generationProgressService.markStageStarted(progressId, 'GENERATING_SPINE', 1);
     }
 
     try {
@@ -215,11 +214,27 @@ storyRoutes.post(
           conceptVerification: validatedVerification,
           contentPreferences: trimmedContentPreferences,
         },
-        apiKey
+        apiKey,
+        undefined,
+        progressId
+          ? {
+              onStageStarted: (stage: string): void =>
+                generationProgressService.markStageStarted(
+                  progressId,
+                  stage as GenerationStage,
+                  1,
+                ),
+              onStageCompleted: (stage: string): void =>
+                generationProgressService.markStageCompleted(
+                  progressId,
+                  stage as GenerationStage,
+                  1,
+                ),
+            }
+          : undefined,
       );
 
       if (progressId) {
-        generationProgressService.markStageCompleted(progressId, 'GENERATING_SPINE', 1);
         generationProgressService.complete(progressId);
       }
 

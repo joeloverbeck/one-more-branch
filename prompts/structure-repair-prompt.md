@@ -14,6 +14,8 @@ Call 3 repair prompt for the split structure pipeline. It receives:
 
 It must return only targeted act rewrites, not a full regenerated structure.
 
+The system prompt is built by `buildStructureSystemPrompt()`, which injects `{{CONTENT_POLICY}}` (NC-21 content guidelines) automatically.
+
 ## Contract Highlights
 
 - Non-target acts are preserved by omission.

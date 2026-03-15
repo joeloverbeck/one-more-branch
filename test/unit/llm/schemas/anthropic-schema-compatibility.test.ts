@@ -40,7 +40,9 @@ import { PROMISE_TRACKER_SCHEMA } from '../../../../src/llm/schemas/promise-trac
 import { PROSE_QUALITY_SCHEMA } from '../../../../src/llm/schemas/prose-quality-schema';
 import { SCENE_IDEATOR_SCHEMA } from '../../../../src/llm/schemas/scene-ideator-schema';
 import { SPINE_REWRITE_SCHEMA } from '../../../../src/llm/schemas/spine-rewrite-schema';
-import { SPINE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/spine-schema';
+import { SPINE_FOUNDATION_SCHEMA } from '../../../../src/llm/schemas/spine-foundation-schema';
+import { SPINE_ARC_ENGINE_SCHEMA } from '../../../../src/llm/schemas/spine-arc-engine-schema';
+import { SPINE_SYNTHESIS_SCHEMA } from '../../../../src/llm/schemas/spine-synthesis-schema';
 import { STATE_ACCOUNTANT_SCHEMA } from '../../../../src/llm/schemas/state-accountant-schema';
 import { STRUCTURE_EVALUATOR_SCHEMA } from '../../../../src/llm/schemas/structure-evaluator-schema';
 import { STRUCTURE_REPAIR_SCHEMA } from '../../../../src/llm/schemas/structure-repair-schema';
@@ -242,7 +244,9 @@ describe('Anthropic schema compatibility', () => {
     { name: 'LOREKEEPER_SCHEMA', schema: LOREKEEPER_SCHEMA },
     { name: 'AGENDA_RESOLVER_SCHEMA', schema: AGENDA_RESOLVER_SCHEMA },
     { name: 'CHOICE_GENERATOR_SCHEMA', schema: CHOICE_GENERATOR_SCHEMA },
-    { name: 'SPINE_GENERATION_SCHEMA', schema: SPINE_GENERATION_SCHEMA },
+    { name: 'SPINE_FOUNDATION_SCHEMA', schema: SPINE_FOUNDATION_SCHEMA },
+    { name: 'SPINE_ARC_ENGINE_SCHEMA', schema: SPINE_ARC_ENGINE_SCHEMA },
+    { name: 'SPINE_SYNTHESIS_SCHEMA', schema: SPINE_SYNTHESIS_SCHEMA },
     { name: 'SPINE_REWRITE_SCHEMA', schema: SPINE_REWRITE_SCHEMA },
 { name: 'CHARACTER_DECOMPOSITION_SCHEMA', schema: CHARACTER_DECOMPOSITION_SCHEMA },
     { name: 'CHARACTER_CONTEXTUALIZATION_SCHEMA', schema: CHARACTER_CONTEXTUALIZATION_SCHEMA },
