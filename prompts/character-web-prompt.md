@@ -23,7 +23,8 @@ The Character Web prompt is the first LLM call in the character-building pipelin
 | `kernelSummary` | `string?` | Compact text summary of the story kernel (fallback when typed object unavailable) |
 | `conceptSummary` | `string?` | Compact text summary of the concept spec (fallback when typed object unavailable) |
 | `userNotes` | `string?` | Free-text user notes for cast design guidance |
-| `worldbuilding` | `string` | Raw worldbuilding prose (geography, cultures, factions, history, magic, technology). Empty string if none provided. |
+| `decomposedWorld` | `DecomposedWorld?` | Structured world facts loaded from a saved worldbuilding entry. Used to ground character names, social positions, and occupations. |
+| `sourceWorldbuildingId` | `string?` | ID of the saved worldbuilding entry (stored in web inputs) |
 | `storyKernel` | `StoryKernel?` | Full typed kernel object (~10 fields + valueSpectrum) |
 | `conceptSpec` | `ConceptSpec?` | Full typed concept spec (~25 fields) |
 
@@ -213,6 +214,6 @@ The character web output is persisted as a `SavedCharacterWeb` and feeds into:
 
 ## Contract Notes
 
-- `CastPipelineInputs` carries both string summaries (`kernelSummary`, `conceptSummary`), typed objects (`storyKernel`, `conceptSpec`), and `worldbuilding` (raw prose, empty string if not provided). Typed objects take priority; string summaries are fallback.
+- `CastPipelineInputs` carries both string summaries (`kernelSummary`, `conceptSummary`), typed objects (`storyKernel`, `conceptSpec`), and `decomposedWorld` (structured world facts loaded from a saved worldbuilding entry via `sourceWorldbuildingId`). Raw `worldbuilding` prose is no longer provided by the UI — only `decomposedWorld` from the saved worldbuilding entry. Typed objects take priority; string summaries are fallback.
 - The service's `deriveInputsFromConcept()` loads the concept and kernel from persistence, populating both string summaries and typed objects.
 - Shared section builders in `concept-kernel-sections.ts` are reused by the entity-decomposer, character web, and all 5 character dev stage prompts.

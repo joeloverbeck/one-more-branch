@@ -13,7 +13,7 @@ interface CharacterWebCreateBody {
   readonly name?: unknown;
   readonly sourceConceptId?: unknown;
   readonly userNotes?: unknown;
-  readonly worldbuilding?: unknown;
+  readonly sourceWorldbuildingId?: unknown;
 }
 
 interface CharacterWebGenerateBody {
@@ -174,11 +174,22 @@ characterWebRoutes.post(
       return res.status(400).json({ success: false, error: 'sourceConceptId is required' });
     }
 
+    const sourceWorldbuildingId = parseRequiredString(
+      'Source worldbuilding',
+      body.sourceWorldbuildingId,
+    );
+    if (!sourceWorldbuildingId) {
+      return res
+        .status(400)
+        .json({ success: false, error: 'sourceWorldbuildingId is required' });
+    }
+
     const web = await characterWebService.createWeb(
       name,
       sourceConceptId,
       trimOptionalString(body.userNotes),
-      trimOptionalString(body.worldbuilding),
+      undefined,
+      sourceWorldbuildingId,
     );
 
     return res.status(201).json({ success: true, web });

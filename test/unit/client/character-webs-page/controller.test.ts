@@ -53,6 +53,10 @@ describe('character webs page controller', () => {
         return Promise.resolve(mockJsonResponse({ success: true, concepts: [] }));
       }
 
+      if (url.includes('/worldbuilding/api/list')) {
+        return Promise.resolve(mockJsonResponse({ success: true, worldbuildings: [] }));
+      }
+
       return Promise.resolve(mockJsonResponse({ status: 'completed' }));
     }) as jest.Mock;
 
@@ -76,11 +80,13 @@ describe('character webs page controller', () => {
           name: string;
           sourceConceptId: string;
           userNotes?: string;
+          sourceWorldbuildingId?: string;
         };
         createBody = {
           name: body.name,
           sourceConceptId: body.sourceConceptId,
           userNotes: body.userNotes,
+          sourceWorldbuildingId: body.sourceWorldbuildingId,
         };
 
         const web = {
@@ -121,6 +127,15 @@ describe('character webs page controller', () => {
         return Promise.resolve(mockJsonResponse({ success: true, concepts: [] }));
       }
 
+      if (url.includes('/worldbuilding/api/list')) {
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            worldbuildings: [{ id: 'wb-1', name: 'Dark Fantasy World' }],
+          })
+        );
+      }
+
       return Promise.resolve(mockJsonResponse({ status: 'completed' }));
     }) as jest.Mock;
 
@@ -135,6 +150,10 @@ describe('character webs page controller', () => {
     option.textContent = 'Test Concept';
     conceptSelector.appendChild(option);
     conceptSelector.value = 'concept-1';
+
+    const wbSelector = document.getElementById('character-web-worldbuilding-selector') as HTMLSelectElement;
+    wbSelector.value = 'wb-1';
+
     (document.getElementById('character-web-user-notes') as HTMLTextAreaElement).value =
       '  Keep the alliances venomous.  ';
 
@@ -145,6 +164,7 @@ describe('character webs page controller', () => {
       name: 'Court of Ash',
       sourceConceptId: 'concept-1',
       userNotes: 'Keep the alliances venomous.',
+      sourceWorldbuildingId: 'wb-1',
     });
     expect(document.getElementById('selected-character-web-name')?.textContent).toBe(
       'Court of Ash'
@@ -241,6 +261,10 @@ describe('character webs page controller', () => {
 
       if (url.includes('/concepts/api/list')) {
         return Promise.resolve(mockJsonResponse({ success: true, concepts: [] }));
+      }
+
+      if (url.includes('/worldbuilding/api/list')) {
+        return Promise.resolve(mockJsonResponse({ success: true, worldbuildings: [] }));
       }
 
       return Promise.resolve(mockJsonResponse({ status: 'completed' }));

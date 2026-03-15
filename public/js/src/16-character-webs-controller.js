@@ -13,7 +13,7 @@ function initCharacterWebsPage() {
   var createBtn = document.getElementById('character-web-create-btn');
   var webNameInput = document.getElementById('character-web-name');
   var conceptSelector = document.getElementById('character-web-concept-selector');
-  var worldbuildingInput = document.getElementById('character-web-worldbuilding');
+  var worldbuildingSelector = document.getElementById('character-web-worldbuilding-selector');
   var userNotesInput = document.getElementById('character-web-user-notes');
   var webList = document.getElementById('character-web-list');
   var webDetailsSection = document.getElementById('character-web-details');
@@ -36,7 +36,7 @@ function initCharacterWebsPage() {
     !loading ||
     !createBtn ||
     !webNameInput ||
-    !worldbuildingInput ||
+    !worldbuildingSelector ||
     !userNotesInput ||
     !webList ||
     !webDetailsSection ||
@@ -877,6 +877,13 @@ function initCharacterWebsPage() {
       return;
     }
 
+    var worldbuildingId =
+      worldbuildingSelector instanceof HTMLSelectElement ? (worldbuildingSelector.value || '').trim() : '';
+    if (!worldbuildingId) {
+      setError('A worldbuilding entry must be selected');
+      return;
+    }
+
     try {
       var data = await fetchJson(
         '/character-webs/api/create',
@@ -888,17 +895,18 @@ function initCharacterWebsPage() {
             sourceConceptId: conceptId,
             userNotes:
               typeof userNotesInput.value === 'string' ? userNotesInput.value.trim() : '',
-            worldbuilding:
-              typeof worldbuildingInput.value === 'string' ? worldbuildingInput.value.trim() : '',
+            sourceWorldbuildingId: worldbuildingId,
           }),
         },
         'Failed to create character web'
       );
       webNameInput.value = '';
-      worldbuildingInput.value = '';
       userNotesInput.value = '';
       if (conceptSelector instanceof HTMLSelectElement) {
         conceptSelector.value = '';
+      }
+      if (worldbuildingSelector instanceof HTMLSelectElement) {
+        worldbuildingSelector.value = '';
       }
       await refreshWebs(data.web.id);
     } catch (error) {
@@ -1033,6 +1041,23 @@ function initCharacterWebsPage() {
             option.value = concept.id;
             option.textContent = concept.name || 'Untitled Concept';
             conceptSelector.appendChild(option);
+          });
+        }
+      } catch (_error) {
+        // Non-fatal
+      }
+    }
+
+    if (worldbuildingSelector instanceof HTMLSelectElement) {
+      try {
+        var wbResponse = await fetch('/worldbuilding/api/list');
+        var wbData = await wbResponse.json();
+        if (wbResponse.ok && wbData.success && Array.isArray(wbData.worldbuildings)) {
+          wbData.worldbuildings.forEach(function (entry) {
+            var option = document.createElement('option');
+            option.value = entry.id;
+            option.textContent = entry.name || 'Untitled Worldbuilding';
+            worldbuildingSelector.appendChild(option);
           });
         }
       } catch (_error) {
