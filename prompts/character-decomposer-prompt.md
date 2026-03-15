@@ -52,6 +52,10 @@ DECOMPOSITION PRINCIPLES:
 7. INFER MISSING DETAILS: If speech patterns aren't explicit, INFER from background, personality, and social context.
 
 8-10. Agency principles (decision pattern, core beliefs, conflict priority).
+
+11-14. Deep psychology (moral line, worst fear, formative wound, misbelief, stress variants, focalization filter, escalation ladder).
+
+15-19. Material grounding (immediate objectives, constraints, desires, current intentions, sociology).
 ```
 
 ### 2) User Message
@@ -77,6 +81,8 @@ INSTRUCTIONS:
 10. pressurePoint: Identify the one vulnerability that could force action against self-interest
 11. personalDilemmas: Identify 1-3 competing loyalties or values creating internal conflict
 12. emotionSalience: Assess emotional expressiveness (LOW/MEDIUM/HIGH). null if uncertain
+13-19. Deep psychology fields (moralLine, worstFear, formativeWound, misbelief, stressVariants, focalizationFilter, escalationLadder)
+20-24. Material grounding fields (immediateObjectives, constraints, desires, currentIntentions, sociology)
 ```
 
 ## JSON Response Shape
@@ -97,6 +103,11 @@ INSTRUCTIONS:
   "conflictPriority": "{{which value/goal wins when conflicted}}",
   "falseBeliefs": ["{{sincere misconception}}"],
   "secretsKept": ["{{actively concealed truth}}"],
+  "immediateObjectives": ["{{tactical goal being actively pursued}}"],
+  "constraints": ["{{external limitation on options}}"],
+  "desires": ["{{concrete want beyond super-objective}}"],
+  "currentIntentions": ["{{active plan being executed}}"],
+  "sociology": "{{class, family, economic situation, social world}}",
   "speechFingerprint": {
     "catchphrases": ["{{signature phrase}}"],
     "vocabularyProfile": "{{formality, word preferences, jargon}}",

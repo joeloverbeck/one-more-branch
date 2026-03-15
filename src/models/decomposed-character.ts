@@ -64,6 +64,11 @@ export interface DecomposedCharacter {
   readonly escalationLadder?: readonly string[];
   readonly ruptureTriggers?: readonly string[];
   readonly repairMoves?: readonly string[];
+  readonly immediateObjectives?: readonly string[];
+  readonly constraints?: readonly string[];
+  readonly desires?: readonly string[];
+  readonly currentIntentions?: readonly string[];
+  readonly sociology?: string;
 }
 
 export function formatDecomposedCharacterForPrompt(
@@ -163,6 +168,26 @@ export function formatDecomposedCharacterForPrompt(
       `  Current Tension: ${rel.currentTension}`,
       `  Leverage: ${rel.leverage}`
     );
+  }
+
+  if (char.immediateObjectives && char.immediateObjectives.length > 0) {
+    lines.push(`Immediate Objectives:\n${char.immediateObjectives.map((o) => `  - ${o}`).join('\n')}`);
+  }
+
+  if (char.constraints && char.constraints.length > 0) {
+    lines.push(`Constraints:\n${char.constraints.map((c) => `  - ${c}`).join('\n')}`);
+  }
+
+  if (char.desires && char.desires.length > 0) {
+    lines.push(`Desires:\n${char.desires.map((d) => `  - ${d}`).join('\n')}`);
+  }
+
+  if (char.currentIntentions && char.currentIntentions.length > 0) {
+    lines.push(`Current Intentions:\n${char.currentIntentions.map((i) => `  - ${i}`).join('\n')}`);
+  }
+
+  if (char.sociology) {
+    lines.push(`Sociology: ${char.sociology}`);
   }
 
   lines.push(`Knowledge Boundaries: ${char.knowledgeBoundaries}`);

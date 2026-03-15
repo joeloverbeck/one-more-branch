@@ -83,6 +83,11 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
         'stressVariants',
         'focalizationFilter',
         'escalationLadder',
+        'immediateObjectives',
+        'constraints',
+        'desires',
+        'currentIntentions',
+        'sociology',
         'speechFingerprint',
       ],
       properties: {
@@ -239,6 +244,40 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
           type: 'array',
           description: CHARACTER_SCHEMA_FIELDS.escalationLadder.description,
           items: { type: 'string' },
+        },
+        immediateObjectives: {
+          type: 'array',
+          description:
+            '2-5 concrete, time-bound tactical goals this character is actively pursuing. ' +
+            'These drive scene-level action.',
+          items: { type: 'string' },
+        },
+        constraints: {
+          type: 'array',
+          description:
+            '2-4 external limitations restricting this character\'s options. ' +
+            'Creates dramatic tension by defining what they CANNOT do.',
+          items: { type: 'string' },
+        },
+        desires: {
+          type: 'array',
+          description:
+            '3-6 concrete desires beyond the super-objective. ' +
+            'Each could generate a story beat or scene conflict.',
+          items: { type: 'string' },
+        },
+        currentIntentions: {
+          type: 'array',
+          description:
+            '2-4 active plans this character is executing. ' +
+            'What they would DO in the next scene.',
+          items: { type: 'string' },
+        },
+        sociology: {
+          type: 'string',
+          description:
+            'The character\'s social position: class, family structure, economic circumstances, ' +
+            'and social world. 2-4 sentences grounding them in material reality.',
         },
         speechFingerprint: {
           type: 'object',

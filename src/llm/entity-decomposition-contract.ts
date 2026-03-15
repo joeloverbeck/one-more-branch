@@ -241,6 +241,36 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
       '3-5 ordered steps showing how this character escalates when blocked, from mildest to most extreme. ' +
       'Empty array if not yet determined.',
   },
+  immediateObjectives: {
+    type: 'array',
+    description:
+      '2-5 concrete, time-bound tactical goals this character is actively pursuing. ' +
+      'These drive scene-level action.',
+  },
+  constraints: {
+    type: 'array',
+    description:
+      '2-4 external limitations restricting this character\'s options. ' +
+      'Creates dramatic tension by defining what they CANNOT do.',
+  },
+  desires: {
+    type: 'array',
+    description:
+      '3-6 concrete desires beyond the super-objective. ' +
+      'Each could generate a story beat or scene conflict.',
+  },
+  currentIntentions: {
+    type: 'array',
+    description:
+      '2-4 active plans this character is executing. ' +
+      'What they would DO in the next scene.',
+  },
+  sociology: {
+    type: 'string',
+    description:
+      'The character\'s social position: class, family structure, economic circumstances, ' +
+      'and social world. 2-4 sentences grounding them in material reality.',
+  },
   ruptureTriggers: {
     type: 'array',
     description:
@@ -287,6 +317,11 @@ export const CHARACTER_REQUIRED_FIELDS: ReadonlyArray<
   'stressVariants',
   'focalizationFilter',
   'escalationLadder',
+  'immediateObjectives',
+  'constraints',
+  'desires',
+  'currentIntentions',
+  'sociology',
   'ruptureTriggers',
   'repairMoves',
 ];
@@ -324,6 +359,7 @@ export const CHARACTER_STRING_FIELDS: ReadonlyArray<
   'worstFear',
   'formativeWound',
   'misbelief',
+  'sociology',
 ];
 
 export const CHARACTER_ARRAY_FIELDS: ReadonlyArray<
@@ -339,6 +375,10 @@ export const CHARACTER_ARRAY_FIELDS: ReadonlyArray<
   'stakes',
   'personalDilemmas',
   'escalationLadder',
+  'immediateObjectives',
+  'constraints',
+  'desires',
+  'currentIntentions',
   'ruptureTriggers',
   'repairMoves',
 ];
