@@ -238,6 +238,7 @@ describe('character-web routes', () => {
         name: '  Shattered Compass  ',
         sourceConceptId: '  concept-1  ',
         userNotes: '  Keep everyone dangerous.  ',
+        sourceWorldbuildingId: '  wb-1  ',
       },
     });
     const res = mockRes();
@@ -250,6 +251,7 @@ describe('character-web routes', () => {
       'concept-1',
       'Keep everyone dangerous.',
       undefined,
+      'wb-1',
     );
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({ success: true, web });

@@ -548,7 +548,9 @@ export function buildCharacterWebsPageHtml(): string {
         <select id="character-web-concept-selector">
           <option value="">Select a concept...</option>
         </select>
-        <textarea id="character-web-worldbuilding"></textarea>
+        <select id="character-web-worldbuilding-selector">
+          <option value="">Select worldbuilding...</option>
+        </select>
         <textarea id="character-web-user-notes"></textarea>
         <button type="button" id="character-web-create-btn">Create</button>
         <div id="character-web-list"></div>
