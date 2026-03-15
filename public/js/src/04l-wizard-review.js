@@ -35,7 +35,6 @@ var REVIEW_SECTIONS = [
       { id: 'protagonistRole', label: 'Role', type: 'text' },
       { id: 'coreCompetence', label: 'Core Competence', type: 'text' },
       { id: 'coreFlaw', label: 'Core Flaw', type: 'text' },
-      { id: 'characterConcept', label: 'Character Concept', type: 'textarea' },
       { id: 'dynamic-list-actionVerbs', label: 'Action Verbs', type: 'dynamic-list', field: 'actionVerbs' },
     ],
   },

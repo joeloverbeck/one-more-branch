@@ -252,16 +252,16 @@ describe('Story', () => {
       );
     });
 
-    it("throws 'Character concept is required' for empty string", () => {
-      expect(() => createStory({ title: 'Test', characterConcept: '' })).toThrow(
-        'Character concept is required'
-      );
+    it('does not throw for empty characterConcept', () => {
+      expect(() => createStory({ title: 'Test', characterConcept: '' })).not.toThrow();
     });
 
-    it("throws 'Character concept is required' for whitespace-only string", () => {
-      expect(() => createStory({ title: 'Test', characterConcept: '   ' })).toThrow(
-        'Character concept is required'
-      );
+    it('sets characterConcept to undefined when empty or whitespace-only', () => {
+      const story1 = createStory({ title: 'Test', characterConcept: '' });
+      expect(story1.characterConcept).toBeUndefined();
+
+      const story2 = createStory({ title: 'Test', characterConcept: '   ' });
+      expect(story2.characterConcept).toBeUndefined();
     });
 
     it('sets createdAt and updatedAt to current time and equal initially', () => {
@@ -312,9 +312,9 @@ describe('Story', () => {
       expect(isStory({ ...story, title: '   ' })).toBe(false);
     });
 
-    it('returns false when characterConcept is whitespace only', () => {
-      const story = createStory({ title: 'Test', characterConcept: 'Hero' });
-      expect(isStory({ ...story, characterConcept: '   ' })).toBe(false);
+    it('returns true when characterConcept is undefined (optional field)', () => {
+      const story = createStory({ title: 'Test' });
+      expect(isStory({ ...story, characterConcept: undefined })).toBe(true);
     });
 
     it('returns true for story with valid structure object', () => {

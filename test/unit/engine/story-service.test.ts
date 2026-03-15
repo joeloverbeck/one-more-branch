@@ -245,6 +245,7 @@ describe('story-service', () => {
           characterConcept: 'A valid character concept for this test case.',
           apiKey: 'test-key',
           spine: mockSpine,
+          protagonistCharacterId: 'char-1',
         })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
@@ -252,13 +253,14 @@ describe('story-service', () => {
       expect(mockedGeneratePage).not.toHaveBeenCalled();
     });
 
-    it('throws VALIDATION_FAILED for short characterConcept', async () => {
+    it('throws VALIDATION_FAILED for missing protagonistCharacterId', async () => {
       await expect(
         startNewStory({
           title: 'Test Title',
-          characterConcept: 'too short',
+          characterConcept: 'A valid character concept for this test case.',
           apiKey: 'test-key',
           spine: mockSpine,
+          protagonistCharacterId: '',
         })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 
@@ -273,6 +275,7 @@ describe('story-service', () => {
           characterConcept: 'A valid character concept for this test case.',
           apiKey: '   ',
           spine: mockSpine,
+          protagonistCharacterId: 'char-1',
         })
       ).rejects.toMatchObject({ code: 'VALIDATION_FAILED' });
 

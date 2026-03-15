@@ -5,7 +5,8 @@ import type { ConceptVerification } from '../../models/concept-generator.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 
 export interface SpineSynthesisPromptContext {
-  readonly characterConcept: string;
+  readonly characterConcept?: string;
+  readonly protagonistSummary?: string;
   readonly tone: string;
   readonly arcEngines: readonly SpineArcEngine[];
   readonly storyKernel?: StoryKernel;
@@ -98,10 +99,15 @@ export function buildSpineSynthesisPrompt(context: SpineSynthesisPromptContext):
   const kernelSection = buildKernelConstraints(context.storyKernel);
   const verificationSection = buildVerificationConstraints(context.conceptVerification);
 
+  const characterSection = context.protagonistSummary
+    ? `PROTAGONIST CHARACTER:\n${context.protagonistSummary}`
+    : context.characterConcept
+      ? `CHARACTER CONCEPT:\n${context.characterConcept}`
+      : '';
+
   const userPrompt = `Synthesize dramatic capstone elements for ALL ${context.arcEngines.length} locked arc engines below.
 
-CHARACTER CONCEPT:
-${context.characterConcept}
+${characterSection}
 
 TONE/GENRE: ${context.tone}
 

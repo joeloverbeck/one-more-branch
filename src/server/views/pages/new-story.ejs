@@ -231,17 +231,6 @@
             <input type="text" id="coreFlaw" placeholder="What holds the protagonist back">
           </div>
           <div class="form-group">
-            <label for="characterConcept">Character Concept (free text) *</label>
-            <textarea
-              id="characterConcept"
-              name="characterConcept"
-              rows="3"
-              required
-              minlength="10"
-              placeholder="Full protagonist description: name, personality, background, abilities, motivations."
-            ><%= values.characterConcept || '' %></textarea>
-          </div>
-          <div class="form-group">
             <label>Action Verbs (min 6)</label>
             <div id="dynamic-list-actionVerbs" class="dynamic-list" data-field="actionVerbs" data-min="6"></div>
             <div class="dynamic-list-add">
@@ -378,18 +367,19 @@
 
           <!-- Character Selection (from decomposed characters) -->
           <div class="form-group">
-            <label for="protagonist-character-selector">Protagonist (from Character Profiles)</label>
-            <select id="protagonist-character-selector">
-              <option value="">-- Select protagonist (optional) --</option>
+            <label for="protagonist-character-selector">Protagonist (from Character Profiles) *</label>
+            <select id="protagonist-character-selector" required>
+              <option value="">-- Select protagonist --</option>
             </select>
             <p class="form-help">
-              <a href="/characters">Decompose characters</a> first for higher fidelity, or add raw NPCs below.
+              <a href="/characters">Decompose characters</a> first. A protagonist is required.
             </p>
           </div>
 
           <div class="form-group">
             <label>NPC Characters (from Character Profiles)</label>
-            <div id="npc-character-checkboxes" class="character-checkbox-list"></div>
+            <div id="npc-character-selector-wrap"></div>
+            <div id="npc-character-pills" class="npc-pills-container"></div>
             <p class="form-help" id="npc-character-help">Select additional characters to include as NPCs.</p>
           </div>
 

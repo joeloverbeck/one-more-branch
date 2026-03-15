@@ -21,10 +21,10 @@ export type StoryFormInput = {
 
 export type TrimmedStoryInput = {
   title: string;
-  characterConcept: string;
+  characterConcept?: string;
   worldbuilding?: string;
   tone?: string;
-  protagonistCharacterId?: string;
+  protagonistCharacterId: string;
   npcCharacterIds?: string[];
   startingSituation?: string;
   conceptSpec?: ConceptSpec;
@@ -43,15 +43,15 @@ export type ValidationResult =
  */
 export function validateStoryInput(input: StoryFormInput): ValidationResult {
   const trimmedTitle = input.title?.trim();
-  const trimmedCharacterConcept = input.characterConcept?.trim();
   const trimmedApiKey = input.apiKey?.trim();
+  const trimmedProtagonistId = input.protagonistCharacterId?.trim();
 
   if (!trimmedTitle || trimmedTitle.length === 0) {
     return { valid: false, error: 'Story title is required' };
   }
 
-  if (!trimmedCharacterConcept || trimmedCharacterConcept.length < 10) {
-    return { valid: false, error: 'Character concept must be at least 10 characters' };
+  if (!trimmedProtagonistId) {
+    return { valid: false, error: 'Protagonist character selection is required' };
   }
 
   if (!trimmedApiKey || trimmedApiKey.length < 10) {
@@ -69,10 +69,10 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
     valid: true,
     trimmed: {
       title: trimmedTitle,
-      characterConcept: trimmedCharacterConcept,
+      ...(input.characterConcept?.trim() ? { characterConcept: input.characterConcept.trim() } : {}),
       worldbuilding: input.worldbuilding?.trim(),
       tone: input.tone?.trim(),
-      ...(input.protagonistCharacterId ? { protagonistCharacterId: input.protagonistCharacterId } : {}),
+      protagonistCharacterId: trimmedProtagonistId,
       ...(input.npcCharacterIds && input.npcCharacterIds.length > 0
         ? { npcCharacterIds: input.npcCharacterIds }
         : {}),

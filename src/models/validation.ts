@@ -17,11 +17,7 @@ export function validateStory(story: unknown): ValidationResult {
     };
   }
 
-  if (story.characterConcept.length < 10) {
-    errors.push('Character concept is too short (minimum 10 characters)');
-  }
-
-  if (story.characterConcept.length > 5000) {
+  if (story.characterConcept && story.characterConcept.length > 5000) {
     errors.push('Character concept is too long (maximum 5000 characters)');
   }
 

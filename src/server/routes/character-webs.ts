@@ -283,6 +283,26 @@ characterWebRoutes.delete(
   })
 );
 
+characterWebRoutes.delete(
+  '/api/:webId/assignments/:characterName',
+  wrapAsyncRoute(async (req: Request, res: Response) => {
+    const webId = readRouteParam(req.params['webId']);
+    const characterName = decodeURIComponent(readRouteParam(req.params['characterName']));
+
+    try {
+      const web = await characterWebService.removeAssignment(webId, characterName);
+      return res.json({ success: true, web });
+    } catch (error) {
+      const knownError = mapKnownError(error);
+      if (knownError) {
+        return res.status(knownError.status).json({ success: false, error: knownError.message });
+      }
+
+      throw error;
+    }
+  })
+);
+
 characterWebRoutes.get(
   '/api/:webId/characters',
   wrapAsyncRoute(async (req: Request, res: Response) => {

@@ -26,9 +26,8 @@ function validateStartStoryOptions(options: StartStoryOptions): void {
     throw new EngineError('Title is required', 'VALIDATION_FAILED');
   }
 
-  const characterConcept = options.characterConcept.trim();
-  if (characterConcept.length < 10) {
-    throw new EngineError('Character concept must be at least 10 characters', 'VALIDATION_FAILED');
+  if (!options.protagonistCharacterId?.trim()) {
+    throw new EngineError('Protagonist character selection is required', 'VALIDATION_FAILED');
   }
 
   if (options.apiKey.trim().length === 0) {
@@ -61,7 +60,7 @@ async function runNewDecompositionPipeline(
   options: StartStoryOptions
 ): Promise<Story> {
   const standaloneCharacters = await loadStandaloneCharacters(
-    options.protagonistCharacterId!,
+    options.protagonistCharacterId,
     options.npcCharacterIds ?? []
   );
 
@@ -155,18 +154,22 @@ async function buildPreparedStory(
     .map((promise) => promise.trim())
     .filter((promise) => promise.length > 0);
   const trimmedTitle = options.title.trim();
-  const trimmedCharacterConcept = options.characterConcept.trim();
+
+  // Derive characterConcept from protagonist's rawDescription if not explicitly provided
+  const protagonist = await loadCharacter(options.protagonistCharacterId);
+  if (!protagonist) {
+    throw new EngineError('Protagonist character not found', 'VALIDATION_FAILED');
+  }
+  const derivedCharacterConcept = options.characterConcept?.trim() ?? protagonist.rawDescription;
 
   let story: Story = {
     ...createStory({
       title: trimmedTitle,
-      characterConcept: trimmedCharacterConcept,
+      characterConcept: derivedCharacterConcept,
       worldbuilding: options.worldbuilding,
       tone: options.tone,
       ...(options.npcs ? { npcs: options.npcs } : {}),
-      ...(options.protagonistCharacterId
-        ? { protagonistCharacterId: options.protagonistCharacterId }
-        : {}),
+      protagonistCharacterId: options.protagonistCharacterId,
       ...(options.npcCharacterIds && options.npcCharacterIds.length > 0
         ? { npcCharacterIds: options.npcCharacterIds }
         : {}),

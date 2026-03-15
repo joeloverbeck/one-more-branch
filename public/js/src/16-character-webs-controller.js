@@ -183,6 +183,48 @@ function initCharacterWebsPage() {
     }
   }
 
+  async function removeAssignment(characterName) {
+    if (!state.selectedWeb || !state.selectedWeb.web) {
+      return;
+    }
+
+    try {
+      var data = await fetchJson(
+        '/character-webs/api/' +
+          encodeURIComponent(state.selectedWeb.web.id) +
+          '/assignments/' +
+          encodeURIComponent(characterName),
+        { method: 'DELETE' },
+        'Failed to remove character from cast'
+      );
+
+      if (data && data.web) {
+        state.selectedWeb.web = data.web;
+      }
+
+      var charData = await fetchJson(
+        '/character-webs/api/' + encodeURIComponent(state.selectedWeb.web.id) + '/characters',
+        { method: 'GET' },
+        'Failed to refresh characters'
+      );
+
+      if (charData && Array.isArray(charData.characters)) {
+        state.selectedWeb.characters = charData.characters;
+      }
+
+      if (
+        state.selectedCharacter &&
+        state.selectedCharacter.characterName === characterName
+      ) {
+        resetCharacterPanel();
+      }
+
+      renderWebDetails();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to remove character');
+    }
+  }
+
   function renderWebList() {
     if (!Array.isArray(state.webs) || state.webs.length === 0) {
       webList.innerHTML = '<p class="form-help">No character webs yet.</p>';
@@ -234,8 +276,18 @@ function initCharacterWebsPage() {
   function renderAssignmentsReadOnly(web) {
     return web.assignments
       .map(function (assignment) {
+        var removeBtn = '';
+        if (!assignment.isProtagonist) {
+          removeBtn =
+            '<button type="button" class="btn btn-danger btn-sm assignment-remove-btn" ' +
+            'data-character-name="' + escapeHtml(assignment.characterName) + '" ' +
+            'title="Remove from cast" ' +
+            'style="position:absolute;top:0.5rem;right:0.5rem;padding:0.15rem 0.4rem;font-size:0.75rem;line-height:1;">' +
+            '\u00D7</button>';
+        }
         return (
-          '<article class="spine-card">' +
+          '<article class="spine-card" style="position:relative;">' +
+          removeBtn +
           '<h4>' +
           escapeHtml(assignment.characterName) +
           (assignment.isProtagonist
@@ -274,6 +326,15 @@ function initCharacterWebsPage() {
       '<div class="web-assignments-content">' +
       renderAssignmentsReadOnly(web) +
       '</div>';
+
+    assignmentsContainer.querySelectorAll('.assignment-remove-btn').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var characterName = button.getAttribute('data-character-name') || '';
+        if (characterName && window.confirm('Remove ' + characterName + ' from the cast? This will also delete any developed character data.')) {
+          void removeAssignment(characterName);
+        }
+      });
+    });
 
     assignmentsContainer.querySelector('.web-assignments-edit-btn').addEventListener('click', function () {
       var contentEl = assignmentsContainer.querySelector('.web-assignments-content');

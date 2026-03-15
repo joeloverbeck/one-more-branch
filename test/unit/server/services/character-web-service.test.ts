@@ -602,6 +602,73 @@ describe('character-web-service', () => {
     } satisfies Partial<EngineError>);
   });
 
+  describe('removeAssignment', () => {
+    it('removes character from assignments and filters matching relationships', async () => {
+      const web = createWeb();
+      deps.loadCharacterWeb.mockResolvedValue(web);
+
+      const result = await service.removeAssignment('web-1', 'Mara Voss');
+
+      expect(result.assignments).toHaveLength(1);
+      expect(result.assignments[0]?.characterName).toBe('Iria Vale');
+      expect(result.relationshipArchetypes).toHaveLength(0);
+      expect(deps.saveCharacterWeb).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assignments: [expect.objectContaining({ characterName: 'Iria Vale' })],
+          relationshipArchetypes: [],
+        }),
+      );
+    });
+
+    it('cascade deletes developed character if one exists', async () => {
+      deps.loadCharacterWeb.mockResolvedValue(createWeb());
+      deps.listDevelopedCharactersByWebId.mockResolvedValue([
+        createCharacter({ id: 'char-mara', characterName: 'Mara Voss' }),
+      ]);
+
+      await service.removeAssignment('web-1', 'Mara Voss');
+
+      expect(deps.deleteDevelopedCharacter).toHaveBeenCalledWith('char-mara');
+    });
+
+    it('works when no developed character exists (no cascade error)', async () => {
+      deps.loadCharacterWeb.mockResolvedValue(createWeb());
+      deps.listDevelopedCharactersByWebId.mockResolvedValue([]);
+
+      await expect(service.removeAssignment('web-1', 'Mara Voss')).resolves.toBeDefined();
+      expect(deps.deleteDevelopedCharacter).not.toHaveBeenCalled();
+    });
+
+    it('throws VALIDATION_FAILED if character not found', async () => {
+      deps.loadCharacterWeb.mockResolvedValue(createWeb());
+
+      await expect(service.removeAssignment('web-1', 'Unknown Character')).rejects.toMatchObject({
+        name: 'EngineError',
+        code: 'VALIDATION_FAILED',
+        message: 'Character Unknown Character not found in web web-1 assignments',
+      } satisfies Partial<EngineError>);
+    });
+
+    it('throws VALIDATION_FAILED if trying to remove protagonist', async () => {
+      deps.loadCharacterWeb.mockResolvedValue(createWeb());
+
+      await expect(service.removeAssignment('web-1', 'Iria Vale')).rejects.toMatchObject({
+        name: 'EngineError',
+        code: 'VALIDATION_FAILED',
+        message: 'Cannot remove protagonist Iria Vale from web',
+      } satisfies Partial<EngineError>);
+    });
+
+    it('uses case-insensitive name matching', async () => {
+      deps.loadCharacterWeb.mockResolvedValue(createWeb());
+
+      const result = await service.removeAssignment('web-1', '  mara voss  ');
+
+      expect(result.assignments).toHaveLength(1);
+      expect(result.assignments[0]?.characterName).toBe('Iria Vale');
+    });
+  });
+
   it('deleteWeb rejects missing webs with RESOURCE_NOT_FOUND before deleting children', async () => {
     deps.loadCharacterWeb.mockResolvedValue(null);
 

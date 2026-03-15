@@ -92,7 +92,7 @@ describe('storyRoutes', () => {
   });
 
   describe('POST /create validation', () => {
-    it('returns 400 for empty character concept', async () => {
+    it('returns 400 for missing protagonistCharacterId', async () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
       const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
@@ -101,7 +101,7 @@ describe('storyRoutes', () => {
         {
           body: {
             title: 'Test Title',
-            characterConcept: '',
+            characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -114,10 +114,9 @@ describe('storyRoutes', () => {
       expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
-        error: 'Character concept must be at least 10 characters',
+        error: 'Protagonist character selection is required',
         values: {
           title: 'Test Title',
-          characterConcept: '',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -125,7 +124,7 @@ describe('storyRoutes', () => {
       });
     });
 
-    it('returns 400 for short character concept after trim', async () => {
+    it('returns 400 for empty protagonistCharacterId after trim', async () => {
       const status = jest.fn().mockReturnThis();
       const render = jest.fn();
       const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
@@ -134,7 +133,8 @@ describe('storyRoutes', () => {
         {
           body: {
             title: 'Test Title',
-            characterConcept: '   too short   ',
+            characterConcept: 'A long enough character concept',
+            protagonistCharacterId: '   ',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -147,10 +147,9 @@ describe('storyRoutes', () => {
       expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(render).toHaveBeenCalledWith('pages/new-story', {
         title: 'New Adventure - One More Branch',
-        error: 'Character concept must be at least 10 characters',
+        error: 'Protagonist character selection is required',
         values: {
           title: 'Test Title',
-          characterConcept: '   too short   ',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -168,6 +167,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
           },
@@ -182,7 +182,6 @@ describe('storyRoutes', () => {
         error: 'OpenRouter API key is required',
         values: {
           title: 'Test Title',
-          characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -200,6 +199,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: '    short    ',
@@ -215,7 +215,6 @@ describe('storyRoutes', () => {
         error: 'OpenRouter API key is required',
         values: {
           title: 'Test Title',
-          characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -262,6 +261,7 @@ describe('storyRoutes', () => {
           body: {
             title: '  Trimmed Title  ',
             characterConcept: '  Trimmed Concept  ',
+            protagonistCharacterId: 'char-1',
             worldbuilding: '  Trimmed World  ',
             tone: '  Trimmed Tone  ',
             apiKey: '  valid-key-12345  ',
@@ -277,6 +277,7 @@ describe('storyRoutes', () => {
       expect(prepareStorySpy).toHaveBeenCalledWith({
         title: 'Trimmed Title',
         characterConcept: 'Trimmed Concept',
+        protagonistCharacterId: 'char-1',
         worldbuilding: 'Trimmed World',
         tone: 'Trimmed Tone',
         apiKey: 'valid-key-12345',
@@ -302,6 +303,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -319,7 +321,6 @@ describe('storyRoutes', () => {
         error: 'generation failed',
         values: {
           title: 'Test Title',
-          characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -343,6 +344,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'invalid-key',
@@ -359,7 +361,6 @@ describe('storyRoutes', () => {
         error: 'Invalid API key. Please check your OpenRouter API key.',
         values: {
           title: 'Test Title',
-          characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -382,6 +383,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -398,7 +400,6 @@ describe('storyRoutes', () => {
         error: 'Insufficient credits. Please add credits to your OpenRouter account.',
         values: {
           title: 'Test Title',
-          characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -421,6 +422,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -437,7 +439,6 @@ describe('storyRoutes', () => {
         error: 'Rate limit exceeded. Please wait a moment and try again.',
         values: {
           title: 'Test Title',
-          characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -461,6 +462,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -477,7 +479,6 @@ describe('storyRoutes', () => {
         error: 'API request error: Invalid request: missing required field',
         values: {
           title: 'Test Title',
-          characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -502,6 +503,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -519,7 +521,6 @@ describe('storyRoutes', () => {
           'Story generation failed due to a configuration error. Please try again or report this issue.',
         values: {
           title: 'Test Title',
-          characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -544,6 +545,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -561,7 +563,6 @@ describe('storyRoutes', () => {
           'Story generation failed due to a configuration error. Please try again or report this issue.',
         values: {
           title: 'Test Title',
-          characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -584,6 +585,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -600,7 +602,6 @@ describe('storyRoutes', () => {
         error: 'OpenRouter service is temporarily unavailable. Please try again later.',
         values: {
           title: 'Test Title',
-          characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -620,6 +621,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -636,7 +638,6 @@ describe('storyRoutes', () => {
         error: 'API error: Some parsing error',
         values: {
           title: 'Test Title',
-          characterConcept: 'A long enough character concept',
           worldbuilding: 'World',
           tone: 'Epic',
           startingSituation: undefined,
@@ -697,7 +698,7 @@ describe('storyRoutes', () => {
       });
     });
 
-    it('returns 400 JSON for empty character concept', async () => {
+    it('returns 400 JSON for missing protagonistCharacterId', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
       const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
@@ -706,7 +707,7 @@ describe('storyRoutes', () => {
         {
           body: {
             title: 'Test Title',
-            characterConcept: '',
+            characterConcept: 'A long enough character concept',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -719,11 +720,11 @@ describe('storyRoutes', () => {
       expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(json).toHaveBeenCalledWith({
         success: false,
-        error: 'Character concept must be at least 10 characters',
+        error: 'Protagonist character selection is required',
       });
     });
 
-    it('returns 400 JSON for short character concept after trim', async () => {
+    it('returns 400 JSON for empty protagonistCharacterId after trim', async () => {
       const status = jest.fn().mockReturnThis();
       const json = jest.fn();
       const prepareStorySpy = jest.spyOn(storyEngine, 'prepareStory');
@@ -732,7 +733,8 @@ describe('storyRoutes', () => {
         {
           body: {
             title: 'Test Title',
-            characterConcept: '   too short   ',
+            characterConcept: 'A long enough character concept',
+            protagonistCharacterId: '   ',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -745,7 +747,7 @@ describe('storyRoutes', () => {
       expect(prepareStorySpy).not.toHaveBeenCalled();
       expect(json).toHaveBeenCalledWith({
         success: false,
-        error: 'Character concept must be at least 10 characters',
+        error: 'Protagonist character selection is required',
       });
     });
 
@@ -758,7 +760,7 @@ describe('storyRoutes', () => {
         {
           body: {
             title: 'Test Title',
-            characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
           },
@@ -783,7 +785,7 @@ describe('storyRoutes', () => {
         {
           body: {
             title: 'Test Title',
-            characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: '    short    ',
@@ -861,7 +863,7 @@ describe('storyRoutes', () => {
         {
           body: {
             title: 'Test Title',
-            characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -914,6 +916,7 @@ describe('storyRoutes', () => {
           body: {
             title: '  Trimmed Title  ',
             characterConcept: '  Trimmed Concept  ',
+            protagonistCharacterId: 'char-1',
             worldbuilding: '  Trimmed World  ',
             tone: '  Trimmed Tone  ',
             apiKey: '  valid-key-12345  ',
@@ -928,6 +931,7 @@ describe('storyRoutes', () => {
       expect(prepareStorySpy).toHaveBeenCalledWith({
         title: 'Trimmed Title',
         characterConcept: 'Trimmed Concept',
+        protagonistCharacterId: 'char-1',
         worldbuilding: 'Trimmed World',
         tone: 'Trimmed Tone',
         apiKey: 'valid-key-12345',
@@ -968,6 +972,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Concept Story',
             characterConcept: 'A long enough concept for validation',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Tone',
             apiKey: 'valid-key-12345',
@@ -982,6 +987,7 @@ describe('storyRoutes', () => {
       expect(prepareStorySpy).toHaveBeenCalledWith({
         title: 'Concept Story',
         characterConcept: 'A long enough concept for validation',
+        protagonistCharacterId: 'char-1',
         worldbuilding: 'World',
         tone: 'Tone',
         apiKey: 'valid-key-12345',
@@ -1030,6 +1036,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'No Progress Story',
             characterConcept: 'No Progress Concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'No Progress World',
             tone: 'No Progress Tone',
             apiKey: 'valid-key-12345',
@@ -1043,6 +1050,7 @@ describe('storyRoutes', () => {
       expect(prepareStorySpy).toHaveBeenCalledWith({
         title: 'No Progress Story',
         characterConcept: 'No Progress Concept',
+        protagonistCharacterId: 'char-1',
         worldbuilding: 'No Progress World',
         tone: 'No Progress Tone',
         apiKey: 'valid-key-12345',
@@ -1094,6 +1102,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'Test Concept Here',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             startingSituation: '  You awaken in a dark cave  ',
@@ -1108,6 +1117,7 @@ describe('storyRoutes', () => {
       expect(prepareStorySpy).toHaveBeenCalledWith({
         title: 'Test Title',
         characterConcept: 'Test Concept Here',
+        protagonistCharacterId: 'char-1',
         worldbuilding: 'World',
         tone: 'Epic',
         startingSituation: 'You awaken in a dark cave',
@@ -1169,6 +1179,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Progress Story',
             characterConcept: 'Progress Concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'Progress World',
             tone: 'Progress Tone',
             apiKey: 'valid-key-12345',
@@ -1219,6 +1230,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -1246,6 +1258,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -1278,6 +1291,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'invalid-key',
@@ -1313,6 +1327,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -1348,6 +1363,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -1383,6 +1399,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -1415,6 +1432,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -1453,6 +1471,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',
@@ -1503,6 +1522,7 @@ describe('storyRoutes', () => {
           body: {
             title: 'Test Title',
             characterConcept: 'A long enough character concept',
+            protagonistCharacterId: 'char-1',
             worldbuilding: 'World',
             tone: 'Epic',
             apiKey: 'valid-key-12345',

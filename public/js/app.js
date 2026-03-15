@@ -4672,7 +4672,6 @@ var REVIEW_SECTIONS = [
       { id: 'protagonistRole', label: 'Role', type: 'text' },
       { id: 'coreCompetence', label: 'Core Competence', type: 'text' },
       { id: 'coreFlaw', label: 'Core Flaw', type: 'text' },
-      { id: 'characterConcept', label: 'Character Concept', type: 'textarea' },
       { id: 'dynamic-list-actionVerbs', label: 'Action Verbs', type: 'dynamic-list', field: 'actionVerbs' },
     ],
   },
@@ -4876,18 +4875,20 @@ function readFieldValue(fieldDef) {
 }
 
 // ── Character Selector Component ─────────────────────────────────────
-// Populates protagonist dropdown and NPC checkboxes from decomposed characters.
+// Populates protagonist dropdown and NPC select + pill tags from decomposed characters.
 
 /**
  * Creates a character selector controller for the new-story form.
  * Fetches saved decomposed characters and renders selection UI.
  *
  * @param {HTMLSelectElement} protagonistSelect - The protagonist dropdown
- * @param {HTMLElement} npcContainer - Container for NPC checkboxes
+ * @param {HTMLElement} npcSelectorWrap - Container for NPC select dropdown
+ * @param {HTMLElement} npcPillsContainer - Container for NPC pill tags
  * @returns {{ init: () => Promise<void>, getProtagonistCharacterId: () => string, getNpcCharacterIds: () => string[] }}
  */
-function createCharacterSelector(protagonistSelect, npcContainer) {
+function createCharacterSelector(protagonistSelect, npcSelectorWrap, npcPillsContainer) {
   var characters = [];
+  var selectedNpcIds = [];
 
   function renderProtagonistOptions(selectedId) {
     // Keep the default empty option
@@ -4906,41 +4907,96 @@ function createCharacterSelector(protagonistSelect, npcContainer) {
     }
   }
 
-  function renderNpcCheckboxes(excludeId) {
-    npcContainer.innerHTML = '';
-    var available = characters.filter(function (ch) { return ch.id !== excludeId; });
+  function renderNpcSelector() {
+    npcSelectorWrap.innerHTML = '';
+    var protagonistId = protagonistSelect.value || '';
+    var available = characters.filter(function (ch) {
+      return ch.id !== protagonistId && selectedNpcIds.indexOf(ch.id) === -1;
+    });
 
-    if (available.length === 0) {
-      npcContainer.innerHTML = '<p class="form-help" style="margin:0;">No other characters available.</p>';
+    if (available.length === 0 && selectedNpcIds.length === 0) {
+      npcSelectorWrap.innerHTML = '<p class="form-help" style="margin:0;">No other characters available.</p>';
       return;
     }
 
+    if (available.length === 0) {
+      // All characters already selected as NPCs
+      return;
+    }
+
+    var select = document.createElement('select');
+    select.className = 'npc-add-selector';
+
+    var defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = '-- Add NPC character --';
+    select.appendChild(defaultOpt);
+
     for (var i = 0; i < available.length; i++) {
       var ch = available[i];
-      var label = document.createElement('label');
-      label.className = 'character-checkbox-label';
+      var opt = document.createElement('option');
+      opt.value = ch.id;
+      var label = ch.name;
+      if (ch.coreTraits && ch.coreTraits.length > 0) {
+        label += ' — ' + ch.coreTraits.slice(0, 3).join(', ');
+      }
+      opt.textContent = label;
+      select.appendChild(opt);
+    }
 
-      var checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.value = ch.id;
-      checkbox.className = 'character-checkbox';
-      checkbox.name = 'npcCharacterIds';
+    select.addEventListener('change', function () {
+      var selectedId = select.value;
+      if (selectedId && selectedNpcIds.indexOf(selectedId) === -1) {
+        selectedNpcIds.push(selectedId);
+        renderNpcSelector();
+        renderNpcPills();
+      }
+    });
+
+    npcSelectorWrap.appendChild(select);
+  }
+
+  function renderNpcPills() {
+    npcPillsContainer.innerHTML = '';
+
+    for (var i = 0; i < selectedNpcIds.length; i++) {
+      var npcId = selectedNpcIds[i];
+      var ch = characters.find(function (c) { return c.id === npcId; });
+      if (!ch) continue;
+
+      var pill = document.createElement('span');
+      pill.className = 'npc-pill';
 
       var nameSpan = document.createElement('span');
-      nameSpan.className = 'character-checkbox-name';
+      nameSpan.className = 'npc-pill-name';
       nameSpan.textContent = ch.name;
-
-      label.appendChild(checkbox);
-      label.appendChild(nameSpan);
+      pill.appendChild(nameSpan);
 
       if (ch.coreTraits && ch.coreTraits.length > 0) {
         var traitsSpan = document.createElement('span');
-        traitsSpan.className = 'character-checkbox-traits';
+        traitsSpan.className = 'npc-pill-traits';
         traitsSpan.textContent = ' — ' + ch.coreTraits.slice(0, 3).join(', ');
-        label.appendChild(traitsSpan);
+        pill.appendChild(traitsSpan);
       }
 
-      npcContainer.appendChild(label);
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'npc-pill-remove';
+      removeBtn.dataset.id = npcId;
+      removeBtn.innerHTML = '&times;';
+      removeBtn.addEventListener('click', (function (id) {
+        return function () {
+          var idx = selectedNpcIds.indexOf(id);
+          if (idx !== -1) {
+            selectedNpcIds.splice(idx, 1);
+          }
+          renderNpcSelector();
+          renderNpcPills();
+        };
+      })(npcId));
+      pill.appendChild(removeBtn);
+
+      npcPillsContainer.appendChild(pill);
     }
   }
 
@@ -4949,12 +5005,7 @@ function createCharacterSelector(protagonistSelect, npcContainer) {
   }
 
   function getNpcCharacterIds() {
-    var checkboxes = npcContainer.querySelectorAll('input.character-checkbox:checked');
-    var ids = [];
-    for (var i = 0; i < checkboxes.length; i++) {
-      ids.push(checkboxes[i].value);
-    }
-    return ids;
+    return selectedNpcIds.slice();
   }
 
   async function init() {
@@ -4970,17 +5021,24 @@ function createCharacterSelector(protagonistSelect, npcContainer) {
     }
 
     if (characters.length === 0) {
-      npcContainer.innerHTML =
+      npcSelectorWrap.innerHTML =
         '<p class="form-help" style="margin:0;">No decomposed characters yet. ' +
         '<a href="/characters">Create some</a> first.</p>';
       return;
     }
 
     renderProtagonistOptions('');
-    renderNpcCheckboxes('');
+    renderNpcSelector();
 
     protagonistSelect.addEventListener('change', function () {
-      renderNpcCheckboxes(protagonistSelect.value);
+      // Remove new protagonist from NPC selection if present
+      var newProtId = protagonistSelect.value;
+      var idx = selectedNpcIds.indexOf(newProtId);
+      if (idx !== -1) {
+        selectedNpcIds.splice(idx, 1);
+        renderNpcPills();
+      }
+      renderNpcSelector();
     });
   }
 
@@ -7682,10 +7740,11 @@ function initNewStoryPage() {
 
   // Character selector for decomposed characters
   var protagonistSelectEl = document.getElementById('protagonist-character-selector');
-  var npcCheckboxContainer = document.getElementById('npc-character-checkboxes');
+  var npcSelectorWrap = document.getElementById('npc-character-selector-wrap');
+  var npcPillsContainer = document.getElementById('npc-character-pills');
   var characterSelector =
-    protagonistSelectEl && npcCheckboxContainer
-      ? createCharacterSelector(protagonistSelectEl, npcCheckboxContainer)
+    protagonistSelectEl && npcSelectorWrap && npcPillsContainer
+      ? createCharacterSelector(protagonistSelectEl, npcSelectorWrap, npcPillsContainer)
       : null;
   if (characterSelector) {
     characterSelector.init();
@@ -7723,7 +7782,7 @@ function initNewStoryPage() {
     : null;
 
   // Field-to-step mapping for validation navigation
-  var FIELD_STEP_MAP = { title: 1, apiKey: 1, characterConcept: 3, 'kernel-selector-story': 1 };
+  var FIELD_STEP_MAP = { title: 1, apiKey: 1, 'protagonist-character-selector': 5, 'kernel-selector-story': 1 };
 
   function setValueById(id, value) {
     var field = document.getElementById(id);
@@ -7772,13 +7831,6 @@ function initNewStoryPage() {
     setValueById('protagonistRole', conceptSpec.protagonistRole || '');
     setValueById('coreCompetence', conceptSpec.coreCompetence || '');
     setValueById('coreFlaw', conceptSpec.coreFlaw || '');
-    var role = toTrimmedString(conceptSpec.protagonistRole);
-    var competence = toTrimmedString(conceptSpec.coreCompetence);
-    var flaw = toTrimmedString(conceptSpec.coreFlaw);
-    setValueById(
-      'characterConcept',
-      'Role: ' + role + '. Competence: ' + competence + '. Flaw: ' + flaw + '.'
-    );
     populateDynamicList('actionVerbs', conceptSpec.actionVerbs);
 
     // Conflict Engine
@@ -7927,9 +7979,6 @@ function initNewStoryPage() {
     var formData = new FormData(form);
     var npcs = collectNpcEntries();
 
-    // Build characterConcept from structured fields if the free-text is the default prefill
-    var characterConcept = toTrimmedString(formData.get('characterConcept'));
-
     // Build worldbuilding — merge free text with structured lists
     var worldbuildingFreeText = toTrimmedString(formData.get('worldbuilding'));
 
@@ -7938,7 +7987,6 @@ function initNewStoryPage() {
 
     return {
       title: toTrimmedString(formData.get('title')),
-      characterConcept: characterConcept,
       worldbuilding: worldbuildingFreeText,
       tone: toneFreeText,
       npcs: npcs.length > 0 ? npcs : undefined,
@@ -7956,8 +8004,8 @@ function initNewStoryPage() {
     hideExistingError();
 
     var titleInput = document.getElementById('title');
-    var characterConceptInput = document.getElementById('characterConcept');
     var apiKeyInput = document.getElementById('apiKey');
+    var protagonistSelector = document.getElementById('protagonist-character-selector');
 
     if (
       titleInput &&
@@ -7969,13 +8017,9 @@ function initNewStoryPage() {
       return false;
     }
 
-    if (
-      characterConceptInput &&
-      typeof characterConceptInput.checkValidity === 'function' &&
-      !characterConceptInput.checkValidity()
-    ) {
-      navigateToStepForField('characterConcept');
-      characterConceptInput.reportValidity();
+    if (!protagonistSelector || !protagonistSelector.value) {
+      navigateToStepForField('protagonist-character-selector');
+      showFormError('Protagonist character selection is required');
       return false;
     }
 
@@ -8169,7 +8213,6 @@ function initNewStoryPage() {
       var formValues = collectFormData();
       var conceptSpecFromFields = buildConceptSpecFromFields();
       var spineBody = {
-        characterConcept: formValues.characterConcept,
         worldbuilding: formValues.worldbuilding,
         tone: formValues.tone,
         npcs: formValues.npcs,
@@ -8251,7 +8294,6 @@ function initNewStoryPage() {
       var conceptSpecFromFields = buildConceptSpecFromFields();
       var createBody = {
         title: formValues.title,
-        characterConcept: formValues.characterConcept,
         worldbuilding: formValues.worldbuilding,
         tone: formValues.tone,
         npcs: formValues.npcs,
@@ -12437,6 +12479,48 @@ function initCharacterWebsPage() {
     }
   }
 
+  async function removeAssignment(characterName) {
+    if (!state.selectedWeb || !state.selectedWeb.web) {
+      return;
+    }
+
+    try {
+      var data = await fetchJson(
+        '/character-webs/api/' +
+          encodeURIComponent(state.selectedWeb.web.id) +
+          '/assignments/' +
+          encodeURIComponent(characterName),
+        { method: 'DELETE' },
+        'Failed to remove character from cast'
+      );
+
+      if (data && data.web) {
+        state.selectedWeb.web = data.web;
+      }
+
+      var charData = await fetchJson(
+        '/character-webs/api/' + encodeURIComponent(state.selectedWeb.web.id) + '/characters',
+        { method: 'GET' },
+        'Failed to refresh characters'
+      );
+
+      if (charData && Array.isArray(charData.characters)) {
+        state.selectedWeb.characters = charData.characters;
+      }
+
+      if (
+        state.selectedCharacter &&
+        state.selectedCharacter.characterName === characterName
+      ) {
+        resetCharacterPanel();
+      }
+
+      renderWebDetails();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to remove character');
+    }
+  }
+
   function renderWebList() {
     if (!Array.isArray(state.webs) || state.webs.length === 0) {
       webList.innerHTML = '<p class="form-help">No character webs yet.</p>';
@@ -12488,8 +12572,18 @@ function initCharacterWebsPage() {
   function renderAssignmentsReadOnly(web) {
     return web.assignments
       .map(function (assignment) {
+        var removeBtn = '';
+        if (!assignment.isProtagonist) {
+          removeBtn =
+            '<button type="button" class="btn btn-danger btn-sm assignment-remove-btn" ' +
+            'data-character-name="' + escapeHtml(assignment.characterName) + '" ' +
+            'title="Remove from cast" ' +
+            'style="position:absolute;top:0.5rem;right:0.5rem;padding:0.15rem 0.4rem;font-size:0.75rem;line-height:1;">' +
+            '\u00D7</button>';
+        }
         return (
-          '<article class="spine-card">' +
+          '<article class="spine-card" style="position:relative;">' +
+          removeBtn +
           '<h4>' +
           escapeHtml(assignment.characterName) +
           (assignment.isProtagonist
@@ -12528,6 +12622,15 @@ function initCharacterWebsPage() {
       '<div class="web-assignments-content">' +
       renderAssignmentsReadOnly(web) +
       '</div>';
+
+    assignmentsContainer.querySelectorAll('.assignment-remove-btn').forEach(function (button) {
+      button.addEventListener('click', function () {
+        var characterName = button.getAttribute('data-character-name') || '';
+        if (characterName && window.confirm('Remove ' + characterName + ' from the cast? This will also delete any developed character data.')) {
+          void removeAssignment(characterName);
+        }
+      });
+    });
 
     assignmentsContainer.querySelector('.web-assignments-edit-btn').addEventListener('click', function () {
       var contentEl = assignmentsContainer.querySelector('.web-assignments-content');
