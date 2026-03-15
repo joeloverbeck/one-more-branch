@@ -1,8 +1,47 @@
 import type { NextFunction, Request, Response, Router } from 'express';
 
 jest.mock('@/llm', () => ({
-  decomposeEntities: jest.fn(),
   generateStoryStructure: jest.fn(),
+}));
+
+jest.mock('@/persistence/character-repository', () => ({
+  loadCharacter: jest.fn().mockResolvedValue({
+    id: 'char-1',
+    name: 'Test Protagonist',
+    rawDescription: 'A test character.',
+    speechFingerprint: {
+      catchphrases: [],
+      vocabularyProfile: 'neutral',
+      sentencePatterns: 'short',
+      verbalTics: [],
+      dialogueSamples: [],
+      metaphorFrames: '',
+      antiExamples: [],
+      discourseMarkers: [],
+      registerShifts: '',
+    },
+    coreTraits: ['curious'],
+    knowledgeBoundaries: 'Knows basic geography.',
+    decisionPattern: 'Methodical.',
+    coreBeliefs: ['Truth matters.'],
+    conflictPriority: 'Knowledge over safety.',
+    appearance: 'Average build.',
+    createdAt: new Date().toISOString(),
+  }),
+}));
+
+jest.mock('@/llm/character-contextualizer', () => ({
+  contextualizeCharacters: jest.fn().mockResolvedValue({
+    decomposedCharacters: [],
+    rawResponse: '{}',
+  }),
+}));
+
+jest.mock('@/llm/worldbuilding-decomposer', () => ({
+  decomposeWorldbuilding: jest.fn().mockResolvedValue({
+    decomposedWorld: { facts: [], rawWorldbuilding: '' },
+    rawResponse: '{}',
+  }),
 }));
 
 jest.mock('@/llm/concept-stress-tester', () => ({
@@ -62,7 +101,7 @@ jest.mock('@/logging/index', () => ({
 }));
 
 import { storyEngine } from '@/engine';
-import { generateStoryStructure, decomposeEntities } from '@/llm';
+import { generateStoryStructure } from '@/llm';
 import type { StoryId, StoryKernel, StorySpine } from '@/models';
 import { conceptSeedRoutes } from '@/server/routes/concept-seeds';
 import { conceptRoutes } from '@/server/routes/concepts';
@@ -162,7 +201,6 @@ const noopNext: NextFunction = jest.fn();
 describe('Concept Assisted Story Flow (E2E)', () => {
   const createdStoryIds = new Set<StoryId>();
 
-  const mockedDecomposeEntities = decomposeEntities as jest.MockedFunction<typeof decomposeEntities>;
   const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
     typeof generateStoryStructure
   >;
@@ -241,14 +279,6 @@ describe('Concept Assisted Story Flow (E2E)', () => {
       },
     });
 
-    mockedDecomposeEntities.mockResolvedValue({
-      decomposedCharacters: [],
-      decomposedWorld: {
-        facts: [],
-        rawWorldbuilding: 'world',
-      },
-      rawResponse: '{}',
-    });
     mockedGenerateStoryStructure.mockResolvedValue({
       overallTheme: 'Survive and reveal hidden truths.',
       acts: [
@@ -441,6 +471,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
           apiKey: 'valid-key-12345',
           spine: mockSpine,
           storyKernel: mockKernel,
+          protagonistCharacterId: 'char-1',
         },
       } as Request,
       { status: createStatus, json: createJson } as unknown as Response,

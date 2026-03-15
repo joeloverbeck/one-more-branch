@@ -35,8 +35,43 @@ jest.mock('@/llm', () => ({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     jest.requireActual('@/llm').mergePageWriterAndReconciledStateWithAnalystResults,
   generateStoryStructure: jest.fn(),
-  decomposeEntities: jest.fn().mockResolvedValue({
+}));
+
+jest.mock('@/persistence/character-repository', () => ({
+  loadCharacter: jest.fn().mockResolvedValue({
+    id: 'char-1',
+    name: 'Test Protagonist',
+    rawDescription: 'A test character.',
+    speechFingerprint: {
+      catchphrases: [],
+      vocabularyProfile: 'neutral',
+      sentencePatterns: 'short',
+      verbalTics: [],
+      dialogueSamples: [],
+      metaphorFrames: '',
+      antiExamples: [],
+      discourseMarkers: [],
+      registerShifts: '',
+    },
+    coreTraits: ['curious'],
+    knowledgeBoundaries: 'Knows basic geography.',
+    decisionPattern: 'Methodical.',
+    coreBeliefs: ['Truth matters.'],
+    conflictPriority: 'Knowledge over safety.',
+    appearance: 'Average build.',
+    createdAt: new Date().toISOString(),
+  }),
+}));
+
+jest.mock('@/llm/character-contextualizer', () => ({
+  contextualizeCharacters: jest.fn().mockResolvedValue({
     decomposedCharacters: [],
+    rawResponse: '{}',
+  }),
+}));
+
+jest.mock('@/llm/worldbuilding-decomposer', () => ({
+  decomposeWorldbuilding: jest.fn().mockResolvedValue({
     decomposedWorld: { facts: [], rawWorldbuilding: '' },
     rawResponse: '{}',
   }),
@@ -318,6 +353,7 @@ describe('story replay integration', () => {
       tone: 'reflective mystery',
       apiKey: 'test-api-key',
       spine: mockSpine,
+      protagonistCharacterId: 'char-1',
     });
     createdStoryIds.add(start.story.id);
 
@@ -342,6 +378,7 @@ describe('story replay integration', () => {
       tone: 'investigative',
       apiKey: 'test-api-key',
       spine: mockSpine,
+      protagonistCharacterId: 'char-1',
     });
     createdStoryIds.add(start.story.id);
 
@@ -373,6 +410,7 @@ describe('story replay integration', () => {
       tone: 'adventure',
       apiKey: 'test-api-key',
       spine: mockSpine,
+      protagonistCharacterId: 'char-1',
     });
     createdStoryIds.add(start.story.id);
 

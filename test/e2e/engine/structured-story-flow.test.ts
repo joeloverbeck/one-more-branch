@@ -57,8 +57,43 @@ jest.mock('@/llm', () => ({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     jest.requireActual('@/llm').mergePageWriterAndReconciledStateWithAnalystResults,
   generateStoryStructure: jest.fn(),
-  decomposeEntities: jest.fn().mockResolvedValue({
+}));
+
+jest.mock('@/persistence/character-repository', () => ({
+  loadCharacter: jest.fn().mockResolvedValue({
+    id: 'char-1',
+    name: 'Test Protagonist',
+    rawDescription: 'A test character.',
+    speechFingerprint: {
+      catchphrases: [],
+      vocabularyProfile: 'neutral',
+      sentencePatterns: 'short',
+      verbalTics: [],
+      dialogueSamples: [],
+      metaphorFrames: '',
+      antiExamples: [],
+      discourseMarkers: [],
+      registerShifts: '',
+    },
+    coreTraits: ['curious'],
+    knowledgeBoundaries: 'Knows basic geography.',
+    decisionPattern: 'Methodical.',
+    coreBeliefs: ['Truth matters.'],
+    conflictPriority: 'Knowledge over safety.',
+    appearance: 'Average build.',
+    createdAt: new Date().toISOString(),
+  }),
+}));
+
+jest.mock('@/llm/character-contextualizer', () => ({
+  contextualizeCharacters: jest.fn().mockResolvedValue({
     decomposedCharacters: [],
+    rawResponse: '{}',
+  }),
+}));
+
+jest.mock('@/llm/worldbuilding-decomposer', () => ({
+  decomposeWorldbuilding: jest.fn().mockResolvedValue({
     decomposedWorld: { facts: [], rawWorldbuilding: '' },
     rawResponse: '{}',
   }),
@@ -555,6 +590,7 @@ describe('Structured Story E2E', () => {
       tone: 'political thriller',
       spine: mockSpine,
       apiKey: 'mock-api-key',
+      protagonistCharacterId: 'char-1',
     });
     createdStoryIds.add(story.id);
 
@@ -586,6 +622,7 @@ describe('Structured Story E2E', () => {
       tone: 'slow-burn mystery',
       spine: mockSpine,
       apiKey: 'mock-api-key',
+      protagonistCharacterId: 'char-1',
     });
     createdStoryIds.add(story.id);
 
@@ -610,6 +647,7 @@ describe('Structured Story E2E', () => {
       tone: 'urgent conspiracy',
       spine: mockSpine,
       apiKey: 'mock-api-key',
+      protagonistCharacterId: 'char-1',
     });
     createdStoryIds.add(story.id);
 
@@ -665,6 +703,7 @@ describe('Structured Story E2E', () => {
       tone: 'strategic suspense',
       spine: mockSpine,
       apiKey: 'mock-api-key',
+      protagonistCharacterId: 'char-1',
     });
     createdStoryIds.add(story.id);
 

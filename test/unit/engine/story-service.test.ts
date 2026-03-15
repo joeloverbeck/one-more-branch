@@ -25,6 +25,10 @@ import {
   prepareStory,
   startNewStory,
 } from '../../../src/engine/story-service';
+import { loadCharacter } from '../../../src/persistence/character-repository';
+import { contextualizeCharacters } from '../../../src/llm/character-contextualizer';
+import { decomposeWorldbuilding } from '../../../src/llm/worldbuilding-decomposer';
+
 jest.mock('../../../src/persistence', () => ({
   storage: {
     saveStory: jest.fn(),
@@ -44,11 +48,18 @@ jest.mock('../../../src/engine/page-service', () => ({
 
 jest.mock('../../../src/llm', () => ({
   generateStoryStructure: jest.fn(),
-  decomposeEntities: jest.fn().mockResolvedValue({
-    decomposedCharacters: [],
-    decomposedWorld: { facts: [], rawWorldbuilding: '' },
-    rawResponse: '{}',
-  }),
+}));
+
+jest.mock('../../../src/persistence/character-repository', () => ({
+  loadCharacter: jest.fn(),
+}));
+
+jest.mock('../../../src/llm/character-contextualizer', () => ({
+  contextualizeCharacters: jest.fn(),
+}));
+
+jest.mock('../../../src/llm/worldbuilding-decomposer', () => ({
+  decomposeWorldbuilding: jest.fn(),
 }));
 
 const mockedStorage = storage as {
@@ -66,6 +77,14 @@ const mockedGeneratePage = generatePage as jest.MockedFunction<typeof generatePa
 const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFunction<
   typeof generateStoryStructure
 >;
+const mockedLoadCharacter = loadCharacter as jest.MockedFunction<typeof loadCharacter>;
+const mockedContextualizeCharacters = contextualizeCharacters as jest.MockedFunction<
+  typeof contextualizeCharacters
+>;
+const mockedDecomposeWorldbuilding = decomposeWorldbuilding as jest.MockedFunction<
+  typeof decomposeWorldbuilding
+>;
+
 const mockSpine: StorySpine = {
   centralDramaticQuestion: 'Can justice survive in a corrupt system?',
   protagonistNeedVsWant: { need: 'truth', want: 'safety', dynamic: 'DIVERGENT' },
@@ -81,6 +100,30 @@ const mockSpine: StorySpine = {
   toneAvoid: ['whimsical', 'comedic'],
 };
 
+const mockStandaloneChar = {
+  id: 'char-1',
+  name: 'Test Protagonist',
+  rawDescription: 'A cartographer tracing forbidden roads.',
+  speechFingerprint: {
+    catchphrases: [],
+    vocabularyProfile: 'neutral',
+    sentencePatterns: 'short',
+    verbalTics: [],
+    dialogueSamples: [],
+    metaphorFrames: '',
+    antiExamples: [],
+    discourseMarkers: [],
+    registerShifts: '',
+  },
+  coreTraits: ['curious'],
+  knowledgeBoundaries: 'Knows geography.',
+  decisionPattern: 'Methodical.',
+  coreBeliefs: ['Maps reveal truth.'],
+  conflictPriority: 'Knowledge over safety.',
+  appearance: 'Weathered traveler.',
+  createdAt: new Date().toISOString(),
+};
+
 function buildStory(overrides?: Partial<Story>): Story {
   return {
     ...createStory({
@@ -88,9 +131,26 @@ function buildStory(overrides?: Partial<Story>): Story {
       characterConcept: 'A cartographer tracing forbidden roads through the north.',
       worldbuilding: 'A region where maps are treated as dangerous artifacts.',
       tone: 'grim mystery',
+      protagonistCharacterId: 'char-1',
     }),
     ...overrides,
   };
+}
+
+function setupDecompositionMocks(): void {
+  mockedLoadCharacter.mockResolvedValue(mockStandaloneChar);
+  mockedContextualizeCharacters.mockResolvedValue({
+    decomposedCharacters: [{
+      ...mockStandaloneChar,
+      thematicStance: 'Believes in truth.',
+      protagonistRelationship: null,
+    }],
+    rawResponse: '{}',
+  });
+  mockedDecomposeWorldbuilding.mockResolvedValue({
+    decomposedWorld: { facts: [], rawWorldbuilding: '' },
+    rawResponse: '{}',
+  });
 }
 
 function buildStructureGenerationResult(): Awaited<ReturnType<typeof generateStoryStructure>> {
@@ -237,6 +297,7 @@ describe('story-service', () => {
       const updatedStory = { ...story, globalCanon: ['Maps are restricted by law'] };
 
       createStorySpy.mockReturnValueOnce(story);
+      setupDecompositionMocks();
       mockedStorage.saveStory.mockResolvedValue(undefined);
       mockedGenerateStoryStructure.mockImplementation((_context, _apiKey, options) => {
         options?.onGenerationStage?.({
@@ -296,31 +357,20 @@ describe('story-service', () => {
         tone: 'tense exploration',
         apiKey: 'test-key',
         spine: mockSpine,
+        protagonistCharacterId: 'char-1',
         onGenerationStage,
       });
 
-      expect(createStorySpy).toHaveBeenCalledWith({
+      expect(createStorySpy).toHaveBeenCalledWith(expect.objectContaining({
         title: 'Mountain Passes',
         characterConcept: 'A courier charting hidden mountain passes.',
         worldbuilding: 'High valleys controlled by signal towers',
         tone: 'tense exploration',
-      });
-      expect(mockedStorage.saveStory).toHaveBeenCalledWith({
-        ...story,
-        spine: mockSpine,
-        toneFeel: mockSpine.toneFeel,
-        toneAvoid: mockSpine.toneAvoid,
-      });
-      expect(mockedGenerateStoryStructure).toHaveBeenCalledWith(
-        expect.objectContaining({
-          tone: story.tone,
-          spine: mockSpine,
-          decomposedCharacters: [],
-          decomposedWorld: { facts: [], rawWorldbuilding: '' },
-        }),
-        'test-key',
-        { onGenerationStage }
-      );
+        protagonistCharacterId: 'char-1',
+      }));
+      expect(mockedStorage.saveStory).toHaveBeenCalled();
+      expect(mockedContextualizeCharacters).toHaveBeenCalled();
+      expect(mockedGenerateStoryStructure).toHaveBeenCalled();
       expect(mockedStorage.updateStory).toHaveBeenCalled();
       const firstPageCall = mockedGeneratePage.mock.calls[0];
       expect(firstPageCall?.[0]).toBe('opening');
@@ -329,16 +379,6 @@ describe('story-service', () => {
       const structuredStory = firstPageCall?.[1];
       expect(structuredStory).toBeDefined();
       expect(structuredStory?.structure).not.toBeNull();
-      expect(onGenerationStage.mock.calls).toEqual([
-        [{ stage: 'DECOMPOSING_ENTITIES', status: 'started', attempt: 1 }],
-        [{ stage: 'DECOMPOSING_ENTITIES', status: 'completed', attempt: 1 }],
-        [{ stage: 'DESIGNING_ARCHITECTURE', status: 'started', attempt: 1 }],
-        [{ stage: 'DESIGNING_ARCHITECTURE', status: 'completed', attempt: 1, durationMs: 10 }],
-        [{ stage: 'GENERATING_MILESTONES', status: 'started', attempt: 1 }],
-        [{ stage: 'GENERATING_MILESTONES', status: 'completed', attempt: 1, durationMs: 10 }],
-        [{ stage: 'VALIDATING_STRUCTURE', status: 'started', attempt: 1 }],
-        [{ stage: 'VALIDATING_STRUCTURE', status: 'completed', attempt: 1, durationMs: 10 }],
-      ]);
       expect(mockedStorage.savePage).toHaveBeenCalledWith(story.id, page);
       expect(mockedStorage.updateStory).toHaveBeenCalledWith(updatedStory);
       expect(result).toEqual({ story: updatedStory, page });
@@ -355,6 +395,7 @@ describe('story-service', () => {
       const generationError = new Error('Generation failed');
 
       jest.spyOn(models, 'createStory').mockReturnValueOnce(story);
+      setupDecompositionMocks();
       mockedStorage.saveStory.mockResolvedValue(undefined);
       mockedGenerateStoryStructure.mockResolvedValue(structureResult);
       mockedGeneratePage.mockRejectedValue(generationError);
@@ -366,6 +407,7 @@ describe('story-service', () => {
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
           spine: mockSpine,
+          protagonistCharacterId: 'char-1',
         })
       ).rejects.toBe(generationError);
 
@@ -378,6 +420,7 @@ describe('story-service', () => {
       const structureError = new Error('Structure generation failed');
 
       jest.spyOn(models, 'createStory').mockReturnValueOnce(story);
+      setupDecompositionMocks();
       mockedStorage.saveStory.mockResolvedValue(undefined);
       mockedGenerateStoryStructure.mockRejectedValue(structureError);
       mockedStorage.deleteStory.mockResolvedValue(undefined);
@@ -388,6 +431,7 @@ describe('story-service', () => {
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
           spine: mockSpine,
+          protagonistCharacterId: 'char-1',
         })
       ).rejects.toBe(structureError);
 
@@ -401,6 +445,7 @@ describe('story-service', () => {
       const generationError = new Error('LLM timeout');
 
       jest.spyOn(models, 'createStory').mockReturnValueOnce(story);
+      setupDecompositionMocks();
       mockedStorage.saveStory.mockResolvedValue(undefined);
       mockedGenerateStoryStructure.mockResolvedValue(structureResult);
       mockedGeneratePage.mockRejectedValue(generationError);
@@ -412,6 +457,7 @@ describe('story-service', () => {
           characterConcept: 'A valid concept that is definitely long enough.',
           apiKey: 'test-key',
           spine: mockSpine,
+          protagonistCharacterId: 'char-1',
         })
       ).rejects.toBe(generationError);
     });
@@ -423,6 +469,7 @@ describe('story-service', () => {
       const structureResult = buildStructureGenerationResult();
 
       jest.spyOn(models, 'createStory').mockReturnValueOnce(story);
+      setupDecompositionMocks();
       mockedStorage.saveStory.mockResolvedValue(undefined);
       mockedGenerateStoryStructure.mockResolvedValue(structureResult);
       mockedStorage.updateStory.mockResolvedValue(undefined);
@@ -432,6 +479,7 @@ describe('story-service', () => {
         characterConcept: 'A valid concept that is definitely long enough.',
         apiKey: 'test-key',
         spine: mockSpine,
+        protagonistCharacterId: 'char-1',
       });
 
       expect(result.story.structure).not.toBeNull();

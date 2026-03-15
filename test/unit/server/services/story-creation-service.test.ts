@@ -173,10 +173,6 @@ describe('story-creation-service', () => {
       const result = validateStoryInput({
         title: 'My Story',
         characterConcept: 'A brave adventurer seeking fortune',
-        npcs: [
-          { name: '  Gandalf  ', description: '  A wise wizard  ' },
-          { name: '', description: 'No name' },
-        ],
         startingSituation: '  In a dark tavern  ',
         apiKey: 'sk-valid-api-key-12345',
         storyKernel: VALID_KERNEL,
@@ -184,7 +180,6 @@ describe('story-creation-service', () => {
 
       expect(result.valid).toBe(true);
       if (result.valid) {
-        expect(result.trimmed.npcs).toEqual([{ name: 'Gandalf', description: 'A wise wizard' }]);
         expect(result.trimmed.startingSituation).toBe('In a dark tavern');
       }
     });

@@ -1,5 +1,5 @@
 import { contextualizeCharacters } from '../llm/character-contextualizer.js';
-import { decomposeEntities, generateStoryStructure } from '../llm';
+import { generateStoryStructure } from '../llm';
 import { decomposeWorldbuilding } from '../llm/worldbuilding-decomposer.js';
 import type { SelectedSceneDirection } from '../models/scene-direction.js';
 import type { StandaloneDecomposedCharacter } from '../models/standalone-decomposed-character.js';
@@ -145,46 +145,6 @@ async function runNewDecompositionPipeline(
   };
 }
 
-async function runLegacyDecompositionPipeline(
-  story: Story,
-  options: StartStoryOptions
-): Promise<Story> {
-  options.onGenerationStage?.({
-    stage: 'DECOMPOSING_ENTITIES',
-    status: 'started',
-    attempt: 1,
-  });
-  const decompositionContext = {
-    characterConcept: story.characterConcept,
-    worldbuilding: story.worldbuilding,
-    tone: story.tone,
-    toneFeel: story.toneFeel,
-    toneAvoid: story.toneAvoid,
-    npcs: story.npcs,
-    spine: story.spine,
-    conceptSpec: story.conceptSpec,
-    storyKernel: story.storyKernel,
-    startingSituation: story.startingSituation,
-  };
-  const decompositionResult = await decomposeEntities(decompositionContext, options.apiKey);
-  options.onGenerationStage?.({
-    stage: 'DECOMPOSING_ENTITIES',
-    status: 'completed',
-    attempt: 1,
-  });
-
-  const initialNpcRelationships = buildInitialNpcRelationships(
-    decompositionResult.decomposedCharacters
-  );
-
-  return {
-    ...story,
-    decomposedCharacters: decompositionResult.decomposedCharacters,
-    decomposedWorld: decompositionResult.decomposedWorld,
-    ...(initialNpcRelationships.length > 0 ? { initialNpcRelationships } : {}),
-  };
-}
-
 async function buildPreparedStory(
   options: StartStoryOptions,
   onStoryCreated?: (story: Story) => void
@@ -233,11 +193,8 @@ async function buildPreparedStory(
 
   await storage.saveStory(story);
 
-  // Stage 1: Decompose — new pipeline (character IDs) or legacy (raw NPCs)
-  const useNewPipeline = Boolean(options.protagonistCharacterId);
-  story = useNewPipeline
-    ? await runNewDecompositionPipeline(story, options)
-    : await runLegacyDecompositionPipeline(story, options);
+  // Stage 1: Decompose characters and worldbuilding
+  story = await runNewDecompositionPipeline(story, options);
   await storage.updateStory(story);
 
   const structureResult = await generateStoryStructure(

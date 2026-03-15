@@ -80,6 +80,13 @@ function mergeContextIntoCharacter(
     ...(standalone.pressurePoint ? { pressurePoint: standalone.pressurePoint } : {}),
     ...(standalone.personalDilemmas ? { personalDilemmas: standalone.personalDilemmas } : {}),
     ...(standalone.emotionSalience ? { emotionSalience: standalone.emotionSalience } : {}),
+    ...(standalone.moralLine ? { moralLine: standalone.moralLine } : {}),
+    ...(standalone.worstFear ? { worstFear: standalone.worstFear } : {}),
+    ...(standalone.formativeWound ? { formativeWound: standalone.formativeWound } : {}),
+    ...(standalone.misbelief ? { misbelief: standalone.misbelief } : {}),
+    ...(standalone.stressVariants ? { stressVariants: standalone.stressVariants } : {}),
+    ...(standalone.focalizationFilter ? { focalizationFilter: standalone.focalizationFilter } : {}),
+    ...(standalone.escalationLadder ? { escalationLadder: standalone.escalationLadder } : {}),
   };
 }
 

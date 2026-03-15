@@ -2,7 +2,6 @@ import type { LLMError } from '../../llm/llm-client-types.js';
 import { logger } from '../../logging/index.js';
 import { type ConceptSpec, isConceptSpec } from '../../models/index.js';
 import type { ConceptVerification } from '../../models/concept-generator.js';
-import type { Npc } from '../../models/npc.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 import { isStoryKernel } from '../../models/story-kernel.js';
 
@@ -11,7 +10,6 @@ export type StoryFormInput = {
   characterConcept?: string;
   worldbuilding?: string;
   tone?: string;
-  npcs?: Array<{ name?: string; description?: string }>;
   protagonistCharacterId?: string;
   npcCharacterIds?: string[];
   startingSituation?: string;
@@ -26,7 +24,6 @@ export type TrimmedStoryInput = {
   characterConcept: string;
   worldbuilding?: string;
   tone?: string;
-  npcs?: Npc[];
   protagonistCharacterId?: string;
   npcCharacterIds?: string[];
   startingSituation?: string;
@@ -68,13 +65,6 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
     return { valid: false, error: 'A story kernel is required' };
   }
 
-  const validNpcs = input.npcs
-    ?.map((npc) => ({
-      name: (npc.name ?? '').trim(),
-      description: (npc.description ?? '').trim(),
-    }))
-    .filter((npc) => npc.name.length > 0 && npc.description.length > 0);
-
   return {
     valid: true,
     trimmed: {
@@ -82,7 +72,6 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
       characterConcept: trimmedCharacterConcept,
       worldbuilding: input.worldbuilding?.trim(),
       tone: input.tone?.trim(),
-      npcs: validNpcs && validNpcs.length > 0 ? validNpcs : undefined,
       ...(input.protagonistCharacterId ? { protagonistCharacterId: input.protagonistCharacterId } : {}),
       ...(input.npcCharacterIds && input.npcCharacterIds.length > 0
         ? { npcCharacterIds: input.npcCharacterIds }

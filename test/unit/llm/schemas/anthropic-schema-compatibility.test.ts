@@ -23,7 +23,7 @@ import { CONCEPT_SPECIFICITY_SCHEMA } from '../../../../src/llm/schemas/concept-
 import { CONCEPT_STRESS_TEST_SCHEMA } from '../../../../src/llm/schemas/concept-stress-tester-schema';
 import { CHARACTER_CONTEXTUALIZATION_SCHEMA } from '../../../../src/llm/schemas/character-contextualizer-schema';
 import { CHARACTER_DECOMPOSITION_SCHEMA } from '../../../../src/llm/schemas/character-decomposer-schema';
-import { ENTITY_DECOMPOSITION_SCHEMA } from '../../../../src/llm/schemas/entity-decomposer-schema';
+
 import { WORLDBUILDING_DECOMPOSITION_SCHEMA } from '../../../../src/llm/schemas/worldbuilding-decomposer-schema';
 import { WORLDBUILDING_SEED_SCHEMA } from '../../../../src/llm/schemas/worldbuilding-seed-schema';
 import { WORLDBUILDING_ELABORATION_SCHEMA } from '../../../../src/llm/schemas/worldbuilding-elaboration-schema';
@@ -244,8 +244,7 @@ describe('Anthropic schema compatibility', () => {
     { name: 'CHOICE_GENERATOR_SCHEMA', schema: CHOICE_GENERATOR_SCHEMA },
     { name: 'SPINE_GENERATION_SCHEMA', schema: SPINE_GENERATION_SCHEMA },
     { name: 'SPINE_REWRITE_SCHEMA', schema: SPINE_REWRITE_SCHEMA },
-    { name: 'ENTITY_DECOMPOSITION_SCHEMA', schema: ENTITY_DECOMPOSITION_SCHEMA },
-    { name: 'CHARACTER_DECOMPOSITION_SCHEMA', schema: CHARACTER_DECOMPOSITION_SCHEMA },
+{ name: 'CHARACTER_DECOMPOSITION_SCHEMA', schema: CHARACTER_DECOMPOSITION_SCHEMA },
     { name: 'CHARACTER_CONTEXTUALIZATION_SCHEMA', schema: CHARACTER_CONTEXTUALIZATION_SCHEMA },
     { name: 'WORLDBUILDING_DECOMPOSITION_SCHEMA', schema: WORLDBUILDING_DECOMPOSITION_SCHEMA },
     { name: 'CONCEPT_IDEATION_SCHEMA', schema: CONCEPT_IDEATION_SCHEMA },

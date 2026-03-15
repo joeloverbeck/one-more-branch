@@ -33,7 +33,15 @@ ${formatBullets(SPEECH_EXTRACTION_BULLETS)}
 
 9. ${AGENCY_PRINCIPLES[1]}
 
-10. ${AGENCY_PRINCIPLES[2]}`;
+10. ${AGENCY_PRINCIPLES[2]}
+
+11. DEEP PSYCHOLOGY: Extract the character's moral line (what they will never cross), worst fear (identity-level devastation), formative wound (defining early experience), and misbelief (the false worldview conclusion drawn from their wound — distinct from factual false beliefs).
+
+12. STRESS VARIANTS: Describe how the character's voice and behavior shift under five conditions: underThreat, inIntimacy, whenLying, whenAshamed, whenWinning. These are essential for authentic voice modulation in dramatic scenes.
+
+13. FOCALIZATION FILTER: Identify what this character notices first, systematically misses, and misreads. null if there is not enough information to determine this.
+
+14. ESCALATION LADDER: List 3-5 ordered steps showing how this character escalates when blocked, from mildest response to most extreme.`;
 
 export interface CharacterDecomposerPromptContext {
   readonly characterName: string;
@@ -62,7 +70,14 @@ INSTRUCTIONS:
 9. stakes: List 2-4 concrete things the character stands to lose or gain
 10. pressurePoint: Identify the one vulnerability that could force this character to act against their own interest
 11. personalDilemmas: Identify 1-3 competing loyalties or values that create genuine internal conflict
-12. emotionSalience: Assess how emotionally expressive this character is (LOW/MEDIUM/HIGH). null if uncertain`;
+12. emotionSalience: Assess how emotionally expressive this character is (LOW/MEDIUM/HIGH). null if uncertain
+13. moralLine: Identify the line this character will not cross, regardless of the stakes
+14. worstFear: What would psychologically destroy this character — not physical danger, but identity-level devastation
+15. formativeWound: The defining early experience that shaped this character's defenses and worldview
+16. misbelief: The false conclusion drawn from their wound that distorts how they see the world (distinct from falseBeliefs which are factual misconceptions)
+17. stressVariants: How the character's voice and behavior shift under five conditions: underThreat, inIntimacy, whenLying, whenAshamed, whenWinning
+18. focalizationFilter: What the character notices first, systematically misses, and misreads. null if uncertain
+19. escalationLadder: 3-5 ordered steps showing how this character escalates when blocked, from mildest to most extreme`;
 
   return [
     { role: 'system', content: CHARACTER_DECOMPOSER_SYSTEM_PROMPT },
