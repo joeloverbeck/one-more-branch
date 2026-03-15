@@ -69,8 +69,6 @@ export const CHAR_RELATIONSHIPS_GENERATION_SCHEMA: JsonSchema = {
               },
               numericValence: {
                 type: 'number',
-                minimum: -5,
-                maximum: 5,
                 description: 'A numeric relationship score from -5 to 5 inclusive.',
               },
               history: {

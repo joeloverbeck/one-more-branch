@@ -8,8 +8,14 @@ import {
   loadCharacter,
   listCharacters,
   deleteCharacter,
+  updateCharacter,
 } from '../../persistence/character-repository.js';
 import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
+import {
+  isEditableCharacterField,
+  validateCharacterFieldValue,
+  applyCharacterFieldUpdate,
+} from '../utils/character-field-updater.js';
 import { flattenParam } from '../utils/request-normalizers.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
 
@@ -130,6 +136,42 @@ characterRoutes.get(
     }
 
     return res.json({ success: true, character });
+  })
+);
+
+characterRoutes.patch(
+  '/api/:characterId',
+  wrapAsyncRoute(async (req: Request, res: Response) => {
+    const characterId = flattenParam(req.params['characterId']) ?? '';
+    const body = req.body as { fieldPath?: unknown; value?: unknown };
+    const fieldPath = typeof body.fieldPath === 'string' ? body.fieldPath.trim() : '';
+
+    if (fieldPath.length === 0) {
+      return res.status(400).json({ success: false, error: 'fieldPath is required' });
+    }
+
+    if (!isEditableCharacterField(fieldPath)) {
+      return res.status(400).json({ success: false, error: `Field "${fieldPath}" is not editable` });
+    }
+
+    const validationError = validateCharacterFieldValue(fieldPath, body.value);
+    if (validationError) {
+      return res.status(400).json({ success: false, error: validationError });
+    }
+
+    try {
+      const updated = await updateCharacter(characterId, (existing) =>
+        applyCharacterFieldUpdate(existing, fieldPath, body.value)
+      );
+      return res.json({ success: true, character: updated });
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      if (err.message.includes('not found')) {
+        return res.status(404).json({ success: false, error: err.message });
+      }
+      logger.error('Error updating character:', { error: err.message, stack: err.stack });
+      return res.status(500).json({ success: false, error: err.message });
+    }
   })
 );
 

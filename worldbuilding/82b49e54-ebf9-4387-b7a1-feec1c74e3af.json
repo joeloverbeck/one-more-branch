@@ -1,0 +1,115 @@
+{
+  "id": "82b49e54-ebf9-4387-b7a1-feec1c74e3af",
+  "name": "Donostia - Sugar Mommy",
+  "sourceKind": "RAW_DECOMPOSED",
+  "createdAt": "2026-03-14T21:52:30.219Z",
+  "updatedAt": "2026-03-14T21:52:30.219Z",
+  "inputs": {},
+  "worldSeed": null,
+  "rawWorldMarkdown": null,
+  "rawSourceText": "Set in Donostia, a costal, sophisticated city in the north coast of Spain. Contains famous restaurants and art expositions. There's a strong contrast between the Donostia of the wealthy, with their class dynamics, and working-class neighborhoods. Prices of housing have risen steadily, which forces plenty of young people to move out. Many of the wealthy and famous aspire to live in a villa in the hillside or hilltop with views overlooking the Donostia bay.",
+  "decomposedWorld": {
+    "facts": [
+      {
+        "id": "wf-1",
+        "domain": "geography",
+        "fact": "Donostia is a coastal city located on the north coast of Spain.",
+        "scope": "Donostia, Spain",
+        "factType": "LAW"
+      },
+      {
+        "id": "wf-2",
+        "domain": "geography",
+        "fact": "Donostia has a bay that is visible from elevated hillside and hilltop positions.",
+        "scope": "Donostia, Spain",
+        "factType": "LAW"
+      },
+      {
+        "id": "wf-3",
+        "domain": "geography",
+        "fact": "Donostia is surrounded by hills, some of which are dotted with villas and upscale residences.",
+        "scope": "Donostia outskirts and elevated districts",
+        "factType": "LAW"
+      },
+      {
+        "id": "wf-4",
+        "domain": "culture",
+        "fact": "Donostia is renowned for its sophisticated culinary scene, including famous high-end restaurants.",
+        "scope": "Donostia, Spain",
+        "factType": "NORM"
+      },
+      {
+        "id": "wf-5",
+        "domain": "culture",
+        "fact": "Donostia hosts notable art expositions that attract a cultured, affluent audience.",
+        "scope": "Donostia, Spain",
+        "factType": "NORM"
+      },
+      {
+        "id": "wf-6",
+        "domain": "society",
+        "fact": "Donostia is sharply divided between a wealthy elite class and working-class neighborhoods, with stark contrasts in lifestyle and resources.",
+        "scope": "Donostia, Spain",
+        "factType": "LAW"
+      },
+      {
+        "id": "wf-7",
+        "domain": "society",
+        "fact": "The wealthy class in Donostia maintains rigid internal class dynamics and social hierarchies.",
+        "scope": "Donostia wealthy circles",
+        "factType": "NORM"
+      },
+      {
+        "id": "wf-8",
+        "domain": "economy",
+        "fact": "Housing prices in Donostia have risen steadily over time, making the city increasingly unaffordable.",
+        "scope": "Donostia, Spain",
+        "factType": "LAW"
+      },
+      {
+        "id": "wf-9",
+        "domain": "society",
+        "fact": "Rising housing costs force many young people to leave Donostia and relocate elsewhere.",
+        "scope": "Donostia, Spain",
+        "factType": "NORM"
+      },
+      {
+        "id": "wf-10",
+        "domain": "culture",
+        "fact": "Among the wealthy and famous of Donostia, owning a hilltop or hillside villa with bay views is a coveted status symbol and aspiration.",
+        "scope": "Donostia wealthy and celebrity circles",
+        "factType": "NORM"
+      },
+      {
+        "id": "wf-11",
+        "domain": "geography",
+        "fact": "Hilltop and hillside villas in Donostia offer panoramic views overlooking the Donostia bay.",
+        "scope": "Donostia elevated residential districts",
+        "factType": "LAW"
+      },
+      {
+        "id": "wf-12",
+        "domain": "society",
+        "fact": "Donostia's sophistication and prestige attract wealthy residents, celebrities, and the socially ambitious.",
+        "scope": "Donostia, Spain",
+        "factType": "NORM"
+      },
+      {
+        "id": "wf-13",
+        "domain": "economy",
+        "fact": "Working-class residents of Donostia are economically marginalized relative to the city's wealthy elite, particularly as housing costs climb.",
+        "scope": "Donostia working-class neighborhoods",
+        "factType": "NORM"
+      },
+      {
+        "id": "wf-14",
+        "domain": "culture",
+        "fact": "The illicit and secretive mixing across class boundaries in Donostia's intimate social spaces — restaurants, art expositions, private villas — carries a charged, transgressive quality.",
+        "scope": "Donostia social spaces",
+        "factType": "NORM"
+      }
+    ],
+    "rawWorldbuilding": "Set in Donostia, a costal, sophisticated city in the north coast of Spain. Contains famous restaurants and art expositions. There's a strong contrast between the Donostia of the wealthy, with their class dynamics, and working-class neighborhoods. Prices of housing have risen steadily, which forces plenty of young people to move out. Many of the wealthy and famous aspire to live in a villa in the hillside or hilltop with views overlooking the Donostia bay."
+  },
+  "completedStages": []
+}

@@ -44,6 +44,22 @@ export async function listCharacters(): Promise<StandaloneDecomposedCharacter[]>
   return characters;
 }
 
+export async function updateCharacter(
+  characterId: string,
+  updater: (existing: StandaloneDecomposedCharacter) => StandaloneDecomposedCharacter
+): Promise<StandaloneDecomposedCharacter> {
+  const existing = await loadCharacter(characterId);
+  if (!existing) {
+    throw new Error(`Character not found: ${characterId}`);
+  }
+  const updated = updater(existing);
+  if (!isStandaloneDecomposedCharacter(updated)) {
+    throw new Error('Invalid character data after update');
+  }
+  await saveCharacter(updated);
+  return updated;
+}
+
 export async function deleteCharacter(characterId: string): Promise<void> {
   const filePath = getCharacterFilePath(characterId);
   await deleteFile(filePath);

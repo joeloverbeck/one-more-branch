@@ -405,12 +405,12 @@ describe('CHAR_RELATIONSHIPS_GENERATION_SCHEMA', () => {
         enum: ['POSITIVE', 'NEGATIVE', 'AMBIVALENT'],
       },
     ]);
-    expect((relationshipProperties['numericValence'] as Record<string, unknown>)['minimum']).toBe(
-      -5
-    );
-    expect((relationshipProperties['numericValence'] as Record<string, unknown>)['maximum']).toBe(
-      5
-    );
+    expect(
+      (relationshipProperties['numericValence'] as Record<string, unknown>)['minimum']
+    ).toBeUndefined();
+    expect(
+      (relationshipProperties['numericValence'] as Record<string, unknown>)['maximum']
+    ).toBeUndefined();
   });
 });
 
