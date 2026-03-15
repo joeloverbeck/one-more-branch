@@ -86,7 +86,7 @@ async function generateMilestones(
     messages,
     parseResponse: (parsed) =>
       parseMilestoneGenerationResponseObject(parsed, macroArchitecture, {
-        verifiedSetpieceCount: context.conceptVerification?.escalatingSetpieces.length ?? 0,
+        verifiedSetpieceCount: macroArchitecture.setpieceBank.length,
       }),
   });
   const milestoneResult = milestoneStageResult.parsed;
@@ -149,7 +149,7 @@ export async function generateStoryStructure(
   const validated = await runGenerationStage(
     options?.onGenerationStage,
     STRUCTURE_PIPELINE_STAGES.validation,
-    () => validateAndRepairStructure(result, context, apiKey, resolvedOptions)
+    () => validateAndRepairStructure(result, context, apiKey, resolvedOptions, macroArchitecture.setpieceBank)
   );
   return validated.result;
 }

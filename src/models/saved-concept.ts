@@ -191,15 +191,7 @@ function isConceptVerification(value: unknown): value is ConceptVerification {
     value['premisePromises'].length >= VERIFICATION_CONSTRAINTS.premisePromisesMin &&
     value['premisePromises'].length <= VERIFICATION_CONSTRAINTS.premisePromisesMax &&
     value['premisePromises'].every((item: unknown) => isNonEmptyString(item)) &&
-    Array.isArray(value['escalatingSetpieces']) &&
-    value['escalatingSetpieces'].length >= VERIFICATION_CONSTRAINTS.escalatingSetpiecesMin &&
-    value['escalatingSetpieces'].length <= VERIFICATION_CONSTRAINTS.escalatingSetpiecesMax &&
-    value['escalatingSetpieces'].every((item: unknown) => isNonEmptyString(item)) &&
     typeof value['setpieceCausalChainBroken'] === 'boolean' &&
-    Array.isArray(value['setpieceCausalLinks']) &&
-    value['setpieceCausalLinks'].length >= VERIFICATION_CONSTRAINTS.setpieceCausalLinksMin &&
-    value['setpieceCausalLinks'].length <= VERIFICATION_CONSTRAINTS.setpieceCausalLinksMax &&
-    value['setpieceCausalLinks'].every((item: unknown) => isNonEmptyString(item)) &&
     isNonEmptyString(value['inevitabilityStatement']) &&
     isLoadBearingCheck(value['loadBearingCheck']) &&
     isKernelFidelityCheck(value['kernelFidelityCheck']) &&

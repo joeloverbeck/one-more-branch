@@ -449,9 +449,7 @@ export interface ConceptVerification {
   readonly loglineCompressible: boolean;
   readonly logline: string;
   readonly premisePromises: readonly string[];
-  readonly escalatingSetpieces: readonly string[];
   readonly setpieceCausalChainBroken: boolean;
-  readonly setpieceCausalLinks: readonly string[];
   readonly inevitabilityStatement: string;
   readonly loadBearingCheck: LoadBearingCheck;
   readonly kernelFidelityCheck: KernelFidelityCheck;

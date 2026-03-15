@@ -156,16 +156,13 @@ describe('Concept Pipeline Integration', () => {
     };
 
     const scenarioPayload = {
-      scenarioAnalyses: Array.from({ length: 6 }, (_, i) => {
-        const v = createConceptVerificationFixture(i + 1);
-        return {
-          conceptId: v.conceptId,
-          escalatingSetpieces: v.escalatingSetpieces,
-          setpieceCausalChainBroken: v.setpieceCausalChainBroken,
-          setpieceCausalLinks: v.setpieceCausalLinks,
-          conceptIntegrityScore: v.conceptIntegrityScore,
-        };
-      }),
+      scenarioAnalyses: Array.from({ length: 6 }, (_, i) => ({
+        conceptId: `concept_${i + 1}`,
+        escalatingSetpieces: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6'],
+        setpieceCausalChainBroken: false,
+        setpieceCausalLinks: ['1->2', '2->3', '3->4', '4->5', '5->6'],
+        conceptIntegrityScore: 85,
+      })),
     };
 
     fetchMock

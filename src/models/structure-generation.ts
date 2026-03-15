@@ -51,6 +51,7 @@ export interface MacroArchitectureResult {
   pacingBudget: { targetPagesMin: number; targetPagesMax: number };
   anchorMoments: AnchorMoments;
   acts: MacroAct[];
+  setpieceBank: readonly string[];
   initialNpcAgendas?: NpcAgenda[];
   rawResponse: string;
 }

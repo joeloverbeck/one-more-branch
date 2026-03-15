@@ -23,6 +23,7 @@ function createMacroArchitecture(): MacroArchitectureResult {
       climax: { actIndex: 2, description: 'The harbor court collapses under testimony.' },
       signatureScenarioPlacement: { actIndex: 1, description: 'A ritual hearing turns into a trap.' },
     },
+    setpieceBank: ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3'],
     initialNpcAgendas: [],
     acts: [
       {
@@ -80,9 +81,7 @@ describe('buildMilestoneGenerationPrompt', () => {
       loglineCompressible: true,
       logline: 'A disgraced inspector must weaponize civic ritual against a tribunal cover-up.',
       premisePromises: ['Public ritual becomes a weapon'],
-      escalatingSetpieces: ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3'],
       setpieceCausalChainBroken: false,
-      setpieceCausalLinks: ['0->1', '1->2', '2->3'],
       inevitabilityStatement: 'The ritual machinery will eventually turn on itself.',
       loadBearingCheck: {
         passes: true,

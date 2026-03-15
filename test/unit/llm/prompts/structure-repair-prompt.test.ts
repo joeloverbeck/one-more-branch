@@ -43,9 +43,7 @@ describe('structure-repair-prompt', () => {
           loglineCompressible: true,
           logline: 'A disgraced guard weaponizes public ritual against a tribunal cover-up.',
           premisePromises: ['Public ritual becomes a weapon'],
-          escalatingSetpieces: ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3'],
           setpieceCausalChainBroken: false,
-          setpieceCausalLinks: ['0->1', '1->2', '2->3'],
           inevitabilityStatement: 'The ritual machinery will turn on itself.',
           loadBearingCheck: {
             passes: true,
@@ -61,6 +59,7 @@ describe('structure-repair-prompt', () => {
         },
       },
       {
+        setpieceBank: ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3'],
         targetActIndices: [1, 2],
         diagnostics: [
           {

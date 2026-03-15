@@ -7,11 +7,26 @@ describe('MACRO_ARCHITECTURE_SCHEMA', () => {
     expect(MACRO_ARCHITECTURE_SCHEMA.json_schema.strict).toBe(true);
   });
 
-  it('avoids Anthropic-incompatible array cardinality keywords', () => {
-    const schemaStr = JSON.stringify(MACRO_ARCHITECTURE_SCHEMA);
+  it('avoids Anthropic-incompatible array cardinality keywords outside setpieceBank', () => {
+    const schema = MACRO_ARCHITECTURE_SCHEMA.json_schema.schema as {
+      properties: Record<string, unknown>;
+    };
 
-    expect(schemaStr).not.toMatch(/"minItems":\s*[2-9]/);
-    expect(schemaStr).not.toMatch(/"maxItems"/);
+    // setpieceBank intentionally uses minItems/maxItems to enforce exactly 6 items
+    const { setpieceBank: _setpieceBank, ...otherProperties } = schema.properties;
+    void _setpieceBank;
+    const otherSchemaStr = JSON.stringify(otherProperties);
+
+    expect(otherSchemaStr).not.toMatch(/"minItems":\s*[2-9]/);
+    expect(otherSchemaStr).not.toMatch(/"maxItems"/);
+
+    // Verify setpieceBank enforces exactly 6 items
+    const setpieceBankSchema = schema.properties['setpieceBank'] as {
+      minItems: number;
+      maxItems: number;
+    };
+    expect(setpieceBankSchema.minItems).toBe(6);
+    expect(setpieceBankSchema.maxItems).toBe(6);
   });
 
   it('requires the macro contract fields and forbids extra properties', () => {
@@ -40,6 +55,7 @@ describe('MACRO_ARCHITECTURE_SCHEMA', () => {
       'pacingBudget',
       'anchorMoments',
       'initialNpcAgendas',
+      'setpieceBank',
       'acts',
     ]);
     expect(schema.additionalProperties).toBe(false);

@@ -26,6 +26,14 @@ function createValidMacroArchitecture(): Record<string, unknown> {
         offScreenBehavior: 'Rotates loyal officers through key checkpoints.',
       },
     ],
+    setpieceBank: [
+      'Setpiece 1',
+      'Setpiece 2',
+      'Setpiece 3',
+      'Setpiece 4',
+      'Setpiece 5',
+      'Setpiece 6',
+    ],
     acts: [
       {
         name: 'Act I',

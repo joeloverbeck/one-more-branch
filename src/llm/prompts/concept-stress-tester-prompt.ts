@@ -64,17 +64,10 @@ function buildUserPayload(context: ConceptStressTesterContext): string {
 }
 
 function buildVerificationIntelligenceSection(verification: ConceptVerification): string {
-  const setpieces = verification.escalatingSetpieces
-    .map((s, i) => `${i + 1}. ${s}`)
-    .join('\n');
-
   return `## VERIFICATION INTELLIGENCE
 
 ### Signature Scenario (PROTECT THIS)
 ${verification.signatureScenario}
-
-### Setpiece Bank (PRESERVE UNIQUENESS)
-${setpieces}
 
 ### Load-Bearing Check
 - Passes: ${verification.loadBearingCheck.passes}
@@ -83,7 +76,6 @@ ${setpieces}
 
 DIRECTIVES:
 - Your hardened concept MUST NOT invalidate the signature scenario.
-- Your drift risk mitigations MUST NOT erode any setpiece's world-specific elements.
 - If load-bearing check identified generic collapse into "${verification.loadBearingCheck.genericCollapse}", your hardening must WIDEN the distance from that generic form, not narrow it.`;
 }
 

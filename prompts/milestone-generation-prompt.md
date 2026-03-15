@@ -13,7 +13,7 @@ This prompt takes a validated, immutable `MacroArchitectureResult` plus the orig
 - 2-4 milestones per act
 - canonical milestone fields including `exitCondition`
 - midpoint placement that must match the locked macro anchor
-- setpiece traceability or explicit concept-specificity for escalation-heavy milestones
+- setpiece traceability against `MacroArchitectureResult.setpieceBank` (not concept verification) or explicit concept-specificity for escalation-heavy milestones
 
 It must not rewrite macro-act fields. Macro architecture remains the source of truth for act-level commitments.
 

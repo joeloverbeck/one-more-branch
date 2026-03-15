@@ -185,8 +185,27 @@ export function parseMacroArchitectureResponseObject(
     pacingBudget: parsePacingBudget(data['pacingBudget']),
     anchorMoments: parseAnchorMoments(data['anchorMoments'], acts.length),
     initialNpcAgendas: parseNpcAgendas(data['initialNpcAgendas']),
+    setpieceBank: parseSetpieceBank(data['setpieceBank']),
     acts,
   };
+}
+
+const SETPIECE_BANK_SIZE = 6;
+
+function parseSetpieceBank(value: unknown): readonly string[] {
+  if (!Array.isArray(value)) {
+    throw new LLMError('setpieceBank must be an array', 'STRUCTURE_PARSE_ERROR', true);
+  }
+
+  if (value.length !== SETPIECE_BANK_SIZE) {
+    throw new LLMError(
+      `setpieceBank must contain exactly ${SETPIECE_BANK_SIZE} items (received: ${value.length})`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
+  return value.map((item, index) => parseRequiredString(item, `setpieceBank[${index}]`));
 }
 
 function parsePacingBudget(value: unknown): MacroArchitectureResult['pacingBudget'] {

@@ -88,9 +88,7 @@ describe('structure-generation shared context builders', () => {
         'The tribunal itself becomes the battleground.',
         'An ally inside the system is morally compromised.',
       ],
-      escalatingSetpieces: ['Dock chase', 'Archive theft', 'Rigged hearing', 'Mutiny lockdown'],
       setpieceCausalChainBroken: false,
-      setpieceCausalLinks: ['1->2', '2->3', '3->4'],
       inevitabilityStatement: 'Public reckoning is unavoidable.',
       loadBearingCheck: {
         passes: true,

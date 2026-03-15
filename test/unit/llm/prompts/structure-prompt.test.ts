@@ -201,7 +201,7 @@ describe('buildStructurePrompt', () => {
     expect(lastUser).toContain('causalLink: one sentence explaining the cause');
   });
 
-  it('includes setpiece traceability instructions when concept verification is provided', () => {
+  it('does not include setpiece traceability instructions (deprecated in structure prompt)', () => {
     const messages = buildStructurePrompt({
       ...baseContext,
       conceptVerification: {
@@ -210,9 +210,7 @@ describe('buildStructurePrompt', () => {
         loglineCompressible: true,
         logline: 'An investigator must weaponize tribunal ritual before the tide courts bury the city\'s evidence.',
         premisePromises: ['promise 1', 'promise 2', 'promise 3'],
-        escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
         setpieceCausalChainBroken: false,
-        setpieceCausalLinks: ['1->2', '2->3', '3->4', '4->5', '5->6'],
         inevitabilityStatement: 'The city cannot avoid public reckoning.',
         loadBearingCheck: {
           passes: true,
@@ -229,9 +227,7 @@ describe('buildStructurePrompt', () => {
     });
     const lastUser = getUserMessages(messages).at(-1) ?? '';
 
-    expect(lastUser).toContain('at least 4 of your milestone hooks MUST trace back');
-    expect(lastUser).toContain('setpieceSourceIndex');
-    expect(lastUser).toContain('first item = 0, last item = 5');
+    expect(lastUser).not.toContain('VERIFIED SETPIECE BANK');
   });
 
   it('includes premise promise contract when concept verification includes premise promises', () => {
@@ -247,9 +243,7 @@ describe('buildStructurePrompt', () => {
           'A trusted ally becomes complicit in the purge machinery.',
           'The final confrontation unfolds under a rising tide siren.',
         ],
-        escalatingSetpieces: ['s1', 's2', 's3', 's4', 's5', 's6'],
         setpieceCausalChainBroken: false,
-        setpieceCausalLinks: ['1->2', '2->3', '3->4', '4->5', '5->6'],
         inevitabilityStatement: 'The city cannot avoid public reckoning.',
         loadBearingCheck: {
           passes: true,
