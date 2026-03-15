@@ -17,3 +17,5 @@ This prompt designs the locked macro frame for story structure:
 - initial NPC agendas
 
 It does not generate milestones. Milestone realization happens in the dedicated Call 2 prompt.
+
+The system prompt is built by `buildStructureSystemPrompt()`, which injects `{{CONTENT_POLICY}}` (NC-21 content guidelines) automatically.

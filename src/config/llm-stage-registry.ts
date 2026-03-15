@@ -10,7 +10,6 @@ export const LLM_STAGE_KEYS = [
   'conceptStressTester',
   'conceptSpecificity',
   'conceptScenario',
-  'spine',
   'spineFoundation',
   'spineArcEngine',
   'spineSynthesis',

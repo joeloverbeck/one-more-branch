@@ -40,7 +40,6 @@ import { PROMISE_TRACKER_SCHEMA } from '../../../../src/llm/schemas/promise-trac
 import { PROSE_QUALITY_SCHEMA } from '../../../../src/llm/schemas/prose-quality-schema';
 import { SCENE_IDEATOR_SCHEMA } from '../../../../src/llm/schemas/scene-ideator-schema';
 import { SPINE_REWRITE_SCHEMA } from '../../../../src/llm/schemas/spine-rewrite-schema';
-import { SPINE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/spine-schema';
 import { SPINE_FOUNDATION_SCHEMA } from '../../../../src/llm/schemas/spine-foundation-schema';
 import { SPINE_ARC_ENGINE_SCHEMA } from '../../../../src/llm/schemas/spine-arc-engine-schema';
 import { SPINE_SYNTHESIS_SCHEMA } from '../../../../src/llm/schemas/spine-synthesis-schema';
@@ -245,7 +244,6 @@ describe('Anthropic schema compatibility', () => {
     { name: 'LOREKEEPER_SCHEMA', schema: LOREKEEPER_SCHEMA },
     { name: 'AGENDA_RESOLVER_SCHEMA', schema: AGENDA_RESOLVER_SCHEMA },
     { name: 'CHOICE_GENERATOR_SCHEMA', schema: CHOICE_GENERATOR_SCHEMA },
-    { name: 'SPINE_GENERATION_SCHEMA', schema: SPINE_GENERATION_SCHEMA },
     { name: 'SPINE_FOUNDATION_SCHEMA', schema: SPINE_FOUNDATION_SCHEMA },
     { name: 'SPINE_ARC_ENGINE_SCHEMA', schema: SPINE_ARC_ENGINE_SCHEMA },
     { name: 'SPINE_SYNTHESIS_SCHEMA', schema: SPINE_SYNTHESIS_SCHEMA },

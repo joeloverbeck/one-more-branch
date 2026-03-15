@@ -126,9 +126,19 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/structure-repair-prompt.md',
   },
   {
-    promptType: 'spine',
-    sourcePath: 'src/llm/prompts/spine-prompt.ts',
-    docPath: 'prompts/spine-prompt.md',
+    promptType: 'spineFoundation',
+    sourcePath: 'src/llm/prompts/spine-foundation-prompt.ts',
+    docPath: 'prompts/spine-foundation-prompt.md',
+  },
+  {
+    promptType: 'spineArcEngine',
+    sourcePath: 'src/llm/prompts/spine-arc-engine-prompt.ts',
+    docPath: 'prompts/spine-arc-engine-prompt.md',
+  },
+  {
+    promptType: 'spineSynthesis',
+    sourcePath: 'src/llm/prompts/spine-synthesis-prompt.ts',
+    docPath: 'prompts/spine-synthesis-prompt.md',
   },
   {
     promptType: 'spineRewrite',

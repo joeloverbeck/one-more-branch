@@ -16,3 +16,5 @@ This prompt takes a validated, immutable `MacroArchitectureResult` plus the orig
 - setpiece traceability or explicit concept-specificity for escalation-heavy milestones
 
 It must not rewrite macro-act fields. Macro architecture remains the source of truth for act-level commitments.
+
+The system prompt is built by `buildStructureSystemPrompt()`, which injects `{{CONTENT_POLICY}}` (NC-21 content guidelines) automatically.
