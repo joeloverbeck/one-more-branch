@@ -9,6 +9,7 @@ import {
   formatOverdueThreadsSection,
   formatPendingPromisesSection,
 } from '../../../../src/llm/prompts/scene-ideator-prompt';
+import { DEFAULT_SCENE_IDEA_COUNT } from '../../../../src/llm/scene-ideation-contract';
 import {
   Urgency,
   ThreadType,
@@ -64,6 +65,7 @@ describe('buildSceneIdeatorPrompt', () => {
   it('system message contains diversity constraint', () => {
     const messages = buildSceneIdeatorPrompt(openingContext);
     expect(messages[0].content).toContain('DIVERSITY CONSTRAINT:');
+    expect(messages[0].content).toContain('diversityLane');
   });
 
   it('system message contains field instructions', () => {
@@ -72,6 +74,13 @@ describe('buildSceneIdeatorPrompt', () => {
   });
 
   describe('opening mode', () => {
+    it('uses the shared scene ideation count and slate block', () => {
+      const messages = buildSceneIdeatorPrompt(openingContext);
+      expect(messages[0].content).toContain(`generate exactly ${DEFAULT_SCENE_IDEA_COUNT}`);
+      expect(messages[1].content).toContain('IDEATION SLATE:');
+      expect(messages[1].content).toContain(`Generate exactly ${DEFAULT_SCENE_IDEA_COUNT} options.`);
+    });
+
     it('user message contains "OPENING scene"', () => {
       const messages = buildSceneIdeatorPrompt(openingContext);
       expect(messages[1].content).toContain('OPENING scene');
@@ -88,6 +97,12 @@ describe('buildSceneIdeatorPrompt', () => {
   });
 
   describe('continuation mode', () => {
+    it('describes the lane-aware output shape', () => {
+      const messages = buildSceneIdeatorPrompt(continuationContext);
+      expect(messages[1].content).toContain('OUTPUT SHAPE:');
+      expect(messages[1].content).toContain('diversityLane, scenePurpose');
+    });
+
     it('user message contains "PREVIOUS SCENE SUMMARY"', () => {
       const messages = buildSceneIdeatorPrompt(continuationContext);
       expect(messages[1].content).toContain('PREVIOUS SCENE SUMMARY');

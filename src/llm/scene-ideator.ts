@@ -9,9 +9,10 @@ import {
   readJsonResponse,
 } from './http-client.js';
 import { buildSceneIdeatorPrompt } from './prompts/scene-ideator-prompt.js';
+import { buildSceneIdeationSlate } from './scene-ideation-slate.js';
 import { withModelFallback } from './model-fallback.js';
 import { withRetry } from './retry.js';
-import { SCENE_IDEATOR_SCHEMA } from './schemas/scene-ideator-schema.js';
+import { buildSceneIdeatorSchema } from './schemas/scene-ideator-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import type { SceneDirectionOption } from '../models/scene-direction.js';
@@ -20,6 +21,7 @@ import {
   isValuePolarityShift,
   isPacingMode,
 } from '../models/scene-direction-taxonomy.js';
+import { isSceneIdeaLane } from './scene-ideation-contract.js';
 import type { SceneIdeatorContext, SceneIdeationResult } from './scene-ideator-types.js';
 
 function parseSceneDirectionOption(raw: unknown, index: number): SceneDirectionOption {
@@ -32,6 +34,14 @@ function parseSceneDirectionOption(raw: unknown, index: number): SceneDirectionO
   }
 
   const data = raw as Record<string, unknown>;
+
+  if (!isSceneIdeaLane(data['diversityLane'])) {
+    throw new LLMError(
+      `Scene direction option ${index + 1} invalid diversityLane: ${String(data['diversityLane'])}`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
 
   if (!isScenePurpose(data['scenePurpose'])) {
     throw new LLMError(
@@ -77,6 +87,7 @@ function parseSceneDirectionOption(raw: unknown, index: number): SceneDirectionO
   }
 
   return {
+    diversityLane: data['diversityLane'],
     scenePurpose: data['scenePurpose'],
     valuePolarityShift: data['valuePolarityShift'],
     pacingMode: data['pacingMode'],
@@ -86,21 +97,46 @@ function parseSceneDirectionOption(raw: unknown, index: number): SceneDirectionO
 }
 
 function validateDiversity(options: readonly SceneDirectionOption[]): void {
-  const seen = new Set<string>();
+  const seenLanes = new Set<string>();
+  const seenPurposeShiftPairs = new Set<string>();
+  const seenLanePurposePairs = new Set<string>();
+
   for (const option of options) {
-    const key = `${option.scenePurpose}:${option.valuePolarityShift}`;
-    if (seen.has(key)) {
+    const lanePurposeKey = `${option.diversityLane}:${option.scenePurpose}`;
+    if (seenLanePurposePairs.has(lanePurposeKey)) {
       throw new LLMError(
-        `Diversity violation: duplicate (scenePurpose, valuePolarityShift) combination: ${key}`,
+        `Diversity violation: duplicate (diversityLane, scenePurpose) combination: ${lanePurposeKey}`,
         'STRUCTURE_PARSE_ERROR',
         true
       );
     }
-    seen.add(key);
+    seenLanePurposePairs.add(lanePurposeKey);
+
+    if (seenLanes.has(option.diversityLane)) {
+      throw new LLMError(
+        `Diversity violation: duplicate diversityLane: ${option.diversityLane}`,
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
+    }
+    seenLanes.add(option.diversityLane);
+
+    const purposeShiftKey = `${option.scenePurpose}:${option.valuePolarityShift}`;
+    if (seenPurposeShiftPairs.has(purposeShiftKey)) {
+      throw new LLMError(
+        `Diversity violation: duplicate (scenePurpose, valuePolarityShift) combination: ${purposeShiftKey}`,
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
+    }
+    seenPurposeShiftPairs.add(purposeShiftKey);
   }
 }
 
-function parseSceneIdeatorResponse(parsed: unknown): readonly SceneDirectionOption[] {
+function parseSceneIdeatorResponse(
+  parsed: unknown,
+  targetOptionCount: number
+): readonly SceneDirectionOption[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError('Scene ideator response must be an object', 'STRUCTURE_PARSE_ERROR', true);
   }
@@ -114,9 +150,9 @@ function parseSceneIdeatorResponse(parsed: unknown): readonly SceneDirectionOpti
     );
   }
 
-  if (data['options'].length !== 3) {
+  if (data['options'].length !== targetOptionCount) {
     throw new LLMError(
-      `Scene ideator response must have exactly 3 options (received: ${data['options'].length})`,
+      `Scene ideator response must have exactly ${targetOptionCount} options (received: ${data['options'].length})`,
       'STRUCTURE_PARSE_ERROR',
       true
     );
@@ -133,6 +169,7 @@ async function fetchSceneDirections(
   apiKey: string,
   model: string,
   messages: ReturnType<typeof buildSceneIdeatorPrompt>,
+  targetOptionCount: number,
   temperature: number,
   maxTokens: number
 ): Promise<SceneIdeationResult> {
@@ -149,7 +186,7 @@ async function fetchSceneDirections(
       messages,
       temperature,
       max_tokens: maxTokens,
-      response_format: SCENE_IDEATOR_SCHEMA,
+      response_format: buildSceneIdeatorSchema(targetOptionCount),
     }),
   });
 
@@ -170,7 +207,7 @@ async function fetchSceneDirections(
   const parsedMessage = parseMessageJsonContent(content);
   const responseText = parsedMessage.rawText;
   try {
-    const sceneOptions = parseSceneIdeatorResponse(parsedMessage.parsed);
+    const sceneOptions = parseSceneIdeatorResponse(parsedMessage.parsed, targetOptionCount);
     return { options: sceneOptions, rawResponse: responseText };
   } catch (error) {
     if (error instanceof LLMError) {
@@ -191,13 +228,22 @@ export async function generateSceneDirections(
   const primaryModel = options?.model ?? getStageModel('sceneIdeator');
   const temperature = options?.temperature ?? config.temperature;
   const maxTokens = options?.maxTokens ?? config.maxTokens;
+  const slate = buildSceneIdeationSlate(context);
 
-  const messages = buildSceneIdeatorPrompt(context);
+  const messages = buildSceneIdeatorPrompt(context, slate);
   logPrompt(logger, 'sceneIdeator', messages);
 
   const result = await withRetry(() =>
     withModelFallback(
-      (m) => fetchSceneDirections(apiKey, m, messages, temperature, maxTokens),
+      (m) =>
+        fetchSceneDirections(
+          apiKey,
+          m,
+          messages,
+          slate.targetOptionCount,
+          temperature,
+          maxTokens
+        ),
       primaryModel,
       'sceneIdeator'
     )

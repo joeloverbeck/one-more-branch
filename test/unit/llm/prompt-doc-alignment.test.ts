@@ -170,6 +170,11 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     sourcePath: 'src/llm/prompts/concept-single-evaluator-prompt.ts',
     docPath: 'prompts/concept-single-evaluator-prompt.md',
   },
+  {
+    promptType: 'sceneIdeator',
+    sourcePath: 'src/llm/prompts/scene-ideator-prompt.ts',
+    docPath: 'prompts/scene-ideator-prompt.md',
+  },
 ];
 
 function readRepoFile(relativePath: string): string {

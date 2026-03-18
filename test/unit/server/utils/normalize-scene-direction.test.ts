@@ -92,4 +92,19 @@ describe('normalizeSelectedSceneDirection', () => {
       dramaticJustification: 'This advances the conflict.',
     });
   });
+
+  it('ignores ideator-only diversityLane metadata', () => {
+    const result = normalizeSelectedSceneDirection({
+      ...validInput,
+      diversityLane: 'ESCALATION',
+    });
+
+    expect(result).toEqual({
+      scenePurpose: 'CONFRONTATION',
+      valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
+      pacingMode: 'ACCELERATING',
+      sceneDirection: 'The hero faces the villain.',
+      dramaticJustification: 'This advances the conflict.',
+    });
+  });
 });

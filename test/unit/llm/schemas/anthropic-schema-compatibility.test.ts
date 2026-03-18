@@ -38,7 +38,10 @@ import { NPC_INTELLIGENCE_SCHEMA } from '../../../../src/llm/schemas/npc-intelli
 import { PAGE_PLANNER_GENERATION_SCHEMA } from '../../../../src/llm/schemas/page-planner-schema';
 import { PROMISE_TRACKER_SCHEMA } from '../../../../src/llm/schemas/promise-tracker-schema';
 import { PROSE_QUALITY_SCHEMA } from '../../../../src/llm/schemas/prose-quality-schema';
-import { SCENE_IDEATOR_SCHEMA } from '../../../../src/llm/schemas/scene-ideator-schema';
+import {
+  buildSceneIdeatorSchema,
+  SCENE_IDEATOR_SCHEMA,
+} from '../../../../src/llm/schemas/scene-ideator-schema';
 import { SPINE_REWRITE_SCHEMA } from '../../../../src/llm/schemas/spine-rewrite-schema';
 import { SPINE_FOUNDATION_SCHEMA } from '../../../../src/llm/schemas/spine-foundation-schema';
 import { SPINE_ARC_ENGINE_SCHEMA } from '../../../../src/llm/schemas/spine-arc-engine-schema';
@@ -289,6 +292,10 @@ describe('Anthropic schema compatibility', () => {
     { name: 'PROMISE_TRACKER_SCHEMA', schema: PROMISE_TRACKER_SCHEMA },
     { name: 'PROSE_QUALITY_SCHEMA', schema: PROSE_QUALITY_SCHEMA },
     { name: 'SCENE_IDEATOR_SCHEMA', schema: SCENE_IDEATOR_SCHEMA },
+    {
+      name: 'buildSceneIdeatorSchema(DEFAULT)',
+      schema: buildSceneIdeatorSchema(),
+    },
     { name: 'STRUCTURE_EVALUATOR_SCHEMA', schema: STRUCTURE_EVALUATOR_SCHEMA },
     { name: 'STRUCTURE_REPAIR_SCHEMA', schema: STRUCTURE_REPAIR_SCHEMA },
     { name: 'CHARACTER_WEB_GENERATION_SCHEMA', schema: CHARACTER_WEB_GENERATION_SCHEMA },

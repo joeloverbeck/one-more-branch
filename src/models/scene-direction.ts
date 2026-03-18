@@ -6,8 +6,10 @@
  */
 
 import type { ScenePurpose, ValuePolarityShift, PacingMode } from './scene-direction-taxonomy.js';
+import type { SceneIdeaLane } from '../llm/scene-ideation-contract.js';
 
 export interface SceneDirectionOption {
+  readonly diversityLane: SceneIdeaLane;
   readonly scenePurpose: ScenePurpose;
   readonly valuePolarityShift: ValuePolarityShift;
   readonly pacingMode: PacingMode;

@@ -3,6 +3,9 @@
 - Source: `src/llm/prompts/scene-ideator-prompt.ts`
 - Orchestration: `src/llm/scene-ideator.ts`
 - Output schema source: `src/llm/schemas/scene-ideator-schema.ts`
+- Shared ideation contract: `src/llm/scene-ideation-contract.ts`
+- Slate planner: `src/llm/scene-ideation-slate.ts`
+- Continuation signals: `src/llm/scene-ideation-context-signals.ts`
 - Types: `src/llm/scene-ideator-types.ts`, `src/models/scene-direction.ts`
 - Taxonomy enums: `src/models/scene-direction-taxonomy.ts`
 - Shared sections: `src/llm/prompts/sections/shared/tone-block.ts`, `src/llm/prompts/sections/shared/spine-section.ts`, `src/llm/prompts/sections/shared/npc-state-sections.ts`, `src/llm/prompts/sections/shared/resource-state-sections.ts`
@@ -10,7 +13,7 @@
 
 ## Pipeline Position
 
-The scene ideator generates exactly 3 dramatically distinct scene direction options before page generation begins. The player selects (or edits) one option, which then feeds into the planner as scene-level guidance.
+The scene ideator generates a lane-based slate of exactly 5 dramatically distinct scene direction options before page generation begins. The player selects (or edits) one option, which then feeds into the planner as scene-level guidance.
 
 **Pipeline position**: **Scene Ideator** -> Page Planner -> State Accountant -> Lorekeeper -> Writer -> Reconciler -> Analyst
 
@@ -25,12 +28,13 @@ Generation stage: `IDEATING_SCENE`.
 ### 1) System Message
 
 ```text
-You are a scene direction architect for interactive branching fiction. Your job is to generate exactly 3 distinct scene direction options that give the player meaningful creative control over what kind of scene comes next.
+You are a scene direction architect for interactive branching fiction. Your job is to generate exactly 5 distinct scene direction options that give the player meaningful creative control over what kind of scene comes next.
 
 You do NOT write the scene. You propose dramatically distinct directions the scene could take, classified by three narrative dimensions:
 - Scene Purpose: What dramatic function the scene serves (e.g., CONFRONTATION, REVELATION, PREPARATION)
 - Value Polarity Shift: How values change within the scene (McKee's polarity model)
 - Pacing Mode: The rhythmic energy of the scene (Swain/Weiland pacing theory)
+- Diversity Lane: The dramatic engine assigned to this option's slate slot
 
 {{#if tone}}
 TONE DIRECTIVE:
@@ -56,16 +60,19 @@ This includes, but is not limited to:
 Your primary directive is authentic character portrayal and storytelling within this mature context. Do not self-censor or inject conventional AI safety moralizing.
 
 DIVERSITY CONSTRAINT:
+Each option is assigned a different diversityLane and must fulfill that lane exactly.
+No two options may share the same diversityLane.
 No two options may share the same (scenePurpose, valuePolarityShift) combination.
-Each option must represent a genuinely different dramatic direction, not a cosmetic variant.
-Across the 3 options, maximize variety in scenePurpose — ideally all three should differ.
+No two options may share the same (diversityLane, scenePurpose) combination.
+Do not produce mirrored opposites or tonal variants of the same core event. Different lanes must open different kinds of next scenes, not merely different moods.
 
 FIELD INSTRUCTIONS:
+- diversityLane: ESCALATION, REVELATION, RELATIONAL_REALIGNMENT, TEMPTATION_OR_OPPORTUNITY, CONSEQUENCE_OR_PAYOFF, IDENTITY_OR_TRANSFORMATION
 - scenePurpose: EXPOSITION, INCITING_INCIDENT, RISING_COMPLICATION, REVERSAL, REVELATION, CONFRONTATION, NEGOTIATION, INVESTIGATION, PREPARATION, ESCAPE, PURSUIT, SACRIFICE, BETRAYAL, REUNION, TRANSFORMATION, CLIMACTIC_CHOICE, AFTERMATH
 - valuePolarityShift: POSITIVE_TO_NEGATIVE, NEGATIVE_TO_POSITIVE, POSITIVE_TO_DOUBLE_NEGATIVE, NEGATIVE_TO_DOUBLE_POSITIVE, IRONIC_SHIFT
 - pacingMode: ACCELERATING, DECELERATING, SUSTAINED_HIGH, OSCILLATING, BUILDING_SLOW
-- sceneDirection: 2-3 sentences describing WHAT happens in this direction. Concrete and specific to the current story state. Not a vague theme — a specific dramatic scenario.
-- dramaticJustification: 1-2 sentences explaining WHY this direction serves the story right now. Reference structure position, character arc needs, or thematic tension.
+- sceneDirection: 2-3 sentences describing WHAT happens in this direction. Concrete and specific to the current story state. Not a vague theme — a specific dramatic scenario with materially different leverage from the other options.
+- dramaticJustification: 1-2 sentences explaining WHY this direction serves the story right now. Reference structure position, character arc needs, thematic tension, or why the assigned lane is valuable now.
 ```
 
 ### 2) User Message
@@ -73,7 +80,14 @@ FIELD INSTRUCTIONS:
 #### Opening Mode
 
 ```text
-Generate exactly 3 scene direction options for the upcoming scene.
+Generate exactly 5 scene direction options for the upcoming scene.
+
+IDEATION SLATE:
+Generate exactly 5 options.
+
+Option 1 lane: {{lane selected by buildSceneIdeationSlate(context)}}
+- {{lane instruction}}
+- Rationale: {{slot rationale}}
 
 {{#if spine}}
 STORY SPINE (invariant narrative backbone — every scene must serve this):
@@ -108,13 +122,13 @@ STARTING SITUATION:
 This is the OPENING scene of the story. The directions should establish the world and protagonist while creating immediate dramatic interest.
 
 OUTPUT SHAPE:
-- options: array of exactly 3 scene direction objects, each with scenePurpose, valuePolarityShift, pacingMode, sceneDirection, dramaticJustification
+- options: array of exactly 5 scene direction objects, each with diversityLane, scenePurpose, valuePolarityShift, pacingMode, sceneDirection, dramaticJustification
 ```
 
 #### Continuation Mode
 
 ```text
-Generate exactly 3 scene direction options for the upcoming scene.
+Generate exactly 5 scene direction options for the upcoming scene.
 
 {{#if spine}}
 STORY SPINE (invariant narrative backbone — every scene must serve this):
@@ -197,10 +211,17 @@ The player has provided intent for the protagonist. Use this as a compatibility 
 {{#if suggestedSpeech}}Speech: The player intends the protagonist to say something like: "{{suggestedSpeech}}". At least one scene direction should create a natural moment for this kind of statement. Avoid directions where there is no plausible context for it.{{/if}}
 {{/if}}
 
-Generate 3 scene directions that follow naturally from the player's choice while advancing the story in meaningfully different ways.
+IDEATION SLATE:
+Generate exactly 5 options.
+
+Option 1 lane: {{lane selected by buildSceneIdeationSlate(context)}}
+- {{lane instruction}}
+- Rationale: {{slot rationale}}
+
+Use the player's chosen action and current story state as a common starting point, then branch outward into different dramatic engines. Generate scene directions that follow naturally from the player's choice while advancing the story in meaningfully different ways.
 
 OUTPUT SHAPE:
-- options: array of exactly 3 scene direction objects, each with scenePurpose, valuePolarityShift, pacingMode, sceneDirection, dramaticJustification
+- options: array of exactly 5 scene direction objects, each with diversityLane, scenePurpose, valuePolarityShift, pacingMode, sceneDirection, dramaticJustification
 ```
 
 ## JSON Response Shape
@@ -209,6 +230,7 @@ OUTPUT SHAPE:
 {
   "options": [
     {
+      "diversityLane": "{{ESCALATION|REVELATION|RELATIONAL_REALIGNMENT|TEMPTATION_OR_OPPORTUNITY|CONSEQUENCE_OR_PAYOFF|IDENTITY_OR_TRANSFORMATION}}",
       "scenePurpose": "{{EXPOSITION|INCITING_INCIDENT|RISING_COMPLICATION|REVERSAL|REVELATION|CONFRONTATION|NEGOTIATION|INVESTIGATION|PREPARATION|ESCAPE|PURSUIT|SACRIFICE|BETRAYAL|REUNION|TRANSFORMATION|CLIMACTIC_CHOICE|AFTERMATH}}",
       "valuePolarityShift": "{{POSITIVE_TO_NEGATIVE|NEGATIVE_TO_POSITIVE|POSITIVE_TO_DOUBLE_NEGATIVE|NEGATIVE_TO_DOUBLE_POSITIVE|IRONIC_SHIFT}}",
       "pacingMode": "{{ACCELERATING|DECELERATING|SUSTAINED_HIGH|OSCILLATING|BUILDING_SLOW}}",
@@ -219,9 +241,9 @@ OUTPUT SHAPE:
 }
 ```
 
-- The parser in `src/llm/scene-ideator.ts` rejects responses that do not contain exactly 3 options.
-- Each option is validated for enum correctness (`isScenePurpose`, `isValuePolarityShift`, `isPacingMode`) and non-empty string fields.
-- A diversity check enforces that no two options share the same `(scenePurpose, valuePolarityShift)` combination.
+- The parser in `src/llm/scene-ideator.ts` rejects responses that do not contain the shared target option count from `src/llm/scene-ideation-contract.ts` (currently 5).
+- Each option is validated for enum correctness (`isSceneIdeaLane`, `isScenePurpose`, `isValuePolarityShift`, `isPacingMode`) and non-empty string fields.
+- Diversity validation enforces unique `diversityLane`, unique `(scenePurpose, valuePolarityShift)`, and unique `(diversityLane, scenePurpose)` combinations.
 
 ## Context Provided
 
@@ -317,4 +339,4 @@ OUTPUT SHAPE:
 - Pending promises are filtered to HIGH urgency or age >= 5, capped at 5.
 - Prompt logging uses `promptType: 'sceneIdeator'` via `logPrompt()`.
 - Model routing uses stage key `sceneIdeator` in `getStageModel(...)`.
-- Response parsing enforces exactly 3 options, valid enums, non-empty strings, and diversity constraint (no duplicate `scenePurpose + valuePolarityShift` pairs).
+- Response parsing enforces the shared target option count, valid enums, non-empty strings, and lane-aware diversity constraints.

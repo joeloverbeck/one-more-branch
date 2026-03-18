@@ -29,11 +29,13 @@ import {
   validateDiversity,
   generateSceneDirections,
 } from '../../../src/llm/scene-ideator';
+import { DEFAULT_SCENE_IDEA_COUNT } from '../../../src/llm/scene-ideation-contract';
 import type { SceneDirectionOption } from '../../../src/models/scene-direction';
 import type { SceneIdeatorOpeningContext } from '../../../src/llm/scene-ideator-types';
 
 function validOptionRaw(overrides?: Record<string, unknown>): Record<string, unknown> {
   return {
+    diversityLane: 'ESCALATION',
     scenePurpose: 'CONFRONTATION',
     valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
     pacingMode: 'ACCELERATING',
@@ -43,9 +45,10 @@ function validOptionRaw(overrides?: Record<string, unknown>): Record<string, unk
   };
 }
 
-function threeDistinctOptions(): Record<string, unknown>[] {
+function defaultDistinctOptions(): Record<string, unknown>[] {
   return [
     validOptionRaw({
+      diversityLane: 'ESCALATION',
       scenePurpose: 'CONFRONTATION',
       valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
       pacingMode: 'ACCELERATING',
@@ -53,6 +56,7 @@ function threeDistinctOptions(): Record<string, unknown>[] {
       dramaticJustification: 'Justification A.',
     }),
     validOptionRaw({
+      diversityLane: 'REVELATION',
       scenePurpose: 'REVELATION',
       valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
       pacingMode: 'DECELERATING',
@@ -60,11 +64,28 @@ function threeDistinctOptions(): Record<string, unknown>[] {
       dramaticJustification: 'Justification B.',
     }),
     validOptionRaw({
+      diversityLane: 'RELATIONAL_REALIGNMENT',
       scenePurpose: 'ESCAPE',
       valuePolarityShift: 'IRONIC_SHIFT',
       pacingMode: 'SUSTAINED_HIGH',
       sceneDirection: 'Option C direction.',
       dramaticJustification: 'Justification C.',
+    }),
+    validOptionRaw({
+      diversityLane: 'TEMPTATION_OR_OPPORTUNITY',
+      scenePurpose: 'NEGOTIATION',
+      valuePolarityShift: 'POSITIVE_TO_DOUBLE_NEGATIVE',
+      pacingMode: 'OSCILLATING',
+      sceneDirection: 'Option D direction.',
+      dramaticJustification: 'Justification D.',
+    }),
+    validOptionRaw({
+      diversityLane: 'CONSEQUENCE_OR_PAYOFF',
+      scenePurpose: 'AFTERMATH',
+      valuePolarityShift: 'NEGATIVE_TO_DOUBLE_POSITIVE',
+      pacingMode: 'BUILDING_SLOW',
+      sceneDirection: 'Option E direction.',
+      dramaticJustification: 'Justification E.',
     }),
   ];
 }
@@ -99,6 +120,7 @@ describe('parseSceneDirectionOption', () => {
   it('returns a valid SceneDirectionOption from well-formed input', () => {
     const result = parseSceneDirectionOption(validOptionRaw(), 0);
 
+    expect(result.diversityLane).toBe('ESCALATION');
     expect(result.scenePurpose).toBe('CONFRONTATION');
     expect(result.valuePolarityShift).toBe('POSITIVE_TO_NEGATIVE');
     expect(result.pacingMode).toBe('ACCELERATING');
@@ -135,6 +157,19 @@ describe('parseSceneDirectionOption', () => {
       expect((error as LLMError).message).toContain('3');
       expect((error as LLMError).code).toBe('STRUCTURE_PARSE_ERROR');
     }
+  });
+
+  it('throws when diversityLane is invalid', () => {
+    expect(() =>
+      parseSceneDirectionOption(validOptionRaw({ diversityLane: 'BAD_LANE' }), 0)
+    ).toThrow(/invalid diversityLane/);
+  });
+
+  it('throws when diversityLane is missing', () => {
+    const raw = validOptionRaw();
+    delete raw['diversityLane'];
+
+    expect(() => parseSceneDirectionOption(raw, 0)).toThrow(/invalid diversityLane/);
   });
 
   it('throws when scenePurpose is invalid', () => {
@@ -244,9 +279,10 @@ describe('parseSceneDirectionOption', () => {
 });
 
 describe('validateDiversity', () => {
-  it('does not throw when all (scenePurpose, valuePolarityShift) combinations are unique', () => {
+  it('does not throw when all lanes and diversity combinations are unique', () => {
     const options: SceneDirectionOption[] = [
       {
+        diversityLane: 'ESCALATION',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'ACCELERATING',
@@ -254,6 +290,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
+        diversityLane: 'REVELATION',
         scenePurpose: 'REVELATION',
         valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
         pacingMode: 'DECELERATING',
@@ -261,6 +298,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'B',
       },
       {
+        diversityLane: 'RELATIONAL_REALIGNMENT',
         scenePurpose: 'ESCAPE',
         valuePolarityShift: 'IRONIC_SHIFT',
         pacingMode: 'SUSTAINED_HIGH',
@@ -275,6 +313,7 @@ describe('validateDiversity', () => {
   it('allows same scenePurpose with different valuePolarityShift', () => {
     const options: SceneDirectionOption[] = [
       {
+        diversityLane: 'ESCALATION',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'ACCELERATING',
@@ -282,6 +321,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
+        diversityLane: 'REVELATION',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
         pacingMode: 'DECELERATING',
@@ -296,6 +336,7 @@ describe('validateDiversity', () => {
   it('allows same valuePolarityShift with different scenePurpose', () => {
     const options: SceneDirectionOption[] = [
       {
+        diversityLane: 'ESCALATION',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'ACCELERATING',
@@ -303,6 +344,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
+        diversityLane: 'REVELATION',
         scenePurpose: 'REVELATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'DECELERATING',
@@ -317,6 +359,7 @@ describe('validateDiversity', () => {
   it('throws LLMError when two options share the same combination', () => {
     const options: SceneDirectionOption[] = [
       {
+        diversityLane: 'ESCALATION',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'ACCELERATING',
@@ -324,6 +367,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
+        diversityLane: 'REVELATION',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'DECELERATING',
@@ -339,6 +383,7 @@ describe('validateDiversity', () => {
   it('includes the duplicate key in the error message', () => {
     const options: SceneDirectionOption[] = [
       {
+        diversityLane: 'ESCALATION',
         scenePurpose: 'ESCAPE',
         valuePolarityShift: 'IRONIC_SHIFT',
         pacingMode: 'ACCELERATING',
@@ -346,6 +391,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
+        diversityLane: 'REVELATION',
         scenePurpose: 'ESCAPE',
         valuePolarityShift: 'IRONIC_SHIFT',
         pacingMode: 'DECELERATING',
@@ -363,97 +409,183 @@ describe('validateDiversity', () => {
       expect((error as LLMError).code).toBe('STRUCTURE_PARSE_ERROR');
     }
   });
+
+  it('rejects duplicate diversity lanes', () => {
+    const options: SceneDirectionOption[] = [
+      {
+        diversityLane: 'ESCALATION',
+        scenePurpose: 'CONFRONTATION',
+        valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
+        pacingMode: 'ACCELERATING',
+        sceneDirection: 'A',
+        dramaticJustification: 'A',
+      },
+      {
+        diversityLane: 'ESCALATION',
+        scenePurpose: 'REVELATION',
+        valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
+        pacingMode: 'DECELERATING',
+        sceneDirection: 'B',
+        dramaticJustification: 'B',
+      },
+    ];
+
+    expect(() => validateDiversity(options)).toThrow(/duplicate diversityLane: ESCALATION/);
+  });
+
+  it('rejects duplicate (diversityLane, scenePurpose) pairs', () => {
+    const options: SceneDirectionOption[] = [
+      {
+        diversityLane: 'ESCALATION',
+        scenePurpose: 'CONFRONTATION',
+        valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
+        pacingMode: 'ACCELERATING',
+        sceneDirection: 'A',
+        dramaticJustification: 'A',
+      },
+      {
+        diversityLane: 'REVELATION',
+        scenePurpose: 'NEGOTIATION',
+        valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
+        pacingMode: 'DECELERATING',
+        sceneDirection: 'B',
+        dramaticJustification: 'B',
+      },
+      {
+        diversityLane: 'ESCALATION',
+        scenePurpose: 'CONFRONTATION',
+        valuePolarityShift: 'IRONIC_SHIFT',
+        pacingMode: 'SUSTAINED_HIGH',
+        sceneDirection: 'C',
+        dramaticJustification: 'C',
+      },
+    ];
+
+    expect(() => validateDiversity(options)).toThrow(
+      /duplicate \(diversityLane, scenePurpose\) combination: ESCALATION:CONFRONTATION/
+    );
+  });
 });
 
 describe('parseSceneIdeatorResponse', () => {
-  it('parses a valid 3-option response', () => {
-    const options = threeDistinctOptions();
-    const result = parseSceneIdeatorResponse({ options });
+  it('parses a valid default-count response', () => {
+    const options = defaultDistinctOptions();
+    const result = parseSceneIdeatorResponse({ options }, DEFAULT_SCENE_IDEA_COUNT);
 
-    expect(result).toHaveLength(3);
+    expect(result).toHaveLength(DEFAULT_SCENE_IDEA_COUNT);
+    expect(result[0]!.diversityLane).toBe('ESCALATION');
     expect(result[0]!.scenePurpose).toBe('CONFRONTATION');
     expect(result[1]!.scenePurpose).toBe('REVELATION');
     expect(result[2]!.scenePurpose).toBe('ESCAPE');
   });
 
   it('returns a readonly array', () => {
-    const result = parseSceneIdeatorResponse({ options: threeDistinctOptions() });
+    const result = parseSceneIdeatorResponse(
+      { options: defaultDistinctOptions() },
+      DEFAULT_SCENE_IDEA_COUNT
+    );
     expect(Array.isArray(result)).toBe(true);
     expect(Object.isFrozen(result)).toBe(false); // readonly type, not frozen
   });
 
   it('throws when parsed is not an object', () => {
-    expect(() => parseSceneIdeatorResponse('string')).toThrow(LLMError);
-    expect(() => parseSceneIdeatorResponse(null)).toThrow(LLMError);
-    expect(() => parseSceneIdeatorResponse(42)).toThrow(LLMError);
+    expect(() => parseSceneIdeatorResponse('string', DEFAULT_SCENE_IDEA_COUNT)).toThrow(LLMError);
+    expect(() => parseSceneIdeatorResponse(null, DEFAULT_SCENE_IDEA_COUNT)).toThrow(LLMError);
+    expect(() => parseSceneIdeatorResponse(42, DEFAULT_SCENE_IDEA_COUNT)).toThrow(LLMError);
   });
 
   it('throws when parsed is an array', () => {
-    expect(() => parseSceneIdeatorResponse([])).toThrow(LLMError);
-    expect(() => parseSceneIdeatorResponse([])).toThrow(/must be an object/);
+    expect(() => parseSceneIdeatorResponse([], DEFAULT_SCENE_IDEA_COUNT)).toThrow(LLMError);
+    expect(() => parseSceneIdeatorResponse([], DEFAULT_SCENE_IDEA_COUNT)).toThrow(/must be an object/);
   });
 
   it('throws when options field is missing', () => {
-    expect(() => parseSceneIdeatorResponse({})).toThrow(LLMError);
-    expect(() => parseSceneIdeatorResponse({})).toThrow(/missing options array/);
-  });
-
-  it('throws when options is not an array', () => {
-    expect(() => parseSceneIdeatorResponse({ options: 'not array' })).toThrow(
+    expect(() => parseSceneIdeatorResponse({}, DEFAULT_SCENE_IDEA_COUNT)).toThrow(LLMError);
+    expect(() => parseSceneIdeatorResponse({}, DEFAULT_SCENE_IDEA_COUNT)).toThrow(
       /missing options array/
     );
   });
 
-  it('throws when options has fewer than 3 items', () => {
-    const options = threeDistinctOptions().slice(0, 2);
-
-    expect(() => parseSceneIdeatorResponse({ options })).toThrow(LLMError);
-    expect(() => parseSceneIdeatorResponse({ options })).toThrow(/exactly 3 options/);
+  it('throws when options is not an array', () => {
+    expect(() => parseSceneIdeatorResponse({ options: 'not array' }, DEFAULT_SCENE_IDEA_COUNT)).toThrow(
+      /missing options array/
+    );
   });
 
-  it('throws when options has more than 3 items', () => {
+  it('throws when options has fewer than the requested count', () => {
+    const options = defaultDistinctOptions().slice(0, DEFAULT_SCENE_IDEA_COUNT - 1);
+
+    expect(() => parseSceneIdeatorResponse({ options }, DEFAULT_SCENE_IDEA_COUNT)).toThrow(
+      LLMError
+    );
+    expect(() => parseSceneIdeatorResponse({ options }, DEFAULT_SCENE_IDEA_COUNT)).toThrow(
+      new RegExp(`exactly ${DEFAULT_SCENE_IDEA_COUNT} options`)
+    );
+  });
+
+  it('throws when options has more than the requested count', () => {
     const options = [
-      ...threeDistinctOptions(),
+      ...defaultDistinctOptions(),
       validOptionRaw({
+        diversityLane: 'IDENTITY_OR_TRANSFORMATION',
         scenePurpose: 'BETRAYAL',
         valuePolarityShift: 'POSITIVE_TO_DOUBLE_NEGATIVE',
       }),
     ];
 
-    expect(() => parseSceneIdeatorResponse({ options })).toThrow(/exactly 3 options/);
+    expect(() => parseSceneIdeatorResponse({ options }, DEFAULT_SCENE_IDEA_COUNT)).toThrow(
+      new RegExp(`exactly ${DEFAULT_SCENE_IDEA_COUNT} options`)
+    );
   });
 
   it('throws when an individual option is invalid', () => {
-    const options = threeDistinctOptions();
+    const options = defaultDistinctOptions();
     options[1] = { scenePurpose: 'INVALID' };
 
-    expect(() => parseSceneIdeatorResponse({ options })).toThrow(LLMError);
+    expect(() => parseSceneIdeatorResponse({ options }, DEFAULT_SCENE_IDEA_COUNT)).toThrow(
+      LLMError
+    );
   });
 
   it('throws on diversity violation within options', () => {
     const options = [
       validOptionRaw({
+        diversityLane: 'ESCALATION',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
       }),
       validOptionRaw({
+        diversityLane: 'REVELATION',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         sceneDirection: 'Different direction.',
         dramaticJustification: 'Different justification.',
       }),
       validOptionRaw({
+        diversityLane: 'RELATIONAL_REALIGNMENT',
         scenePurpose: 'ESCAPE',
         valuePolarityShift: 'IRONIC_SHIFT',
       }),
+      validOptionRaw({
+        diversityLane: 'TEMPTATION_OR_OPPORTUNITY',
+        scenePurpose: 'NEGOTIATION',
+        valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
+      }),
+      validOptionRaw({
+        diversityLane: 'CONSEQUENCE_OR_PAYOFF',
+        scenePurpose: 'AFTERMATH',
+        valuePolarityShift: 'NEGATIVE_TO_DOUBLE_POSITIVE',
+      }),
     ];
 
-    expect(() => parseSceneIdeatorResponse({ options })).toThrow(/Diversity violation/);
+    expect(() => parseSceneIdeatorResponse({ options }, DEFAULT_SCENE_IDEA_COUNT)).toThrow(
+      /Diversity violation/
+    );
   });
 
   it('includes received count in error message for wrong option count', () => {
     try {
-      parseSceneIdeatorResponse({ options: [validOptionRaw()] });
+      parseSceneIdeatorResponse({ options: [validOptionRaw()] }, DEFAULT_SCENE_IDEA_COUNT);
       fail('Expected LLMError');
     } catch (error) {
       expect(error).toBeInstanceOf(LLMError);
@@ -474,13 +606,13 @@ describe('generateSceneDirections', () => {
   });
 
   it('returns options and rawResponse from a valid API response', async () => {
-    const payload = { options: threeDistinctOptions() };
+    const payload = { options: defaultDistinctOptions() };
     globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
 
     const context = createMinimalOpeningContext();
     const result = await generateSceneDirections(context, 'test-api-key');
 
-    expect(result.options).toHaveLength(3);
+    expect(result.options).toHaveLength(DEFAULT_SCENE_IDEA_COUNT);
     expect(result.options[0]!.scenePurpose).toBe('CONFRONTATION');
     expect(result.options[1]!.scenePurpose).toBe('REVELATION');
     expect(result.options[2]!.scenePurpose).toBe('ESCAPE');
@@ -489,7 +621,7 @@ describe('generateSceneDirections', () => {
   });
 
   it('passes API key in Authorization header', async () => {
-    const payload = { options: threeDistinctOptions() };
+    const payload = { options: defaultDistinctOptions() };
     globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(payload));
 
     await generateSceneDirections(createMinimalOpeningContext(), 'my-secret-key');
@@ -526,7 +658,7 @@ describe('generateSceneDirections', () => {
   });
 
   it('throws LLMError when response fails parsing', async () => {
-    const badPayload = { options: [validOptionRaw()] }; // Only 1 option instead of 3
+    const badPayload = { options: [validOptionRaw()] };
     globalThis.fetch = jest.fn().mockResolvedValue(createMockResponse(badPayload));
 
     await expect(

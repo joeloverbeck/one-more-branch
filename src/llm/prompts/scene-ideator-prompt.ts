@@ -19,26 +19,48 @@ import type {
   SceneIdeatorContext,
   SceneIdeatorContinuationContext,
 } from '../scene-ideator-types.js';
+import type { SceneIdeationSlate } from '../scene-ideation-slate.js';
 import { buildSceneIdeationContextSignals } from '../scene-ideation-context-signals.js';
+import { buildSceneIdeationSlate } from '../scene-ideation-slate.js';
+import { SCENE_IDEA_LANES } from '../scene-ideation-contract.js';
 
-const SCENE_IDEATOR_ROLE = `You are a scene direction architect for interactive branching fiction. Your job is to generate exactly 3 distinct scene direction options that give the player meaningful creative control over what kind of scene comes next.
+function buildSceneIdeatorRole(targetOptionCount: number): string {
+  return `You are a scene direction architect for interactive branching fiction. Your job is to generate exactly ${targetOptionCount} distinct scene direction options that give the player meaningful creative control over what kind of scene comes next.
 
 You do NOT write the scene. You propose dramatically distinct directions the scene could take, classified by three narrative dimensions:
 - Scene Purpose: What dramatic function the scene serves (e.g., CONFRONTATION, REVELATION, PREPARATION)
 - Value Polarity Shift: How values change within the scene (McKee's polarity model)
-- Pacing Mode: The rhythmic energy of the scene (Swain/Weiland pacing theory)`;
+- Pacing Mode: The rhythmic energy of the scene (Swain/Weiland pacing theory)
+- Diversity Lane: The dramatic engine assigned to this option's slate slot`;
+}
 
 const DIVERSITY_CONSTRAINT = `DIVERSITY CONSTRAINT:
+Each option is assigned a different diversityLane and must fulfill that lane exactly.
+No two options may share the same diversityLane.
 No two options may share the same (scenePurpose, valuePolarityShift) combination.
-Each option must represent a genuinely different dramatic direction, not a cosmetic variant.
-Across the 3 options, maximize variety in scenePurpose — ideally all three should differ.`;
+No two options may share the same (diversityLane, scenePurpose) combination.
+Do not produce mirrored opposites or tonal variants of the same core event. Different lanes must open different kinds of next scenes, not merely different moods.`;
 
 const FIELD_INSTRUCTIONS = `FIELD INSTRUCTIONS:
+- diversityLane: ${SCENE_IDEA_LANES.join(', ')}
 - scenePurpose: EXPOSITION, INCITING_INCIDENT, RISING_COMPLICATION, REVERSAL, REVELATION, CONFRONTATION, NEGOTIATION, INVESTIGATION, PREPARATION, ESCAPE, PURSUIT, SACRIFICE, BETRAYAL, REUNION, TRANSFORMATION, CLIMACTIC_CHOICE, AFTERMATH
 - valuePolarityShift: POSITIVE_TO_NEGATIVE, NEGATIVE_TO_POSITIVE, POSITIVE_TO_DOUBLE_NEGATIVE, NEGATIVE_TO_DOUBLE_POSITIVE, IRONIC_SHIFT
 - pacingMode: ACCELERATING, DECELERATING, SUSTAINED_HIGH, OSCILLATING, BUILDING_SLOW
-- sceneDirection: 2-3 sentences describing WHAT happens in this direction. Concrete and specific to the current story state. Not a vague theme — a specific dramatic scenario.
-- dramaticJustification: 1-2 sentences explaining WHY this direction serves the story right now. Reference structure position, character arc needs, or thematic tension.`;
+- sceneDirection: 2-3 sentences describing WHAT happens in this direction. Concrete and specific to the current story state. Not a vague theme — a specific dramatic scenario with materially different leverage from the other options.
+- dramaticJustification: 1-2 sentences explaining WHY this direction serves the story right now. Reference structure position, character arc needs, thematic tension, or why the assigned lane is valuable now.`;
+
+const LANE_INSTRUCTIONS: Readonly<Record<string, string>> = {
+  ESCALATION: 'Increase active pressure, danger, urgency, exposure, or cost.',
+  REVELATION: 'Introduce new information or a reframe that changes what the player understands.',
+  RELATIONAL_REALIGNMENT:
+    'Shift alliance, trust, leverage, intimacy, dependence, or rivalry.',
+  TEMPTATION_OR_OPPORTUNITY:
+    'Offer an attractive path, opening, or advantage that carries cost or compromise.',
+  CONSEQUENCE_OR_PAYOFF:
+    'Cash out prior actions, promises, debts, or accumulated pressure.',
+  IDENTITY_OR_TRANSFORMATION:
+    'Test role, self-concept, taboo, ritual, corruption, or becoming.',
+};
 
 function buildStructurePositionSection(context: SceneIdeatorContinuationContext): string {
   if (!context.accumulatedStructureState || !context.structure) {
@@ -189,8 +211,30 @@ function buildContinuationSections(context: SceneIdeatorContinuationContext): st
   return sections.filter((s) => s.length > 0).join('\n');
 }
 
-export function buildSceneIdeatorPrompt(context: SceneIdeatorContext): ChatMessage[] {
-  const systemSections: string[] = [SCENE_IDEATOR_ROLE];
+function buildIdeationSlateSection(slate: SceneIdeationSlate): string {
+  const lines = [`IDEATION SLATE:`, `Generate exactly ${slate.targetOptionCount} options.`, ''];
+
+  for (const slot of slate.slots) {
+    lines.push(`Option ${slot.index + 1} lane: ${slot.lane}`);
+    lines.push(`- ${LANE_INSTRUCTIONS[slot.lane]}`);
+    lines.push(`- Rationale: ${slot.rationale}`);
+    if (slot.requiredSignals && slot.requiredSignals.length > 0) {
+      lines.push(`- Required context to honor: ${slot.requiredSignals.join(', ')}`);
+    }
+    if (slot.discouragedSignals && slot.discouragedSignals.length > 0) {
+      lines.push(`- Avoid redundancy with: ${slot.discouragedSignals.join(', ')}`);
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+export function buildSceneIdeatorPrompt(
+  context: SceneIdeatorContext,
+  slate: SceneIdeationSlate = buildSceneIdeationSlate(context)
+): ChatMessage[] {
+  const systemSections: string[] = [buildSceneIdeatorRole(slate.targetOptionCount)];
 
   if (context.tone) {
     systemSections.push(buildToneDirective(context.tone, context.toneFeel, context.toneAvoid));
@@ -201,7 +245,7 @@ export function buildSceneIdeatorPrompt(context: SceneIdeatorContext): ChatMessa
   systemSections.push(FIELD_INSTRUCTIONS);
 
   const userSections: string[] = [
-    'Generate exactly 3 scene direction options for the upcoming scene.\n',
+    `Generate exactly ${slate.targetOptionCount} scene direction options for the upcoming scene.\n`,
   ];
 
   userSections.push(buildSpineSection(context.spine));
@@ -218,22 +262,24 @@ export function buildSceneIdeatorPrompt(context: SceneIdeatorContext): ChatMessa
     userSections.push(`WORLD:\n${worldText}\n`);
   }
 
+  userSections.push(buildIdeationSlateSection(slate));
+
   if (context.mode === 'opening') {
     if (context.startingSituation) {
       userSections.push(`STARTING SITUATION:\n${context.startingSituation}\n`);
     }
     userSections.push(
-      'This is the OPENING scene of the story. The directions should establish the world and protagonist while creating immediate dramatic interest.\n'
+      'This is the OPENING scene of the story. Use the common starting situation, then branch outward into different dramatic engines that establish the world and protagonist while creating immediate dramatic interest.\n'
     );
   } else {
     userSections.push(buildContinuationSections(context));
     userSections.push(
-      "Generate 3 scene directions that follow naturally from the player's choice while advancing the story in meaningfully different ways.\n"
+      "Use the player's chosen action and current story state as a common starting point, then branch outward into different dramatic engines. Generate scene directions that follow naturally from the player's choice while advancing the story in meaningfully different ways.\n"
     );
   }
 
   userSections.push(
-    'OUTPUT SHAPE:\n- options: array of exactly 3 scene direction objects, each with scenePurpose, valuePolarityShift, pacingMode, sceneDirection, dramaticJustification'
+    `OUTPUT SHAPE:\n- options: array of exactly ${slate.targetOptionCount} scene direction objects, each with diversityLane, scenePurpose, valuePolarityShift, pacingMode, sceneDirection, dramaticJustification`
   );
 
   return [
