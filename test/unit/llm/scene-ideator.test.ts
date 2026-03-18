@@ -30,6 +30,7 @@ import {
   generateSceneDirections,
 } from '../../../src/llm/scene-ideator';
 import { DEFAULT_SCENE_IDEA_COUNT } from '../../../src/llm/scene-ideation-contract';
+import { SCENE_IDEA_LANES } from '../../../src/models/scene-direction-taxonomy';
 import type { SceneDirectionOption } from '../../../src/models/scene-direction';
 import type { SceneIdeatorOpeningContext } from '../../../src/llm/scene-ideator-types';
 
@@ -170,6 +171,11 @@ describe('parseSceneDirectionOption', () => {
     delete raw['diversityLane'];
 
     expect(() => parseSceneDirectionOption(raw, 0)).toThrow(/invalid diversityLane/);
+  });
+
+  it.each(SCENE_IDEA_LANES)('accepts valid diversityLane %s', (lane) => {
+    const result = parseSceneDirectionOption(validOptionRaw({ diversityLane: lane }), 0);
+    expect(result.diversityLane).toBe(lane);
   });
 
   it('throws when scenePurpose is invalid', () => {

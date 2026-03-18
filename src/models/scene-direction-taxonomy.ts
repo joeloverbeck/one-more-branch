@@ -1,11 +1,23 @@
 /**
  * Narrative taxonomy enums for scene direction selection.
  *
- * Three dimensions classify the dramatic intent of an upcoming scene:
+ * Four dimensions classify the dramatic intent of an upcoming scene:
  * - ScenePurpose: What dramatic function the scene serves (McKee/Truby)
  * - ValuePolarityShift: How values change within the scene (McKee)
  * - PacingMode: The rhythmic energy of the scene (Swain/Weiland)
+ * - SceneIdeaLane: Which dramatic engine the ideation slate assigns to an option
  */
+
+export const SCENE_IDEA_LANES = [
+  'ESCALATION',
+  'REVELATION',
+  'RELATIONAL_REALIGNMENT',
+  'TEMPTATION_OR_OPPORTUNITY',
+  'CONSEQUENCE_OR_PAYOFF',
+  'IDENTITY_OR_TRANSFORMATION',
+] as const;
+
+export type SceneIdeaLane = (typeof SCENE_IDEA_LANES)[number];
 
 export type ScenePurpose =
   | 'EXPOSITION'
@@ -88,6 +100,10 @@ export function isValuePolarityShift(value: unknown): value is ValuePolarityShif
 
 export function isPacingMode(value: unknown): value is PacingMode {
   return typeof value === 'string' && (PACING_MODE_VALUES as readonly string[]).includes(value);
+}
+
+export function isSceneIdeaLane(value: unknown): value is SceneIdeaLane {
+  return typeof value === 'string' && (SCENE_IDEA_LANES as readonly string[]).includes(value);
 }
 
 export const SCENE_PURPOSE_LABELS: Record<ScenePurpose, string> = {

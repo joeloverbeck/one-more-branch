@@ -7,7 +7,7 @@
 - Slate planner: `src/llm/scene-ideation-slate.ts`
 - Continuation signals: `src/llm/scene-ideation-context-signals.ts`
 - Types: `src/llm/scene-ideator-types.ts`, `src/models/scene-direction.ts`
-- Taxonomy enums: `src/models/scene-direction-taxonomy.ts`
+- Taxonomy enums: `src/models/scene-direction-taxonomy.ts` (including `SceneIdeaLane`)
 - Shared sections: `src/llm/prompts/sections/shared/tone-block.ts`, `src/llm/prompts/sections/shared/spine-section.ts`, `src/llm/prompts/sections/shared/npc-state-sections.ts`, `src/llm/prompts/sections/shared/resource-state-sections.ts`
 - Decomposed data formatters: `src/models/decomposed-character.ts`, `src/models/decomposed-world.ts`
 

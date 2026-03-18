@@ -22,7 +22,7 @@ import type {
 import type { SceneIdeationSlate } from '../scene-ideation-slate.js';
 import { buildSceneIdeationContextSignals } from '../scene-ideation-context-signals.js';
 import { buildSceneIdeationSlate } from '../scene-ideation-slate.js';
-import { SCENE_IDEA_LANES } from '../scene-ideation-contract.js';
+import { SCENE_IDEA_LANES } from '../../models/scene-direction-taxonomy.js';
 
 function buildSceneIdeatorRole(targetOptionCount: number): string {
   return `You are a scene direction architect for interactive branching fiction. Your job is to generate exactly ${targetOptionCount} distinct scene direction options that give the player meaningful creative control over what kind of scene comes next.

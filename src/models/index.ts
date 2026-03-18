@@ -378,11 +378,13 @@ export { isConceptSeed, parseConceptSeedEntity } from './concept-seed';
 export type { SavedKernel, GeneratedKernelBatch } from './saved-kernel';
 export { isSavedKernel, isGeneratedKernelBatch } from './saved-kernel';
 
-export type { ScenePurpose, ValuePolarityShift, PacingMode } from './scene-direction-taxonomy';
+export type { ScenePurpose, ValuePolarityShift, PacingMode, SceneIdeaLane } from './scene-direction-taxonomy';
 export {
+  SCENE_IDEA_LANES,
   SCENE_PURPOSE_VALUES,
   VALUE_POLARITY_SHIFT_VALUES,
   PACING_MODE_VALUES,
+  isSceneIdeaLane,
   isScenePurpose,
   isValuePolarityShift,
   isPacingMode,

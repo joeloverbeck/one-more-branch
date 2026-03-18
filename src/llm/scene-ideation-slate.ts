@@ -4,8 +4,8 @@ import {
   DEFAULT_OPENING_SCENE_IDEA_LANES,
   DEFAULT_SCENE_IDEA_COUNT,
   IDENTITY_REPLACEMENT_LANE_ORDER,
-  type SceneIdeaLane,
 } from './scene-ideation-contract.js';
+import type { SceneIdeaLane } from '../models/scene-direction-taxonomy.js';
 import {
   buildSceneIdeationContextSignals,
   type SceneIdeationContextSignals as ContinuationSignals,

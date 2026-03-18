@@ -10,6 +10,7 @@ import {
   formatPendingPromisesSection,
 } from '../../../../src/llm/prompts/scene-ideator-prompt';
 import { DEFAULT_SCENE_IDEA_COUNT } from '../../../../src/llm/scene-ideation-contract';
+import { SCENE_IDEA_LANES } from '../../../../src/models/scene-direction-taxonomy';
 import {
   Urgency,
   ThreadType,
@@ -71,6 +72,9 @@ describe('buildSceneIdeatorPrompt', () => {
   it('system message contains field instructions', () => {
     const messages = buildSceneIdeatorPrompt(openingContext);
     expect(messages[0].content).toContain('FIELD INSTRUCTIONS:');
+    for (const lane of SCENE_IDEA_LANES) {
+      expect(messages[0].content).toContain(lane);
+    }
   });
 
   describe('opening mode', () => {

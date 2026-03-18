@@ -1,6 +1,7 @@
 import type { JsonSchema } from '../llm-client-types.js';
-import { DEFAULT_SCENE_IDEA_COUNT, SCENE_IDEA_LANES } from '../scene-ideation-contract.js';
+import { DEFAULT_SCENE_IDEA_COUNT } from '../scene-ideation-contract.js';
 import {
+  SCENE_IDEA_LANES,
   PACING_MODE_VALUES,
   SCENE_PURPOSE_VALUES,
   VALUE_POLARITY_SHIFT_VALUES,

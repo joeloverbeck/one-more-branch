@@ -17,11 +17,11 @@ import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import type { SceneDirectionOption } from '../models/scene-direction.js';
 import {
+  isSceneIdeaLane,
   isScenePurpose,
   isValuePolarityShift,
   isPacingMode,
 } from '../models/scene-direction-taxonomy.js';
-import { isSceneIdeaLane } from './scene-ideation-contract.js';
 import type { SceneIdeatorContext, SceneIdeationResult } from './scene-ideator-types.js';
 
 function parseSceneDirectionOption(raw: unknown, index: number): SceneDirectionOption {
