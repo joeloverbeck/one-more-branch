@@ -103,6 +103,7 @@ export function buildSharedStructureContext(
 
   const state = accumulatedStructureState;
   const currentAct = structure.acts[state.currentActIndex];
+  const activeMilestone = currentAct?.milestones[state.currentMilestoneIndex];
 
   if (!currentAct) {
     return '';
@@ -167,6 +168,7 @@ export function buildSharedStructureContext(
     exitReversal.trim().length > 0 ? `\nExpected Exit Reversal: ${exitReversal}` : '';
   const promiseTargetsLine =
     promiseTargets.length > 0 ? `\nPromise Targets: ${promiseTargets.join(', ')}` : '';
+  const structurePrioritySection = buildStructurePriorityGuidanceSection(currentAct, activeMilestone);
 
   return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
@@ -178,7 +180,7 @@ CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of ${structure
 Objective: ${currentAct.objective}
 Stakes: ${currentAct.stakes}${actQuestionLine}${exitReversalLine}${promiseTargetsLine}
 
-BEATS IN THIS ACT:
+${structurePrioritySection}BEATS IN THIS ACT:
 ${milestoneLines}
 
 REMAINING ACTS:
@@ -522,7 +524,7 @@ Populate threadPayoffAssessments for each resolved thread.
       : '';
   const actTrajectorySection =
     actQuestionLine || exitReversalLine || activeMilestoneExitLine
-      ? `=== ACT TRAJECTORY CHECK ===\n${actQuestionLine}${exitReversalLine}${activeMilestoneExitLine}- Use the act question to judge whether the narrative is advancing or drifting from the act's dramatic center.\n- If the scene appears to transition out of this act, assess whether it earns the expected exit reversal.\n\n`
+      ? `${buildStructurePriorityGuidanceSection(currentAct, activeMilestone, { heading: '=== ACT TRAJECTORY CHECK ===', includeFinalBlankLine: false })}\n- Use the act question to judge whether the narrative is advancing or drifting from the act's dramatic center.\n- If the scene appears to transition out of this act, assess whether it earns the expected exit reversal.\n\n`
       : '';
 
   return `=== STORY STRUCTURE ===
@@ -589,4 +591,69 @@ ${escalationCheckSection}${DEVIATION_DETECTION_SECTION}
 ${remainingBeatsSection}
 
 ${pacingEvaluationSection}`;
+}
+
+function buildStructurePriorityGuidanceSection(
+  currentAct: StoryStructure['acts'][number],
+  activeMilestone: StoryMilestone | undefined,
+  options?: {
+    readonly heading?: string;
+    readonly includeFinalBlankLine?: boolean;
+  }
+): string {
+  const heading = options?.heading ?? '=== STRUCTURE PRIORITIES ===';
+  const includeFinalBlankLine = options?.includeFinalBlankLine ?? true;
+  const activeMilestoneExitCondition =
+    typeof activeMilestone?.exitCondition === 'string' ? activeMilestone.exitCondition.trim() : '';
+  const activeMilestoneObjective =
+    typeof activeMilestone?.objective === 'string' ? activeMilestone.objective.trim() : '';
+  const actQuestion =
+    typeof currentAct.actQuestion === 'string' ? currentAct.actQuestion.trim() : '';
+  const exitReversal =
+    typeof currentAct.exitReversal === 'string' ? currentAct.exitReversal.trim() : '';
+  const isFinalMilestoneOfAct =
+    !!activeMilestone &&
+    currentAct.milestones[currentAct.milestones.length - 1]?.id === activeMilestone.id;
+
+  const lines: string[] = [heading];
+
+  if (activeMilestoneExitCondition.length > 0) {
+    lines.push(`Immediate milestone completion target: ${activeMilestoneExitCondition}`);
+    lines.push(
+      '- Treat the active milestone exit condition as the default completion contract for the current scene.'
+    );
+    if (activeMilestoneObjective.length > 0) {
+      lines.push(
+        `- Use the milestone objective only as fallback context when the exit condition is absent: ${activeMilestoneObjective}`
+      );
+    }
+  } else if (activeMilestoneObjective.length > 0) {
+    lines.push(`Immediate milestone completion target (fallback): ${activeMilestoneObjective}`);
+    lines.push(
+      '- No exit condition is present, so use the active milestone objective as the current scene completion contract.'
+    );
+  }
+
+  if (actQuestion.length > 0) {
+    lines.push(`Act Question: ${actQuestion}`);
+    lines.push('- Use the act question as the act-level compass for scene direction and drift checks.');
+  }
+
+  if (exitReversal.length > 0) {
+    lines.push(`Expected Exit Reversal: ${exitReversal}`);
+    lines.push(
+      '- Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.'
+    );
+    if (isFinalMilestoneOfAct) {
+      lines.push(
+        "- The active milestone is the act's final milestone, so the scene may directly set up or deliver the exit reversal."
+      );
+    } else {
+      lines.push(
+        '- Only elevate the exit reversal into a direct scene requirement when the scene is approaching an act transition.'
+      );
+    }
+  }
+
+  return `${lines.join('\n')}${includeFinalBlankLine ? '\n\n' : ''}`;
 }

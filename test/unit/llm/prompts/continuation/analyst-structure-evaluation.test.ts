@@ -153,6 +153,35 @@ describe('buildAnalystStructureEvaluation', () => {
     );
   });
 
+  it('includes explicit milestone-completion versus act-trajectory guidance', () => {
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentMilestoneIndex: 1,
+      milestoneProgressions: [
+        { milestoneId: '1.1', status: 'concluded', resolution: 'Reached safehouse' },
+        { milestoneId: '1.2', status: 'active' },
+      ],
+      pagesInCurrentMilestone: 0,
+      pacingNudge: null,
+    };
+
+    const result = buildAnalystStructureEvaluation(testStructure, state, emptyActiveState);
+
+    expect(result).toContain('=== ACT TRAJECTORY CHECK ===');
+    expect(result).toContain(
+      'Immediate milestone completion target: The evidence is secured somewhere the purge cannot immediately destroy it.'
+    );
+    expect(result).toContain(
+      'Treat the active milestone exit condition as the default completion contract for the current scene.'
+    );
+    expect(result).toContain(
+      'Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.'
+    );
+    expect(result).toContain(
+      'Only elevate the exit reversal into a direct scene requirement when the scene is approaching an act transition.'
+    );
+  });
+
   it('shows milestone status lines with concluded, active, and pending', () => {
     const state: AccumulatedStructureState = {
       currentActIndex: 0,

@@ -224,4 +224,21 @@ describe('prompt documentation alignment', () => {
     expect(docContent).toContain('AgedTrackedPromise[]');
     expect(docContent).not.toContain('exactly 3 options');
   });
+
+  it('documents shared structure priority guidance across planner, lorekeeper, and evaluator docs', () => {
+    const plannerDoc = readRepoFile('prompts/page-planner-prompt.md');
+    const lorekeeperDoc = readRepoFile('prompts/lorekeeper-prompt.md');
+    const evaluatorDoc = readRepoFile('prompts/structure-evaluator-prompt.md');
+
+    expect(plannerDoc).toContain('=== STRUCTURE PRIORITIES ===');
+    expect(plannerDoc).toContain(
+      'Treat the active milestone exit condition as the default completion contract for the current scene.'
+    );
+    expect(lorekeeperDoc).toContain('=== STRUCTURE PRIORITIES ===');
+    expect(lorekeeperDoc).toContain(
+      'Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.'
+    );
+    expect(evaluatorDoc).toContain('=== ACT TRAJECTORY CHECK ===');
+    expect(evaluatorDoc).toContain('Immediate milestone completion target');
+  });
 });

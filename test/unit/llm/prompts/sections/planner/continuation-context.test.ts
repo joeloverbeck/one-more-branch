@@ -782,6 +782,16 @@ describe('planner continuation context section', () => {
     expect(result).toContain(
       'Exit condition: The ally either recommits or is neutralized before they can betray the route.'
     );
+    expect(result).toContain('=== STRUCTURE PRIORITIES ===');
+    expect(result).toContain(
+      'Immediate milestone completion target: The ally either recommits or is neutralized before they can betray the route.'
+    );
+    expect(result).toContain(
+      'Treat the active milestone exit condition as the default completion contract for the current scene.'
+    );
+    expect(result).toContain(
+      'Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.'
+    );
     expect(result).toContain('REMAINING ACTS:');
     expect(result).not.toContain('Current Act Index:');
     expect(result).not.toContain('Current Milestone Index:');

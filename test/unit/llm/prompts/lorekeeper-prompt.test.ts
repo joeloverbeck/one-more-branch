@@ -234,6 +234,71 @@ describe('buildLorekeeperPrompt', () => {
     expect(userPrompt).toContain('Locked door');
   });
 
+  it('inherits shared structure priority guidance when structure context is present', () => {
+    const messages = buildLorekeeperPrompt(
+      buildMinimalContext({
+        structure: {
+          overallTheme: 'Truth survives only if carried through the purge.',
+          premise: 'A courier must preserve evidence long enough to expose a regime.',
+          openingImage: 'Sirens flood a midnight avenue.',
+          closingImage: 'The surviving proof reaches a crowd at dawn.',
+          pacingBudget: { targetPagesMin: 20, targetPagesMax: 30 },
+          generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+          acts: [
+            {
+              id: '1',
+              name: 'Containment',
+              objective: 'Escape the first sweep',
+              stakes: 'Capture means disappearance.',
+              entryCondition: 'The purge begins.',
+              actQuestion: 'Can the courier keep the proof alive long enough to matter?',
+              exitReversal: 'The proof survives, but the conspiracy is wider than expected.',
+              promiseTargets: ['The purge can be exposed'],
+              obligationTargets: [],
+              milestones: [
+                {
+                  id: '1.1',
+                  name: 'Protect the proof',
+                  description: 'Secure the evidence cache',
+                  objective: 'Protect the evidence',
+                  causalLink: 'The purge starts by burning archive nodes.',
+                  exitCondition: 'The evidence is hidden somewhere the purge cannot immediately reach.',
+                  role: 'setup',
+                  escalationType: null,
+                  secondaryEscalationType: null,
+                  crisisType: null,
+                  expectedGapMagnitude: null,
+                  isMidpoint: false,
+                  midpointType: null,
+                  uniqueScenarioHook: null,
+                  approachVectors: null,
+                  setpieceSourceIndex: null,
+                  obligatorySceneTag: null,
+                },
+              ],
+            },
+          ],
+        },
+        accumulatedStructureState: {
+          currentActIndex: 0,
+          currentMilestoneIndex: 0,
+          milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
+          pagesInCurrentMilestone: 0,
+          pacingNudge: null,
+        },
+      })
+    );
+    const userPrompt = messages[1]?.content ?? '';
+
+    expect(userPrompt).toContain('=== STRUCTURE PRIORITIES ===');
+    expect(userPrompt).toContain(
+      'Immediate milestone completion target: The evidence is hidden somewhere the purge cannot immediately reach.'
+    );
+    expect(userPrompt).toContain(
+      'Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.'
+    );
+  });
+
   it('includes ancestor summaries when present', () => {
     const context = buildMinimalContext({
       ancestorSummaries: [

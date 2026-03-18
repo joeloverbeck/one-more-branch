@@ -80,7 +80,10 @@ describe('buildStructureEvaluatorPrompt', () => {
       'extract 1-3 completion anchors from activeMilestone.exitCondition when it is non-empty; otherwise extract them from activeMilestone.objective'
     );
     expect(userMessage?.content).toContain(
-      'Active Milestone Exit Condition: The proof is secured in the archive vault beyond the purge’s immediate reach.'
+      'Immediate milestone completion target: The proof is secured in the archive vault beyond the purge’s immediate reach.'
+    );
+    expect(userMessage?.content).toContain(
+      'Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.'
     );
   });
 });

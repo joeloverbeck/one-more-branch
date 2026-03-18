@@ -28,7 +28,7 @@ This split allows each evaluator to specialize on its domain without context pol
 ### 1) System Message
 
 ```text
-You are a story structure evaluator for interactive fiction. Your SINGLE responsibility is to evaluate whether the narrative satisfies structural objectives — beat completion, deviation, pacing, and spine integrity.
+You are a story structure evaluator for interactive fiction. Your SINGLE responsibility is to evaluate whether the narrative satisfies structural objectives — milestone completion, deviation, pacing, and spine integrity.
 
 You do NOT evaluate tone, NPC coherence, narrative promises, or quality. Those are handled by other evaluators.
 
@@ -38,32 +38,32 @@ RATING: NC-21 (ADULTS ONLY)
 
 Use this strict sequence:
 Step A: Classify scene signals using the provided enums.
-Step B: Apply the completion gate against the active beat objective before deciding beatConcluded.
+Step B: Apply the completion gate against the active milestone exit condition when present; otherwise use the active milestone objective before deciding milestoneConcluded.
 
-Before setting beatConcluded, extract 1-3 objective anchors from activeBeat.objective and map each anchor to concrete evidence.
+Before setting milestoneConcluded, extract 1-3 completion anchors from activeMilestone.exitCondition when it is non-empty; otherwise extract them from activeMilestone.objective, then map each anchor to concrete evidence.
 
-An objective anchor is a distinct verifiable condition embedded in the beat objective text. Each anchor represents one thing the protagonist must accomplish for the beat to be complete. Multi-part objectives yield multiple anchors.
+A completion anchor is a distinct verifiable condition embedded in the active completion target. Each anchor represents one thing that must be true for the milestone to be complete. Multi-part exit conditions or objectives yield multiple anchors.
 
 Example 1 — Objective: "Secure evidence before the tribunal can destroy it"
   Anchors:
     1. "evidence is secured" — look for: protagonist physically obtains, copies, or safeguards the evidence
     2. "tribunal has not yet destroyed it" — look for: evidence still intact at time of acquisition, no indication it was tampered with or lost
-  Evidence mapping: If the narrative shows the protagonist stealing sealed ledgers and escaping the archive, anchor 1 is satisfied. If the narrative mentions guards arriving but the ledgers are already taken, anchor 2 is satisfied. Both anchors met → beatConcluded = true.
+  Evidence mapping: If the narrative shows the protagonist stealing sealed ledgers and escaping the archive, anchor 1 is satisfied. If the narrative mentions guards arriving but the ledgers are already taken, anchor 2 is satisfied. Both anchors met → milestoneConcluded = true.
 
 Example 2 — Objective: "Convince the rival houses to commit support without revealing all leverage"
   Anchors:
     1. "rival houses commit support" — look for: explicit agreement, alliance, or promise of aid from at least one house
     2. "leverage is not fully revealed" — look for: protagonist withholds key information, negotiates selectively
-  Evidence mapping: If house leaders agree to back the protagonist but the protagonist kept the damning letters secret, both anchors are met. If the protagonist revealed everything to win support, anchor 2 fails → beatConcluded = false despite anchor 1 being met.
+  Evidence mapping: If house leaders agree to back the protagonist but the protagonist kept the damning letters secret, both anchors are met. If the protagonist revealed everything to win support, anchor 2 fails → milestoneConcluded = false despite anchor 1 being met.
 
 Evidence is cumulative across the current narrative and active state.
-If no anchor has explicit evidence, beatConcluded must be false.
+If no anchor has explicit evidence, milestoneConcluded must be false.
 
 MIDPOINT EVALUATION:
-- If the active beat is midpoint-tagged, enforce midpoint delivery quality:
+- If the active milestone is midpoint-tagged, enforce midpoint delivery quality:
   - FALSE_VICTORY: apparent win with hidden structural cost or instability.
   - FALSE_DEFEAT: apparent loss that plants credible recovery potential.
-- If beatConcluded is true without midpoint-grade reversal function, mark pacingIssueDetected true and explain the midpoint miss.
+- If milestoneConcluded is true without midpoint-grade reversal function, mark pacingIssueDetected true and explain the midpoint miss.
 
 SPINE INTEGRITY EVALUATION:
 - If a STORY SPINE section is present, evaluate whether any spine element has been IRREVERSIBLY invalidated by the narrative.
@@ -81,16 +81,16 @@ After classifying scene signals, write a pacingDirective: a 1-3 sentence natural
 Synthesize ALL of the following into one coherent instruction:
 - Scene rhythm: Does the next scene need to breathe after a major event, or accelerate toward a conclusion?
 - Momentum: Is the story stalling, progressing steadily, or shifting scope?
-- Structural position: How close is the current beat to conclusion? Is the next beat's entry condition approaching readiness?
+- Structural position: How close is the current milestone to conclusion? Is the next milestone's entry condition approaching readiness?
 - Commitment level: Has the protagonist locked into a path, or are options still open?
-- Pacing budget: How many pages remain relative to beats? Burning budget or running lean?
+- Pacing budget: How many pages remain relative to milestones? Burning budget or running lean?
 - Any pacing issue detected: If pacingIssueDetected is true, the directive MUST include the corrective action.
 
-Write as if briefing a fiction writer: "The next scene should deliver a direct confrontation that advances the beat objective" NOT "momentum should increase."
+Write as if briefing a fiction writer: "The next scene should deliver a direct confrontation that advances the milestone objective" NOT "momentum should increase."
 If no pacing concern exists, still provide rhythm guidance: "After this tense revelation, the next scene can afford a brief character moment before escalating."
 
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
-Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future beats are genuinely invalidated.
+Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future milestones are genuinely invalidated.
 ```
 
 ### 2) User Message
@@ -105,6 +105,16 @@ Objective: {{currentAct.objective}}
 Stakes: {{currentAct.stakes}}
 {{#if currentAct.actQuestion}}Act Question: {{currentAct.actQuestion}}{{/if}}
 {{#if currentAct.exitReversal}}Expected Exit Reversal: {{currentAct.exitReversal}}{{/if}}
+
+=== ACT TRAJECTORY CHECK ===
+Immediate milestone completion target: {{activeMilestone.exitCondition || activeMilestone.objective}}
+- Treat the active milestone exit condition as the default completion contract for the current scene.
+- Use the milestone objective only as fallback context when the exit condition is absent.
+{{#if currentAct.actQuestion}}- Use the act question as the act-level compass for scene direction and drift checks.{{/if}}
+{{#if currentAct.exitReversal}}- Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.{{/if}}
+{{#if currentAct.exitReversal}}- Only elevate the exit reversal into a direct scene requirement when the scene is approaching an act transition or the active milestone is the act's final milestone.{{/if}}
+- Use the act question to judge whether the narrative is advancing or drifting from the act's dramatic center.
+- If the scene appears to transition out of this act, assess whether it earns the expected exit reversal.
 
 BEATS IN THIS ACT:
   [x] CONCLUDED ({{beat.role}}): {{beat.description}}
@@ -122,20 +132,20 @@ BEATS IN THIS ACT:
 REMAINING ACTS:
   - Act {{N}}: {{act.name}} - {{act.objective}}
 
-CURRENT STATE (for beat evaluation):
+CURRENT STATE (for milestone evaluation):
 - Location: {{activeState.currentLocation}}
 - Active threats: {{activeState.activeThreats[*].text}}
 - Constraints: {{activeState.activeConstraints[*].text}}
 - Open threads:
   [{{thread.id}}] ({{thread.threadType}}/{{thread.urgency}}, {{threadAges[thread.id]}} pages old) {{thread.text}}
 - Threads resolved this scene: {{threadsResolved}}
-(Consider these when evaluating beat completion)
+(Consider these when evaluating milestone completion)
 
 === BEAT EVALUATION ===
-Evaluate the following narrative against this structure to determine beat completion.
+Evaluate the following narrative against this structure to determine milestone completion.
 
 === SCENE SIGNAL CLASSIFICATION ===
-Classify the narrative before deciding beatConcluded:
+Classify the narrative before deciding milestoneConcluded:
 - sceneMomentum: STASIS | INCREMENTAL_PROGRESS | MAJOR_PROGRESS | REVERSAL_OR_SETBACK | SCOPE_SHIFT
 - objectiveEvidenceStrength: NONE | WEAK_IMPLICIT | CLEAR_EXPLICIT
 - commitmentStrength: NONE | TENTATIVE | EXPLICIT_REVERSIBLE | EXPLICIT_IRREVERSIBLE
@@ -143,40 +153,40 @@ Classify the narrative before deciding beatConcluded:
 - entryConditionReadiness: NOT_READY | PARTIAL | READY
 
 === COMPLETION GATE ===
-Set beatConcluded: true only when the gate is satisfied.
+Set milestoneConcluded: true only when the gate is satisfied.
 
-Base gate for all beat roles (must satisfy at least one):
-1. objectiveEvidenceStrength is CLEAR_EXPLICIT for the active beat objective (when `exitCondition` is present on the active beat, objective anchors are extracted from `exitCondition` preferentially over the beat objective)
-2. structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the active beat objective is no longer the primary unresolved objective
+Base gate for all milestone roles (must satisfy at least one):
+1. objectiveEvidenceStrength is CLEAR_EXPLICIT for the active milestone exit condition (or the active milestone objective when no exit condition is present)
+2. structuralPositionSignal is CLEARLY_IN_NEXT_BEAT AND there is explicit evidence that the active milestone completion target is no longer the primary unresolved objective
 
 Additional gate for turning_point:
 - commitmentStrength must be EXPLICIT_REVERSIBLE or EXPLICIT_IRREVERSIBLE
 - If commitmentStrength is EXPLICIT_REVERSIBLE, require an explicit forward consequence that materially changes available next actions
 
 Negative guards:
-- Intensity/action escalation alone is insufficient without CLEAR_EXPLICIT objective evidence
-- SCOPE_SHIFT alone cannot conclude a beat without objective resolution or explicit structural supersession evidence
+- Intensity/action escalation alone is insufficient without CLEAR_EXPLICIT evidence for the active milestone completion target
+- SCOPE_SHIFT alone cannot conclude a milestone without satisfying the active milestone completion target or explicit structural supersession evidence
 
-If the completion gate is not satisfied, set beatConcluded: false.
+If the completion gate is not satisfied, set milestoneConcluded: false.
 
-PROGRESSION CHECK: Compare the narrative against PENDING beat descriptions and objectives when classifying structuralPositionSignal and alignedBeatId. If the narrative is truly in next-beat territory, use CLEARLY_IN_NEXT_BEAT and apply the completion gate. Also identify which specific pending beat the narrative aligns with via alignedBeatId.
-(Only present when there are pending beats remaining.)
+PROGRESSION CHECK: Compare the narrative against PENDING milestone descriptions and objectives when classifying structuralPositionSignal and alignedMilestoneId. If the narrative is truly in next-milestone territory, use CLEARLY_IN_NEXT_BEAT and apply the completion gate. Also identify which specific pending milestone the narrative aligns with via alignedMilestoneId.
+(Only present when there are pending milestones remaining.)
 
 === BEAT ALIGNMENT DETECTION ===
-After classifying structuralPositionSignal, if the signal is NOT WITHIN_ACTIVE_BEAT, identify which PENDING beat the narrative most closely aligns with.
+After classifying structuralPositionSignal, if the signal is NOT WITHIN_ACTIVE_BEAT, identify which PENDING milestone the narrative most closely aligns with.
 
-Compare the current narrative state against ALL pending beat objectives (shown above). Select the beat whose objective best describes what the narrative is currently delivering or has just delivered.
+Compare the current narrative state against ALL pending milestone objectives (shown above). Select the milestone whose objective best describes what the narrative is currently delivering or has just delivered.
 
-- alignedBeatId: The beat ID (e.g., "1.4", "2.1") that best matches the current narrative territory. null if WITHIN_ACTIVE_BEAT or no clear match.
-- beatAlignmentConfidence:
-  - HIGH: The narrative clearly satisfies or is actively delivering most conditions of the target beat's objective. Multiple objective elements are present.
-  - MEDIUM: The narrative has elements that overlap with the target beat but also fits nearby beats. Ambiguous.
-  - LOW: Weak or uncertain alignment. The narrative may have moved past the active beat but the target is unclear.
-- beatAlignmentReason: One sentence explaining the alignment judgment.
+- alignedMilestoneId: The milestone ID (e.g., "1.4", "2.1") that best matches the current narrative territory. null if WITHIN_ACTIVE_BEAT or no clear match.
+- milestoneAlignmentConfidence:
+  - HIGH: The narrative clearly satisfies or is actively delivering most conditions of the target milestone's objective. Multiple objective elements are present.
+  - MEDIUM: The narrative has elements that overlap with the target milestone but also fits nearby milestones. Ambiguous.
+  - LOW: Weak or uncertain alignment. The narrative may have moved past the active milestone but the target is unclear.
+- milestoneAlignmentReason: One sentence explaining the alignment judgment.
 
-If the aligned beat is the NEXT sequential beat (i.e., the one immediately after the active beat), this is normal progression — still report it but confidence assessment remains standard.
+If the aligned milestone is the NEXT sequential milestone (i.e., the one immediately after the active milestone), this is normal progression — still report it but confidence assessment remains standard.
 
-If the aligned beat is 2+ beats ahead of the active beat, this indicates a narrative leap. Be especially careful with HIGH confidence — only assign it when the evidence is unambiguous.
+If the aligned milestone is 2+ milestones ahead of the active milestone, this indicates a narrative leap. Be especially careful with HIGH confidence — only assign it when the evidence is unambiguous.
 
 {{#if activeBeatRole === 'escalation'}}
 === ESCALATION QUALITY CHECK ===
