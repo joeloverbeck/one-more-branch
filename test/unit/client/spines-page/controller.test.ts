@@ -106,7 +106,8 @@ describe('spines page controller', () => {
     await jest.runAllTimersAsync();
 
     // Check that generate endpoint was called
-    const generateCall = fetchMock.mock.calls.find(
+    const fetchCalls = fetchMock.mock.calls as [string, RequestInit?][];
+    const generateCall = fetchCalls.find(
       (call: [string, RequestInit?]) =>
         typeof call[0] === 'string' && call[0].includes('/spines/api/generate')
     );
@@ -165,7 +166,8 @@ describe('spines page controller', () => {
     await Promise.resolve();
     await jest.runAllTimersAsync();
 
-    const saveCall = fetchMock.mock.calls.find(
+    const fetchCalls = fetchMock.mock.calls as [string, RequestInit?][];
+    const saveCall = fetchCalls.find(
       (call: [string, RequestInit?]) =>
         typeof call[0] === 'string' && call[0].includes('/spines/api/save')
     );
