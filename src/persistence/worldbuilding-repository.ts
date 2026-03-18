@@ -27,7 +27,7 @@ export async function loadWorldbuilding(id: string): Promise<SavedWorldbuilding 
 
 export async function updateWorldbuilding(
   id: string,
-  updater: (wb: SavedWorldbuilding) => SavedWorldbuilding,
+  updater: (wb: SavedWorldbuilding) => SavedWorldbuilding
 ): Promise<SavedWorldbuilding> {
   return worldbuildingRepository.update(id, updater);
 }

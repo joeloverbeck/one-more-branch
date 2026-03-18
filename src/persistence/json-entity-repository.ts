@@ -2,7 +2,9 @@ import * as path from 'path';
 import { withLock } from './lock-manager.js';
 import { deleteFile, fileExists, listFiles, readJsonFile, writeJsonFile } from './file-utils.js';
 
-export interface JsonEntityRepositoryOptions<TEntity extends { readonly id: string; readonly updatedAt: string }> {
+export interface JsonEntityRepositoryOptions<
+  TEntity extends { readonly id: string; readonly updatedAt: string },
+> {
   readonly lockPrefix: string;
   readonly entityLabel: string;
   readonly notFoundLabel: string;
@@ -26,7 +28,9 @@ function createEntityAsserter<TEntity>(
   };
 }
 
-export interface JsonEntityRepository<TEntity extends { readonly id: string; readonly updatedAt: string }> {
+export interface JsonEntityRepository<
+  TEntity extends { readonly id: string; readonly updatedAt: string },
+> {
   readonly save: (entity: TEntity) => Promise<void>;
   readonly load: (id: string) => Promise<TEntity | null>;
   readonly update: (id: string, updater: (existing: TEntity) => TEntity) => Promise<TEntity>;

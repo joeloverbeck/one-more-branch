@@ -45,7 +45,10 @@ function parseProtagonistRelationship(raw: unknown): DecomposedRelationship | nu
       : typeof rawValence === 'string' && rawValence.trim() !== ''
         ? Number(rawValence)
         : 0;
-  const clampedValence = Math.max(-5, Math.min(5, Number.isNaN(numericValence) ? 0 : numericValence));
+  const clampedValence = Math.max(
+    -5,
+    Math.min(5, Number.isNaN(numericValence) ? 0 : numericValence)
+  );
 
   return {
     valence: clampedValence,
@@ -87,7 +90,9 @@ function mergeContextIntoCharacter(
     ...(standalone.stressVariants ? { stressVariants: standalone.stressVariants } : {}),
     ...(standalone.focalizationFilter ? { focalizationFilter: standalone.focalizationFilter } : {}),
     ...(standalone.escalationLadder ? { escalationLadder: standalone.escalationLadder } : {}),
-    ...(standalone.immediateObjectives ? { immediateObjectives: standalone.immediateObjectives } : {}),
+    ...(standalone.immediateObjectives
+      ? { immediateObjectives: standalone.immediateObjectives }
+      : {}),
     ...(standalone.constraints ? { constraints: standalone.constraints } : {}),
     ...(standalone.desires ? { desires: standalone.desires } : {}),
     ...(standalone.currentIntentions ? { currentIntentions: standalone.currentIntentions } : {}),
@@ -233,8 +238,7 @@ export async function contextualizeCharacters(
           responseLabel: 'character-contextualizer',
           messages,
           schema: CHARACTER_CONTEXTUALIZATION_SCHEMA,
-          parseResponse: (parsed) =>
-            parseContextualizationResponse(parsed, context.characters),
+          parseResponse: (parsed) => parseContextualizationResponse(parsed, context.characters),
         }),
       primaryModel,
       'characterContextualizer'

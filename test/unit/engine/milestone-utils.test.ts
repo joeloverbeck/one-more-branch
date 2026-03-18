@@ -25,7 +25,9 @@ function createStructure(): StoryStructure {
         objective: 'Survive the campaign',
         stakes: 'The kingdom may fall',
         entryCondition: 'The journey begins',
-        milestones: [{ id: '2.1', description: 'First major setback', objective: 'Recover from loss' }],
+        milestones: [
+          { id: '2.1', description: 'First major setback', objective: 'Recover from loss' },
+        ],
       },
     ],
     overallTheme: 'Restore the broken kingdom',

@@ -59,7 +59,7 @@ function buildUserPayload(context: ConceptStressTesterContext): string {
       weaknesses: context.weaknesses,
     },
     null,
-    2,
+    2
   );
 }
 

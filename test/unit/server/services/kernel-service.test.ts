@@ -71,7 +71,7 @@ describe('kernel-service', () => {
           sparkLine: 'a loyal rival',
           apiKey: 'valid-key-12345',
         },
-        undefined,
+        undefined
       );
       expect(result).toEqual({ evaluatedKernels });
     });
@@ -100,7 +100,7 @@ describe('kernel-service', () => {
           sparkLine: undefined,
           apiKey: 'valid-key-12345',
         },
-        undefined,
+        undefined
       );
     });
 
@@ -128,7 +128,7 @@ describe('kernel-service', () => {
           sparkLine: undefined,
           apiKey: 'valid-key-12345',
         },
-        onGenerationStage,
+        onGenerationStage
       );
     });
 
@@ -141,7 +141,7 @@ describe('kernel-service', () => {
         service.generateKernels({
           thematicInterests: 'trust',
           apiKey: ' short ',
-        }),
+        })
       ).rejects.toThrow('OpenRouter API key is required');
     });
 
@@ -155,7 +155,7 @@ describe('kernel-service', () => {
         service.generateKernels({
           thematicInterests: 'trust',
           apiKey: 'valid-key-12345',
-        }),
+        })
       ).rejects.toBe(llmError);
     });
   });

@@ -69,7 +69,7 @@ export function buildConceptEvolverPrompt(context: ConceptEvolverContext): ChatM
     buildConceptTaxonomyGuidance(context.excludedGenres),
     CONCEPT_QUALITY_ANCHORS,
     DIVERSITY_CONSTRAINTS,
-    KERNEL_CONSTRAINTS,
+    KERNEL_CONSTRAINTS
   );
 
   const userSections: string[] = [
@@ -99,7 +99,7 @@ ${buildParentPayload(context.parentConcepts)}`,
 
   if (mandateParts.length > 0) {
     userSections.push(
-      `USER CREATIVE MANDATE (evolved offspring MUST embody ALL of the following):\n${mandateParts.join('\n')}\nMutation changes form, not tonal identity. Every offspring must centrally express all listed qualities.`,
+      `USER CREATIVE MANDATE (evolved offspring MUST embody ALL of the following):\n${mandateParts.join('\n')}\nMutation changes form, not tonal identity. Every offspring must centrally express all listed qualities.`
     );
   }
 
@@ -114,7 +114,7 @@ ${buildParentPayload(context.parentConcepts)}`,
 - conflictType must be structurally coherent with conflictAxis.
 - settingAxioms must contain 2-5 enforceable rules.
 - constraintSet must contain 2-5 meaningful limits.
-- keyInstitutions must contain 2-4 pressure-producing institutions.`,
+- keyInstitutions must contain 2-4 pressure-producing institutions.`
   );
 
   return [

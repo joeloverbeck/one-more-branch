@@ -12,13 +12,13 @@ import { CONCEPT_ARCHITECT_SCHEMA } from './schemas/concept-architect-schema.js'
 
 export function parseConceptArchitectResponse(
   parsed: unknown,
-  expectedCount: number,
+  expectedCount: number
 ): readonly ConceptCharacterWorldFields[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Concept architect response must be an object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -27,7 +27,7 @@ export function parseConceptArchitectResponse(
     throw new LLMError(
       'Concept architect response missing concepts array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -35,7 +35,7 @@ export function parseConceptArchitectResponse(
     throw new LLMError(
       `Concept architect response must include exactly ${expectedCount} items (received: ${data['concepts'].length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -45,7 +45,7 @@ export function parseConceptArchitectResponse(
 export async function generateConceptCharacterWorlds(
   context: ConceptArchitectContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptArchitectResult> {
   const expectedCount = context.seeds.length;
   const messages = buildConceptArchitectPrompt(context);

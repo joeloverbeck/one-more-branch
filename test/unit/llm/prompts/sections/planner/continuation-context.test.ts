@@ -15,7 +15,10 @@ import {
   buildPlannerContinuationContextSection,
   buildEscalationDirective,
 } from '../../../../../../src/llm/prompts/sections/planner/continuation-context.js';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../../../../fixtures/decomposed';
+import {
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../../../../fixtures/decomposed';
 
 describe('planner continuation context section', () => {
   it('builds accountant continuation context without planner-only sections', () => {
@@ -64,9 +67,20 @@ describe('planner continuation context section', () => {
       tone: 'gritty cyberpunk',
       decomposedCharacters: [
         buildMinimalDecomposedCharacter('A biotech smuggler'),
-        buildMinimalDecomposedCharacter('Azra', { rawDescription: 'Ex-military fixer with a debt to the protagonist' }),
+        buildMinimalDecomposedCharacter('Azra', {
+          rawDescription: 'Ex-military fixer with a debt to the protagonist',
+        }),
       ],
-      decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A quarantined coastal megacity.', scope: 'global' }], rawWorldbuilding: 'A quarantined coastal megacity.' },
+      decomposedWorld: {
+        facts: [
+          {
+            domain: 'geography' as const,
+            fact: 'A quarantined coastal megacity.',
+            scope: 'global',
+          },
+        ],
+        rawWorldbuilding: 'A quarantined coastal megacity.',
+      },
       globalCanon: ['Drone patrols scan thermal signatures nightly'],
       globalCharacterCanon: {
         azra: ['Azra speaks in clipped military phrases'],
@@ -269,7 +283,7 @@ describe('planner continuation context section', () => {
       ],
       parentDramaticIronyOpportunities: [
         'Voss will confront the protagonist about the sabotage, not knowing it was his own lieutenant.',
-        'The protagonist can exploit Voss\'s false belief to gain access to the reactor.',
+        "The protagonist can exploit Voss's false belief to gain access to the reactor.",
       ],
     };
 
@@ -278,7 +292,7 @@ describe('planner continuation context section', () => {
     expect(result).toContain('=== DRAMATIC IRONY OPPORTUNITIES ===');
     expect(result).toContain('Analyst-identified opportunities from previous scene:');
     expect(result).toContain('Voss will confront the protagonist about the sabotage');
-    expect(result).toContain('The protagonist can exploit Voss\'s false belief');
+    expect(result).toContain("The protagonist can exploit Voss's false belief");
   });
 
   it('renders dramatic irony section when only opportunities exist without knowledge state', () => {
@@ -304,9 +318,7 @@ describe('planner continuation context section', () => {
       ancestorSummaries: [],
       accumulatedPromises: [],
       accumulatedKnowledgeState: [],
-      parentDramaticIronyOpportunities: [
-        'The merchant does not know the artifact is a fake.',
-      ],
+      parentDramaticIronyOpportunities: ['The merchant does not know the artifact is a fake.'],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -416,7 +428,25 @@ describe('planner continuation context section', () => {
             objective: 'Setup',
             stakes: 'Failure',
             entryCondition: 'Start',
-            milestones: [{ id: '1.1', name: 'Milestone 1', description: 'Setup', objective: 'Setup', causalLink: 'Because setup.', role: 'setup', escalationType: null, secondaryEscalationType: null, crisisType: null, expectedGapMagnitude: null, isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: null, setpieceSourceIndex: null }],
+            milestones: [
+              {
+                id: '1.1',
+                name: 'Milestone 1',
+                description: 'Setup',
+                objective: 'Setup',
+                causalLink: 'Because setup.',
+                role: 'setup',
+                escalationType: null,
+                secondaryEscalationType: null,
+                crisisType: null,
+                expectedGapMagnitude: null,
+                isMidpoint: false,
+                midpointType: null,
+                uniqueScenarioHook: null,
+                approachVectors: null,
+                setpieceSourceIndex: null,
+              },
+            ],
           },
           {
             id: '2',
@@ -424,7 +454,25 @@ describe('planner continuation context section', () => {
             objective: 'Escalate',
             stakes: 'Failure',
             entryCondition: 'Escalate',
-            milestones: [{ id: '2.1', name: 'Milestone 2', description: 'Escalate', objective: 'Escalate', causalLink: 'Because escalate.', role: 'escalation', escalationType: 'THREAT_ESCALATION', secondaryEscalationType: null, crisisType: 'BEST_BAD_CHOICE', expectedGapMagnitude: 'MODERATE', isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: ['DIRECT_FORCE', 'ANALYTICAL_REASONING'], setpieceSourceIndex: null }],
+            milestones: [
+              {
+                id: '2.1',
+                name: 'Milestone 2',
+                description: 'Escalate',
+                objective: 'Escalate',
+                causalLink: 'Because escalate.',
+                role: 'escalation',
+                escalationType: 'THREAT_ESCALATION',
+                secondaryEscalationType: null,
+                crisisType: 'BEST_BAD_CHOICE',
+                expectedGapMagnitude: 'MODERATE',
+                isMidpoint: false,
+                midpointType: null,
+                uniqueScenarioHook: null,
+                approachVectors: ['DIRECT_FORCE', 'ANALYTICAL_REASONING'],
+                setpieceSourceIndex: null,
+              },
+            ],
           },
           {
             id: '3',
@@ -432,7 +480,25 @@ describe('planner continuation context section', () => {
             objective: 'Resolve',
             stakes: 'Collapse',
             entryCondition: 'Final',
-            milestones: [{ id: '3.1', name: 'Milestone 3', description: 'Resolve', objective: 'Resolve', causalLink: 'Because final.', role: 'turning_point', escalationType: 'REVELATION_SHIFT', secondaryEscalationType: null, crisisType: 'IRRECONCILABLE_GOODS', expectedGapMagnitude: 'WIDE', isMidpoint: false, midpointType: null, uniqueScenarioHook: null, approachVectors: ['ANALYTICAL_REASONING', 'PERSUASION_INFLUENCE'], setpieceSourceIndex: null }],
+            milestones: [
+              {
+                id: '3.1',
+                name: 'Milestone 3',
+                description: 'Resolve',
+                objective: 'Resolve',
+                causalLink: 'Because final.',
+                role: 'turning_point',
+                escalationType: 'REVELATION_SHIFT',
+                secondaryEscalationType: null,
+                crisisType: 'IRRECONCILABLE_GOODS',
+                expectedGapMagnitude: 'WIDE',
+                isMidpoint: false,
+                midpointType: null,
+                uniqueScenarioHook: null,
+                approachVectors: ['ANALYTICAL_REASONING', 'PERSUASION_INFLUENCE'],
+                setpieceSourceIndex: null,
+              },
+            ],
           },
         ],
       },
@@ -472,8 +538,8 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-    accumulatedPromises: [],
-    accumulatedKnowledgeState: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       decomposedCharacters: [
         {
           name: 'Rin',
@@ -505,7 +571,7 @@ describe('planner continuation context section', () => {
           protagonistRelationship: {
             valence: -2,
             dynamic: 'antagonist',
-            history: 'Was Rin\'s station commander before the cover-up.',
+            history: "Was Rin's station commander before the cover-up.",
             currentTension: 'Suspects Rin is gathering evidence against him.',
             leverage: 'Controls station security access.',
           },
@@ -559,8 +625,8 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-    accumulatedPromises: [],
-    accumulatedKnowledgeState: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       structure: {
         overallTheme: 'Loyalty under impossible pressure',
         premise: 'A smuggler must expose corruption before a citywide purge.',
@@ -611,7 +677,8 @@ describe('planner continuation context section', () => {
                 description: 'Confront compromised ally',
                 objective: 'Prevent betrayal',
                 causalLink: 'The ally controls the only covert route.',
-                exitCondition: 'The ally either recommits or is neutralized before they can betray the route.',
+                exitCondition:
+                  'The ally either recommits or is neutralized before they can betray the route.',
                 role: 'escalation',
                 escalationType: null,
                 secondaryEscalationType: null,
@@ -630,7 +697,8 @@ describe('planner continuation context section', () => {
                 description: 'Expose the city directive',
                 objective: 'Broadcast proof',
                 causalLink: 'Proof of the directive changes what resistance cells can do.',
-                exitCondition: 'The directive is public enough that the resistance can mobilize around it.',
+                exitCondition:
+                  'The directive is public enough that the resistance can mobilize around it.',
                 role: 'turning_point',
                 escalationType: null,
                 secondaryEscalationType: null,
@@ -685,7 +753,11 @@ describe('planner continuation context section', () => {
         pagesInCurrentMilestone: 1,
         pacingNudge: null,
         milestoneProgressions: [
-          { milestoneId: '1.1', status: 'concluded', resolution: 'Route secured through maintenance' },
+          {
+            milestoneId: '1.1',
+            status: 'concluded',
+            resolution: 'Route secured through maintenance',
+          },
           { milestoneId: '1.2', status: 'active' },
           { milestoneId: '1.3', status: 'pending' },
           { milestoneId: '2.1', status: 'pending' },
@@ -824,8 +896,8 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-    accumulatedPromises: [],
-    accumulatedKnowledgeState: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -862,8 +934,8 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-    accumulatedPromises: [],
-    accumulatedKnowledgeState: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       accumulatedNpcAgendas: {
         Azra: {
           npcName: 'Azra',
@@ -951,8 +1023,8 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-    accumulatedPromises: [],
-    accumulatedKnowledgeState: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       parentProtagonistAffect: {
         primaryEmotion: 'dread',
         primaryIntensity: 'strong',
@@ -991,8 +1063,8 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-    accumulatedPromises: [],
-    accumulatedKnowledgeState: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -1021,8 +1093,8 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-    accumulatedPromises: [],
-    accumulatedKnowledgeState: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       protagonistGuidance: {
         suggestedSpeech: 'Get lost, I never want to see you again.',
       },
@@ -1057,8 +1129,8 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-    accumulatedPromises: [],
-    accumulatedKnowledgeState: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -1087,8 +1159,8 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-    accumulatedPromises: [],
-    accumulatedKnowledgeState: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       protagonistGuidance: { suggestedSpeech: '   ' },
     };
 
@@ -1118,8 +1190,8 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-    accumulatedPromises: [],
-    accumulatedKnowledgeState: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
       protagonistGuidance: {
         suggestedEmotions: 'Furious but controlled.',
         suggestedThoughts: 'This deal is a setup.',
@@ -1155,8 +1227,8 @@ describe('planner continuation context section', () => {
       },
       grandparentNarrative: null,
       ancestorSummaries: [],
-    accumulatedPromises: [],
-    accumulatedKnowledgeState: [],
+      accumulatedPromises: [],
+      accumulatedKnowledgeState: [],
     };
 
     const result = buildPlannerContinuationContextSection(context);
@@ -1264,7 +1336,11 @@ describe('planner continuation context section', () => {
         pagesInCurrentMilestone: 1,
         pacingNudge: null,
         milestoneProgressions: [
-          { milestoneId: '1.1', status: 'concluded', resolution: 'Route secured through maintenance' },
+          {
+            milestoneId: '1.1',
+            status: 'concluded',
+            resolution: 'Route secured through maintenance',
+          },
           { milestoneId: '1.2', status: 'active' },
         ],
       },

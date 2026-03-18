@@ -82,8 +82,7 @@ export function isScenePurpose(value: unknown): value is ScenePurpose {
 
 export function isValuePolarityShift(value: unknown): value is ValuePolarityShift {
   return (
-    typeof value === 'string' &&
-    (VALUE_POLARITY_SHIFT_VALUES as readonly string[]).includes(value)
+    typeof value === 'string' && (VALUE_POLARITY_SHIFT_VALUES as readonly string[]).includes(value)
   );
 }
 

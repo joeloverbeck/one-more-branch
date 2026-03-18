@@ -26,9 +26,7 @@ import {
   MINIMAL_DECOMPOSED_WORLD,
 } from '../../fixtures/decomposed';
 
-function createSpineRewriteContext(
-  overrides?: Partial<SpineRewriteContext>
-): SpineRewriteContext {
+function createSpineRewriteContext(overrides?: Partial<SpineRewriteContext>): SpineRewriteContext {
   return {
     tone: 'dark fantasy',
     currentSpine: {

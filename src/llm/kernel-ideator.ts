@@ -1,4 +1,8 @@
-import { isStoryKernel, type KernelIdeationResult, type KernelIdeatorContext } from '../models/index.js';
+import {
+  isStoryKernel,
+  type KernelIdeationResult,
+  type KernelIdeatorContext,
+} from '../models/index.js';
 import { runLlmStage } from './llm-stage-runner.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
@@ -15,7 +19,7 @@ export function parseKernelIdeationResponse(parsed: unknown): KernelIdeationResu
     throw new LLMError(
       'Kernel ideation response missing kernels array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -23,7 +27,7 @@ export function parseKernelIdeationResponse(parsed: unknown): KernelIdeationResu
     throw new LLMError(
       `Kernel ideation response must include 6-8 kernels (received: ${data['kernels'].length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -32,7 +36,7 @@ export function parseKernelIdeationResponse(parsed: unknown): KernelIdeationResu
       throw new LLMError(
         `Kernel ideation response includes invalid kernel at index ${index}`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
 
@@ -44,7 +48,7 @@ export function parseKernelIdeationResponse(parsed: unknown): KernelIdeationResu
     throw new LLMError(
       `Kernel ideation response must use at least 5 distinct conflictAxis values (found: ${conflictAxisSet.size})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -53,7 +57,7 @@ export function parseKernelIdeationResponse(parsed: unknown): KernelIdeationResu
     throw new LLMError(
       `Kernel ideation response must use at least 3 distinct dramaticStance values (found: ${dramaticStanceSet.size})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -63,7 +67,7 @@ export function parseKernelIdeationResponse(parsed: unknown): KernelIdeationResu
 export async function generateKernels(
   context: KernelIdeatorContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<KernelIdeationResult> {
   const messages = buildKernelIdeatorPrompt(context);
 

@@ -7,7 +7,11 @@ import {
 import type { GenreFrame } from '../../models/concept-generator.js';
 import { CONFLICT_TYPE_VALUES } from '../../models/story-spine.js';
 
-function buildEnumGuidance(label: string, values: readonly string[], descriptions: string[]): string {
+function buildEnumGuidance(
+  label: string,
+  values: readonly string[],
+  descriptions: string[]
+): string {
   const rows = values.map((value, index) => `- ${value}: ${descriptions[index]}`);
   return `${label}:\n${rows.join('\n')}`;
 }
@@ -49,9 +53,10 @@ const GENRE_DESCRIPTIONS: readonly string[] = [
   'Martial-arts honor code, jianghu underworld, qi cultivation, and sect politics.',
 ];
 
-function filterGenreDescriptions(
-  excludedGenres?: readonly GenreFrame[],
-): { genres: readonly string[]; descriptions: string[] } {
+function filterGenreDescriptions(excludedGenres?: readonly GenreFrame[]): {
+  genres: readonly string[];
+  descriptions: string[];
+} {
   const allowed = filterGenreFrames(excludedGenres);
   const descriptions = allowed.map((genre) => {
     const index = GENRE_FRAMES.indexOf(genre);

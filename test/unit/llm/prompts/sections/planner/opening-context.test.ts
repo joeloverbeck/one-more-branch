@@ -1,6 +1,9 @@
 import type { OpeningPagePlanContext } from '../../../../../../src/llm/context-types.js';
 import { buildPlannerOpeningContextSection } from '../../../../../../src/llm/prompts/sections/planner/opening-context.js';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../../../../fixtures/decomposed';
+import {
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../../../../fixtures/decomposed';
 
 describe('planner opening context section', () => {
   it('includes decomposed world and tone in opening context', () => {
@@ -8,7 +11,12 @@ describe('planner opening context section', () => {
       mode: 'opening',
       tone: 'sci-fi suspense',
       decomposedCharacters: [buildMinimalDecomposedCharacter('A stranded deep-space courier')],
-      decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A decaying orbital trade ring.', scope: 'global' }], rawWorldbuilding: 'A decaying orbital trade ring.' },
+      decomposedWorld: {
+        facts: [
+          { domain: 'geography' as const, fact: 'A decaying orbital trade ring.', scope: 'global' },
+        ],
+        rawWorldbuilding: 'A decaying orbital trade ring.',
+      },
     };
 
     const result = buildPlannerOpeningContextSection(context);

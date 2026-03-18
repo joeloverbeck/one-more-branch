@@ -1,7 +1,4 @@
-import type {
-  PromisePayoffAssessment,
-  ThreadPayoffAssessment,
-} from '../../models/state/index.js';
+import type { PromisePayoffAssessment, ThreadPayoffAssessment } from '../../models/state/index.js';
 import type { DetectedPromise, PromiseTrackerResult } from '../promise-tracker-types.js';
 import type { DelayedConsequenceDraft } from '../writer-types.js';
 import { isCanonicalIdForPrefix, STATE_ID_PREFIXES } from '../validation/state-id-prefixes.js';
@@ -114,9 +111,7 @@ export function validatePromiseTrackerResponse(
   return {
     promisesDetected: normalizeDetectedPromises(validated.promisesDetected),
     promisesResolved: normalizePromisesResolved(validated.promisesResolved),
-    promisePayoffAssessments: normalizePromisePayoffAssessments(
-      validated.promisePayoffAssessments
-    ),
+    promisePayoffAssessments: normalizePromisePayoffAssessments(validated.promisePayoffAssessments),
     threadPayoffAssessments: normalizeThreadPayoffAssessments(validated.threadPayoffAssessments),
     premisePromiseFulfilled:
       premisePromiseFulfilled && premisePromiseFulfilled.length > 0

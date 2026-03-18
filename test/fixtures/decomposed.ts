@@ -38,9 +38,7 @@ export const MINIMAL_DECOMPOSED_WORLD: DecomposedWorld = {
   rawWorldbuilding: '',
 };
 
-export function buildMinimalDecomposedWorld(
-  overrides?: Partial<DecomposedWorld>
-): DecomposedWorld {
+export function buildMinimalDecomposedWorld(overrides?: Partial<DecomposedWorld>): DecomposedWorld {
   return {
     facts: [],
     rawWorldbuilding: '',

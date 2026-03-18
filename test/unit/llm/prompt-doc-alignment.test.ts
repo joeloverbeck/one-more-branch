@@ -208,5 +208,4 @@ describe('prompt documentation alignment', () => {
     expect(docContent).toContain('dramaticClarity');
     expect(docContent).toContain('conflictTension');
   });
-
 });

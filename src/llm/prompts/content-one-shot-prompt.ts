@@ -39,12 +39,7 @@ export function buildContentOneShotPrompt(context: ContentOneShotContext): ChatM
   const contentPreferences = normalize(context.contentPreferences);
   const kernelBlock = normalize(context.kernelBlock);
 
-  const systemSections: string[] = [
-    ROLE_INTRO,
-    CONTENT_POLICY,
-    QUALITY_RULES,
-    DIVERSITY_RULES,
-  ];
+  const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, QUALITY_RULES, DIVERSITY_RULES];
 
   const userSections: string[] = [
     'Infer my imaginative taste from the exemplar ideas below, but do not copy their surface elements. Generate content packets that belong to the same creative appetite while still feeling original.',
@@ -73,7 +68,7 @@ export function buildContentOneShotPrompt(context: ContentOneShotContext): ChatM
     `OUTPUT REQUIREMENTS:
 - Return exactly 18 packets.
 - Every packet must be strong enough to inspire a story concept by itself.
-- No packet may feel like generic fantasy, generic sci-fi, or generic horror with a cosmetic gimmick.`,
+- No packet may feel like generic fantasy, generic sci-fi, or generic horror with a cosmetic gimmick.`
   );
 
   return [

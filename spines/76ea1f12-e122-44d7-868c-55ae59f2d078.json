@@ -1,0 +1,48 @@
+{
+  "id": "76ea1f12-e122-44d7-868c-55ae59f2d078",
+  "name": "FALL_FROM_GRACE — Can Iker name the architecture Valentina has built around hi",
+  "createdAt": "2026-03-16T02:03:18.174Z",
+  "updatedAt": "2026-03-16T02:03:18.174Z",
+  "spineOption": {
+    "centralDramaticQuestion": "Can Iker name the architecture Valentina has built around him — the lease, the slot, the rising waterline — and act on that naming before the concessions accumulate past the point where Gros feels like a life rather than a diminishment?",
+    "protagonistNeedVsWant": {
+      "need": "To name the architecture Valentina has built around him and act on that naming before the concessions accumulate past the point of reversibility — even at the cost of the gilded life and the feeling it produces.",
+      "want": "To keep the knowledge of the cage abstract and unacted-upon, preserving the luxury and the feeling of being extraordinary by never forcing the moment that would require him to choose.",
+      "dynamic": "IRRECONCILABLE"
+    },
+    "primaryAntagonisticForce": {
+      "description": "The gilded waterline Valentina has been steadily raising around him — the suite, the program slot, the financial infrastructure, the accumulated luxury of feeling extraordinary — which operates not through coercion but through the progressive thinning of the life outside it, until naming the cage requires him to choose a Gros that now looks irrevocably smaller than the man she has made him feel he is.",
+      "pressureMechanism": "Each concession Iker allows without naming it raises the cost of the next act of naming, so his want — to keep the knowledge abstract and unacted-upon — operates as a ratchet that makes the cage more structurally real with every day he does not dismantle it, widening the gap between the naming his need demands and the luxury his want cannot surrender."
+    },
+    "storySpineType": "FALL_FROM_GRACE",
+    "conflictAxis": "KNOWLEDGE_VS_INNOCENCE",
+    "conflictType": "PERSON_VS_FATE",
+    "characterArcType": "FALL",
+    "toneFeel": [
+      "velvet-suffocating",
+      "humid",
+      "gilded",
+      "vertiginous",
+      "skin-close"
+    ],
+    "toneAvoid": [
+      "melodramatic",
+      "pulpy",
+      "campy",
+      "self-pitying",
+      "redemptive"
+    ],
+    "wantNeedCollisionPoint": "When Iker discovers the pre-signed lease and chooses to say nothing in order to preserve the feeling and the arrangement, he converts the last moment at which naming the cage was reversible into the first moment at which he is genuinely inside it — and the luxury closes over him exactly as her design required.",
+    "protagonistDeepestFear": "That naming what Valentina has built around him — the envelope, the program slot, the rising waterline — would require him to act on the name, and acting on it would return him to a Gros life that now looks irrevocably thinner from the other side of everything she has already made him feel."
+  },
+  "sourceConceptId": "be54c82d-2a94-4f04-bf61-a8698c3b77fd",
+  "protagonistCharacterId": "char-76e412d4-89b1-4a43-8d66-f325b8942b00",
+  "npcCharacterIds": [
+    "char-700a955d-67b8-4c03-9274-f629dec2cde9",
+    "char-89f76d63-3479-43d9-9fb3-f79b14734a74",
+    "char-eb535f4c-ed79-4651-9129-6ad1891aae9e"
+  ],
+  "worldbuildingId": "82b49e54-ebf9-4387-b7a1-feec1c74e3af",
+  "tone": "sex, seduction, erotica, big breasts, possession, obsession, desire, secrecy, transgression, taboo, intimacy, sugar mommy, dependency, luxury, wealth, passion",
+  "startingSituation": "Six weeks after his breakup with Amaia, Iker is hired for a single evening's work moving furniture and equipment at one of Gorka's restaurant venues before a private event \\u2014 the kind of cash-in-hand labor that circulates through Gros on short notice. Valentina is there overseeing the setup, dressed in a silk blouse cut low enough to be a statement. Iker doesn't know it, but Valentina is the one who got Iker hired; for weeks, she had been growing obsessed with Iker after she once saw him through the windows of the local gym; the vision of Iker, that handsome, strong, dedicated 18-year-old convinced him that she had to make Iker hers, entangling him in a passionate sexual affair behind her husband Gorka's back. Valentina got Iker hired for that evening's work at the venue to engineer an encounter with Iker. She asks him to carry something to a back room, and in that temporal privacy, she makes her first connection with him, initiating her possessive seduction."
+}

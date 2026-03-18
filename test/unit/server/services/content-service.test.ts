@@ -91,7 +91,10 @@ function createOneShotPacket(): ContentOneShotPacket {
 const VALID_API_KEY = 'sk-test-key-1234567890';
 const EXEMPLAR_IDEAS = ['A city where gravity reverses at midnight'];
 
-function expectCompletedStage(event: GenerationStageEvent, stage: GenerationStageEvent['stage']): void {
+function expectCompletedStage(
+  event: GenerationStageEvent,
+  stage: GenerationStageEvent['stage']
+): void {
   expect(event).toMatchObject({ stage, status: 'completed', attempt: 1 });
   expect(typeof event.durationMs).toBe('number');
 }
@@ -153,7 +156,7 @@ describe('ContentService', () => {
           contentPreferences: 'violent',
           kernelBlock: 'some kernel',
         }),
-        VALID_API_KEY,
+        VALID_API_KEY
       );
       expect(result.packets).toEqual(deps.fixtures.oneShotPackets);
     });
@@ -166,7 +169,7 @@ describe('ContentService', () => {
         service.generateContentQuick({
           exemplarIdeas: EXEMPLAR_IDEAS,
           apiKey: '',
-        }),
+        })
       ).rejects.toThrow('OpenRouter API key is required');
     });
 
@@ -231,7 +234,7 @@ describe('ContentService', () => {
         expect.objectContaining<Partial<SparkstormerContext>>({
           tasteProfile: deps.fixtures.tasteProfile,
         }),
-        VALID_API_KEY,
+        VALID_API_KEY
       );
     });
 
@@ -249,7 +252,7 @@ describe('ContentService', () => {
           sparks: deps.fixtures.sparks,
           tasteProfile: deps.fixtures.tasteProfile,
         }),
-        VALID_API_KEY,
+        VALID_API_KEY
       );
     });
 
@@ -267,7 +270,7 @@ describe('ContentService', () => {
           packets: deps.fixtures.packets,
           tasteProfile: deps.fixtures.tasteProfile,
         }),
-        VALID_API_KEY,
+        VALID_API_KEY
       );
     });
 
@@ -328,7 +331,7 @@ describe('ContentService', () => {
           moodOrGenre: 'cosmic horror',
           contentPreferences: 'body horror',
         }),
-        VALID_API_KEY,
+        VALID_API_KEY
       );
     });
 
@@ -369,7 +372,7 @@ describe('ContentService', () => {
           kernelBlock: 'kernel info',
           contentPreferences: 'dark',
         }),
-        VALID_API_KEY,
+        VALID_API_KEY
       );
     });
 
@@ -433,7 +436,7 @@ describe('ContentService', () => {
       const service = createContentService(deps);
 
       await expect(
-        service.generateContentQuick({ exemplarIdeas: [], apiKey: VALID_API_KEY }),
+        service.generateContentQuick({ exemplarIdeas: [], apiKey: VALID_API_KEY })
       ).rejects.toThrow('At least one exemplar idea is required');
     });
 
@@ -442,7 +445,7 @@ describe('ContentService', () => {
       const service = createContentService(deps);
 
       await expect(
-        service.generateContentQuick({ exemplarIdeas: ['  ', ''], apiKey: VALID_API_KEY }),
+        service.generateContentQuick({ exemplarIdeas: ['  ', ''], apiKey: VALID_API_KEY })
       ).rejects.toThrow('At least one non-empty exemplar idea is required');
     });
 
@@ -451,7 +454,7 @@ describe('ContentService', () => {
       const service = createContentService(deps);
 
       await expect(
-        service.generateContentQuick({ exemplarIdeas: EXEMPLAR_IDEAS, apiKey: 'short' }),
+        service.generateContentQuick({ exemplarIdeas: EXEMPLAR_IDEAS, apiKey: 'short' })
       ).rejects.toThrow('OpenRouter API key is required');
     });
   });

@@ -6,8 +6,14 @@ import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
-import { buildNpcAgendasSection, buildNpcRelationshipsSection } from './sections/shared/npc-state-sections.js';
-import { buildInventorySection, buildHealthSection } from './sections/shared/resource-state-sections.js';
+import {
+  buildNpcAgendasSection,
+  buildNpcRelationshipsSection,
+} from './sections/shared/npc-state-sections.js';
+import {
+  buildInventorySection,
+  buildHealthSection,
+} from './sections/shared/resource-state-sections.js';
 import type { ThreadEntry, AgedTrackedPromise } from '../../models/state/keyed-entry.js';
 import { Urgency } from '../../models/state/keyed-entry.js';
 import { getOverdueThreads } from './sections/planner/index.js';
@@ -35,9 +41,7 @@ const FIELD_INSTRUCTIONS = `FIELD INSTRUCTIONS:
 - sceneDirection: 2-3 sentences describing WHAT happens in this direction. Concrete and specific to the current story state. Not a vague theme — a specific dramatic scenario.
 - dramaticJustification: 1-2 sentences explaining WHY this direction serves the story right now. Reference structure position, character arc needs, or thematic tension.`;
 
-function buildStructurePositionSection(
-  context: SceneIdeatorContinuationContext
-): string {
+function buildStructurePositionSection(context: SceneIdeatorContinuationContext): string {
   if (!context.accumulatedStructureState || !context.structure) {
     return '';
   }
@@ -60,9 +64,7 @@ function buildStructurePositionSection(
   return lines.join('\n');
 }
 
-function buildActiveStateSection(
-  context: SceneIdeatorContinuationContext
-): string {
+function buildActiveStateSection(context: SceneIdeatorContinuationContext): string {
   const lines: string[] = ['CURRENT STORY STATE:'];
   lines.push(`Location: ${context.activeState.currentLocation}`);
 
@@ -81,9 +83,7 @@ function buildActiveStateSection(
   }
 
   if (context.activeState.activeConstraints.length > 0) {
-    const constraints = context.activeState.activeConstraints
-      .map((c) => c.text)
-      .join('; ');
+    const constraints = context.activeState.activeConstraints.map((c) => c.text).join('; ');
     lines.push(`Active constraints: ${constraints}`);
   }
 
@@ -132,9 +132,7 @@ export function formatPendingPromisesSection(
   return `PENDING PROMISES (consider fulfilling): ${list}\n`;
 }
 
-export function buildIdeatorGuidanceSection(
-  guidance: ProtagonistGuidance | undefined
-): string {
+export function buildIdeatorGuidanceSection(guidance: ProtagonistGuidance | undefined): string {
   if (isProtagonistGuidanceEmpty(guidance)) {
     return '';
   }
@@ -166,9 +164,7 @@ export function buildIdeatorGuidanceSection(
   return lines.join('\n');
 }
 
-function buildContinuationSections(
-  context: SceneIdeatorContinuationContext
-): string {
+function buildContinuationSections(context: SceneIdeatorContinuationContext): string {
   const sections: string[] = [];
 
   sections.push(`PREVIOUS SCENE SUMMARY:\n${context.previousNarrative}\n`);
@@ -184,16 +180,12 @@ function buildContinuationSections(
 
   if (context.ancestorSummaries.length > 0) {
     const recent = context.ancestorSummaries.slice(-3);
-    const summaryText = recent
-      .map((s) => `- ${s.summary}`)
-      .join('\n');
+    const summaryText = recent.map((s) => `- ${s.summary}`).join('\n');
     sections.push(`RECENT STORY CONTEXT:\n${summaryText}\n`);
   }
 
   if (context.threadAges) {
-    sections.push(
-      formatOverdueThreadsSection(context.activeState.openThreads, context.threadAges)
-    );
+    sections.push(formatOverdueThreadsSection(context.activeState.openThreads, context.threadAges));
   }
 
   sections.push(formatPendingPromisesSection(context.accumulatedPromises));
@@ -203,15 +195,11 @@ function buildContinuationSections(
   return sections.filter((s) => s.length > 0).join('\n');
 }
 
-export function buildSceneIdeatorPrompt(
-  context: SceneIdeatorContext
-): ChatMessage[] {
+export function buildSceneIdeatorPrompt(context: SceneIdeatorContext): ChatMessage[] {
   const systemSections: string[] = [SCENE_IDEATOR_ROLE];
 
   if (context.tone) {
-    systemSections.push(
-      buildToneDirective(context.tone, context.toneFeel, context.toneAvoid)
-    );
+    systemSections.push(buildToneDirective(context.tone, context.toneFeel, context.toneAvoid));
   }
 
   systemSections.push(CONTENT_POLICY);
@@ -246,7 +234,7 @@ export function buildSceneIdeatorPrompt(
   } else {
     userSections.push(buildContinuationSections(context));
     userSections.push(
-      'Generate 3 scene directions that follow naturally from the player\'s choice while advancing the story in meaningfully different ways.\n'
+      "Generate 3 scene directions that follow naturally from the player's choice while advancing the story in meaningfully different ways.\n"
     );
   }
 

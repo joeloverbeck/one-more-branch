@@ -5,7 +5,7 @@ import { createConceptSeedFixture } from '../../fixtures/concept-generator';
 function createDiverseSeed(
   index: number,
   genreFrame: string,
-  conflictAxis: string,
+  conflictAxis: string
 ): ConceptSeedFields {
   return {
     ...createConceptSeedFixture(index),
@@ -70,7 +70,7 @@ describe('concept-evolver-seeder', () => {
         conflictAxis: payload.concepts[0].conflictAxis,
       };
       expect(() => parseConceptEvolverSeederResponse(payload)).toThrow(
-        'duplicate genreFrame+conflictAxis pair',
+        'duplicate genreFrame+conflictAxis pair'
       );
     });
 

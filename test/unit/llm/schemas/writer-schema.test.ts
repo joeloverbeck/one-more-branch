@@ -13,11 +13,7 @@ describe('WRITER_GENERATION_SCHEMA', () => {
       additionalProperties: boolean;
     };
 
-    expect(schema.required).toEqual([
-      'narrative',
-      'protagonistAffect',
-      'sceneSummary',
-    ]);
+    expect(schema.required).toEqual(['narrative', 'protagonistAffect', 'sceneSummary']);
     expect(schema.additionalProperties).toBe(false);
   });
 

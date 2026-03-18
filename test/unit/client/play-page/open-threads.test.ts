@@ -38,7 +38,14 @@ describe('open threads panel', () => {
       page: {
         id: 2,
         narrativeText: 'Story continues.',
-        choices: [{ text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 }],
+        choices: [
+          {
+            text: 'Next',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'GOAL_PRIORITY_CHANGE',
+            nextPageId: 3,
+          },
+        ],
         isEnding: false,
         openThreads: threads,
         openThreadOverflowSummary: overflowSummary,
@@ -67,8 +74,18 @@ describe('open threads panel', () => {
   it('renders threads sorted by urgency (HIGH > MEDIUM > LOW)', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -96,8 +113,18 @@ describe('open threads panel', () => {
   it('truncates to 6 visible with overflow summary', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -124,8 +151,18 @@ describe('open threads panel', () => {
   it('builds overflow summary with correct urgency counts', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -166,8 +203,18 @@ describe('open threads panel', () => {
   it('uses server-provided overflow summary when present', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -191,8 +238,18 @@ describe('open threads panel', () => {
   it('removes overflow summary when thread count drops below limit', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -218,7 +275,12 @@ describe('open threads panel', () => {
     document.body.innerHTML = buildPlayPageHtml({
       openThreads: [{ id: 'th-1', text: 'Existing thread', threadType: 'QUEST', urgency: 'HIGH' }],
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
       ],
     });
     loadAppAndInit();
@@ -233,8 +295,18 @@ describe('open threads panel', () => {
   it('updates panel in place on subsequent renders', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -264,8 +336,18 @@ describe('open threads panel', () => {
   it('filters out null or invalid threads', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -288,8 +370,18 @@ describe('open threads panel', () => {
   it('applies correct urgency CSS class', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -313,8 +405,18 @@ describe('open threads panel', () => {
   it('renders thread badge pills with correct icon paths', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();

@@ -43,9 +43,7 @@ function buildNpcAgendasSection(context: NpcIntelligenceContext): string {
 
   const lines = [
     'NPC AGENDAS (evaluate behavior consistency):',
-    ...entries.map(
-      (a) => `[${a.npcName}]\n  Goal: ${a.currentGoal}\n  Fear: ${a.fear}`
-    ),
+    ...entries.map((a) => `[${a.npcName}]\n  Goal: ${a.currentGoal}\n  Fear: ${a.fear}`),
   ];
 
   return `${lines.join('\n')}\n\n`;

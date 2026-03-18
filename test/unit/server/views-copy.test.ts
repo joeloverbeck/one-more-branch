@@ -32,7 +32,8 @@ describeIfBuilt('EJS Views Availability', () => {
   const requiredViews = [
     'pages/home.ejs',
     'pages/error.ejs',
-    'pages/new-story.ejs',
+    'pages/spines.ejs',
+    'pages/create-story.ejs',
     'pages/play.ejs',
     'pages/briefing.ejs',
     'pages/kernels.ejs',

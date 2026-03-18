@@ -47,10 +47,7 @@ async function loadStandaloneCharacters(
   const characters = await Promise.all(allIds.map((id) => loadCharacter(id)));
   const missing = allIds.filter((id, i) => !characters[i]);
   if (missing.length > 0) {
-    throw new EngineError(
-      `Characters not found: ${missing.join(', ')}`,
-      'VALIDATION_FAILED'
-    );
+    throw new EngineError(`Characters not found: ${missing.join(', ')}`, 'VALIDATION_FAILED');
   }
   return characters.map((c) => c!);
 }
@@ -279,7 +276,12 @@ export async function generateOpeningPage(
   }
 
   const { page, updatedStory } = await generatePage(
-    'opening', story, apiKey, undefined, onGenerationStage, selectedSceneDirection
+    'opening',
+    story,
+    apiKey,
+    undefined,
+    onGenerationStage,
+    selectedSceneDirection
   );
 
   await storage.savePage(storyId, page);

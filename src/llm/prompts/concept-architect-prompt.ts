@@ -2,7 +2,10 @@ import type { ContentPacket } from '../../models/content-packet.js';
 import type { ConceptArchitectContext, ConceptSeedFields } from '../../models/concept-generator.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
-import { buildArchitectTaxonomyGuidance, ARCHITECT_QUALITY_ANCHORS } from './concept-prompt-shared.js';
+import {
+  buildArchitectTaxonomyGuidance,
+  ARCHITECT_QUALITY_ANCHORS,
+} from './concept-prompt-shared.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 
 const ROLE_INTRO =
@@ -40,7 +43,7 @@ function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
         `- [${p.contentId}] coreAnomaly: ${p.coreAnomaly}
   wildnessInvariant: ${p.wildnessInvariant}
   socialEngine: ${p.socialEngine}
-  signatureImage: ${p.signatureImage}`,
+  signatureImage: ${p.signatureImage}`
     )
     .join('\n');
 
@@ -96,7 +99,7 @@ export function buildConceptArchitectPrompt(context: ConceptArchitectContext): C
   const protagonistDetails = normalize(context.protagonistDetails);
   if (protagonistDetails) {
     userSections.push(
-      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — CHARACTER DESIGN MUST MATCH):\n${protagonistDetails}\nThe protagonistRole, coreCompetence, coreFlaw, and actionVerbs MUST be consistent with this protagonist. Do not redesign the protagonist into a different character. Adapt the world and constraints to serve this protagonist, not the other way around.`,
+      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — CHARACTER DESIGN MUST MATCH):\n${protagonistDetails}\nThe protagonistRole, coreCompetence, coreFlaw, and actionVerbs MUST be consistent with this protagonist. Do not redesign the protagonist into a different character. Adapt the world and constraints to serve this protagonist, not the other way around.`
     );
   }
 
@@ -108,7 +111,7 @@ export function buildConceptArchitectPrompt(context: ConceptArchitectContext): C
 
   if (mandateParts.length > 0) {
     userSections.push(
-      `USER CREATIVE MANDATE (character and world designs MUST embody ALL of the following):\n${mandateParts.join('\n')}\nDesign characters and worlds that centrally express these qualities.`,
+      `USER CREATIVE MANDATE (character and world designs MUST embody ALL of the following):\n${mandateParts.join('\n')}\nDesign characters and worlds that centrally express these qualities.`
     );
   }
 
@@ -120,7 +123,7 @@ export function buildConceptArchitectPrompt(context: ConceptArchitectContext): C
 - settingAxioms must contain 2-5 enforceable rules.
 - constraintSet must contain 2-5 meaningful limits.
 - keyInstitutions must contain 2-4 pressure-producing institutions.
-- Each character/world design must be specifically tailored to its seed's genreFrame, conflictAxis, and oneLineHook.`,
+- Each character/world design must be specifically tailored to its seed's genreFrame, conflictAxis, and oneLineHook.`
   );
 
   return [

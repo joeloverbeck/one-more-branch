@@ -82,7 +82,8 @@ describe('buildMacroArchitecturePrompt', () => {
       conceptId: 'concept_1',
       signatureScenario: 'A harbor tribunal hearing collapses into ritual violence.',
       loglineCompressible: true,
-      logline: 'A framed captain must weaponize tribunal ritual before the harbor courts burn the truth.',
+      logline:
+        'A framed captain must weaponize tribunal ritual before the harbor courts burn the truth.',
       premisePromises: [
         'The tribunal itself becomes the battleground.',
         'An ally inside the system is morally compromised.',
@@ -176,7 +177,9 @@ describe('buildMacroArchitecturePrompt', () => {
 
     expect(userMessage).toContain('CONCEPT STAKES:');
     expect(userMessage).toContain('PREMISE PROMISE CONTRACT:');
-    expect(userMessage).toContain('Signature scenario: A harbor tribunal hearing collapses into ritual violence.');
+    expect(userMessage).toContain(
+      'Signature scenario: A harbor tribunal hearing collapses into ritual violence.'
+    );
     expect(userMessage).toContain('The tribunal itself becomes the battleground.');
     expect(userMessage).toContain('Every premise promise must be allocated to at least one act');
   });

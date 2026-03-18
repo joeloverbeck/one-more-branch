@@ -226,7 +226,11 @@ export function getKeyedEntryPanelData(
 }
 
 export function getThreatPanelData(
-  entries: readonly { readonly id: string; readonly text: string; readonly threatType: ThreatType }[],
+  entries: readonly {
+    readonly id: string;
+    readonly text: string;
+    readonly threatType: ThreatType;
+  }[],
   limit: number = KEYED_ENTRY_PANEL_LIMIT
 ): ThreatPanelData {
   const visibleRows: ThreatPanelRow[] = entries.slice(0, limit).map((entry) => ({

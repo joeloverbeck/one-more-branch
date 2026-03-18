@@ -31,11 +31,7 @@ function isNonEmptyStringArray(value: unknown): value is readonly string[] {
 
 export function parseTasteDistillerResponse(parsed: unknown): TasteProfile {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError(
-      'Taste distiller response must be an object',
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError('Taste distiller response must be an object', 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const data = parsed as Record<string, unknown>;
@@ -45,7 +41,7 @@ export function parseTasteDistillerResponse(parsed: unknown): TasteProfile {
     throw new LLMError(
       'Taste distiller response missing tasteProfile object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -56,7 +52,7 @@ export function parseTasteDistillerResponse(parsed: unknown): TasteProfile {
       throw new LLMError(
         `tasteProfile.${field} must be a non-empty array of non-empty strings`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
   }
@@ -65,7 +61,7 @@ export function parseTasteDistillerResponse(parsed: unknown): TasteProfile {
     throw new LLMError(
       `tasteProfile.riskAppetite must be one of LOW, MEDIUM, HIGH, MAXIMAL`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -85,7 +81,7 @@ export function parseTasteDistillerResponse(parsed: unknown): TasteProfile {
 export async function generateTasteProfile(
   context: TasteDistillerContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<TasteDistillerResult> {
   const messages = buildContentTasteDistillerPrompt(context);
   const result = await runLlmStage({

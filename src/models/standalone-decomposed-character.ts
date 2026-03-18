@@ -63,10 +63,7 @@ export function isStandaloneDecomposedCharacter(
 }
 
 export function formatStandaloneCharacterSummary(char: StandaloneDecomposedCharacter): string {
-  const lines: string[] = [
-    `${char.name}`,
-    `  Traits: ${char.coreTraits.join(', ')}`,
-  ];
+  const lines: string[] = [`${char.name}`, `  Traits: ${char.coreTraits.join(', ')}`];
 
   if (char.superObjective) {
     lines.push(`  Super-Objective: ${char.superObjective}`);

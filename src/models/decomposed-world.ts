@@ -24,12 +24,7 @@ export type WorldFactType =
 
 export type NarrativeWeight = 'LOW' | 'MEDIUM' | 'HIGH';
 
-export type WorldStoryFunction =
-  | 'EPIC'
-  | 'EPISTEMIC'
-  | 'DRAMATIC'
-  | 'ATMOSPHERIC'
-  | 'THEMATIC';
+export type WorldStoryFunction = 'EPIC' | 'EPISTEMIC' | 'DRAMATIC' | 'ATMOSPHERIC' | 'THEMATIC';
 
 export interface WorldFact {
   readonly id: string;
@@ -92,7 +87,7 @@ function renderFact(fact: WorldFact): string {
 
 export function formatDecomposedWorldForPrompt(
   world: DecomposedWorld,
-  consumer?: WorldPromptConsumer,
+  consumer?: WorldPromptConsumer
 ): string {
   if (world.facts.length === 0) {
     return '';
@@ -123,11 +118,7 @@ export function formatDecomposedWorldForPrompt(
   }
 
   const includeOpenQuestions = !consumer || consumer !== 'PAGE';
-  if (
-    includeOpenQuestions &&
-    world.openQuestions &&
-    world.openQuestions.length > 0
-  ) {
+  if (includeOpenQuestions && world.openQuestions && world.openQuestions.length > 0) {
     sections.push('[OPEN QUESTIONS]');
     for (const q of world.openQuestions) {
       sections.push(`- ${q}`);

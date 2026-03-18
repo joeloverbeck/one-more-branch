@@ -33,12 +33,26 @@ const TEST_OPTIONS: GenerationOptions = {
   apiKey: 'test-key',
 };
 
-function makeValidResponse(): { choices: { text: string; choiceType: string; primaryDelta: string }[] } {
+function makeValidResponse(): {
+  choices: { text: string; choiceType: string; primaryDelta: string }[];
+} {
   return {
     choices: [
-      { text: 'Demand an explanation', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' },
-      { text: 'Flee the scene quickly', choiceType: 'WITHDRAW', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
-      { text: 'Investigate the noise', choiceType: 'INVESTIGATE', primaryDelta: 'THREAT_LEVEL_CHANGE' },
+      {
+        text: 'Demand an explanation',
+        choiceType: 'CONTEST',
+        primaryDelta: 'INFORMATION_STATE_CHANGE',
+      },
+      {
+        text: 'Flee the scene quickly',
+        choiceType: 'WITHDRAW',
+        primaryDelta: 'LOCATION_ACCESS_CHANGE',
+      },
+      {
+        text: 'Investigate the noise',
+        choiceType: 'INVESTIGATE',
+        primaryDelta: 'THREAT_LEVEL_CHANGE',
+      },
     ],
   };
 }
@@ -79,8 +93,16 @@ describe('generateChoiceGeneratorWithFallback', () => {
   it('trims choice text whitespace', async () => {
     const body = {
       choices: [
-        { text: '  Demand an explanation  ', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' },
-        { text: '  Flee the scene  ', choiceType: 'WITHDRAW', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+        {
+          text: '  Demand an explanation  ',
+          choiceType: 'CONTEST',
+          primaryDelta: 'INFORMATION_STATE_CHANGE',
+        },
+        {
+          text: '  Flee the scene  ',
+          choiceType: 'WITHDRAW',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+        },
       ],
     };
     mockSuccessResponse(body);
@@ -99,18 +121,15 @@ describe('generateChoiceGeneratorWithFallback', () => {
       json: () => Promise.reject(new Error('not json')),
     });
 
-    await expect(
-      generateChoiceGeneratorWithFallback(TEST_MESSAGES, TEST_OPTIONS)
-    ).rejects.toThrow(LLMError);
+    await expect(generateChoiceGeneratorWithFallback(TEST_MESSAGES, TEST_OPTIONS)).rejects.toThrow(
+      LLMError
+    );
   });
 
   it('throws non-retryable LLMError for structured output not supported', async () => {
-    const error = new LLMError(
-      'does not support structured output',
-      'HTTP_400',
-      false,
-      { rawErrorBody: 'provider does not support structured output' }
-    );
+    const error = new LLMError('does not support structured output', 'HTTP_400', false, {
+      rawErrorBody: 'provider does not support structured output',
+    });
     mockFetch.mockRejectedValueOnce(error);
 
     try {
@@ -124,7 +143,9 @@ describe('generateChoiceGeneratorWithFallback', () => {
   });
 
   it('throws validation error for invalid response structure', async () => {
-    const body = { choices: [{ text: 'Go', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' }] };
+    const body = {
+      choices: [{ text: 'Go', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' }],
+    };
     mockSuccessResponse(body);
 
     await expect(

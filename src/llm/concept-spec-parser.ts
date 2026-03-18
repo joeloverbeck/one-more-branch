@@ -4,11 +4,7 @@ import type {
   ConceptCharacterWorldFields,
   ConceptEngineFields,
 } from '../models/index.js';
-import {
-  isConflictAxis,
-  isGenreFrame,
-  isSettingScale,
-} from '../models/index.js';
+import { isConflictAxis, isGenreFrame, isSettingScale } from '../models/index.js';
 import { isConflictType } from '../models/story-spine.js';
 import { LLMError } from './llm-client-types.js';
 
@@ -25,7 +21,7 @@ function requireStringArray(
   fieldName: string,
   label: string,
   minItems: number,
-  maxItems?: number,
+  maxItems?: number
 ): readonly string[] {
   if (!Array.isArray(value)) {
     throw new LLMError(`${label} has invalid ${fieldName}`, 'STRUCTURE_PARSE_ERROR', true);
@@ -41,7 +37,7 @@ function requireStringArray(
     throw new LLMError(
       `${label} ${fieldName} must contain ${rangeLabel} items`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -51,7 +47,7 @@ function requireStringArray(
 export function parseConceptSpec(
   raw: unknown,
   index: number,
-  prefix: string = 'Concept',
+  prefix: string = 'Concept'
 ): ConceptSpec {
   const label = `${prefix} ${index + 1}`;
 
@@ -65,28 +61,28 @@ export function parseConceptSpec(
     throw new LLMError(
       `${label} has invalid genreFrame: ${String(data['genreFrame'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   if (!isConflictAxis(data['conflictAxis'])) {
     throw new LLMError(
       `${label} has invalid conflictAxis: ${String(data['conflictAxis'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   if (!isConflictType(data['conflictType'])) {
     throw new LLMError(
       `${label} has invalid conflictType: ${String(data['conflictType'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   if (!isSettingScale(data['settingScale'])) {
     throw new LLMError(
       `${label} has invalid settingScale: ${String(data['settingScale'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   return {
@@ -115,7 +111,7 @@ export function parseConceptSpec(
     incitingDisruption: requireNonEmptyString(
       data['incitingDisruption'],
       'incitingDisruption',
-      label,
+      label
     ),
     escapeValve: requireNonEmptyString(data['escapeValve'], 'escapeValve', label),
     protagonistLie: requireNonEmptyString(data['protagonistLie'], 'protagonistLie', label),
@@ -124,7 +120,7 @@ export function parseConceptSpec(
     wantNeedCollisionSketch: requireNonEmptyString(
       data['wantNeedCollisionSketch'],
       'wantNeedCollisionSketch',
-      label,
+      label
     ),
   };
 }
@@ -132,7 +128,7 @@ export function parseConceptSpec(
 export function parseConceptSeed(
   raw: unknown,
   index: number,
-  prefix: string = 'Seed',
+  prefix: string = 'Seed'
 ): ConceptSeedFields {
   const label = `${prefix} ${index + 1}`;
 
@@ -146,21 +142,21 @@ export function parseConceptSeed(
     throw new LLMError(
       `${label} has invalid genreFrame: ${String(data['genreFrame'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   if (!isConflictAxis(data['conflictAxis'])) {
     throw new LLMError(
       `${label} has invalid conflictAxis: ${String(data['conflictAxis'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   if (!isConflictType(data['conflictType'])) {
     throw new LLMError(
       `${label} has invalid conflictType: ${String(data['conflictType'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -178,7 +174,7 @@ export function parseConceptSeed(
 export function parseConceptCharacterWorld(
   raw: unknown,
   index: number,
-  prefix: string = 'CharacterWorld',
+  prefix: string = 'CharacterWorld'
 ): ConceptCharacterWorldFields {
   const label = `${prefix} ${index + 1}`;
 
@@ -192,7 +188,7 @@ export function parseConceptCharacterWorld(
     throw new LLMError(
       `${label} has invalid settingScale: ${String(data['settingScale'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -212,7 +208,7 @@ export function parseConceptCharacterWorld(
 export function parseConceptEngine(
   raw: unknown,
   index: number,
-  prefix: string = 'Engine',
+  prefix: string = 'Engine'
 ): ConceptEngineFields {
   const label = `${prefix} ${index + 1}`;
 
@@ -231,21 +227,17 @@ export function parseConceptEngine(
     incitingDisruption: requireNonEmptyString(
       data['incitingDisruption'],
       'incitingDisruption',
-      label,
+      label
     ),
     escapeValve: requireNonEmptyString(data['escapeValve'], 'escapeValve', label),
-    elevatorParagraph: requireNonEmptyString(
-      data['elevatorParagraph'],
-      'elevatorParagraph',
-      label,
-    ),
+    elevatorParagraph: requireNonEmptyString(data['elevatorParagraph'], 'elevatorParagraph', label),
     protagonistLie: requireNonEmptyString(data['protagonistLie'], 'protagonistLie', label),
     protagonistTruth: requireNonEmptyString(data['protagonistTruth'], 'protagonistTruth', label),
     protagonistGhost: requireNonEmptyString(data['protagonistGhost'], 'protagonistGhost', label),
     wantNeedCollisionSketch: requireNonEmptyString(
       data['wantNeedCollisionSketch'],
       'wantNeedCollisionSketch',
-      label,
+      label
     ),
   };
 }

@@ -64,9 +64,7 @@ If no pacing concern exists, still provide rhythm guidance: "After this tense re
 Be analytical and precise. Evaluate cumulative progress, not just single scenes.
 Be conservative about deviation - minor variations are acceptable. Only mark true deviation when future milestones are genuinely invalidated.`;
 
-export function buildStructureEvaluatorPrompt(
-  context: StructureEvaluatorContext
-): ChatMessage[] {
+export function buildStructureEvaluatorPrompt(context: StructureEvaluatorContext): ChatMessage[] {
   const structureEvaluation = buildAnalystStructureEvaluation(
     context.structure,
     context.accumulatedStructureState,

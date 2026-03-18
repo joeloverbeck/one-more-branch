@@ -15,11 +15,8 @@ describe('concepts page form validation', () => {
   beforeEach(() => {
     fetchMock = jest.fn();
     fetchMock.mockImplementation((input: RequestInfo | URL) => {
-      const url = typeof input === 'string'
-        ? input
-        : input instanceof URL
-          ? input.toString()
-          : input.url;
+      const url =
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
       if (url.startsWith('/concept-seeds/api/seed-1')) {
         return Promise.resolve(
           mockJsonResponse({
@@ -32,10 +29,12 @@ describe('concepts page form validation', () => {
               conflictAxis: 'POWER_VS_MORALITY',
               protagonistRole: 'Dark mage',
             },
-          }),
+          })
         );
       }
-      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
+      return Promise.resolve(
+        mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404)
+      );
     });
     global.fetch = fetchMock;
     document.body.innerHTML = '';

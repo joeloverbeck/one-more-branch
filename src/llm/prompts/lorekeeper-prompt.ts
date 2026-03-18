@@ -66,12 +66,13 @@ ${formatNumberedLines(LOREKEEPER_CURATION_PRINCIPLES)}`;
 export function buildLorekeeperPrompt(context: LorekeeperContext): ChatMessage[] {
   const plan = context.pagePlan;
 
-  const npcsSection = context.decomposedCharacters.length > 0
-    ? `CHARACTERS (structured profiles with speech fingerprints):
+  const npcsSection =
+    context.decomposedCharacters.length > 0
+      ? `CHARACTERS (structured profiles with speech fingerprints):
 ${context.decomposedCharacters.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
 
 `
-    : '';
+      : '';
 
   const canonSection =
     context.globalCanon.length > 0

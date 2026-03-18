@@ -63,12 +63,25 @@ function createMacroPayload(): {
     closingImage: 'The same dais occupied by witnesses instead of judges.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     anchorMoments: {
-      incitingIncident: { actIndex: 0, description: 'The guard is framed in front of the harbor court.' },
+      incitingIncident: {
+        actIndex: 0,
+        description: 'The guard is framed in front of the harbor court.',
+      },
       midpoint: { actIndex: 1, milestoneSlot: 1, midpointType: 'FALSE_DEFEAT' },
       climax: { actIndex: 2, description: 'The harbor court loses control of the verdict.' },
-      signatureScenarioPlacement: { actIndex: 1, description: 'A ritual hearing becomes a public trap.' },
+      signatureScenarioPlacement: {
+        actIndex: 1,
+        description: 'A ritual hearing becomes a public trap.',
+      },
     },
-    setpieceBank: ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3', 'setpiece 4', 'setpiece 5'],
+    setpieceBank: [
+      'setpiece 0',
+      'setpiece 1',
+      'setpiece 2',
+      'setpiece 3',
+      'setpiece 4',
+      'setpiece 5',
+    ],
     initialNpcAgendas: [
       {
         npcName: 'Judge Corven',
@@ -206,7 +219,8 @@ function createMilestonePayload(): {
             name: 'Ritual hearing ambush',
             description: 'The guard turns the hearing oath ritual into a public trap.',
             objective: 'Force a judge to confess on the record.',
-            causalLink: 'Because the intercepted code identifies which judge must speak for the purge.',
+            causalLink:
+              'Because the intercepted code identifies which judge must speak for the purge.',
             exitCondition: 'A confession is made in front of the crowd.',
             role: 'turning_point',
             escalationType: 'REVERSAL_OF_FORTUNE',

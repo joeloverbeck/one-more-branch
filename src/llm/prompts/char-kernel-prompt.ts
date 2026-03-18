@@ -54,7 +54,7 @@ function buildCharKernelKernelSection(storyKernel?: StoryKernel): string {
   return (
     baseSection +
     '\n\n' +
-    'CONSTRAINT: Align the super-objective with the value at stake. Use the value spectrum to position the character morally. Use the thematic question to shape the character\'s core internal conflict.'
+    "CONSTRAINT: Align the super-objective with the value at stake. Use the value spectrum to position the character morally. Use the thematic question to shape the character's core internal conflict."
   );
 }
 
@@ -64,9 +64,7 @@ export function buildCharKernelPrompt(context: CharacterDevPromptContext): ChatM
 
   const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, DESIGN_GUIDELINES];
 
-  const userSections: string[] = [
-    `Generate a character kernel for ${assignment.characterName}.`,
-  ];
+  const userSections: string[] = [`Generate a character kernel for ${assignment.characterName}.`];
 
   userSections.push(`CHARACTER ROLE IN CAST:
 - Name: ${assignment.characterName}
@@ -110,7 +108,9 @@ export function buildCharKernelPrompt(context: CharacterDevPromptContext): ChatM
       : '';
 
   if (worldSection.length > 0) {
-    userSections.push(`${worldSection}\n\nCONSTRAINT: Ground the super-objective and opposition in the world's power structures and realities. Use worldbuilding facts to determine what resources, institutions, and forces are available to the character.`);
+    userSections.push(
+      `${worldSection}\n\nCONSTRAINT: Ground the super-objective and opposition in the world's power structures and realities. Use worldbuilding facts to determine what resources, institutions, and forces are available to the character.`
+    );
   }
 
   if (context.userNotes) {

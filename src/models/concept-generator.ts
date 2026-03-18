@@ -76,9 +76,7 @@ export function isGenreFrame(value: unknown): value is GenreFrame {
   return typeof value === 'string' && (GENRE_FRAMES as readonly string[]).includes(value);
 }
 
-export function filterGenreFrames(
-  excludedGenres?: readonly GenreFrame[],
-): readonly GenreFrame[] {
+export function filterGenreFrames(excludedGenres?: readonly GenreFrame[]): readonly GenreFrame[] {
   if (!excludedGenres || excludedGenres.length === 0) {
     return GENRE_FRAMES;
   }

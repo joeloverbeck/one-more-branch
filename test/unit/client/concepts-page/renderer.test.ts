@@ -64,11 +64,13 @@ describe('concepts page renderer', () => {
             success: true,
             evaluatedConcept,
             verification: verification ?? null,
-          }),
+          })
         );
       }
 
-      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
+      return Promise.resolve(
+        mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404)
+      );
     });
 
     document.body.innerHTML = buildConceptsPageHtml();
@@ -140,12 +142,14 @@ describe('concepts page renderer', () => {
               },
             },
             false,
-            500,
-          ),
+            500
+          )
         );
       }
 
-      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
+      return Promise.resolve(
+        mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404)
+      );
     });
 
     document.body.innerHTML = buildConceptsPageHtml();

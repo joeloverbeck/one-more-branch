@@ -157,7 +157,8 @@ describe('analyst insights modal', () => {
   });
 
   it('displays full thread text without truncation in thread payoffs', async () => {
-    const longText = 'A very long thread text that should not be truncated at all because truncation was removed from the implementation';
+    const longText =
+      'A very long thread text that should not be truncated at all because truncation was removed from the implementation';
     document.body.innerHTML = buildPlayPageHtml({
       analystResult: createMockAnalystResult({
         threadPayoffAssessments: [
@@ -239,7 +240,9 @@ describe('analyst insights modal', () => {
     const modalBody = document.getElementById('insights-modal-body') as HTMLElement;
     // Should have a gauge row for Completion Gate
     const gaugeRows = modalBody.querySelectorAll('.milestone-gauge__row');
-    const labels = Array.from(gaugeRows).map((r) => r.querySelector('.milestone-gauge__label')?.textContent);
+    const labels = Array.from(gaugeRows).map(
+      (r) => r.querySelector('.milestone-gauge__label')?.textContent
+    );
     expect(labels).toContain('Completion Gate');
     // Should NOT have old completion-gate paragraph
     expect(modalBody.querySelector('.completion-gate')).toBeNull();
@@ -365,8 +368,12 @@ describe('analyst insights modal', () => {
     expect(img.src).toContain('promise-chekhov-gun-high.png');
     expect(img.getAttribute('onerror')).toContain("this.style.display='none'");
 
-    expect(payoffItem?.querySelector('.payoff-satisfaction-badge')?.textContent).toBe('\u2728 Well Earned');
-    expect(payoffItem?.querySelector('.payoff-reasoning')?.textContent).toBe('Built up over 5 pages.');
+    expect(payoffItem?.querySelector('.payoff-satisfaction-badge')?.textContent).toBe(
+      '\u2728 Well Earned'
+    );
+    expect(payoffItem?.querySelector('.payoff-reasoning')?.textContent).toBe(
+      'Built up over 5 pages.'
+    );
   });
 
   it('renders promise payoffs without badge when meta is missing', async () => {
@@ -393,7 +400,9 @@ describe('analyst insights modal', () => {
     const payoffItem = modalBody.querySelector('.promise-payoff-item');
     expect(payoffItem).not.toBeNull();
     expect(payoffItem?.querySelector('.promise-payoff-badge')).toBeNull();
-    expect(payoffItem?.querySelector('.payoff-thread-text')?.textContent).toBe('Something resolved');
+    expect(payoffItem?.querySelector('.payoff-thread-text')?.textContent).toBe(
+      'Something resolved'
+    );
   });
 
   it('updates modal content on choice response and supports ending-page initialization', async () => {
@@ -413,8 +422,18 @@ describe('analyst insights modal', () => {
       analystResult: createMockAnalystResult({ sceneMomentum: 'STASIS' }),
       isEnding: false,
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();

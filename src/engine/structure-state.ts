@@ -1,9 +1,10 @@
-import type {
-  AccumulatedStructureState,
-  StoryStructure,
-} from '../models/story-arc';
+import type { AccumulatedStructureState, StoryStructure } from '../models/story-arc';
 import type { VersionedStoryStructure } from '../models/structure-version';
-import { getMilestoneOrThrow, parseMilestoneIndices, upsertMilestoneProgression } from './milestone-utils';
+import {
+  getMilestoneOrThrow,
+  parseMilestoneIndices,
+  upsertMilestoneProgression,
+} from './milestone-utils';
 import type { StructureProgressionResult } from './structure-types';
 
 /**
@@ -37,7 +38,8 @@ export function advanceStructureState(
     throw new Error(`Invalid currentActIndex: ${currentState.currentActIndex}`);
   }
 
-  const isLastMilestoneOfAct = currentState.currentMilestoneIndex === currentAct.milestones.length - 1;
+  const isLastMilestoneOfAct =
+    currentState.currentMilestoneIndex === currentAct.milestones.length - 1;
   const isLastAct = currentState.currentActIndex === structure.acts.length - 1;
 
   if (isLastMilestoneOfAct && isLastAct) {
@@ -104,10 +106,7 @@ export function advanceWithMilestoneSkip(
   // Then advance through intermediate milestones until we reach the target
   let state = result.updatedState;
 
-  while (
-    !isAtTarget(state, target.actIndex, target.milestoneIndex) &&
-    !result.isComplete
-  ) {
+  while (!isAtTarget(state, target.actIndex, target.milestoneIndex) && !result.isComplete) {
     result = advanceStructureState(structure, state, bridgedResolution);
     state = result.updatedState;
   }
@@ -125,7 +124,9 @@ function isAtTarget(
   targetActIdx: number,
   targetMilestoneIdx: number
 ): boolean {
-  return state.currentActIndex === targetActIdx && state.currentMilestoneIndex === targetMilestoneIdx;
+  return (
+    state.currentActIndex === targetActIdx && state.currentMilestoneIndex === targetMilestoneIdx
+  );
 }
 
 /**

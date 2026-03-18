@@ -182,7 +182,11 @@ describe('validateSupplementaryResponse', () => {
   });
 
   it('filters out choices with invalid choiceType', () => {
-    const invalid = { text: 'Do something', choiceType: 'INVALID_TYPE', primaryDelta: 'GOAL_PRIORITY_CHANGE' };
+    const invalid = {
+      text: 'Do something',
+      choiceType: 'INVALID_TYPE',
+      primaryDelta: 'GOAL_PRIORITY_CHANGE',
+    };
     const result = validateSupplementaryResponse([VALID_CHOICE_B, invalid]);
     expect(result).toHaveLength(1);
     expect(result![0]!.text).toBe(VALID_CHOICE_B.text);

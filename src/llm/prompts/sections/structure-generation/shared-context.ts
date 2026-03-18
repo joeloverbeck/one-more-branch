@@ -131,9 +131,7 @@ Negation of negation: ${storyKernel.valueSpectrum.negationOfNegation}${guidanceT
 `;
 }
 
-export function buildStructureGenerationGenreObligationsSection(
-  conceptSpec?: ConceptSpec
-): string {
+export function buildStructureGenerationGenreObligationsSection(conceptSpec?: ConceptSpec): string {
   if (!conceptSpec) {
     return '';
   }

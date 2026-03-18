@@ -30,7 +30,7 @@ export interface ConceptDevelopmentContext {
 export function mergeConceptStages(
   seeds: readonly ConceptSeedFields[],
   characterWorlds: readonly ConceptCharacterWorldFields[],
-  engines: readonly ConceptEngineFields[],
+  engines: readonly ConceptEngineFields[]
 ): readonly ConceptSpec[] {
   return seeds.map((seed, index): ConceptSpec => {
     const cw = characterWorlds[index] as ConceptCharacterWorldFields;
@@ -46,7 +46,7 @@ export function mergeConceptStages(
 export async function generateConceptIdeation(
   context: ConceptIdeatorContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptIdeationPhaseResult> {
   const seedResult = await generateConceptSeeds(context, apiKey, options);
   const architectResult = await generateConceptCharacterWorlds(
@@ -59,7 +59,7 @@ export async function generateConceptIdeation(
       contentPreferences: context.contentPreferences,
     },
     apiKey,
-    options,
+    options
   );
   return { seeds: seedResult.seeds, characterWorlds: architectResult.characterWorlds };
 }
@@ -67,7 +67,7 @@ export async function generateConceptIdeation(
 export async function generateConceptDevelopment(
   context: ConceptDevelopmentContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptIdeationResult> {
   const engineResult = await generateConceptEngines(
     {
@@ -80,7 +80,7 @@ export async function generateConceptDevelopment(
       contentPreferences: context.contentPreferences,
     },
     apiKey,
-    options,
+    options
   );
   const concepts = mergeConceptStages(context.seeds, context.characterWorlds, engineResult.engines);
   return { concepts, rawResponse: engineResult.rawResponse };
@@ -89,7 +89,7 @@ export async function generateConceptDevelopment(
 export async function generateConceptIdeas(
   context: ConceptIdeatorContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptIdeationResult> {
   const ideation = await generateConceptIdeation(context, apiKey, options);
   return generateConceptDevelopment(
@@ -103,6 +103,6 @@ export async function generateConceptIdeas(
       contentPreferences: context.contentPreferences,
     },
     apiKey,
-    options,
+    options
   );
 }

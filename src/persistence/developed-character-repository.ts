@@ -50,7 +50,7 @@ export async function loadDevelopedCharacter(id: string): Promise<SavedDeveloped
 
 export async function updateDevelopedCharacter(
   id: string,
-  updater: (char: SavedDevelopedCharacter) => SavedDevelopedCharacter,
+  updater: (char: SavedDevelopedCharacter) => SavedDevelopedCharacter
 ): Promise<SavedDevelopedCharacter> {
   return developedCharacterRepository.update(id, updater);
 }
@@ -64,7 +64,7 @@ export async function listDevelopedCharacters(): Promise<SavedDevelopedCharacter
 }
 
 export async function listDevelopedCharactersByWebId(
-  webId: string,
+  webId: string
 ): Promise<SavedDevelopedCharacter[]> {
   const allCharacters = await developedCharacterRepository.list();
   return allCharacters.filter((char) => char.sourceWebId === webId);

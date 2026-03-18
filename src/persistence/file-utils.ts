@@ -283,6 +283,21 @@ export function getWorldbuildingFilePath(id: string): string {
   return path.join(getWorldbuildingDir(), `${id}.json`);
 }
 
+export function getSpinesDir(): string {
+  return path.resolve(process.cwd(), getConfig().storage.spinesDir);
+}
+
+export function ensureSpinesDir(): void {
+  const dir = getSpinesDir();
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
+  }
+}
+
+export function getSpineFilePath(spineId: string): string {
+  return path.join(getSpinesDir(), `${spineId}.json`);
+}
+
 export async function deleteFile(filePath: string): Promise<void> {
   try {
     await fs.unlink(filePath);

@@ -1,6 +1,4 @@
-import {
-  formatDecomposedCharacterForPrompt,
-} from '../../../../models/decomposed-character.js';
+import { formatDecomposedCharacterForPrompt } from '../../../../models/decomposed-character.js';
 import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
 import { isProtagonistGuidanceEmpty } from '../../../../models/protagonist-guidance.js';
 import type { ProtagonistGuidance } from '../../../../models/protagonist-guidance.js';
@@ -108,9 +106,10 @@ function buildPacingBriefingSection(context: ContinuationPagePlanContext): strin
     context.parentPacingDirective != null && context.parentPacingDirective.length > 0;
   const hasTrajectory = (context.momentumTrajectory?.length ?? 0) >= 2;
 
-  const trajectoryWarnings = hasTrajectory && context.momentumTrajectory
-    ? buildTrajectoryWarnings(context.momentumTrajectory)
-    : '';
+  const trajectoryWarnings =
+    hasTrajectory && context.momentumTrajectory
+      ? buildTrajectoryWarnings(context.momentumTrajectory)
+      : '';
 
   if (!hasNudge && !hasDirective && !trajectoryWarnings) {
     return '';
@@ -161,7 +160,10 @@ function buildConsecutiveTrajectoryWarningSection<
   let dominantCount = 0;
 
   for (const value of options.detectValues) {
-    const count = countConsecutiveFromEnd(trajectory, (point) => options.valueForPoint(point) === value);
+    const count = countConsecutiveFromEnd(
+      trajectory,
+      (point) => options.valueForPoint(point) === value
+    );
     if (count > dominantCount) {
       dominantCount = count;
       dominantValue = value;
@@ -307,7 +309,6 @@ function buildDramaticIronyOpportunitiesSection(context: ContinuationPagePlanCon
   return lines.join('\n') + '\n';
 }
 
-
 function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefined): string {
   if (isProtagonistGuidanceEmpty(guidance)) {
     return '';
@@ -419,30 +420,34 @@ export function buildEscalationDirective(
       lines.push(`Previous milestone resolved: "${previousResolution}"`);
     }
     if (activeMilestone.escalationType) {
-      lines.push(`Escalation mechanism: ${activeMilestone.escalationType} — plan a scene that delivers this specific type of escalation.`);
+      lines.push(
+        `Escalation mechanism: ${activeMilestone.escalationType} — plan a scene that delivers this specific type of escalation.`
+      );
     }
     if (activeMilestone.secondaryEscalationType) {
-      lines.push(`Secondary escalation mechanism: ${activeMilestone.secondaryEscalationType} — layer this as an additional pressure axis in the same scene.`);
+      lines.push(
+        `Secondary escalation mechanism: ${activeMilestone.secondaryEscalationType} — layer this as an additional pressure axis in the same scene.`
+      );
     }
     if (activeMilestone.crisisType) {
-      lines.push(`Crisis type: ${activeMilestone.crisisType} — shape the scene so the dilemma matches this crisis form.`);
+      lines.push(
+        `Crisis type: ${activeMilestone.crisisType} — shape the scene so the dilemma matches this crisis form.`
+      );
     }
     if (activeMilestone.uniqueScenarioHook) {
       lines.push(`Unique scenario hook: ${activeMilestone.uniqueScenarioHook}`);
     }
     if (activeMilestone.approachVectors && activeMilestone.approachVectors.length > 0) {
-      lines.push(`Approach vectors: ${activeMilestone.approachVectors.join(', ')} — consider these when designing the scene's dramatic question.`);
+      lines.push(
+        `Approach vectors: ${activeMilestone.approachVectors.join(', ')} — consider these when designing the scene's dramatic question.`
+      );
     }
     lines.push('Requirements:');
+    lines.push('- Introduce a new consequence, threat, or irreversible change not present before');
     lines.push(
-      '- Introduce a new consequence, threat, or irreversible change not present before'
+      "- The protagonist's situation must be measurably worse, more constrained, or more costly than before"
     );
-    lines.push(
-      '- The protagonist\'s situation must be measurably worse, more constrained, or more costly than before'
-    );
-    lines.push(
-      '- "More complicated" is NOT escalation — escalation means "more costly to fail"'
-    );
+    lines.push('- "More complicated" is NOT escalation — escalation means "more costly to fail"');
   } else if (activeMilestone.role === 'turning_point') {
     lines.push('=== TURNING POINT DIRECTIVE ===');
     lines.push(
@@ -452,27 +457,33 @@ export function buildEscalationDirective(
       lines.push(`Previous milestone resolved: "${previousResolution}"`);
     }
     if (activeMilestone.escalationType) {
-      lines.push(`Turning point mechanism: ${activeMilestone.escalationType} — plan a scene that delivers this specific type of shift.`);
+      lines.push(
+        `Turning point mechanism: ${activeMilestone.escalationType} — plan a scene that delivers this specific type of shift.`
+      );
     }
     if (activeMilestone.secondaryEscalationType) {
-      lines.push(`Secondary turning point mechanism: ${activeMilestone.secondaryEscalationType} — ensure the irreversible shift lands across both escalation axes.`);
+      lines.push(
+        `Secondary turning point mechanism: ${activeMilestone.secondaryEscalationType} — ensure the irreversible shift lands across both escalation axes.`
+      );
     }
     if (activeMilestone.crisisType) {
-      lines.push(`Crisis type: ${activeMilestone.crisisType} — shape the scene so the pivotal decision matches this crisis form.`);
+      lines.push(
+        `Crisis type: ${activeMilestone.crisisType} — shape the scene so the pivotal decision matches this crisis form.`
+      );
     }
     if (activeMilestone.uniqueScenarioHook) {
       lines.push(`Unique scenario hook: ${activeMilestone.uniqueScenarioHook}`);
     }
     if (activeMilestone.approachVectors && activeMilestone.approachVectors.length > 0) {
-      lines.push(`Approach vectors: ${activeMilestone.approachVectors.join(', ')} — consider these when designing the scene's dramatic question.`);
+      lines.push(
+        `Approach vectors: ${activeMilestone.approachVectors.join(', ')} — consider these when designing the scene's dramatic question.`
+      );
     }
     lines.push('Requirements:');
     lines.push(
       '- Create a point of no return — a decision, revelation, or consequence that cannot be undone'
     );
-    lines.push(
-      '- The protagonist\'s available options must fundamentally change after this scene'
-    );
+    lines.push("- The protagonist's available options must fundamentally change after this scene");
     lines.push(
       '- "More complicated" is NOT a turning point — a turning point means the status quo is permanently destroyed'
     );
@@ -486,7 +497,7 @@ export function buildEscalationDirective(
     }
     lines.push('Requirements:');
     lines.push(
-      '- Deepen the protagonist\'s understanding, conviction, fear, or value conflict tied to the current dramatic question'
+      "- Deepen the protagonist's understanding, conviction, fear, or value conflict tied to the current dramatic question"
     );
     lines.push(
       '- Produce a meaningful internal or relational shift that changes how the next conflict will be approached'
@@ -597,18 +608,20 @@ function buildContinuationContextSection(
   context: ContinuationPagePlanContext,
   options: ContinuationContextRenderOptions
 ): string {
-  const worldSection = context.decomposedWorld.facts.length > 0
-    ? `${formatDecomposedWorldForPrompt(context.decomposedWorld)}
+  const worldSection =
+    context.decomposedWorld.facts.length > 0
+      ? `${formatDecomposedWorldForPrompt(context.decomposedWorld)}
 
 `
-    : '';
+      : '';
 
-  const npcsSection = context.decomposedCharacters.length > 0
-    ? `CHARACTERS (structured profiles):
+  const npcsSection =
+    context.decomposedCharacters.length > 0
+      ? `CHARACTERS (structured profiles):
 ${context.decomposedCharacters.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
 
 `
-    : '';
+      : '';
 
   const structureSection = buildSharedStructureContext(
     context.structure,
@@ -616,9 +629,7 @@ ${context.decomposedCharacters.map((c, i) => formatDecomposedCharacterForPrompt(
   );
 
   const globalCanonSection =
-    context.globalCanon.length > 0
-      ? formatCanonForPrompt(context.globalCanon)
-      : '(none)';
+    context.globalCanon.length > 0 ? formatCanonForPrompt(context.globalCanon) : '(none)';
 
   const inventorySection =
     context.accumulatedInventory.length > 0
@@ -656,12 +667,13 @@ ${context.decomposedCharacters.map((c, i) => formatDecomposedCharacterForPrompt(
           .join('\n')
       : '(none)';
 
-  const grandparentSection = options.includeGrandparentNarrative && context.grandparentNarrative
-    ? `SCENE BEFORE LAST (full text for style continuity):
+  const grandparentSection =
+    options.includeGrandparentNarrative && context.grandparentNarrative
+      ? `SCENE BEFORE LAST (full text for style continuity):
 ${context.grandparentNarrative}
 
 `
-    : '';
+      : '';
 
   const summariesSection =
     context.ancestorSummaries.length > 0
@@ -724,10 +736,12 @@ ${context.ancestorSummaries.map((summary) => `- [${summary.pageId}] ${summary.su
 
   const includeProtagonist = options.includeProtagonistDirective ?? true;
 
-  const protagonistName = context.decomposedCharacters.length > 0 ? context.decomposedCharacters[0]!.name : null;
-  const protagonistDirective = includeProtagonist && protagonistName
-    ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist.\n\n`
-    : '';
+  const protagonistName =
+    context.decomposedCharacters.length > 0 ? context.decomposedCharacters[0]!.name : null;
+  const protagonistDirective =
+    includeProtagonist && protagonistName
+      ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist.\n\n`
+      : '';
 
   const guidanceSection = includeProtagonist
     ? buildProtagonistGuidanceSection(context.protagonistGuidance)

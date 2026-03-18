@@ -12,13 +12,13 @@ import { CONCEPT_ENGINEER_SCHEMA } from './schemas/concept-engineer-schema.js';
 
 export function parseConceptEngineerResponse(
   parsed: unknown,
-  expectedCount: number,
+  expectedCount: number
 ): readonly ConceptEngineFields[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Concept engineer response must be an object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -27,7 +27,7 @@ export function parseConceptEngineerResponse(
     throw new LLMError(
       'Concept engineer response missing concepts array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -35,7 +35,7 @@ export function parseConceptEngineerResponse(
     throw new LLMError(
       `Concept engineer response must include exactly ${expectedCount} items (received: ${data['concepts'].length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -45,7 +45,7 @@ export function parseConceptEngineerResponse(
 export async function generateConceptEngines(
   context: ConceptEngineerContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptEngineerResult> {
   const expectedCount = context.seeds.length;
   const messages = buildConceptEngineerPrompt(context);

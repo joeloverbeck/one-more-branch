@@ -557,14 +557,18 @@ describe('story-arc model utilities', () => {
       });
 
       it('throws if invalidatedMilestoneIds is empty', () => {
-        expect(() => createMilestoneDeviation('No invalidated milestones provided', [], 'Summary')).toThrow(
-          'MilestoneDeviation must have at least one invalidated milestone ID'
-        );
+        expect(() =>
+          createMilestoneDeviation('No invalidated milestones provided', [], 'Summary')
+        ).toThrow('MilestoneDeviation must have at least one invalidated milestone ID');
       });
 
       it('preserves array identity', () => {
         const invalidatedMilestoneIds = ['2.2', '3.1'] as const;
-        const result = createMilestoneDeviation('Deviation detected', invalidatedMilestoneIds, 'Summary');
+        const result = createMilestoneDeviation(
+          'Deviation detected',
+          invalidatedMilestoneIds,
+          'Summary'
+        );
 
         expect(result.invalidatedMilestoneIds).toBe(invalidatedMilestoneIds);
       });
@@ -578,7 +582,11 @@ describe('story-arc model utilities', () => {
 
     describe('validateDeviationTargets', () => {
       it('returns true when concluded milestones are not invalidated', () => {
-        const deviation = createMilestoneDeviation('Future milestones are invalid', ['2.2'], 'Summary');
+        const deviation = createMilestoneDeviation(
+          'Future milestones are invalid',
+          ['2.2'],
+          'Summary'
+        );
         const structureState: AccumulatedStructureState = {
           currentActIndex: 1,
           currentMilestoneIndex: 0,
@@ -616,11 +624,17 @@ describe('story-arc model utilities', () => {
       });
 
       it('returns true for milestone IDs not in progressions', () => {
-        const deviation = createMilestoneDeviation('Future acts need replacement', ['3.1'], 'Summary');
+        const deviation = createMilestoneDeviation(
+          'Future acts need replacement',
+          ['3.1'],
+          'Summary'
+        );
         const structureState: AccumulatedStructureState = {
           currentActIndex: 1,
           currentMilestoneIndex: 0,
-          milestoneProgressions: [{ milestoneId: '1.1', status: 'concluded', resolution: 'Quest accepted' }],
+          milestoneProgressions: [
+            { milestoneId: '1.1', status: 'concluded', resolution: 'Quest accepted' },
+          ],
           pagesInCurrentMilestone: 0,
           pacingNudge: null,
         };

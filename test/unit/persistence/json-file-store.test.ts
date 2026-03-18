@@ -14,7 +14,9 @@ describe('json-file-store', () => {
     await fsPromises.rm(tempRoot, { recursive: true, force: true });
   });
 
-  function createStore(): ReturnType<typeof createJsonFileStore<string, { readonly value: string }>> {
+  function createStore(): ReturnType<
+    typeof createJsonFileStore<string, { readonly value: string }>
+  > {
     return createJsonFileStore<string, { readonly value: string }>({
       getFilePath: (id) => path.join(tempRoot, `${id}.json`),
       getLockKey: (id) => `json-store:${id}`,

@@ -129,7 +129,8 @@ describe('kernels page controller', () => {
     global.fetch = createRoutedFetch({
       '/kernels/api/list': () => mockJsonResponse({ success: true, kernels: [] }),
       '/generation-progress/': () => mockJsonResponse({ status: 'completed' }),
-      '/kernels/api/generate': () => mockJsonResponse({ success: true, evaluatedKernels: [generated] }),
+      '/kernels/api/generate': () =>
+        mockJsonResponse({ success: true, evaluatedKernels: [generated] }),
       '/kernels/api/save': () => mockJsonResponse({ success: true, kernel: saved }),
     });
 
@@ -154,7 +155,9 @@ describe('kernels page controller', () => {
     const generatedContainer = document.getElementById('generated-kernels') as HTMLElement;
     expect(generatedContainer.textContent).toContain(generated.kernel.dramaticThesis);
 
-    const saveBtn = generatedContainer.querySelector('.kernel-save-generated-btn') as HTMLButtonElement;
+    const saveBtn = generatedContainer.querySelector(
+      '.kernel-save-generated-btn'
+    ) as HTMLButtonElement;
     saveBtn.click();
 
     await flushPromises();
@@ -176,7 +179,9 @@ describe('kernels page controller', () => {
         return Promise.resolve(mockJsonResponse({ success: true, kernels: [] }));
       }
       if (url.includes('/generation-progress/')) {
-        return Promise.resolve(mockJsonResponse({ status: 'running', activeStage: 'GENERATING_KERNELS' }));
+        return Promise.resolve(
+          mockJsonResponse({ status: 'running', activeStage: 'GENERATING_KERNELS' })
+        );
       }
       if (url.includes('/kernels/api/generate')) {
         return new Promise((resolve) => {
@@ -231,7 +236,7 @@ describe('kernels page controller', () => {
               rawError: '{"error":{"message":"Context length exceeded"}}',
             },
           },
-          500,
+          500
         ),
     });
 
@@ -264,7 +269,8 @@ describe('kernels page controller', () => {
     let wasDeleted = false;
 
     global.fetch = createRoutedFetch({
-      '/kernels/api/list': () => mockJsonResponse({ success: true, kernels: wasDeleted ? [] : [kernel] }),
+      '/kernels/api/list': () =>
+        mockJsonResponse({ success: true, kernels: wasDeleted ? [] : [kernel] }),
       '/kernels/api/delete-me': (_url, init) => {
         if (init?.method !== 'DELETE') {
           return mockJsonResponse({ success: false, error: 'Bad method' }, 400);
@@ -291,7 +297,8 @@ describe('kernels page controller', () => {
     const fetchCalls = (global.fetch as jest.MockedFunction<typeof fetch>).mock
       .calls as unknown as FetchCall[];
     const deleteCall = fetchCalls.find(
-      (call) => getRequestUrl(call[0]).includes('/kernels/api/delete-me') && call[1]?.method === 'DELETE'
+      (call) =>
+        getRequestUrl(call[0]).includes('/kernels/api/delete-me') && call[1]?.method === 'DELETE'
     );
     expect(deleteCall).toBeDefined();
   });
@@ -320,7 +327,9 @@ describe('kernels page controller', () => {
     const nameInput = document.querySelector('.kernel-edit-name') as HTMLInputElement;
     nameInput.value = 'Reframed Kernel Name';
 
-    const questionInput = document.querySelector('.kernel-edit-thematicQuestion') as HTMLInputElement;
+    const questionInput = document.querySelector(
+      '.kernel-edit-thematicQuestion'
+    ) as HTMLInputElement;
     questionInput.value = 'Can care exist without control?';
 
     const saveBtn = document.querySelector('.kernel-edit-save-btn') as HTMLButtonElement;

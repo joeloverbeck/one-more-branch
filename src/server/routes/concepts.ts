@@ -2,11 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Request, Response, Router } from 'express';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
-import type {
-  ConceptSpec,
-  ConceptVerification,
-  EvaluatedConcept,
-} from '../../models/index.js';
+import type { ConceptSpec, ConceptVerification, EvaluatedConcept } from '../../models/index.js';
 import { GENRE_FRAMES } from '../../models/index.js';
 import type { ConceptSeeds, SavedConcept } from '../../models/saved-concept.js';
 import {
@@ -44,7 +40,7 @@ conceptRoutes.get(
       seedGenreGroups,
       genreFrames: GENRE_FRAMES,
     });
-  }),
+  })
 );
 
 conceptRoutes.get(
@@ -74,7 +70,7 @@ conceptRoutes.get(
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const seeds = await listSeeds();
     return res.json({ success: true, seeds });
-  }),
+  })
 );
 
 conceptRoutes.post(
@@ -142,7 +138,7 @@ conceptRoutes.post(
       logger.error('Error during concept development:', { error: err.message, stack: err.stack });
       return res.status(500).json({ success: false, error: err.message });
     }
-  }),
+  })
 );
 
 conceptRoutes.post(
@@ -175,7 +171,7 @@ conceptRoutes.post(
     const defaultName =
       trimmedName && trimmedName.length > 0
         ? trimmedName
-        : body.evaluatedConcept.concept.oneLineHook ?? 'Untitled Concept';
+        : (body.evaluatedConcept.concept.oneLineHook ?? 'Untitled Concept');
 
     const savedConcept: SavedConcept = {
       id,
@@ -308,7 +304,9 @@ conceptRoutes.post(
           model: error.context?.['model'],
           retryable: error.retryable,
         });
-        const { publicMessage, response } = buildLlmRouteErrorResult(error, { includeDebug: false });
+        const { publicMessage, response } = buildLlmRouteErrorResult(error, {
+          includeDebug: false,
+        });
         progress.fail(publicMessage);
         return res.status(500).json(response);
       }

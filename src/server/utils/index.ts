@@ -25,7 +25,11 @@ export {
 export { buildBeginErrorResponse, buildChoiceErrorResponse } from './play-error-handler.js';
 export type { ErrorResponsePayload } from './play-error-handler.js';
 export type { PagePanelData } from './page-panel-data.js';
-export { extractNpcBriefings, extractProtagonistBriefing, groupWorldFacts } from './briefing-helpers.js';
+export {
+  extractNpcBriefings,
+  extractProtagonistBriefing,
+  groupWorldFacts,
+} from './briefing-helpers.js';
 export {
   getActDisplayInfo,
   getConstraintPanelData,

@@ -1,10 +1,5 @@
 import { Choice, ChoiceType, Page, PageId, PrimaryDelta, StoryId } from '../models';
-import {
-  getPageFilePath,
-  getStoryDir,
-  listFiles,
-  writeJsonFile,
-} from './file-utils';
+import { getPageFilePath, getStoryDir, listFiles, writeJsonFile } from './file-utils';
 import { createJsonFileStore } from './json-file-store';
 import { withLock } from './lock-manager';
 import {
@@ -14,7 +9,9 @@ import {
   serializePage,
 } from './page-serializer';
 
-function getPageFileStore(storyId: StoryId): ReturnType<typeof createJsonFileStore<PageId, PageFileData>> {
+function getPageFileStore(
+  storyId: StoryId
+): ReturnType<typeof createJsonFileStore<PageId, PageFileData>> {
   return createJsonFileStore<PageId, PageFileData>({
     getFilePath: (pageId) => getPageFilePath(storyId, pageId),
     getLockKey: () => storyId,

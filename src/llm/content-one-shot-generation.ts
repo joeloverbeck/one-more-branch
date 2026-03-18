@@ -25,11 +25,7 @@ const REQUIRED_PACKET_FIELDS = [
 
 function parsePacket(raw: unknown, index: number): ContentOneShotPacket {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
-    throw new LLMError(
-      `Packet at index ${index} must be an object`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`Packet at index ${index} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const data = raw as Record<string, unknown>;
@@ -39,7 +35,7 @@ function parsePacket(raw: unknown, index: number): ContentOneShotPacket {
       throw new LLMError(
         `Packet at index ${index} missing or empty required field: ${field}`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
   }
@@ -48,7 +44,7 @@ function parsePacket(raw: unknown, index: number): ContentOneShotPacket {
     throw new LLMError(
       `Packet at index ${index} has invalid contentKind: ${String(data['contentKind'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -66,14 +62,12 @@ function parsePacket(raw: unknown, index: number): ContentOneShotPacket {
   };
 }
 
-export function parseContentOneShotResponse(
-  parsed: unknown,
-): readonly ContentOneShotPacket[] {
+export function parseContentOneShotResponse(parsed: unknown): readonly ContentOneShotPacket[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Content one-shot response must be an object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -82,7 +76,7 @@ export function parseContentOneShotResponse(
     throw new LLMError(
       'Content one-shot response missing packets array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -90,7 +84,7 @@ export function parseContentOneShotResponse(
     throw new LLMError(
       'Content one-shot response must include at least 1 packet',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -100,7 +94,7 @@ export function parseContentOneShotResponse(
 export async function generateContentOneShot(
   context: ContentOneShotContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ContentOneShotResult> {
   const messages = buildContentOneShotPrompt(context);
   const result = await runLlmStage({

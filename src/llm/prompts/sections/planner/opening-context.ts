@@ -1,6 +1,4 @@
-import {
-  formatDecomposedCharacterForPrompt,
-} from '../../../../models/decomposed-character.js';
+import { formatDecomposedCharacterForPrompt } from '../../../../models/decomposed-character.js';
 import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
 import { createInitialStructureState } from '../../../../models/story-arc.js';
 import type { StoryKernel } from '../../../../models/story-kernel.js';
@@ -31,18 +29,20 @@ export function buildPlannerOpeningContextSection(
   context: OpeningPagePlanContext,
   options?: PlannerContextOptions
 ): string {
-  const worldSection = context.decomposedWorld.facts.length > 0
-    ? `${formatDecomposedWorldForPrompt(context.decomposedWorld)}
+  const worldSection =
+    context.decomposedWorld.facts.length > 0
+      ? `${formatDecomposedWorldForPrompt(context.decomposedWorld)}
 
 `
-    : '';
+      : '';
 
-  const npcsSection = context.decomposedCharacters.length > 0
-    ? `CHARACTERS (structured profiles):
+  const npcsSection =
+    context.decomposedCharacters.length > 0
+      ? `CHARACTERS (structured profiles):
 ${context.decomposedCharacters.map((c, i) => formatDecomposedCharacterForPrompt(c, i === 0)).join('\n\n')}
 
 `
-    : '';
+      : '';
 
   const startingSituationSection = context.startingSituation
     ? `STARTING SITUATION:
@@ -84,10 +84,12 @@ ${initialAgendas
 
   const includeProtagonist = options?.includeProtagonistDirective ?? true;
 
-  const protagonistName = context.decomposedCharacters.length > 0 ? context.decomposedCharacters[0]!.name : null;
-  const protagonistDirective = includeProtagonist && protagonistName
-    ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist.\n\n`
-    : '';
+  const protagonistName =
+    context.decomposedCharacters.length > 0 ? context.decomposedCharacters[0]!.name : null;
+  const protagonistDirective =
+    includeProtagonist && protagonistName
+      ? `PROTAGONIST IDENTITY: ${protagonistName} is the protagonist.\n\n`
+      : '';
 
   const valueSpectrumSection = buildOpeningValueSpectrumSection(context.storyKernel);
 

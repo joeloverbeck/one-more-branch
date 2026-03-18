@@ -12,10 +12,7 @@ import {
   saveContentPacket,
   updateContentPacket,
 } from '../../persistence/content-packet-repository.js';
-import {
-  listTasteProfiles,
-  saveTasteProfile,
-} from '../../persistence/taste-profile-repository.js';
+import { listTasteProfiles, saveTasteProfile } from '../../persistence/taste-profile-repository.js';
 import type { SavedTasteProfile } from '../../models/saved-content-packet.js';
 import { contentService } from '../services/index.js';
 import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
@@ -35,7 +32,7 @@ contentPacketRoutes.get(
       packets,
       contentKindGroups,
     });
-  }),
+  })
 );
 
 // --- GET /api/list --- JSON list of all content packets
@@ -44,7 +41,7 @@ contentPacketRoutes.get(
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const packets = await listContentPackets();
     return res.json({ success: true, packets });
-  }),
+  })
 );
 
 // --- GET /api/:packetId --- Load single content packet
@@ -57,7 +54,7 @@ contentPacketRoutes.get(
       return res.status(404).json({ success: false, error: 'Content packet not found' });
     }
     return res.json({ success: true, packet });
-  }),
+  })
 );
 
 // --- POST /api/generate --- Generate content packets (quick or pipeline)
@@ -156,7 +153,7 @@ contentPacketRoutes.post(
       logger.error('Error during content generation:', { error: err.message, stack: err.stack });
       return res.status(500).json({ success: false, error: err.message });
     }
-  }),
+  })
 );
 
 // --- POST /api/:packetId/save --- Save a generated packet
@@ -179,7 +176,9 @@ contentPacketRoutes.post(
 
     const saved: SavedContentPacket = {
       id: packetId as string,
-      name: body.name?.trim() ?? ('title' in packet ? (packet as { title: string }).title : 'Untitled Packet'),
+      name:
+        body.name?.trim() ??
+        ('title' in packet ? (packet as { title: string }).title : 'Untitled Packet'),
       createdAt: now,
       updatedAt: now,
       contentKind: packet.contentKind,
@@ -188,14 +187,16 @@ contentPacketRoutes.post(
       socialEngine: packet.socialEngine,
       choicePressure: packet.choicePressure,
       signatureImage: packet.signatureImage,
-      escalationPath: 'escalationPath' in packet
-        ? (packet as { escalationPath: string }).escalationPath
-        : (packet as { escalationHint: string }).escalationHint,
+      escalationPath:
+        'escalationPath' in packet
+          ? (packet as { escalationPath: string }).escalationPath
+          : (packet as { escalationHint: string }).escalationHint,
       wildnessInvariant: packet.wildnessInvariant,
       dullCollapse: packet.dullCollapse,
-      interactionVerbs: 'interactionVerbs' in packet
-        ? [...(packet as unknown as { interactionVerbs: readonly string[] }).interactionVerbs]
-        : [],
+      interactionVerbs:
+        'interactionVerbs' in packet
+          ? [...(packet as unknown as { interactionVerbs: readonly string[] }).interactionVerbs]
+          : [],
       pinned: false,
       recommendedRole: 'PRIMARY_SEED' as const,
       evaluation: body.evaluation as SavedContentPacket['evaluation'],
@@ -203,7 +204,7 @@ contentPacketRoutes.post(
 
     await saveContentPacket(saved);
     return res.json({ success: true, packet: saved });
-  }),
+  })
 );
 
 // --- PATCH /api/:packetId/pin --- Toggle pinned state
@@ -223,7 +224,7 @@ contentPacketRoutes.patch(
     }));
 
     return res.json({ success: true, packet: updated });
-  }),
+  })
 );
 
 // --- DELETE /api/:packetId --- Delete a packet
@@ -238,7 +239,7 @@ contentPacketRoutes.delete(
 
     await deleteContentPacket(packetId as string);
     return res.json({ success: true });
-  }),
+  })
 );
 
 // --- GET /taste-profiles/api/list --- List taste profiles
@@ -247,7 +248,7 @@ contentPacketRoutes.get(
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const profiles = await listTasteProfiles();
     return res.json({ success: true, profiles });
-  }),
+  })
 );
 
 // --- POST /taste-profiles/api/generate --- Generate a taste profile
@@ -330,5 +331,5 @@ contentPacketRoutes.post(
       });
       return res.status(500).json({ success: false, error: err.message });
     }
-  }),
+  })
 );

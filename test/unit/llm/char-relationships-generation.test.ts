@@ -81,12 +81,8 @@ function createCharacterKernel(overrides?: Partial<CharacterKernel>): CharacterK
     ],
     primaryOpposition: "The current king, who murdered Kael's father.",
     stakes: ["His family's honor and legacy", 'The lives of those who supported his father'],
-    constraints: [
-      'Must conceal his true identity',
-      'Cannot harm innocents in pursuit of his goal',
-    ],
-    pressurePoint:
-      'His sister is held hostage by the king - any overt action risks her life.',
+    constraints: ['Must conceal his true identity', 'Cannot harm innocents in pursuit of his goal'],
+    pressurePoint: 'His sister is held hostage by the king - any overt action risks her life.',
     moralLine: 'He will not harm children, no matter the strategic gain.',
     worstFear: 'Becoming the tyrant his father was rumoured to be.',
     ...overrides,
@@ -100,8 +96,7 @@ function createTridimensionalProfile(
     characterName: 'Kael',
     physiology:
       'Lean and wiry, with calloused hands from the forged commoner persona and a telltale blood-oath scar.',
-    sociology:
-      'Raised as a prince but living as a blacksmith among people he was taught to rule.',
+    sociology: 'Raised as a prince but living as a blacksmith among people he was taught to rule.',
     psychology:
       'Hypervigilant, proud, and morally strained by the lies he believes justice requires.',
     coreTraits: [
@@ -111,7 +106,7 @@ function createTridimensionalProfile(
       'Hypervigilance',
       'Reluctant deception',
     ],
-    formativeWound: 'Witnessing his father\'s murder as a child.',
+    formativeWound: "Witnessing his father's murder as a child.",
     protectiveMask: 'The stoic blacksmith who never asks questions.',
     misbelief: 'Only violence can restore what violence destroyed.',
     ...overrides,
@@ -162,7 +157,7 @@ function createOtherDevelopedCharacter(
       characterName: 'Mira',
       superObjective: 'To prevent the kingdom from collapsing into a revenge war.',
       immediateObjectives: ['Keep Kael alive', 'Contain the noble factions'],
-      primaryOpposition: 'Kael\'s appetite for escalation',
+      primaryOpposition: "Kael's appetite for escalation",
       stakes: ['Civilian lives', 'Her own claim to moral legitimacy'],
       constraints: ['Cannot expose her hidden lineage yet'],
       pressurePoint: 'She still loves the version of Kael who no longer exists.',
@@ -230,7 +225,7 @@ function validRelationshipsResponseRaw(
         currentTension:
           'Kael wants decisive bloodshed while Mira keeps diverting him toward slower coalition-building.',
         leverage:
-          'Mira knows where Kael\'s sister is hidden; Kael knows Mira\'s secret lineage could fracture her coalition.',
+          "Mira knows where Kael's sister is hidden; Kael knows Mira's secret lineage could fracture her coalition.",
         ruptureTriggers: ['Discovering the betrayal at the bridge'],
         repairMoves: ['A public apology before the court'],
       },
@@ -283,8 +278,12 @@ describe('buildCharRelationshipsPrompt', () => {
 
     expect(messages[1].content).toContain('OTHER DEVELOPED CHARACTERS:');
     expect(messages[1].content).toContain('- Mira');
-    expect(messages[1].content).toContain('Super-objective: To prevent the kingdom from collapsing into a revenge war.');
-    expect(messages[1].content).toContain('False beliefs: Kael can still be reasoned back into restraint');
+    expect(messages[1].content).toContain(
+      'Super-objective: To prevent the kingdom from collapsing into a revenge war.'
+    );
+    expect(messages[1].content).toContain(
+      'False beliefs: Kael can still be reasoned back into restraint'
+    );
   });
 
   it('omits counterpart section when other developed characters are missing or empty', () => {
@@ -354,25 +353,25 @@ describe('CHAR_RELATIONSHIPS_GENERATION_SCHEMA', () => {
     const relationshipItem = relationships['items'] as Record<string, unknown>;
     const relationshipProperties = relationshipItem['properties'] as Record<string, unknown>;
 
-    expect((relationshipProperties['relationshipType'] as Record<string, unknown>)['anyOf']).toEqual(
-      [
-        {
-          type: 'string',
-          enum: [
-            'KIN',
-            'ALLY',
-            'RIVAL',
-            'PATRON',
-            'CLIENT',
-            'MENTOR',
-            'SUBORDINATE',
-            'ROMANTIC',
-            'EX_ROMANTIC',
-            'INFORMANT',
-          ],
-        },
-      ]
-    );
+    expect(
+      (relationshipProperties['relationshipType'] as Record<string, unknown>)['anyOf']
+    ).toEqual([
+      {
+        type: 'string',
+        enum: [
+          'KIN',
+          'ALLY',
+          'RIVAL',
+          'PATRON',
+          'CLIENT',
+          'MENTOR',
+          'SUBORDINATE',
+          'ROMANTIC',
+          'EX_ROMANTIC',
+          'INFORMANT',
+        ],
+      },
+    ]);
     expect((relationshipProperties['valence'] as Record<string, unknown>)['anyOf']).toEqual([
       {
         type: 'string',
@@ -400,9 +399,7 @@ describe('generateCharRelationships', () => {
   });
 
   it('calls OpenRouter with the Stage 4 schema and returns a typed result', async () => {
-    global.fetch = jest
-      .fn()
-      .mockResolvedValue(createMockResponse(validRelationshipsResponseRaw()));
+    global.fetch = jest.fn().mockResolvedValue(createMockResponse(validRelationshipsResponseRaw()));
 
     const result = await generateCharRelationships(createContext(), 'test-api-key');
 
@@ -418,9 +415,7 @@ describe('generateCharRelationships', () => {
     expect(result.deepRelationships.relationships[0]?.relationshipType).toBe(
       PipelineRelationshipType.RIVAL
     );
-    expect(result.deepRelationships.relationships[0]?.valence).toBe(
-      RelationshipValence.AMBIVALENT
-    );
+    expect(result.deepRelationships.relationships[0]?.valence).toBe(RelationshipValence.AMBIVALENT);
     expect(result.deepRelationships.relationships[0]?.numericValence).toBe(-2);
     expect(result.deepRelationships.personalDilemmas).toHaveLength(1);
     expect(result.rawResponse).toBeDefined();
@@ -496,16 +491,10 @@ describe('generateCharRelationships', () => {
   });
 
   it('logs the prompt with the charRelationships stage key', async () => {
-    global.fetch = jest
-      .fn()
-      .mockResolvedValue(createMockResponse(validRelationshipsResponseRaw()));
+    global.fetch = jest.fn().mockResolvedValue(createMockResponse(validRelationshipsResponseRaw()));
 
     await generateCharRelationships(createContext(), 'test-api-key');
 
-    expect(mockLogPrompt).toHaveBeenCalledWith(
-      mockLogger,
-      'charRelationships',
-      expect.any(Array)
-    );
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'charRelationships', expect.any(Array));
   });
 });

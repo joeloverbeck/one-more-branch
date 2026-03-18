@@ -1,10 +1,7 @@
 import type { GenerationStageCallback, GenerationStage } from '../engine/types.js';
 import { runGenerationStage } from '../engine/generation-pipeline-helpers.js';
 import { EngineError } from '../engine/types.js';
-import type {
-  CastPipelineInputs,
-  CharacterDevStage,
-} from '../models/character-pipeline-types.js';
+import type { CastPipelineInputs, CharacterDevStage } from '../models/character-pipeline-types.js';
 import type { CharacterWebContext } from '../models/saved-developed-character.js';
 import {
   canGenerateCharacterStage,
@@ -64,15 +61,11 @@ function requireApiKey(apiKey: string): string {
   return trimmed;
 }
 
-function requireStageData<T>(
-  value: T | null,
-  characterName: string,
-  stageName: string,
-): T {
+function requireStageData<T>(value: T | null, characterName: string, stageName: string): T {
   if (value === null) {
     throw new EngineError(
       `${characterName} is missing required ${stageName} data`,
-      'VALIDATION_FAILED',
+      'VALIDATION_FAILED'
     );
   }
 
@@ -81,30 +74,31 @@ function requireStageData<T>(
 
 function buildCompletedStages(
   completedStages: readonly CharacterDevStage[],
-  stage: CharacterDevStage,
+  stage: CharacterDevStage
 ): CharacterDevStage[] {
   return Array.from(new Set([...completedStages, stage])).sort((left, right) => left - right);
 }
 
 function validateStagePreconditions(
   character: SavedDevelopedCharacter,
-  stage: CharacterDevStage,
+  stage: CharacterDevStage
 ): void {
   if (!canGenerateCharacterStage(character, stage)) {
     const prerequisiteStage = stage - 1;
     throw new EngineError(
       `Cannot generate stage ${stage} for ${character.characterName} before stage ${prerequisiteStage} is complete`,
-      'VALIDATION_FAILED',
+      'VALIDATION_FAILED'
     );
   }
 }
 
 export async function runCharacterStage(
   input: RunCharacterStageInput,
-  deps: CharacterStageRunnerDeps = defaultDeps,
+  deps: CharacterStageRunnerDeps = defaultDeps
 ): Promise<RunCharacterStageResult> {
   const apiKey = requireApiKey(input.apiKey);
-  const { character, stage, inputs, webContext, otherDevelopedCharacters, onGenerationStage } = input;
+  const { character, stage, inputs, webContext, otherDevelopedCharacters, onGenerationStage } =
+    input;
 
   validateStagePreconditions(character, stage);
 
@@ -118,8 +112,8 @@ export async function runCharacterStage(
             webContext,
             ...inputs,
           },
-          apiKey,
-        ),
+          apiKey
+        )
       );
 
       return {
@@ -137,7 +131,7 @@ export async function runCharacterStage(
       const characterKernel = requireStageData(
         character.characterKernel,
         character.characterName,
-        'character kernel',
+        'character kernel'
       );
 
       const result = await runGenerationStage(onGenerationStage, stageEvent, () =>
@@ -147,8 +141,8 @@ export async function runCharacterStage(
             characterKernel,
             ...inputs,
           },
-          apiKey,
-        ),
+          apiKey
+        )
       );
 
       return {
@@ -166,12 +160,12 @@ export async function runCharacterStage(
       const characterKernel = requireStageData(
         character.characterKernel,
         character.characterName,
-        'character kernel',
+        'character kernel'
       );
       const tridimensionalProfile = requireStageData(
         character.tridimensionalProfile,
         character.characterName,
-        'tridimensional profile',
+        'tridimensional profile'
       );
 
       const result = await runGenerationStage(onGenerationStage, stageEvent, () =>
@@ -182,8 +176,8 @@ export async function runCharacterStage(
             tridimensionalProfile,
             ...inputs,
           },
-          apiKey,
-        ),
+          apiKey
+        )
       );
 
       return {
@@ -201,17 +195,17 @@ export async function runCharacterStage(
       const characterKernel = requireStageData(
         character.characterKernel,
         character.characterName,
-        'character kernel',
+        'character kernel'
       );
       const tridimensionalProfile = requireStageData(
         character.tridimensionalProfile,
         character.characterName,
-        'tridimensional profile',
+        'tridimensional profile'
       );
       const agencyModel = requireStageData(
         character.agencyModel,
         character.characterName,
-        'agency model',
+        'agency model'
       );
 
       const result = await runGenerationStage(onGenerationStage, stageEvent, () =>
@@ -224,8 +218,8 @@ export async function runCharacterStage(
             otherDevelopedCharacters,
             ...inputs,
           },
-          apiKey,
-        ),
+          apiKey
+        )
       );
 
       return {
@@ -243,22 +237,22 @@ export async function runCharacterStage(
       const characterKernel = requireStageData(
         character.characterKernel,
         character.characterName,
-        'character kernel',
+        'character kernel'
       );
       const tridimensionalProfile = requireStageData(
         character.tridimensionalProfile,
         character.characterName,
-        'tridimensional profile',
+        'tridimensional profile'
       );
       const agencyModel = requireStageData(
         character.agencyModel,
         character.characterName,
-        'agency model',
+        'agency model'
       );
       const deepRelationships = requireStageData(
         character.deepRelationships,
         character.characterName,
-        'deep relationships',
+        'deep relationships'
       );
 
       const result = await runGenerationStage(onGenerationStage, stageEvent, () =>
@@ -271,8 +265,8 @@ export async function runCharacterStage(
             deepRelationships,
             ...inputs,
           },
-          apiKey,
-        ),
+          apiKey
+        )
       );
 
       return {

@@ -6,7 +6,9 @@ function createValidStatePayload(): Record<string, unknown> {
     stateIntents: {
       currentLocation: 'Eastern watchtower parapet',
       threats: {
-        add: [{ text: 'Archers establish crossfire from the catwalk', threatType: 'HOSTILE_AGENT' }],
+        add: [
+          { text: 'Archers establish crossfire from the catwalk', threatType: 'HOSTILE_AGENT' },
+        ],
         removeIds: [],
       },
       constraints: {
@@ -36,7 +38,9 @@ function createValidStatePayload(): Record<string, unknown> {
         removeIds: [],
       },
       canon: {
-        worldAdd: [{ text: 'The eastern stairwell overlooks the collapsed market square.', factType: 'LAW' }],
+        worldAdd: [
+          { text: 'The eastern stairwell overlooks the collapsed market square.', factType: 'LAW' },
+        ],
         characterAdd: [
           { characterName: 'Captain Ives', facts: ['Ives served at the tower before the war.'] },
         ],
@@ -48,7 +52,8 @@ function createValidStatePayload(): Record<string, unknown> {
 describe('validateStateAccountantResponse', () => {
   it('returns normalized StateAccountantGenerationResult and preserves rawResponse', () => {
     const rawJson = createValidStatePayload();
-    (rawJson.stateIntents as { currentLocation: string }).currentLocation = '  Eastern watchtower parapet  ';
+    (rawJson.stateIntents as { currentLocation: string }).currentLocation =
+      '  Eastern watchtower parapet  ';
 
     const result = validateStateAccountantResponse(rawJson, '{"raw":"accountant"}');
 
@@ -138,8 +143,9 @@ describe('validateStateAccountantResponse', () => {
 
   it('repairs legacy characterState add shape from character/text fields', () => {
     const rawJson = createValidStatePayload();
-    (rawJson.stateIntents as { characterState: { add: Array<Record<string, unknown>> } }).characterState
-      .add = [
+    (
+      rawJson.stateIntents as { characterState: { add: Array<Record<string, unknown>> } }
+    ).characterState.add = [
       {
         character: 'Jon Ureña',
         text: 'Ethical self-image erodes as domestic comfort is accepted.',
@@ -168,7 +174,13 @@ describe('validateStateAccountantResponse', () => {
       threats: { add: [], removeIds: [] },
       constraints: { add: [], removeIds: [] },
       threads: {
-        add: [{ text: 'Find a way down before the tower collapses', threadType: 'DANGER', urgency: 'HIGH' }],
+        add: [
+          {
+            text: 'Find a way down before the tower collapses',
+            threadType: 'DANGER',
+            urgency: 'HIGH',
+          },
+        ],
         resolveIds: [],
       },
       inventory: { add: [], removeIds: [] },
@@ -189,9 +201,7 @@ describe('validateStateAccountantResponse', () => {
       { characterName: 'Sister Maren', states: ['Clinging to the railing'] },
     ]);
     expect(result.rawResponse).toBe('{"raw":"flat"}');
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('[accountant-wrapper-repair]')
-    );
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[accountant-wrapper-repair]'));
     warnSpy.mockRestore();
   });
 

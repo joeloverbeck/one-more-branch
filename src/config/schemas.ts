@@ -20,6 +20,7 @@ const StorageConfigSchema = z.object({
   contentPacketsDir: z.string().min(1).default('content-packets'),
   tasteProfilesDir: z.string().min(1).default('taste-profiles'),
   worldbuildingDir: z.string().min(1).default('worldbuilding'),
+  spinesDir: z.string().min(1).default('spines'),
 });
 
 /**
@@ -41,13 +42,13 @@ const PromptOptionsConfigSchema = z.object({
  * LLM configuration schema.
  */
 const llmModelsSchemaShape = Object.fromEntries(
-  LLM_STAGE_KEYS.map((stage) => [stage, z.string().min(1).optional()]),
+  LLM_STAGE_KEYS.map((stage) => [stage, z.string().min(1).optional()])
 ) as Record<(typeof LLM_STAGE_KEYS)[number], z.ZodOptional<z.ZodString>>;
 
 const LLMModelsConfigSchema = z.object(llmModelsSchemaShape).strict();
 
 const stageMaxTokensSchemaShape = Object.fromEntries(
-  LLM_STAGE_KEYS.map((stage) => [stage, z.number().int().min(256).max(131072).optional()]),
+  LLM_STAGE_KEYS.map((stage) => [stage, z.number().int().min(256).max(131072).optional()])
 ) as Record<(typeof LLM_STAGE_KEYS)[number], z.ZodOptional<z.ZodNumber>>;
 
 const StageMaxTokensConfigSchema = z.object(stageMaxTokensSchemaShape).strict();

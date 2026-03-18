@@ -60,7 +60,7 @@ function requireParentKernels(parentKernels: unknown): readonly EvaluatedKernel[
 }
 
 export function createKernelEvolutionService(
-  deps: KernelEvolutionServiceDeps = defaultDeps,
+  deps: KernelEvolutionServiceDeps = defaultDeps
 ): KernelEvolutionService {
   return {
     async evolveKernels(input: EvolveKernelsInput): Promise<EvolveKernelsResult> {
@@ -72,11 +72,7 @@ export function createKernelEvolutionService(
       const evolution: KernelEvolutionResult = await runGenerationStage(
         onGenerationStage,
         'EVOLVING_KERNELS',
-        () =>
-          deps.evolveKernels(
-            { parentKernels, userSeeds },
-            apiKey,
-          ),
+        () => deps.evolveKernels({ parentKernels, userSeeds }, apiKey)
       );
 
       const evaluation: KernelEvaluationResult = await runGenerationStage(
@@ -91,8 +87,8 @@ export function createKernelEvolutionService(
                 ...userSeeds,
               },
             },
-            apiKey,
-          ),
+            apiKey
+          )
       );
 
       return {

@@ -15,7 +15,11 @@ export interface CharKernelGenerationResult {
 
 function parseCharKernelResponse(parsed: unknown): CharacterKernel {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError('Character kernel response must be an object', 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      'Character kernel response must be an object',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   const data = parsed as Record<string, unknown>;
@@ -36,10 +40,7 @@ function parseCharKernelResponse(parsed: unknown): CharacterKernel {
     );
   }
 
-  if (
-    !Array.isArray(data['immediateObjectives']) ||
-    data['immediateObjectives'].length === 0
-  ) {
+  if (!Array.isArray(data['immediateObjectives']) || data['immediateObjectives'].length === 0) {
     throw new LLMError(
       'Character kernel response missing or empty immediateObjectives',
       'STRUCTURE_PARSE_ERROR',

@@ -45,9 +45,7 @@ export interface SceneIdeatorContinuationContext {
   readonly protagonistGuidance?: ProtagonistGuidance;
 }
 
-export type SceneIdeatorContext =
-  | SceneIdeatorOpeningContext
-  | SceneIdeatorContinuationContext;
+export type SceneIdeatorContext = SceneIdeatorOpeningContext | SceneIdeatorContinuationContext;
 
 export interface SceneIdeationResult {
   readonly options: readonly SceneDirectionOption[];

@@ -29,7 +29,7 @@ function responseWithMessageContent(content: string): Response {
 function createEvolvedSeed(
   index: number,
   genreFrame: GenreFrame,
-  conflictAxis: ConflictAxis,
+  conflictAxis: ConflictAxis
 ): ConceptSeedFields {
   return {
     ...createConceptSeedFixture(index),
@@ -41,7 +41,7 @@ function createEvolvedSeed(
 
 function expectCompletedStage(
   event: { stage: string; status: string; attempt: number; durationMs?: number },
-  stage: string,
+  stage: string
 ): void {
   expect(event).toMatchObject({ stage, status: 'completed', attempt: 1 });
   expect(typeof event.durationMs).toBe('number');
@@ -76,7 +76,12 @@ describe('Evolution Pipeline Integration', () => {
 
   it('runs evolve -> evaluate -> verify through real service orchestration', async () => {
     const service = createEvolutionService();
-    const stageEvents: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+    const stageEvents: Array<{
+      stage: string;
+      status: string;
+      attempt: number;
+      durationMs?: number;
+    }> = [];
 
     const evolverSeederPayload = {
       concepts: [
@@ -90,7 +95,9 @@ describe('Evolution Pipeline Integration', () => {
     };
 
     const architectPayload = {
-      concepts: Array.from({ length: 6 }, (_, index) => createConceptCharacterWorldFixture(index + 1)),
+      concepts: Array.from({ length: 6 }, (_, index) =>
+        createConceptCharacterWorldFixture(index + 1)
+      ),
     };
     const engineerPayload = {
       concepts: Array.from({ length: 6 }, (_, index) => createConceptEngineFixture(index + 1)),
@@ -188,15 +195,31 @@ describe('Evolution Pipeline Integration', () => {
     expect(verifierMessages).toContain('Strength 1');
 
     expect(stageEvents).toHaveLength(10);
-    expect(stageEvents[0]).toEqual({ stage: 'SEEDING_EVOLVED_CONCEPTS', status: 'started', attempt: 1 });
+    expect(stageEvents[0]).toEqual({
+      stage: 'SEEDING_EVOLVED_CONCEPTS',
+      status: 'started',
+      attempt: 1,
+    });
     expectCompletedStage(stageEvents[1]!, 'SEEDING_EVOLVED_CONCEPTS');
-    expect(stageEvents[2]).toEqual({ stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 });
+    expect(stageEvents[2]).toEqual({
+      stage: 'ARCHITECTING_CONCEPTS',
+      status: 'started',
+      attempt: 1,
+    });
     expectCompletedStage(stageEvents[3]!, 'ARCHITECTING_CONCEPTS');
-    expect(stageEvents[4]).toEqual({ stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 });
+    expect(stageEvents[4]).toEqual({
+      stage: 'ENGINEERING_CONCEPTS',
+      status: 'started',
+      attempt: 1,
+    });
     expectCompletedStage(stageEvents[5]!, 'ENGINEERING_CONCEPTS');
     expect(stageEvents[6]).toEqual({ stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 });
     expectCompletedStage(stageEvents[7]!, 'EVALUATING_CONCEPTS');
-    expect(stageEvents[8]).toEqual({ stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 });
+    expect(stageEvents[8]).toEqual({
+      stage: 'ANALYZING_SPECIFICITY',
+      status: 'started',
+      attempt: 1,
+    });
     expectCompletedStage(stageEvents[9]!, 'ANALYZING_SPECIFICITY');
   });
 });

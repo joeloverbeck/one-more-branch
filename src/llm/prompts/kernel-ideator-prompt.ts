@@ -98,12 +98,14 @@ dramaticStance IRONIC describes philosophical worldview (subversive/deconstructi
     if (sparkLine) mandateParts.push(`Spark Line: ${sparkLine}`);
 
     userSections.push(
-      `USER CREATIVE MANDATE (every kernel MUST honor ALL of the following):\n${mandateParts.join('\n')}\nThese are non-negotiable. Every kernel must centrally reflect all listed seeds, though HOW each manifests dramatically may differ across kernels. Diversity comes from different dramatic propositions, conflict domains, and value spectrums — not from distributing or ignoring user seeds.`,
+      `USER CREATIVE MANDATE (every kernel MUST honor ALL of the following):\n${mandateParts.join('\n')}\nThese are non-negotiable. Every kernel must centrally reflect all listed seeds, though HOW each manifests dramatically may differ across kernels. Diversity comes from different dramatic propositions, conflict domains, and value spectrums — not from distributing or ignoring user seeds.`
     );
   }
 
   if (!hasAnySeeds) {
-    userSections.push('No seeds were provided. Derive kernels from universal human themes and conflicts.');
+    userSections.push(
+      'No seeds were provided. Derive kernels from universal human themes and conflicts.'
+    );
   }
 
   userSections.push(

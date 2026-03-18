@@ -3,8 +3,8 @@ import type { DecomposedWorld, WorldFact } from '../../../../models/decomposed-w
 function sortByWeight(facts: readonly WorldFact[]): WorldFact[] {
   const order: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
   return [...facts].sort((a, b) => {
-    const aw = a.narrativeWeight ? order[a.narrativeWeight] ?? 1 : 1;
-    const bw = b.narrativeWeight ? order[b.narrativeWeight] ?? 1 : 1;
+    const aw = a.narrativeWeight ? (order[a.narrativeWeight] ?? 1) : 1;
+    const bw = b.narrativeWeight ? (order[b.narrativeWeight] ?? 1) : 1;
     return aw - bw;
   });
 }
@@ -64,8 +64,8 @@ export function buildWorldSectionForSpine(world: DecomposedWorld): string {
       (f) =>
         f.narrativeWeight === 'HIGH' ||
         hasStoryFunction(f, 'EPIC', 'DRAMATIC') ||
-        hasFactType(f, 'LAW', 'MYSTERY'),
-    ),
+        hasFactType(f, 'LAW', 'MYSTERY')
+    )
   );
 
   if (highWeight.length > 0) {
@@ -75,7 +75,7 @@ export function buildWorldSectionForSpine(world: DecomposedWorld): string {
   }
 
   const faultLines = world.facts.filter(
-    (f) => hasFactType(f, 'DISPUTED', 'TABOO') || hasStoryFunction(f, 'DRAMATIC', 'EPISTEMIC'),
+    (f) => hasFactType(f, 'DISPUTED', 'TABOO') || hasStoryFunction(f, 'DRAMATIC', 'EPISTEMIC')
   );
   if (faultLines.length > 0) {
     sections.push('[FAULT LINES & TENSIONS]');
@@ -112,8 +112,8 @@ export function buildWorldSectionForCharacterWeb(world: DecomposedWorld): string
     world.facts.filter(
       (f) =>
         hasDomain(f, 'society', 'governance', 'faction', 'economy', 'culture') ||
-        hasFactType(f, 'NORM', 'LAW', 'PRACTICE', 'TABOO'),
-    ),
+        hasFactType(f, 'NORM', 'LAW', 'PRACTICE', 'TABOO')
+    )
   );
 
   if (socialFacts.length > 0) {
@@ -150,8 +150,8 @@ export function buildWorldSectionForCharacterDev(world: DecomposedWorld): string
     world.facts.filter(
       (f) =>
         hasDomain(f, 'society', 'culture', 'religion', 'language', 'governance') ||
-        hasFactType(f, 'NORM', 'PRACTICE', 'TABOO', 'BELIEF'),
-    ),
+        hasFactType(f, 'NORM', 'PRACTICE', 'TABOO', 'BELIEF')
+    )
   );
 
   if (relevantFacts.length > 0) {

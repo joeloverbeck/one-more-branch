@@ -23,7 +23,10 @@ import {
 } from './prompts/index.js';
 import { withRetry } from './retry.js';
 import type { StateAccountantGenerationResult } from './accountant-types.js';
-import type { StructureEvaluatorContext, StructureEvaluatorResult } from './structure-evaluator-types.js';
+import type {
+  StructureEvaluatorContext,
+  StructureEvaluatorResult,
+} from './structure-evaluator-types.js';
 import type { PromiseTrackerContext, PromiseTrackerResult } from './promise-tracker-types.js';
 import type { ProseQualityContext, ProseQualityResult } from './prose-quality-types.js';
 import type { NpcIntelligenceContext, NpcIntelligenceResult } from './npc-intelligence-types.js';

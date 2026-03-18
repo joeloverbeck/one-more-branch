@@ -31,7 +31,8 @@ export const CHAR_AGENCY_GENERATION_SCHEMA: JsonSchema = {
               enum: ['LOW', 'MEDIUM', 'HIGH'],
             },
           ],
-          description: 'How strongly the character\'s emotional state steers moment-to-moment decisions.',
+          description:
+            "How strongly the character's emotional state steers moment-to-moment decisions.",
         },
         coreBeliefs: {
           type: 'array',
@@ -40,22 +41,25 @@ export const CHAR_AGENCY_GENERATION_SCHEMA: JsonSchema = {
         },
         desires: {
           type: 'array',
-          description: 'The enduring wants that shape the character\'s behavior.',
+          description: "The enduring wants that shape the character's behavior.",
           items: { type: 'string' },
         },
         currentIntentions: {
           type: 'array',
-          description: 'The near-term actions or pursuits the character is actively trying to carry out.',
+          description:
+            'The near-term actions or pursuits the character is actively trying to carry out.',
           items: { type: 'string' },
         },
         falseBeliefs: {
           type: 'array',
-          description: 'Incorrect assumptions, blind spots, or misreadings that create dramatic friction.',
+          description:
+            'Incorrect assumptions, blind spots, or misreadings that create dramatic friction.',
           items: { type: 'string' },
         },
         decisionPattern: {
           type: 'string',
-          description: 'A concise explanation of how the character typically makes decisions under pressure.',
+          description:
+            'A concise explanation of how the character typically makes decisions under pressure.',
         },
         focalizationFilter: {
           type: 'object',

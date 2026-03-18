@@ -3,7 +3,11 @@ import { ChoiceType, PrimaryDelta } from '../../../../src/models/choice-enums';
 
 function makeRawChoices(): { text: string; choiceType: string; primaryDelta: string }[] {
   return [
-    { text: '  Demand an explanation  ', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' },
+    {
+      text: '  Demand an explanation  ',
+      choiceType: 'CONTEST',
+      primaryDelta: 'INFORMATION_STATE_CHANGE',
+    },
     { text: '  Flee the scene  ', choiceType: 'WITHDRAW', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
   ];
 }
@@ -29,7 +33,9 @@ describe('validateChoiceGeneratorResponse', () => {
   });
 
   it('throws on invalid input', () => {
-    const rawJson = { choices: [{ text: 'Go', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' }] };
+    const rawJson = {
+      choices: [{ text: 'Go', choiceType: 'CONTEST', primaryDelta: 'INFORMATION_STATE_CHANGE' }],
+    };
     expect(() => validateChoiceGeneratorResponse(rawJson, '{}')).toThrow();
   });
 

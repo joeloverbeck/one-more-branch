@@ -18,7 +18,10 @@ jest.mock('../../../src/logging/index.js', () => ({
   logResponse: jest.fn(),
 }));
 
-import { parseConceptStressTestResponse, stressTestConcept } from '../../../src/llm/concept-stress-tester';
+import {
+  parseConceptStressTestResponse,
+  stressTestConcept,
+} from '../../../src/llm/concept-stress-tester';
 import { buildConceptStressTesterPrompt } from '../../../src/llm/prompts/concept-stress-tester-prompt';
 import { CONCEPT_STRESS_TEST_SCHEMA } from '../../../src/llm/schemas/concept-stress-tester-schema';
 import type { ConceptSpec, ConceptStressTesterContext } from '../../../src/models';
@@ -215,7 +218,11 @@ describe('concept-stress-tester', () => {
 
     const requestBody = getRequestBody();
     expect(requestBody['response_format']).toEqual(CONCEPT_STRESS_TEST_SCHEMA);
-    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'conceptStressTester', expect.any(Array));
+    expect(mockLogPrompt).toHaveBeenCalledWith(
+      mockLogger,
+      'conceptStressTester',
+      expect.any(Array)
+    );
     expect(mockLogPrompt).toHaveBeenCalledTimes(1);
   });
 
@@ -281,7 +288,9 @@ describe('concept-stress-tester', () => {
     const messages = buildConceptStressTesterPrompt(context);
     const userMessage = messages[1]?.content ?? '';
 
-    expect(userMessage).toContain("Compare each packet's dullCollapse against the verification's genericCollapse");
+    expect(userMessage).toContain(
+      "Compare each packet's dullCollapse against the verification's genericCollapse"
+    );
   });
 
   it('stressTestConcept passes content packets through to prompt builder', async () => {

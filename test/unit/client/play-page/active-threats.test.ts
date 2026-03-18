@@ -38,7 +38,14 @@ describe('active threats panel', () => {
       page: {
         id: 2,
         narrativeText: 'Story continues.',
-        choices: [{ text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 }],
+        choices: [
+          {
+            text: 'Next',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'GOAL_PRIORITY_CHANGE',
+            nextPageId: 3,
+          },
+        ],
         isEnding: false,
         openThreads: [],
         openThreadOverflowSummary: null,
@@ -71,8 +78,18 @@ describe('active threats panel', () => {
   it('renders threats after AJAX choice response', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -96,8 +113,18 @@ describe('active threats panel', () => {
   it('limits to 6 visible items with overflow summary', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -121,8 +148,18 @@ describe('active threats panel', () => {
   it('uses server-provided overflow summary when present', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -143,7 +180,12 @@ describe('active threats panel', () => {
     document.body.innerHTML = buildPlayPageHtml({
       activeThreats: [{ id: 'at-1', text: 'Existing threat' }],
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
       ],
     });
     loadAppAndInit();
@@ -157,8 +199,18 @@ describe('active threats panel', () => {
   it('updates panel in-place on subsequent renders', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -184,8 +236,18 @@ describe('active threats panel', () => {
   it('filters out invalid entries', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -208,8 +270,18 @@ describe('active threats panel', () => {
   it('does not render when no threats in response', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -223,8 +295,18 @@ describe('active threats panel', () => {
   it('applies correct CSS classes', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();

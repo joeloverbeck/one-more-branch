@@ -63,7 +63,11 @@ function getNestedArray(obj: unknown, path: readonly string[]): string[] | undef
   return Array.isArray(current) ? (current as string[]) : undefined;
 }
 
-function setNestedArray(obj: Record<string, unknown>, path: readonly string[], value: string[]): void {
+function setNestedArray(
+  obj: Record<string, unknown>,
+  path: readonly string[],
+  value: string[]
+): void {
   let current: Record<string, unknown> = obj;
   for (let i = 0; i < path.length - 1; i++) {
     const key = path[i]!;

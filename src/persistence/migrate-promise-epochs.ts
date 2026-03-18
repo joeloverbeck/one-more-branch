@@ -12,9 +12,7 @@ export function migratePagePromiseEpochs(
   const promiseAgeEpoch = pageId - 1;
   pageData['promiseAgeEpoch'] = promiseAgeEpoch;
 
-  const promises = pageData['accumulatedPromises'] as
-    | Array<Record<string, unknown>>
-    | undefined;
+  const promises = pageData['accumulatedPromises'] as Array<Record<string, unknown>> | undefined;
   if (!promises) return;
 
   for (const p of promises) {

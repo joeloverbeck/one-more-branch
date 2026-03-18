@@ -7,26 +7,21 @@ describe('MACRO_ARCHITECTURE_SCHEMA', () => {
     expect(MACRO_ARCHITECTURE_SCHEMA.json_schema.strict).toBe(true);
   });
 
-  it('avoids Anthropic-incompatible array cardinality keywords outside setpieceBank', () => {
+  it('avoids Anthropic-incompatible array cardinality keywords', () => {
     const schema = MACRO_ARCHITECTURE_SCHEMA.json_schema.schema as {
       properties: Record<string, unknown>;
     };
 
-    // setpieceBank intentionally uses minItems/maxItems to enforce exactly 6 items
-    const { setpieceBank: _setpieceBank, ...otherProperties } = schema.properties;
-    void _setpieceBank;
-    const otherSchemaStr = JSON.stringify(otherProperties);
+    const schemaStr = JSON.stringify(schema.properties);
 
-    expect(otherSchemaStr).not.toMatch(/"minItems":\s*[2-9]/);
-    expect(otherSchemaStr).not.toMatch(/"maxItems"/);
+    expect(schemaStr).not.toMatch(/"minItems":\s*[2-9]/);
+    expect(schemaStr).not.toMatch(/"maxItems"/);
 
-    // Verify setpieceBank enforces exactly 6 items
+    // Verify setpieceBank enforces count via description (prompt-level enforcement)
     const setpieceBankSchema = schema.properties['setpieceBank'] as {
-      minItems: number;
-      maxItems: number;
+      description: string;
     };
-    expect(setpieceBankSchema.minItems).toBe(6);
-    expect(setpieceBankSchema.maxItems).toBe(6);
+    expect(setpieceBankSchema.description).toMatch(/6/);
   });
 
   it('requires the macro contract fields and forbids extra properties', () => {

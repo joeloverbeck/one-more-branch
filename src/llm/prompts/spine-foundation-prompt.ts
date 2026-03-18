@@ -60,7 +60,7 @@ function buildKernelGrounding(context: SpinePromptContext): string {
 
   const k = context.storyKernel;
   const lines: string[] = [
-    'THEMATIC KERNEL (the spine\'s philosophical foundation):',
+    "THEMATIC KERNEL (the spine's philosophical foundation):",
     `Dramatic thesis: ${k.dramaticThesis}`,
     `Antithesis: ${k.antithesis}`,
     `Value at stake: ${k.valueAtStake}`,
@@ -69,7 +69,7 @@ function buildKernelGrounding(context: SpinePromptContext): string {
     `Dramatic stance: ${k.dramaticStance}`,
     `Thematic question: ${k.thematicQuestion}`,
     '',
-    'CONSTRAINT: The thematicPremise should operationalize the kernel\'s dramaticThesis.',
+    "CONSTRAINT: The thematicPremise should operationalize the kernel's dramaticThesis.",
     'When kernel specifies conflictAxis, ALL foundations MUST use that exact value.',
   ];
 

@@ -61,9 +61,7 @@ function buildCastKernelSection(storyKernel?: StoryKernel): string {
 export function buildCharacterWebPrompt(context: CharacterWebPromptContext): ChatMessage[] {
   const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, DESIGN_GUIDELINES];
 
-  const userSections: string[] = [
-    'Generate a character web for the following story setup.',
-  ];
+  const userSections: string[] = ['Generate a character web for the following story setup.'];
 
   const conceptSection = buildCastConceptSection(context.conceptSpec);
   const kernelSection = buildCastKernelSection(context.storyKernel);
@@ -87,7 +85,9 @@ export function buildCharacterWebPrompt(context: CharacterWebPromptContext): Cha
       : '';
 
   if (worldSection.length > 0) {
-    userSections.push(`${worldSection}\n\nCONSTRAINT: Ground character names, social positions, and occupations in the worldbuilding. Use world facts to determine what kinds of characters are plausible and what roles exist in this setting.`);
+    userSections.push(
+      `${worldSection}\n\nCONSTRAINT: Ground character names, social positions, and occupations in the worldbuilding. Use world facts to determine what kinds of characters are plausible and what roles exist in this setting.`
+    );
   }
 
   if (context.userNotes) {

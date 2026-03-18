@@ -21,7 +21,10 @@ import {
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import { createStory } from '../../../src/models/story';
 import { createInitialVersionedStructure } from '../../../src/models/structure-version';
-import { createMilestoneDeviation, createInitialStructureState } from '../../../src/models/story-arc';
+import {
+  createMilestoneDeviation,
+  createInitialStructureState,
+} from '../../../src/models/story-arc';
 
 function createGenerationResult(): StructureGenerationResult {
   return {
@@ -205,7 +208,9 @@ describe('structure modules integration', () => {
 
       expect(childState).not.toBe(parentState);
       expect(childState.currentMilestoneIndex).toBe(1);
-      expect(childState.milestoneProgressions.find((p) => p.milestoneId === '1.1')?.status).toBe('concluded');
+      expect(childState.milestoneProgressions.find((p) => p.milestoneId === '1.1')?.status).toBe(
+        'concluded'
+      );
 
       // Grandchild page without milestone conclusion inherits state
       const grandchildState = applyStructureProgression(structure, childState, false, '');
@@ -251,7 +256,11 @@ describe('structure modules integration', () => {
           expect(indices).not.toBeNull();
 
           // Verify indices point to correct milestone
-          const retrievedBeat = getMilestoneOrThrow(structure, indices!.actIndex, indices!.milestoneIndex);
+          const retrievedBeat = getMilestoneOrThrow(
+            structure,
+            indices!.actIndex,
+            indices!.milestoneIndex
+          );
           expect(retrievedBeat.id).toBe(milestone.id);
         }
       }

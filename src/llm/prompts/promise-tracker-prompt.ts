@@ -82,9 +82,7 @@ function buildPremisePromiseSection(context: PromiseTrackerContext): string {
     return '';
   }
 
-  const fulfilled = new Set(
-    context.fulfilledPremisePromises.map((promise) => promise.trim())
-  );
+  const fulfilled = new Set(context.fulfilledPremisePromises.map((promise) => promise.trim()));
   const pending = allPromises.filter((promise) => !fulfilled.has(promise.trim()));
 
   const lines = ['PREMISE PROMISE TRACKING:'];

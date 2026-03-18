@@ -73,7 +73,7 @@ function createContentPacketFixture(index = 1): ContentPacket {
 function createContext(count = 2): ConceptVerifierContext {
   return {
     evaluatedConcepts: Array.from({ length: count }, (_, i) =>
-      createEvaluatedConceptFixture(i + 1),
+      createEvaluatedConceptFixture(i + 1)
     ),
     kernel: createStoryKernel(),
   };
@@ -146,17 +146,17 @@ function createScenarioData(index = 1): {
   };
 }
 
-function createValidSpecificityPayload(
-  count = 2,
-): { specificityAnalyses: ReturnType<typeof createSpecificityData>[] } {
+function createValidSpecificityPayload(count = 2): {
+  specificityAnalyses: ReturnType<typeof createSpecificityData>[];
+} {
   return {
     specificityAnalyses: Array.from({ length: count }, (_, i) => createSpecificityData(i + 1)),
   };
 }
 
-function createValidScenarioPayload(
-  count = 2,
-): { scenarioAnalyses: ReturnType<typeof createScenarioData>[] } {
+function createValidScenarioPayload(count = 2): {
+  scenarioAnalyses: ReturnType<typeof createScenarioData>[];
+} {
   return {
     scenarioAnalyses: Array.from({ length: count }, (_, i) => createScenarioData(i + 1)),
   };
@@ -230,32 +230,32 @@ describe('concept-verifier', () => {
 
     it('rejects non-object response', () => {
       expect(() => parseConceptSpecificityResponse('invalid', expectedIds(1))).toThrow(
-        'must be an object',
+        'must be an object'
       );
     });
 
     it('rejects null response', () => {
       expect(() => parseConceptSpecificityResponse(null, expectedIds(1))).toThrow(
-        'must be an object',
+        'must be an object'
       );
     });
 
     it('rejects missing specificityAnalyses array', () => {
       expect(() => parseConceptSpecificityResponse({}, expectedIds(1))).toThrow(
-        'missing specificityAnalyses array',
+        'missing specificityAnalyses array'
       );
     });
 
     it('rejects count mismatch', () => {
       const payload = createValidSpecificityPayload(2);
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(3))).toThrow(
-        'exactly 3 items (received: 2)',
+        'exactly 3 items (received: 2)'
       );
     });
 
     it('rejects non-object analysis item', () => {
       expect(() =>
-        parseConceptSpecificityResponse({ specificityAnalyses: ['bad'] }, expectedIds(1)),
+        parseConceptSpecificityResponse({ specificityAnalyses: ['bad'] }, expectedIds(1))
       ).toThrow('Specificity 1 must be an object');
     });
 
@@ -264,7 +264,7 @@ describe('concept-verifier', () => {
       delete (payload.specificityAnalyses[0] as Record<string, unknown>)['conceptId'];
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'invalid conceptId',
+        'invalid conceptId'
       );
     });
 
@@ -273,7 +273,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].conceptId = '   ';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'invalid conceptId',
+        'invalid conceptId'
       );
     });
 
@@ -282,7 +282,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].conceptId = 'concept_999';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'concept set does not match requested candidates',
+        'concept set does not match requested candidates'
       );
     });
 
@@ -291,7 +291,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[1].conceptId = 'concept_1';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(2))).toThrow(
-        'duplicate conceptIds',
+        'duplicate conceptIds'
       );
     });
 
@@ -300,7 +300,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].signatureScenario = '   ';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'invalid signatureScenario',
+        'invalid signatureScenario'
       );
     });
 
@@ -309,7 +309,7 @@ describe('concept-verifier', () => {
       (payload.specificityAnalyses[0] as Record<string, unknown>)['loglineCompressible'] = 'yes';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'invalid loglineCompressible',
+        'invalid loglineCompressible'
       );
     });
 
@@ -318,7 +318,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].logline = '  ';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'invalid logline',
+        'invalid logline'
       );
     });
 
@@ -328,7 +328,7 @@ describe('concept-verifier', () => {
         'One two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty twentyone twentytwo twentythree twentyfour twentyfive twentysix twentyseven twentyeight twentynine thirty thirtyone thirtytwo thirtythree thirtyfour thirtyfive thirtysix';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'logline must be 35 words or fewer',
+        'logline must be 35 words or fewer'
       );
     });
 
@@ -337,7 +337,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].inevitabilityStatement = '';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'invalid inevitabilityStatement',
+        'invalid inevitabilityStatement'
       );
     });
 
@@ -346,7 +346,7 @@ describe('concept-verifier', () => {
       delete (payload.specificityAnalyses[0] as Record<string, unknown>)['premisePromises'];
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'premisePromises must be an array',
+        'premisePromises must be an array'
       );
     });
 
@@ -355,7 +355,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].premisePromises = ['one'];
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'premisePromises must have 2-7 items',
+        'premisePromises must have 2-7 items'
       );
     });
 
@@ -364,7 +364,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].premisePromises = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'premisePromises must have 2-7 items',
+        'premisePromises must have 2-7 items'
       );
     });
 
@@ -373,7 +373,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].premisePromises[1] = '   ';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'invalid premisePromises[1]',
+        'invalid premisePromises[1]'
       );
     });
 
@@ -391,7 +391,7 @@ describe('concept-verifier', () => {
         'yes';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'loadBearingCheck has invalid passes',
+        'loadBearingCheck has invalid passes'
       );
     });
 
@@ -400,7 +400,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].loadBearingCheck.reasoning = '';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'invalid reasoning',
+        'invalid reasoning'
       );
     });
 
@@ -409,7 +409,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].loadBearingCheck.genericCollapse = '  ';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'invalid genericCollapse',
+        'invalid genericCollapse'
       );
     });
 
@@ -418,7 +418,7 @@ describe('concept-verifier', () => {
       (payload.specificityAnalyses[0] as Record<string, unknown>)['loadBearingCheck'] = 'bad';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'loadBearingCheck must be an object',
+        'loadBearingCheck must be an object'
       );
     });
 
@@ -435,7 +435,7 @@ describe('concept-verifier', () => {
       (payload.specificityAnalyses[0] as Record<string, unknown>)['kernelFidelityCheck'] = 'bad';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'kernelFidelityCheck must be an object',
+        'kernelFidelityCheck must be an object'
       );
     });
 
@@ -445,7 +445,7 @@ describe('concept-verifier', () => {
         'yes';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'kernelFidelityCheck has invalid passes',
+        'kernelFidelityCheck has invalid passes'
       );
     });
 
@@ -454,7 +454,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].kernelFidelityCheck.reasoning = '';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'invalid reasoning',
+        'invalid reasoning'
       );
     });
 
@@ -463,7 +463,7 @@ describe('concept-verifier', () => {
       payload.specificityAnalyses[0].kernelFidelityCheck.kernelDrift = '  ';
 
       expect(() => parseConceptSpecificityResponse(payload, expectedIds(1))).toThrow(
-        'invalid kernelDrift',
+        'invalid kernelDrift'
       );
     });
 
@@ -526,13 +526,13 @@ describe('concept-verifier', () => {
 
     it('rejects non-object response', () => {
       expect(() => parseConceptScenarioResponse('invalid', expectedIds(1))).toThrow(
-        'must be an object',
+        'must be an object'
       );
     });
 
     it('rejects missing scenarioAnalyses array', () => {
       expect(() => parseConceptScenarioResponse({}, expectedIds(1))).toThrow(
-        'missing scenarioAnalyses array',
+        'missing scenarioAnalyses array'
       );
     });
 
@@ -541,7 +541,7 @@ describe('concept-verifier', () => {
       (payload.scenarioAnalyses[0] as Record<string, unknown>)['escalatingSetpieces'] = 'not-array';
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'escalatingSetpieces must be an array',
+        'escalatingSetpieces must be an array'
       );
     });
 
@@ -550,18 +550,26 @@ describe('concept-verifier', () => {
       payload.scenarioAnalyses[0].escalatingSetpieces = ['a', 'b'];
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'escalatingSetpieces must have 3-8 items (received: 2)',
+        'escalatingSetpieces must have 3-8 items (received: 2)'
       );
     });
 
     it('rejects too many setpieces', () => {
       const payload = createValidScenarioPayload(1);
       payload.scenarioAnalyses[0].escalatingSetpieces = [
-        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
+        'a',
+        'b',
+        'c',
+        'd',
+        'e',
+        'f',
+        'g',
+        'h',
+        'i',
       ];
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'escalatingSetpieces must have 3-8 items (received: 9)',
+        'escalatingSetpieces must have 3-8 items (received: 9)'
       );
     });
 
@@ -570,7 +578,7 @@ describe('concept-verifier', () => {
       (payload.scenarioAnalyses[0] as Record<string, unknown>)['setpieceCausalChainBroken'] = 'no';
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'invalid setpieceCausalChainBroken',
+        'invalid setpieceCausalChainBroken'
       );
     });
 
@@ -579,7 +587,7 @@ describe('concept-verifier', () => {
       (payload.scenarioAnalyses[0] as Record<string, unknown>)['setpieceCausalLinks'] = 'broken';
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'setpieceCausalLinks must be an array',
+        'setpieceCausalLinks must be an array'
       );
     });
 
@@ -588,18 +596,25 @@ describe('concept-verifier', () => {
       payload.scenarioAnalyses[0].setpieceCausalLinks = ['1->2'];
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'setpieceCausalLinks must have 2-7 items (received: 1)',
+        'setpieceCausalLinks must have 2-7 items (received: 1)'
       );
     });
 
     it('rejects too many setpieceCausalLinks', () => {
       const payload = createValidScenarioPayload(1);
       payload.scenarioAnalyses[0].setpieceCausalLinks = [
-        '1->2', '2->3', '3->4', '4->5', '5->6', '6->7', '7->8', '8->9',
+        '1->2',
+        '2->3',
+        '3->4',
+        '4->5',
+        '5->6',
+        '6->7',
+        '7->8',
+        '8->9',
       ];
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'setpieceCausalLinks must have 2-7 items (received: 8)',
+        'setpieceCausalLinks must have 2-7 items (received: 8)'
       );
     });
 
@@ -608,7 +623,7 @@ describe('concept-verifier', () => {
       payload.scenarioAnalyses[0].setpieceCausalLinks[3] = '   ';
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'invalid setpieceCausalLinks[3]',
+        'invalid setpieceCausalLinks[3]'
       );
     });
 
@@ -617,7 +632,7 @@ describe('concept-verifier', () => {
       payload.scenarioAnalyses[0].escalatingSetpieces[2] = '  ';
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'invalid escalatingSetpieces[2]',
+        'invalid escalatingSetpieces[2]'
       );
     });
 
@@ -626,7 +641,7 @@ describe('concept-verifier', () => {
       (payload.scenarioAnalyses[0] as Record<string, unknown>)['conceptIntegrityScore'] = 'high';
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'invalid conceptIntegrityScore',
+        'invalid conceptIntegrityScore'
       );
     });
 
@@ -635,7 +650,7 @@ describe('concept-verifier', () => {
       payload.scenarioAnalyses[0].conceptIntegrityScore = NaN;
 
       expect(() => parseConceptScenarioResponse(payload, expectedIds(1))).toThrow(
-        'invalid conceptIntegrityScore',
+        'invalid conceptIntegrityScore'
       );
     });
   });
@@ -646,12 +661,8 @@ describe('concept-verifier', () => {
       const scenarioPayload = createValidScenarioPayload(2);
 
       fetchMock
-        .mockResolvedValueOnce(
-          responseWithMessageContent(JSON.stringify(specificityPayload)),
-        )
-        .mockResolvedValueOnce(
-          responseWithMessageContent(JSON.stringify(scenarioPayload)),
-        );
+        .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(specificityPayload)))
+        .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(scenarioPayload)));
 
       const result = await verifyConcepts(createContext(2), 'test-api-key');
 
@@ -664,13 +675,9 @@ describe('concept-verifier', () => {
       expect(mockLogPrompt).toHaveBeenCalledWith(
         mockLogger,
         'conceptSpecificity',
-        expect.any(Array),
+        expect.any(Array)
       );
-      expect(mockLogPrompt).toHaveBeenCalledWith(
-        mockLogger,
-        'conceptScenario',
-        expect.any(Array),
-      );
+      expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'conceptScenario', expect.any(Array));
       expect(mockLogPrompt).toHaveBeenCalledTimes(2);
     });
 
@@ -679,12 +686,8 @@ describe('concept-verifier', () => {
       const scenarioPayload = createValidScenarioPayload(2);
 
       fetchMock
-        .mockResolvedValueOnce(
-          responseWithMessageContent(JSON.stringify(specificityPayload)),
-        )
-        .mockResolvedValueOnce(
-          responseWithMessageContent(JSON.stringify(scenarioPayload)),
-        );
+        .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(specificityPayload)))
+        .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(scenarioPayload)));
 
       const context: ConceptVerifierContext = {
         ...createContext(2),
@@ -696,16 +699,16 @@ describe('concept-verifier', () => {
       expect(result.verifications).toHaveLength(2);
       expect(fetchMock).toHaveBeenCalledTimes(2);
 
-      const firstCallBody = JSON.parse(
-        (fetchMock.mock.calls[0][1] as { body: string }).body,
-      ) as { messages: Array<{ content: string }> };
+      const firstCallBody = JSON.parse((fetchMock.mock.calls[0][1] as { body: string }).body) as {
+        messages: Array<{ content: string }>;
+      };
       const firstSystemMessage = firstCallBody.messages[0].content;
       expect(firstSystemMessage).toContain('CONTENT PACKET INVARIANT-REMOVAL TEST');
       expect(firstSystemMessage).toContain('Wildness invariant 1');
 
-      const secondCallBody = JSON.parse(
-        (fetchMock.mock.calls[1][1] as { body: string }).body,
-      ) as { messages: Array<{ content: string }> };
+      const secondCallBody = JSON.parse((fetchMock.mock.calls[1][1] as { body: string }).body) as {
+        messages: Array<{ content: string }>;
+      };
       const secondSystemMessage = secondCallBody.messages[0].content;
       expect(secondSystemMessage).toContain('CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS');
       expect(secondSystemMessage).toContain('Signature image 1');
@@ -716,29 +719,27 @@ describe('concept-verifier', () => {
       const scenarioPayload = createValidScenarioPayload(2);
 
       fetchMock
-        .mockResolvedValueOnce(
-          responseWithMessageContent(JSON.stringify(specificityPayload)),
-        )
-        .mockResolvedValueOnce(
-          responseWithMessageContent(JSON.stringify(scenarioPayload)),
-        );
+        .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(specificityPayload)))
+        .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(scenarioPayload)));
 
       const result = await verifyConcepts(createContext(2), 'test-api-key');
 
       expect(result.verifications).toHaveLength(2);
       expect(fetchMock).toHaveBeenCalledTimes(2);
 
-      const firstCallBody = JSON.parse(
-        (fetchMock.mock.calls[0][1] as { body: string }).body,
-      ) as { messages: Array<{ content: string }> };
+      const firstCallBody = JSON.parse((fetchMock.mock.calls[0][1] as { body: string }).body) as {
+        messages: Array<{ content: string }>;
+      };
       const firstSystemMessage = firstCallBody.messages[0].content;
       expect(firstSystemMessage).not.toContain('CONTENT PACKET INVARIANT-REMOVAL TEST');
 
-      const secondCallBody = JSON.parse(
-        (fetchMock.mock.calls[1][1] as { body: string }).body,
-      ) as { messages: Array<{ content: string }> };
+      const secondCallBody = JSON.parse((fetchMock.mock.calls[1][1] as { body: string }).body) as {
+        messages: Array<{ content: string }>;
+      };
       const secondSystemMessage = secondCallBody.messages[0].content;
-      expect(secondSystemMessage).not.toContain('CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS');
+      expect(secondSystemMessage).not.toContain(
+        'CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS'
+      );
     });
   });
 

@@ -55,7 +55,7 @@ function createSeeds(count: number): Array<ReturnType<typeof createConceptSeedFi
 }
 
 function createCharacterWorlds(
-  count: number,
+  count: number
 ): Array<ReturnType<typeof createConceptCharacterWorldFixture>> {
   return Array.from({ length: count }, (_, i) => createConceptCharacterWorldFixture(i + 1));
 }
@@ -155,7 +155,7 @@ describe('concept-evolver', () => {
           contentPreferences: context.contentPreferences,
         },
         'test-api-key',
-        undefined,
+        undefined
       );
     });
 
@@ -181,7 +181,7 @@ describe('concept-evolver', () => {
           contentPreferences: context.contentPreferences,
         },
         'test-api-key',
-        undefined,
+        undefined
       );
     });
 
@@ -218,7 +218,10 @@ describe('concept-evolver', () => {
     });
 
     it('passes contentPackets to architect and engineer contexts', async () => {
-      const packets = [createContentPacketFixture('content_1'), createContentPacketFixture('content_2')];
+      const packets = [
+        createContentPacketFixture('content_1'),
+        createContentPacketFixture('content_2'),
+      ];
       const context: ConceptEvolverContext = {
         ...createContext(),
         contentPackets: packets,
@@ -236,12 +239,12 @@ describe('concept-evolver', () => {
       expect(mockGenerateCharacterWorlds).toHaveBeenCalledWith(
         expect.objectContaining({ contentPackets: packets }),
         'test-api-key',
-        undefined,
+        undefined
       );
       expect(mockGenerateEngines).toHaveBeenCalledWith(
         expect.objectContaining({ contentPackets: packets }),
         'test-api-key',
-        undefined,
+        undefined
       );
     });
 
@@ -261,7 +264,7 @@ describe('concept-evolver', () => {
       expect(mockGenerateCharacterWorlds).toHaveBeenCalledWith(
         expect.objectContaining({ contentPackets: undefined }),
         'test-api-key',
-        undefined,
+        undefined
       );
     });
   });

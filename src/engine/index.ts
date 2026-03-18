@@ -12,7 +12,12 @@ export {
   getStoryStats,
 } from './story-service';
 
-export { generatePage, generateFirstPage, generateNextPage, getOrGeneratePage } from './page-service';
+export {
+  generatePage,
+  generateFirstPage,
+  generateNextPage,
+  getOrGeneratePage,
+} from './page-service';
 export type { GeneratePageContinuationParams } from './page-service';
 
 // NPC agenda resolution pipeline
@@ -20,7 +25,10 @@ export { resolveNpcAgendas } from './npc-agenda-pipeline';
 export type { NpcAgendaContext } from './npc-agenda-pipeline';
 
 // Lorekeeper + writer pipeline
-export { createWriterWithLorekeeper, createContinuationWriterWithLorekeeper } from './lorekeeper-writer-pipeline';
+export {
+  createWriterWithLorekeeper,
+  createContinuationWriterWithLorekeeper,
+} from './lorekeeper-writer-pipeline';
 export type {
   WriterWithLorekeeperContext,
   OpeningWriterContext,
@@ -35,8 +43,17 @@ export { collectRecapSummaries } from './recap-collector';
 export type { RecapEntry } from './recap-collector';
 
 // Page building
-export { buildPage, buildFirstPage, buildContinuationPage, createEmptyStructureContext } from './page-builder';
-export type { PageBuildContext, FirstPageBuildContext, ContinuationPageBuildContext } from './page-builder';
+export {
+  buildPage,
+  buildFirstPage,
+  buildContinuationPage,
+  createEmptyStructureContext,
+} from './page-builder';
+export type {
+  PageBuildContext,
+  FirstPageBuildContext,
+  ContinuationPageBuildContext,
+} from './page-builder';
 export {
   computeAccumulatedKnowledgeState,
   computeNarrativeStateLifecycle,
@@ -73,7 +90,11 @@ export type { DeviationContext, DeviationHandlingResult } from './deviation-hand
 export type { StructureProgressionResult, StructureGenerationResult } from './structure-types';
 
 // Milestone utilities
-export { parseMilestoneIndices, getMilestoneOrThrow, upsertMilestoneProgression } from './milestone-utils';
+export {
+  parseMilestoneIndices,
+  getMilestoneOrThrow,
+  upsertMilestoneProgression,
+} from './milestone-utils';
 
 // Structure factory
 export {
@@ -84,10 +105,7 @@ export {
 } from './structure-factory';
 
 // Structure state machine
-export {
-  advanceStructureState,
-  applyStructureProgression,
-} from './structure-state';
+export { advanceStructureState, applyStructureProgression } from './structure-state';
 
 // Structure rewrite support
 export {

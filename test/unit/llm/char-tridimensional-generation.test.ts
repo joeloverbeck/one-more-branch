@@ -72,12 +72,8 @@ function createCharacterKernel(overrides?: Partial<CharacterKernel>): CharacterK
     ],
     primaryOpposition: "The current king, who murdered Kael's father.",
     stakes: ["His family's honor and legacy", 'The lives of those who supported his father'],
-    constraints: [
-      'Must conceal his true identity',
-      'Cannot harm innocents in pursuit of his goal',
-    ],
-    pressurePoint:
-      'His sister is held hostage by the king — any overt action risks her life.',
+    constraints: ['Must conceal his true identity', 'Cannot harm innocents in pursuit of his goal'],
+    pressurePoint: 'His sister is held hostage by the king — any overt action risks her life.',
     moralLine: 'Will not harm innocents even if it costs him the throne.',
     worstFear: 'That he is becoming the tyrant he seeks to overthrow.',
     ...overrides,
@@ -319,7 +315,11 @@ describe('generateCharTridimensional', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await generateCharTridimensional(
-      { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
+      {
+        webContext: createWebContext(),
+        characterKernel: createCharacterKernel(),
+        worldbuilding: '',
+      },
       'test-api-key'
     );
 
@@ -359,7 +359,11 @@ describe('generateCharTridimensional', () => {
 
     await expect(
       generateCharTridimensional(
-        { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
+        {
+          webContext: createWebContext(),
+          characterKernel: createCharacterKernel(),
+          worldbuilding: '',
+        },
         'test-api-key'
       )
     ).rejects.toThrow(/missing characterName/);
@@ -372,7 +376,11 @@ describe('generateCharTridimensional', () => {
 
     await expect(
       generateCharTridimensional(
-        { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
+        {
+          webContext: createWebContext(),
+          characterKernel: createCharacterKernel(),
+          worldbuilding: '',
+        },
         'test-api-key'
       )
     ).rejects.toThrow(/missing physiology/);
@@ -385,7 +393,11 @@ describe('generateCharTridimensional', () => {
 
     await expect(
       generateCharTridimensional(
-        { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
+        {
+          webContext: createWebContext(),
+          characterKernel: createCharacterKernel(),
+          worldbuilding: '',
+        },
         'test-api-key'
       )
     ).rejects.toThrow(/missing sociology/);
@@ -398,7 +410,11 @@ describe('generateCharTridimensional', () => {
 
     await expect(
       generateCharTridimensional(
-        { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
+        {
+          webContext: createWebContext(),
+          characterKernel: createCharacterKernel(),
+          worldbuilding: '',
+        },
         'test-api-key'
       )
     ).rejects.toThrow(/missing psychology/);
@@ -411,7 +427,11 @@ describe('generateCharTridimensional', () => {
 
     await expect(
       generateCharTridimensional(
-        { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
+        {
+          webContext: createWebContext(),
+          characterKernel: createCharacterKernel(),
+          worldbuilding: '',
+        },
         'test-api-key'
       )
     ).rejects.toThrow(/missing or empty coreTraits/);
@@ -422,15 +442,16 @@ describe('generateCharTridimensional', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await generateCharTridimensional(
-      { webContext: createWebContext(), characterKernel: createCharacterKernel(), kernelSummary: 'Test', worldbuilding: '' },
+      {
+        webContext: createWebContext(),
+        characterKernel: createCharacterKernel(),
+        kernelSummary: 'Test',
+        worldbuilding: '',
+      },
       'test-api-key'
     );
 
-    expect(mockLogPrompt).toHaveBeenCalledWith(
-      mockLogger,
-      'charTridimensional',
-      expect.any(Array)
-    );
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'charTridimensional', expect.any(Array));
   });
 
   it('uses charTridimensional stage model', async () => {
@@ -438,7 +459,11 @@ describe('generateCharTridimensional', () => {
     global.fetch = jest.fn().mockResolvedValue(mockResponse);
 
     await generateCharTridimensional(
-      { webContext: createWebContext(), characterKernel: createCharacterKernel(), worldbuilding: '' },
+      {
+        webContext: createWebContext(),
+        characterKernel: createCharacterKernel(),
+        worldbuilding: '',
+      },
       'test-api-key'
     );
 

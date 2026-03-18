@@ -90,7 +90,7 @@ function createScoredConcept(index = 1): ScoredConcept {
 
 function expectCompletedStage(
   event: { stage: string; status: string; attempt: number; durationMs?: number },
-  stage: string,
+  stage: string
 ): void {
   expect(event).toMatchObject({ stage, status: 'completed', attempt: 1 });
   expect(typeof event.durationMs).toBe('number');
@@ -196,7 +196,7 @@ describe('concept-service', () => {
           contentPreferences: 'no romance',
           kernel: createStoryKernel(),
         },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(deps.generateConceptCharacterWorlds).toHaveBeenCalledWith(
         {
@@ -207,7 +207,7 @@ describe('concept-service', () => {
           contentPreferences: 'no romance',
           kernel: createStoryKernel(),
         },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(deps.generateConceptEngines).toHaveBeenCalledWith(
         {
@@ -219,7 +219,7 @@ describe('concept-service', () => {
           contentPreferences: 'no romance',
           kernel: createStoryKernel(),
         },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(evaluateConcepts).toHaveBeenCalledWith(
         {
@@ -231,11 +231,11 @@ describe('concept-service', () => {
             apiKey: 'valid-key-12345',
           },
         },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(verifyConcepts).toHaveBeenCalledWith(
         { evaluatedConcepts: evaluated, kernel: createStoryKernel() },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(result).toEqual({
         ideatedConcepts: [createConceptSpec(1), createConceptSpec(2)],
@@ -262,7 +262,7 @@ describe('concept-service', () => {
           contentPreferences: '',
           kernel: createStoryKernel(),
           apiKey: 'valid-key-12345',
-        }),
+        })
       ).rejects.toThrow('At least one concept seed field is required');
     });
 
@@ -280,7 +280,7 @@ describe('concept-service', () => {
           genreVibes: 'noir',
           kernel: createStoryKernel(),
           apiKey: '  short ',
-        }),
+        })
       ).rejects.toThrow('OpenRouter API key is required');
     });
 
@@ -300,12 +300,16 @@ describe('concept-service', () => {
           genreVibes: 'dark fantasy',
           kernel: createStoryKernel(),
           apiKey: 'valid-key-12345',
-        }),
+        })
       ).rejects.toBe(llmError);
     });
 
     it('wraps evaluation failures with ideated concepts for partial persistence', async () => {
-      const llmError = new LLMError('Scored concept 4 has invalid scores', 'STRUCTURE_PARSE_ERROR', true);
+      const llmError = new LLMError(
+        'Scored concept 4 has invalid scores',
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
       const deps = createConceptStageDeps();
       const ideationConcepts = [createConceptSpec(1), createConceptSpec(2)];
       const service = createConceptService({
@@ -334,7 +338,8 @@ describe('concept-service', () => {
     });
 
     it('emits stage callbacks for ideation, evaluation, and verification in order', async () => {
-      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+        [];
       const deps = createConceptStageDeps();
       const service = createConceptService({
         ...deps,
@@ -362,15 +367,30 @@ describe('concept-service', () => {
 
       expect(events).toHaveLength(10);
       expect(events[0]).toEqual({ stage: 'SEEDING_CONCEPTS', status: 'started', attempt: 1 });
-      expectCompletedStage(events[1] as { stage: string; status: string; attempt: number; durationMs?: number }, 'SEEDING_CONCEPTS');
+      expectCompletedStage(
+        events[1] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'SEEDING_CONCEPTS'
+      );
       expect(events[2]).toEqual({ stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 });
-      expectCompletedStage(events[3] as { stage: string; status: string; attempt: number; durationMs?: number }, 'ARCHITECTING_CONCEPTS');
+      expectCompletedStage(
+        events[3] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'ARCHITECTING_CONCEPTS'
+      );
       expect(events[4]).toEqual({ stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 });
-      expectCompletedStage(events[5] as { stage: string; status: string; attempt: number; durationMs?: number }, 'ENGINEERING_CONCEPTS');
+      expectCompletedStage(
+        events[5] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'ENGINEERING_CONCEPTS'
+      );
       expect(events[6]).toEqual({ stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 });
-      expectCompletedStage(events[7] as { stage: string; status: string; attempt: number; durationMs?: number }, 'EVALUATING_CONCEPTS');
+      expectCompletedStage(
+        events[7] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'EVALUATING_CONCEPTS'
+      );
       expect(events[8]).toEqual({ stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 });
-      expectCompletedStage(events[9] as { stage: string; status: string; attempt: number; durationMs?: number }, 'ANALYZING_SPECIFICITY');
+      expectCompletedStage(
+        events[9] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'ANALYZING_SPECIFICITY'
+      );
     });
 
     it('rejects missing kernel', async () => {
@@ -387,7 +407,7 @@ describe('concept-service', () => {
           genreVibes: 'noir',
           kernel: undefined as unknown as StoryKernel,
           apiKey: 'valid-key-12345',
-        }),
+        })
       ).rejects.toThrow('Story kernel is required');
     });
   });
@@ -435,7 +455,7 @@ describe('concept-service', () => {
           scores: input.scores,
           weaknesses: ['weak novelty', 'thin urgency'],
         },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(result).toBe(output);
     });
@@ -454,7 +474,7 @@ describe('concept-service', () => {
           scores: createScores(),
           weaknesses: ['x'],
           apiKey: 'valid-key-12345',
-        }),
+        })
       ).rejects.toThrow('Concept is required');
 
       await expect(
@@ -463,7 +483,7 @@ describe('concept-service', () => {
           scores: undefined as unknown as ConceptDimensionScores,
           weaknesses: ['x'],
           apiKey: 'valid-key-12345',
-        }),
+        })
       ).rejects.toThrow('Concept scores are required');
 
       await expect(
@@ -472,12 +492,13 @@ describe('concept-service', () => {
           scores: createScores(),
           weaknesses: undefined as unknown as string[],
           apiKey: 'valid-key-12345',
-        }),
+        })
       ).rejects.toThrow('Concept weaknesses are required');
     });
 
     it('emits stress-test stage callbacks in order', async () => {
-      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+        [];
       const output: ConceptStressTestResult = {
         hardenedConcept: createConceptSpec(9),
         driftRisks: [],
@@ -503,7 +524,10 @@ describe('concept-service', () => {
 
       expect(events).toHaveLength(2);
       expect(events[0]).toEqual({ stage: 'STRESS_TESTING_CONCEPT', status: 'started', attempt: 1 });
-      expectCompletedStage(events[1] as { stage: string; status: string; attempt: number; durationMs?: number }, 'STRESS_TESTING_CONCEPT');
+      expectCompletedStage(
+        events[1] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'STRESS_TESTING_CONCEPT'
+      );
     });
   });
 });

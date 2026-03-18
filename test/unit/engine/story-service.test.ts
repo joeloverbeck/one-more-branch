@@ -8,9 +8,7 @@ import {
   StorySpine,
 } from '../../../src/models';
 import * as models from '../../../src/models';
-import {
-  generateStoryStructure,
-} from '../../../src/llm';
+import { generateStoryStructure } from '../../../src/llm';
 import { storage } from '../../../src/persistence';
 import { generatePage } from '../../../src/engine/page-service';
 import { createStoryStructure } from '../../../src/engine/structure-factory';
@@ -140,11 +138,13 @@ function buildStory(overrides?: Partial<Story>): Story {
 function setupDecompositionMocks(): void {
   mockedLoadCharacter.mockResolvedValue(mockStandaloneChar);
   mockedContextualizeCharacters.mockResolvedValue({
-    decomposedCharacters: [{
-      ...mockStandaloneChar,
-      thematicStance: 'Believes in truth.',
-      protagonistRelationship: null,
-    }],
+    decomposedCharacters: [
+      {
+        ...mockStandaloneChar,
+        thematicStance: 'Believes in truth.',
+        protagonistRelationship: null,
+      },
+    ],
     rawResponse: '{}',
   });
   mockedDecomposeWorldbuilding.mockResolvedValue({
@@ -338,18 +338,22 @@ describe('story-service', () => {
         });
         return Promise.resolve(structureResult);
       });
-      mockedGeneratePage.mockResolvedValue({ page, updatedStory, metrics: {
-        plannerDurationMs: 0,
-        accountantDurationMs: 0,
-        writerDurationMs: 0,
-        reconcilerDurationMs: 0,
-        plannerValidationIssueCount: 0,
-        accountantValidationIssueCount: 0,
-        writerValidationIssueCount: 0,
-        reconcilerIssueCount: 0,
-        reconcilerRetried: false,
-        finalStatus: 'success',
-      }});
+      mockedGeneratePage.mockResolvedValue({
+        page,
+        updatedStory,
+        metrics: {
+          plannerDurationMs: 0,
+          accountantDurationMs: 0,
+          writerDurationMs: 0,
+          reconcilerDurationMs: 0,
+          plannerValidationIssueCount: 0,
+          accountantValidationIssueCount: 0,
+          writerValidationIssueCount: 0,
+          reconcilerIssueCount: 0,
+          reconcilerRetried: false,
+          finalStatus: 'success',
+        },
+      });
       mockedStorage.savePage.mockResolvedValue(undefined);
       mockedStorage.updateStory.mockResolvedValue(undefined);
 
@@ -364,13 +368,15 @@ describe('story-service', () => {
         onGenerationStage,
       });
 
-      expect(createStorySpy).toHaveBeenCalledWith(expect.objectContaining({
-        title: 'Mountain Passes',
-        characterConcept: 'A courier charting hidden mountain passes.',
-        worldbuilding: 'High valleys controlled by signal towers',
-        tone: 'tense exploration',
-        protagonistCharacterId: 'char-1',
-      }));
+      expect(createStorySpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Mountain Passes',
+          characterConcept: 'A courier charting hidden mountain passes.',
+          worldbuilding: 'High valleys controlled by signal towers',
+          tone: 'tense exploration',
+          protagonistCharacterId: 'char-1',
+        })
+      );
       expect(mockedStorage.saveStory).toHaveBeenCalled();
       expect(mockedContextualizeCharacters).toHaveBeenCalled();
       expect(mockedGenerateStoryStructure).toHaveBeenCalled();
@@ -490,7 +496,6 @@ describe('story-service', () => {
       expect(mockedGeneratePage).not.toHaveBeenCalled();
       expect(mockedStorage.savePage).not.toHaveBeenCalled();
     });
-
   });
 
   describe('generateOpeningPage', () => {

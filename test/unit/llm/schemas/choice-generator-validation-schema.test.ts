@@ -15,7 +15,11 @@ describe('ChoiceGeneratorResultSchema', () => {
     const input = {
       choices: [
         makeChoice(),
-        makeChoice({ text: 'Flee the scene', choiceType: ChoiceType.WITHDRAW, primaryDelta: PrimaryDelta.LOCATION_ACCESS_CHANGE }),
+        makeChoice({
+          text: 'Flee the scene',
+          choiceType: ChoiceType.WITHDRAW,
+          primaryDelta: PrimaryDelta.LOCATION_ACCESS_CHANGE,
+        }),
       ],
     };
     expect(() => ChoiceGeneratorResultSchema.parse(input)).not.toThrow();
@@ -40,7 +44,10 @@ describe('ChoiceGeneratorResultSchema', () => {
   it('rejects more than 5 choices', () => {
     const input = {
       choices: Array.from({ length: 6 }, (_, i) =>
-        makeChoice({ text: `Choice ${i + 1}`, choiceType: Object.values(ChoiceType)[i % Object.values(ChoiceType).length] })
+        makeChoice({
+          text: `Choice ${i + 1}`,
+          choiceType: Object.values(ChoiceType)[i % Object.values(ChoiceType).length],
+        })
       ),
     };
     expect(() => ChoiceGeneratorResultSchema.parse(input)).toThrow(/at most 5 choices/);

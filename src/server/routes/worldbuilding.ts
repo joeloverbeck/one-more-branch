@@ -38,7 +38,7 @@ function handleLlmRouteError(
   res: Response,
   progress: ReturnType<typeof createRouteGenerationProgress>,
   error: LLMError,
-  operation: string,
+  operation: string
 ): Response {
   logger.error(`LLM error during ${operation}`, {
     message: error.message,
@@ -54,7 +54,7 @@ function handleUnknownRouteError(
   res: Response,
   progress: ReturnType<typeof createRouteGenerationProgress>,
   error: unknown,
-  operation: string,
+  operation: string
 ): Response {
   const err = error instanceof Error ? error : new Error(String(error));
   progress.fail(err.message);
@@ -64,15 +64,12 @@ function handleUnknownRouteError(
 
 // --- Page render ---
 
-worldbuildingRoutes.get(
-  '/',
-  (_req: Request, res: Response) => {
-    return res.render('pages/worldbuilding', {
-      title: 'Worldbuilding - One More Branch',
-      currentPath: '/worldbuilding',
-    });
-  },
-);
+worldbuildingRoutes.get('/', (_req: Request, res: Response) => {
+  return res.render('pages/worldbuilding', {
+    title: 'Worldbuilding - One More Branch',
+    currentPath: '/worldbuilding',
+  });
+});
 
 // --- API: List ---
 
@@ -81,7 +78,7 @@ worldbuildingRoutes.get(
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const worldbuildings = await listWorldbuildings();
     return res.json({ success: true, worldbuildings });
-  }),
+  })
 );
 
 worldbuildingRoutes.get(
@@ -90,7 +87,7 @@ worldbuildingRoutes.get(
     const conceptId = readRouteParam(req.params['conceptId']);
     const worldbuildings = await listWorldbuildingsByConcept(conceptId);
     return res.json({ success: true, worldbuildings });
-  }),
+  })
 );
 
 // --- API: Load ---
@@ -104,7 +101,7 @@ worldbuildingRoutes.get(
       return res.status(404).json({ success: false, error: `Worldbuilding not found: ${id}` });
     }
     return res.json({ success: true, worldbuilding: wb });
-  }),
+  })
 );
 
 // --- API: Create (pipeline) ---
@@ -126,11 +123,11 @@ worldbuildingRoutes.post(
         startingSituation: trimOptionalString(body['startingSituation']),
         tone: trimOptionalString(body['tone']),
       },
-      trimOptionalString(body['sourceConceptId']),
+      trimOptionalString(body['sourceConceptId'])
     );
 
     return res.status(201).json({ success: true, worldbuilding: wb });
-  }),
+  })
 );
 
 // --- API: Decompose raw ---
@@ -159,7 +156,7 @@ worldbuildingRoutes.post(
         rawText,
         apiKey,
         tone,
-        progress.onGenerationStage,
+        progress.onGenerationStage
       );
       progress.complete();
       return res.status(201).json({ success: true, worldbuilding: wb });
@@ -169,7 +166,7 @@ worldbuildingRoutes.post(
       }
       return handleUnknownRouteError(res, progress, error, 'worldbuilding decomposition');
     }
-  }),
+  })
 );
 
 // --- API: Generate seed ---
@@ -189,7 +186,7 @@ worldbuildingRoutes.post(
       const wb = await runWorldSeedGeneration(
         readRouteParam(req.params['id']),
         apiKey,
-        progress.onGenerationStage,
+        progress.onGenerationStage
       );
       progress.complete();
       return res.json({ success: true, worldbuilding: wb });
@@ -199,7 +196,7 @@ worldbuildingRoutes.post(
       }
       return handleUnknownRouteError(res, progress, error, 'world seed generation');
     }
-  }),
+  })
 );
 
 // --- API: Generate elaboration ---
@@ -219,7 +216,7 @@ worldbuildingRoutes.post(
       const wb = await runWorldElaborationGeneration(
         readRouteParam(req.params['id']),
         apiKey,
-        progress.onGenerationStage,
+        progress.onGenerationStage
       );
       progress.complete();
       return res.json({ success: true, worldbuilding: wb });
@@ -229,7 +226,7 @@ worldbuildingRoutes.post(
       }
       return handleUnknownRouteError(res, progress, error, 'world elaboration generation');
     }
-  }),
+  })
 );
 
 // --- API: Patch ---
@@ -248,7 +245,7 @@ worldbuildingRoutes.patch(
       const err = error instanceof Error ? error : new Error(String(error));
       return res.status(500).json({ success: false, error: err.message });
     }
-  }),
+  })
 );
 
 // --- API: Delete ---
@@ -258,5 +255,5 @@ worldbuildingRoutes.delete(
   wrapAsyncRoute(async (req: Request, res: Response) => {
     await deleteWorldbuildingById(readRouteParam(req.params['id']));
     return res.status(204).end();
-  }),
+  })
 );

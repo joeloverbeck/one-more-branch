@@ -33,15 +33,11 @@ describe('normalizeSelectedSceneDirection', () => {
   });
 
   it('returns undefined when pacingMode is invalid', () => {
-    expect(
-      normalizeSelectedSceneDirection({ ...validInput, pacingMode: 'TURBO' })
-    ).toBeUndefined();
+    expect(normalizeSelectedSceneDirection({ ...validInput, pacingMode: 'TURBO' })).toBeUndefined();
   });
 
   it('returns undefined when sceneDirection is empty or whitespace-only', () => {
-    expect(
-      normalizeSelectedSceneDirection({ ...validInput, sceneDirection: '' })
-    ).toBeUndefined();
+    expect(normalizeSelectedSceneDirection({ ...validInput, sceneDirection: '' })).toBeUndefined();
     expect(
       normalizeSelectedSceneDirection({ ...validInput, sceneDirection: '   ' })
     ).toBeUndefined();

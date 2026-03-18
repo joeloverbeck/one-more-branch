@@ -16,7 +16,9 @@ export async function saveCharacter(character: StandaloneDecomposedCharacter): P
   await writeJsonFile(filePath, character);
 }
 
-export async function loadCharacter(characterId: string): Promise<StandaloneDecomposedCharacter | null> {
+export async function loadCharacter(
+  characterId: string
+): Promise<StandaloneDecomposedCharacter | null> {
   const filePath = getCharacterFilePath(characterId);
   const raw = await readJsonFile<unknown>(filePath);
   if (raw === null) {

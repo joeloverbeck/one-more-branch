@@ -35,7 +35,10 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
   ADVENTURE: [
     { tag: 'call_to_quest', gloss: 'An external summons or discovery launches the journey' },
     { tag: 'threshold_crossing', gloss: 'The protagonist leaves the known world behind' },
-    { tag: 'ally_tested_or_won', gloss: 'A companion proves loyalty or is recruited through trial' },
+    {
+      tag: 'ally_tested_or_won',
+      gloss: 'A companion proves loyalty or is recruited through trial',
+    },
     { tag: 'ordeal_survived', gloss: 'The protagonist endures a defining physical or mental test' },
     { tag: 'treasure_with_cost', gloss: 'The prize is won but at meaningful expense' },
     { tag: 'return_transformed', gloss: 'The protagonist comes back changed by the journey' },
@@ -115,7 +118,8 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
   CULTIVATION: [
     {
       tag: 'cultivation_breakthrough',
-      gloss: 'The protagonist advances through a defined power level through tribulation or insight',
+      gloss:
+        'The protagonist advances through a defined power level through tribulation or insight',
     },
     {
       tag: 'heavenly_tribulation_survived',
@@ -178,7 +182,10 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
       tag: 'accomplice_through_inaction',
       gloss: 'A character becomes complicit by failing to act',
     },
-    { tag: 'darkest_joke_lands', gloss: 'The most transgressive moment produces the biggest laugh' },
+    {
+      tag: 'darkest_joke_lands',
+      gloss: 'The most transgressive moment produces the biggest laugh',
+    },
     {
       tag: 'bleak_ironic_resolution',
       gloss: 'The ending resolves things but in a way that mocks resolution',
@@ -486,7 +493,10 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
       tag: 'mundane_world_with_unquestioned_marvel',
       gloss: 'Magic appears and no one is surprised',
     },
-    { tag: 'mythic_symbol_intrudes', gloss: 'A figure or event from folklore enters the narrative' },
+    {
+      tag: 'mythic_symbol_intrudes',
+      gloss: 'A figure or event from folklore enters the narrative',
+    },
     {
       tag: 'community_ritual_or_collective_memory',
       gloss: 'A shared practice or memory carries weight',
@@ -656,7 +666,10 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     },
   ],
   SATIRE: [
-    { tag: 'target_system_established', gloss: 'The institution or social structure is introduced' },
+    {
+      tag: 'target_system_established',
+      gloss: 'The institution or social structure is introduced',
+    },
     {
       tag: 'absurdity_escalation',
       gloss: "The system's logic produces increasingly ridiculous outcomes",
@@ -740,7 +753,8 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     },
     {
       tag: 'bridge_confrontation',
-      gloss: 'A climactic face-to-face encounter between protagonist and antagonist in a seat of power',
+      gloss:
+        'A climactic face-to-face encounter between protagonist and antagonist in a seat of power',
     },
     {
       tag: 'hope_preserved_through_action',
@@ -847,7 +861,8 @@ export const GENRE_OBLIGATION_TAGS_BY_GENRE = {
     },
     {
       tag: 'anagnorisis',
-      gloss: 'The protagonist sees, too late, the truth of their situation and their role in causing it',
+      gloss:
+        'The protagonist sees, too late, the truth of their situation and their role in causing it',
     },
   ],
   TRANSGRESSIVE: [
@@ -957,15 +972,13 @@ export type GenreObligationTag =
 const GENRE_OBLIGATION_TAG_SET = new Set<string>(
   Object.values(GENRE_OBLIGATION_TAGS_BY_GENRE)
     .flat()
-    .map((e) => e.tag),
+    .map((e) => e.tag)
 );
 
 export function isGenreObligationTag(value: unknown): value is GenreObligationTag {
   return typeof value === 'string' && GENRE_OBLIGATION_TAG_SET.has(value);
 }
 
-export function getGenreObligationTags(
-  genreFrame: GenreFrame,
-): readonly GenreObligationEntry[] {
+export function getGenreObligationTags(genreFrame: GenreFrame): readonly GenreObligationEntry[] {
   return GENRE_OBLIGATION_TAGS_BY_GENRE[genreFrame];
 }

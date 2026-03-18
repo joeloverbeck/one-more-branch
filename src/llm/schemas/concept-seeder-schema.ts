@@ -4,7 +4,7 @@ import { CONFLICT_TYPE_VALUES } from '../../models/story-spine.js';
 import type { JsonSchema } from '../llm-client-types.js';
 
 export function buildConceptSeedSchema(
-  excludedGenres?: readonly GenreFrame[],
+  excludedGenres?: readonly GenreFrame[]
 ): Record<string, unknown> {
   const allowedGenres = filterGenreFrames(excludedGenres);
   return {
@@ -31,9 +31,7 @@ export function buildConceptSeedSchema(
   };
 }
 
-export function buildConceptSeederSchema(
-  excludedGenres?: readonly GenreFrame[],
-): JsonSchema {
+export function buildConceptSeederSchema(excludedGenres?: readonly GenreFrame[]): JsonSchema {
   return {
     type: 'json_schema',
     json_schema: {

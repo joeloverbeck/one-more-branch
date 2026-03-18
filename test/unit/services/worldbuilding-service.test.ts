@@ -59,7 +59,8 @@ describe('worldbuilding-service', () => {
   });
 
   it('runWorldSeedGeneration completes the world-seed stage with duration and persists stage 1', async () => {
-    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+      [];
     mockedLoadWorldbuilding.mockResolvedValue({
       id: 'wb-1',
       inputs: {
@@ -78,8 +79,8 @@ describe('worldbuilding-service', () => {
         updater({
           id: 'wb-1',
           completedStages: [],
-        } as never),
-      ),
+        } as never)
+      )
     );
 
     await runWorldSeedGeneration('wb-1', 'valid-key-12345', (event) => events.push(event));
@@ -91,17 +92,22 @@ describe('worldbuilding-service', () => {
         startingSituation: 'A border city is about to riot',
         tone: 'grim',
       },
-      'valid-key-12345',
+      'valid-key-12345'
     );
     expect(mockedUpdateWorldbuilding).toHaveBeenCalledWith('wb-1', expect.any(Function));
     expect(events).toHaveLength(2);
     expect(events[0]).toEqual({ stage: 'GENERATING_WORLD_SEED', status: 'started', attempt: 1 });
-    expect(events[1]).toMatchObject({ stage: 'GENERATING_WORLD_SEED', status: 'completed', attempt: 1 });
+    expect(events[1]).toMatchObject({
+      stage: 'GENERATING_WORLD_SEED',
+      status: 'completed',
+      attempt: 1,
+    });
     expect(events[1]?.durationMs).toBe(12);
   });
 
   it('runWorldElaborationGeneration completes the elaboration stage with duration and canonicalizes the world', async () => {
-    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+      [];
     mockedLoadWorldbuilding.mockResolvedValue({
       id: 'wb-1',
       worldSeed: 'A city built around stolen weather',
@@ -123,8 +129,8 @@ describe('worldbuilding-service', () => {
         updater({
           id: 'wb-1',
           completedStages: [1],
-        } as never),
-      ),
+        } as never)
+      )
     );
 
     await runWorldElaborationGeneration('wb-1', 'valid-key-12345', (event) => events.push(event));
@@ -135,17 +141,22 @@ describe('worldbuilding-service', () => {
         userNotes: 'Dense political factions',
         tone: 'grim',
       },
-      'valid-key-12345',
+      'valid-key-12345'
     );
     expect(mockedCanonicalizeDecomposedWorld).toHaveBeenCalledWith({ regions: ['Harbor'] });
     expect(events).toHaveLength(2);
     expect(events[0]).toEqual({ stage: 'ELABORATING_WORLD', status: 'started', attempt: 1 });
-    expect(events[1]).toMatchObject({ stage: 'ELABORATING_WORLD', status: 'completed', attempt: 1 });
+    expect(events[1]).toMatchObject({
+      stage: 'ELABORATING_WORLD',
+      status: 'completed',
+      attempt: 1,
+    });
     expect(events[1]?.durationMs).toBe(8);
   });
 
   it('decomposeRawWorldbuilding completes the decomposition stage with duration and saves the result', async () => {
-    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+      [];
     mockedDecomposeWorldbuilding.mockImplementation(() => {
       jest.advanceTimersByTime(5);
       return Promise.resolve({
@@ -159,12 +170,12 @@ describe('worldbuilding-service', () => {
       'Raw world text',
       'valid-key-12345',
       'grim',
-      (event) => events.push(event),
+      (event) => events.push(event)
     );
 
     expect(mockedDecomposeWorldbuilding).toHaveBeenCalledWith(
       { worldbuilding: 'Raw world text', tone: 'grim' },
-      'valid-key-12345',
+      'valid-key-12345'
     );
     expect(mockedSaveWorldbuilding).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -172,11 +183,15 @@ describe('worldbuilding-service', () => {
         sourceKind: 'RAW_DECOMPOSED',
         rawSourceText: 'Raw world text',
         decomposedWorld: { factions: ['Guild'] },
-      }),
+      })
     );
     expect(events).toHaveLength(2);
     expect(events[0]).toEqual({ stage: 'DECOMPOSING_WORLD', status: 'started', attempt: 1 });
-    expect(events[1]).toMatchObject({ stage: 'DECOMPOSING_WORLD', status: 'completed', attempt: 1 });
+    expect(events[1]).toMatchObject({
+      stage: 'DECOMPOSING_WORLD',
+      status: 'completed',
+      attempt: 1,
+    });
     expect(events[1]?.durationMs).toBe(5);
   });
 });

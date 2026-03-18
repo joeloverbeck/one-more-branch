@@ -82,18 +82,13 @@ export function formatDecomposedCharacterForPrompt(
     lines.push('PROTAGONIST');
   }
 
-  lines.push(
-    `Core Traits: ${char.coreTraits.join(', ')}`,
-  );
+  lines.push(`Core Traits: ${char.coreTraits.join(', ')}`);
 
   if (char.superObjective) {
     lines.push(`Super-Objective: ${char.superObjective}`);
   }
 
-  lines.push(
-    `Thematic Stance: ${char.thematicStance}`,
-    `Appearance: ${char.appearance}`
-  );
+  lines.push(`Thematic Stance: ${char.thematicStance}`, `Appearance: ${char.appearance}`);
 
   if (char.stakes && char.stakes.length > 0) {
     lines.push(`Stakes:\n${char.stakes.map((s) => `  - ${s}`).join('\n')}`);
@@ -145,7 +140,9 @@ export function formatDecomposedCharacterForPrompt(
   }
 
   if (char.escalationLadder && char.escalationLadder.length > 0) {
-    lines.push(`Escalation Ladder:\n${char.escalationLadder.map((step, i) => `  ${i + 1}. ${step}`).join('\n')}`);
+    lines.push(
+      `Escalation Ladder:\n${char.escalationLadder.map((step, i) => `  ${i + 1}. ${step}`).join('\n')}`
+    );
   }
 
   if (char.stressVariants) {
@@ -171,7 +168,9 @@ export function formatDecomposedCharacterForPrompt(
   }
 
   if (char.immediateObjectives && char.immediateObjectives.length > 0) {
-    lines.push(`Immediate Objectives:\n${char.immediateObjectives.map((o) => `  - ${o}`).join('\n')}`);
+    lines.push(
+      `Immediate Objectives:\n${char.immediateObjectives.map((o) => `  - ${o}`).join('\n')}`
+    );
   }
 
   if (char.constraints && char.constraints.length > 0) {

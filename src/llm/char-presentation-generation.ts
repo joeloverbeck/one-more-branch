@@ -3,10 +3,7 @@ import type {
   RelationSpecificVariant,
   TextualPresentation,
 } from '../models/character-pipeline-types.js';
-import {
-  SPEECH_ARRAY_FIELDS,
-  SPEECH_STRING_FIELDS,
-} from './entity-decomposition-contract.js';
+import { SPEECH_ARRAY_FIELDS, SPEECH_STRING_FIELDS } from './entity-decomposition-contract.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import {
@@ -102,11 +99,22 @@ function parseCharPresentationResponse(parsed: unknown): TextualPresentation {
     ? data['relationSpecificVariants']
     : [];
   const relationSpecificVariants: RelationSpecificVariant[] = rawRelVariants
-    .filter((v): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v))
+    .filter(
+      (v): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
+    )
     .map((v) => ({
-      towardCharacter: parseRequiredString(v['towardCharacter'], 'relationSpecificVariants.towardCharacter'),
-      registerShift: parseRequiredString(v['registerShift'], 'relationSpecificVariants.registerShift'),
-      emotionalLeakage: parseRequiredString(v['emotionalLeakage'], 'relationSpecificVariants.emotionalLeakage'),
+      towardCharacter: parseRequiredString(
+        v['towardCharacter'],
+        'relationSpecificVariants.towardCharacter'
+      ),
+      registerShift: parseRequiredString(
+        v['registerShift'],
+        'relationSpecificVariants.registerShift'
+      ),
+      emotionalLeakage: parseRequiredString(
+        v['emotionalLeakage'],
+        'relationSpecificVariants.emotionalLeakage'
+      ),
     }));
 
   return {

@@ -41,7 +41,9 @@ function parseActIndex(value: unknown, label: string, actCount: number): number 
   return value as number;
 }
 
-function parseNpcAgendas(value: unknown): NonNullable<MacroArchitectureResult['initialNpcAgendas']> {
+function parseNpcAgendas(
+  value: unknown
+): NonNullable<MacroArchitectureResult['initialNpcAgendas']> {
   if (!Array.isArray(value)) {
     throw new LLMError('initialNpcAgendas must be an array', 'STRUCTURE_PARSE_ERROR', true);
   }
@@ -50,7 +52,10 @@ function parseNpcAgendas(value: unknown): NonNullable<MacroArchitectureResult['i
     const record = asRecord(agenda, `initialNpcAgendas[${index}]`);
     return {
       npcName: parseRequiredString(record['npcName'], `initialNpcAgendas[${index}].npcName`),
-      currentGoal: parseRequiredString(record['currentGoal'], `initialNpcAgendas[${index}].currentGoal`),
+      currentGoal: parseRequiredString(
+        record['currentGoal'],
+        `initialNpcAgendas[${index}].currentGoal`
+      ),
       leverage: parseRequiredString(record['leverage'], `initialNpcAgendas[${index}].leverage`),
       fear: parseRequiredString(record['fear'], `initialNpcAgendas[${index}].fear`),
       offScreenBehavior: parseRequiredString(
@@ -61,7 +66,10 @@ function parseNpcAgendas(value: unknown): NonNullable<MacroArchitectureResult['i
   });
 }
 
-function parseAnchorMoments(value: unknown, actCount: number): MacroArchitectureResult['anchorMoments'] {
+function parseAnchorMoments(
+  value: unknown,
+  actCount: number
+): MacroArchitectureResult['anchorMoments'] {
   const record = asRecord(value, 'anchorMoments');
   const incitingIncident = asRecord(record['incitingIncident'], 'anchorMoments.incitingIncident');
   const midpoint = asRecord(record['midpoint'], 'anchorMoments.midpoint');
@@ -82,7 +90,11 @@ function parseAnchorMoments(value: unknown, actCount: number): MacroArchitecture
   }
 
   const milestoneSlot = midpoint['milestoneSlot'];
-  if (!Number.isInteger(milestoneSlot) || (milestoneSlot as number) < 0 || (milestoneSlot as number) > MAX_MILESTONE_SLOT) {
+  if (
+    !Number.isInteger(milestoneSlot) ||
+    (milestoneSlot as number) < 0 ||
+    (milestoneSlot as number) > MAX_MILESTONE_SLOT
+  ) {
     throw new LLMError(
       `anchorMoments.midpoint.milestoneSlot must be an integer between 0 and ${MAX_MILESTONE_SLOT}`,
       'STRUCTURE_PARSE_ERROR',
@@ -135,7 +147,11 @@ export function parseMacroArchitectureResponseObject(
   const data = asRecord(parsed, 'Macro architecture response');
 
   const actsValue = data['acts'];
-  if (!Array.isArray(actsValue) || actsValue.length < MIN_MACRO_ACTS || actsValue.length > MAX_MACRO_ACTS) {
+  if (
+    !Array.isArray(actsValue) ||
+    actsValue.length < MIN_MACRO_ACTS ||
+    actsValue.length > MAX_MACRO_ACTS
+  ) {
     const received = Array.isArray(actsValue) ? actsValue.length : typeof actsValue;
     throw new LLMError(
       `Macro architecture response must include ${MIN_MACRO_ACTS}-${MAX_MACRO_ACTS} acts (received: ${received})`,
@@ -166,10 +182,16 @@ export function parseMacroArchitectureResponseObject(
       name: parseRequiredString(record['name'], `acts[${actIndex}].name`),
       objective: parseRequiredString(record['objective'], `acts[${actIndex}].objective`),
       stakes: parseRequiredString(record['stakes'], `acts[${actIndex}].stakes`),
-      entryCondition: parseRequiredString(record['entryCondition'], `acts[${actIndex}].entryCondition`),
+      entryCondition: parseRequiredString(
+        record['entryCondition'],
+        `acts[${actIndex}].entryCondition`
+      ),
       actQuestion: parseRequiredString(record['actQuestion'], `acts[${actIndex}].actQuestion`),
       exitReversal,
-      promiseTargets: parseStringArray(record['promiseTargets'], `acts[${actIndex}].promiseTargets`),
+      promiseTargets: parseStringArray(
+        record['promiseTargets'],
+        `acts[${actIndex}].promiseTargets`
+      ),
       obligationTargets: parseStringArray(
         record['obligationTargets'],
         `acts[${actIndex}].obligationTargets`
@@ -210,7 +232,10 @@ function parseSetpieceBank(value: unknown): readonly string[] {
 
 function parsePacingBudget(value: unknown): MacroArchitectureResult['pacingBudget'] {
   const record = asRecord(value, 'pacingBudget');
-  if (typeof record['targetPagesMin'] !== 'number' || typeof record['targetPagesMax'] !== 'number') {
+  if (
+    typeof record['targetPagesMin'] !== 'number' ||
+    typeof record['targetPagesMax'] !== 'number'
+  ) {
     throw new LLMError(
       'pacingBudget.targetPagesMin and pacingBudget.targetPagesMax must be numbers',
       'STRUCTURE_PARSE_ERROR',

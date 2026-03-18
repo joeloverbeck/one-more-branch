@@ -1,8 +1,5 @@
 import type { DeepRelationshipResult } from '../models/character-pipeline-types.js';
-import {
-  isPipelineRelationshipType,
-  isRelationshipValence,
-} from '../models/character-enums.js';
+import { isPipelineRelationshipType, isRelationshipValence } from '../models/character-enums.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import {
@@ -42,7 +39,9 @@ function parseRequiredStringArray(data: Record<string, unknown>, key: string): s
   return rawValue.map((item) => parseRequiredString(item, `${key} item`));
 }
 
-function parseRelationships(data: Record<string, unknown>): DeepRelationshipResult['relationships'] {
+function parseRelationships(
+  data: Record<string, unknown>
+): DeepRelationshipResult['relationships'] {
   const rawRelationships = data['relationships'];
   if (!Array.isArray(rawRelationships)) {
     throw new LLMError(
@@ -96,12 +95,18 @@ function parseRelationships(data: Record<string, unknown>): DeepRelationshipResu
 
     const rawRupture = relationship['ruptureTriggers'];
     const ruptureTriggers = Array.isArray(rawRupture)
-      ? rawRupture.filter((r): r is string => typeof r === 'string').map((s) => s.trim()).filter((s) => s.length > 0)
+      ? rawRupture
+          .filter((r): r is string => typeof r === 'string')
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0)
       : [];
 
     const rawRepair = relationship['repairMoves'];
     const repairMoves = Array.isArray(rawRepair)
-      ? rawRepair.filter((r): r is string => typeof r === 'string').map((s) => s.trim()).filter((s) => s.length > 0)
+      ? rawRepair
+          .filter((r): r is string => typeof r === 'string')
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0)
       : [];
 
     return {

@@ -21,7 +21,10 @@ function createMacroArchitecture(): MacroArchitectureResult {
       incitingIncident: { actIndex: 0, description: 'An inspector is framed in public.' },
       midpoint: { actIndex: 1, milestoneSlot: 1, midpointType: 'FALSE_VICTORY' },
       climax: { actIndex: 2, description: 'The harbor court collapses under testimony.' },
-      signatureScenarioPlacement: { actIndex: 1, description: 'A ritual hearing turns into a trap.' },
+      signatureScenarioPlacement: {
+        actIndex: 1,
+        description: 'A ritual hearing turns into a trap.',
+      },
     },
     setpieceBank: ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3'],
     initialNpcAgendas: [],
@@ -106,7 +109,9 @@ describe('buildMilestoneGenerationPrompt', () => {
   });
 
   it('injects the locked macro architecture and midpoint constraints', () => {
-    const user = getUserMessage(buildMilestoneGenerationPrompt(baseContext, createMacroArchitecture()));
+    const user = getUserMessage(
+      buildMilestoneGenerationPrompt(baseContext, createMacroArchitecture())
+    );
 
     expect(user).toContain('LOCKED MACRO ARCHITECTURE (immutable; do not rewrite)');
     expect(user).toContain('"actQuestion": "Who set the inspector up?"');
@@ -116,7 +121,9 @@ describe('buildMilestoneGenerationPrompt', () => {
   });
 
   it('includes setpiece and specificity guidance for escalation milestones', () => {
-    const user = getUserMessage(buildMilestoneGenerationPrompt(baseContext, createMacroArchitecture()));
+    const user = getUserMessage(
+      buildMilestoneGenerationPrompt(baseContext, createMacroArchitecture())
+    );
 
     expect(user).toContain('VERIFIED SETPIECE BANK (zero-based indices)');
     expect(user).toContain('setpieceSourceIndex');
@@ -125,7 +132,9 @@ describe('buildMilestoneGenerationPrompt', () => {
   });
 
   it('includes the content policy in the system prompt', () => {
-    const system = getSystemMessage(buildMilestoneGenerationPrompt(baseContext, createMacroArchitecture()));
+    const system = getSystemMessage(
+      buildMilestoneGenerationPrompt(baseContext, createMacroArchitecture())
+    );
 
     expect(system).toContain('NC-21');
     expect(system).toContain(CONTENT_POLICY);

@@ -72,6 +72,8 @@ describe('MILESTONE_GENERATION_SCHEMA', () => {
     };
 
     expect(schema.properties.acts.description).toContain('One item per macro act');
-    expect(schema.properties.acts.items.properties.milestones.description).toContain('2-4 milestones');
+    expect(schema.properties.acts.items.properties.milestones.description).toContain(
+      '2-4 milestones'
+    );
   });
 });

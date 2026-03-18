@@ -56,9 +56,7 @@ describe('briefing begin adventure', () => {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
       }
       if (typeof url === 'string' && url.includes('/ideate-scene')) {
-        return Promise.resolve(
-          mockJsonResponse({ success: true, options: mockSceneOptions })
-        );
+        return Promise.resolve(mockJsonResponse({ success: true, options: mockSceneOptions }));
       }
       if (typeof url === 'string' && url.includes('/begin')) {
         return Promise.resolve(mockJsonResponse({ success: true, storyId: 'briefing-story-1' }));

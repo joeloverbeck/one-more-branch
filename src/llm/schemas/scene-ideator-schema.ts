@@ -46,8 +46,7 @@ export const SCENE_IDEATOR_SCHEMA: JsonSchema = {
                   'CLIMACTIC_CHOICE',
                   'AFTERMATH',
                 ],
-                description:
-                  'The dramatic function this scene serves in the narrative arc.',
+                description: 'The dramatic function this scene serves in the narrative arc.',
               },
               valuePolarityShift: {
                 type: 'string',
@@ -58,8 +57,7 @@ export const SCENE_IDEATOR_SCHEMA: JsonSchema = {
                   'NEGATIVE_TO_DOUBLE_POSITIVE',
                   'IRONIC_SHIFT',
                 ],
-                description:
-                  'How values change within the scene (McKee polarity shift).',
+                description: 'How values change within the scene (McKee polarity shift).',
               },
               pacingMode: {
                 type: 'string',
@@ -70,8 +68,7 @@ export const SCENE_IDEATOR_SCHEMA: JsonSchema = {
                   'OSCILLATING',
                   'BUILDING_SLOW',
                 ],
-                description:
-                  'The rhythmic energy of the scene (Swain/Weiland pacing).',
+                description: 'The rhythmic energy of the scene (Swain/Weiland pacing).',
               },
               sceneDirection: {
                 type: 'string',

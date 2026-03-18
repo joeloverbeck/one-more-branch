@@ -2,7 +2,10 @@ import { CONTENT_POLICY } from '../../../src/llm/content-policy';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
 import { ConstraintType, ThreatType } from '../../../src/models/state';
 import { buildContinuationPrompt, buildOpeningPrompt } from '../../../src/llm/prompts';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
+import {
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../fixtures/decomposed';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
   return messages.find((message) => message.role === 'system')?.content ?? '';
@@ -115,7 +118,13 @@ describe('buildOpeningPrompt', () => {
       tone: 'dark fantasy',
       decomposedCharacters: [buildMinimalDecomposedCharacter('Character')],
       decomposedWorld: {
-        facts: [{ domain: 'geography' as const, fact: 'The city floats above a poisoned sea.', scope: 'global' }],
+        facts: [
+          {
+            domain: 'geography' as const,
+            fact: 'The city floats above a poisoned sea.',
+            scope: 'global',
+          },
+        ],
         rawWorldbuilding: 'The city floats above a poisoned sea.',
       },
     });
@@ -243,7 +252,8 @@ describe('buildOpeningPrompt', () => {
 describe('buildContinuationPrompt', () => {
   const structure: StoryStructure = {
     overallTheme: 'Stop the city purge before dawn.',
-    premise: 'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
+    premise:
+      'A fugitive must broadcast evidence of a government purge before dawn erases all proof.',
     openingImage: 'An opening image placeholder.',
     closingImage: 'A closing image placeholder.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
@@ -383,7 +393,9 @@ describe('buildContinuationPrompt', () => {
   it('should include global canon when present', () => {
     const messages = buildContinuationPrompt({
       ...baseContext,
-      globalCanon: [{ text: 'Mayor Calder controls the city police through blackmail', factType: 'NORM' }],
+      globalCanon: [
+        { text: 'Mayor Calder controls the city police through blackmail', factType: 'NORM' },
+      ],
     });
 
     const user = getUserMessage(messages);
@@ -938,7 +950,11 @@ describe('buildContinuationPrompt', () => {
             },
           ],
           activeConstraints: [
-            { id: 'cn-9', text: 'Broken arm - cannot climb', constraintType: ConstraintType.ENVIRONMENTAL },
+            {
+              id: 'cn-9',
+              text: 'Broken arm - cannot climb',
+              constraintType: ConstraintType.ENVIRONMENTAL,
+            },
           ],
           openThreads: [
             {
@@ -983,9 +999,7 @@ describe('buildContinuationPrompt', () => {
     it('includes decomposed character profiles when provided', () => {
       const messages = buildContinuationPrompt({
         ...baseContext,
-        decomposedCharacters: [
-          buildMinimalDecomposedCharacter('Gandalf'),
-        ],
+        decomposedCharacters: [buildMinimalDecomposedCharacter('Gandalf')],
       });
 
       const content = getUserMessage(messages);

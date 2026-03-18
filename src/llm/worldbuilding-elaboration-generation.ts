@@ -34,18 +34,39 @@ export interface WorldElaborationResult {
 }
 
 const VALID_DOMAINS: readonly WorldFactDomain[] = [
-  'geography', 'ecology', 'history', 'society', 'culture', 'religion',
-  'governance', 'economy', 'faction', 'technology', 'magic', 'language',
+  'geography',
+  'ecology',
+  'history',
+  'society',
+  'culture',
+  'religion',
+  'governance',
+  'economy',
+  'faction',
+  'technology',
+  'magic',
+  'language',
 ];
 
 const VALID_FACT_TYPES: readonly WorldFactType[] = [
-  'LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY', 'PRACTICE', 'TABOO',
+  'LAW',
+  'NORM',
+  'BELIEF',
+  'DISPUTED',
+  'RUMOR',
+  'MYSTERY',
+  'PRACTICE',
+  'TABOO',
 ];
 
 const VALID_NARRATIVE_WEIGHTS: readonly NarrativeWeight[] = ['LOW', 'MEDIUM', 'HIGH'];
 
 const VALID_STORY_FUNCTIONS: readonly WorldStoryFunction[] = [
-  'EPIC', 'EPISTEMIC', 'DRAMATIC', 'ATMOSPHERIC', 'THEMATIC',
+  'EPIC',
+  'EPISTEMIC',
+  'DRAMATIC',
+  'ATMOSPHERIC',
+  'THEMATIC',
 ];
 
 function parseElaboratedFact(raw: unknown, index: number): WorldFact | null {
@@ -54,28 +75,32 @@ function parseElaboratedFact(raw: unknown, index: number): WorldFact | null {
   const data = raw as Record<string, unknown>;
   if (typeof data['fact'] !== 'string' || data['fact'].trim().length === 0) return null;
 
-  const id = typeof data['id'] === 'string' && data['id'].length > 0
-    ? data['id']
-    : `wf-${index + 1}`;
+  const id =
+    typeof data['id'] === 'string' && data['id'].length > 0 ? data['id'] : `wf-${index + 1}`;
 
-  const domain = typeof data['domain'] === 'string' && VALID_DOMAINS.includes(data['domain'] as WorldFactDomain)
-    ? (data['domain'] as WorldFactDomain)
-    : 'culture';
+  const domain =
+    typeof data['domain'] === 'string' && VALID_DOMAINS.includes(data['domain'] as WorldFactDomain)
+      ? (data['domain'] as WorldFactDomain)
+      : 'culture';
 
   const scope = typeof data['scope'] === 'string' ? data['scope'] : 'General';
 
-  const factType = typeof data['factType'] === 'string' && VALID_FACT_TYPES.includes(data['factType'] as WorldFactType)
-    ? (data['factType'] as WorldFactType)
-    : undefined;
+  const factType =
+    typeof data['factType'] === 'string' &&
+    VALID_FACT_TYPES.includes(data['factType'] as WorldFactType)
+      ? (data['factType'] as WorldFactType)
+      : undefined;
 
-  const narrativeWeight = typeof data['narrativeWeight'] === 'string' && VALID_NARRATIVE_WEIGHTS.includes(data['narrativeWeight'] as NarrativeWeight)
-    ? (data['narrativeWeight'] as NarrativeWeight)
-    : undefined;
+  const narrativeWeight =
+    typeof data['narrativeWeight'] === 'string' &&
+    VALID_NARRATIVE_WEIGHTS.includes(data['narrativeWeight'] as NarrativeWeight)
+      ? (data['narrativeWeight'] as NarrativeWeight)
+      : undefined;
 
   const storyFunctions = Array.isArray(data['storyFunctions'])
     ? (data['storyFunctions'] as unknown[]).filter(
         (s): s is WorldStoryFunction =>
-          typeof s === 'string' && VALID_STORY_FUNCTIONS.includes(s as WorldStoryFunction),
+          typeof s === 'string' && VALID_STORY_FUNCTIONS.includes(s as WorldStoryFunction)
       )
     : undefined;
 
@@ -93,7 +118,8 @@ function parseElaboratedFact(raw: unknown, index: number): WorldFact | null {
 
   const thematicTag = typeof data['thematicTag'] === 'string' ? data['thematicTag'] : undefined;
   const sensoryHook = typeof data['sensoryHook'] === 'string' ? data['sensoryHook'] : undefined;
-  const exampleEvidence = typeof data['exampleEvidence'] === 'string' ? data['exampleEvidence'] : undefined;
+  const exampleEvidence =
+    typeof data['exampleEvidence'] === 'string' ? data['exampleEvidence'] : undefined;
 
   return {
     id,
@@ -112,21 +138,20 @@ function parseElaboratedFact(raw: unknown, index: number): WorldFact | null {
   };
 }
 
-function parseElaborationResponse(
-  parsed: unknown,
-): Omit<WorldElaborationResult, 'rawResponse'> {
+function parseElaborationResponse(parsed: unknown): Omit<WorldElaborationResult, 'rawResponse'> {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'World elaboration response must be an object',
       'WORLD_ELABORATION_PARSE_ERROR',
-      true,
+      true
     );
   }
 
   const data = parsed as Record<string, unknown>;
 
   const worldLogline = typeof data['worldLogline'] === 'string' ? data['worldLogline'] : '';
-  const rawWorldMarkdown = typeof data['rawWorldMarkdown'] === 'string' ? data['rawWorldMarkdown'] : '';
+  const rawWorldMarkdown =
+    typeof data['rawWorldMarkdown'] === 'string' ? data['rawWorldMarkdown'] : '';
 
   const rawFacts = Array.isArray(data['worldFacts']) ? (data['worldFacts'] as unknown[]) : [];
   const worldFacts: WorldFact[] = rawFacts
@@ -160,7 +185,7 @@ interface GenerationRequest<TParsed> {
 
 async function fetchGeneration<TParsed>(
   apiKey: string,
-  request: GenerationRequest<TParsed>,
+  request: GenerationRequest<TParsed>
 ): Promise<TParsed & { rawResponse: string }> {
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
@@ -195,7 +220,7 @@ async function fetchGeneration<TParsed>(
     responseData,
     request.responseLabel,
     request.model,
-    request.maxTokens,
+    request.maxTokens
   );
 
   const parsedMessage = parseMessageJsonContent(content);
@@ -215,7 +240,7 @@ async function fetchGeneration<TParsed>(
 
 export async function generateWorldElaboration(
   context: WorldElaborationPromptContext,
-  apiKey: string,
+  apiKey: string
 ): Promise<WorldElaborationResult> {
   const config = getConfig().llm;
   const primaryModel = getStageModel('worldbuildingElaboration');
@@ -238,8 +263,8 @@ export async function generateWorldElaboration(
           parseResponse: parseElaborationResponse,
         }),
       primaryModel,
-      'worldbuildingElaboration',
-    ),
+      'worldbuildingElaboration'
+    )
   );
 
   logResponse(logger, 'worldbuildingElaboration', result.rawResponse);

@@ -31,7 +31,10 @@ export interface PagePanelData {
   readonly npcAgendaPanelData: NpcAgendaPanelData;
   readonly knowledgeStatePanelData: KnowledgeStatePanelData;
   readonly insightsThreadMeta: Record<string, { threadType: string; urgency: string }>;
-  readonly insightsPromiseMeta: Record<string, { promiseType: string; scope: string; urgency: string }>;
+  readonly insightsPromiseMeta: Record<
+    string,
+    { promiseType: string; scope: string; urgency: string }
+  >;
 }
 
 export function buildInsightsThreadMeta(

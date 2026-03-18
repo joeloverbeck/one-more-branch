@@ -59,10 +59,7 @@ function isStringArray(value: unknown): value is readonly string[] {
 }
 
 function hasAtMostWords(value: string, maxWords: number): boolean {
-  return value
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean).length <= maxWords;
+  return value.trim().split(/\s+/).filter(Boolean).length <= maxWords;
 }
 
 function isFiniteScore(value: unknown): value is number {
@@ -204,7 +201,10 @@ function isConceptVerification(value: unknown): value is ConceptVerification {
 
 function isStressTestResult(
   value: unknown
-): value is { readonly driftRisks: readonly DriftRisk[]; readonly playerBreaks: readonly PlayerBreak[] } {
+): value is {
+  readonly driftRisks: readonly DriftRisk[];
+  readonly playerBreaks: readonly PlayerBreak[];
+} {
   if (!isObjectRecord(value)) {
     return false;
   }
@@ -244,11 +244,13 @@ export function isSavedConcept(value: unknown): value is SavedConcept {
     isIsoDateString(value['updatedAt']) &&
     isConceptSeeds(value['seeds']) &&
     isEvaluatedConcept(value['evaluatedConcept']) &&
-    (value['preHardenedConcept'] === undefined || isEvaluatedConcept(value['preHardenedConcept'])) &&
+    (value['preHardenedConcept'] === undefined ||
+      isEvaluatedConcept(value['preHardenedConcept'])) &&
     (value['hardenedAt'] === undefined || isIsoDateString(value['hardenedAt'])) &&
     isNonEmptyString(value['sourceKernelId']) &&
     (value['stressTestResult'] === undefined || isStressTestResult(value['stressTestResult'])) &&
-    (value['verificationResult'] === undefined || isConceptVerification(value['verificationResult']))
+    (value['verificationResult'] === undefined ||
+      isConceptVerification(value['verificationResult']))
   );
 }
 

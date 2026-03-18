@@ -170,7 +170,10 @@ describe('state-reconciler integration', () => {
     ]);
     expect(result.threatsRemoved).toEqual(['th-1']);
     expect(result.constraintsAdded).toEqual([
-      { text: 'Alley is a dead end with no escape route', constraintType: ConstraintType.ENVIRONMENTAL },
+      {
+        text: 'Alley is a dead end with no escape route',
+        constraintType: ConstraintType.ENVIRONMENTAL,
+      },
     ]);
     expect(result.constraintsRemoved).toEqual(['cn-1']);
     expect(result.threadsAdded).toEqual([
@@ -289,7 +292,10 @@ describe('state-reconciler integration', () => {
       { text: 'Xylocarpa toxin infiltrating groundwater', threatType: ThreatType.ENVIRONMENTAL },
     ]);
     expect(result.constraintsAdded).toEqual([
-      { text: 'Bridge crossing is blocked by patrol', constraintType: ConstraintType.ENVIRONMENTAL },
+      {
+        text: 'Bridge crossing is blocked by patrol',
+        constraintType: ConstraintType.ENVIRONMENTAL,
+      },
     ]);
     expect(result.inventoryAdded).toEqual(['Zyzzogeton gemstone amulet']);
     expect(result.healthAdded).toEqual(['Fatigue from the alley chase']);
@@ -589,7 +595,9 @@ describe('state-reconciler integration', () => {
           removeIds: [],
         },
         canon: {
-          worldAdd: [{ text: 'The sewer system predates the current city by centuries', factType: 'LAW' }],
+          worldAdd: [
+            { text: 'The sewer system predates the current city by centuries', factType: 'LAW' },
+          ],
           characterAdd: [
             { characterName: 'Mara', facts: ['Explored the sewer tunnel as a child'] },
           ],

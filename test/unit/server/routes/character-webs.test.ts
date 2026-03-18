@@ -252,7 +252,7 @@ describe('character-web routes', () => {
       'concept-1',
       'Keep everyone dangerous.',
       undefined,
-      'wb-1',
+      'wb-1'
     );
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({ success: true, web });

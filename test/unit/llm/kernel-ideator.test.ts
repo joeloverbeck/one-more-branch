@@ -137,8 +137,12 @@ describe('kernel-ideator', () => {
   });
 
   it('parseKernelIdeationResponse rejects kernel counts outside 6-8', () => {
-    expect(() => parseKernelIdeationResponse(createValidPayload(5))).toThrow('must include 6-8 kernels');
-    expect(() => parseKernelIdeationResponse(createValidPayload(9))).toThrow('must include 6-8 kernels');
+    expect(() => parseKernelIdeationResponse(createValidPayload(5))).toThrow(
+      'must include 6-8 kernels'
+    );
+    expect(() => parseKernelIdeationResponse(createValidPayload(9))).toThrow(
+      'must include 6-8 kernels'
+    );
   });
 
   it('parseKernelIdeationResponse rejects invalid kernel objects', () => {
@@ -167,9 +171,7 @@ describe('kernel-ideator', () => {
     expect(systemMessage).toContain('Do not include named characters');
     expect(systemMessage).toContain('Do not include plot milestones');
     expect(systemMessage).toContain('strongest credible counter-argument');
-    expect(systemMessage).toContain(
-      'CRITICAL: Diversity means different dramatic propositions',
-    );
+    expect(systemMessage).toContain('CRITICAL: Diversity means different dramatic propositions');
   });
 
   it('buildKernelIdeatorPrompt includes USER CREATIVE MANDATE when seeds provided', () => {
@@ -231,18 +233,21 @@ describe('kernel-ideator', () => {
     expect(mockLogPrompt).toHaveBeenCalledTimes(1);
   });
 
-  it.each([429, 503])('generateKernels handles HTTP %i as retryable LLMError', async (statusCode) => {
-    fetchMock.mockResolvedValue(createErrorResponse(statusCode, 'Server overloaded'));
+  it.each([429, 503])(
+    'generateKernels handles HTTP %i as retryable LLMError',
+    async (statusCode) => {
+      fetchMock.mockResolvedValue(createErrorResponse(statusCode, 'Server overloaded'));
 
-    const pending = generateKernels({}, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({
-      code: `HTTP_${statusCode}`,
-      retryable: true,
-    });
+      const pending = generateKernels({}, 'test-api-key');
+      const expectation = expect(pending).rejects.toMatchObject({
+        code: `HTTP_${statusCode}`,
+        retryable: true,
+      });
 
-    await advanceRetryDelays();
-    await expectation;
+      await advanceRetryDelays();
+      await expectation;
 
-    expect(fetchMock).toHaveBeenCalledTimes(3);
-  });
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    }
+  );
 });

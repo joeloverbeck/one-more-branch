@@ -159,7 +159,10 @@ export async function runAnalystEvaluation(
     pagesInCurrentMilestone: context.parentStructureState.pagesInCurrentMilestone + 1,
   };
 
-  const activeMilestone = getCurrentMilestone(context.activeStructure, context.parentStructureState);
+  const activeMilestone = getCurrentMilestone(
+    context.activeStructure,
+    context.parentStructureState
+  );
   const activeMilestoneObligationTag = activeMilestone?.obligatorySceneTag ?? undefined;
 
   logger.info('Generation stage started', {
@@ -238,18 +241,20 @@ export async function runAnalystEvaluation(
   const durationMs = Date.now() - analystStart;
 
   // Extract results, logging failures
-  const structureResult =
-    structureSettled.status === 'fulfilled' ? structureSettled.value : null;
-  const promiseResult =
-    promiseSettled.status === 'fulfilled' ? promiseSettled.value : null;
-  const proseResult =
-    proseSettled.status === 'fulfilled' ? proseSettled.value : null;
-  const npcResult =
-    npcSettled.status === 'fulfilled' ? npcSettled.value : null;
+  const structureResult = structureSettled.status === 'fulfilled' ? structureSettled.value : null;
+  const promiseResult = promiseSettled.status === 'fulfilled' ? promiseSettled.value : null;
+  const proseResult = proseSettled.status === 'fulfilled' ? proseSettled.value : null;
+  const npcResult = npcSettled.status === 'fulfilled' ? npcSettled.value : null;
 
   // Emit completion/failure for each stage
   if (structureSettled.status === 'fulfilled') {
-    emitGenerationStage(context.onGenerationStage, 'EVALUATING_STRUCTURE', 'completed', 1, durationMs);
+    emitGenerationStage(
+      context.onGenerationStage,
+      'EVALUATING_STRUCTURE',
+      'completed',
+      1,
+      durationMs
+    );
   } else {
     logger.warn('Structure evaluator failed', {
       ...context.logContext,
@@ -276,7 +281,13 @@ export async function runAnalystEvaluation(
   }
 
   if (npcSettled.status === 'fulfilled') {
-    emitGenerationStage(context.onGenerationStage, 'EVALUATING_NPC_INTELLIGENCE', 'completed', 1, durationMs);
+    emitGenerationStage(
+      context.onGenerationStage,
+      'EVALUATING_NPC_INTELLIGENCE',
+      'completed',
+      1,
+      durationMs
+    );
   } else {
     logger.warn('NPC intelligence evaluator failed', {
       ...context.logContext,
@@ -312,9 +323,7 @@ export async function runAnalystEvaluation(
     npcSettled.status === 'rejected' ? npcSettled.reason : null,
   ].filter(Boolean);
 
-  const errorMessage = failures
-    .map((e) => (e instanceof Error ? e.message : String(e)))
-    .join('; ');
+  const errorMessage = failures.map((e) => (e instanceof Error ? e.message : String(e))).join('; ');
 
   return {
     result: null,

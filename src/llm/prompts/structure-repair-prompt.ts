@@ -66,7 +66,9 @@ export function buildStructureRepairPrompt(
     context.conceptVerification,
     'Ensure repaired acts still deliver these premise promises concretely.'
   );
-  const genreObligationsSection = buildStructureGenerationGenreObligationsSection(context.conceptSpec);
+  const genreObligationsSection = buildStructureGenerationGenreObligationsSection(
+    context.conceptSpec
+  );
   const setpieceBankSection = buildSetpieceBankSection(input.setpieceBank ?? []);
   const allObligations = context.conceptSpec
     ? getGenreObligationTags(context.conceptSpec.genreFrame).map((entry) => entry.tag)

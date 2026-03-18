@@ -1,6 +1,11 @@
 import { getStageModel } from '../config/stage-model.js';
 import { getConfig } from '../config/index.js';
-import type { DecomposedWorld, WorldFact, WorldFactDomain, WorldFactType } from '../models/decomposed-world.js';
+import type {
+  DecomposedWorld,
+  WorldFact,
+  WorldFactDomain,
+  WorldFactType,
+} from '../models/decomposed-world.js';
 import { logger, logPrompt, logResponse } from '../logging/index.js';
 import type { JsonSchema, ChatMessage } from './llm-client-types.js';
 import {
@@ -20,12 +25,29 @@ import { withRetry } from './retry.js';
 import { WORLDBUILDING_DECOMPOSITION_SCHEMA } from './schemas/worldbuilding-decomposer-schema.js';
 
 const VALID_DOMAINS: readonly WorldFactDomain[] = [
-  'geography', 'ecology', 'history', 'society', 'culture', 'religion',
-  'governance', 'economy', 'faction', 'technology', 'magic', 'language',
+  'geography',
+  'ecology',
+  'history',
+  'society',
+  'culture',
+  'religion',
+  'governance',
+  'economy',
+  'faction',
+  'technology',
+  'magic',
+  'language',
 ];
 
 const VALID_FACT_TYPES: readonly WorldFactType[] = [
-  'LAW', 'NORM', 'BELIEF', 'DISPUTED', 'RUMOR', 'MYSTERY', 'PRACTICE', 'TABOO',
+  'LAW',
+  'NORM',
+  'BELIEF',
+  'DISPUTED',
+  'RUMOR',
+  'MYSTERY',
+  'PRACTICE',
+  'TABOO',
 ];
 
 function isValidDomain(value: unknown): value is WorldFactDomain {
@@ -52,9 +74,10 @@ function parseWorldFact(raw: unknown): WorldFact | null {
   const domain = isValidDomain(data['domain']) ? data['domain'] : 'culture';
   const scope = typeof data['scope'] === 'string' ? data['scope'] : 'General';
   const factType = isValidFactType(data['factType']) ? data['factType'] : undefined;
-  const id = typeof data['id'] === 'string' && data['id'].length > 0
-    ? data['id']
-    : `wf-${++wbWorldFactCounter}`;
+  const id =
+    typeof data['id'] === 'string' && data['id'].length > 0
+      ? data['id']
+      : `wf-${++wbWorldFactCounter}`;
 
   return { id, domain, fact: data['fact'].trim(), scope, ...(factType ? { factType } : {}) };
 }

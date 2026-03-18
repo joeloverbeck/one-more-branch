@@ -35,14 +35,11 @@ function parseConceptIds(input: unknown): string[] {
     .filter((conceptId) => conceptId.length > 0);
 }
 
-evolutionRoutes.get(
-  '/',
-  (_req: Request, res: Response) => {
-    return res.render('pages/evolution', {
-      title: 'Evolve Concepts - One More Branch',
-    });
-  },
-);
+evolutionRoutes.get('/', (_req: Request, res: Response) => {
+  return res.render('pages/evolution', {
+    title: 'Evolve Concepts - One More Branch',
+  });
+});
 
 evolutionRoutes.get(
   '/api/concepts-by-kernel/:kernelId',
@@ -57,7 +54,7 @@ evolutionRoutes.get(
     const filtered = concepts.filter((concept) => concept.sourceKernelId === kernelId);
 
     return res.json({ success: true, concepts: filtered });
-  }),
+  })
 );
 
 evolutionRoutes.post(
@@ -154,5 +151,5 @@ evolutionRoutes.post(
       logger.error('Error evolving concepts:', { error: err.message, stack: err.stack });
       return res.status(500).json({ success: false, error: err.message });
     }
-  }),
+  })
 );

@@ -56,10 +56,15 @@ describe('buildLlmRouteErrorResult', () => {
 
   it('includes stage in debug payload for OUTPUT_TRUNCATED errors', () => {
     process.env['NODE_ENV'] = 'test';
-    const error = new LLMError('Model output truncated before completion', 'OUTPUT_TRUNCATED', false, {
-      model: 'qwen/qwen3.5-397b-a17b',
-      stage: 'conceptSeeder',
-    });
+    const error = new LLMError(
+      'Model output truncated before completion',
+      'OUTPUT_TRUNCATED',
+      false,
+      {
+        model: 'qwen/qwen3.5-397b-a17b',
+        stage: 'conceptSeeder',
+      }
+    );
 
     const result = buildLlmRouteErrorResult(error);
 
@@ -68,7 +73,7 @@ describe('buildLlmRouteErrorResult', () => {
       expect.objectContaining({
         model: 'qwen/qwen3.5-397b-a17b',
         stage: 'conceptSeeder',
-      }),
+      })
     );
   });
 

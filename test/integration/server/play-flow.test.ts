@@ -9,9 +9,9 @@ import {
 } from '@/llm';
 import { runAnalystEvaluation } from '@/engine/analyst-evaluation';
 import { reconcileState } from '@/engine/state-reconciler';
-import type { StoryId, StoryKernel, StorySpine } from '@/models';
+import type { StoryId } from '@/models';
 import { playRoutes } from '@/server/routes/play';
-import { storyRoutes } from '@/server/routes/stories';
+import { createStoryRoutes } from '@/server/routes/create-story';
 import {
   createMockAnalystResult,
   createMockPageWriterResult,
@@ -63,11 +63,147 @@ jest.mock('@/persistence/character-repository', () => ({
   }),
 }));
 
+jest.mock('@/persistence/spine-repository', () => ({
+  loadSpine: jest.fn().mockResolvedValue({
+    id: 'spine-1',
+    name: 'Test Spine',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    spineOption: {
+      centralDramaticQuestion: 'Can justice survive in a corrupt system?',
+      protagonistNeedVsWant: { need: 'truth', want: 'safety', dynamic: 'DIVERGENT' },
+      primaryAntagonisticForce: {
+        description: 'The corrupt tribunal',
+        pressureMechanism: 'Controls all records and courts',
+      },
+      storySpineType: 'MYSTERY',
+      conflictAxis: 'INDIVIDUAL_VS_SYSTEM',
+      conflictType: 'PERSON_VS_SOCIETY',
+      characterArcType: 'POSITIVE_CHANGE',
+      toneFeel: ['grim', 'tense', 'political'],
+      toneAvoid: ['whimsical', 'comedic'],
+    },
+    sourceConceptId: 'concept-1',
+    protagonistCharacterId: 'char-1',
+    npcCharacterIds: [],
+    worldbuildingId: '',
+    tone: 'fantasy',
+    startingSituation: '',
+  }),
+  listSpines: jest.fn().mockResolvedValue([]),
+}));
+
+jest.mock('@/persistence/concept-repository', () => ({
+  loadConcept: jest.fn().mockResolvedValue({
+    id: 'concept-1',
+    name: 'Test Concept',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    seeds: {},
+    evaluatedConcept: {
+      concept: {
+        oneLineHook: 'Hook',
+        elevatorParagraph: 'Elevator',
+        genreFrame: 'NOIR',
+        genreSubversion: 'Subversion',
+        protagonistRole: 'Detective',
+        coreCompetence: 'Deduction',
+        coreFlaw: 'Arrogance',
+        actionVerbs: ['investigate', 'interrogate', 'deduce', 'pursue', 'expose', 'confront'],
+        coreConflictLoop: 'Investigate then face consequences',
+        conflictAxis: 'POWER_VS_MORALITY',
+        conflictType: 'PERSON_VS_SOCIETY',
+        pressureSource: 'The corrupt tribunal',
+        stakesPersonal: 'Loss of integrity',
+        stakesSystemic: 'Justice collapses',
+        deadlineMechanism: 'Trial date approaches',
+        settingAxioms: ['Corruption is systemic', 'Truth is dangerous'],
+        constraintSet: ['Limited allies', 'Watched constantly', 'Evidence is controlled'],
+        keyInstitutions: ['The Tribunal', 'The Archive'],
+        settingScale: 'CITY',
+        whatIfQuestion: 'What if justice required breaking the law?',
+        ironicTwist: 'The judge is the criminal.',
+        playerFantasy: 'Uncovering hidden truth against all odds.',
+        incitingDisruption: 'A sealed verdict is leaked.',
+        escapeValve: 'Flee the city.',
+        protagonistLie: 'The system can be fixed from within.',
+        protagonistTruth: 'The system must be dismantled.',
+        protagonistGhost: 'Failed to save an innocent before.',
+        wantNeedCollisionSketch: 'Safety requires silence but truth demands exposure.',
+      },
+      scores: {
+        hookStrength: 4,
+        conflictEngine: 4,
+        agencyBreadth: 4,
+        noveltyLeverage: 4,
+        ironicPremise: 4,
+        sceneGenerativePower: 4,
+        contentCharge: 4,
+      },
+      overallScore: 4,
+      passes: true,
+      strengths: ['strong'],
+      weaknesses: ['none'],
+      tradeoffSummary: 'Good overall',
+    },
+    sourceKernelId: 'kernel-1',
+    verificationResult: undefined,
+  }),
+  listConcepts: jest.fn().mockResolvedValue([]),
+}));
+
+jest.mock('@/persistence/kernel-repository', () => ({
+  loadKernel: jest.fn().mockResolvedValue({
+    id: 'kernel-1',
+    name: 'Test Kernel',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    seeds: {},
+    evaluatedKernel: {
+      kernel: {
+        dramaticThesis: 'Power corrupts',
+        antithesis: 'Power enables justice',
+        valueAtStake: 'Moral integrity',
+        opposingForce: 'Ambition',
+        directionOfChange: 'NEGATIVE',
+        conflictAxis: 'POWER_VS_MORALITY',
+        dramaticStance: 'TRAGIC',
+        thematicQuestion: 'Can one wield power without losing oneself?',
+        valueSpectrum: {
+          positive: 'Integrity',
+          contrary: 'Pragmatism',
+          contradictory: 'Corruption',
+          negationOfNegation: 'Tyranny',
+        },
+        moralArgument: 'Absolute power corrupts absolutely',
+      },
+      scores: {
+        tensionPotential: 4,
+        thematicDepth: 4,
+        conflictRichness: 4,
+        moralComplexity: 4,
+        arcPotential: 4,
+      },
+      overallScore: 4,
+      passes: true,
+      strengths: ['strong'],
+      weaknesses: [],
+      tradeoffSummary: 'Good',
+    },
+    sourceGeneration: undefined,
+  }),
+}));
+
 jest.mock('@/llm/character-contextualizer', () => ({
   contextualizeCharacters: jest.fn().mockResolvedValue({
     decomposedCharacters: [],
     rawResponse: '{}',
   }),
+}));
+
+jest.mock('@/services/worldbuilding-service', () => ({
+  loadWorldbuildingById: jest.fn().mockResolvedValue(null),
+  listWorldbuildings: jest.fn().mockResolvedValue([]),
 }));
 
 jest.mock('@/llm/worldbuilding-decomposer', () => ({
@@ -113,8 +249,10 @@ const mockedGenerateStoryStructure = generateStoryStructure as jest.MockedFuncti
   typeof generateStoryStructure
 >;
 const mockedReconcileState = reconcileState as jest.MockedFunction<typeof reconcileState>;
-// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-const actualReconcileState: typeof reconcileState = jest.requireActual('@/engine/state-reconciler').reconcileState;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const actualReconcileState: typeof reconcileState =
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  jest.requireActual('@/engine/state-reconciler').reconcileState;
 
 const TEST_PREFIX = 'TEST USEINT-010 server integration';
 const mockedStructureResult = {
@@ -178,39 +316,6 @@ const mockedStructureResult = {
   rawResponse: 'structure',
 };
 
-const mockSpine: StorySpine = {
-  centralDramaticQuestion: 'Can justice survive in a corrupt system?',
-  protagonistNeedVsWant: { need: 'truth', want: 'safety', dynamic: 'DIVERGENT' },
-  primaryAntagonisticForce: {
-    description: 'The corrupt tribunal',
-    pressureMechanism: 'Controls all records and courts',
-  },
-  storySpineType: 'MYSTERY',
-  conflictAxis: 'INDIVIDUAL_VS_SYSTEM',
-  conflictType: 'PERSON_VS_SOCIETY',
-  characterArcType: 'POSITIVE_CHANGE',
-  toneFeel: ['grim', 'tense', 'political'],
-  toneAvoid: ['whimsical', 'comedic'],
-};
-
-const mockKernel: StoryKernel = {
-  dramaticThesis: 'Power corrupts',
-  antithesis: 'Power enables justice',
-  valueAtStake: 'Moral integrity',
-  opposingForce: 'Ambition',
-  directionOfChange: 'NEGATIVE',
-  conflictAxis: 'POWER_VS_MORALITY',
-  dramaticStance: 'TRAGIC',
-  thematicQuestion: 'Can one wield power without losing oneself?',
-  valueSpectrum: {
-    positive: 'Integrity',
-    contrary: 'Pragmatism',
-    contradictory: 'Corruption',
-    negationOfNegation: 'Tyranny',
-  },
-  moralArgument: 'Absolute power corrupts absolutely',
-};
-
 type RouteLayer = {
   route?: {
     path?: string;
@@ -259,16 +364,6 @@ function createMockResponse(): ResMocks {
   };
 }
 
-function parseStoryIdFromRedirect(redirectCallArg: unknown): StoryId {
-  const redirectLocation = String(redirectCallArg);
-  const storyId = redirectLocation.match(/\/play\/([a-f0-9-]+)/)?.[1];
-  if (!storyId) {
-    throw new Error(`Could not parse story id from redirect location: ${redirectLocation}`);
-  }
-
-  return storyId as StoryId;
-}
-
 function getMockCallArg(mockFn: jest.Mock, callIndex: number, argIndex: number): unknown {
   const calls = mockFn.mock.calls as unknown[][];
   return calls[callIndex]?.[argIndex];
@@ -287,7 +382,7 @@ async function waitForMock(mock: jest.Mock, timeout = 1000): Promise<void> {
 
 describe('Play Flow Integration (Mocked LLM)', () => {
   const createdStoryIds = new Set<StoryId>();
-  const createStoryHandler = getRouteHandler(storyRoutes, 'post', '/create');
+  const createStoryHandler = getRouteHandler(createStoryRoutes, 'post', '/api/create');
   const beginStoryHandler = getRouteHandler(playRoutes, 'post', '/:storyId/begin');
   const getPlayHandler = getRouteHandler(playRoutes, 'get', '/:storyId');
   const chooseHandler = getRouteHandler(playRoutes, 'post', '/:storyId/choice');
@@ -372,29 +467,24 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       })
     );
 
-    const { res, status, render, redirect } = createMockResponse();
+    const { res, json } = createMockResponse();
 
     void createStoryHandler(
       {
         body: {
+          spineId: 'spine-1',
           title: `${TEST_PREFIX} Title`,
-          characterConcept: `${TEST_PREFIX} create-story`,
-          tone: 'fantasy',
           apiKey: 'mock-api-key-12345',
-          spine: mockSpine,
-          storyKernel: mockKernel,
-          protagonistCharacterId: 'char-1',
         },
       } as Request,
       res
     );
-    await waitForMock(redirect);
+    await waitForMock(json);
 
-    expect(status).not.toHaveBeenCalled();
-    expect(render).not.toHaveBeenCalled();
-    expect(redirect).toHaveBeenCalledTimes(1);
-
-    const storyId = parseStoryIdFromRedirect(getMockCallArg(redirect, 0, 0));
+    expect(json).toHaveBeenCalledTimes(1);
+    const jsonArg = getMockCallArg(json, 0, 0) as { success: boolean; storyId: string };
+    expect(jsonArg.success).toBe(true);
+    const storyId = jsonArg.storyId as StoryId;
     createdStoryIds.add(storyId);
 
     expect(mockedGenerateOpeningPage).not.toHaveBeenCalled();
@@ -426,19 +516,16 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     void createStoryHandler(
       {
         body: {
+          spineId: 'spine-1',
           title: `${TEST_PREFIX} Title`,
-          characterConcept: `${TEST_PREFIX} make-choice`,
           apiKey: 'mock-api-key-12345',
-          spine: mockSpine,
-          storyKernel: mockKernel,
-          protagonistCharacterId: 'char-1',
         },
       } as Request,
       createRes.res
     );
-    await waitForMock(createRes.redirect);
+    await waitForMock(createRes.json);
 
-    const storyId = parseStoryIdFromRedirect(getMockCallArg(createRes.redirect, 0, 0));
+    const storyId = (getMockCallArg(createRes.json, 0, 0) as { storyId: string }).storyId as StoryId;
     createdStoryIds.add(storyId);
 
     const beginRes = createMockResponse();
@@ -551,19 +638,16 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     void createStoryHandler(
       {
         body: {
+          spineId: 'spine-1',
           title: `${TEST_PREFIX} Title`,
-          characterConcept: `${TEST_PREFIX} replay`,
           apiKey: 'mock-api-key-12345',
-          spine: mockSpine,
-          storyKernel: mockKernel,
-          protagonistCharacterId: 'char-1',
         },
       } as Request,
       createRes.res
     );
-    await waitForMock(createRes.redirect);
+    await waitForMock(createRes.json);
 
-    const storyId = parseStoryIdFromRedirect(getMockCallArg(createRes.redirect, 0, 0));
+    const storyId = (getMockCallArg(createRes.json, 0, 0) as { storyId: string }).storyId as StoryId;
     createdStoryIds.add(storyId);
 
     const beginRes = createMockResponse();
@@ -581,7 +665,11 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         narrative: 'Page 2 content...',
         choices: [
           { text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
-          { text: 'Turn back', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
+          {
+            text: 'Turn back',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
+          },
         ],
         protagonistAffect: createMockProtagonistAffect({
           primaryEmotion: 'determined',
@@ -698,7 +786,11 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         narrative: 'Opening scene with multiple active threads.',
         choices: [
           { text: 'Advance', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
-          { text: 'Investigate', choiceType: 'INVESTIGATE', primaryDelta: 'INFORMATION_STATE_CHANGE' },
+          {
+            text: 'Investigate',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'INFORMATION_STATE_CHANGE',
+          },
         ],
         protagonistAffect: createMockProtagonistAffect({
           primaryEmotion: 'concerned',
@@ -717,19 +809,16 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     void createStoryHandler(
       {
         body: {
+          spineId: 'spine-1',
           title: `${TEST_PREFIX} Threads`,
-          characterConcept: `${TEST_PREFIX} open-thread-panel`,
           apiKey: 'mock-api-key-12345',
-          spine: mockSpine,
-          storyKernel: mockKernel,
-          protagonistCharacterId: 'char-1',
         },
       } as Request,
       createRes.res
     );
-    await waitForMock(createRes.redirect);
+    await waitForMock(createRes.json);
 
-    const storyId = parseStoryIdFromRedirect(getMockCallArg(createRes.redirect, 0, 0));
+    const storyId = (getMockCallArg(createRes.json, 0, 0) as { storyId: string }).storyId as StoryId;
     createdStoryIds.add(storyId);
 
     const beginRes = createMockResponse();

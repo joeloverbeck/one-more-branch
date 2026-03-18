@@ -113,7 +113,7 @@ export function buildKernelEvolverPrompt(context: KernelEvolverContext): ChatMes
     if (sparkLine) mandateParts.push(`Spark Line: ${sparkLine}`);
 
     userSections.push(
-      `USER CREATIVE MANDATE (every kernel MUST honor ALL of the following):\n${mandateParts.join('\n')}\nThese are non-negotiable. Every kernel must centrally reflect all listed seeds, though HOW each manifests dramatically may differ across kernels. Diversity comes from different dramatic propositions, conflict domains, and value spectrums — not from distributing or ignoring user seeds.`,
+      `USER CREATIVE MANDATE (every kernel MUST honor ALL of the following):\n${mandateParts.join('\n')}\nThese are non-negotiable. Every kernel must centrally reflect all listed seeds, though HOW each manifests dramatically may differ across kernels. Diversity comes from different dramatic propositions, conflict domains, and value spectrums — not from distributing or ignoring user seeds.`
     );
   }
 
@@ -124,7 +124,7 @@ export function buildKernelEvolverPrompt(context: KernelEvolverContext): ChatMes
 - Every kernel must be complete and schema-valid.
 - Do not copy any parent unchanged.
 - Preserve useful parent strengths while directly addressing parent weaknesses.
-- Each offspring should employ a different mutation strategy.`,
+- Each offspring should employ a different mutation strategy.`
   );
 
   return [

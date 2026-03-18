@@ -10,17 +10,13 @@ import { runLlmStage } from './llm-stage-runner.js';
 import { buildContentPacketerPrompt } from './prompts/content-packeter-prompt.js';
 import { buildContentPacketerSchema } from './schemas/content-packeter-schema.js';
 
-function validateStringField(
-  data: Record<string, unknown>,
-  field: string,
-  index: number,
-): string {
+function validateStringField(data: Record<string, unknown>, field: string, index: number): string {
   const value = data[field];
   if (typeof value !== 'string' || value.trim().length === 0) {
     throw new LLMError(
       `packets[${index}].${field} must be a non-empty string`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   return value;
@@ -28,11 +24,7 @@ function validateStringField(
 
 function validatePacket(value: unknown, index: number): ContentPacket {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new LLMError(
-      `packets[${index}] must be an object`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`packets[${index}] must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const data = value as Record<string, unknown>;
@@ -42,14 +34,12 @@ function validatePacket(value: unknown, index: number): ContentPacket {
   if (
     !Array.isArray(data['sourceSparkIds']) ||
     data['sourceSparkIds'].length === 0 ||
-    !data['sourceSparkIds'].every(
-      (id: unknown) => typeof id === 'string' && id.trim().length > 0,
-    )
+    !data['sourceSparkIds'].every((id: unknown) => typeof id === 'string' && id.trim().length > 0)
   ) {
     throw new LLMError(
       `packets[${index}].sourceSparkIds must be a non-empty array of non-empty strings`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -57,7 +47,7 @@ function validatePacket(value: unknown, index: number): ContentPacket {
     throw new LLMError(
       `packets[${index}].contentKind must be a valid ContentKind`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -74,14 +64,12 @@ function validatePacket(value: unknown, index: number): ContentPacket {
     !Array.isArray(data['interactionVerbs']) ||
     data['interactionVerbs'].length < 4 ||
     data['interactionVerbs'].length > 6 ||
-    !data['interactionVerbs'].every(
-      (v: unknown) => typeof v === 'string' && v.trim().length > 0,
-    )
+    !data['interactionVerbs'].every((v: unknown) => typeof v === 'string' && v.trim().length > 0)
   ) {
     throw new LLMError(
       `packets[${index}].interactionVerbs must be an array of 4-6 non-empty strings`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -106,7 +94,7 @@ export function parseContentPacketerResponse(parsed: unknown): readonly ContentP
     throw new LLMError(
       'Content packeter response must be an object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -114,11 +102,7 @@ export function parseContentPacketerResponse(parsed: unknown): readonly ContentP
   const packets = data['packets'];
 
   if (!Array.isArray(packets) || packets.length === 0) {
-    throw new LLMError(
-      'packets must be a non-empty array',
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError('packets must be a non-empty array', 'STRUCTURE_PARSE_ERROR', true);
   }
 
   return packets.map((packet, index) => validatePacket(packet, index));
@@ -127,7 +111,7 @@ export function parseContentPacketerResponse(parsed: unknown): readonly ContentP
 export async function generateContentPackets(
   context: ContentPacketerContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ContentPacketerResult> {
   const messages = buildContentPacketerPrompt(context);
   const result = await runLlmStage({

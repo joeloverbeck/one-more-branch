@@ -85,7 +85,8 @@ export const CHAR_RELATIONSHIPS_GENERATION_SCHEMA: JsonSchema = {
               },
               ruptureTriggers: {
                 type: 'array',
-                description: '1-3 specific events or revelations that would shatter this relationship.',
+                description:
+                  '1-3 specific events or revelations that would shatter this relationship.',
                 items: { type: 'string' },
               },
               repairMoves: {

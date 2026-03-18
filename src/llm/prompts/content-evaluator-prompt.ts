@@ -39,7 +39,7 @@ export function buildContentEvaluatorPrompt(context: ContentEvaluatorContext): C
 
   if (context.tasteProfile) {
     userSections.push(
-      `TASTE PROFILE (use to calibrate antiGenericity and sceneBurst relative to user appetite):\n${JSON.stringify(context.tasteProfile, null, 2)}`,
+      `TASTE PROFILE (use to calibrate antiGenericity and sceneBurst relative to user appetite):\n${JSON.stringify(context.tasteProfile, null, 2)}`
     );
   }
 
@@ -49,7 +49,7 @@ export function buildContentEvaluatorPrompt(context: ContentEvaluatorContext): C
 - One evaluation per packet, in the same order as the input.
 - Each evaluation must have: contentId, scores (all 8 dimensions), strengths, weaknesses, recommendedRole.
 - Scores are integers 0-5.
-- recommendedRole must be one of: PRIMARY_SEED, SECONDARY_MUTAGEN, IMAGE_ONLY, REJECT.`,
+- recommendedRole must be one of: PRIMARY_SEED, SECONDARY_MUTAGEN, IMAGE_ONLY, REJECT.`
   );
 
   return [

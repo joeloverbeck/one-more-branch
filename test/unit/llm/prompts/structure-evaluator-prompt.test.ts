@@ -35,7 +35,8 @@ describe('buildStructureEvaluatorPrompt', () => {
               description: 'Secure the archive vault',
               objective: 'Keep the proof intact',
               causalLink: 'The purge is burning evidence caches.',
-              exitCondition: 'The proof is secured in the archive vault beyond the purge’s immediate reach.',
+              exitCondition:
+                'The proof is secured in the archive vault beyond the purge’s immediate reach.',
               role: 'setup',
               escalationType: null,
               secondaryEscalationType: null,

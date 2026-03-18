@@ -471,8 +471,10 @@ export function buildNewStoryPageHtml(options: NewStoryPageOptions = {}): string
           </section>
           <section class="wizard-step" data-step="5" style="display:none">
             <div class="form-group">
-              <label for="worldbuilding">Worldbuilding</label>
-              <textarea id="worldbuilding" name="worldbuilding" rows="3"></textarea>
+              <label for="worldbuilding-selector">Worldbuilding Profile *</label>
+              <select id="worldbuilding-selector" required>
+                <option value="">-- Select worldbuilding --</option>
+              </select>
             </div>
             <div class="form-group">
               <label for="protagonist-character-selector">Protagonist (from Character Profiles) *</label>
@@ -674,6 +676,94 @@ export function buildKernelsPageHtml(): string {
         <section id="saved-kernels-section">
           <div id="saved-kernels"></div>
         </section>
+      </section>
+    </main>
+  `;
+}
+
+export function buildSpinesPageHtml(): string {
+  return `
+    <main class="container" id="spines-page">
+      <section class="form-section">
+        <section id="spine-generate-section">
+          <form id="spine-generate-form">
+            <div class="form-group">
+              <select id="spineConceptId" required>
+                <option value="">Select a concept...</option>
+                <option value="concept-1">Test Concept</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <select id="spineProtagonistId" required>
+                <option value="">Select protagonist...</option>
+                <option value="char-1">Test Character</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <select id="spineNpcIds" multiple>
+                <option value="char-2">NPC</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <select id="spineWorldbuildingId" required>
+                <option value="">Select worldbuilding...</option>
+                <option value="wb-1">Test World</option>
+              </select>
+            </div>
+            <div class="form-group"><textarea id="spineTone"></textarea></div>
+            <div class="form-group"><textarea id="spineStartingSituation"></textarea></div>
+            <div class="form-group">
+              <input type="password" id="spineApiKey" required />
+            </div>
+            <div class="form-actions">
+              <button type="button" id="generate-spines-btn" disabled>Generate Spines</button>
+            </div>
+          </form>
+        </section>
+        <section id="spine-progress-section" class="loading-overlay" style="display: none;">
+          <div id="spine-progress-content" class="loading-overlay-content"></div>
+        </section>
+        <section id="generated-spines-section" style="display: none;">
+          <div id="generated-spines"></div>
+        </section>
+        <section id="saved-spines-section">
+          <div id="saved-spines">
+            <p class="spine-section-subtitle">No saved spines yet.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+  `;
+}
+
+export function buildCreateStoryPageHtml(): string {
+  return `
+    <main class="container" id="create-story-page">
+      <section class="form-section">
+        <form id="create-story-form">
+          <div class="form-group">
+            <select id="createStorySpineId" required>
+              <option value="">Select a spine...</option>
+              <option value="spine-1" data-spine='{"id":"spine-1","name":"Test","spineOption":{"storySpineType":"QUEST","centralDramaticQuestion":"Can they?","conflictAxis":"INDIVIDUAL_VS_SYSTEM","conflictType":"PERSON_VS_SOCIETY","characterArcType":"POSITIVE_CHANGE","protagonistNeedVsWant":{"need":"peace","want":"revenge","dynamic":"DIVERGENT"},"primaryAntagonisticForce":{"description":"Evil","pressureMechanism":"Force"},"toneFeel":[],"toneAvoid":[],"wantNeedCollisionPoint":"","protagonistDeepestFear":""},"tone":"dark","startingSituation":"A storm"}'>Test Spine</option>
+            </select>
+          </div>
+          <div id="spine-summary-panel" style="display: none;">
+            <div id="spine-summary-content"></div>
+          </div>
+          <div class="form-group">
+            <input type="text" id="createStoryTitle" required />
+          </div>
+          <div class="form-group">
+            <input type="password" id="createStoryApiKey" required />
+          </div>
+          <div class="form-actions">
+            <button type="button" id="create-story-btn" disabled>Create Story</button>
+          </div>
+        </form>
+        <section id="create-story-progress-section" class="loading-overlay" style="display: none;">
+          <div id="create-story-progress-content" class="loading-overlay-content"></div>
+        </section>
+        <div id="create-story-error" class="form-error" style="display: none;"></div>
       </section>
     </main>
   `;

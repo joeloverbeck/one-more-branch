@@ -63,7 +63,9 @@ type SchemaIssue = {
   message: string;
 };
 
-function getJsonType(value: unknown): 'null' | 'string' | 'number' | 'integer' | 'boolean' | 'array' | 'object' {
+function getJsonType(
+  value: unknown
+): 'null' | 'string' | 'number' | 'integer' | 'boolean' | 'array' | 'object' {
   if (value === null) {
     return 'null';
   }
@@ -92,7 +94,11 @@ function getDeclaredTypes(typeValue: unknown): string[] {
   return [];
 }
 
-function findAnthropicArrayConstraintIssues(node: unknown, path: string, issues: SchemaIssue[]): void {
+function findAnthropicArrayConstraintIssues(
+  node: unknown,
+  path: string,
+  issues: SchemaIssue[]
+): void {
   if (typeof node !== 'object' || node === null) {
     return;
   }
@@ -120,7 +126,11 @@ function findAnthropicArrayConstraintIssues(node: unknown, path: string, issues:
   }
 }
 
-function findAnthropicNumericConstraintIssues(node: unknown, path: string, issues: SchemaIssue[]): void {
+function findAnthropicNumericConstraintIssues(
+  node: unknown,
+  path: string,
+  issues: SchemaIssue[]
+): void {
   if (typeof node !== 'object' || node === null) {
     return;
   }
@@ -147,7 +157,11 @@ function findAnthropicNumericConstraintIssues(node: unknown, path: string, issue
   }
 }
 
-function findAnthropicStringConstraintIssues(node: unknown, path: string, issues: SchemaIssue[]): void {
+function findAnthropicStringConstraintIssues(
+  node: unknown,
+  path: string,
+  issues: SchemaIssue[]
+): void {
   if (typeof node !== 'object' || node === null) {
     return;
   }
@@ -188,7 +202,8 @@ function findEnumTypeIssues(node: unknown, path: string, issues: SchemaIssue[]):
     for (const enumValue of enumValues) {
       const enumType = getJsonType(enumValue);
       const matchesType =
-        declaredTypes.includes(enumType) || (enumType === 'integer' && declaredTypes.includes('number'));
+        declaredTypes.includes(enumType) ||
+        (enumType === 'integer' && declaredTypes.includes('number'));
       if (!matchesType) {
         issues.push({
           path,
@@ -248,7 +263,7 @@ describe('Anthropic schema compatibility', () => {
     { name: 'SPINE_ARC_ENGINE_SCHEMA', schema: SPINE_ARC_ENGINE_SCHEMA },
     { name: 'SPINE_SYNTHESIS_SCHEMA', schema: SPINE_SYNTHESIS_SCHEMA },
     { name: 'SPINE_REWRITE_SCHEMA', schema: SPINE_REWRITE_SCHEMA },
-{ name: 'CHARACTER_DECOMPOSITION_SCHEMA', schema: CHARACTER_DECOMPOSITION_SCHEMA },
+    { name: 'CHARACTER_DECOMPOSITION_SCHEMA', schema: CHARACTER_DECOMPOSITION_SCHEMA },
     { name: 'CHARACTER_CONTEXTUALIZATION_SCHEMA', schema: CHARACTER_CONTEXTUALIZATION_SCHEMA },
     { name: 'WORLDBUILDING_DECOMPOSITION_SCHEMA', schema: WORLDBUILDING_DECOMPOSITION_SCHEMA },
     { name: 'CONCEPT_IDEATION_SCHEMA', schema: CONCEPT_IDEATION_SCHEMA },
@@ -278,7 +293,10 @@ describe('Anthropic schema compatibility', () => {
     { name: 'STRUCTURE_REPAIR_SCHEMA', schema: STRUCTURE_REPAIR_SCHEMA },
     { name: 'CHARACTER_WEB_GENERATION_SCHEMA', schema: CHARACTER_WEB_GENERATION_SCHEMA },
     { name: 'CHAR_KERNEL_GENERATION_SCHEMA', schema: CHAR_KERNEL_GENERATION_SCHEMA },
-    { name: 'CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA', schema: CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA },
+    {
+      name: 'CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA',
+      schema: CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA,
+    },
     { name: 'CHAR_AGENCY_GENERATION_SCHEMA', schema: CHAR_AGENCY_GENERATION_SCHEMA },
     { name: 'CHAR_RELATIONSHIPS_GENERATION_SCHEMA', schema: CHAR_RELATIONSHIPS_GENERATION_SCHEMA },
     { name: 'CHAR_PRESENTATION_GENERATION_SCHEMA', schema: CHAR_PRESENTATION_GENERATION_SCHEMA },
@@ -286,32 +304,19 @@ describe('Anthropic schema compatibility', () => {
     { name: 'WORLDBUILDING_ELABORATION_SCHEMA', schema: WORLDBUILDING_ELABORATION_SCHEMA },
   ];
 
-  // setpieceBank in MACRO_ARCHITECTURE_SCHEMA intentionally uses minItems/maxItems
-  // to enforce exactly 6 items, which is Anthropic-incompatible but required by design.
-  const KNOWN_EXCEPTIONS: Record<string, SchemaIssue[]> = {
-    MACRO_ARCHITECTURE_SCHEMA: [
-      {
-        path: 'schema.properties.setpieceBank',
-        message: 'minItems must be 0 or 1 for Anthropic-compatible schemas (received 6)',
-      },
-      {
-        path: 'schema.properties.setpieceBank',
-        message: 'maxItems is not supported for Anthropic-compatible schemas',
-      },
-    ],
-  };
-
-  it.each(llmResponseSchemas)('%s should satisfy Anthropic schema compatibility checks', ({ name, schema }) => {
-    const issues = getIssues(schema);
-    const expectedIssues = KNOWN_EXCEPTIONS[name] ?? [];
-    expect(issues).toEqual(expectedIssues);
-  });
+  it.each(llmResponseSchemas)(
+    '%s should satisfy Anthropic schema compatibility checks',
+    ({ schema }) => {
+      const issues = getIssues(schema);
+      expect(issues).toEqual([]);
+    }
+  );
 
   it('should include every static JsonSchema export from src/llm/schemas/', () => {
     const schemasDir = path.resolve(__dirname, '../../../../src/llm/schemas');
-    const schemaFiles = fs.readdirSync(schemasDir).filter(
-      (f) => f.endsWith('-schema.ts') && !f.endsWith('-validation-schema.ts'),
-    );
+    const schemaFiles = fs
+      .readdirSync(schemasDir)
+      .filter((f) => f.endsWith('-schema.ts') && !f.endsWith('-validation-schema.ts'));
 
     const registeredNames = new Set(llmResponseSchemas.map((entry) => entry.name));
     const missingSchemas: string[] = [];

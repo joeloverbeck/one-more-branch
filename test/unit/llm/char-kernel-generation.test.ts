@@ -44,7 +44,7 @@ function createWebContext(overrides?: Partial<CharacterWebContext>): CharacterWe
       storyFunction: StoryFunction.ANTAGONIST,
       characterDepth: CharacterDepth.ROUND,
       narrativeRole: 'The rival who challenges the protagonist at every turn.',
-      conflictRelationship: 'Directly opposes the protagonist\'s goals.',
+      conflictRelationship: "Directly opposes the protagonist's goals.",
     },
     protagonistName: 'Mira',
     relationshipArchetypes: [
@@ -71,17 +71,10 @@ function validKernelResponseRaw(
       'Infiltrate the court as a commoner',
       'Find allies among the disaffected nobles',
     ],
-    primaryOpposition: 'The current king, who murdered Kael\'s father.',
-    stakes: [
-      'His family\'s honor and legacy',
-      'The lives of those who supported his father',
-    ],
-    constraints: [
-      'Must conceal his true identity',
-      'Cannot harm innocents in pursuit of his goal',
-    ],
-    pressurePoint:
-      'His sister is held hostage by the king — any overt action risks her life.',
+    primaryOpposition: "The current king, who murdered Kael's father.",
+    stakes: ["His family's honor and legacy", 'The lives of those who supported his father'],
+    constraints: ['Must conceal his true identity', 'Cannot harm innocents in pursuit of his goal'],
+    pressurePoint: 'His sister is held hostage by the king — any overt action risks her life.',
     moralLine: 'Will never betray a sworn oath',
     worstFear: 'Being forgotten by history',
     ...overrides,

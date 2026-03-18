@@ -1,0 +1,48 @@
+{
+  "id": "fef3161b-fe1a-4b29-b6fb-0f5990268c8f",
+  "name": "MYSTERY — When Iker finds the signed lease on the desk with his name a",
+  "createdAt": "2026-03-16T02:01:11.902Z",
+  "updatedAt": "2026-03-16T02:01:11.902Z",
+  "spineOption": {
+    "centralDramaticQuestion": "When Iker finds the signed lease on the desk with his name already on it, can he accept that the authenticity of what he feels for Valentina can never be verified from the inside — or will the unbearable alternative of being ordinary drive him to swallow the evidence and call it love?",
+    "protagonistNeedVsWant": {
+      "need": "To accept that the authenticity of desire — hers or his own — cannot be verified from the inside, and that demanding proof of genuineness is itself the mechanism by which he surrenders his subjecthood.",
+      "want": "To find irrefutable evidence that Valentina's recognition of him is real and unarchitected, so that the feeling of being extraordinary can be trusted rather than merely endured.",
+      "dynamic": "IRRECONCILABLE"
+    },
+    "primaryAntagonisticForce": {
+      "description": "Valentina's desire itself — not as malice but as a structural intelligence that has already anticipated every move Iker might make toward verification, building each apparent proof of her genuine recognition into the architecture of the arrangement so that the evidence he seeks was manufactured in advance of his seeking it.",
+      "pressureMechanism": "Every piece of evidence Iker finds that seems to confirm Valentina's desire is real was placed there by the same apparatus he is trying to see past, so the harder he investigates, the more completely he hands her the proof of his own irreplaceability-hunger, making his want — irrefutable evidence — the precise instrument by which he surrenders the epistemic ground his need requires him to hold."
+    },
+    "storySpineType": "MYSTERY",
+    "conflictAxis": "KNOWLEDGE_VS_INNOCENCE",
+    "conflictType": "PERSON_VS_SELF",
+    "characterArcType": "DISILLUSIONMENT",
+    "toneFeel": [
+      "smoldering",
+      "silk-heavy",
+      "airless",
+      "slow-burning",
+      "claustrophobic"
+    ],
+    "toneAvoid": [
+      "winking",
+      "comedic",
+      "breezy",
+      "moralistic",
+      "sentimental"
+    ],
+    "wantNeedCollisionPoint": "The moment Iker decides to say nothing about the lease and instead presses Valentina for a declaration of unscripted feeling, he produces exactly the conditions under which she can give him one — and in receiving it, he transforms the only act that could have restored his subjecthood into the final proof that she has already replaced it.",
+    "protagonistDeepestFear": "That the singular recognition Valentina offers him — the first proof that he is genuinely extraordinary to someone with full information — will turn out to be an architecture she built rather than a truth she discovered, confirming that intimacy is always geography and he was never irreplaceable to anyone."
+  },
+  "sourceConceptId": "be54c82d-2a94-4f04-bf61-a8698c3b77fd",
+  "protagonistCharacterId": "char-76e412d4-89b1-4a43-8d66-f325b8942b00",
+  "npcCharacterIds": [
+    "char-700a955d-67b8-4c03-9274-f629dec2cde9",
+    "char-89f76d63-3479-43d9-9fb3-f79b14734a74",
+    "char-eb535f4c-ed79-4651-9129-6ad1891aae9e"
+  ],
+  "worldbuildingId": "82b49e54-ebf9-4387-b7a1-feec1c74e3af",
+  "tone": "sex, seduction, erotica, big breasts, possession, obsession, desire, secrecy, transgression, taboo, intimacy, sugar mommy, dependency, luxury, wealth, passion",
+  "startingSituation": "Six weeks after his breakup with Amaia, Iker is hired for a single evening's work moving furniture and equipment at one of Gorka's restaurant venues before a private event \\u2014 the kind of cash-in-hand labor that circulates through Gros on short notice. Valentina is there overseeing the setup, dressed in a silk blouse cut low enough to be a statement. Iker doesn't know it, but Valentina is the one who got Iker hired; for weeks, she had been growing obsessed with Iker after she once saw him through the windows of the local gym; the vision of Iker, that handsome, strong, dedicated 18-year-old convinced him that she had to make Iker hers, entangling him in a passionate sexual affair behind her husband Gorka's back. Valentina got Iker hired for that evening's work at the venue to engineer an encounter with Iker. She asks him to carry something to a back room, and in that temporal privacy, she makes her first connection with him, initiating her possessive seduction."
+}

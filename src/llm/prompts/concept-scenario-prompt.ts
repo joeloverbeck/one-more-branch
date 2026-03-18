@@ -18,7 +18,7 @@ function buildContentPacketSetpieceDirective(packets: readonly ContentPacket[]):
   const packetSummaries = packets
     .map(
       (p) =>
-        `- ${p.contentId}: signatureImage="${p.signatureImage}", escalationPath="${p.escalationPath}", socialEngine="${p.socialEngine}"`,
+        `- ${p.contentId}: signatureImage="${p.signatureImage}", escalationPath="${p.escalationPath}", socialEngine="${p.socialEngine}"`
     )
     .join('\n');
 
@@ -33,7 +33,7 @@ ${packetSummaries}`;
 
 function buildUserPayload(
   context: ConceptVerifierContext,
-  specificityAnalyses: readonly ConceptSpecificityAnalysis[],
+  specificityAnalyses: readonly ConceptSpecificityAnalysis[]
 ): string {
   const conceptInputs = context.evaluatedConcepts.map((evaluated, index) => {
     const analysis = specificityAnalyses.find((a) => a.conceptId === `concept_${index + 1}`);
@@ -64,7 +64,7 @@ function buildUserPayload(
 
 export function buildConceptScenarioPrompt(
   context: ConceptVerifierContext,
-  specificityAnalyses: readonly ConceptSpecificityAnalysis[],
+  specificityAnalyses: readonly ConceptSpecificityAnalysis[]
 ): ChatMessage[] {
   const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, SCENARIO_DIRECTIVES];
 

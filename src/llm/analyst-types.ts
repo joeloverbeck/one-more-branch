@@ -22,21 +22,11 @@ export type {
   StructureEvaluatorResult,
 } from './structure-evaluator-types.js';
 
-export type {
-  DetectedPromise,
-  PromiseTrackerResult,
-} from './promise-tracker-types.js';
+export type { DetectedPromise, PromiseTrackerResult } from './promise-tracker-types.js';
 
-export type {
-  ThematicCharge,
-  NarrativeFocus,
-  ProseQualityResult,
-} from './prose-quality-types.js';
+export type { ThematicCharge, NarrativeFocus, ProseQualityResult } from './prose-quality-types.js';
 
-export type {
-  DetectedRelationshipShift,
-  NpcIntelligenceResult,
-} from './npc-intelligence-types.js';
+export type { DetectedRelationshipShift, NpcIntelligenceResult } from './npc-intelligence-types.js';
 
 /**
  * Combined analyst result composed from the 4 focused evaluator stages.

@@ -155,7 +155,8 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     },
     {
       tag: 'sect_as_cultivation_institution',
-      gloss: 'Sects are training institutions, political powers, and social hierarchies simultaneously',
+      gloss:
+        'Sects are training institutions, political powers, and social hierarchies simultaneously',
     },
     {
       tag: 'treasures_and_pills_as_cultivation_aids',
@@ -341,7 +342,7 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     },
     {
       tag: 'justice_is_structural',
-      gloss: 'The world\'s design rewards virtue and punishes vice',
+      gloss: "The world's design rewards virtue and punishes vice",
     },
   ],
   FANTASY: [
@@ -771,7 +772,7 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     },
     {
       tag: 'satire_of_social_strata',
-      gloss: 'Each milieu\'s pretensions are exposed',
+      gloss: "Each milieu's pretensions are exposed",
     },
     {
       tag: 'wit_as_primary_survival_tool',
@@ -835,13 +836,13 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     },
     {
       tag: 'complementary_wounds_between_lovers',
-      gloss: 'Each lover\'s flaw matches the other\'s need',
+      gloss: "Each lover's flaw matches the other's need",
     },
   ],
   SATIRE: [
     {
       tag: 'target_institution_rendered_absurd',
-      gloss: 'The system\'s logic is shown as ridiculous',
+      gloss: "The system's logic is shown as ridiculous",
     },
     {
       tag: 'exaggeration_reveals_truth',
@@ -1027,7 +1028,7 @@ export const GENRE_CONVENTIONS_BY_GENRE = {
     },
     {
       tag: 'antagonist_always_one_step_ahead',
-      gloss: 'The opposition anticipates the hero\'s moves',
+      gloss: "The opposition anticipates the hero's moves",
     },
     {
       tag: 'information_revealed_under_duress',
@@ -1185,15 +1186,13 @@ export type GenreConventionTag =
 const GENRE_CONVENTION_TAG_SET = new Set<string>(
   Object.values(GENRE_CONVENTIONS_BY_GENRE)
     .flat()
-    .map((e) => e.tag),
+    .map((e) => e.tag)
 );
 
 export function isGenreConventionTag(value: unknown): value is GenreConventionTag {
   return typeof value === 'string' && GENRE_CONVENTION_TAG_SET.has(value);
 }
 
-export function getGenreConventions(
-  genreFrame: GenreFrame,
-): readonly GenreConventionEntry[] {
+export function getGenreConventions(genreFrame: GenreFrame): readonly GenreConventionEntry[] {
   return GENRE_CONVENTIONS_BY_GENRE[genreFrame];
 }

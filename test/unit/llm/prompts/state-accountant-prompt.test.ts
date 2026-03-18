@@ -4,8 +4,16 @@ import type {
   OpeningPagePlanContext,
 } from '../../../../src/llm/context-types';
 import type { ReducedPagePlanResult } from '../../../../src/llm/planner-types';
-import { PromiseScope, PromiseType, ThreadType, Urgency } from '../../../../src/models/state/index.js';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../../fixtures/decomposed';
+import {
+  PromiseScope,
+  PromiseType,
+  ThreadType,
+  Urgency,
+} from '../../../../src/models/state/index.js';
+import {
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../../fixtures/decomposed';
 
 function getUserMessage(messages: { role: string; content: string }[]): string {
   return messages.find((message) => message.role === 'user')?.content ?? '';

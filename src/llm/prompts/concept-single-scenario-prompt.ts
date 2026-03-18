@@ -20,7 +20,7 @@ const SCENARIO_DIRECTIVES = `SCENARIO DIRECTIVES:
 export function buildSingleConceptScenarioPrompt(
   evaluated: EvaluatedConcept,
   kernel: StoryKernel,
-  specificityResult: SingleSpecificityResult,
+  specificityResult: SingleSpecificityResult
 ): ChatMessage[] {
   const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, SCENARIO_DIRECTIVES];
 

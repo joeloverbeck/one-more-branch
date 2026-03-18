@@ -166,7 +166,7 @@ describe('config schemas', () => {
 
     it('accepts explicit per-stage model overrides including kernel and concept stages', () => {
       const perStageModels = Object.fromEntries(
-        LLM_STAGE_KEYS.map((stage) => [stage, `test-model-for-${stage}`]),
+        LLM_STAGE_KEYS.map((stage) => [stage, `test-model-for-${stage}`])
       );
 
       const result = AppConfigSchema.parse({
@@ -192,7 +192,7 @@ describe('config schemas', () => {
               invalidStageName: 'z-ai/glm-5',
             },
           },
-        }),
+        })
       ).toThrow();
     });
   });

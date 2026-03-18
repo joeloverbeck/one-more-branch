@@ -1,4 +1,8 @@
-import type { CastPipelineInputs, CastRoleAssignment, RelationshipArchetype } from './character-pipeline-types.js';
+import type {
+  CastPipelineInputs,
+  CastRoleAssignment,
+  RelationshipArchetype,
+} from './character-pipeline-types.js';
 
 export interface SavedCharacterWeb {
   readonly id: string;
@@ -38,13 +42,13 @@ export function isSavedCharacterWeb(value: unknown): value is SavedCharacterWeb 
 }
 
 export function getProtagonistAssignment(
-  assignments: readonly CastRoleAssignment[],
+  assignments: readonly CastRoleAssignment[]
 ): CastRoleAssignment {
   const protagonists = assignments.filter((assignment) => assignment.isProtagonist);
 
   if (protagonists.length !== 1) {
     throw new Error(
-      `Character web requires exactly one protagonist assignment; found ${protagonists.length}`,
+      `Character web requires exactly one protagonist assignment; found ${protagonists.length}`
     );
   }
 

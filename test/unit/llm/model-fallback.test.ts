@@ -47,18 +47,16 @@ describe('withModelFallback', () => {
     expect(fn).toHaveBeenCalledTimes(2);
     expect(fn).toHaveBeenNthCalledWith(1, 'z-ai/glm-5');
     expect(fn).toHaveBeenNthCalledWith(2, 'anthropic/claude-sonnet-4.6');
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('rate-limited (429)')
-    );
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('rate-limited (429)'));
   });
 
   it('re-throws HTTP 429 when primary model is the default model', async () => {
     const error = new LLMError('Rate limited', 'HTTP_429', true);
     const fn = jest.fn().mockRejectedValue(error);
 
-    await expect(
-      withModelFallback(fn, 'anthropic/claude-sonnet-4.6', 'writer')
-    ).rejects.toThrow(error);
+    await expect(withModelFallback(fn, 'anthropic/claude-sonnet-4.6', 'writer')).rejects.toThrow(
+      error
+    );
 
     expect(fn).toHaveBeenCalledTimes(1);
   });
@@ -67,9 +65,7 @@ describe('withModelFallback', () => {
     const error = new LLMError('Server error', 'HTTP_500', true);
     const fn = jest.fn().mockRejectedValue(error);
 
-    await expect(
-      withModelFallback(fn, 'z-ai/glm-5', 'lorekeeper')
-    ).rejects.toThrow(error);
+    await expect(withModelFallback(fn, 'z-ai/glm-5', 'lorekeeper')).rejects.toThrow(error);
 
     expect(fn).toHaveBeenCalledTimes(1);
   });
@@ -78,9 +74,7 @@ describe('withModelFallback', () => {
     const error = new Error('network down');
     const fn = jest.fn().mockRejectedValue(error);
 
-    await expect(
-      withModelFallback(fn, 'z-ai/glm-5', 'planner')
-    ).rejects.toThrow(error);
+    await expect(withModelFallback(fn, 'z-ai/glm-5', 'planner')).rejects.toThrow(error);
 
     expect(fn).toHaveBeenCalledTimes(1);
   });
@@ -92,9 +86,7 @@ describe('withModelFallback', () => {
       .mockRejectedValueOnce(new LLMError('Rate limited', 'HTTP_429', true))
       .mockRejectedValueOnce(fallbackError);
 
-    await expect(
-      withModelFallback(fn, 'z-ai/glm-5', 'accountant')
-    ).rejects.toThrow(fallbackError);
+    await expect(withModelFallback(fn, 'z-ai/glm-5', 'accountant')).rejects.toThrow(fallbackError);
 
     expect(fn).toHaveBeenCalledTimes(2);
   });
@@ -117,9 +109,7 @@ describe('withModelFallback', () => {
     expect(fn).toHaveBeenCalledTimes(2);
     expect(fn).toHaveBeenNthCalledWith(1, 'qwen/qwen3.5-397b-a17b');
     expect(fn).toHaveBeenNthCalledWith(2, 'anthropic/claude-sonnet-4.6');
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('reasoning error')
-    );
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('reasoning error'));
   });
 
   it('re-throws REASONING_MODEL_ERROR when primary model is the default model', async () => {
@@ -137,9 +127,7 @@ describe('withModelFallback', () => {
     const fallbackError = new LLMError('Fallback also failed', 'HTTP_500', true);
     const fn = jest
       .fn()
-      .mockRejectedValueOnce(
-        new LLMError('reasoning error', 'REASONING_MODEL_ERROR', true)
-      )
+      .mockRejectedValueOnce(new LLMError('reasoning error', 'REASONING_MODEL_ERROR', true))
       .mockRejectedValueOnce(fallbackError);
 
     await expect(

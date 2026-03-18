@@ -35,14 +35,16 @@ describe('buildAnalystStructureEvaluation', () => {
             id: '1.2',
             description: 'Secure evidence',
             objective: 'Protect evidence',
-            exitCondition: 'The evidence is secured somewhere the purge cannot immediately destroy it.',
+            exitCondition:
+              'The evidence is secured somewhere the purge cannot immediately destroy it.',
             role: 'escalation',
           },
           {
             id: '1.3',
             description: 'Choose ally',
             objective: 'Commit to ally',
-            exitCondition: 'The fugitive commits to a partner whose resources change the escape route.',
+            exitCondition:
+              'The fugitive commits to a partner whose resources change the escape route.',
             role: 'turning_point',
           },
         ],

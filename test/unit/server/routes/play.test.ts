@@ -535,7 +535,9 @@ describe('playRoutes', () => {
       const [viewName, payload] = render.mock.calls[0] as [string, Record<string, unknown>];
       expect(viewName).toBe('pages/briefing');
       expect(payload['title']).toBe('Prepared Story - Mission Briefing');
-      expect(payload['story']).toEqual(expect.objectContaining({ id: storyId, title: 'Prepared Story' }));
+      expect(payload['story']).toEqual(
+        expect.objectContaining({ id: storyId, title: 'Prepared Story' })
+      );
       expect(payload['briefing']).toEqual(
         expect.objectContaining({
           theme: 'Trust is a weapon',
@@ -1670,30 +1672,25 @@ describe('playRoutes', () => {
         error: 'Generation failed due to reconciliation issues.',
         code: 'GENERATION_RECONCILIATION_FAILED',
         retryAttempted: true,
-        reconciliationIssueCodes: [
-          'THREAD_MISSING_EQUIVALENT_RESOLVE',
-          'UNKNOWN_STATE_ID',
-        ],
+        reconciliationIssueCodes: ['THREAD_MISSING_EQUIVALENT_RESOLVE', 'UNKNOWN_STATE_ID'],
       });
     });
 
     it('fails progress with reconciliation public message when reconciliation fails', async () => {
-      jest
-        .spyOn(storyEngine, 'makeChoice')
-        .mockRejectedValue(
-          new StateReconciliationError(
-            'State reconciliation failed after retry',
-            'RECONCILIATION_FAILED',
-            [
-              {
-                code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
-                field: 'openThreads',
-                message: 'Missing resolve operation',
-              },
-            ],
-            false
-          )
-        );
+      jest.spyOn(storyEngine, 'makeChoice').mockRejectedValue(
+        new StateReconciliationError(
+          'State reconciliation failed after retry',
+          'RECONCILIATION_FAILED',
+          [
+            {
+              code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
+              field: 'openThreads',
+              message: 'Missing resolve operation',
+            },
+          ],
+          false
+        )
+      );
       const progressStartSpy = jest.spyOn(generationProgressService, 'start');
       const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
       const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');

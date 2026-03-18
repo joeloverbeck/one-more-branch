@@ -126,15 +126,12 @@ function handleUnknownRouteError(
   return res.status(500).json({ success: false, error: err.message });
 }
 
-characterWebRoutes.get(
-  '/',
-  (_req: Request, res: Response) => {
-    return res.render('pages/character-webs', {
-      title: 'Character Webs - One More Branch',
-      currentPath: '/character-webs',
-    });
-  }
-);
+characterWebRoutes.get('/', (_req: Request, res: Response) => {
+  return res.render('pages/character-webs', {
+    title: 'Character Webs - One More Branch',
+    currentPath: '/character-webs',
+  });
+});
 
 characterWebRoutes.get(
   '/api/list',
@@ -176,12 +173,10 @@ characterWebRoutes.post(
 
     const sourceWorldbuildingId = parseRequiredString(
       'Source worldbuilding',
-      body.sourceWorldbuildingId,
+      body.sourceWorldbuildingId
     );
     if (!sourceWorldbuildingId) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'sourceWorldbuildingId is required' });
+      return res.status(400).json({ success: false, error: 'sourceWorldbuildingId is required' });
     }
 
     const web = await characterWebService.createWeb(
@@ -189,7 +184,7 @@ characterWebRoutes.post(
       sourceConceptId,
       trimOptionalString(body.userNotes),
       undefined,
-      sourceWorldbuildingId,
+      sourceWorldbuildingId
     );
 
     return res.status(201).json({ success: true, web });
@@ -450,11 +445,7 @@ characterWebRoutes.patch(
     }
 
     try {
-      const character = await characterWebService.patchCharacterStage(
-        charId,
-        stage,
-        req.body,
-      );
+      const character = await characterWebService.patchCharacterStage(charId, stage, req.body);
       return res.json({ success: true, character });
     } catch (error) {
       const knownError = mapKnownError(error);

@@ -35,7 +35,14 @@ describe('sidebar widgets container', () => {
       page: {
         id: 2,
         narrativeText: 'Story continues.',
-        choices: [{ text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 }],
+        choices: [
+          {
+            text: 'Next',
+            choiceType: 'INTERVENE',
+            primaryDelta: 'GOAL_PRIORITY_CHANGE',
+            nextPageId: 3,
+          },
+        ],
         isEnding: false,
         openThreads: [],
         openThreadOverflowSummary: null,
@@ -79,8 +86,18 @@ describe('sidebar widgets container', () => {
   it('creates sidebar container when any widget has data', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -100,7 +117,12 @@ describe('sidebar widgets container', () => {
     document.body.innerHTML = buildPlayPageHtml({
       activeThreats: [{ id: 'at-1', text: 'Existing threat' }],
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
       ],
     });
     loadAppAndInit();
@@ -120,20 +142,37 @@ describe('sidebar widgets container', () => {
   it('stacks all three widgets in correct order', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
 
     await clickChoiceAndResolve(
       makeChoiceResponse({
-        openThreads: [
-          { id: 'th-1', text: 'A thread', threadType: 'QUEST', urgency: 'HIGH' },
-        ],
+        openThreads: [{ id: 'th-1', text: 'A thread', threadType: 'QUEST', urgency: 'HIGH' }],
         activeThreats: [{ id: 'at-1', text: 'A threat' }],
         activeConstraints: [{ id: 'cn-1', text: 'A constraint' }],
-        trackedPromises: [{ id: 'pr-1', text: 'A promise', promiseType: 'CHEKHOV_GUN', scope: 'BEAT', age: 2, suggestedUrgency: 'HIGH' }],
+        trackedPromises: [
+          {
+            id: 'pr-1',
+            text: 'A promise',
+            promiseType: 'CHEKHOV_GUN',
+            scope: 'BEAT',
+            age: 2,
+            suggestedUrgency: 'HIGH',
+          },
+        ],
       })
     );
 
@@ -151,17 +190,25 @@ describe('sidebar widgets container', () => {
   it('handles mixed visibility (threads + constraints but no threats)', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
 
     await clickChoiceAndResolve(
       makeChoiceResponse({
-        openThreads: [
-          { id: 'th-1', text: 'A thread', threadType: 'QUEST', urgency: 'MEDIUM' },
-        ],
+        openThreads: [{ id: 'th-1', text: 'A thread', threadType: 'QUEST', urgency: 'MEDIUM' }],
         activeConstraints: [{ id: 'cn-1', text: 'A constraint' }],
       })
     );
@@ -180,8 +227,18 @@ describe('sidebar widgets container', () => {
   it('handles only threats visible', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -203,8 +260,18 @@ describe('sidebar widgets container', () => {
   it('renders tracked promises panel with icon, type badge, and age', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
     loadAppAndInit();
@@ -212,7 +279,14 @@ describe('sidebar widgets container', () => {
     await clickChoiceAndResolve(
       makeChoiceResponse({
         trackedPromises: [
-          { id: 'pr-1', text: 'The gun on the mantle', promiseType: 'CHEKHOV_GUN', scope: 'BEAT', age: 3, suggestedUrgency: 'HIGH' },
+          {
+            id: 'pr-1',
+            text: 'The gun on the mantle',
+            promiseType: 'CHEKHOV_GUN',
+            scope: 'BEAT',
+            age: 3,
+            suggestedUrgency: 'HIGH',
+          },
         ],
       })
     );
@@ -234,9 +308,23 @@ describe('sidebar widgets container', () => {
 
   it('removes tracked promises panel when response has empty array', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      trackedPromises: [{ id: 'pr-1', text: 'Old promise', promiseType: 'FORESHADOWING', scope: 'BEAT', age: 1, suggestedUrgency: 'LOW' }],
+      trackedPromises: [
+        {
+          id: 'pr-1',
+          text: 'Old promise',
+          promiseType: 'FORESHADOWING',
+          scope: 'BEAT',
+          age: 1,
+          suggestedUrgency: 'LOW',
+        },
+      ],
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
       ],
     });
     loadAppAndInit();

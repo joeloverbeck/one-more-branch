@@ -190,7 +190,8 @@ playRoutes.post(
           progress.fail('Choice already explored');
           return res.status(400).json({
             success: false,
-            error: 'Choice already explored; scene ideation is only available for unexplored choices',
+            error:
+              'Choice already explored; scene ideation is only available for unexplored choices',
           });
         }
 

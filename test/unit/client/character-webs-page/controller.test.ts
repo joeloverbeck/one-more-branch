@@ -144,14 +144,18 @@ describe('character webs page controller', () => {
     await flushClientWork();
 
     (document.getElementById('character-web-name') as HTMLInputElement).value = '  Court of Ash  ';
-    const conceptSelector = document.getElementById('character-web-concept-selector') as HTMLSelectElement;
+    const conceptSelector = document.getElementById(
+      'character-web-concept-selector'
+    ) as HTMLSelectElement;
     const option = document.createElement('option');
     option.value = 'concept-1';
     option.textContent = 'Test Concept';
     conceptSelector.appendChild(option);
     conceptSelector.value = 'concept-1';
 
-    const wbSelector = document.getElementById('character-web-worldbuilding-selector') as HTMLSelectElement;
+    const wbSelector = document.getElementById(
+      'character-web-worldbuilding-selector'
+    ) as HTMLSelectElement;
     wbSelector.value = 'wb-1';
 
     (document.getElementById('character-web-user-notes') as HTMLTextAreaElement).value =

@@ -163,9 +163,7 @@ function extractStructureResult(
   };
 }
 
-function extractPromiseResult(
-  ar: AnalystResult
-): PromiseTrackerResult & { rawResponse: string } {
+function extractPromiseResult(ar: AnalystResult): PromiseTrackerResult & { rawResponse: string } {
   return {
     promisesDetected: ar.promisesDetected,
     promisesResolved: ar.promisesResolved,
@@ -331,7 +329,9 @@ const openingResult = createMockFinalResult({
     secondaryEmotions: ['alertness', 'curiosity'],
     dominantMotivation: 'Uncover the source of the archive signal',
   },
-  newCanonFacts: [{ text: 'City clocks can be synchronized by a hidden archive signal', factType: 'LAW' }],
+  newCanonFacts: [
+    { text: 'City clocks can be synchronized by a hidden archive signal', factType: 'LAW' },
+  ],
   sceneSummary: 'Test summary of the scene events and consequences.',
   rawResponse: 'opening',
 });
@@ -409,7 +409,9 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): PageWrit
         secondaryEmotions: ['vindication', 'caution'],
         dominantMotivation: 'Escape with the evidence intact',
       },
-      newCanonFacts: [{ text: 'Signal chambers distribute timing scripts to patrol sectors', factType: 'LAW' }],
+      newCanonFacts: [
+        { text: 'Signal chambers distribute timing scripts to patrol sectors', factType: 'LAW' },
+      ],
       sceneSummary: 'Test summary of the scene events and consequences.',
       rawResponse: `continuation-press-${pageNumber}`,
     });
@@ -439,7 +441,9 @@ function buildWriterResult(selectedChoice: string, pageNumber: number): PageWrit
       secondaryEmotions: ['caution', 'observation'],
       dominantMotivation: 'Wait for the right moment to act',
     },
-    newCanonFacts: [{ text: 'Guard rotations change immediately after clock anomalies', factType: 'LAW' }],
+    newCanonFacts: [
+      { text: 'Guard rotations change immediately after clock anomalies', factType: 'LAW' },
+    ],
     sceneSummary: 'Test summary of the scene events and consequences.',
     rawResponse: `continuation-cautious-${pageNumber}`,
   });
@@ -522,8 +526,16 @@ describe('Structured Story E2E', () => {
       if (context.narrative.includes('rain-soaked capital')) {
         return Promise.resolve({
           choices: [
-            { text: 'Pursue the masked courier through the archive tunnels', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
-            { text: 'Hide in the crowd and decode the clock anomaly first', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
+            {
+              text: 'Pursue the masked courier through the archive tunnels',
+              choiceType: 'INTERVENE' as const,
+              primaryDelta: 'GOAL_PRIORITY_CHANGE' as const,
+            },
+            {
+              text: 'Hide in the crowd and decode the clock anomaly first',
+              choiceType: 'INVESTIGATE' as const,
+              primaryDelta: 'INFORMATION_STATE_CHANGE' as const,
+            },
           ],
           rawResponse: '{}',
         });
@@ -531,8 +543,16 @@ describe('Structured Story E2E', () => {
       if (context.narrative.includes('catch the courier')) {
         return Promise.resolve({
           choices: [
-            { text: 'Press deeper toward the signal source', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
-            { text: 'Retreat and brief your contact', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
+            {
+              text: 'Press deeper toward the signal source',
+              choiceType: 'INTERVENE' as const,
+              primaryDelta: 'GOAL_PRIORITY_CHANGE' as const,
+            },
+            {
+              text: 'Retreat and brief your contact',
+              choiceType: 'INVESTIGATE' as const,
+              primaryDelta: 'INFORMATION_STATE_CHANGE' as const,
+            },
           ],
           rawResponse: '{}',
         });
@@ -540,16 +560,32 @@ describe('Structured Story E2E', () => {
       if (context.narrative.includes('signal chamber')) {
         return Promise.resolve({
           choices: [
-            { text: 'Exfiltrate with the logs', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
-            { text: 'Trigger a distraction in the chamber', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
+            {
+              text: 'Exfiltrate with the logs',
+              choiceType: 'INTERVENE' as const,
+              primaryDelta: 'GOAL_PRIORITY_CHANGE' as const,
+            },
+            {
+              text: 'Trigger a distraction in the chamber',
+              choiceType: 'INVESTIGATE' as const,
+              primaryDelta: 'INFORMATION_STATE_CHANGE' as const,
+            },
           ],
           rawResponse: '{}',
         });
       }
       return Promise.resolve({
         choices: [
-          { text: 'Continue forward', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
-          { text: 'Investigate surroundings', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
+          {
+            text: 'Continue forward',
+            choiceType: 'INTERVENE' as const,
+            primaryDelta: 'GOAL_PRIORITY_CHANGE' as const,
+          },
+          {
+            text: 'Investigate surroundings',
+            choiceType: 'INVESTIGATE' as const,
+            primaryDelta: 'INFORMATION_STATE_CHANGE' as const,
+          },
         ],
         rawResponse: '{}',
       });

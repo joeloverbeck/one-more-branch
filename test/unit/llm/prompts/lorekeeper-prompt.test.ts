@@ -2,10 +2,7 @@ import {
   buildLorekeeperPrompt,
   detectMentionedCharacters,
 } from '../../../../src/llm/prompts/lorekeeper-prompt';
-import {
-  createEmptyActiveState,
-  parsePageId,
-} from '../../../../src/models';
+import { createEmptyActiveState, parsePageId } from '../../../../src/models';
 import type { LorekeeperContext } from '../../../../src/llm/context-types';
 import type { PagePlan } from '../../../../src/llm/planner-types';
 import type { DecomposedCharacter } from '../../../../src/models/decomposed-character';
@@ -129,7 +126,7 @@ describe('buildLorekeeperPrompt', () => {
               dynamic: 'manipulator',
               history: 'Has been using Jon as an unwitting enforcer.',
               currentTension: 'Fears Jon will discover the truth.',
-              leverage: 'Knows Jon\'s criminal past.',
+              leverage: "Knows Jon's criminal past.",
             },
             knowledgeBoundaries: 'Knows court politics and trade routes.',
             appearance: 'Immaculate uniform, polished boots.',
@@ -316,7 +313,9 @@ describe('buildLorekeeperPrompt', () => {
     const userPrompt = messages[1]?.content ?? '';
 
     expect(userPrompt).toContain('TONE DIRECTIVE:');
-    expect(userPrompt).toContain('Atmospheric feel (evoke these qualities): gritty, visceral, tense');
+    expect(userPrompt).toContain(
+      'Atmospheric feel (evoke these qualities): gritty, visceral, tense'
+    );
     expect(userPrompt).toContain('Anti-patterns (never drift toward): whimsical, lighthearted');
   });
 
@@ -399,7 +398,7 @@ describe('detectMentionedCharacters', () => {
     const context = buildMinimalContext({
       decomposedCharacters: [buildMinimalDecomposedCharacter('Alicia Western')],
       pagePlan: buildMinimalPagePlan({
-        sceneIntent: 'Jon materializes outside Alicia\'s room',
+        sceneIntent: "Jon materializes outside Alicia's room",
       }),
     });
 

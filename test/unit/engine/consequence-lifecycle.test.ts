@@ -6,9 +6,7 @@ import {
 } from '../../../src/engine/consequence-lifecycle.js';
 import type { DelayedConsequence } from '../../../src/models/state/delayed-consequence.js';
 
-function makeConsequence(
-  overrides: Partial<DelayedConsequence> = {}
-): DelayedConsequence {
+function makeConsequence(overrides: Partial<DelayedConsequence> = {}): DelayedConsequence {
   return {
     id: 'dc-1',
     description: 'A delayed narrative reversal.',

@@ -5,9 +5,7 @@
 import type { AnalystResult } from '../../llm/analyst-types';
 import type { AnalystResultFileData } from '../page-serializer-types';
 
-function parseNarrativeFocus(
-  value: string
-): AnalystResult['narrativeFocus'] {
+function parseNarrativeFocus(value: string): AnalystResult['narrativeFocus'] {
   if (value === 'DEEPENING' || value === 'BROADENING' || value === 'BALANCED') {
     return value;
   }
@@ -97,9 +95,7 @@ export function analystResultToFileData(
   };
 }
 
-export function fileDataToAnalystResult(
-  data: AnalystResultFileData | null
-): AnalystResult | null {
+export function fileDataToAnalystResult(data: AnalystResultFileData | null): AnalystResult | null {
   if (!data) {
     return null;
   }
@@ -166,8 +162,7 @@ export function fileDataToAnalystResult(
     milestoneAlignmentConfidence:
       (data.milestoneAlignmentConfidence as AnalystResult['milestoneAlignmentConfidence']) ?? 'LOW',
     milestoneAlignmentReason: (data.milestoneAlignmentReason as string) ?? '',
-    thematicCharge:
-      (data.thematicCharge as AnalystResult['thematicCharge']) ?? 'AMBIGUOUS',
+    thematicCharge: (data.thematicCharge as AnalystResult['thematicCharge']) ?? 'AMBIGUOUS',
     narrativeFocus: parseNarrativeFocus(data.narrativeFocus),
     thematicChargeDescription: data.thematicChargeDescription ?? '',
     obligatorySceneFulfilled: data.obligatorySceneFulfilled ?? null,

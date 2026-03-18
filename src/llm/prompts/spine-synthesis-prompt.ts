@@ -30,23 +30,25 @@ COHERENCE RULES:
 - The collision point MUST describe a concrete story moment, not a philosophical abstraction.`;
 
 function formatArcEngines(arcEngines: readonly SpineArcEngine[]): string {
-  return arcEngines.map((ae, i) => {
-    const lines = [
-      `ARC ENGINE ${i + 1}:`,
-      `  conflictAxis: ${ae.conflictAxis}`,
-      `  characterArcType: ${ae.characterArcType}`,
-      `  protagonistDeepestFear: ${ae.protagonistDeepestFear}`,
-      `  toneFeel: ${ae.toneFeel.join(', ')}`,
-      `  toneAvoid: ${ae.toneAvoid.join(', ')}`,
-      `  thematicPremise: ${ae.thematicPremise}`,
-      `  storySpineType: ${ae.storySpineType}`,
-      `  conflictType: ${ae.conflictType}`,
-      `  need: ${ae.protagonistNeedVsWant.need}`,
-      `  want: ${ae.protagonistNeedVsWant.want}`,
-      `  dynamic: ${ae.protagonistNeedVsWant.dynamic}`,
-    ];
-    return lines.join('\n');
-  }).join('\n\n');
+  return arcEngines
+    .map((ae, i) => {
+      const lines = [
+        `ARC ENGINE ${i + 1}:`,
+        `  conflictAxis: ${ae.conflictAxis}`,
+        `  characterArcType: ${ae.characterArcType}`,
+        `  protagonistDeepestFear: ${ae.protagonistDeepestFear}`,
+        `  toneFeel: ${ae.toneFeel.join(', ')}`,
+        `  toneAvoid: ${ae.toneAvoid.join(', ')}`,
+        `  thematicPremise: ${ae.thematicPremise}`,
+        `  storySpineType: ${ae.storySpineType}`,
+        `  conflictType: ${ae.conflictType}`,
+        `  need: ${ae.protagonistNeedVsWant.need}`,
+        `  want: ${ae.protagonistNeedVsWant.want}`,
+        `  dynamic: ${ae.protagonistNeedVsWant.dynamic}`,
+      ];
+      return lines.join('\n');
+    })
+    .join('\n\n');
 }
 
 function buildKernelConstraints(kernel?: StoryKernel): string {
@@ -65,8 +67,8 @@ function buildKernelConstraints(kernel?: StoryKernel): string {
     `Contradictory: ${kernel.valueSpectrum.contradictory}`,
     `Negation of negation: ${kernel.valueSpectrum.negationOfNegation}`,
     '',
-    'The antagonistic force\'s pressure mechanism should push the value toward the contradictory or negation-of-negation levels.',
-    'The central dramatic question should operationalize the kernel\'s thematic question.',
+    "The antagonistic force's pressure mechanism should push the value toward the contradictory or negation-of-negation levels.",
+    "The central dramatic question should operationalize the kernel's thematic question.",
   ];
 
   return lines.join('\n') + '\n\n';
@@ -83,7 +85,7 @@ function buildVerificationConstraints(verification?: ConceptVerification): strin
     `Narrative inevitability: ${verification.inevitabilityStatement}`,
     '',
     'The centralDramaticQuestion should make the signature scenario inevitable.',
-    'The antagonistic force\'s pressure mechanism should logically produce the conditions described in the inevitability statement.',
+    "The antagonistic force's pressure mechanism should logically produce the conditions described in the inevitability statement.",
   ];
 
   return lines.join('\n') + '\n\n';

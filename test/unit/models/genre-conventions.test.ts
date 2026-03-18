@@ -25,9 +25,7 @@ describe('genre conventions registry', () => {
   });
 
   it('returns per-genre conventions through the accessor', () => {
-    expect(getGenreConventions('THRILLER')).toEqual(
-      GENRE_CONVENTIONS_BY_GENRE.THRILLER,
-    );
+    expect(getGenreConventions('THRILLER')).toEqual(GENRE_CONVENTIONS_BY_GENRE.THRILLER);
   });
 
   it('validates convention tags with a type guard', () => {

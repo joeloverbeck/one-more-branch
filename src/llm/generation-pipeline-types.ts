@@ -38,9 +38,7 @@ export interface NarrativeFocusDataPoint {
 
 export type NarrativeFocusTrajectory = readonly NarrativeFocusDataPoint[];
 
-export interface ContinuationGenerationResult
-  extends PageWriterResult,
-    StateReconciliationResult {
+export interface ContinuationGenerationResult extends PageWriterResult, StateReconciliationResult {
   readonly isEnding: boolean;
   readonly choices: Array<{
     text: string;

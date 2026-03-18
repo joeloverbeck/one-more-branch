@@ -70,12 +70,24 @@ jest.mock('@/persistence/kernel-repository', () => ({
   loadKernel: jest.fn(),
 }));
 
+jest.mock('@/persistence/spine-repository', () => ({
+  loadSpine: jest.fn(),
+  listSpines: jest.fn().mockResolvedValue([]),
+}));
+
+jest.mock('@/services/worldbuilding-service', () => ({
+  loadWorldbuildingById: jest.fn().mockResolvedValue(null),
+  listWorldbuildings: jest.fn().mockResolvedValue([]),
+}));
+
 const mockIdeateConcepts = jest.fn();
 const mockDevelopSingleConcept = jest.fn();
 const mockServiceStressTest = jest.fn();
 
 jest.mock('@/server/services/concept-service', () => ({
-  ConceptEvaluationStageError: class extends Error { name = 'ConceptEvaluationStageError'; },
+  ConceptEvaluationStageError: class extends Error {
+    name = 'ConceptEvaluationStageError';
+  },
   createConceptService: jest.fn(),
   conceptService: {
     ideateConcepts: mockIdeateConcepts,
@@ -105,12 +117,9 @@ import { generateStoryStructure } from '@/llm';
 import type { StoryId, StoryKernel, StorySpine } from '@/models';
 import { conceptSeedRoutes } from '@/server/routes/concept-seeds';
 import { conceptRoutes } from '@/server/routes/concepts';
-import { storyRoutes } from '@/server/routes/stories';
-import {
-  loadConcept,
-  saveConcept,
-  updateConcept,
-} from '@/persistence/concept-repository';
+import { createStoryRoutes } from '@/server/routes/create-story';
+import { loadSpine } from '@/persistence/spine-repository';
+import { loadConcept, saveConcept, updateConcept } from '@/persistence/concept-repository';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { loadSeed, saveSeed } from '@/persistence/concept-seed-repository';
 import { loadKernel } from '@/persistence/kernel-repository';
@@ -127,17 +136,19 @@ type RouteLayer = {
   route?: {
     path?: string;
     methods?: Record<string, boolean>;
-    stack?: Array<{ handle: (req: Request, res: Response, next: NextFunction) => Promise<void> | void }>;
+    stack?: Array<{
+      handle: (req: Request, res: Response, next: NextFunction) => Promise<void> | void;
+    }>;
   };
 };
 
 function getRouteHandler(
   router: Router,
   method: 'post',
-  path: string,
+  path: string
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> | void {
   const layer = (router.stack as unknown as RouteLayer[]).find(
-    (item) => item.route?.path === path && item.route?.methods?.[method],
+    (item) => item.route?.path === path && item.route?.methods?.[method]
   );
   const handler = layer?.route?.stack?.[0]?.handle;
 
@@ -215,7 +226,8 @@ describe('Concept Assisted Story Flow (E2E)', () => {
   const developHandler = getRouteHandler(conceptRoutes, 'post', '/api/generate/develop');
   const saveConceptHandler = getRouteHandler(conceptRoutes, 'post', '/api/save');
   const hardenHandler = getRouteHandler(conceptRoutes, 'post', '/api/:conceptId/harden');
-  const createAjaxHandler = getRouteHandler(storyRoutes, 'post', '/create-ajax');
+  const createAjaxHandler = getRouteHandler(createStoryRoutes, 'post', '/api/create');
+  const mockedLoadSpine = loadSpine as jest.MockedFunction<typeof loadSpine>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -223,7 +235,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
 
     const seeds = Array.from({ length: 6 }, (_, index) => createConceptSeedFixture(index + 1));
     const characterWorlds = Array.from({ length: 6 }, (_, index) =>
-      createConceptCharacterWorldFixture(index + 1),
+      createConceptCharacterWorldFixture(index + 1)
     );
 
     mockIdeateConcepts.mockResolvedValue({ seeds, characterWorlds });
@@ -330,7 +342,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
         },
       } as Request,
       { status: generateStatus, json: generateJson } as unknown as Response,
-      noopNext,
+      noopNext
     );
     await waitForMock(generateJson);
     expect(generateStatus).not.toHaveBeenCalled();
@@ -359,7 +371,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
         },
       } as unknown as Request,
       { status: saveSeedStatus, json: saveSeedJson } as unknown as Response,
-      noopNext,
+      noopNext
     );
     await waitForMock(saveSeedJson);
     expect(saveSeedStatus).not.toHaveBeenCalled();
@@ -372,7 +384,9 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     const seedId = saveSeedPayload.seed['id'] as string;
 
     // Step 3: Develop the saved seed into a concept
-    mockedLoadSeed.mockResolvedValue(saveSeedPayload.seed as Parameters<typeof mockedLoadSeed.mockResolvedValue>[0]);
+    mockedLoadSeed.mockResolvedValue(
+      saveSeedPayload.seed as Parameters<typeof mockedLoadSeed.mockResolvedValue>[0]
+    );
 
     const developStatus = jest.fn().mockReturnThis();
     const developJson = jest.fn().mockReturnThis();
@@ -384,7 +398,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
         },
       } as Request,
       { status: developStatus, json: developJson } as unknown as Response,
-      noopNext,
+      noopNext
     );
     await waitForMock(developJson);
     expect(developStatus).not.toHaveBeenCalled();
@@ -410,7 +424,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
         },
       } as unknown as Request,
       { status: saveConceptStatus, json: saveConceptJson } as unknown as Response,
-      noopNext,
+      noopNext
     );
     await waitForMock(saveConceptJson);
 
@@ -435,7 +449,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     mockedUpdateConcept.mockImplementation(
       (_id: string, updater: (existing: typeof savedConcept) => typeof savedConcept) => {
         return Promise.resolve(updater(savedConcept));
-      },
+      }
     );
 
     const hardenStatus = jest.fn().mockReturnThis();
@@ -448,7 +462,7 @@ describe('Concept Assisted Story Flow (E2E)', () => {
         },
       } as unknown as Request,
       { status: hardenStatus, json: hardenJson } as unknown as Response,
-      noopNext,
+      noopNext
     );
     await waitForMock(hardenJson);
 
@@ -456,26 +470,82 @@ describe('Concept Assisted Story Flow (E2E)', () => {
     const hardenedConcept = hardenPayload.hardenedConcept;
     expect(hardenedConcept).toBeDefined();
 
-    // Step 6: Create story with the hardened concept
+    // Step 6: Create story with the hardened concept via saved spine
+    mockedLoadSpine.mockResolvedValueOnce({
+      id: 'spine-e2e',
+      name: 'E2E Spine',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      spineOption: mockSpine,
+      sourceConceptId: 'concept-e2e',
+      protagonistCharacterId: 'char-1',
+      npcCharacterIds: [],
+      worldbuildingId: '',
+      tone: 'grim noir',
+      startingSituation: 'A ledger goes missing at dawn',
+    });
+    mockedLoadConcept.mockResolvedValueOnce({
+      id: 'concept-e2e',
+      name: 'E2E Concept',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      seeds: {},
+      evaluatedConcept: {
+        concept: hardenedConcept,
+        scores: {
+          hookStrength: 4,
+          conflictEngine: 4,
+          agencyBreadth: 4,
+          noveltyLeverage: 4,
+          ironicPremise: 4,
+          sceneGenerativePower: 4,
+          contentCharge: 4,
+        },
+        overallScore: 4,
+        passes: true,
+        strengths: ['strong'],
+        weaknesses: [],
+        tradeoffSummary: 'Good',
+      },
+      sourceKernelId: 'kernel-e2e',
+      verificationResult: undefined,
+    });
+    mockedLoadKernel.mockResolvedValueOnce({
+      id: 'kernel-e2e',
+      name: 'E2E Kernel',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      seeds: {},
+      evaluatedKernel: {
+        kernel: mockKernel,
+        scores: {
+          tensionPotential: 4,
+          thematicDepth: 4,
+          conflictRichness: 4,
+          moralComplexity: 4,
+          arcPotential: 4,
+        },
+        overallScore: 4,
+        passes: true,
+        strengths: ['strong'],
+        weaknesses: [],
+        tradeoffSummary: 'Good',
+      },
+      sourceGeneration: undefined,
+    });
+
     const createStatus = jest.fn().mockReturnThis();
     const createJson = jest.fn().mockReturnThis();
     void createAjaxHandler(
       {
         body: {
+          spineId: 'spine-e2e',
           title: 'E2E CONGEN-09 Story',
-          characterConcept: 'A long enough character concept for validation',
-          worldbuilding: 'A city where memory is currency',
-          tone: 'grim noir',
-          startingSituation: 'A ledger goes missing at dawn',
-          conceptSpec: hardenedConcept,
           apiKey: 'valid-key-12345',
-          spine: mockSpine,
-          storyKernel: mockKernel,
-          protagonistCharacterId: 'char-1',
         },
       } as Request,
       { status: createStatus, json: createJson } as unknown as Response,
-      noopNext,
+      noopNext
     );
     await waitForMock(createJson);
 

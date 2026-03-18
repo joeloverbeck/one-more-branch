@@ -77,12 +77,8 @@ function createCharacterKernel(overrides?: Partial<CharacterKernel>): CharacterK
     ],
     primaryOpposition: "The current king, who murdered Kael's father.",
     stakes: ["His family's honor and legacy", 'The lives of those who supported his father'],
-    constraints: [
-      'Must conceal his true identity',
-      'Cannot harm innocents in pursuit of his goal',
-    ],
-    pressurePoint:
-      'His sister is held hostage by the king - any overt action risks her life.',
+    constraints: ['Must conceal his true identity', 'Cannot harm innocents in pursuit of his goal'],
+    pressurePoint: 'His sister is held hostage by the king - any overt action risks her life.',
     moralLine: 'Will not harm innocents even to reclaim the throne.',
     worstFear: 'Becoming the same tyrant who murdered his father.',
     ...overrides,
@@ -96,8 +92,7 @@ function createTridimensionalProfile(
     characterName: 'Kael',
     physiology:
       'Lean and wiry, with calloused hands from the forged commoner persona and a telltale blood-oath scar.',
-    sociology:
-      'Raised as a prince but living as a blacksmith among people he was taught to rule.',
+    sociology: 'Raised as a prince but living as a blacksmith among people he was taught to rule.',
     psychology:
       'Hypervigilant, proud, and morally strained by the lies he believes justice requires.',
     coreTraits: [
@@ -107,9 +102,9 @@ function createTridimensionalProfile(
       'Hypervigilance',
       'Reluctant deception',
     ],
-    formativeWound: 'Witnessing his father\'s murder as a child and being powerless to stop it.',
+    formativeWound: "Witnessing his father's murder as a child and being powerless to stop it.",
     protectiveMask: 'The humble blacksmith who wants nothing more than a quiet life.',
-    misbelief: 'That reclaiming the throne will heal the wound of his father\'s death.',
+    misbelief: "That reclaiming the throne will heal the wound of his father's death.",
     ...overrides,
   };
 }
@@ -125,10 +120,7 @@ function validAgencyResponseRaw(
       'Mercy without leverage invites betrayal.',
     ],
     desires: ['Reclaim the throne', 'Protect his sister', 'Be seen as just, not merely victorious'],
-    currentIntentions: [
-      'Maintain his cover at court',
-      'Recruit nobles who hate the king',
-    ],
+    currentIntentions: ['Maintain his cover at court', 'Recruit nobles who hate the king'],
     falseBeliefs: [
       'He can control the fallout of every lie he tells.',
       'His sister will forgive any collateral damage if he wins.',
@@ -181,7 +173,9 @@ describe('buildCharAgencyPrompt', () => {
 
     expect(messages).toHaveLength(2);
     expect(messages[1].content).toContain('CHARACTER ROLE IN CAST:');
-    expect(messages[1].content).toContain('A volatile cast with shifting alliances and deep mistrust.');
+    expect(messages[1].content).toContain(
+      'A volatile cast with shifting alliances and deep mistrust.'
+    );
     expect(messages[1].content).toContain('CHARACTER KERNEL (from Stage 1):');
     expect(messages[1].content).toContain('reclaim the throne');
     expect(messages[1].content).toContain('TRIDIMENSIONAL PROFILE (from Stage 2):');
@@ -305,7 +299,9 @@ describe('generateCharAgency', () => {
   it('rejects invalid emotionSalience enum values', async () => {
     global.fetch = jest
       .fn()
-      .mockResolvedValue(createMockResponse(validAgencyResponseRaw({ emotionSalience: 'EXTREME' })));
+      .mockResolvedValue(
+        createMockResponse(validAgencyResponseRaw({ emotionSalience: 'EXTREME' }))
+      );
 
     await expect(
       generateCharAgency(
@@ -344,9 +340,11 @@ describe('generateCharAgency', () => {
   });
 
   it('rejects array fields with non-string entries', async () => {
-    global.fetch = jest.fn().mockResolvedValue(
-      createMockResponse(validAgencyResponseRaw({ falseBeliefs: ['Valid belief', 42] }))
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(
+        createMockResponse(validAgencyResponseRaw({ falseBeliefs: ['Valid belief', 42] }))
+      );
 
     await expect(
       generateCharAgency(

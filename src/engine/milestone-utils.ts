@@ -10,7 +10,9 @@ import { getCurrentMilestone } from '../models';
  * Parses milestone ID (e.g., "1.2") into act and milestone indices.
  * Returns null for invalid formats.
  */
-export function parseMilestoneIndices(milestoneId: string): { actIndex: number; milestoneIndex: number } | null {
+export function parseMilestoneIndices(
+  milestoneId: string
+): { actIndex: number; milestoneIndex: number } | null {
   const milestoneIdMatch = /^(\d+)\.(\d+)$/.exec(milestoneId);
   if (!milestoneIdMatch) {
     return null;

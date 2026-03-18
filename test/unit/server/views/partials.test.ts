@@ -16,7 +16,8 @@ describe('view partial templates', () => {
 
     expect(template).toContain('nav-dropdown');
     expect(template).toContain('href="/"');
-    expect(template).toContain('href="/stories/new"');
+    expect(template).toContain('href="/spines"');
+    expect(template).toContain('href="/create-story"');
     expect(template).toContain('href="/kernels"');
     expect(template).toContain('href="/evolve-kernels"');
     expect(template).toContain('href="/concept-seeds"');
@@ -24,7 +25,7 @@ describe('view partial templates', () => {
     expect(template).toContain('href="/evolve"');
     expect(template).toContain('href="/logs"');
 
-    expect(template.indexOf('Stories')).toBeLessThan(template.indexOf('Kernels'));
+    expect(template.indexOf('Architecture')).toBeLessThan(template.indexOf('Kernels'));
     expect(template.indexOf('Kernels')).toBeLessThan(template.indexOf('Concepts'));
   });
 

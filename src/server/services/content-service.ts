@@ -171,7 +171,7 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       };
 
       const result = await runGenerationStage(onGenerationStage, 'GENERATING_CONTENT', () =>
-        deps.generateContentOneShot(context, apiKey),
+        deps.generateContentOneShot(context, apiKey)
       );
 
       return { packets: result.packets, rawResponse: result.rawResponse };
@@ -190,7 +190,7 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       };
 
       const tasteResult = await runGenerationStage(onGenerationStage, 'DISTILLING_TASTE', () =>
-        deps.generateTasteProfile(tasteContext, apiKey),
+        deps.generateTasteProfile(tasteContext, apiKey)
       );
 
       // Stage 2: Sparkstormer
@@ -201,7 +201,7 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       };
 
       const sparkResult = await runGenerationStage(onGenerationStage, 'GENERATING_SPARKS', () =>
-        deps.generateSparks(sparkContext, apiKey),
+        deps.generateSparks(sparkContext, apiKey)
       );
 
       // Stage 3: Content Packeter
@@ -212,7 +212,7 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       };
 
       const packeterResult = await runGenerationStage(onGenerationStage, 'PACKAGING_CONTENT', () =>
-        deps.generateContentPackets(packeterContext, apiKey),
+        deps.generateContentPackets(packeterContext, apiKey)
       );
 
       // Stage 4: Content Evaluator
@@ -221,8 +221,10 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         tasteProfile: tasteResult.tasteProfile,
       };
 
-      const evaluatorResult = await runGenerationStage(onGenerationStage, 'EVALUATING_CONTENT', () =>
-        deps.evaluateContentPackets(evaluatorContext, apiKey),
+      const evaluatorResult = await runGenerationStage(
+        onGenerationStage,
+        'EVALUATING_CONTENT',
+        () => deps.evaluateContentPackets(evaluatorContext, apiKey)
       );
 
       return {
@@ -245,7 +247,7 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       };
 
       const result = await runGenerationStage(onGenerationStage, 'DISTILLING_TASTE', () =>
-        deps.generateTasteProfile(context, apiKey),
+        deps.generateTasteProfile(context, apiKey)
       );
 
       return { tasteProfile: result.tasteProfile };
@@ -262,7 +264,7 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       };
 
       const result = await runGenerationStage(onGenerationStage, 'GENERATING_SPARKS', () =>
-        deps.generateSparks(context, apiKey),
+        deps.generateSparks(context, apiKey)
       );
 
       return { sparks: result.sparks };
@@ -279,7 +281,7 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       };
 
       const result = await runGenerationStage(onGenerationStage, 'PACKAGING_CONTENT', () =>
-        deps.generateContentPackets(context, apiKey),
+        deps.generateContentPackets(context, apiKey)
       );
 
       return { packets: result.packets };
@@ -295,7 +297,7 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       };
 
       const result = await runGenerationStage(onGenerationStage, 'EVALUATING_CONTENT', () =>
-        deps.evaluateContentPackets(context, apiKey),
+        deps.evaluateContentPackets(context, apiKey)
       );
 
       return { evaluations: result.evaluations };

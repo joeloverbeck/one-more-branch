@@ -20,11 +20,11 @@ import { buildContinuationPage, ContinuationPageBuildContext } from '@/engine/pa
 import { buildPlannerContinuationContextSection } from '@/llm/prompts/sections/planner/continuation-context';
 import { countConsecutiveFromEnd } from '@/llm/prompts/sections/planner/continuation-context';
 import type { ContinuationPagePlanContext } from '@/llm/context-types';
+import { createMockAnalystResult, createMockFinalResult } from '../../fixtures/llm-results';
 import {
-  createMockAnalystResult,
-  createMockFinalResult,
-} from '../../fixtures/llm-results';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../fixtures/decomposed';
 
 function makeBasePlannerContext(
   overrides: Partial<ContinuationPagePlanContext> = {}
@@ -195,12 +195,15 @@ describe('Analyst-to-Planner Feedback Loop', () => {
 
     it('renders PACING BRIEFING with directive alone', () => {
       const context = makeBasePlannerContext({
-        parentPacingDirective: 'After this tense revelation, a brief character moment is acceptable.',
+        parentPacingDirective:
+          'After this tense revelation, a brief character moment is acceptable.',
       });
 
       const result = buildPlannerContinuationContextSection(context);
       expect(result).toContain('=== PACING BRIEFING (from story analyst) ===');
-      expect(result).toContain('After this tense revelation, a brief character moment is acceptable.');
+      expect(result).toContain(
+        'After this tense revelation, a brief character moment is acceptable.'
+      );
       expect(result).not.toContain('URGENT:');
     });
 
@@ -235,7 +238,9 @@ describe('Analyst-to-Planner Feedback Loop', () => {
 
       const result = buildPlannerContinuationContextSection(context);
       expect(result).toContain('Accelerate toward the milestone objective.');
-      expect(result).toContain('WARNING: The last 2 scenes showed no meaningful narrative progress.');
+      expect(result).toContain(
+        'WARNING: The last 2 scenes showed no meaningful narrative progress.'
+      );
     });
   });
 
@@ -294,7 +299,9 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       });
 
       const result = buildPlannerContinuationContextSection(context);
-      expect(result).toContain('WARNING: The last 2 scenes showed no meaningful narrative progress.');
+      expect(result).toContain(
+        'WARNING: The last 2 scenes showed no meaningful narrative progress.'
+      );
       expect(result).toContain('major advancement');
     });
 
@@ -318,7 +325,9 @@ describe('Analyst-to-Planner Feedback Loop', () => {
       });
 
       const result = buildPlannerContinuationContextSection(context);
-      expect(result).toContain('WARNING: The last 3 scenes produced no clear evidence of milestone objective progress.');
+      expect(result).toContain(
+        'WARNING: The last 3 scenes produced no clear evidence of milestone objective progress.'
+      );
       expect(result).toContain('direct progress toward the current milestone objective');
     });
 

@@ -14,14 +14,12 @@ function buildDiversityKey(seed: ConceptSeedFields): string {
   return `${seed.genreFrame}::${seed.conflictAxis}`;
 }
 
-export function parseConceptEvolverSeederResponse(
-  parsed: unknown,
-): readonly ConceptSeedFields[] {
+export function parseConceptEvolverSeederResponse(parsed: unknown): readonly ConceptSeedFields[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Concept evolver seeder response must be an object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -30,7 +28,7 @@ export function parseConceptEvolverSeederResponse(
     throw new LLMError(
       'Concept evolver seeder response missing concepts array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -38,7 +36,7 @@ export function parseConceptEvolverSeederResponse(
     throw new LLMError(
       `Concept evolver seeder response must include exactly 6 seeds (received: ${data['concepts'].length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -50,7 +48,7 @@ export function parseConceptEvolverSeederResponse(
       throw new LLMError(
         `Concept evolver seeder response contains duplicate genreFrame+conflictAxis pair: ${key}`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
     diversityKeys.add(key);
@@ -62,7 +60,7 @@ export function parseConceptEvolverSeederResponse(
 export async function generateEvolvedConceptSeeds(
   context: ConceptEvolverSeederContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptEvolverSeederResult> {
   const messages = buildConceptEvolverSeederPrompt(context);
   const result = await runLlmStage({

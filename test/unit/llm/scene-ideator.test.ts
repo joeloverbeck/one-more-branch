@@ -138,9 +138,9 @@ describe('parseSceneDirectionOption', () => {
   });
 
   it('throws when scenePurpose is invalid', () => {
-    expect(() =>
-      parseSceneDirectionOption(validOptionRaw({ scenePurpose: 'INVALID' }), 0)
-    ).toThrow(/invalid scenePurpose/);
+    expect(() => parseSceneDirectionOption(validOptionRaw({ scenePurpose: 'INVALID' }), 0)).toThrow(
+      /invalid scenePurpose/
+    );
   });
 
   it('throws when scenePurpose is missing', () => {
@@ -170,15 +170,15 @@ describe('parseSceneDirectionOption', () => {
   });
 
   it('throws when sceneDirection is empty string', () => {
-    expect(() =>
-      parseSceneDirectionOption(validOptionRaw({ sceneDirection: '' }), 0)
-    ).toThrow(/missing sceneDirection/);
+    expect(() => parseSceneDirectionOption(validOptionRaw({ sceneDirection: '' }), 0)).toThrow(
+      /missing sceneDirection/
+    );
   });
 
   it('throws when sceneDirection is whitespace only', () => {
-    expect(() =>
-      parseSceneDirectionOption(validOptionRaw({ sceneDirection: '   ' }), 0)
-    ).toThrow(/missing sceneDirection/);
+    expect(() => parseSceneDirectionOption(validOptionRaw({ sceneDirection: '   ' }), 0)).toThrow(
+      /missing sceneDirection/
+    );
   });
 
   it('throws when dramaticJustification is missing', () => {
@@ -234,16 +234,13 @@ describe('parseSceneDirectionOption', () => {
     expect(result.valuePolarityShift).toBe(shift);
   });
 
-  it.each([
-    'ACCELERATING',
-    'DECELERATING',
-    'SUSTAINED_HIGH',
-    'OSCILLATING',
-    'BUILDING_SLOW',
-  ])('accepts valid pacingMode %s', (mode) => {
-    const result = parseSceneDirectionOption(validOptionRaw({ pacingMode: mode }), 0);
-    expect(result.pacingMode).toBe(mode);
-  });
+  it.each(['ACCELERATING', 'DECELERATING', 'SUSTAINED_HIGH', 'OSCILLATING', 'BUILDING_SLOW'])(
+    'accepts valid pacingMode %s',
+    (mode) => {
+      const result = parseSceneDirectionOption(validOptionRaw({ pacingMode: mode }), 0);
+      expect(result.pacingMode).toBe(mode);
+    }
+  );
 });
 
 describe('validateDiversity', () => {
@@ -498,10 +495,7 @@ describe('generateSceneDirections', () => {
     await generateSceneDirections(createMinimalOpeningContext(), 'my-secret-key');
 
     expect(globalThis.fetch).toHaveBeenCalledTimes(1);
-    const [, requestInit] = (globalThis.fetch as jest.Mock).mock.calls[0] as [
-      string,
-      RequestInit,
-    ];
+    const [, requestInit] = (globalThis.fetch as jest.Mock).mock.calls[0] as [string, RequestInit];
     const headers = requestInit.headers as Record<string, string>;
     expect(headers['Authorization']).toBe('Bearer my-secret-key');
   });

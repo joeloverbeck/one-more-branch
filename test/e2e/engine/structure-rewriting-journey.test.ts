@@ -163,9 +163,7 @@ function extractStructureResult(
   };
 }
 
-function extractPromiseResult(
-  ar: AnalystResult
-): PromiseTrackerResult & { rawResponse: string } {
+function extractPromiseResult(ar: AnalystResult): PromiseTrackerResult & { rawResponse: string } {
   return {
     promisesDetected: ar.promisesDetected,
     promisesResolved: ar.promisesResolved,
@@ -463,7 +461,9 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
         secondaryEmotions: ['anticipation', 'tension'],
         dominantMotivation: 'Expose signal tower coordination to the public',
       },
-      newCanonFacts: [{ text: 'Signal towers coordinate legal edits by district', factType: 'LAW' }],
+      newCanonFacts: [
+        { text: 'Signal towers coordinate legal edits by district', factType: 'LAW' },
+      ],
       sceneSummary: 'Test summary of the scene events and consequences.',
       rawResponse: 'continuation-initial',
     });
@@ -503,7 +503,12 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
         secondaryEmotions: ['frustration', 'desperation'],
         dominantMotivation: 'Rebuild credibility and salvage mission',
       },
-      newCanonFacts: [{ text: 'Alliance propaganda can invert public loyalties in a single night', factType: 'LAW' }],
+      newCanonFacts: [
+        {
+          text: 'Alliance propaganda can invert public loyalties in a single night',
+          factType: 'LAW',
+        },
+      ],
       sceneSummary: 'Test summary of the scene events and consequences.',
       rawResponse: 'continuation-deviation',
     });
@@ -524,7 +529,9 @@ function buildWriterResult(selectedChoice: string): PageWriterResult {
       secondaryEmotions: ['relief', 'pride'],
       dominantMotivation: 'Ensure lasting accountability for the regime',
     },
-    newCanonFacts: [{ text: 'Civic votes can immediately revoke emergency command chains', factType: 'LAW' }],
+    newCanonFacts: [
+      { text: 'Civic votes can immediately revoke emergency command chains', factType: 'LAW' },
+    ],
     sceneSummary: 'Test summary of the scene events and consequences.',
     isEnding: true,
     rawResponse: 'continuation-ending',
@@ -616,8 +623,16 @@ describe('Structure Rewriting Journey E2E', () => {
       if (context.narrative.includes('parliament steps')) {
         return Promise.resolve({
           choices: [
-            { text: 'Commit to the alliance publicly', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
-            { text: 'Refuse and go underground', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
+            {
+              text: 'Commit to the alliance publicly',
+              choiceType: 'INTERVENE' as const,
+              primaryDelta: 'GOAL_PRIORITY_CHANGE' as const,
+            },
+            {
+              text: 'Refuse and go underground',
+              choiceType: 'INVESTIGATE' as const,
+              primaryDelta: 'INFORMATION_STATE_CHANGE' as const,
+            },
           ],
           rawResponse: '{}',
         });
@@ -625,8 +640,16 @@ describe('Structure Rewriting Journey E2E', () => {
       if (context.narrative.includes('copy sealed dispatches')) {
         return Promise.resolve({
           choices: [
-            { text: 'Leak your true intent to a dockworker ally', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
-            { text: 'Double down publicly to gain rank', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
+            {
+              text: 'Leak your true intent to a dockworker ally',
+              choiceType: 'INTERVENE' as const,
+              primaryDelta: 'GOAL_PRIORITY_CHANGE' as const,
+            },
+            {
+              text: 'Double down publicly to gain rank',
+              choiceType: 'INVESTIGATE' as const,
+              primaryDelta: 'INFORMATION_STATE_CHANGE' as const,
+            },
           ],
           rawResponse: '{}',
         });
@@ -634,16 +657,32 @@ describe('Structure Rewriting Journey E2E', () => {
       if (context.narrative.includes('covert leak is exposed')) {
         return Promise.resolve({
           choices: [
-            { text: 'Rebuild trust with dockworkers', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
-            { text: 'Attempt immediate forum confrontation', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
+            {
+              text: 'Rebuild trust with dockworkers',
+              choiceType: 'INTERVENE' as const,
+              primaryDelta: 'GOAL_PRIORITY_CHANGE' as const,
+            },
+            {
+              text: 'Attempt immediate forum confrontation',
+              choiceType: 'INVESTIGATE' as const,
+              primaryDelta: 'INFORMATION_STATE_CHANGE' as const,
+            },
           ],
           rawResponse: '{}',
         });
       }
       return Promise.resolve({
         choices: [
-          { text: 'Option A', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
-          { text: 'Option B', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
+          {
+            text: 'Option A',
+            choiceType: 'INTERVENE' as const,
+            primaryDelta: 'GOAL_PRIORITY_CHANGE' as const,
+          },
+          {
+            text: 'Option B',
+            choiceType: 'INVESTIGATE' as const,
+            primaryDelta: 'INFORMATION_STATE_CHANGE' as const,
+          },
         ],
         rawResponse: '{}',
       });

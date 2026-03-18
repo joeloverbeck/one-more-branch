@@ -100,9 +100,7 @@ export function composeOpeningDataRules(): string {
  * Composes the data rules for continuation prompts.
  * These go in the user message, not the system message.
  */
-export function composeContinuationDataRules(options?: {
-  hasStoryBible?: boolean;
-}): string {
+export function composeContinuationDataRules(options?: { hasStoryBible?: boolean }): string {
   const continuationSections = options?.hasStoryBible
     ? [CONTINUATION_CONTINUITY_RULES_BIBLE]
     : [CONTINUATION_CONTINUITY_RULES, CHARACTER_CANON_VS_STATE];

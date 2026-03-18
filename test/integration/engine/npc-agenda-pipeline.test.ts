@@ -80,7 +80,9 @@ describe('resolveNpcAgendas', () => {
   });
 
   it('returns null when NPCs array is empty', async () => {
-    const context = createBaseContext({ decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist')] });
+    const context = createBaseContext({
+      decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist')],
+    });
 
     const outcome = await resolveNpcAgendas(context);
 
@@ -91,7 +93,12 @@ describe('resolveNpcAgendas', () => {
 
   it('returns agenda result on success', async () => {
     mockedGenerateAgendaResolver.mockResolvedValue(mockAgendaResult);
-    const context = createBaseContext({ decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist'), ...testDecomposedCharacters] });
+    const context = createBaseContext({
+      decomposedCharacters: [
+        buildMinimalDecomposedCharacter('Protagonist'),
+        ...testDecomposedCharacters,
+      ],
+    });
 
     const outcome = await resolveNpcAgendas(context);
 
@@ -111,7 +118,12 @@ describe('resolveNpcAgendas', () => {
 
   it('returns null result with degradation on failure', async () => {
     mockedGenerateAgendaResolver.mockRejectedValue(new Error('LLM timeout'));
-    const context = createBaseContext({ decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist'), ...testDecomposedCharacters] });
+    const context = createBaseContext({
+      decomposedCharacters: [
+        buildMinimalDecomposedCharacter('Protagonist'),
+        ...testDecomposedCharacters,
+      ],
+    });
 
     const outcome = await resolveNpcAgendas(context);
 
@@ -130,7 +142,13 @@ describe('resolveNpcAgendas', () => {
   it('emits RESOLVING_AGENDAS started and completed stages on success', async () => {
     mockedGenerateAgendaResolver.mockResolvedValue(mockAgendaResult);
     const stageCallback: GenerationStageCallback = jest.fn();
-    const context = createBaseContext({ decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist'), ...testDecomposedCharacters], onGenerationStage: stageCallback });
+    const context = createBaseContext({
+      decomposedCharacters: [
+        buildMinimalDecomposedCharacter('Protagonist'),
+        ...testDecomposedCharacters,
+      ],
+      onGenerationStage: stageCallback,
+    });
 
     await resolveNpcAgendas(context);
 
@@ -162,7 +180,10 @@ describe('resolveNpcAgendas', () => {
       ],
     };
     const context = createBaseContext({
-      decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist'), ...testDecomposedCharacters],
+      decomposedCharacters: [
+        buildMinimalDecomposedCharacter('Protagonist'),
+        ...testDecomposedCharacters,
+      ],
       deviationContext,
     });
 
@@ -179,7 +200,12 @@ describe('resolveNpcAgendas', () => {
 
   it('does not forward deviationContext when undefined', async () => {
     mockedGenerateAgendaResolver.mockResolvedValue(mockAgendaResult);
-    const context = createBaseContext({ decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist'), ...testDecomposedCharacters] });
+    const context = createBaseContext({
+      decomposedCharacters: [
+        buildMinimalDecomposedCharacter('Protagonist'),
+        ...testDecomposedCharacters,
+      ],
+    });
 
     await resolveNpcAgendas(context);
 
@@ -209,7 +235,10 @@ describe('resolveNpcAgendas', () => {
       ],
     };
     const context = createBaseContext({
-      decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist'), ...testDecomposedCharacters],
+      decomposedCharacters: [
+        buildMinimalDecomposedCharacter('Protagonist'),
+        ...testDecomposedCharacters,
+      ],
       analystSignals,
     });
 
@@ -227,7 +256,13 @@ describe('resolveNpcAgendas', () => {
   it('does not emit completed stage on failure', async () => {
     mockedGenerateAgendaResolver.mockRejectedValue(new Error('LLM timeout'));
     const stageCallback: GenerationStageCallback = jest.fn();
-    const context = createBaseContext({ decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist'), ...testDecomposedCharacters], onGenerationStage: stageCallback });
+    const context = createBaseContext({
+      decomposedCharacters: [
+        buildMinimalDecomposedCharacter('Protagonist'),
+        ...testDecomposedCharacters,
+      ],
+      onGenerationStage: stageCallback,
+    });
 
     await resolveNpcAgendas(context);
 

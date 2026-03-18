@@ -16,10 +16,7 @@ import {
   readErrorDetails,
   readJsonResponse,
 } from './http-client.js';
-import {
-  SPEECH_ARRAY_FIELDS,
-  SPEECH_STRING_FIELDS,
-} from './entity-decomposition-contract.js';
+import { SPEECH_ARRAY_FIELDS, SPEECH_STRING_FIELDS } from './entity-decomposition-contract.js';
 import { LLMError } from './llm-client-types.js';
 import { withModelFallback } from './model-fallback.js';
 import {

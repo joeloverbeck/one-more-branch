@@ -46,8 +46,7 @@ export function computeNarrativeStateLifecycle(
   input: NarrativeStateLifecycleInput
 ): NarrativeStateLifecycleOutput {
   const currentPromiseAgeEpoch =
-    input.currentPromiseAgeEpoch ??
-    (input.isOpening ? 0 : (input.parentPromiseAgeEpoch ?? 0) + 1);
+    input.currentPromiseAgeEpoch ?? (input.isOpening ? 0 : (input.parentPromiseAgeEpoch ?? 0) + 1);
   const effectiveThreadsResolved = input.isOpening
     ? input.threadsResolved
     : augmentThreadsResolvedFromAnalyst(
@@ -75,7 +74,7 @@ export function computeNarrativeStateLifecycle(
     currentPromiseAgeEpoch
   );
 
-  const accumulatedFulfilledPremisePromises = (() : readonly string[] => {
+  const accumulatedFulfilledPremisePromises = ((): readonly string[] => {
     const canonicalByTrimmed = new Map<string, string>();
     for (const promise of input.canonicalPremisePromises ?? []) {
       const trimmed = promise.trim();
@@ -84,7 +83,9 @@ export function computeNarrativeStateLifecycle(
       }
     }
 
-    const inherited = input.isOpening ? [] : (input.parentAccumulatedFulfilledPremisePromises ?? []);
+    const inherited = input.isOpening
+      ? []
+      : (input.parentAccumulatedFulfilledPremisePromises ?? []);
     const inheritedCanonical: string[] = [];
     const inheritedSeen = new Set<string>();
     for (const fulfilled of inherited) {
@@ -100,7 +101,8 @@ export function computeNarrativeStateLifecycle(
       inheritedSeen.add(trimmed);
     }
 
-    const fulfilledNow = (input.isOpening ? null : input.analystPremisePromiseFulfilled)?.trim() ?? '';
+    const fulfilledNow =
+      (input.isOpening ? null : input.analystPremisePromiseFulfilled)?.trim() ?? '';
     if (fulfilledNow.length === 0 || inheritedSeen.has(fulfilledNow)) {
       return inheritedCanonical;
     }

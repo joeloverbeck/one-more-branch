@@ -1,11 +1,11 @@
 import { parseConceptArchitectResponse } from '../../../src/llm/concept-architect';
 import { createConceptCharacterWorldFixture } from '../../fixtures/concept-generator';
 
-function createValidPayload(count = 6): { concepts: Array<ReturnType<typeof createConceptCharacterWorldFixture>> } {
+function createValidPayload(count = 6): {
+  concepts: Array<ReturnType<typeof createConceptCharacterWorldFixture>>;
+} {
   return {
-    concepts: Array.from({ length: count }, (_, i) =>
-      createConceptCharacterWorldFixture(i + 1),
-    ),
+    concepts: Array.from({ length: count }, (_, i) => createConceptCharacterWorldFixture(i + 1)),
   };
 }
 
@@ -36,13 +36,13 @@ describe('concept-architect', () => {
 
     it('rejects count mismatch (fewer items)', () => {
       expect(() => parseConceptArchitectResponse(createValidPayload(5), 6)).toThrow(
-        'exactly 6 items',
+        'exactly 6 items'
       );
     });
 
     it('rejects count mismatch (more items)', () => {
       expect(() => parseConceptArchitectResponse(createValidPayload(7), 6)).toThrow(
-        'exactly 6 items',
+        'exactly 6 items'
       );
     });
 

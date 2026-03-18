@@ -20,7 +20,7 @@ export function buildToneDirective(
   }
 
   lines.push(
-    'These qualities are mandatory creative constraints. Every concept must centrally embody all of them — not as incidental flavor, but as load-bearing identity.',
+    'These qualities are mandatory creative constraints. Every concept must centrally embody all of them — not as incidental flavor, but as load-bearing identity.'
   );
   return lines.join('\n');
 }

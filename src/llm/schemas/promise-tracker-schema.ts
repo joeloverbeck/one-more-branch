@@ -45,8 +45,7 @@ export const PROMISE_TRACKER_SCHEMA: JsonSchema = {
               suggestedUrgency: {
                 type: 'string',
                 enum: ['LOW', 'MEDIUM', 'HIGH'],
-                description:
-                  'How urgently this promise should be addressed in upcoming pages.',
+                description: 'How urgently this promise should be addressed in upcoming pages.',
               },
             },
             required: ['description', 'promiseType', 'scope', 'resolutionHint', 'suggestedUrgency'],

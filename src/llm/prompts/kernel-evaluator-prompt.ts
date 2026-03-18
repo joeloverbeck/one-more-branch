@@ -57,7 +57,9 @@ function buildSeedSection(context: KernelEvaluatorContext): string {
 }
 
 function buildKernelList(kernels: readonly StoryKernel[]): string {
-  return kernels.map((kernel, index) => `${index + 1}. ${JSON.stringify(kernel, null, 2)}`).join('\n\n');
+  return kernels
+    .map((kernel, index) => `${index + 1}. ${JSON.stringify(kernel, null, 2)}`)
+    .join('\n\n');
 }
 
 function buildScoredKernelList(scoredKernels: readonly ScoredKernel[]): string {
@@ -71,8 +73,8 @@ function buildScoredKernelList(scoredKernels: readonly ScoredKernel[]): string {
             overallScore: item.overallScore,
           },
           null,
-          2,
-        )}`,
+          2
+        )}`
     )
     .join('\n\n');
 }
@@ -110,7 +112,7 @@ export function buildKernelEvaluatorScoringPrompt(context: KernelEvaluatorContex
 
 export function buildKernelEvaluatorDeepEvalPrompt(
   context: KernelEvaluatorContext,
-  scoredKernels: readonly ScoredKernel[],
+  scoredKernels: readonly ScoredKernel[]
 ): ChatMessage[] {
   const systemSections = [
     ROLE_INTRO,

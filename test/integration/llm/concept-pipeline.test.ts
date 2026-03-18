@@ -30,7 +30,7 @@ function responseWithMessageContent(content: string): Response {
 
 function expectCompletedStage(
   event: { stage: string; status: string; attempt: number; durationMs?: number },
-  stage: string,
+  stage: string
 ): void {
   expect(event).toMatchObject({ stage, status: 'completed', attempt: 1 });
   expect(typeof event.durationMs).toBe('number');
@@ -52,13 +52,20 @@ describe('Concept Pipeline Integration', () => {
   it('runs ideation then evaluation through real service orchestration', async () => {
     const service = createConceptService();
     const seeds = createConceptSeedInputFixture();
-    const stageEvents: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+    const stageEvents: Array<{
+      stage: string;
+      status: string;
+      attempt: number;
+      durationMs?: number;
+    }> = [];
 
     const seederPayload = {
       concepts: Array.from({ length: 6 }, (_, index) => createConceptSeedFixture(index + 1)),
     };
     const architectPayload = {
-      concepts: Array.from({ length: 6 }, (_, index) => createConceptCharacterWorldFixture(index + 1)),
+      concepts: Array.from({ length: 6 }, (_, index) =>
+        createConceptCharacterWorldFixture(index + 1)
+      ),
     };
     const engineerPayload = {
       concepts: Array.from({ length: 6 }, (_, index) => createConceptEngineFixture(index + 1)),
@@ -70,8 +77,18 @@ describe('Concept Pipeline Integration', () => {
 
     const scoringPayload = {
       scoredConcepts: [
-        { conceptId: 'concept_1', ...createScoredConceptFixture(1), scores: lowScore, overallScore: 1 },
-        { conceptId: 'concept_2', ...createScoredConceptFixture(2), scores: topScore, overallScore: 1 },
+        {
+          conceptId: 'concept_1',
+          ...createScoredConceptFixture(1),
+          scores: lowScore,
+          overallScore: 1,
+        },
+        {
+          conceptId: 'concept_2',
+          ...createScoredConceptFixture(2),
+          scores: topScore,
+          overallScore: 1,
+        },
         {
           conceptId: 'concept_3',
           ...createScoredConceptFixture(3),
@@ -210,20 +227,37 @@ describe('Concept Pipeline Integration', () => {
     expect(stageEvents).toHaveLength(10);
     expect(stageEvents[0]).toEqual({ stage: 'SEEDING_CONCEPTS', status: 'started', attempt: 1 });
     expectCompletedStage(stageEvents[1]!, 'SEEDING_CONCEPTS');
-    expect(stageEvents[2]).toEqual({ stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 });
+    expect(stageEvents[2]).toEqual({
+      stage: 'ARCHITECTING_CONCEPTS',
+      status: 'started',
+      attempt: 1,
+    });
     expectCompletedStage(stageEvents[3]!, 'ARCHITECTING_CONCEPTS');
-    expect(stageEvents[4]).toEqual({ stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 });
+    expect(stageEvents[4]).toEqual({
+      stage: 'ENGINEERING_CONCEPTS',
+      status: 'started',
+      attempt: 1,
+    });
     expectCompletedStage(stageEvents[5]!, 'ENGINEERING_CONCEPTS');
     expect(stageEvents[6]).toEqual({ stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 });
     expectCompletedStage(stageEvents[7]!, 'EVALUATING_CONCEPTS');
-    expect(stageEvents[8]).toEqual({ stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 });
+    expect(stageEvents[8]).toEqual({
+      stage: 'ANALYZING_SPECIFICITY',
+      status: 'started',
+      attempt: 1,
+    });
     expectCompletedStage(stageEvents[9]!, 'ANALYZING_SPECIFICITY');
   });
 
   it('runs stress-test stage through real service orchestration', async () => {
     const service = createConceptService();
     const stressPayload = createConceptStressTestFixture();
-    const stageEvents: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+    const stageEvents: Array<{
+      stage: string;
+      status: string;
+      attempt: number;
+      durationMs?: number;
+    }> = [];
 
     fetchMock.mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(stressPayload)));
 
@@ -242,7 +276,11 @@ describe('Concept Pipeline Integration', () => {
     expect(result.driftRisks).toHaveLength(1);
     expect(result.playerBreaks).toHaveLength(1);
     expect(stageEvents).toHaveLength(2);
-    expect(stageEvents[0]).toEqual({ stage: 'STRESS_TESTING_CONCEPT', status: 'started', attempt: 1 });
+    expect(stageEvents[0]).toEqual({
+      stage: 'STRESS_TESTING_CONCEPT',
+      status: 'started',
+      attempt: 1,
+    });
     expectCompletedStage(stageEvents[1]!, 'STRESS_TESTING_CONCEPT');
   });
 });

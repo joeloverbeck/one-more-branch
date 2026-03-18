@@ -1,7 +1,9 @@
 import { parseConceptSeederResponse } from '../../../src/llm/concept-seeder';
 import { createConceptSeedFixture } from '../../fixtures/concept-generator';
 
-function createValidPayload(count = 6): { concepts: Array<ReturnType<typeof createConceptSeedFixture>> } {
+function createValidPayload(count = 6): {
+  concepts: Array<ReturnType<typeof createConceptSeedFixture>>;
+} {
   return {
     concepts: Array.from({ length: count }, (_, i) => createConceptSeedFixture(i + 1)),
   };
@@ -71,6 +73,8 @@ describe('concept-seeder', () => {
   });
 });
 
-function parsed(payload: ReturnType<typeof createValidPayload>): ReturnType<typeof createConceptSeedFixture> {
+function parsed(
+  payload: ReturnType<typeof createValidPayload>
+): ReturnType<typeof createConceptSeedFixture> {
   return parseConceptSeederResponse(payload)[0];
 }

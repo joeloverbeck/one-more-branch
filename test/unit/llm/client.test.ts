@@ -29,7 +29,10 @@ import {
 } from '../../../src/llm/client';
 import { LLMError } from '../../../src/llm/llm-client-types';
 import { ThreadType, Urgency } from '../../../src/models/state/index';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
+import {
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../fixtures/decomposed';
 
 const openingContext = {
   tone: 'gothic mystery',
@@ -136,7 +139,10 @@ const validPlannerPayload = {
       add: [{ characterName: 'Mara', states: ['Shaken but determined'] }],
       removeIds: [],
     },
-    canon: { worldAdd: [{ text: 'The lower vault has ritual markings on every column.', factType: 'LAW' }], characterAdd: [] },
+    canon: {
+      worldAdd: [{ text: 'The lower vault has ritual markings on every column.', factType: 'LAW' }],
+      characterAdd: [],
+    },
   },
   writerBrief: {
     openingLineDirective: 'Start on immediate tactical pressure.',
@@ -845,7 +851,9 @@ describe('llm client', () => {
   });
 
   it('should log accountant prompts before API call', async () => {
-    fetchMock.mockResolvedValue(responseWithStructuredContent(JSON.stringify(validAccountantPayload)));
+    fetchMock.mockResolvedValue(
+      responseWithStructuredContent(JSON.stringify(validAccountantPayload))
+    );
 
     await generateStateAccountant(plannerOpeningContext, validReducedPlannerPayload, {
       apiKey: 'test-key',

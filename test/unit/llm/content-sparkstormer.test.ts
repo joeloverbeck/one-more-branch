@@ -117,7 +117,7 @@ describe('parseSparkstormerResponse', () => {
 
     const spark = makeValidSpark({ contentKind: 'INVALID_KIND' });
     expect(() => parseSparkstormerResponse({ sparks: [spark] })).toThrow(
-      /contentKind must be a valid ContentKind/,
+      /contentKind must be a valid ContentKind/
     );
   });
 
@@ -125,7 +125,7 @@ describe('parseSparkstormerResponse', () => {
     const spark = makeValidSpark();
     delete spark['sparkId'];
     expect(() => parseSparkstormerResponse({ sparks: [spark] })).toThrow(
-      /sparkId must be a non-empty string/,
+      /sparkId must be a non-empty string/
     );
   });
 
@@ -133,7 +133,7 @@ describe('parseSparkstormerResponse', () => {
     const spark = makeValidSpark();
     delete spark['spark'];
     expect(() => parseSparkstormerResponse({ sparks: [spark] })).toThrow(
-      /spark must be a non-empty string/,
+      /spark must be a non-empty string/
     );
   });
 
@@ -141,14 +141,14 @@ describe('parseSparkstormerResponse', () => {
     const spark = makeValidSpark();
     delete spark['imageSeed'];
     expect(() => parseSparkstormerResponse({ sparks: [spark] })).toThrow(
-      /imageSeed must be a non-empty string/,
+      /imageSeed must be a non-empty string/
     );
   });
 
   it('rejects sparks with empty collisionTags', () => {
     const spark = makeValidSpark({ collisionTags: [] });
     expect(() => parseSparkstormerResponse({ sparks: [spark] })).toThrow(
-      /collisionTags must be a non-empty array/,
+      /collisionTags must be a non-empty array/
     );
   });
 
@@ -156,13 +156,13 @@ describe('parseSparkstormerResponse', () => {
     const spark = makeValidSpark();
     delete spark['collisionTags'];
     expect(() => parseSparkstormerResponse({ sparks: [spark] })).toThrow(
-      /collisionTags must be a non-empty array/,
+      /collisionTags must be a non-empty array/
     );
   });
 
   it('rejects empty sparks array', () => {
     expect(() => parseSparkstormerResponse({ sparks: [] })).toThrow(
-      /sparks must be a non-empty array/,
+      /sparks must be a non-empty array/
     );
   });
 
@@ -172,7 +172,7 @@ describe('parseSparkstormerResponse', () => {
 
   it('rejects response missing sparks key', () => {
     expect(() => parseSparkstormerResponse({ notSparks: [] })).toThrow(
-      /sparks must be a non-empty array/,
+      /sparks must be a non-empty array/
     );
   });
 

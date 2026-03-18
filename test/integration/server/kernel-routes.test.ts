@@ -42,10 +42,10 @@ type RouteLayer = {
 
 function getRouteHandler(
   method: 'get' | 'post' | 'put' | 'delete',
-  path: string,
+  path: string
 ): (req: Request, res: Response) => Promise<void> | void {
   const layer = (kernelRoutes.stack as unknown as RouteLayer[]).find(
-    (item) => item.route?.path === path && item.route?.methods?.[method],
+    (item) => item.route?.path === path && item.route?.methods?.[method]
   );
   const handler = layer?.route?.stack?.[0]?.handle;
 
@@ -173,7 +173,7 @@ describe('Kernel Route Integration', () => {
 
     void getRouteHandler('get', '/api/:kernelId')(
       { params: { kernelId: 'missing' } } as unknown as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -231,7 +231,7 @@ describe('Kernel Route Integration', () => {
           progressId: ' kernel-progress-1 ',
         },
       } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -242,15 +242,19 @@ describe('Kernel Route Integration', () => {
         sparkLine: 'betrayed ally',
         apiKey: 'valid-key-12345',
       },
-      expect.any(Function),
+      expect.any(Function)
     );
     expect(progressStartSpy).toHaveBeenCalledWith('kernel-progress-1', 'kernel-generation');
-    expect(progressMarkStartedSpy).toHaveBeenCalledWith('kernel-progress-1', 'GENERATING_KERNELS', 1);
+    expect(progressMarkStartedSpy).toHaveBeenCalledWith(
+      'kernel-progress-1',
+      'GENERATING_KERNELS',
+      1
+    );
     expect(progressMarkCompletedSpy).toHaveBeenCalledWith(
       'kernel-progress-1',
       'EVALUATING_KERNELS',
       1,
-      undefined,
+      undefined
     );
     expect(progressCompleteSpy).toHaveBeenCalledWith('kernel-progress-1');
     expect(mockedSaveKernelGenerationBatch).toHaveBeenCalledWith(
@@ -261,7 +265,7 @@ describe('Kernel Route Integration', () => {
           sparkLine: 'betrayed ally',
         },
         evaluatedKernels,
-      }),
+      })
     );
     expect(status).not.toHaveBeenCalled();
     expect(json).toHaveBeenCalledWith({ success: true, evaluatedKernels });
@@ -273,7 +277,7 @@ describe('Kernel Route Integration', () => {
 
     void getRouteHandler('post', '/api/generate')(
       { body: { thematicInterests: 'trust' } } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -284,7 +288,7 @@ describe('Kernel Route Integration', () => {
 
   it('POST /api/generate maps LLMError to structured error response and progress failure', async () => {
     mockedRunKernelStage.mockRejectedValue(
-      new LLMError('Rate limit exceeded', 'HTTP_429', true, { httpStatus: 429 }),
+      new LLMError('Rate limit exceeded', 'HTTP_429', true, { httpStatus: 429 })
     );
 
     const status = jest.fn().mockReturnThis();
@@ -299,13 +303,13 @@ describe('Kernel Route Integration', () => {
           progressId: 'kernel-progress-2',
         },
       } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
     expect(progressFailSpy).toHaveBeenCalledWith(
       'kernel-progress-2',
-      'Rate limit exceeded. Please wait a moment and try again.',
+      'Rate limit exceeded. Please wait a moment and try again.'
     );
     expect(status).toHaveBeenCalledWith(500);
     expect(json).toHaveBeenCalledWith({
@@ -337,7 +341,7 @@ describe('Kernel Route Integration', () => {
         contentShape: 'string',
         contentPreview: '{"oops"',
         rawContent: '{"oops"',
-      }),
+      })
     );
 
     const status = jest.fn().mockReturnThis();
@@ -352,7 +356,7 @@ describe('Kernel Route Integration', () => {
           progressId: 'kernel-progress-3',
         },
       } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -362,11 +366,11 @@ describe('Kernel Route Integration', () => {
         message: 'Provider returned error',
         code: 'HTTP_400',
         parsedError: { code: 'provider_error', message: 'Provider returned error' },
-      }),
+      })
     );
     expect(progressFailSpy).toHaveBeenCalledWith(
       'kernel-progress-3',
-      'API request error: Provider returned error',
+      'API request error: Provider returned error'
     );
     expect(status).toHaveBeenCalledWith(500);
     expect(json).toHaveBeenCalledWith({
@@ -402,7 +406,7 @@ describe('Kernel Route Integration', () => {
           },
         },
       } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -414,7 +418,7 @@ describe('Kernel Route Integration', () => {
           emotionalCore: 'dread',
           sparkLine: 'spark',
         },
-      }),
+      })
     );
     expect(status).not.toHaveBeenCalled();
     expect(json).toHaveBeenCalledTimes(1);
@@ -448,14 +452,14 @@ describe('Kernel Route Integration', () => {
           seeds: {},
         },
       } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
     expect(mockedSaveKernel).toHaveBeenCalledWith(
       expect.objectContaining({
         name: longThesis,
-      }),
+      })
     );
     expect(status).not.toHaveBeenCalled();
     expect(json).toHaveBeenCalledTimes(1);
@@ -474,7 +478,7 @@ describe('Kernel Route Integration', () => {
 
     void getRouteHandler('put', '/api/:kernelId')(
       { params: { kernelId: 'missing' }, body: { name: 'Updated' } } as unknown as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -503,7 +507,7 @@ describe('Kernel Route Integration', () => {
         params: { kernelId: 'kernel-1' },
         body: { name: '  New Name ', kernelFields: { valueAtStake: 'Autonomy' } },
       } as unknown as Request,
-      { json } as unknown as Response,
+      { json } as unknown as Response
     );
     await flushPromises();
 
@@ -526,7 +530,7 @@ describe('Kernel Route Integration', () => {
 
     void getRouteHandler('delete', '/api/:kernelId')(
       { params: { kernelId: 'missing' } } as unknown as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -542,7 +546,7 @@ describe('Kernel Route Integration', () => {
 
     void getRouteHandler('delete', '/api/:kernelId')(
       { params: { kernelId: 'kernel-1' } } as unknown as Request,
-      { json } as unknown as Response,
+      { json } as unknown as Response
     );
     await flushPromises();
 

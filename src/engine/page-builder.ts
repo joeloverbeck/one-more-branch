@@ -19,7 +19,10 @@ import {
 } from './consequence-lifecycle.js';
 import type { TrackedPromise } from '../models/state/index.js';
 import type { NpcAgenda, AccumulatedNpcAgendas } from '../models/state/npc-agenda';
-import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/state/npc-relationship';
+import type {
+  NpcRelationship,
+  AccumulatedNpcRelationships,
+} from '../models/state/npc-relationship';
 import { createEmptyAccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import type { KnowledgeAsymmetry } from '../models/state/knowledge-state.js';
 import type { AnalystResult, DetectedPromise } from '../llm/analyst-types';
@@ -283,9 +286,7 @@ export function createEmptyStructureContext(): FirstPageBuildContext {
   };
 }
 
-function getMaxDelayedConsequenceIdNumber(
-  consequences: readonly DelayedConsequence[]
-): number {
+function getMaxDelayedConsequenceIdNumber(consequences: readonly DelayedConsequence[]): number {
   let maxId = 0;
   for (const consequence of consequences) {
     const match = /^dc-(\d+)$/.exec(consequence.id);

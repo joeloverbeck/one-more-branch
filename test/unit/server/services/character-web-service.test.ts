@@ -25,9 +25,7 @@ import {
 
 type CharacterWebServiceDeps = NonNullable<Parameters<typeof createCharacterWebService>[0]>;
 
-function createAssignment(
-  overrides: Partial<CastRoleAssignment> = {},
-): CastRoleAssignment {
+function createAssignment(overrides: Partial<CastRoleAssignment> = {}): CastRoleAssignment {
   return {
     characterName: 'Iria Vale',
     isProtagonist: true,
@@ -87,7 +85,7 @@ function createWeb(overrides: Partial<SavedCharacterWeb> = {}): SavedCharacterWe
 }
 
 function createCharacter(
-  overrides: Partial<SavedDevelopedCharacter> = {},
+  overrides: Partial<SavedDevelopedCharacter> = {}
 ): SavedDevelopedCharacter {
   return {
     id: 'char-1',
@@ -106,7 +104,7 @@ function createCharacter(
 }
 
 function createCompletedCharacter(
-  overrides: Partial<SavedDevelopedCharacter> = {},
+  overrides: Partial<SavedDevelopedCharacter> = {}
 ): SavedDevelopedCharacter {
   return createCharacter({
     characterKernel: {
@@ -270,7 +268,10 @@ function createDeps(): jest.Mocked<CharacterWebServiceDeps> {
     deleteCharacterWeb: jest.fn().mockResolvedValue(undefined),
     saveDevelopedCharacter: jest.fn().mockResolvedValue(undefined),
     loadDevelopedCharacter: jest
-      .fn<ReturnType<CharacterWebServiceDeps['loadDevelopedCharacter']>, Parameters<CharacterWebServiceDeps['loadDevelopedCharacter']>>()
+      .fn<
+        ReturnType<CharacterWebServiceDeps['loadDevelopedCharacter']>,
+        Parameters<CharacterWebServiceDeps['loadDevelopedCharacter']>
+      >()
       .mockRejectedValue(new Error('Developed character not found: missing')),
     listDevelopedCharactersByWebId: jest.fn().mockResolvedValue([]),
     deleteDevelopedCharacter: jest.fn().mockResolvedValue(undefined),
@@ -308,7 +309,7 @@ describe('character-web-service', () => {
     const result = await service.createWeb(
       '  Shattered Compass  ',
       '  concept-1  ',
-      '  Keep everyone dangerous. ',
+      '  Keep everyone dangerous. '
     );
 
     expect(deps.saveCharacterWeb).toHaveBeenCalledWith({
@@ -344,9 +345,11 @@ describe('character-web-service', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         kernelSummary: expect.stringContaining('A revenge story about inherited guilt.'),
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        conceptSummary: expect.stringContaining('A fugitive captain leads an impossible expedition.'),
+        conceptSummary: expect.stringContaining(
+          'A fugitive captain leads an impossible expedition.'
+        ),
       }),
-      'valid-api-key-12345',
+      'valid-api-key-12345'
     );
     expect(deps.saveCharacterWeb).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -354,7 +357,7 @@ describe('character-web-service', () => {
         protagonistName: 'Iria Vale',
         assignments: createWeb().assignments,
         relationshipArchetypes: createArchetypes(),
-      }),
+      })
     );
     expect(onStage).toHaveBeenNthCalledWith(1, {
       stage: 'GENERATING_CHARACTER_WEB',
@@ -384,7 +387,7 @@ describe('character-web-service', () => {
     });
 
     await expect(service.generateWeb('web-1', 'valid-api-key-12345')).rejects.toThrow(
-      'Character web requires exactly one protagonist assignment; found 2',
+      'Character web requires exactly one protagonist assignment; found 2'
     );
   });
 
@@ -459,7 +462,9 @@ describe('character-web-service', () => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         kernelSummary: expect.stringContaining('A revenge story about inherited guilt.'),
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        conceptSummary: expect.stringContaining('A fugitive captain leads an impossible expedition.'),
+        conceptSummary: expect.stringContaining(
+          'A fugitive captain leads an impossible expedition.'
+        ),
       }),
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       webContext: expect.objectContaining({
@@ -496,7 +501,7 @@ describe('character-web-service', () => {
       expect.objectContaining({
         stage: 4 as CharacterDevStage,
         otherDevelopedCharacters: [sibling],
-      }),
+      })
     );
   });
 
@@ -522,7 +527,7 @@ describe('character-web-service', () => {
         deepRelationships: null,
         textualPresentation: null,
         completedStages: [1, 2],
-      }),
+      })
     );
   });
 
@@ -554,7 +559,7 @@ describe('character-web-service', () => {
       createWeb({
         protagonistName: 'Iria Vale',
         assignments: [rivalAssignment, protagonistAssignment],
-      }),
+      })
     );
     const completed = createCompletedCharacter({ characterName: 'Iria Vale' });
     const incomplete = createCharacter({ characterName: 'Mara Voss', completedStages: [1] });
@@ -562,14 +567,17 @@ describe('character-web-service', () => {
 
     const result = await service.toDecomposedCharacters('web-1');
 
-    expect(deps.toDecomposedCharacter).toHaveBeenCalledWith(completed, expect.objectContaining({
-      assignment: protagonistAssignment,
-      protagonistName: 'Iria Vale',
-    }));
+    expect(deps.toDecomposedCharacter).toHaveBeenCalledWith(
+      completed,
+      expect.objectContaining({
+        assignment: protagonistAssignment,
+        protagonistName: 'Iria Vale',
+      })
+    );
     expect(deps.toDecomposedCharacterFromWeb).toHaveBeenCalledWith(
       rivalAssignment,
       createArchetypes(),
-      'Iria Vale',
+      'Iria Vale'
     );
     expect(result.map((character) => character.name)).toEqual(['Iria Vale', 'Mara Voss']);
   });
@@ -582,7 +590,7 @@ describe('character-web-service', () => {
 
   it('loadCharacter returns null for missing characters', async () => {
     deps.loadDevelopedCharacter.mockRejectedValue(
-      new Error('Developed character not found: char-missing'),
+      new Error('Developed character not found: char-missing')
     );
 
     await expect(service.loadCharacter('char-missing')).resolves.toBeNull();
@@ -590,11 +598,11 @@ describe('character-web-service', () => {
 
   it('generateCharacterStage normalizes missing developed characters into RESOURCE_NOT_FOUND', async () => {
     deps.loadDevelopedCharacter.mockRejectedValue(
-      new Error('Developed character not found: char-missing'),
+      new Error('Developed character not found: char-missing')
     );
 
     await expect(
-      service.generateCharacterStage('char-missing', 1, 'valid-api-key-12345'),
+      service.generateCharacterStage('char-missing', 1, 'valid-api-key-12345')
     ).rejects.toMatchObject({
       name: 'EngineError',
       code: 'RESOURCE_NOT_FOUND',
@@ -616,7 +624,7 @@ describe('character-web-service', () => {
         expect.objectContaining({
           assignments: [expect.objectContaining({ characterName: 'Iria Vale' })],
           relationshipArchetypes: [],
-        }),
+        })
       );
     });
 

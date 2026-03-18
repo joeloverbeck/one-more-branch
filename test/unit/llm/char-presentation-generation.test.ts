@@ -82,7 +82,7 @@ function createContext(
     },
     tridimensionalProfile: {
       characterName: 'Kael',
-      physiology: 'Lean, scarred, sleep-starved, carrying a soldier\'s economy of motion.',
+      physiology: "Lean, scarred, sleep-starved, carrying a soldier's economy of motion.",
       sociology:
         'Raised in a deposed royal household, then hardened among smugglers and deserters.',
       psychology:
@@ -121,12 +121,14 @@ function createContext(
           currentTension:
             'Mira wants legitimacy through coalition; Kael keeps preparing for a decisive purge.',
           leverage:
-            'Mira knows where Kael\'s sister is hidden, while Kael knows Mira\'s bloodline could shatter her alliances.',
+            "Mira knows where Kael's sister is hidden, while Kael knows Mira's bloodline could shatter her alliances.",
           ruptureTriggers: ['Discovering Kael ordered a civilian massacre'],
           repairMoves: ['Kael publicly renouncing violence against non-combatants'],
         },
       ],
-      secrets: ['Kael suspects his father ordered atrocities that justify the rebellion against him.'],
+      secrets: [
+        'Kael suspects his father ordered atrocities that justify the rebellion against him.',
+      ],
       personalDilemmas: [
         'If he tells Mira the truth about his father, he may lose the only person restraining him.',
       ],
@@ -165,7 +167,7 @@ function validPresentationResponseRaw(
     appearance:
       'Lean and severe, with an old cheek scar and the disciplined stillness of someone used to being watched.',
     knowledgeBoundaries:
-      'Kael knows the court\'s military fractures and Mira\'s coalition weaknesses, but he does not know which captains are double agents and misreads how much mercy the public will tolerate.',
+      "Kael knows the court's military fractures and Mira's coalition weaknesses, but he does not know which captains are double agents and misreads how much mercy the public will tolerate.",
     conflictPriority:
       'When survival, loyalty, and legitimacy collide, Kael protects his sister first and the throne second.',
     stressVariants: {
@@ -220,11 +222,11 @@ describe('buildCharPresentationPrompt', () => {
       })
     );
 
-    expect(messages[1].content).toContain('STORY KERNEL:\nA story about power and inherited guilt.');
-    expect(messages[1].content).toContain('CONCEPT:\nDark court-intrigue fantasy.');
     expect(messages[1].content).toContain(
-      'USER NOTES:\nKeep the voice sharp and unsentimental.'
+      'STORY KERNEL:\nA story about power and inherited guilt.'
     );
+    expect(messages[1].content).toContain('CONCEPT:\nDark court-intrigue fantasy.');
+    expect(messages[1].content).toContain('USER NOTES:\nKeep the voice sharp and unsentimental.');
   });
 });
 
@@ -334,10 +336,6 @@ describe('generateCharPresentation', () => {
 
     await generateCharPresentation(createContext(), 'test-api-key');
 
-    expect(mockLogPrompt).toHaveBeenCalledWith(
-      mockLogger,
-      'charPresentation',
-      expect.any(Array)
-    );
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'charPresentation', expect.any(Array));
   });
 });

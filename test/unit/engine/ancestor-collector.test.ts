@@ -49,9 +49,9 @@ function buildAnalystResult(
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
     delayedConsequencesTriggered: [],
-knowledgeAsymmetryDetected: [],
-dramaticIronyOpportunities: [],
-rawResponse: '',
+    knowledgeAsymmetryDetected: [],
+    dramaticIronyOpportunities: [],
+    rawResponse: '',
   };
 }
 

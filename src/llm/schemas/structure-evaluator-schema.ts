@@ -70,7 +70,8 @@ export const STRUCTURE_EVALUATOR_SCHEMA: JsonSchema = {
         invalidatedMilestoneIds: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Milestone IDs invalidated by deviation (format: X.Y); empty when no deviation.',
+          description:
+            'Milestone IDs invalidated by deviation (format: X.Y); empty when no deviation.',
         },
         spineDeviationDetected: {
           type: 'boolean',

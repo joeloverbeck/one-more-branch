@@ -58,5 +58,4 @@ describe('validatePagePlannerResponse', () => {
 
     expect(() => validatePagePlannerResponse(rawJson, '{}')).toThrow(LLMError);
   });
-
 });

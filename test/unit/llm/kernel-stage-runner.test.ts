@@ -70,16 +70,12 @@ function createEvaluatedKernel(kernel: StoryKernel): EvaluatedKernel {
   };
 }
 
-function findStageEntry(
-  entries: LogEntry[],
-  message: string,
-  stage: string,
-): LogEntry | undefined {
+function findStageEntry(entries: LogEntry[], message: string, stage: string): LogEntry | undefined {
   return entries.find(
     (entry) =>
       entry.message === message &&
       typeof entry.context?.stage === 'string' &&
-      entry.context.stage === stage,
+      entry.context.stage === stage
   );
 }
 
@@ -104,7 +100,8 @@ describe('kernel-stage-runner', () => {
       rawResponse: 'evaluator raw',
     });
 
-    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+      [];
     const result = await runKernelStage(
       {
         thematicInterests: ' trust and control ',
@@ -118,7 +115,7 @@ describe('kernel-stage-runner', () => {
       {
         generateKernels,
         evaluateKernels,
-      },
+      }
     );
 
     expect(generateKernels).toHaveBeenCalledWith(
@@ -127,7 +124,7 @@ describe('kernel-stage-runner', () => {
         emotionalCore: 'grief',
         sparkLine: undefined,
       },
-      'test-api-key-123',
+      'test-api-key-123'
     );
     expect(evaluateKernels).toHaveBeenCalledWith(
       {
@@ -139,7 +136,7 @@ describe('kernel-stage-runner', () => {
           apiKey: 'test-api-key-123',
         },
       },
-      'test-api-key-123',
+      'test-api-key-123'
     );
 
     expect(events).toHaveLength(4);
@@ -170,7 +167,11 @@ describe('kernel-stage-runner', () => {
     const ideatorStart = findStageEntry(entries, 'Generation stage started', 'kernel-ideator');
     const ideatorComplete = findStageEntry(entries, 'Generation stage completed', 'kernel-ideator');
     const evaluatorStart = findStageEntry(entries, 'Generation stage started', 'kernel-evaluator');
-    const evaluatorComplete = findStageEntry(entries, 'Generation stage completed', 'kernel-evaluator');
+    const evaluatorComplete = findStageEntry(
+      entries,
+      'Generation stage completed',
+      'kernel-evaluator'
+    );
 
     expect(ideatorStart?.level).toBe('info');
     expect(ideatorStart?.context?.flow).toBe('kernel-generation');
@@ -201,7 +202,8 @@ describe('kernel-stage-runner', () => {
       .mockReturnValueOnce(115)
       .mockReturnValueOnce(200)
       .mockReturnValueOnce(240);
-    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+      [];
 
     await runKernelStage(
       {
@@ -222,14 +224,17 @@ describe('kernel-stage-runner', () => {
           evaluatedKernels,
           rawResponse: 'evaluator raw',
         }),
-      },
+      }
     );
 
     expect(dateNowSpy).toHaveBeenCalledTimes(4);
 
-    const completedEvents = events.filter(
-      (event) => event.status === 'completed',
-    ) as Array<{ stage: string; status: string; attempt: number; durationMs: number }>;
+    const completedEvents = events.filter((event) => event.status === 'completed') as Array<{
+      stage: string;
+      status: string;
+      attempt: number;
+      durationMs: number;
+    }>;
 
     expect(completedEvents).toEqual([
       {
@@ -248,7 +253,11 @@ describe('kernel-stage-runner', () => {
 
     const entries = logger.getEntries();
     const ideatorComplete = findStageEntry(entries, 'Generation stage completed', 'kernel-ideator');
-    const evaluatorComplete = findStageEntry(entries, 'Generation stage completed', 'kernel-evaluator');
+    const evaluatorComplete = findStageEntry(
+      entries,
+      'Generation stage completed',
+      'kernel-evaluator'
+    );
 
     expect(ideatorComplete?.context?.durationMs).toBe(15);
     expect(evaluatorComplete?.context?.durationMs).toBe(40);
@@ -267,8 +276,8 @@ describe('kernel-stage-runner', () => {
         {
           generateKernels,
           evaluateKernels,
-        },
-      ),
+        }
+      )
     ).rejects.toThrow('OpenRouter API key is required');
 
     expect(generateKernels).not.toHaveBeenCalled();
@@ -278,7 +287,8 @@ describe('kernel-stage-runner', () => {
   it('logs a failed stage when ideation throws', async () => {
     const error = new Error('ideation failed');
     const evaluateKernels = jest.fn();
-    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+      [];
 
     await expect(
       runKernelStage(
@@ -291,15 +301,15 @@ describe('kernel-stage-runner', () => {
         {
           generateKernels: jest.fn().mockRejectedValue(error),
           evaluateKernels,
-        },
-      ),
+        }
+      )
     ).rejects.toThrow('ideation failed');
 
     expect(evaluateKernels).not.toHaveBeenCalled();
     const failureEntry = findStageEntry(
       logger.getEntries(),
       'Generation stage failed',
-      'kernel-ideator',
+      'kernel-ideator'
     );
 
     expect(failureEntry?.level).toBe('error');

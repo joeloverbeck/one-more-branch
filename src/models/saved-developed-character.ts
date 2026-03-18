@@ -34,9 +34,7 @@ function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-export function isSavedDevelopedCharacter(
-  value: unknown,
-): value is SavedDevelopedCharacter {
+export function isSavedDevelopedCharacter(value: unknown): value is SavedDevelopedCharacter {
   if (!isObjectRecord(value)) {
     return false;
   }
@@ -58,14 +56,14 @@ export function isSavedDevelopedCharacter(
 
 export function isCharacterStageComplete(
   char: SavedDevelopedCharacter,
-  stage: CharacterDevStage,
+  stage: CharacterDevStage
 ): boolean {
   return char.completedStages.includes(stage);
 }
 
 export function canGenerateCharacterStage(
   char: SavedDevelopedCharacter,
-  stage: CharacterDevStage,
+  stage: CharacterDevStage
 ): boolean {
   if (stage === 1) {
     return true;

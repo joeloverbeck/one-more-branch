@@ -50,7 +50,7 @@ function buildSeedSection(seeds: ConceptSeedInput): string {
 
 export function buildSingleConceptScoringPrompt(
   concept: ConceptSpec,
-  userSeeds: ConceptSeedInput,
+  userSeeds: ConceptSeedInput
 ): ChatMessage[] {
   const systemSections: string[] = [
     ROLE_INTRO,
@@ -86,7 +86,7 @@ export function buildSingleConceptScoringPrompt(
 export function buildSingleConceptDeepEvalPrompt(
   concept: ConceptSpec,
   scored: ScoredConcept,
-  userSeeds: ConceptSeedInput,
+  userSeeds: ConceptSeedInput
 ): ChatMessage[] {
   const systemSections: string[] = [
     ROLE_INTRO,
@@ -108,7 +108,7 @@ export function buildSingleConceptDeepEvalPrompt(
     `SCORED CONCEPT WITH LOCKED SCORES:\n${JSON.stringify(
       { concept, scores: scored.scores, overallScore: scored.overallScore },
       null,
-      2,
+      2
     )}`,
     `OUTPUT REQUIREMENTS:
 - Return JSON with shape: { "evaluatedConcept": { strengths, weaknesses, tradeoffSummary } }.

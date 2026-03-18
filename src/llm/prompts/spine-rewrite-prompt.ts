@@ -55,13 +55,15 @@ export function buildSpineRewritePrompt(context: SpineRewriteContext): ChatMessa
         ? 'Primary Antagonistic Force'
         : 'Protagonist Need vs Want';
 
-  const protagonistSection = context.decomposedCharacters.length > 0
-    ? formatDecomposedCharacterForPrompt(context.decomposedCharacters[0]!, true)
-    : '(no protagonist profile)';
+  const protagonistSection =
+    context.decomposedCharacters.length > 0
+      ? formatDecomposedCharacterForPrompt(context.decomposedCharacters[0]!, true)
+      : '(no protagonist profile)';
 
-  const worldSection = context.decomposedWorld.facts.length > 0
-    ? formatDecomposedWorldForPrompt(context.decomposedWorld)
-    : '(no worldbuilding)';
+  const worldSection =
+    context.decomposedWorld.facts.length > 0
+      ? formatDecomposedWorldForPrompt(context.decomposedWorld)
+      : '(no worldbuilding)';
 
   const userPrompt = `The story spine has been irreversibly broken. Rewrite it to accommodate the narrative direction.
 

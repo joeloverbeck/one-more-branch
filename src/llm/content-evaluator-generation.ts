@@ -22,16 +22,13 @@ const SCORE_KEYS: readonly (keyof ContentEvaluationScores)[] = [
   'conceptUtility',
 ] as const;
 
-function validateScores(
-  data: Record<string, unknown>,
-  index: number,
-): ContentEvaluationScores {
+function validateScores(data: Record<string, unknown>, index: number): ContentEvaluationScores {
   const raw = data['scores'];
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     throw new LLMError(
       `evaluations[${index}].scores must be an object`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -44,7 +41,7 @@ function validateScores(
       throw new LLMError(
         `evaluations[${index}].scores.${key} must be a number between 0 and 5`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
     result[key] = value;
@@ -56,7 +53,7 @@ function validateScores(
 function validateStringArray(
   data: Record<string, unknown>,
   field: string,
-  index: number,
+  index: number
 ): readonly string[] {
   const value = data[field];
   if (
@@ -67,7 +64,7 @@ function validateStringArray(
     throw new LLMError(
       `evaluations[${index}].${field} must be a non-empty array of non-empty strings`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   return value as readonly string[];
@@ -75,11 +72,7 @@ function validateStringArray(
 
 function validateEvaluation(value: unknown, index: number): ContentEvaluation {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new LLMError(
-      `evaluations[${index}] must be an object`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`evaluations[${index}] must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const data = value as Record<string, unknown>;
@@ -89,7 +82,7 @@ function validateEvaluation(value: unknown, index: number): ContentEvaluation {
     throw new LLMError(
       `evaluations[${index}].contentId must be a non-empty string`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -101,7 +94,7 @@ function validateEvaluation(value: unknown, index: number): ContentEvaluation {
     throw new LLMError(
       `evaluations[${index}].recommendedRole must be one of PRIMARY_SEED, SECONDARY_MUTAGEN, IMAGE_ONLY, REJECT`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -114,14 +107,12 @@ function validateEvaluation(value: unknown, index: number): ContentEvaluation {
   };
 }
 
-export function parseContentEvaluatorResponse(
-  parsed: unknown,
-): readonly ContentEvaluation[] {
+export function parseContentEvaluatorResponse(parsed: unknown): readonly ContentEvaluation[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Content evaluator response must be an object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -129,11 +120,7 @@ export function parseContentEvaluatorResponse(
   const evaluations = data['evaluations'];
 
   if (!Array.isArray(evaluations) || evaluations.length === 0) {
-    throw new LLMError(
-      'evaluations must be a non-empty array',
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError('evaluations must be a non-empty array', 'STRUCTURE_PARSE_ERROR', true);
   }
 
   return evaluations.map((evaluation, index) => validateEvaluation(evaluation, index));
@@ -142,7 +129,7 @@ export function parseContentEvaluatorResponse(
 export async function evaluateContentPackets(
   context: ContentEvaluatorContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ContentEvaluatorResult> {
   const messages = buildContentEvaluatorPrompt(context);
   const result = await runLlmStage({

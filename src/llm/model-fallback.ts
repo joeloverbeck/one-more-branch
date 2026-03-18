@@ -13,11 +13,7 @@ export async function withModelFallback<T>(
   } catch (error) {
     const defaultModel = getConfig().llm.defaultModel;
 
-    if (
-      error instanceof LLMError &&
-      error.code === 'HTTP_429' &&
-      primaryModel !== defaultModel
-    ) {
+    if (error instanceof LLMError && error.code === 'HTTP_429' && primaryModel !== defaultModel) {
       logger.warn(
         `Stage "${stage}": model ${primaryModel} rate-limited (429), falling back to ${defaultModel}`
       );

@@ -30,18 +30,20 @@ COHERENCE RULES:
 - storySpineType and conflictType should create productive tension with the thematicPremise.`;
 
 function formatFoundations(foundations: readonly SpineFoundation[]): string {
-  return foundations.map((f, i) => {
-    const lines = [
-      `FOUNDATION ${i + 1}:`,
-      `  conflictAxis: ${f.conflictAxis}`,
-      `  characterArcType: ${f.characterArcType}`,
-      `  protagonistDeepestFear: ${f.protagonistDeepestFear}`,
-      `  toneFeel: ${f.toneFeel.join(', ')}`,
-      `  toneAvoid: ${f.toneAvoid.join(', ')}`,
-      `  thematicPremise: ${f.thematicPremise}`,
-    ];
-    return lines.join('\n');
-  }).join('\n\n');
+  return foundations
+    .map((f, i) => {
+      const lines = [
+        `FOUNDATION ${i + 1}:`,
+        `  conflictAxis: ${f.conflictAxis}`,
+        `  characterArcType: ${f.characterArcType}`,
+        `  protagonistDeepestFear: ${f.protagonistDeepestFear}`,
+        `  toneFeel: ${f.toneFeel.join(', ')}`,
+        `  toneAvoid: ${f.toneAvoid.join(', ')}`,
+        `  thematicPremise: ${f.thematicPremise}`,
+      ];
+      return lines.join('\n');
+    })
+    .join('\n\n');
 }
 
 function buildConceptConstraints(conceptSpec?: ConceptSpec): string {

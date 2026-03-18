@@ -296,9 +296,15 @@ describe('page-serializer', () => {
         accumulatedHealth: [{ id: 'hp-1', text: 'healthy' }],
         accumulatedActiveState: {
           currentLocation: 'Watchtower',
-          activeThreats: [{ id: 'th-1', text: 'Incoming scouts', threatType: ThreatType.ENVIRONMENTAL }],
+          activeThreats: [
+            { id: 'th-1', text: 'Incoming scouts', threatType: ThreatType.ENVIRONMENTAL },
+          ],
           activeConstraints: [
-            { id: 'cn-1', text: 'Bridge is collapsed', constraintType: ConstraintType.ENVIRONMENTAL },
+            {
+              id: 'cn-1',
+              text: 'Bridge is collapsed',
+              constraintType: ConstraintType.ENVIRONMENTAL,
+            },
           ],
           openThreads: [
             {
@@ -372,7 +378,9 @@ describe('page-serializer', () => {
         accumulatedInventory: [{ id: 'inv-1', text: 'item' }],
         accumulatedActiveState: {
           currentLocation: 'Cellar',
-          activeThreats: [{ id: 'th-8', text: 'Flooding water', threatType: ThreatType.ENVIRONMENTAL }],
+          activeThreats: [
+            { id: 'th-8', text: 'Flooding water', threatType: ThreatType.ENVIRONMENTAL },
+          ],
           activeConstraints: [],
           openThreads: [],
         },

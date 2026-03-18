@@ -33,15 +33,14 @@ const PROTAGONIST_RELATIONSHIP_SCHEMA: SchemaProperty = {
         },
         leverage: {
           type: 'string',
-          description:
-            'What this NPC holds over the protagonist or vice versa. 1 sentence.',
+          description: 'What this NPC holds over the protagonist or vice versa. 1 sentence.',
         },
       },
     },
     { type: 'null' },
   ],
   description:
-    'This character\'s relationship with the protagonist. MUST be null for the protagonist. ' +
+    "This character's relationship with the protagonist. MUST be null for the protagonist. " +
     'For NPCs, describe the structured relationship with valence, dynamic, history, tension, and leverage.',
 };
 

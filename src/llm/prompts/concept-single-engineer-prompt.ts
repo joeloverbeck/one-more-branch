@@ -54,7 +54,7 @@ function normalize(value: string | undefined): string | undefined {
 }
 
 export function buildSingleConceptEngineerPrompt(
-  context: SingleEngineerPromptContext,
+  context: SingleEngineerPromptContext
 ): ChatMessage[] {
   const genreVibes = normalize(context.genreVibes);
   const moodKeywords = normalize(context.moodKeywords);
@@ -85,7 +85,7 @@ export function buildSingleConceptEngineerPrompt(
   const protagonistDetails = normalize(context.protagonistDetails);
   if (protagonistDetails) {
     userSections.push(
-      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — ARC MUST SERVE THIS CHARACTER):\n${protagonistDetails}\nThe pressureSource, stakes, deadlineMechanism, protagonistLie, protagonistTruth, protagonistGhost, and wantNeedCollisionSketch MUST be engineered for this specific protagonist. The conflict engine exists to pressure this character, not a substitute.`,
+      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — ARC MUST SERVE THIS CHARACTER):\n${protagonistDetails}\nThe pressureSource, stakes, deadlineMechanism, protagonistLie, protagonistTruth, protagonistGhost, and wantNeedCollisionSketch MUST be engineered for this specific protagonist. The conflict engine exists to pressure this character, not a substitute.`
     );
   }
 
@@ -97,7 +97,7 @@ export function buildSingleConceptEngineerPrompt(
 
   if (mandateParts.length > 0) {
     userSections.push(
-      `USER CREATIVE MANDATE (conflict forces, pressure, stakes, and elevator paragraph MUST embody ALL of the following):\n${mandateParts.join('\n')}\nDesign a conflict engine that centrally expresses these qualities.`,
+      `USER CREATIVE MANDATE (conflict forces, pressure, stakes, and elevator paragraph MUST embody ALL of the following):\n${mandateParts.join('\n')}\nDesign a conflict engine that centrally expresses these qualities.`
     );
   }
 
@@ -106,7 +106,7 @@ export function buildSingleConceptEngineerPrompt(
 - Return JSON matching schema shape: { "concept": { ...12 fields } }.
 - elevatorParagraph must synthesize the full concept — hook, character, world, and conflict engine — into a compelling pitch.
 - pressureSource, stakesPersonal, stakesSystemic, deadlineMechanism, ironicTwist, incitingDisruption, and escapeValve must all be non-empty and specific to the concept.
-- protagonistLie, protagonistTruth, protagonistGhost, and wantNeedCollisionSketch must all be non-empty, specific, and consistent with the concept's conflict engine.`,
+- protagonistLie, protagonistTruth, protagonistGhost, and wantNeedCollisionSketch must all be non-empty, specific, and consistent with the concept's conflict engine.`
   );
 
   return [

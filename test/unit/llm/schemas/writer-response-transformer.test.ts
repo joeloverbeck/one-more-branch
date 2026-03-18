@@ -109,7 +109,7 @@ describe('validateWriterResponse', () => {
         {
           narrative: '',
           sceneSummary: 'Test summary of the scene events and consequences.',
-          },
+        },
         'raw json response'
       )
     ).toThrow();

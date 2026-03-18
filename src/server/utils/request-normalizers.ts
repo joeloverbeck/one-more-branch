@@ -43,7 +43,9 @@ function normalizeBoundedText(input: unknown, maxLength: number): string | undef
   return trimmed.slice(0, maxLength);
 }
 
-export function normalizeProtagonistGuidance(rawGuidance: unknown): ProtagonistGuidance | undefined {
+export function normalizeProtagonistGuidance(
+  rawGuidance: unknown
+): ProtagonistGuidance | undefined {
   if (!rawGuidance || typeof rawGuidance !== 'object' || Array.isArray(rawGuidance)) {
     return undefined;
   }
@@ -102,9 +104,7 @@ export function parseCustomChoiceText(input: unknown): { value?: string; error?:
   return { value: trimmed };
 }
 
-export function normalizeSelectedSceneDirection(
-  raw: unknown
-): SelectedSceneDirection | undefined {
+export function normalizeSelectedSceneDirection(raw: unknown): SelectedSceneDirection | undefined {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return undefined;
   }

@@ -9,7 +9,10 @@ function createValidMacroArchitecture(): Record<string, unknown> {
     closingImage: 'The same harbor stands bannerless at dawn.',
     pacingBudget: { targetPagesMin: 18, targetPagesMax: 36 },
     anchorMoments: {
-      incitingIncident: { actIndex: 0, description: 'The captain is framed during a public hearing.' },
+      incitingIncident: {
+        actIndex: 0,
+        description: 'The captain is framed during a public hearing.',
+      },
       midpoint: { actIndex: 1, milestoneSlot: 1, midpointType: 'FALSE_VICTORY' },
       climax: { actIndex: 2, description: 'The tribunal’s ritual chamber is publicly overturned.' },
       signatureScenarioPlacement: {
@@ -111,7 +114,9 @@ describe('parseMacroArchitectureResponseObject', () => {
 
   it('rejects a non-final act with an empty exit reversal', () => {
     const parsed = createValidMacroArchitecture();
-    ((parsed['acts'] as Array<Record<string, unknown>>)[0] as Record<string, unknown>)['exitReversal'] = '';
+    ((parsed['acts'] as Array<Record<string, unknown>>)[0] as Record<string, unknown>)[
+      'exitReversal'
+    ] = '';
 
     expect(() => parseMacroArchitectureResponseObject(parsed)).toThrow(LLMError);
     expect(() => parseMacroArchitectureResponseObject(parsed)).toThrow(
@@ -121,8 +126,9 @@ describe('parseMacroArchitectureResponseObject', () => {
 
   it('rejects a final act that tries to set another reversal', () => {
     const parsed = createValidMacroArchitecture();
-    ((parsed['acts'] as Array<Record<string, unknown>>)[2] as Record<string, unknown>)['exitReversal'] =
-      'One more cliffhanger';
+    ((parsed['acts'] as Array<Record<string, unknown>>)[2] as Record<string, unknown>)[
+      'exitReversal'
+    ] = 'One more cliffhanger';
 
     expect(() => parseMacroArchitectureResponseObject(parsed)).toThrow(LLMError);
     expect(() => parseMacroArchitectureResponseObject(parsed)).toThrow(
@@ -132,8 +138,9 @@ describe('parseMacroArchitectureResponseObject', () => {
 
   it('rejects non-string promise target arrays', () => {
     const parsed = createValidMacroArchitecture();
-    ((parsed['acts'] as Array<Record<string, unknown>>)[1] as Record<string, unknown>)['promiseTargets'] =
-      ['Valid', 42];
+    ((parsed['acts'] as Array<Record<string, unknown>>)[1] as Record<string, unknown>)[
+      'promiseTargets'
+    ] = ['Valid', 42];
 
     expect(() => parseMacroArchitectureResponseObject(parsed)).toThrow(LLMError);
     expect(() => parseMacroArchitectureResponseObject(parsed)).toThrow(

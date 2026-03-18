@@ -53,24 +53,15 @@ function buildMilestoneObjectiveSection(
     return '';
   }
 
-  const exitCondition =
-    typeof milestone.exitCondition === 'string' ? milestone.exitCondition : '';
+  const exitCondition = typeof milestone.exitCondition === 'string' ? milestone.exitCondition : '';
   const exitConditionLine =
-    exitCondition.trim().length > 0
-      ? `\nExit Condition: ${exitCondition}`
-      : '';
+    exitCondition.trim().length > 0 ? `\nExit Condition: ${exitCondition}` : '';
 
-  const actQuestion =
-    typeof act.actQuestion === 'string' ? act.actQuestion : '';
-  const actQuestionLine =
-    actQuestion.trim().length > 0
-      ? `\nAct Question: ${actQuestion}`
-      : '';
+  const actQuestion = typeof act.actQuestion === 'string' ? act.actQuestion : '';
+  const actQuestionLine = actQuestion.trim().length > 0 ? `\nAct Question: ${actQuestion}` : '';
 
   const escalationLine =
-    milestone.escalationType != null
-      ? `\nEscalation Type: ${milestone.escalationType}`
-      : '';
+    milestone.escalationType != null ? `\nEscalation Type: ${milestone.escalationType}` : '';
 
   const crisisLine =
     milestone.role === 'turning_point' && milestone.crisisType != null
@@ -84,9 +75,7 @@ Act Objective: ${act.objective}${actQuestionLine}${escalationLine}${crisisLine}
 `;
 }
 
-function buildProtagonistSection(
-  decomposedCharacters: readonly DecomposedCharacter[]
-): string {
+function buildProtagonistSection(decomposedCharacters: readonly DecomposedCharacter[]): string {
   const protagonist = decomposedCharacters[0];
   if (!protagonist) {
     return '';
@@ -141,16 +130,14 @@ function buildStructureAwareChoiceDesignSection(
 
   const lines: string[] = [];
 
-  const exitCondition =
-    typeof milestone.exitCondition === 'string' ? milestone.exitCondition : '';
+  const exitCondition = typeof milestone.exitCondition === 'string' ? milestone.exitCondition : '';
   if (exitCondition.trim().length > 0) {
     lines.push(
       '- When an Exit Condition is shown: at least one choice should move toward satisfying it and at least one should complicate or delay it.'
     );
   }
 
-  const actQuestion =
-    typeof act.actQuestion === 'string' ? act.actQuestion : '';
+  const actQuestion = typeof act.actQuestion === 'string' ? act.actQuestion : '';
   if (actQuestion.trim().length > 0) {
     lines.push(
       '- When an Act Question is shown: choices should offer divergent answers to this question.'
@@ -182,9 +169,7 @@ You do NOT write narrative prose. You ONLY generate structured choice objects.
 
 ${CONTENT_POLICY}`;
 
-export function buildChoiceGeneratorPrompt(
-  context: ChoiceGeneratorContext
-): ChatMessage[] {
+export function buildChoiceGeneratorPrompt(context: ChoiceGeneratorContext): ChatMessage[] {
   const spineSection = buildSpineSection(context.spine);
   const locationSection = buildLocationSection(context.activeState);
   const threatsSection = buildThreatsSection(context.activeState);
@@ -196,15 +181,10 @@ export function buildChoiceGeneratorPrompt(
   );
   const protagonistSection = buildProtagonistSection(context.decomposedCharacters);
   const affectSection = buildAffectSection(context.protagonistAffect);
-  const dramaticQuestionSection = buildDramaticQuestionSection(
-    context.dramaticQuestion
-  );
-  const bibleSection = context.storyBible
-    ? buildStoryBibleContextSection(context.storyBible)
-    : '';
-  const guidelinesSection = context.choiceGuidance === 'strict'
-    ? STRICT_CHOICE_GUIDELINES + '\n\n'
-    : '';
+  const dramaticQuestionSection = buildDramaticQuestionSection(context.dramaticQuestion);
+  const bibleSection = context.storyBible ? buildStoryBibleContextSection(context.storyBible) : '';
+  const guidelinesSection =
+    context.choiceGuidance === 'strict' ? STRICT_CHOICE_GUIDELINES + '\n\n' : '';
   const structureAwareSection = buildStructureAwareChoiceDesignSection(
     context.structure,
     context.accumulatedStructureState

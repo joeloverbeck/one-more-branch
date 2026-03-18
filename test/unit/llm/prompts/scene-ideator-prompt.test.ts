@@ -154,9 +154,7 @@ describe('buildSceneIdeatorPrompt', () => {
     it('renders health conditions when present', () => {
       const ctx: SceneIdeatorContinuationContext = {
         ...continuationContext,
-        accumulatedHealth: [
-          { id: 'hp-1', text: 'Broken arm' },
-        ],
+        accumulatedHealth: [{ id: 'hp-1', text: 'Broken arm' }],
       };
       const messages = buildSceneIdeatorPrompt(ctx);
       expect(messages[1].content).toContain('YOUR HEALTH:');
@@ -177,7 +175,12 @@ describe('buildSceneIdeatorPrompt', () => {
         activeState: {
           ...continuationContext.activeState,
           openThreads: [
-            { id: 'td-1', text: 'Find the lost sword', threadType: ThreadType.QUEST, urgency: Urgency.HIGH },
+            {
+              id: 'td-1',
+              text: 'Find the lost sword',
+              threadType: ThreadType.QUEST,
+              urgency: Urgency.HIGH,
+            },
           ],
         },
         threadAges: { 'td-1': 5 },

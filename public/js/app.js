@@ -7711,697 +7711,9 @@ function initPlayPage() {
   });
 }
 
-function initNewStoryPage() {
-  const form = document.querySelector('.story-form');
-  const loading = document.getElementById('loading');
-  const conceptDropdownMount = document.getElementById('concept-dropdown-mount');
-  const useConceptBtn = document.getElementById('use-concept-btn');
-  const skipConceptBtn = document.getElementById('skip-concept-btn');
-  const generateSpineBtn = document.getElementById('generate-spine-btn');
-  const regenerateSpineBtn = document.getElementById('regenerate-spines-btn');
-  const spineContainer = document.getElementById('spine-options');
-  const spineSection = document.getElementById('spine-section');
-  const kernelSelectorStory = document.getElementById('kernel-selector-story');
-  const kernelDisplayPanel = document.getElementById('kernel-display-panel');
-  const errorDiv = document.querySelector('.alert-error');
-
-  if (!form || !loading || !generateSpineBtn) {
-    return;
-  }
-  const loadingProgress = createLoadingProgressController(loading);
-  var selectedConceptSpec = null;
-  var selectedConceptVerification = null;
-  var selectedContentPreferences = null;
-  var selectedKernelForStory = null;
-  var loadedConceptsMap = {};
-
-  initNpcControls();
-  initDynamicLists();
-
-  // Character selector for decomposed characters
-  var protagonistSelectEl = document.getElementById('protagonist-character-selector');
-  var npcSelectorWrap = document.getElementById('npc-character-selector-wrap');
-  var npcPillsContainer = document.getElementById('npc-character-pills');
-  var characterSelector =
-    protagonistSelectEl && npcSelectorWrap && npcPillsContainer
-      ? createCharacterSelector(protagonistSelectEl, npcSelectorWrap, npcPillsContainer)
-      : null;
-  if (characterSelector) {
-    characterSelector.init();
-  }
-
-  function toTrimmedString(value) {
-    return typeof value === 'string' ? value.trim() : '';
-  }
-
-  function getValueById(id) {
-    var field = document.getElementById(id);
-    return field && typeof field.value === 'string' ? field.value.trim() : '';
-  }
-
-  function hideExistingError() {
-    if (errorDiv) {
-      errorDiv.style.display = 'none';
-    }
-  }
-
-  // Initialize wizard stepper
-  var wizard = typeof createWizardStepper === 'function'
-    ? createWizardStepper({
-      onStepChange: function (_from, to) {
-        if (to === 6) {
-          var reviewContainer = document.getElementById('wizard-review-summary');
-          if (typeof buildReviewSummary === 'function') {
-            buildReviewSummary(reviewContainer, function (step) {
-              wizard.goToStep(step);
-            });
-          }
-        }
-      },
-    })
-    : null;
-
-  // Field-to-step mapping for validation navigation
-  var FIELD_STEP_MAP = { title: 1, apiKey: 1, 'protagonist-character-selector': 5, 'kernel-selector-story': 1 };
-
-  function setValueById(id, value) {
-    var field = document.getElementById(id);
-    if (!field || typeof field.value !== 'string') {
-      return;
-    }
-
-    field.value = value;
-  }
-
-  function setSelectedById(id, value) {
-    var field = document.getElementById(id);
-    if (!(field instanceof HTMLSelectElement)) return;
-    var strVal = String(value || '');
-    for (var i = 0; i < field.options.length; i++) {
-      if (field.options[i].value === strVal) {
-        field.selectedIndex = i;
-        return;
-      }
-    }
-  }
-
-  function markWizardStepsComplete(steps) {
-    if (!wizard) return;
-    steps.forEach(function (s) { wizard.markStepComplete(s); });
-  }
-
-  function prefillFromConceptSpec(conceptSpec) {
-    if (!conceptSpec) return;
-
-    // Narrative Identity
-    setValueById('oneLineHook', conceptSpec.oneLineHook || '');
-    setValueById('elevatorParagraph', conceptSpec.elevatorParagraph || '');
-    setValueById('whatIfQuestion', conceptSpec.whatIfQuestion || '');
-    setValueById('ironicTwist', conceptSpec.ironicTwist || '');
-    setValueById('playerFantasy', conceptSpec.playerFantasy || '');
-
-    // Genre & Tone
-    setSelectedById('genreFrame', conceptSpec.genreFrame);
-    setValueById('genreSubversion', conceptSpec.genreSubversion || '');
-    var genreLabel = String(conceptSpec.genreFrame || '').replace(/_/g, ' ');
-    var subversion = toTrimmedString(conceptSpec.genreSubversion);
-    setValueById('tone', genreLabel + (subversion ? ' - ' + subversion : ''));
-
-    // Protagonist
-    setValueById('protagonistRole', conceptSpec.protagonistRole || '');
-    setValueById('coreCompetence', conceptSpec.coreCompetence || '');
-    setValueById('coreFlaw', conceptSpec.coreFlaw || '');
-    populateDynamicList('actionVerbs', conceptSpec.actionVerbs);
-
-    // Conflict Engine
-    setValueById('coreConflictLoop', conceptSpec.coreConflictLoop || '');
-    setSelectedById('conflictAxis', conceptSpec.conflictAxis);
-    setSelectedById('conflictType', conceptSpec.conflictType);
-    setValueById('pressureSource', conceptSpec.pressureSource || '');
-    setValueById('stakesPersonal', conceptSpec.stakesPersonal || '');
-    setValueById('stakesSystemic', conceptSpec.stakesSystemic || '');
-    setValueById('deadlineMechanism', conceptSpec.deadlineMechanism || '');
-    setValueById('incitingDisruption', conceptSpec.incitingDisruption || '');
-    setValueById('escapeValve', conceptSpec.escapeValve || '');
-    setValueById('protagonistLie', conceptSpec.protagonistLie || '');
-    setValueById('protagonistTruth', conceptSpec.protagonistTruth || '');
-    setValueById('protagonistGhost', conceptSpec.protagonistGhost || '');
-    setValueById('wantNeedCollisionSketch', conceptSpec.wantNeedCollisionSketch || '');
-
-    // World
-    populateDynamicList('settingAxioms', conceptSpec.settingAxioms);
-    populateDynamicList('constraintSet', conceptSpec.constraintSet);
-    populateDynamicList('keyInstitutions', conceptSpec.keyInstitutions);
-    setSelectedById('settingScale', conceptSpec.settingScale);
-
-    markWizardStepsComplete([2, 3, 4, 5]);
-  }
-
-  function prefillFromVerification(verification) {
-    if (!verification) return;
-    setValueById('signatureScenario', verification.signatureScenario || '');
-    setValueById('inevitabilityStatement', verification.inevitabilityStatement || '');
-    populateDynamicList('escalatingSetpieces', verification.escalatingSetpieces || []);
-    populateDynamicList('premisePromises', verification.premisePromises || []);
-  }
-
-  function buildConceptSpecFromFields() {
-    var oneLineHook = getValueById('oneLineHook');
-    var elevatorParagraph = getValueById('elevatorParagraph');
-    var genreFrame = getValueById('genreFrame');
-    var genreSubversion = getValueById('genreSubversion');
-    var protagonistRole = getValueById('protagonistRole');
-    var coreCompetence = getValueById('coreCompetence');
-    var coreFlaw = getValueById('coreFlaw');
-    var actionVerbs = collectDynamicListEntries('actionVerbs');
-    var coreConflictLoop = getValueById('coreConflictLoop');
-    var conflictAxis = getValueById('conflictAxis');
-    var conflictType = getValueById('conflictType');
-    var pressureSource = getValueById('pressureSource');
-    var stakesPersonal = getValueById('stakesPersonal');
-    var stakesSystemic = getValueById('stakesSystemic');
-    var deadlineMechanism = getValueById('deadlineMechanism');
-    var incitingDisruption = getValueById('incitingDisruption');
-    var escapeValve = getValueById('escapeValve');
-    var settingAxioms = collectDynamicListEntries('settingAxioms');
-    var constraintSet = collectDynamicListEntries('constraintSet');
-    var keyInstitutions = collectDynamicListEntries('keyInstitutions');
-    var settingScale = getValueById('settingScale');
-    var whatIfQuestion = getValueById('whatIfQuestion');
-    var ironicTwist = getValueById('ironicTwist');
-    var playerFantasy = getValueById('playerFantasy');
-    var protagonistLie = getValueById('protagonistLie');
-    var protagonistTruth = getValueById('protagonistTruth');
-    var protagonistGhost = getValueById('protagonistGhost');
-    var wantNeedCollisionSketch = getValueById('wantNeedCollisionSketch');
-
-    // Only build a conceptSpec if we have enough meaningful fields
-    if (!oneLineHook || !coreConflictLoop || !conflictAxis) {
-      return null;
-    }
-
-    var spec = {
-      oneLineHook: oneLineHook,
-      elevatorParagraph: elevatorParagraph,
-      genreFrame: genreFrame,
-      genreSubversion: genreSubversion,
-      protagonistRole: protagonistRole,
-      coreCompetence: coreCompetence,
-      coreFlaw: coreFlaw,
-      actionVerbs: actionVerbs,
-      coreConflictLoop: coreConflictLoop,
-      conflictAxis: conflictAxis,
-      conflictType: conflictType,
-      pressureSource: pressureSource,
-      stakesPersonal: stakesPersonal,
-      stakesSystemic: stakesSystemic,
-      deadlineMechanism: deadlineMechanism,
-      incitingDisruption: incitingDisruption,
-      escapeValve: escapeValve,
-      settingAxioms: settingAxioms,
-      constraintSet: constraintSet,
-      keyInstitutions: keyInstitutions,
-      settingScale: settingScale,
-      whatIfQuestion: whatIfQuestion,
-      ironicTwist: ironicTwist,
-      playerFantasy: playerFantasy,
-      protagonistLie: protagonistLie,
-      protagonistTruth: protagonistTruth,
-      protagonistGhost: protagonistGhost,
-      wantNeedCollisionSketch: wantNeedCollisionSketch,
-    };
-
-    return spec;
-  }
-
-  function buildConceptVerificationFromFields() {
-    var signatureScenario = getValueById('signatureScenario');
-    var inevitabilityStatement = getValueById('inevitabilityStatement');
-    var escalatingSetpieces = collectDynamicListEntries('escalatingSetpieces');
-    var premisePromises = collectDynamicListEntries('premisePromises');
-
-    if (
-      escalatingSetpieces.length === 0 &&
-      premisePromises.length === 0 &&
-      !signatureScenario &&
-      !inevitabilityStatement
-    ) {
-      return null;
-    }
-
-    var base = selectedConceptVerification || {};
-    return {
-      conceptId: base.conceptId || '',
-      signatureScenario: signatureScenario || base.signatureScenario || '',
-      loglineCompressible: base.loglineCompressible || false,
-      logline: base.logline || '',
-      premisePromises: premisePromises.length > 0 ? premisePromises : base.premisePromises || [],
-      escalatingSetpieces:
-        escalatingSetpieces.length > 0 ? escalatingSetpieces : base.escalatingSetpieces || [],
-      setpieceCausalChainBroken: base.setpieceCausalChainBroken || false,
-      setpieceCausalLinks: base.setpieceCausalLinks || [],
-      inevitabilityStatement: inevitabilityStatement || base.inevitabilityStatement || '',
-      loadBearingCheck: base.loadBearingCheck || {
-        passes: true,
-        reasoning: '',
-        genericCollapse: '',
-      },
-      kernelFidelityCheck: base.kernelFidelityCheck || {
-        passes: true,
-        reasoning: '',
-        kernelDrift: '',
-      },
-      conceptIntegrityScore: base.conceptIntegrityScore || 0,
-    };
-  }
-
-  function collectFormData() {
-    var formData = new FormData(form);
-    var npcs = collectNpcEntries();
-
-    // Build worldbuilding — merge free text with structured lists
-    var worldbuildingFreeText = toTrimmedString(formData.get('worldbuilding'));
-
-    // Build tone from genre + free text
-    var toneFreeText = toTrimmedString(formData.get('tone'));
-
-    return {
-      title: toTrimmedString(formData.get('title')),
-      worldbuilding: worldbuildingFreeText,
-      tone: toneFreeText,
-      npcs: npcs.length > 0 ? npcs : undefined,
-      startingSituation: toTrimmedString(formData.get('startingSituation')),
-      apiKey: toTrimmedString(formData.get('apiKey')),
-    };
-  }
-
-  function navigateToStepForField(fieldId) {
-    if (!wizard || !FIELD_STEP_MAP[fieldId]) return;
-    wizard.goToStep(FIELD_STEP_MAP[fieldId]);
-  }
-
-  function validateBeforeGeneratingSpines() {
-    hideExistingError();
-
-    var titleInput = document.getElementById('title');
-    var apiKeyInput = document.getElementById('apiKey');
-    var protagonistSelector = document.getElementById('protagonist-character-selector');
-
-    if (
-      titleInput &&
-      typeof titleInput.checkValidity === 'function' &&
-      !titleInput.checkValidity()
-    ) {
-      navigateToStepForField('title');
-      titleInput.reportValidity();
-      return false;
-    }
-
-    if (!protagonistSelector || !protagonistSelector.value) {
-      navigateToStepForField('protagonist-character-selector');
-      showFormError('Protagonist character selection is required');
-      return false;
-    }
-
-    var apiKeyValue =
-      apiKeyInput && typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
-    if (!apiKeyValue) {
-      navigateToStepForField('apiKey');
-      showFormError('OpenRouter API key is required');
-      return false;
-    }
-
-    if (!selectedKernelForStory) {
-      navigateToStepForField('kernel-selector-story');
-      showFormError('A thematic kernel must be selected before generating spine options.');
-      return false;
-    }
-
-    return true;
-  }
-
-  // ── Kernel selector logic (for story creation) ─────────────────
-
-  function renderStoryKernelDisplay(kernel) {
-    if (!kernelDisplayPanel) return;
-
-    if (!kernel) {
-      kernelDisplayPanel.style.display = 'none';
-      selectedKernelForStory = null;
-      return;
-    }
-
-    selectedKernelForStory = kernel;
-    var thesisEl = document.getElementById('kernel-disp-thesis');
-    var valueEl = document.getElementById('kernel-disp-value');
-    var opposingEl = document.getElementById('kernel-disp-opposing');
-    var directionEl = document.getElementById('kernel-disp-direction');
-    var questionEl = document.getElementById('kernel-disp-question');
-
-    if (thesisEl) thesisEl.textContent = kernel.dramaticThesis || '';
-    if (valueEl) valueEl.textContent = kernel.valueAtStake || '';
-    if (opposingEl) opposingEl.textContent = kernel.opposingForce || '';
-    if (directionEl)
-      directionEl.textContent = String(kernel.directionOfChange || '').replace(/_/g, ' ');
-    if (questionEl) questionEl.textContent = kernel.thematicQuestion || '';
-
-    var moralEl = document.getElementById('kernel-disp-moral');
-    if (moralEl) moralEl.textContent = kernel.moralArgument || '';
-
-    var vsSection = document.getElementById('kernel-disp-vs-section');
-    if (kernel.valueSpectrum && vsSection) {
-      var vsPosEl = document.getElementById('kernel-disp-vs-positive');
-      var vsConEl = document.getElementById('kernel-disp-vs-contrary');
-      var vsCdEl = document.getElementById('kernel-disp-vs-contradictory');
-      var vsNegEl = document.getElementById('kernel-disp-vs-negation');
-      if (vsPosEl) vsPosEl.textContent = kernel.valueSpectrum.positive || '';
-      if (vsConEl) vsConEl.textContent = kernel.valueSpectrum.contrary || '';
-      if (vsCdEl) vsCdEl.textContent = kernel.valueSpectrum.contradictory || '';
-      if (vsNegEl) vsNegEl.textContent = kernel.valueSpectrum.negationOfNegation || '';
-      vsSection.style.display = 'block';
-    } else if (vsSection) {
-      vsSection.style.display = 'none';
-    }
-
-    kernelDisplayPanel.style.display = 'block';
-  }
-
-  async function loadStoryKernelOptions() {
-    if (!(kernelSelectorStory instanceof HTMLSelectElement)) return;
-
-    try {
-      var response = await fetch('/kernels/api/list', { method: 'GET' });
-      var data = await response.json();
-      if (!response.ok || !data.success || !Array.isArray(data.kernels)) return;
-
-      data.kernels.forEach(function (kernel) {
-        var option = document.createElement('option');
-        option.value = kernel.id;
-        option.textContent = kernel.name || 'Untitled Kernel';
-        kernelSelectorStory.appendChild(option);
-      });
-    } catch (e) {
-      // Non-fatal
-    }
-  }
-
-  async function handleStoryKernelChange() {
-    if (!(kernelSelectorStory instanceof HTMLSelectElement)) return;
-
-    var kernelId = (kernelSelectorStory.value || '').trim();
-    if (!kernelId) {
-      renderStoryKernelDisplay(null);
-      return;
-    }
-
-    try {
-      var response = await fetch('/kernels/api/' + encodeURIComponent(kernelId));
-      var data = await response.json();
-      if (!response.ok || !data.success || !data.kernel) {
-        throw new Error(data.error || 'Failed to load kernel');
-      }
-
-      renderStoryKernelDisplay(data.kernel.evaluatedKernel.kernel);
-    } catch (e) {
-      kernelSelectorStory.value = '';
-      renderStoryKernelDisplay(null);
-    }
-  }
-
-  if (kernelSelectorStory instanceof HTMLSelectElement) {
-    loadStoryKernelOptions();
-    kernelSelectorStory.addEventListener('change', function () {
-      void handleStoryKernelChange();
-    });
-  }
-
-  // ── Concept selector logic ─────────────────────────────────────
-
-  var conceptDropdownInstance = null;
-
-  async function loadConceptList() {
-    try {
-      var response = await fetch('/concepts/api/list');
-      var data = await response.json();
-      if (!response.ok || !data.success) return;
-
-      if (conceptDropdownMount && Array.isArray(data.concepts)) {
-        data.concepts.forEach(function (c) {
-          loadedConceptsMap[c.id] = c;
-        });
-
-        conceptDropdownInstance = createConceptDropdown(
-          conceptDropdownMount,
-          data.concepts,
-          function (conceptId) {
-            if (useConceptBtn) {
-              useConceptBtn.disabled = !conceptId;
-            }
-          }
-        );
-      }
-    } catch (e) {
-      // Non-fatal: concepts list unavailable
-    }
-  }
-
-  if (conceptDropdownMount) {
-    loadConceptList();
-  }
-
-  if (useConceptBtn) {
-    useConceptBtn.addEventListener('click', function (event) {
-      event.preventDefault();
-      var conceptId = conceptDropdownInstance ? conceptDropdownInstance.getSelectedId() : '';
-      if (!conceptId) return;
-
-      var savedConcept = loadedConceptsMap[conceptId];
-      if (savedConcept && savedConcept.evaluatedConcept && savedConcept.evaluatedConcept.concept) {
-        selectedConceptSpec = savedConcept.evaluatedConcept.concept;
-        selectedConceptVerification = savedConcept.verificationResult || null;
-        selectedContentPreferences =
-          savedConcept.seeds && savedConcept.seeds.contentPreferences
-            ? savedConcept.seeds.contentPreferences
-            : null;
-        prefillFromConceptSpec(selectedConceptSpec);
-        prefillFromVerification(selectedConceptVerification);
-
-        // Auto-load linked kernel if available
-        if (savedConcept.sourceKernelId && kernelSelectorStory instanceof HTMLSelectElement) {
-          kernelSelectorStory.value = savedConcept.sourceKernelId;
-          void handleStoryKernelChange();
-        }
-
-        if (wizard) {
-          wizard.markStepComplete(1);
-          wizard.goToStep(2);
-        }
-      }
-    });
-  }
-
-  async function fetchSpineOptions() {
-    hideExistingError();
-
-    generateSpineBtn.disabled = true;
-    if (regenerateSpineBtn) regenerateSpineBtn.disabled = true;
-    loading.style.display = 'flex';
-    var progressId = createProgressId();
-    loadingProgress.start(progressId);
-
-    try {
-      var formValues = collectFormData();
-      var conceptSpecFromFields = buildConceptSpecFromFields();
-      var spineBody = {
-        worldbuilding: formValues.worldbuilding,
-        tone: formValues.tone,
-        npcs: formValues.npcs,
-        startingSituation: formValues.startingSituation,
-        apiKey: formValues.apiKey,
-        conceptSpec: conceptSpecFromFields || undefined,
-        contentPreferences: selectedContentPreferences || undefined,
-        progressId: progressId,
-      };
-      if (characterSelector) {
-        var protId = characterSelector.getProtagonistCharacterId();
-        if (protId) {
-          spineBody.protagonistCharacterId = protId;
-        }
-        var npcIds = characterSelector.getNpcCharacterIds();
-        if (npcIds.length > 0) {
-          spineBody.npcCharacterIds = npcIds;
-        }
-      }
-      if (selectedKernelForStory) {
-        spineBody.storyKernel = selectedKernelForStory;
-      }
-      var verificationFromFields = buildConceptVerificationFromFields();
-      if (verificationFromFields) {
-        spineBody.conceptVerification = verificationFromFields;
-      }
-
-      var response = await fetch('/stories/generate-spines', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(spineBody),
-      });
-
-      var data = await response.json();
-
-      if (!response.ok || !data.success) {
-        if (data.code) {
-          console.error('Error code:', data.code, '| Retryable:', data.retryable);
-        }
-        throw new Error(data.error || 'Failed to generate spine options');
-      }
-
-      if (formValues.apiKey.length >= 10) {
-        setApiKey(formValues.apiKey);
-      }
-
-      if (spineContainer && spineSection) {
-        renderSpineOptions(data.options, spineContainer, function (option) {
-          createStoryWithSpine(option);
-        });
-        spineSection.style.display = 'block';
-        if (regenerateSpineBtn) regenerateSpineBtn.style.display = 'inline-block';
-        spineSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    } catch (error) {
-      console.error('Spine generation error:', error);
-      showFormError(
-        error instanceof Error ? error.message : 'Something went wrong. Please try again.'
-      );
-    } finally {
-      loadingProgress.stop();
-      loading.style.display = 'none';
-      generateSpineBtn.disabled = false;
-      if (regenerateSpineBtn) regenerateSpineBtn.disabled = false;
-    }
-  }
-
-  async function createStoryWithSpine(spine) {
-    hideExistingError();
-
-    generateSpineBtn.disabled = true;
-    if (regenerateSpineBtn) regenerateSpineBtn.disabled = true;
-    loading.style.display = 'flex';
-    var progressId = createProgressId();
-    loadingProgress.start(progressId);
-
-    try {
-      var formValues = collectFormData();
-      var conceptSpecFromFields = buildConceptSpecFromFields();
-      var createBody = {
-        title: formValues.title,
-        worldbuilding: formValues.worldbuilding,
-        tone: formValues.tone,
-        npcs: formValues.npcs,
-        startingSituation: formValues.startingSituation,
-        apiKey: formValues.apiKey,
-        conceptSpec: conceptSpecFromFields || undefined,
-        spine: spine,
-        progressId: progressId,
-      };
-      if (characterSelector) {
-        var protId = characterSelector.getProtagonistCharacterId();
-        if (protId) {
-          createBody.protagonistCharacterId = protId;
-        }
-        var npcIds = characterSelector.getNpcCharacterIds();
-        if (npcIds.length > 0) {
-          createBody.npcCharacterIds = npcIds;
-        }
-      }
-      if (selectedKernelForStory) {
-        createBody.storyKernel = selectedKernelForStory;
-      }
-      var verificationFromFields = buildConceptVerificationFromFields();
-      if (verificationFromFields) {
-        createBody.conceptVerification = verificationFromFields;
-      }
-
-      var response = await fetch('/stories/create-ajax', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(createBody),
-      });
-
-      var data = await response.json();
-
-      if (!response.ok || !data.success) {
-        if (data.code) {
-          console.error('Error code:', data.code, '| Retryable:', data.retryable);
-        }
-        if (data.debug) {
-          console.error('Debug info:', data.debug);
-        }
-        throw new Error(data.error || 'Failed to create story');
-      }
-
-      window.location.assign('/play/' + data.storyId + '/briefing');
-    } catch (error) {
-      console.error('Story creation error:', error);
-      showFormError(
-        error instanceof Error ? error.message : 'Something went wrong. Please try again.'
-      );
-      generateSpineBtn.disabled = false;
-      if (regenerateSpineBtn) regenerateSpineBtn.disabled = false;
-    } finally {
-      loadingProgress.stop();
-      loading.style.display = 'none';
-    }
-  }
-
-  var storedApiKey = getApiKey();
-  var apiKeyInput = document.getElementById('apiKey');
-  if (
-    apiKeyInput &&
-    storedApiKey &&
-    typeof apiKeyInput.value === 'string' &&
-    apiKeyInput.value.length === 0
-  ) {
-    apiKeyInput.value = storedApiKey;
-  }
-
-  if (skipConceptBtn) {
-    skipConceptBtn.addEventListener('click', function (event) {
-      event.preventDefault();
-      selectedConceptSpec = null;
-      selectedConceptVerification = null;
-      selectedContentPreferences = null;
-      // Stay on step 1 — user fills in kernel/title manually, then uses Next
-    });
-  }
-
-  // Phase A: Generate Spine on button click
-  generateSpineBtn.addEventListener('click', function (event) {
-    event.preventDefault();
-    if (!validateBeforeGeneratingSpines()) {
-      return;
-    }
-    fetchSpineOptions();
-  });
-
-  // Regenerate button
-  if (regenerateSpineBtn) {
-    regenerateSpineBtn.addEventListener('click', function (event) {
-      event.preventDefault();
-      if (spineContainer) clearSpineOptions(spineContainer);
-      clearSelectedSpine();
-      fetchSpineOptions();
-    });
-  }
-
-  // Prevent default form submit (no longer a submit button)
-  form.addEventListener('submit', function (event) {
-    event.preventDefault();
-  });
-}
 
 document.addEventListener('DOMContentLoaded', () => {
   initPlayPage();
-  initNewStoryPage();
   initBriefingPage();
   initConceptsPage();
   initConceptSeedsPage();
@@ -8410,7 +7722,414 @@ document.addEventListener('DOMContentLoaded', () => {
   initKernelEvolutionPage();
   initCharacterWebsPage();
   initCharactersPage();
+  initSpinesPage();
+  initCreateStoryPage();
 });
+
+// ── Spine Page Controller ────────────────────────────────────────
+
+function initSpinesPage() {
+  var page = document.getElementById('spines-page');
+  if (!page) return;
+
+  var form = document.getElementById('spine-generate-form');
+  var generateBtn = document.getElementById('generate-spines-btn');
+  var progressSection = document.getElementById('spine-progress-section');
+  var progressContent = document.getElementById('spine-progress-content');
+  var generatedSection = document.getElementById('generated-spines-section');
+  var generatedContainer = document.getElementById('generated-spines');
+  var savedContainer = document.getElementById('saved-spines');
+
+  var conceptSelect = document.getElementById('spineConceptId');
+  var protagonistSelect = document.getElementById('spineProtagonistId');
+  var worldbuildingSelect = document.getElementById('spineWorldbuildingId');
+  var apiKeyInput = document.getElementById('spineApiKey');
+  var toneInput = document.getElementById('spineTone');
+  var startingSituationInput = document.getElementById('spineStartingSituation');
+  var npcSelect = document.getElementById('spineNpcIds');
+
+  if (!form || !generateBtn) return;
+
+  var loadingProgress = createLoadingProgressController(progressContent);
+
+  // Restore API key
+  var storedApiKey = getApiKey();
+  if (storedApiKey && apiKeyInput && apiKeyInput.value.length === 0) {
+    apiKeyInput.value = storedApiKey;
+  }
+
+  function updateGenerateButton() {
+    var hasApiKey = apiKeyInput && apiKeyInput.value.trim().length >= 10;
+    var hasConcept = conceptSelect && conceptSelect.value;
+    var hasProtagonist = protagonistSelect && protagonistSelect.value;
+    var hasWorldbuilding = worldbuildingSelect && worldbuildingSelect.value;
+    generateBtn.disabled = !(hasApiKey && hasConcept && hasProtagonist && hasWorldbuilding);
+  }
+
+  if (apiKeyInput) apiKeyInput.addEventListener('input', updateGenerateButton);
+  if (conceptSelect) conceptSelect.addEventListener('change', updateGenerateButton);
+  if (protagonistSelect) protagonistSelect.addEventListener('change', updateGenerateButton);
+  if (worldbuildingSelect) worldbuildingSelect.addEventListener('change', updateGenerateButton);
+  updateGenerateButton();
+
+  // Track current form context for saving
+  var currentFormContext = {};
+
+  function collectFormContext() {
+    return {
+      conceptId: conceptSelect ? conceptSelect.value : '',
+      protagonistCharacterId: protagonistSelect ? protagonistSelect.value : '',
+      npcCharacterIds: npcSelect
+        ? Array.from(npcSelect.selectedOptions).map(function (o) { return o.value; })
+        : [],
+      worldbuildingId: worldbuildingSelect ? worldbuildingSelect.value : '',
+      tone: toneInput ? toneInput.value.trim() : '',
+      startingSituation: startingSituationInput ? startingSituationInput.value.trim() : '',
+    };
+  }
+
+  function renderSpineCard(option, index, isSaved) {
+    var card = document.createElement('div');
+    card.className = 'spine-option-card';
+
+    var html =
+      '<h3>' + escapeHtml(option.storySpineType) + '</h3>' +
+      '<p><strong>Dramatic Question:</strong> ' + escapeHtml(option.centralDramaticQuestion) + '</p>' +
+      '<p><strong>Conflict:</strong> ' + escapeHtml(option.conflictAxis) + ' / ' + escapeHtml(option.conflictType) + '</p>' +
+      '<p><strong>Arc:</strong> ' + escapeHtml(option.characterArcType) + '</p>' +
+      '<p><strong>Need:</strong> ' + escapeHtml(option.protagonistNeedVsWant.need) + '</p>' +
+      '<p><strong>Want:</strong> ' + escapeHtml(option.protagonistNeedVsWant.want) + '</p>' +
+      '<p><strong>Antagonistic Force:</strong> ' + escapeHtml(option.primaryAntagonisticForce.description) + '</p>';
+
+    if (option.toneFeel && option.toneFeel.length > 0) {
+      html += '<p><strong>Tone Feel:</strong> ' + option.toneFeel.map(escapeHtml).join(', ') + '</p>';
+    }
+    if (option.toneAvoid && option.toneAvoid.length > 0) {
+      html += '<p><strong>Tone Avoid:</strong> ' + option.toneAvoid.map(escapeHtml).join(', ') + '</p>';
+    }
+    if (option.wantNeedCollisionPoint) {
+      html += '<p><strong>Collision Point:</strong> ' + escapeHtml(option.wantNeedCollisionPoint) + '</p>';
+    }
+    if (option.protagonistDeepestFear) {
+      html += '<p><strong>Deepest Fear:</strong> ' + escapeHtml(option.protagonistDeepestFear) + '</p>';
+    }
+
+    if (!isSaved) {
+      html += '<div class="form-actions">' +
+        '<button type="button" class="btn btn-primary save-spine-btn" data-index="' + index + '">Save</button>' +
+        '</div>';
+    }
+
+    card.innerHTML = html;
+    return card;
+  }
+
+  function renderSavedSpineCard(spine) {
+    var card = document.createElement('div');
+    card.className = 'spine-option-card';
+    card.dataset.spineId = spine.id;
+
+    var opt = spine.spineOption;
+    var html =
+      '<h3>' + escapeHtml(spine.name) + '</h3>' +
+      '<p><strong>Type:</strong> ' + escapeHtml(opt.storySpineType) + '</p>' +
+      '<p><strong>Dramatic Question:</strong> ' + escapeHtml(opt.centralDramaticQuestion) + '</p>' +
+      '<p><strong>Conflict:</strong> ' + escapeHtml(opt.conflictAxis) + ' / ' + escapeHtml(opt.conflictType) + '</p>' +
+      '<p><strong>Arc:</strong> ' + escapeHtml(opt.characterArcType) + '</p>' +
+      '<div class="form-actions">' +
+      '<button type="button" class="btn btn-danger delete-spine-btn" data-spine-id="' + spine.id + '">Delete</button>' +
+      '</div>';
+
+    card.innerHTML = html;
+    return card;
+  }
+
+  var generatedOptions = [];
+
+  async function fetchSpineOptions() {
+    generateBtn.disabled = true;
+    progressSection.style.display = 'flex';
+    generatedSection.style.display = 'none';
+    generatedContainer.innerHTML = '';
+
+    currentFormContext = collectFormContext();
+
+    var progressId = createProgressId();
+    loadingProgress.start(progressId);
+
+    try {
+      var apiKey = apiKeyInput.value.trim();
+      setApiKey(apiKey);
+
+      var response = await fetch('/spines/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conceptId: currentFormContext.conceptId,
+          protagonistCharacterId: currentFormContext.protagonistCharacterId,
+          npcCharacterIds: currentFormContext.npcCharacterIds,
+          worldbuildingId: currentFormContext.worldbuildingId,
+          tone: currentFormContext.tone,
+          startingSituation: currentFormContext.startingSituation,
+          apiKey: apiKey,
+          progressId: progressId,
+        }),
+      });
+
+      var data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to generate spines');
+      }
+
+      generatedOptions = data.options;
+
+      data.options.forEach(function (option, i) {
+        generatedContainer.appendChild(renderSpineCard(option, i, false));
+      });
+
+      generatedSection.style.display = '';
+    } catch (error) {
+      var errorEl = document.createElement('p');
+      errorEl.className = 'form-error';
+      errorEl.textContent = error instanceof Error ? error.message : 'Generation failed';
+      generatedContainer.appendChild(errorEl);
+      generatedSection.style.display = '';
+    } finally {
+      loadingProgress.stop();
+      progressSection.style.display = 'none';
+      updateGenerateButton();
+    }
+  }
+
+  // Save button delegation
+  generatedContainer.addEventListener('click', async function (event) {
+    var saveBtn = event.target.closest('.save-spine-btn');
+    if (!saveBtn) return;
+
+    var index = parseInt(saveBtn.dataset.index, 10);
+    var option = generatedOptions[index];
+    if (!option) return;
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    try {
+      var response = await fetch('/spines/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          spineOption: option,
+          sourceConceptId: currentFormContext.conceptId,
+          protagonistCharacterId: currentFormContext.protagonistCharacterId,
+          npcCharacterIds: currentFormContext.npcCharacterIds,
+          worldbuildingId: currentFormContext.worldbuildingId,
+          tone: currentFormContext.tone,
+          startingSituation: currentFormContext.startingSituation,
+        }),
+      });
+
+      var data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to save spine');
+      }
+
+      saveBtn.textContent = 'Saved!';
+      saveBtn.classList.remove('btn-primary');
+      saveBtn.classList.add('btn-success');
+
+      // Add to saved section
+      var emptyMsg = savedContainer.querySelector('.spine-section-subtitle');
+      if (emptyMsg) emptyMsg.remove();
+      savedContainer.appendChild(renderSavedSpineCard(data.spine));
+    } catch (error) {
+      saveBtn.textContent = 'Error';
+      saveBtn.disabled = false;
+    }
+  });
+
+  // Delete button delegation
+  savedContainer.addEventListener('click', async function (event) {
+    var deleteBtn = event.target.closest('.delete-spine-btn');
+    if (!deleteBtn) return;
+
+    var spineId = deleteBtn.dataset.spineId;
+    if (!spineId) return;
+
+    deleteBtn.disabled = true;
+    deleteBtn.textContent = 'Deleting...';
+
+    try {
+      var response = await fetch('/spines/api/' + spineId, {
+        method: 'DELETE',
+      });
+
+      var data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to delete spine');
+      }
+
+      var card = savedContainer.querySelector('[data-spine-id="' + spineId + '"]');
+      if (card) card.remove();
+
+      if (savedContainer.children.length === 0) {
+        var msg = document.createElement('p');
+        msg.className = 'spine-section-subtitle';
+        msg.textContent = 'No saved spines yet. Generate some above!';
+        savedContainer.appendChild(msg);
+      }
+    } catch (error) {
+      deleteBtn.textContent = 'Error';
+      deleteBtn.disabled = false;
+    }
+  });
+
+  generateBtn.addEventListener('click', function (event) {
+    event.preventDefault();
+    fetchSpineOptions();
+  });
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+  });
+}
+
+// ── Create Story Page Controller ─────────────────────────────────
+
+function initCreateStoryPage() {
+  var page = document.getElementById('create-story-page');
+  if (!page) return;
+
+  var form = document.getElementById('create-story-form');
+  var createBtn = document.getElementById('create-story-btn');
+  var spineSelect = document.getElementById('createStorySpineId');
+  var titleInput = document.getElementById('createStoryTitle');
+  var apiKeyInput = document.getElementById('createStoryApiKey');
+  var summaryPanel = document.getElementById('spine-summary-panel');
+  var summaryContent = document.getElementById('spine-summary-content');
+  var progressSection = document.getElementById('create-story-progress-section');
+  var progressContent = document.getElementById('create-story-progress-content');
+  var errorDiv = document.getElementById('create-story-error');
+
+  if (!form || !createBtn) return;
+
+  var loadingProgress = createLoadingProgressController(progressContent);
+
+  // Restore API key
+  var storedApiKey = getApiKey();
+  if (storedApiKey && apiKeyInput && apiKeyInput.value.length === 0) {
+    apiKeyInput.value = storedApiKey;
+  }
+
+  function updateCreateButton() {
+    var hasSpine = spineSelect && spineSelect.value;
+    var hasTitle = titleInput && titleInput.value.trim().length > 0;
+    var hasApiKey = apiKeyInput && apiKeyInput.value.trim().length >= 10;
+    createBtn.disabled = !(hasSpine && hasTitle && hasApiKey);
+  }
+
+  if (spineSelect) spineSelect.addEventListener('change', updateCreateButton);
+  if (titleInput) titleInput.addEventListener('input', updateCreateButton);
+  if (apiKeyInput) apiKeyInput.addEventListener('input', updateCreateButton);
+  updateCreateButton();
+
+  // Show spine summary when selection changes
+  if (spineSelect) {
+    spineSelect.addEventListener('change', function () {
+      var selected = spineSelect.options[spineSelect.selectedIndex];
+      if (!selected || !selected.dataset.spine) {
+        if (summaryPanel) summaryPanel.style.display = 'none';
+        return;
+      }
+
+      try {
+        var spine = JSON.parse(selected.dataset.spine);
+        var opt = spine.spineOption;
+        var html =
+          '<p><strong>Type:</strong> ' + escapeHtml(opt.storySpineType) + '</p>' +
+          '<p><strong>Dramatic Question:</strong> ' + escapeHtml(opt.centralDramaticQuestion) + '</p>' +
+          '<p><strong>Conflict:</strong> ' + escapeHtml(opt.conflictAxis) + ' / ' + escapeHtml(opt.conflictType) + '</p>' +
+          '<p><strong>Arc:</strong> ' + escapeHtml(opt.characterArcType) + '</p>' +
+          '<p><strong>Need:</strong> ' + escapeHtml(opt.protagonistNeedVsWant.need) + '</p>' +
+          '<p><strong>Want:</strong> ' + escapeHtml(opt.protagonistNeedVsWant.want) + '</p>';
+
+        if (spine.tone) {
+          html += '<p><strong>Tone:</strong> ' + escapeHtml(spine.tone) + '</p>';
+        }
+        if (spine.startingSituation) {
+          html += '<p><strong>Starting Situation:</strong> ' + escapeHtml(spine.startingSituation) + '</p>';
+        }
+
+        if (summaryContent) summaryContent.innerHTML = html;
+        if (summaryPanel) summaryPanel.style.display = '';
+      } catch (e) {
+        if (summaryPanel) summaryPanel.style.display = 'none';
+      }
+    });
+  }
+
+  function showError(msg) {
+    if (errorDiv) {
+      errorDiv.textContent = msg;
+      errorDiv.style.display = '';
+    }
+  }
+
+  function hideError() {
+    if (errorDiv) {
+      errorDiv.style.display = 'none';
+    }
+  }
+
+  async function createStory() {
+    hideError();
+    createBtn.disabled = true;
+    if (progressSection) progressSection.style.display = 'flex';
+
+    var progressId = createProgressId();
+    loadingProgress.start(progressId);
+
+    try {
+      var apiKey = apiKeyInput.value.trim();
+      setApiKey(apiKey);
+
+      var response = await fetch('/create-story/api/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          spineId: spineSelect.value,
+          title: titleInput.value.trim(),
+          apiKey: apiKey,
+          progressId: progressId,
+        }),
+      });
+
+      var data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to create story');
+      }
+
+      window.location.assign('/play/' + data.storyId + '/briefing');
+    } catch (error) {
+      showError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+      updateCreateButton();
+    } finally {
+      loadingProgress.stop();
+      if (progressSection) progressSection.style.display = 'none';
+    }
+  }
+
+  createBtn.addEventListener('click', function (event) {
+    event.preventDefault();
+    createStory();
+  });
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+  });
+}
 
   // ── Briefing page controller ─────────────────────────────────────
 

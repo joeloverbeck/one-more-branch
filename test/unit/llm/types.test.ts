@@ -226,7 +226,9 @@ describe('LLM types', () => {
             removeIds: [],
           },
           canon: {
-            worldAdd: [{ text: 'The bridge groans audibly before each thunderclap.', factType: 'LAW' }],
+            worldAdd: [
+              { text: 'The bridge groans audibly before each thunderclap.', factType: 'LAW' },
+            ],
             characterAdd: [
               { characterName: 'Scout', facts: ['The scout has crossed this bridge once before.'] },
             ],
@@ -717,7 +719,9 @@ describe('LLM types', () => {
         healthRemoved: [],
         characterStateChangesAdded: [{ characterName: 'Elara', states: ['determined'] }],
         characterStateChangesRemoved: [],
-        newCanonFacts: [{ text: 'The eastern tower survived the initial collapse.', factType: 'LAW' }],
+        newCanonFacts: [
+          { text: 'The eastern tower survived the initial collapse.', factType: 'LAW' },
+        ],
         newCharacterCanonFacts: { Elara: ['Elara reached the tower ahead of the squad.'] },
         reconciliationDiagnostics: [],
       };
@@ -834,9 +838,9 @@ describe('LLM types', () => {
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
         delayedConsequencesTriggered: [],
-knowledgeAsymmetryDetected: [],
-dramaticIronyOpportunities: [],
-rawResponse: '{"milestoneConcluded":true}',
+        knowledgeAsymmetryDetected: [],
+        dramaticIronyOpportunities: [],
+        rawResponse: '{"milestoneConcluded":true}',
       };
 
       expect(result.milestoneConcluded).toBe(true);
@@ -886,9 +890,9 @@ rawResponse: '{"milestoneConcluded":true}',
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
         delayedConsequencesTriggered: [],
-knowledgeAsymmetryDetected: [],
-dramaticIronyOpportunities: [],
-rawResponse: '{"deviationDetected":true}',
+        knowledgeAsymmetryDetected: [],
+        dramaticIronyOpportunities: [],
+        rawResponse: '{"deviationDetected":true}',
       };
 
       expect(result.deviationDetected).toBe(true);
@@ -1065,7 +1069,13 @@ rawResponse: '{"deviationDetected":true}',
           },
         ],
         decomposedWorld: {
-          facts: [{ domain: 'geography' as const, fact: 'A flooded city-state in collapse', scope: 'global' }],
+          facts: [
+            {
+              domain: 'geography' as const,
+              fact: 'A flooded city-state in collapse',
+              scope: 'global',
+            },
+          ],
           rawWorldbuilding: 'A flooded city-state in collapse',
         },
         completedBeats: [],

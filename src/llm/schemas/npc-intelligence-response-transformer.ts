@@ -1,5 +1,8 @@
 import type { KnowledgeAsymmetry } from '../../models/state/index.js';
-import type { DetectedRelationshipShift, NpcIntelligenceResult } from '../npc-intelligence-types.js';
+import type {
+  DetectedRelationshipShift,
+  NpcIntelligenceResult,
+} from '../npc-intelligence-types.js';
 import { NpcIntelligenceResultSchema } from './npc-intelligence-validation-schema.js';
 
 function normalizeRelationshipShifts(
@@ -31,15 +34,11 @@ function normalizeKnowledgeAsymmetryDetected(
   return value
     .map((entry) => ({
       characterName: entry.characterName.trim(),
-      knownFacts: entry.knownFacts
-        .map((fact) => fact.trim())
-        .filter((fact) => fact.length > 0),
+      knownFacts: entry.knownFacts.map((fact) => fact.trim()).filter((fact) => fact.length > 0),
       falseBeliefs: entry.falseBeliefs
         .map((belief) => belief.trim())
         .filter((belief) => belief.length > 0),
-      secrets: entry.secrets
-        .map((secret) => secret.trim())
-        .filter((secret) => secret.length > 0),
+      secrets: entry.secrets.map((secret) => secret.trim()).filter((secret) => secret.length > 0),
     }))
     .filter((entry) => entry.characterName.length > 0);
 }

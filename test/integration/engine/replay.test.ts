@@ -172,7 +172,8 @@ const mockedStructureResult = {
         {
           description: 'Protect evidence',
           objective: 'Avoid losing collected proof.',
-          causalLink: 'Entering restricted areas exposes evidence to interference and demands protection.',
+          causalLink:
+            'Entering restricted areas exposes evidence to interference and demands protection.',
         },
       ],
     },

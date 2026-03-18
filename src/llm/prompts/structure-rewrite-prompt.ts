@@ -120,7 +120,10 @@ function buildGenreObligationSection(context: StructureRewriteContext): string {
   const allLines = allObligations.map((entry) => `- ${entry.tag}: ${entry.gloss}`).join('\n');
   const fulfilledLines =
     fulfilled.size > 0 ? [...fulfilled].map((tag) => `- ${tag}`).join('\n') : '- (none)';
-  const remainingLines = remaining.length > 0 ? remaining.map((entry) => `- ${entry.tag}: ${entry.gloss}`).join('\n') : '- (none)';
+  const remainingLines =
+    remaining.length > 0
+      ? remaining.map((entry) => `- ${entry.tag}: ${entry.gloss}`).join('\n')
+      : '- (none)';
 
   return `\nGENRE OBLIGATION CONTRACT (for ${context.conceptSpec.genreFrame}):
 All obligation tags:
@@ -158,13 +161,15 @@ ${formatPlannedBeats(context.plannedBeats)}
 `
       : '';
 
-  const protagonistSection = context.decomposedCharacters.length > 0
-    ? formatDecomposedCharacterForPrompt(context.decomposedCharacters[0]!, true)
-    : '(no protagonist profile)';
+  const protagonistSection =
+    context.decomposedCharacters.length > 0
+      ? formatDecomposedCharacterForPrompt(context.decomposedCharacters[0]!, true)
+      : '(no protagonist profile)';
 
-  const worldSection = context.decomposedWorld.facts.length > 0
-    ? `World:\n${formatDecomposedWorldForPrompt(context.decomposedWorld)}\n`
-    : '';
+  const worldSection =
+    context.decomposedWorld.facts.length > 0
+      ? `World:\n${formatDecomposedWorldForPrompt(context.decomposedWorld)}\n`
+      : '';
 
   const toneFeelLine =
     context.toneFeel && context.toneFeel.length > 0

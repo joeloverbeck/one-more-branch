@@ -20,15 +20,9 @@ import {
   isValuePolarityShift,
   isPacingMode,
 } from '../models/scene-direction-taxonomy.js';
-import type {
-  SceneIdeatorContext,
-  SceneIdeationResult,
-} from './scene-ideator-types.js';
+import type { SceneIdeatorContext, SceneIdeationResult } from './scene-ideator-types.js';
 
-function parseSceneDirectionOption(
-  raw: unknown,
-  index: number
-): SceneDirectionOption {
+function parseSceneDirectionOption(raw: unknown, index: number): SceneDirectionOption {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     throw new LLMError(
       `Scene direction option ${index + 1} must be an object`,
@@ -106,15 +100,9 @@ function validateDiversity(options: readonly SceneDirectionOption[]): void {
   }
 }
 
-function parseSceneIdeatorResponse(
-  parsed: unknown
-): readonly SceneDirectionOption[] {
+function parseSceneIdeatorResponse(parsed: unknown): readonly SceneDirectionOption[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError(
-      'Scene ideator response must be an object',
-      'STRUCTURE_PARSE_ERROR',
-      true
-    );
+    throw new LLMError('Scene ideator response must be an object', 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const data = parsed as Record<string, unknown>;
@@ -134,9 +122,7 @@ function parseSceneIdeatorResponse(
     );
   }
 
-  const options = data['options'].map((option, index) =>
-    parseSceneDirectionOption(option, index)
-  );
+  const options = data['options'].map((option, index) => parseSceneDirectionOption(option, index));
 
   validateDiversity(options);
 
@@ -148,7 +134,7 @@ async function fetchSceneDirections(
   model: string,
   messages: ReturnType<typeof buildSceneIdeatorPrompt>,
   temperature: number,
-  maxTokens: number,
+  maxTokens: number
 ): Promise<SceneIdeationResult> {
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
@@ -213,7 +199,7 @@ export async function generateSceneDirections(
     withModelFallback(
       (m) => fetchSceneDirections(apiKey, m, messages, temperature, maxTokens),
       primaryModel,
-      'sceneIdeator',
+      'sceneIdeator'
     )
   );
   logResponse(logger, 'sceneIdeator', result.rawResponse);

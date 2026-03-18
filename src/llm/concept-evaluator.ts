@@ -38,7 +38,11 @@ function requireConceptId(value: unknown, label: string): string {
   return value.trim();
 }
 
-function requireNonEmptyStringArray(value: unknown, fieldName: string, label: string): readonly string[] {
+function requireNonEmptyStringArray(
+  value: unknown,
+  fieldName: string,
+  label: string
+): readonly string[] {
   if (!Array.isArray(value)) {
     throw new LLMError(`${label} has invalid ${fieldName}`, 'STRUCTURE_PARSE_ERROR', true);
   }
@@ -49,13 +53,21 @@ function requireNonEmptyStringArray(value: unknown, fieldName: string, label: st
     .filter((item) => item.length > 0);
 
   if (items.length === 0) {
-    throw new LLMError(`${label} ${fieldName} must contain at least 1 item`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} ${fieldName} must contain at least 1 item`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   return items;
 }
 
-function parseClampedScore(value: unknown, fieldName: keyof ConceptDimensionScores, label: string): number {
+function parseClampedScore(
+  value: unknown,
+  fieldName: keyof ConceptDimensionScores,
+  label: string
+): number {
   if (typeof value !== 'number' || Number.isNaN(value) || !Number.isFinite(value)) {
     throw new LLMError(`${label} has invalid ${fieldName} score`, 'STRUCTURE_PARSE_ERROR', true);
   }
@@ -84,7 +96,11 @@ function parseScores(value: unknown, index: number): ConceptDimensionScores {
     agencyBreadth: parseClampedScore(data['agencyBreadth'], 'agencyBreadth', label),
     noveltyLeverage: parseClampedScore(data['noveltyLeverage'], 'noveltyLeverage', label),
     ironicPremise: parseClampedScore(data['ironicPremise'], 'ironicPremise', label),
-    sceneGenerativePower: parseClampedScore(data['sceneGenerativePower'], 'sceneGenerativePower', label),
+    sceneGenerativePower: parseClampedScore(
+      data['sceneGenerativePower'],
+      'sceneGenerativePower',
+      label
+    ),
     contentCharge: parseClampedScore(data['contentCharge'], 'contentCharge', label),
   };
 }
@@ -97,36 +113,40 @@ function parseScoreEvidence(value: unknown, index: number): ConceptScoreEvidence
 
   const data = value as Record<string, unknown>;
   return {
-    hookStrength: requireNonEmptyStringArray(data['hookStrength'], 'hookStrength', `${label} scoreEvidence`),
+    hookStrength: requireNonEmptyStringArray(
+      data['hookStrength'],
+      'hookStrength',
+      `${label} scoreEvidence`
+    ),
     conflictEngine: requireNonEmptyStringArray(
       data['conflictEngine'],
       'conflictEngine',
-      `${label} scoreEvidence`,
+      `${label} scoreEvidence`
     ),
     agencyBreadth: requireNonEmptyStringArray(
       data['agencyBreadth'],
       'agencyBreadth',
-      `${label} scoreEvidence`,
+      `${label} scoreEvidence`
     ),
     noveltyLeverage: requireNonEmptyStringArray(
       data['noveltyLeverage'],
       'noveltyLeverage',
-      `${label} scoreEvidence`,
+      `${label} scoreEvidence`
     ),
     ironicPremise: requireNonEmptyStringArray(
       data['ironicPremise'],
       'ironicPremise',
-      `${label} scoreEvidence`,
+      `${label} scoreEvidence`
     ),
     sceneGenerativePower: requireNonEmptyStringArray(
       data['sceneGenerativePower'],
       'sceneGenerativePower',
-      `${label} scoreEvidence`,
+      `${label} scoreEvidence`
     ),
     contentCharge: requireNonEmptyStringArray(
       data['contentCharge'],
       'contentCharge',
-      `${label} scoreEvidence`,
+      `${label} scoreEvidence`
     ),
   };
 }
@@ -134,7 +154,7 @@ function parseScoreEvidence(value: unknown, index: number): ConceptScoreEvidence
 function parseScoredConcept(
   value: unknown,
   index: number,
-  expectedConceptById: ReadonlyMap<string, ConceptSpec>,
+  expectedConceptById: ReadonlyMap<string, ConceptSpec>
 ): ScoredConcept {
   const label = `Scored concept ${index + 1}`;
 
@@ -171,13 +191,13 @@ function buildExpectedConceptById(concepts: readonly ConceptSpec[]): Map<string,
 function ensureExactIdCoverage(
   parsedConceptIds: readonly string[],
   expectedConceptIds: readonly string[],
-  label: string,
+  label: string
 ): void {
   if (parsedConceptIds.length !== expectedConceptIds.length) {
     throw new LLMError(
       `${label} must include exactly ${expectedConceptIds.length} concepts (received: ${parsedConceptIds.length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -185,13 +205,17 @@ function ensureExactIdCoverage(
   const received = new Set(parsedConceptIds);
 
   if (expected.size !== received.size || [...expected].some((key) => !received.has(key))) {
-    throw new LLMError(`${label} concept set does not match requested candidates`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} concept set does not match requested candidates`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 }
 
 export function parseConceptScoringResponse(
   parsed: unknown,
-  expectedConcepts: readonly ConceptSpec[],
+  expectedConcepts: readonly ConceptSpec[]
 ): readonly ScoredConcept[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError('Concept scoring response must be an object', 'STRUCTURE_PARSE_ERROR', true);
@@ -202,27 +226,38 @@ export function parseConceptScoringResponse(
     throw new LLMError(
       'Concept scoring response missing scoredConcepts array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
   const expectedConceptById = buildExpectedConceptById(expectedConcepts);
   const parsedConcepts = data['scoredConcepts'].map((concept, index) =>
-    parseScoredConcept(concept, index, expectedConceptById),
+    parseScoredConcept(concept, index, expectedConceptById)
   );
   const parsedConceptIds = data['scoredConcepts'].map((item, index) => {
     if (typeof item !== 'object' || item === null || Array.isArray(item)) {
-      throw new LLMError(`Scored concept ${index + 1} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
+      throw new LLMError(
+        `Scored concept ${index + 1} must be an object`,
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
     }
-    return requireConceptId((item as Record<string, unknown>)['conceptId'], `Scored concept ${index + 1}`);
+    return requireConceptId(
+      (item as Record<string, unknown>)['conceptId'],
+      `Scored concept ${index + 1}`
+    );
   });
-  ensureExactIdCoverage(parsedConceptIds, [...expectedConceptById.keys()], 'Concept scoring response');
+  ensureExactIdCoverage(
+    parsedConceptIds,
+    [...expectedConceptById.keys()],
+    'Concept scoring response'
+  );
   return parsedConcepts.sort((a, b) => b.overallScore - a.overallScore);
 }
 
 function parseDeepEvaluatedConcept(
   value: unknown,
-  index: number,
+  index: number
 ): {
   conceptId: string;
   strengths: readonly string[];
@@ -251,10 +286,14 @@ function parseDeepEvaluatedConcept(
 
 function parseConceptDeepEvaluationResponse(
   parsed: unknown,
-  selectedConcepts: readonly ScoredConcept[],
+  selectedConcepts: readonly ScoredConcept[]
 ): readonly EvaluatedConcept[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError('Concept deep-evaluation response must be an object', 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      'Concept deep-evaluation response must be an object',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   const data = parsed as Record<string, unknown>;
@@ -262,23 +301,25 @@ function parseConceptDeepEvaluationResponse(
     throw new LLMError(
       'Concept deep-evaluation response missing evaluatedConcepts array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
   const parsedConcepts = data['evaluatedConcepts'].map((concept, index) =>
-    parseDeepEvaluatedConcept(concept, index),
+    parseDeepEvaluatedConcept(concept, index)
   );
 
-  const expectedConceptById = buildExpectedConceptById(selectedConcepts.map((item) => item.concept));
+  const expectedConceptById = buildExpectedConceptById(
+    selectedConcepts.map((item) => item.concept)
+  );
   ensureExactIdCoverage(
     parsedConcepts.map((item) => item.conceptId),
     [...expectedConceptById.keys()],
-    'Concept deep-evaluation response',
+    'Concept deep-evaluation response'
   );
 
   const scoredById = new Map<string, ScoredConcept>(
-    selectedConcepts.map((item, index) => [getConceptId(index), item]),
+    selectedConcepts.map((item, index) => [getConceptId(index), item])
   );
 
   const merged = parsedConcepts.map((item) => {
@@ -287,7 +328,7 @@ function parseConceptDeepEvaluationResponse(
       throw new LLMError(
         'Concept deep-evaluation response included an unknown conceptId',
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
 
@@ -308,7 +349,7 @@ function parseConceptDeepEvaluationResponse(
 export async function evaluateConcepts(
   context: ConceptEvaluatorContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptEvaluationResult> {
   const conceptIds = context.concepts.map((_, index) => getConceptId(index));
 

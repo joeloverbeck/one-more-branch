@@ -32,7 +32,9 @@ describe('generation-progress-route utility', () => {
     const markCompletedSpy = jest
       .spyOn(generationProgressService, 'markStageCompleted')
       .mockImplementation(() => {});
-    const completeSpy = jest.spyOn(generationProgressService, 'complete').mockImplementation(() => {});
+    const completeSpy = jest
+      .spyOn(generationProgressService, 'complete')
+      .mockImplementation(() => {});
     const failSpy = jest.spyOn(generationProgressService, 'fail').mockImplementation(() => {});
 
     const progress = createRouteGenerationProgress(' route-progress-1 ', 'kernel-generation');
