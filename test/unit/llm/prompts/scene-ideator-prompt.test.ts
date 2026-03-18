@@ -3,6 +3,7 @@ import type {
   SceneIdeatorOpeningContext,
   SceneIdeatorContinuationContext,
 } from '../../../../src/llm/scene-ideator-types';
+import type { SceneIdeationSlate } from '../../../../src/llm/scene-ideation-slate';
 import {
   buildSceneIdeatorPrompt,
   buildIdeatorGuidanceSection,
@@ -69,6 +70,14 @@ describe('buildSceneIdeatorPrompt', () => {
     expect(messages[0].content).toContain('diversityLane');
   });
 
+  it('system message defines diversity as a slate-level contract and forbids mirrored/cosmetic variants', () => {
+    const messages = buildSceneIdeatorPrompt(openingContext);
+    expect(messages[0].content).toContain('Each option is assigned a different diversityLane');
+    expect(messages[0].content).toContain('Do not produce mirrored opposites');
+    expect(messages[0].content).toContain('tonal variants');
+    expect(messages[0].content).toContain('different kinds of next scenes');
+  });
+
   it('system message contains field instructions', () => {
     const messages = buildSceneIdeatorPrompt(openingContext);
     expect(messages[0].content).toContain('FIELD INSTRUCTIONS:');
@@ -105,6 +114,61 @@ describe('buildSceneIdeatorPrompt', () => {
       const messages = buildSceneIdeatorPrompt(continuationContext);
       expect(messages[1].content).toContain('OUTPUT SHAPE:');
       expect(messages[1].content).toContain('diversityLane, scenePurpose');
+    });
+
+    it('renders one ideation-slate lane line per slot in the provided slate', () => {
+      const customSlate: SceneIdeationSlate = {
+        targetOptionCount: 4,
+        slots: [
+          { index: 0, lane: 'REVELATION', rationale: 'Lead with discovery.' },
+          {
+            index: 1,
+            lane: 'CONSEQUENCE_OR_PAYOFF',
+            rationale: 'Cash out overdue pressure.',
+            requiredSignals: ['overdueThreads', 'agedPromises'],
+          },
+          {
+            index: 2,
+            lane: 'RELATIONAL_REALIGNMENT',
+            rationale: 'Force a trust shift.',
+            discouragedSignals: ['duplicatePressure'],
+          },
+          { index: 3, lane: 'ESCALATION', rationale: 'Keep one pressure-forward lane.' },
+        ],
+      };
+
+      const messages = buildSceneIdeatorPrompt(continuationContext, customSlate);
+      expect(messages[1].content).toContain('IDEATION SLATE:');
+      expect(messages[1].content).toContain('Generate exactly 4 options.');
+      expect(messages[1].content).toContain('Option 1 lane: REVELATION');
+      expect(messages[1].content).toContain('Option 2 lane: CONSEQUENCE_OR_PAYOFF');
+      expect(messages[1].content).toContain('Option 3 lane: RELATIONAL_REALIGNMENT');
+      expect(messages[1].content).toContain('Option 4 lane: ESCALATION');
+      expect(messages[1].content).toContain(
+        '- Required context to honor: overdueThreads, agedPromises'
+      );
+      expect(messages[1].content).toContain('- Avoid redundancy with: duplicatePressure');
+    });
+
+    it('uses a provided slate verbatim instead of re-deriving the option count or lane order', () => {
+      const customSlate: SceneIdeationSlate = {
+        targetOptionCount: 4,
+        slots: [
+          { index: 0, lane: 'IDENTITY_OR_TRANSFORMATION', rationale: 'Identity test first.' },
+          { index: 1, lane: 'TEMPTATION_OR_OPPORTUNITY', rationale: 'Temptation second.' },
+          { index: 2, lane: 'REVELATION', rationale: 'Reframe third.' },
+          { index: 3, lane: 'ESCALATION', rationale: 'Pressure last.' },
+        ],
+      };
+
+      const messages = buildSceneIdeatorPrompt(continuationContext, customSlate);
+      expect(messages[0].content).toContain('generate exactly 4 distinct');
+      expect(messages[1].content).toContain(
+        'array of exactly 4 scene direction objects, each with diversityLane'
+      );
+      expect(messages[1].content).toContain('Option 1 lane: IDENTITY_OR_TRANSFORMATION');
+      expect(messages[1].content).not.toContain(`Generate exactly ${DEFAULT_SCENE_IDEA_COUNT} options.`);
+      expect(messages[1].content).not.toContain('Option 1 lane: ESCALATION');
     });
 
     it('user message contains "PREVIOUS SCENE SUMMARY"', () => {
