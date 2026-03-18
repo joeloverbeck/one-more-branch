@@ -251,7 +251,9 @@ describe('story-repository', () => {
 
     const persisted = await fsPromises.readFile(getStoryFilePath(story.id), 'utf-8');
     const parsed = JSON.parse(persisted) as Record<string, unknown>;
-    const structure = parsed['structure'] as { acts: Array<{ milestones: Array<{ name: string }> }> };
+    const structure = parsed['structure'] as {
+      acts: Array<{ milestones: Array<{ name: string }> }>;
+    };
     expect(structure.acts[0]?.milestones[0]?.name).toBe('Guide encounter');
     expect(parsed['structure']).toBeDefined();
   });
@@ -271,10 +273,16 @@ describe('story-repository', () => {
 
     const persisted = await fsPromises.readFile(getStoryFilePath(story.id), 'utf-8');
     const parsed = JSON.parse(persisted) as {
-      structureVersions: Array<{ structure: { acts: Array<{ milestones: Array<{ name: string }> }> } }>;
+      structureVersions: Array<{
+        structure: { acts: Array<{ milestones: Array<{ name: string }> }> };
+      }>;
     };
-    expect(parsed.structureVersions[0]?.structure.acts[0]?.milestones[0]?.name).toBe('Guide encounter');
-    expect(parsed.structureVersions[1]?.structure.acts[0]?.milestones[0]?.name).toBe('Ambush escape');
+    expect(parsed.structureVersions[0]?.structure.acts[0]?.milestones[0]?.name).toBe(
+      'Guide encounter'
+    );
+    expect(parsed.structureVersions[1]?.structure.acts[0]?.milestones[0]?.name).toBe(
+      'Ambush escape'
+    );
   });
 
   it('loadStory returns null when story does not exist', async () => {

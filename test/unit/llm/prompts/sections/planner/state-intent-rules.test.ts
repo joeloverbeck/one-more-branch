@@ -19,7 +19,9 @@ describe('accountant state-intent rules sections', () => {
     });
 
     it('does not contain planner-only instructions', () => {
-      expect(ACCOUNTANT_STATE_INTENT_RULES).not.toContain('Decide immediate scene direction as sceneIntent');
+      expect(ACCOUNTANT_STATE_INTENT_RULES).not.toContain(
+        'Decide immediate scene direction as sceneIntent'
+      );
       expect(ACCOUNTANT_STATE_INTENT_RULES).not.toContain('Propose continuityAnchors');
       expect(ACCOUNTANT_STATE_INTENT_RULES).not.toContain('Provide writerBrief guidance');
       expect(ACCOUNTANT_STATE_INTENT_RULES).not.toContain('CHOICE INTENT RULES');
@@ -102,8 +104,12 @@ describe('accountant state-intent rules sections', () => {
     });
 
     it('enforces discovery scan and quantity guidance against existing canon', () => {
-      expect(ACCOUNTANT_STATE_INTENT_RULES).toContain('DISCOVERY SCAN (run before finalizing canon arrays):');
-      expect(ACCOUNTANT_STATE_INTENT_RULES).toContain('scan the planned scene for these discovery signals');
+      expect(ACCOUNTANT_STATE_INTENT_RULES).toContain(
+        'DISCOVERY SCAN (run before finalizing canon arrays):'
+      );
+      expect(ACCOUNTANT_STATE_INTENT_RULES).toContain(
+        'scan the planned scene for these discovery signals'
+      );
       expect(ACCOUNTANT_STATE_INTENT_RULES).toContain('QUANTITY GUIDANCE:');
       expect(ACCOUNTANT_STATE_INTENT_RULES).toContain(
         'One broad fact is better than multiple narrow variants'
@@ -111,7 +117,9 @@ describe('accountant state-intent rules sections', () => {
     });
 
     it('includes canon self-check before JSON finalization', () => {
-      expect(ACCOUNTANT_STATE_INTENT_RULES).toContain('CANON SELF-CHECK (before you finalize JSON):');
+      expect(ACCOUNTANT_STATE_INTENT_RULES).toContain(
+        'CANON SELF-CHECK (before you finalize JSON):'
+      );
       expect(ACCOUNTANT_STATE_INTENT_RULES).toContain('not a variant of existing character canon');
       expect(ACCOUNTANT_STATE_INTENT_RULES).toContain('move it to characterState.add instead');
       expect(ACCOUNTANT_STATE_INTENT_RULES).toContain(

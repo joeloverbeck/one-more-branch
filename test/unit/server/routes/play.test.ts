@@ -122,7 +122,7 @@ describe('playRoutes', () => {
         page,
         recapSummaries: [],
         pageId: 2,
-        actDisplayInfo: null,
+        playStructureInfo: null,
         milestoneInfo: null,
         openThreadPanelRows: [
           {
@@ -324,7 +324,7 @@ describe('playRoutes', () => {
       );
     });
 
-    it('passes actDisplayInfo when story has structure versions', async () => {
+    it('passes playStructureInfo when story has structure versions', async () => {
       const structure: StoryStructure = {
         acts: [
           {
@@ -408,26 +408,204 @@ describe('playRoutes', () => {
       expect(render).toHaveBeenCalledWith(
         'pages/play',
         expect.objectContaining({
-          actDisplayInfo: {
-            actNumber: 1,
-            actName: 'The Beginning',
-            milestoneId: '1.1',
-            milestoneName: 'The Setup',
-            displayString: 'Act 1: The Beginning - Milestone 1.1: The Setup',
-            actObjective: 'Start the journey',
-            actStakes: 'High',
-            milestoneObjective: 'Start moving.',
-            actQuestion: 'Will the hero leave home behind?',
-            exitCondition: 'The hero commits to the road.',
-            exitReversal: 'The safe road collapses.',
-            promiseTargets: ['The hero can still save the kingdom'],
-            obligationTargets: ['call_to_adventure'],
+          playStructureInfo: {
+            pageStructure: {
+              actNumber: 1,
+              actName: 'The Beginning',
+              milestoneId: '1.1',
+              milestoneName: 'The Setup',
+              displayString: 'Act 1: The Beginning - Milestone 1.1: The Setup',
+              actObjective: 'Start the journey',
+              actStakes: 'High',
+              milestoneObjective: 'Start moving.',
+              actQuestion: 'Will the hero leave home behind?',
+              milestoneExitCriteria: 'The hero commits to the road.',
+              actEndReversal: 'The safe road collapses.',
+              promiseTargets: ['The hero can still save the kingdom'],
+              obligationTargets: ['call_to_adventure'],
+            },
+            nextStructureTarget: {
+              actNumber: 1,
+              actName: 'The Beginning',
+              milestoneId: '1.1',
+              milestoneName: 'The Setup',
+              displayString: 'Act 1: The Beginning - Milestone 1.1: The Setup',
+              actObjective: 'Start the journey',
+              actStakes: 'High',
+              milestoneObjective: 'Start moving.',
+              actQuestion: 'Will the hero leave home behind?',
+              milestoneExitCriteria: 'The hero commits to the road.',
+              actEndReversal: 'The safe road collapses.',
+              promiseTargets: ['The hero can still save the kingdom'],
+              obligationTargets: ['call_to_adventure'],
+            },
           },
         })
       );
     });
 
-    it('passes null actDisplayInfo when page has no structure', async () => {
+    it('keeps page structure page-scoped when milestone progress has already advanced', async () => {
+      const structure: StoryStructure = {
+        acts: [
+          {
+            id: 'act-1',
+            name: 'The Beginning',
+            objective: 'Steal the ledger',
+            stakes: 'If they fail, the resistance is exposed.',
+            entryCondition: 'The crew is assembled',
+            actQuestion: 'Can the crew stay ahead of the crackdown?',
+            exitReversal: 'The ledger implicates an ally.',
+            promiseTargets: ['The job is bigger than the payout'],
+            obligationTargets: ['inciting_incident'],
+            milestones: [
+              {
+                id: '1.1',
+                name: 'The Heist',
+                description: 'Break into the archive.',
+                objective: 'Take the ledger.',
+                exitCondition: 'The crew gets out with proof.',
+                role: 'setup',
+              },
+              {
+                id: '1.2',
+                name: 'The Lockdown',
+                description: 'Escape the response.',
+                objective: 'Survive the sweep.',
+                exitCondition: 'The crew finds a route out.',
+                role: 'escalation',
+              },
+            ],
+          },
+        ],
+        overallTheme: 'Trust under fire',
+        premise: 'A heist escalates into a citywide manhunt.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
+        pacingBudget: {
+          targetPagesMin: 2,
+          targetPagesMax: 4,
+        },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      };
+      const versionId = createStructureVersionId('version-1');
+      const versionedStructure: VersionedStoryStructure = {
+        id: versionId,
+        createdAt: new Date().toISOString(),
+        createdAtPageId: 1,
+        parentVersionId: null,
+        rewriteReason: null,
+        structure,
+      };
+      const story = createStory({
+        title: 'Structured Story',
+        characterConcept: 'A rogue tactician',
+        worldbuilding: 'Occupied city',
+        tone: 'Thriller',
+      });
+      const page = createPage({
+        id: 2,
+        narrativeText: 'They slip out through the smoke tunnels.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Press onward'), createChoice('Hide')],
+        isEnding: false,
+        parentPageId: 1,
+        parentChoiceIndex: 0,
+        structureVersionId: versionId,
+        pageActIndex: 0,
+        pageMilestoneIndex: 0,
+        analystResult: {
+          milestoneConcluded: true,
+          milestoneResolution: 'Milestone resolved',
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedMilestoneIds: [],
+          sceneSummary: '',
+          pacingIssueDetected: false,
+          pacingIssueReason: '',
+          recommendedAction: 'none',
+          sceneMomentum: 'MAJOR_PROGRESS',
+          objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+          commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
+          structuralPositionSignal: 'BRIDGING_TO_NEXT_BEAT',
+          entryConditionReadiness: 'READY',
+          pacingDirective: '',
+          objectiveAnchors: [],
+          anchorEvidence: [],
+          completionGateSatisfied: true,
+          completionGateFailureReason: '',
+          toneAdherent: true,
+          toneDriftDescription: '',
+          promisesDetected: [],
+          promisesResolved: [],
+          promisePayoffAssessments: [],
+          threadPayoffAssessments: [],
+          npcCoherenceAdherent: true,
+          npcCoherenceIssues: '',
+          relationshipShiftsDetected: [],
+          spineDeviationDetected: false,
+          spineDeviationReason: '',
+          spineInvalidatedElement: null,
+          alignedMilestoneId: null,
+          milestoneAlignmentConfidence: 'LOW',
+          milestoneAlignmentReason: '',
+          rawResponse: '',
+        },
+        parentAccumulatedStructureState: {
+          ...createEmptyAccumulatedStructureState(),
+          currentActIndex: 0,
+          currentMilestoneIndex: 1,
+          milestoneProgressions: [
+            { milestoneId: '1.1', status: 'concluded', resolution: 'Ledger secured' },
+            { milestoneId: '1.2', status: 'active' },
+          ],
+        },
+      });
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({
+        ...story,
+        id: storyId,
+        structureVersions: [versionedStructure],
+      });
+      jest.spyOn(storyEngine, 'getPage').mockResolvedValue(page);
+
+      const status = jest.fn().mockReturnThis();
+      const render = jest.fn();
+
+      void getRouteHandler('get', '/:storyId')(
+        { params: { storyId }, query: { page: '2' } } as unknown as Request,
+        { status, render } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(status).not.toHaveBeenCalled();
+      const renderPayload = (render.mock.calls[0] as [string, Record<string, unknown>] | undefined)?.[1];
+      expect(renderPayload).toBeDefined();
+      const playStructureInfo = renderPayload?.['playStructureInfo'] as
+        | {
+            pageStructure?: Record<string, unknown>;
+            nextStructureTarget?: Record<string, unknown>;
+          }
+        | undefined;
+      expect(playStructureInfo?.pageStructure).toEqual(
+        expect.objectContaining({
+          milestoneId: '1.1',
+          milestoneName: 'The Heist',
+          displayString: 'Act 1: The Beginning - Milestone 1.1: The Heist',
+        })
+      );
+      expect(playStructureInfo?.nextStructureTarget).toEqual(
+        expect.objectContaining({
+          milestoneId: '1.2',
+          milestoneName: 'The Lockdown',
+          displayString: 'Act 1: The Beginning - Milestone 1.2: The Lockdown',
+        })
+      );
+      expect(renderPayload?.['milestoneInfo']).toEqual({
+        type: 'milestone',
+        milestoneName: 'The Heist',
+      });
+    });
+
+    it('passes null playStructureInfo when page has no structure', async () => {
       const story = createStory({
         title: 'Simple Story',
         characterConcept: 'A hero',
@@ -458,7 +636,7 @@ describe('playRoutes', () => {
       expect(render).toHaveBeenCalledWith(
         'pages/play',
         expect.objectContaining({
-          actDisplayInfo: null,
+          playStructureInfo: null,
         })
       );
     });
@@ -535,7 +713,9 @@ describe('playRoutes', () => {
       const [viewName, payload] = render.mock.calls[0] as [string, Record<string, unknown>];
       expect(viewName).toBe('pages/briefing');
       expect(payload['title']).toBe('Prepared Story - Mission Briefing');
-      expect(payload['story']).toEqual(expect.objectContaining({ id: storyId, title: 'Prepared Story' }));
+      expect(payload['story']).toEqual(
+        expect.objectContaining({ id: storyId, title: 'Prepared Story' })
+      );
       expect(payload['briefing']).toEqual(
         expect.objectContaining({
           theme: 'Trust is a weapon',
@@ -1434,7 +1614,7 @@ describe('playRoutes', () => {
       expect(payload?.page?.analystResult).toEqual(analystResult);
     });
 
-    it('includes actDisplayInfo in response when page has structure state', async () => {
+    it('includes playStructureInfo in response when page has structure state', async () => {
       const structure: StoryStructure = {
         acts: [
           {
@@ -1547,26 +1727,212 @@ describe('playRoutes', () => {
       expect(json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          actDisplayInfo: {
-            actNumber: 2,
-            actName: 'Act Two',
-            milestoneId: '2.1',
-            milestoneName: 'Rising Pressure',
-            displayString: 'Act 2: Act Two - Milestone 2.1: Rising Pressure',
-            actObjective: 'Face challenges',
-            actStakes: 'Higher',
-            milestoneObjective: 'Force commitment.',
-            actQuestion: 'Can the hero hold the alliance together?',
-            exitCondition: 'The alliance chooses a side in public.',
-            exitReversal: 'The alliance fractures under pressure.',
-            promiseTargets: ['The hero can still save the kingdom'],
-            obligationTargets: ['midpoint_reversal'],
+          playStructureInfo: {
+            pageStructure: {
+              actNumber: 2,
+              actName: 'Act Two',
+              milestoneId: '2.1',
+              milestoneName: 'Rising Pressure',
+              displayString: 'Act 2: Act Two - Milestone 2.1: Rising Pressure',
+              actObjective: 'Face challenges',
+              actStakes: 'Higher',
+              milestoneObjective: 'Force commitment.',
+              actQuestion: 'Can the hero hold the alliance together?',
+              milestoneExitCriteria: 'The alliance chooses a side in public.',
+              actEndReversal: 'The alliance fractures under pressure.',
+              promiseTargets: ['The hero can still save the kingdom'],
+              obligationTargets: ['midpoint_reversal'],
+            },
+            nextStructureTarget: {
+              actNumber: 2,
+              actName: 'Act Two',
+              milestoneId: '2.1',
+              milestoneName: 'Rising Pressure',
+              displayString: 'Act 2: Act Two - Milestone 2.1: Rising Pressure',
+              actObjective: 'Face challenges',
+              actStakes: 'Higher',
+              milestoneObjective: 'Force commitment.',
+              actQuestion: 'Can the hero hold the alliance together?',
+              milestoneExitCriteria: 'The alliance chooses a side in public.',
+              actEndReversal: 'The alliance fractures under pressure.',
+              promiseTargets: ['The hero can still save the kingdom'],
+              obligationTargets: ['midpoint_reversal'],
+            },
           },
         })
       );
     });
 
-    it('includes null actDisplayInfo when page has no structure state', async () => {
+    it('preserves page history separately from the next target when choice result has already advanced', async () => {
+      const structure: StoryStructure = {
+        acts: [
+          {
+            id: 'act-1',
+            name: 'Act One',
+            objective: 'Take the archive ledger',
+            stakes: 'Failure exposes the safehouse.',
+            entryCondition: 'The crew is in position',
+            actQuestion: 'Can they keep the initiative after the theft?',
+            exitReversal: 'The ledger identifies their fence.',
+            promiseTargets: ['The fence is compromised'],
+            obligationTargets: ['inciting_incident'],
+            milestones: [
+              {
+                id: '1.1',
+                name: 'Archive Theft',
+                description: 'The opening hit.',
+                objective: 'Get the ledger.',
+                exitCondition: 'The crew escapes with evidence.',
+                role: 'setup',
+              },
+              {
+                id: '1.2',
+                name: 'Sweep Response',
+                description: 'The city locks down.',
+                objective: 'Stay ahead of the dragnet.',
+                exitCondition: 'The crew secures a route through the district.',
+                role: 'escalation',
+              },
+            ],
+          },
+        ],
+        overallTheme: 'Pressure reveals loyalty',
+        premise: 'A theft immediately turns into a manhunt.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
+        pacingBudget: {
+          targetPagesMin: 2,
+          targetPagesMax: 4,
+        },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      };
+      const versionId = createStructureVersionId('version-1');
+      const versionedStructure: VersionedStoryStructure = {
+        id: versionId,
+        createdAt: new Date().toISOString(),
+        createdAtPageId: 1,
+        parentVersionId: null,
+        rewriteReason: null,
+        structure,
+      };
+      const story = createStory({
+        title: 'Structured Story',
+        characterConcept: 'A resistance courier',
+        worldbuilding: 'Occupied city',
+        tone: 'Thriller',
+      });
+      const resultPage = createPage({
+        id: 3,
+        narrativeText: 'They vanish into the blackout district.',
+        sceneSummary: 'Test summary of the scene events and consequences.',
+        choices: [createChoice('Keep moving'), createChoice('Lay low')],
+        isEnding: false,
+        parentPageId: 2,
+        parentChoiceIndex: 0,
+        structureVersionId: versionId,
+        pageActIndex: 0,
+        pageMilestoneIndex: 0,
+        analystResult: {
+          milestoneConcluded: true,
+          milestoneResolution: 'Milestone resolved',
+          deviationDetected: false,
+          deviationReason: '',
+          invalidatedMilestoneIds: [],
+          sceneSummary: '',
+          pacingIssueDetected: false,
+          pacingIssueReason: '',
+          recommendedAction: 'none',
+          sceneMomentum: 'MAJOR_PROGRESS',
+          objectiveEvidenceStrength: 'CLEAR_EXPLICIT',
+          commitmentStrength: 'EXPLICIT_IRREVERSIBLE',
+          structuralPositionSignal: 'BRIDGING_TO_NEXT_BEAT',
+          entryConditionReadiness: 'READY',
+          pacingDirective: '',
+          objectiveAnchors: [],
+          anchorEvidence: [],
+          completionGateSatisfied: true,
+          completionGateFailureReason: '',
+          toneAdherent: true,
+          toneDriftDescription: '',
+          promisesDetected: [],
+          promisesResolved: [],
+          promisePayoffAssessments: [],
+          threadPayoffAssessments: [],
+          npcCoherenceAdherent: true,
+          npcCoherenceIssues: '',
+          relationshipShiftsDetected: [],
+          spineDeviationDetected: false,
+          spineDeviationReason: '',
+          spineInvalidatedElement: null,
+          alignedMilestoneId: null,
+          milestoneAlignmentConfidence: 'LOW',
+          milestoneAlignmentReason: '',
+          rawResponse: '',
+        },
+        parentAccumulatedStructureState: {
+          ...createEmptyAccumulatedStructureState(),
+          currentActIndex: 0,
+          currentMilestoneIndex: 1,
+          milestoneProgressions: [
+            { milestoneId: '1.1', status: 'concluded', resolution: 'The ledger is in hand' },
+            { milestoneId: '1.2', status: 'active' },
+          ],
+        },
+      });
+
+      jest.spyOn(storyEngine, 'loadStory').mockResolvedValue({
+        ...story,
+        id: storyId,
+        structureVersions: [versionedStructure],
+      });
+      jest.spyOn(storyEngine, 'makeChoice').mockResolvedValue({
+        page: resultPage,
+        wasGenerated: true,
+      });
+
+      const status = jest.fn().mockReturnThis();
+      const json = jest.fn();
+
+      void getRouteHandler('post', '/:storyId/choice')(
+        {
+          params: { storyId },
+          body: { pageId: 2, choiceIndex: 0, apiKey: 'valid-key-12345' },
+        } as Request,
+        { status, json } as unknown as Response
+      );
+      await flushPromises();
+
+      expect(status).not.toHaveBeenCalled();
+      const jsonPayload = (json.mock.calls[0] as [Record<string, unknown>] | undefined)?.[0];
+      expect(jsonPayload).toBeDefined();
+      expect(jsonPayload?.['success']).toBe(true);
+      const playStructureInfo = jsonPayload?.['playStructureInfo'] as
+        | {
+            pageStructure?: Record<string, unknown>;
+            nextStructureTarget?: Record<string, unknown>;
+          }
+        | undefined;
+      expect(playStructureInfo?.pageStructure).toEqual(
+        expect.objectContaining({
+          milestoneId: '1.1',
+          milestoneName: 'Archive Theft',
+          displayString: 'Act 1: Act One - Milestone 1.1: Archive Theft',
+        })
+      );
+      expect(playStructureInfo?.nextStructureTarget).toEqual(
+        expect.objectContaining({
+          milestoneId: '1.2',
+          milestoneName: 'Sweep Response',
+          displayString: 'Act 1: Act One - Milestone 1.2: Sweep Response',
+        })
+      );
+      expect(jsonPayload?.['milestoneInfo']).toEqual({
+        type: 'milestone',
+        milestoneName: 'Archive Theft',
+      });
+    });
+
+    it('includes null playStructureInfo when page has no structure state', async () => {
       const story = createStory({
         title: 'Simple Story',
         characterConcept: 'A hero',
@@ -1604,7 +1970,7 @@ describe('playRoutes', () => {
       expect(json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          actDisplayInfo: null,
+          playStructureInfo: null,
         })
       );
     });
@@ -1670,30 +2036,25 @@ describe('playRoutes', () => {
         error: 'Generation failed due to reconciliation issues.',
         code: 'GENERATION_RECONCILIATION_FAILED',
         retryAttempted: true,
-        reconciliationIssueCodes: [
-          'THREAD_MISSING_EQUIVALENT_RESOLVE',
-          'UNKNOWN_STATE_ID',
-        ],
+        reconciliationIssueCodes: ['THREAD_MISSING_EQUIVALENT_RESOLVE', 'UNKNOWN_STATE_ID'],
       });
     });
 
     it('fails progress with reconciliation public message when reconciliation fails', async () => {
-      jest
-        .spyOn(storyEngine, 'makeChoice')
-        .mockRejectedValue(
-          new StateReconciliationError(
-            'State reconciliation failed after retry',
-            'RECONCILIATION_FAILED',
-            [
-              {
-                code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
-                field: 'openThreads',
-                message: 'Missing resolve operation',
-              },
-            ],
-            false
-          )
-        );
+      jest.spyOn(storyEngine, 'makeChoice').mockRejectedValue(
+        new StateReconciliationError(
+          'State reconciliation failed after retry',
+          'RECONCILIATION_FAILED',
+          [
+            {
+              code: 'THREAD_MISSING_EQUIVALENT_RESOLVE',
+              field: 'openThreads',
+              message: 'Missing resolve operation',
+            },
+          ],
+          false
+        )
+      );
       const progressStartSpy = jest.spyOn(generationProgressService, 'start');
       const progressFailSpy = jest.spyOn(generationProgressService, 'fail');
       const progressCompleteSpy = jest.spyOn(generationProgressService, 'complete');

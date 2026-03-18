@@ -104,9 +104,7 @@ describe('content-packet-repository', () => {
     await saveContentPacket(createSavedContentPacket(newerId, '2026-03-07T00:00:00.000Z'));
 
     const packets = await listContentPackets();
-    const orderedIds = packets
-      .filter((p) => p.id === newerId || p.id === olderId)
-      .map((p) => p.id);
+    const orderedIds = packets.filter((p) => p.id === newerId || p.id === olderId).map((p) => p.id);
 
     expect(orderedIds).toEqual([newerId, olderId]);
   });

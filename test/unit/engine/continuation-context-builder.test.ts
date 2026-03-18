@@ -11,7 +11,10 @@ import {
 } from '@/models';
 import type { VersionedStoryStructure } from '@/models';
 import { PromiseScope, PromiseType, Urgency } from '@/models/state';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
+import {
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../fixtures/decomposed';
 
 function makeStory(overrides: Partial<Story> = {}): Story {
   return {
@@ -89,9 +92,7 @@ describe('continuation-context-builder', () => {
         isEnding: false,
         parentPageId: parsePageId(1),
         parentChoiceIndex: 0,
-        accumulatedFulfilledPremisePromises: [
-          'A hidden tribunal ledger must surface in public.',
-        ],
+        accumulatedFulfilledPremisePromises: ['A hidden tribunal ledger must surface in public.'],
       });
       const parentState = makeParentState();
       const ancestorContext = makeAncestorContext();
@@ -165,9 +166,7 @@ describe('continuation-context-builder', () => {
         null
       );
 
-      expect(result.thematicValenceTrajectory).toEqual(
-        ancestorContext.thematicValenceTrajectory
-      );
+      expect(result.thematicValenceTrajectory).toEqual(ancestorContext.thematicValenceTrajectory);
     });
 
     it('threads narrative focus trajectory from ancestor context', () => {

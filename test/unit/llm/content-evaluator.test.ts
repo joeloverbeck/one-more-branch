@@ -1,10 +1,7 @@
 import { buildContentEvaluatorPrompt } from '../../../src/llm/prompts/content-evaluator-prompt';
 import { parseContentEvaluatorResponse } from '../../../src/llm/content-evaluator-generation';
 import { buildContentEvaluatorSchema } from '../../../src/llm/schemas/content-evaluator-schema';
-import type {
-  ContentEvaluatorContext,
-  ContentPacket,
-} from '../../../src/models/content-packet';
+import type { ContentEvaluatorContext, ContentPacket } from '../../../src/models/content-packet';
 
 function makePacket(overrides: Partial<ContentPacket> = {}): ContentPacket {
   return {
@@ -126,7 +123,7 @@ describe('parseContentEvaluatorResponse', () => {
 
     const evaluation = makeValidEvaluation({ recommendedRole: 'INVALID_ROLE' });
     expect(() => parseContentEvaluatorResponse({ evaluations: [evaluation] })).toThrow(
-      /recommendedRole must be one of/,
+      /recommendedRole must be one of/
     );
   });
 
@@ -147,26 +144,26 @@ describe('parseContentEvaluatorResponse', () => {
       delete missingScores[dim];
       const evaluation = makeValidEvaluation({ scores: missingScores });
       expect(() => parseContentEvaluatorResponse({ evaluations: [evaluation] })).toThrow(
-        new RegExp(`scores\\.${dim} must be a number between 0 and 5`),
+        new RegExp(`scores\\.${dim} must be a number between 0 and 5`)
       );
     }
 
     const negativeScores = makeValidScores({ imageCharge: -1 });
     const evalNeg = makeValidEvaluation({ scores: negativeScores });
     expect(() => parseContentEvaluatorResponse({ evaluations: [evalNeg] })).toThrow(
-      /scores\.imageCharge must be a number between 0 and 5/,
+      /scores\.imageCharge must be a number between 0 and 5/
     );
 
     const overScores = makeValidScores({ humanAche: 6 });
     const evalOver = makeValidEvaluation({ scores: overScores });
     expect(() => parseContentEvaluatorResponse({ evaluations: [evalOver] })).toThrow(
-      /scores\.humanAche must be a number between 0 and 5/,
+      /scores\.humanAche must be a number between 0 and 5/
     );
 
     const stringScores = makeValidScores({ sceneBurst: 'three' });
     const evalStr = makeValidEvaluation({ scores: stringScores });
     expect(() => parseContentEvaluatorResponse({ evaluations: [evalStr] })).toThrow(
-      /scores\.sceneBurst must be a number between 0 and 5/,
+      /scores\.sceneBurst must be a number between 0 and 5/
     );
   });
 
@@ -174,37 +171,37 @@ describe('parseContentEvaluatorResponse', () => {
     const noContentId = makeValidEvaluation();
     delete noContentId['contentId'];
     expect(() => parseContentEvaluatorResponse({ evaluations: [noContentId] })).toThrow(
-      /contentId must be a non-empty string/,
+      /contentId must be a non-empty string/
     );
 
     const noScores = makeValidEvaluation();
     delete noScores['scores'];
     expect(() => parseContentEvaluatorResponse({ evaluations: [noScores] })).toThrow(
-      /scores must be an object/,
+      /scores must be an object/
     );
 
     const noStrengths = makeValidEvaluation();
     delete noStrengths['strengths'];
     expect(() => parseContentEvaluatorResponse({ evaluations: [noStrengths] })).toThrow(
-      /strengths must be a non-empty array/,
+      /strengths must be a non-empty array/
     );
 
     const noWeaknesses = makeValidEvaluation();
     delete noWeaknesses['weaknesses'];
     expect(() => parseContentEvaluatorResponse({ evaluations: [noWeaknesses] })).toThrow(
-      /weaknesses must be a non-empty array/,
+      /weaknesses must be a non-empty array/
     );
 
     const noRole = makeValidEvaluation();
     delete noRole['recommendedRole'];
     expect(() => parseContentEvaluatorResponse({ evaluations: [noRole] })).toThrow(
-      /recommendedRole must be one of/,
+      /recommendedRole must be one of/
     );
   });
 
   it('rejects empty evaluations array', () => {
     expect(() => parseContentEvaluatorResponse({ evaluations: [] })).toThrow(
-      /evaluations must be a non-empty array/,
+      /evaluations must be a non-empty array/
     );
   });
 
@@ -214,7 +211,7 @@ describe('parseContentEvaluatorResponse', () => {
 
   it('rejects response missing evaluations key', () => {
     expect(() => parseContentEvaluatorResponse({ notEvaluations: [] })).toThrow(
-      /evaluations must be a non-empty array/,
+      /evaluations must be a non-empty array/
     );
   });
 

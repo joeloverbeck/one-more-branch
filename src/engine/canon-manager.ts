@@ -1,9 +1,4 @@
-import {
-  CanonFact,
-  GlobalCanon,
-  Story,
-  mergeCanonFacts,
-} from '../models';
+import { CanonFact, GlobalCanon, Story, mergeCanonFacts } from '../models';
 import { mergeCharacterCanonFacts } from './character-canon-manager';
 
 const NEGATION_PATTERNS = ['is not', 'does not', 'never', 'no longer', 'was destroyed', 'died'];
@@ -113,9 +108,7 @@ export function formatCanonForPrompt(canon: GlobalCanon): string {
     return '';
   }
 
-  return canon
-    .map((fact) => `• [${fact.factType}] ${fact.text}`)
-    .join('\n');
+  return canon.map((fact) => `• [${fact.factType}] ${fact.text}`).join('\n');
 }
 
 export function mightContradictCanon(existingCanon: GlobalCanon, newFact: string): boolean {

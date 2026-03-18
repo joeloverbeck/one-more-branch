@@ -1,7 +1,9 @@
 import { parseConceptEngineerResponse } from '../../../src/llm/concept-engineer';
 import { createConceptEngineFixture } from '../../fixtures/concept-generator';
 
-function createValidPayload(count = 6): { concepts: Array<ReturnType<typeof createConceptEngineFixture>> } {
+function createValidPayload(count = 6): {
+  concepts: Array<ReturnType<typeof createConceptEngineFixture>>;
+} {
   return {
     concepts: Array.from({ length: count }, (_, i) => createConceptEngineFixture(i + 1)),
   };
@@ -34,13 +36,13 @@ describe('concept-engineer', () => {
 
     it('rejects count mismatch (fewer items)', () => {
       expect(() => parseConceptEngineerResponse(createValidPayload(5), 6)).toThrow(
-        'exactly 6 items',
+        'exactly 6 items'
       );
     });
 
     it('rejects count mismatch (more items)', () => {
       expect(() => parseConceptEngineerResponse(createValidPayload(7), 6)).toThrow(
-        'exactly 6 items',
+        'exactly 6 items'
       );
     });
 

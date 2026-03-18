@@ -72,7 +72,11 @@ async function generateMilestones(
     promptOptions: ReturnType<typeof resolvePromptOptions>;
   }
 ): Promise<StructureGenerationResult> {
-  const messages = buildMilestoneGenerationPrompt(context, macroArchitecture, options.promptOptions);
+  const messages = buildMilestoneGenerationPrompt(
+    context,
+    macroArchitecture,
+    options.promptOptions
+  );
   const milestoneStageResult = await runLlmStage({
     stageModel: 'milestoneGeneration',
     promptType: 'milestoneGeneration',
@@ -149,7 +153,14 @@ export async function generateStoryStructure(
   const validated = await runGenerationStage(
     options?.onGenerationStage,
     STRUCTURE_PIPELINE_STAGES.validation,
-    () => validateAndRepairStructure(result, context, apiKey, resolvedOptions, macroArchitecture.setpieceBank)
+    () =>
+      validateAndRepairStructure(
+        result,
+        context,
+        apiKey,
+        resolvedOptions,
+        macroArchitecture.setpieceBank
+      )
   );
   return validated.result;
 }

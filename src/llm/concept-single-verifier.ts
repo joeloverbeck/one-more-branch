@@ -51,7 +51,11 @@ function countWords(text: string): number {
 
 function parseLoadBearingCheck(value: unknown, label: string): LoadBearingCheck {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new LLMError(`${label} loadBearingCheck must be an object`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} loadBearingCheck must be an object`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
   const data = value as Record<string, unknown>;
   return {
@@ -60,7 +64,7 @@ function parseLoadBearingCheck(value: unknown, label: string): LoadBearingCheck 
     genericCollapse: requireNonEmptyString(
       data['genericCollapse'],
       'genericCollapse',
-      `${label} loadBearingCheck`,
+      `${label} loadBearingCheck`
     ),
   };
 }
@@ -70,7 +74,7 @@ function parseKernelFidelityCheck(value: unknown, label: string): KernelFidelity
     throw new LLMError(
       `${label} kernelFidelityCheck must be an object`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   const data = value as Record<string, unknown>;
@@ -79,12 +83,12 @@ function parseKernelFidelityCheck(value: unknown, label: string): KernelFidelity
     reasoning: requireNonEmptyString(
       data['reasoning'],
       'reasoning',
-      `${label} kernelFidelityCheck`,
+      `${label} kernelFidelityCheck`
     ),
     kernelDrift: requireNonEmptyString(
       data['kernelDrift'],
       'kernelDrift',
-      `${label} kernelFidelityCheck`,
+      `${label} kernelFidelityCheck`
     ),
   };
 }
@@ -94,7 +98,7 @@ function parseStringArray(
   fieldName: string,
   label: string,
   min: number,
-  max: number,
+  max: number
 ): readonly string[] {
   if (!Array.isArray(value)) {
     throw new LLMError(`${label} ${fieldName} must be an array`, 'STRUCTURE_PARSE_ERROR', true);
@@ -103,7 +107,7 @@ function parseStringArray(
     throw new LLMError(
       `${label} ${fieldName} must have ${min}-${max} items (received: ${value.length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   return value.map((item, i) => requireNonEmptyString(item, `${fieldName}[${i}]`, label));
@@ -119,7 +123,7 @@ export function parseSingleSpecificityResponse(parsed: unknown): SingleSpecifici
     throw new LLMError(
       `${label} response missing specificityAnalysis`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   const sa = data['specificityAnalysis'] as Record<string, unknown>;
@@ -128,7 +132,7 @@ export function parseSingleSpecificityResponse(parsed: unknown): SingleSpecifici
     throw new LLMError(
       `${label} logline must be ${VERIFICATION_CONSTRAINTS.loglineMaxWords} words or fewer`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -141,12 +145,12 @@ export function parseSingleSpecificityResponse(parsed: unknown): SingleSpecifici
       'premisePromises',
       label,
       VERIFICATION_CONSTRAINTS.premisePromisesMin,
-      VERIFICATION_CONSTRAINTS.premisePromisesMax,
+      VERIFICATION_CONSTRAINTS.premisePromisesMax
     ),
     inevitabilityStatement: requireNonEmptyString(
       sa['inevitabilityStatement'],
       'inevitabilityStatement',
-      label,
+      label
     ),
     loadBearingCheck: parseLoadBearingCheck(sa['loadBearingCheck'], label),
     kernelFidelityCheck: parseKernelFidelityCheck(sa['kernelFidelityCheck'], label),
@@ -160,20 +164,12 @@ export function parseSingleScenarioResponse(parsed: unknown): SingleScenarioAnal
   }
   const data = parsed as Record<string, unknown>;
   if (!data['scenarioAnalysis'] || typeof data['scenarioAnalysis'] !== 'object') {
-    throw new LLMError(
-      `${label} response missing scenarioAnalysis`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`${label} response missing scenarioAnalysis`, 'STRUCTURE_PARSE_ERROR', true);
   }
   const sa = data['scenarioAnalysis'] as Record<string, unknown>;
   const score = sa['conceptIntegrityScore'];
   if (typeof score !== 'number' || !Number.isFinite(score)) {
-    throw new LLMError(
-      `${label} has invalid conceptIntegrityScore`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`${label} has invalid conceptIntegrityScore`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   return {
@@ -182,19 +178,19 @@ export function parseSingleScenarioResponse(parsed: unknown): SingleScenarioAnal
       'escalatingSetpieces',
       label,
       VERIFICATION_CONSTRAINTS.escalatingSetpiecesMin,
-      VERIFICATION_CONSTRAINTS.escalatingSetpiecesMax,
+      VERIFICATION_CONSTRAINTS.escalatingSetpiecesMax
     ),
     setpieceCausalChainBroken: requireBoolean(
       sa['setpieceCausalChainBroken'],
       'setpieceCausalChainBroken',
-      label,
+      label
     ),
     setpieceCausalLinks: parseStringArray(
       sa['setpieceCausalLinks'],
       'setpieceCausalLinks',
       label,
       VERIFICATION_CONSTRAINTS.setpieceCausalLinksMin,
-      VERIFICATION_CONSTRAINTS.setpieceCausalLinksMax,
+      VERIFICATION_CONSTRAINTS.setpieceCausalLinksMax
     ),
     conceptIntegrityScore: Math.max(0, Math.min(100, Math.round(score))),
   };
@@ -204,7 +200,7 @@ export async function verifySingleConcept(
   evaluated: EvaluatedConcept,
   kernel: StoryKernel,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptVerification> {
   return runTwoPhaseLlmStage<
     SingleSpecificityAnalysis,

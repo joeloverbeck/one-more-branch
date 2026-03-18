@@ -213,10 +213,7 @@ describe('structure-factory', () => {
 
     it('parses valid approachVectors from generation result', () => {
       const genResult = createGenerationResult();
-      genResult.acts[1]!.milestones[0]!.approachVectors = [
-        'DIRECT_FORCE',
-        'ANALYTICAL_REASONING',
-      ];
+      genResult.acts[1]!.milestones[0]!.approachVectors = ['DIRECT_FORCE', 'ANALYTICAL_REASONING'];
       const result = createStoryStructure(genResult);
 
       expect(result.acts[1]?.milestones[0]?.approachVectors).toEqual([
@@ -308,9 +305,10 @@ describe('structure-factory', () => {
     });
 
     it('returns valid vectors from mixed input', () => {
-      expect(
-        parseApproachVectors(['DIRECT_FORCE', 'INVALID', 'EMPATHIC_CONNECTION'])
-      ).toEqual(['DIRECT_FORCE', 'EMPATHIC_CONNECTION']);
+      expect(parseApproachVectors(['DIRECT_FORCE', 'INVALID', 'EMPATHIC_CONNECTION'])).toEqual([
+        'DIRECT_FORCE',
+        'EMPATHIC_CONNECTION',
+      ]);
     });
 
     it('returns null when all values are invalid', () => {

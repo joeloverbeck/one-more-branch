@@ -1,3 +1,18 @@
+const mockLogger = {
+  info: jest.fn(),
+  debug: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  getEntries: jest.fn().mockReturnValue([]),
+  clear: jest.fn(),
+};
+
+jest.mock('../../../src/logging/index.js', () => ({
+  get logger(): typeof mockLogger {
+    return mockLogger;
+  },
+}));
+
 import { LLMError } from '../../../src/llm/llm-client-types';
 import { parseMilestoneGenerationResponseObject } from '../../../src/llm/milestone-generation-response-parser';
 import type { MacroArchitectureResult } from '../../../src/models/structure-generation';
@@ -89,7 +104,8 @@ function createValidMilestoneResponse(): Record<string, unknown> {
             expectedGapMagnitude: 'WIDE',
             isMidpoint: false,
             midpointType: null,
-            uniqueScenarioHook: 'The archive flood cycle turns legal procedure into a drowning clock.',
+            uniqueScenarioHook:
+              'The archive flood cycle turns legal procedure into a drowning clock.',
             approachVectors: ['SWIFT_ACTION', 'STEALTH_SUBTERFUGE'],
             setpieceSourceIndex: 0,
             obligatorySceneTag: null,
@@ -112,7 +128,8 @@ function createValidMilestoneResponse(): Record<string, unknown> {
             expectedGapMagnitude: 'MODERATE',
             isMidpoint: false,
             midpointType: null,
-            uniqueScenarioHook: 'The city’s ceremonial bell code doubles as covert judicial command traffic.',
+            uniqueScenarioHook:
+              'The city’s ceremonial bell code doubles as covert judicial command traffic.',
             approachVectors: ['ANALYTICAL_REASONING', 'CAREFUL_OBSERVATION'],
             setpieceSourceIndex: 1,
             obligatorySceneTag: 'key_clue_recontextualized',
@@ -130,7 +147,8 @@ function createValidMilestoneResponse(): Record<string, unknown> {
             expectedGapMagnitude: 'CHASM',
             isMidpoint: true,
             midpointType: 'FALSE_VICTORY',
-            uniqueScenarioHook: 'The tribunal’s own oath sequence becomes the trap that strips a judge of plausible deniability.',
+            uniqueScenarioHook:
+              'The tribunal’s own oath sequence becomes the trap that strips a judge of plausible deniability.',
             approachVectors: ['PERSUASION_INFLUENCE', 'SELF_EXPRESSION'],
             setpieceSourceIndex: 2,
             obligatorySceneTag: null,
@@ -153,7 +171,8 @@ function createValidMilestoneResponse(): Record<string, unknown> {
             expectedGapMagnitude: 'WIDE',
             isMidpoint: false,
             midpointType: null,
-            uniqueScenarioHook: 'The bureaucracy itself mutinies when the purge order reaches the clerks who forged the lie.',
+            uniqueScenarioHook:
+              'The bureaucracy itself mutinies when the purge order reaches the clerks who forged the lie.',
             approachVectors: ['ENDURANCE_RESILIENCE', 'EMPATHIC_CONNECTION'],
             setpieceSourceIndex: 3,
             obligatorySceneTag: null,
@@ -183,6 +202,10 @@ function createValidMilestoneResponse(): Record<string, unknown> {
 }
 
 describe('parseMilestoneGenerationResponseObject', () => {
+  beforeEach(() => {
+    mockLogger.warn.mockReset();
+  });
+
   it('parses valid milestone output aligned to the macro architecture', () => {
     const result = parseMilestoneGenerationResponseObject(
       createValidMilestoneResponse(),
@@ -199,26 +222,51 @@ describe('parseMilestoneGenerationResponseObject', () => {
     expect(result.acts[2]?.milestones[1]?.role).toBe('resolution');
   });
 
-  it('throws when the midpoint location does not match the macro anchor', () => {
+  it('warns but does not throw when the midpoint location does not match the macro anchor', () => {
     const response = createValidMilestoneResponse();
-    const midpoint = (response.acts as Array<{ milestones: Array<Record<string, unknown>> }>)[1]!.milestones[1]!;
+    const midpoint = (response.acts as Array<{ milestones: Array<Record<string, unknown>> }>)[1]!
+      .milestones[1]!;
     midpoint.isMidpoint = false;
     midpoint.midpointType = null;
-    (response.acts as Array<{ milestones: Array<Record<string, unknown>> }>)[1]!.milestones[0]!.isMidpoint = true;
-    (response.acts as Array<{ milestones: Array<Record<string, unknown>> }>)[1]!.milestones[0]!.midpointType =
-      'FALSE_VICTORY';
+    (
+      response.acts as Array<{ milestones: Array<Record<string, unknown>> }>
+    )[1]!.milestones[0]!.isMidpoint = true;
+    (
+      response.acts as Array<{ milestones: Array<Record<string, unknown>> }>
+    )[1]!.milestones[0]!.midpointType = 'FALSE_VICTORY';
 
-    expect(() =>
-      parseMilestoneGenerationResponseObject(response, createMacroArchitecture(), {
-        verifiedSetpieceCount: 4,
-      })
-    ).toThrow('Midpoint must appear at acts[1].milestones[1]');
+    const result = parseMilestoneGenerationResponseObject(response, createMacroArchitecture(), {
+      verifiedSetpieceCount: 4,
+    });
+
+    expect(result.acts).toHaveLength(3);
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('instead of expected acts[1].milestones[1]')
+    );
+  });
+
+  it('warns but does not throw when the midpoint type does not match the macro anchor', () => {
+    const response = createValidMilestoneResponse();
+    (
+      response.acts as Array<{ milestones: Array<Record<string, unknown>> }>
+    )[1]!.milestones[1]!.midpointType = 'FALSE_DEFEAT';
+
+    const macro = createMacroArchitecture();
+    const result = parseMilestoneGenerationResponseObject(response, macro, {
+      verifiedSetpieceCount: 4,
+    });
+
+    expect(result.acts).toHaveLength(3);
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('instead of expected FALSE_VICTORY')
+    );
   });
 
   it('throws when an escalation milestone omits escalationType', () => {
     const response = createValidMilestoneResponse();
-    (response.acts as Array<{ milestones: Array<Record<string, unknown>> }>)[1]!.milestones[0]!.escalationType =
-      null;
+    (
+      response.acts as Array<{ milestones: Array<Record<string, unknown>> }>
+    )[1]!.milestones[0]!.escalationType = null;
 
     expect(() =>
       parseMilestoneGenerationResponseObject(response, createMacroArchitecture(), {
@@ -229,8 +277,9 @@ describe('parseMilestoneGenerationResponseObject', () => {
 
   it('throws when a setup milestone includes escalation-only fields', () => {
     const response = createValidMilestoneResponse();
-    (response.acts as Array<{ milestones: Array<Record<string, unknown>> }>)[0]!.milestones[0]!.uniqueScenarioHook =
-      'This should not be here.';
+    (
+      response.acts as Array<{ milestones: Array<Record<string, unknown>> }>
+    )[0]!.milestones[0]!.uniqueScenarioHook = 'This should not be here.';
 
     expect(() =>
       parseMilestoneGenerationResponseObject(response, createMacroArchitecture(), {
@@ -241,9 +290,13 @@ describe('parseMilestoneGenerationResponseObject', () => {
 
   it('throws when setpiece indices are supplied without a verified setpiece bank', () => {
     expect(() =>
-      parseMilestoneGenerationResponseObject(createValidMilestoneResponse(), createMacroArchitecture(), {
-        verifiedSetpieceCount: 0,
-      })
+      parseMilestoneGenerationResponseObject(
+        createValidMilestoneResponse(),
+        createMacroArchitecture(),
+        {
+          verifiedSetpieceCount: 0,
+        }
+      )
     ).toThrow('cannot be set when no verified setpiece bank exists');
   });
 

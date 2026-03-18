@@ -38,7 +38,11 @@ export function getRemainingBeats(
   return structure.acts.flatMap((act) =>
     act.milestones
       .filter((milestone) => !concludedMilestoneIds.has(milestone.id))
-      .map((milestone) => ({ id: milestone.id, description: milestone.description, objective: milestone.objective }))
+      .map((milestone) => ({
+        id: milestone.id,
+        description: milestone.description,
+        objective: milestone.objective,
+      }))
   );
 }
 
@@ -99,6 +103,7 @@ export function buildSharedStructureContext(
 
   const state = accumulatedStructureState;
   const currentAct = structure.acts[state.currentActIndex];
+  const activeMilestone = currentAct?.milestones[state.currentMilestoneIndex];
 
   if (!currentAct) {
     return '';
@@ -106,13 +111,13 @@ export function buildSharedStructureContext(
 
   const milestoneLines = currentAct.milestones
     .map((milestone) => {
-      const progression = state.milestoneProgressions.find((item) => item.milestoneId === milestone.id);
+      const progression = state.milestoneProgressions.find(
+        (item) => item.milestoneId === milestone.id
+      );
       const exitCondition =
         typeof milestone.exitCondition === 'string' ? milestone.exitCondition : '';
       const exitConditionLine =
-        exitCondition.trim().length > 0
-          ? `\n    Exit condition: ${exitCondition}`
-          : '';
+        exitCondition.trim().length > 0 ? `\n    Exit condition: ${exitCondition}` : '';
       if (progression?.status === 'concluded') {
         const resolution =
           progression.resolution && progression.resolution.trim().length > 0
@@ -125,9 +130,7 @@ export function buildSharedStructureContext(
         const escalationLine = milestone.escalationType
           ? `\n    Escalation mechanism: ${milestone.escalationType}`
           : '';
-        const crisisLine = milestone.crisisType
-          ? `\n    Crisis type: ${milestone.crisisType}`
-          : '';
+        const crisisLine = milestone.crisisType ? `\n    Crisis type: ${milestone.crisisType}` : '';
         const gapLine = milestone.expectedGapMagnitude
           ? `\n    Expected gap magnitude: ${milestone.expectedGapMagnitude}`
           : '';
@@ -155,23 +158,17 @@ export function buildSharedStructureContext(
       (act, index) => `  - Act ${state.currentActIndex + 2 + index}: ${act.name} - ${act.objective}`
     )
     .join('\n');
-  const actQuestion =
-    typeof currentAct.actQuestion === 'string' ? currentAct.actQuestion : '';
-  const exitReversal =
-    typeof currentAct.exitReversal === 'string' ? currentAct.exitReversal : '';
+  const actQuestion = typeof currentAct.actQuestion === 'string' ? currentAct.actQuestion : '';
+  const exitReversal = typeof currentAct.exitReversal === 'string' ? currentAct.exitReversal : '';
   const promiseTargets = Array.isArray(currentAct.promiseTargets)
     ? currentAct.promiseTargets.filter((target): target is string => typeof target === 'string')
     : [];
-  const actQuestionLine =
-    actQuestion.trim().length > 0 ? `\nAct Question: ${actQuestion}` : '';
+  const actQuestionLine = actQuestion.trim().length > 0 ? `\nAct Question: ${actQuestion}` : '';
   const exitReversalLine =
-    exitReversal.trim().length > 0
-      ? `\nExpected Exit Reversal: ${exitReversal}`
-      : '';
+    exitReversal.trim().length > 0 ? `\nExpected Exit Reversal: ${exitReversal}` : '';
   const promiseTargetsLine =
-    promiseTargets.length > 0
-      ? `\nPromise Targets: ${promiseTargets.join(', ')}`
-      : '';
+    promiseTargets.length > 0 ? `\nPromise Targets: ${promiseTargets.join(', ')}` : '';
+  const structurePrioritySection = buildStructurePriorityGuidanceSection(currentAct, activeMilestone);
 
   return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
@@ -183,7 +180,7 @@ CURRENT ACT: ${currentAct.name} (Act ${state.currentActIndex + 1} of ${structure
 Objective: ${currentAct.objective}
 Stakes: ${currentAct.stakes}${actQuestionLine}${exitReversalLine}${promiseTargetsLine}
 
-BEATS IN THIS ACT:
+${structurePrioritySection}BEATS IN THIS ACT:
 ${milestoneLines}
 
 REMAINING ACTS:
@@ -220,9 +217,7 @@ export function buildEscalationCheckSection(
 
   if (activeMilestoneRole === 'escalation') {
     lines.push('=== ESCALATION QUALITY CHECK ===');
-    lines.push(
-      'The active milestone role is "escalation". When evaluating this milestone:'
-    );
+    lines.push('The active milestone role is "escalation". When evaluating this milestone:');
     if (previousResolution) {
       lines.push(`Previous milestone resolved: "${previousResolution}"`);
     }
@@ -275,9 +270,7 @@ export function buildEscalationCheckSection(
     }
   } else if (activeMilestoneRole === 'turning_point') {
     lines.push('=== TURNING POINT QUALITY CHECK ===');
-    lines.push(
-      'The active milestone role is "turning_point". When evaluating this milestone:'
-    );
+    lines.push('The active milestone role is "turning_point". When evaluating this milestone:');
     if (previousResolution) {
       lines.push(`Previous milestone resolved: "${previousResolution}"`);
     }
@@ -301,9 +294,7 @@ export function buildEscalationCheckSection(
         `The scene should reflect this unique scenario hook: "${activeMilestone.uniqueScenarioHook}". Assess whether the scene leveraged this story's specific elements.`
       );
     }
-    lines.push(
-      '- Assess whether the narrative delivered an irreversible shift'
-    );
+    lines.push('- Assess whether the narrative delivered an irreversible shift');
     lines.push(
       '- An irreversible shift means a decision, revelation, or consequence that permanently changes available options'
     );
@@ -330,14 +321,12 @@ export function buildEscalationCheckSection(
     }
   } else if (activeMilestoneRole === 'reflection') {
     lines.push('=== REFLECTION QUALITY CHECK ===');
-    lines.push(
-      'The active milestone role is "reflection". When evaluating this milestone:'
-    );
+    lines.push('The active milestone role is "reflection". When evaluating this milestone:');
     if (previousResolution) {
       lines.push(`Previous milestone resolved: "${previousResolution}"`);
     }
     lines.push(
-      '- Assess whether the narrative delivered thematic or internal deepening tied to the protagonist\'s current dilemma'
+      "- Assess whether the narrative delivered thematic or internal deepening tied to the protagonist's current dilemma"
     );
     lines.push(
       '- Reflection should produce a meaningful shift in interpretation, emotional commitment, or relational stance'
@@ -359,15 +348,11 @@ export function buildEscalationCheckSection(
     lines.push(
       '- FALSE_VICTORY: apparent win with hidden cost, instability, or misread consequence'
     );
-    lines.push(
-      '- FALSE_DEFEAT: apparent loss that plants a credible seed of future success'
-    );
+    lines.push('- FALSE_DEFEAT: apparent loss that plants a credible seed of future success');
     lines.push(
       '- If milestoneConcluded is true but no midpoint-grade reversal occurs, set pacingIssueDetected: true and note midpoint underdelivery in pacingIssueReason'
     );
-    lines.push(
-      '- Tie midpoint evaluation to structural function, not just emotional intensity'
-    );
+    lines.push('- Tie midpoint evaluation to structural function, not just emotional intensity');
   }
 
   lines.push('');
@@ -411,13 +396,13 @@ export function buildAnalystStructureEvaluation(
 
   const milestoneLines = currentAct.milestones
     .map((milestone) => {
-      const progression = state.milestoneProgressions.find((item) => item.milestoneId === milestone.id);
+      const progression = state.milestoneProgressions.find(
+        (item) => item.milestoneId === milestone.id
+      );
       const exitCondition =
         typeof milestone.exitCondition === 'string' ? milestone.exitCondition : '';
       const exitConditionLine =
-        exitCondition.trim().length > 0
-          ? `\n    Exit condition: ${exitCondition}`
-          : '';
+        exitCondition.trim().length > 0 ? `\n    Exit condition: ${exitCondition}` : '';
       if (progression?.status === 'concluded') {
         const resolution =
           progression.resolution && progression.resolution.trim().length > 0
@@ -446,7 +431,10 @@ export function buildAnalystStructureEvaluation(
   const remainingBeatsSection =
     remainingBeats.length > 0
       ? `REMAINING BEATS TO EVALUATE FOR DEVIATION:\n${remainingBeats
-          .map((milestone) => `  - ${milestone.id}: ${milestone.description}\n    Objective: ${milestone.objective}`)
+          .map(
+            (milestone) =>
+              `  - ${milestone.id}: ${milestone.description}\n    Objective: ${milestone.objective}`
+          )
           .join('\n')}`
       : 'REMAINING BEATS TO EVALUATE FOR DEVIATION:\n  - None';
 
@@ -525,23 +513,18 @@ Populate threadPayoffAssessments for each resolved thread.
     currentAct.milestones,
     state
   );
-  const actQuestion =
-    typeof currentAct.actQuestion === 'string' ? currentAct.actQuestion : '';
-  const exitReversal =
-    typeof currentAct.exitReversal === 'string' ? currentAct.exitReversal : '';
-  const actQuestionLine =
-    actQuestion.trim().length > 0 ? `Act Question: ${actQuestion}\n` : '';
+  const actQuestion = typeof currentAct.actQuestion === 'string' ? currentAct.actQuestion : '';
+  const exitReversal = typeof currentAct.exitReversal === 'string' ? currentAct.exitReversal : '';
+  const actQuestionLine = actQuestion.trim().length > 0 ? `Act Question: ${actQuestion}\n` : '';
   const exitReversalLine =
-    exitReversal.trim().length > 0
-      ? `Expected Exit Reversal: ${exitReversal}\n`
-      : '';
+    exitReversal.trim().length > 0 ? `Expected Exit Reversal: ${exitReversal}\n` : '';
   const activeMilestoneExitLine =
     activeMilestoneExitCondition.trim().length > 0
       ? `Active Milestone Exit Condition: ${activeMilestoneExitCondition}\n`
       : '';
   const actTrajectorySection =
     actQuestionLine || exitReversalLine || activeMilestoneExitLine
-      ? `=== ACT TRAJECTORY CHECK ===\n${actQuestionLine}${exitReversalLine}${activeMilestoneExitLine}- Use the act question to judge whether the narrative is advancing or drifting from the act's dramatic center.\n- If the scene appears to transition out of this act, assess whether it earns the expected exit reversal.\n\n`
+      ? `${buildStructurePriorityGuidanceSection(currentAct, activeMilestone, { heading: '=== ACT TRAJECTORY CHECK ===', includeFinalBlankLine: false })}\n- Use the act question to judge whether the narrative is advancing or drifting from the act's dramatic center.\n- If the scene appears to transition out of this act, assess whether it earns the expected exit reversal.\n\n`
       : '';
 
   return `=== STORY STRUCTURE ===
@@ -608,4 +591,69 @@ ${escalationCheckSection}${DEVIATION_DETECTION_SECTION}
 ${remainingBeatsSection}
 
 ${pacingEvaluationSection}`;
+}
+
+function buildStructurePriorityGuidanceSection(
+  currentAct: StoryStructure['acts'][number],
+  activeMilestone: StoryMilestone | undefined,
+  options?: {
+    readonly heading?: string;
+    readonly includeFinalBlankLine?: boolean;
+  }
+): string {
+  const heading = options?.heading ?? '=== STRUCTURE PRIORITIES ===';
+  const includeFinalBlankLine = options?.includeFinalBlankLine ?? true;
+  const activeMilestoneExitCondition =
+    typeof activeMilestone?.exitCondition === 'string' ? activeMilestone.exitCondition.trim() : '';
+  const activeMilestoneObjective =
+    typeof activeMilestone?.objective === 'string' ? activeMilestone.objective.trim() : '';
+  const actQuestion =
+    typeof currentAct.actQuestion === 'string' ? currentAct.actQuestion.trim() : '';
+  const exitReversal =
+    typeof currentAct.exitReversal === 'string' ? currentAct.exitReversal.trim() : '';
+  const isFinalMilestoneOfAct =
+    !!activeMilestone &&
+    currentAct.milestones[currentAct.milestones.length - 1]?.id === activeMilestone.id;
+
+  const lines: string[] = [heading];
+
+  if (activeMilestoneExitCondition.length > 0) {
+    lines.push(`Immediate milestone completion target: ${activeMilestoneExitCondition}`);
+    lines.push(
+      '- Treat the active milestone exit condition as the default completion contract for the current scene.'
+    );
+    if (activeMilestoneObjective.length > 0) {
+      lines.push(
+        `- Use the milestone objective only as fallback context when the exit condition is absent: ${activeMilestoneObjective}`
+      );
+    }
+  } else if (activeMilestoneObjective.length > 0) {
+    lines.push(`Immediate milestone completion target (fallback): ${activeMilestoneObjective}`);
+    lines.push(
+      '- No exit condition is present, so use the active milestone objective as the current scene completion contract.'
+    );
+  }
+
+  if (actQuestion.length > 0) {
+    lines.push(`Act Question: ${actQuestion}`);
+    lines.push('- Use the act question as the act-level compass for scene direction and drift checks.');
+  }
+
+  if (exitReversal.length > 0) {
+    lines.push(`Expected Exit Reversal: ${exitReversal}`);
+    lines.push(
+      '- Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.'
+    );
+    if (isFinalMilestoneOfAct) {
+      lines.push(
+        "- The active milestone is the act's final milestone, so the scene may directly set up or deliver the exit reversal."
+      );
+    } else {
+      lines.push(
+        '- Only elevate the exit reversal into a direct scene requirement when the scene is approaching an act transition.'
+      );
+    }
+  }
+
+  return `${lines.join('\n')}${includeFinalBlankLine ? '\n\n' : ''}`;
 }

@@ -10,9 +10,7 @@ import type {
 } from '../../../../src/llm/context-types';
 import { buildPagePlannerPrompt } from '../../../../src/llm/prompts/page-planner-prompt';
 import { buildPagePlannerPrompt as buildPagePlannerPromptFromBarrel } from '../../../../src/llm/prompts';
-import {
-  buildMinimalDecomposedCharacter as makeMinimalDecomposedCharacter,
-} from '../../../fixtures/decomposed';
+import { buildMinimalDecomposedCharacter as makeMinimalDecomposedCharacter } from '../../../fixtures/decomposed';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
   return messages.find((message) => message.role === 'system')?.content ?? '';
@@ -27,14 +25,24 @@ describe('buildPagePlannerPrompt', () => {
     mode: 'opening',
     tone: 'paranoid thriller',
     decomposedCharacters: [makeMinimalDecomposedCharacter('A fugitive radio operator')],
-    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A floodlit surveillance city.', scope: 'global' }], rawWorldbuilding: 'A floodlit surveillance city.' },
+    decomposedWorld: {
+      facts: [
+        { domain: 'geography' as const, fact: 'A floodlit surveillance city.', scope: 'global' },
+      ],
+      rawWorldbuilding: 'A floodlit surveillance city.',
+    },
   };
 
   const continuationContext: ContinuationPagePlanContext = {
     mode: 'continuation',
     tone: 'paranoid thriller',
     decomposedCharacters: [makeMinimalDecomposedCharacter('A fugitive radio operator')],
-    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A floodlit surveillance city.', scope: 'global' }], rawWorldbuilding: 'A floodlit surveillance city.' },
+    decomposedWorld: {
+      facts: [
+        { domain: 'geography' as const, fact: 'A floodlit surveillance city.', scope: 'global' },
+      ],
+      rawWorldbuilding: 'A floodlit surveillance city.',
+    },
     globalCanon: ['Broadcast towers are monitored around the clock'],
     globalCharacterCanon: {
       'captain rourke': ['Relentless and procedural'],

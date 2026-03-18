@@ -34,7 +34,7 @@ function createSeeds(count: number): Array<ReturnType<typeof createConceptSeedFi
 }
 
 function createCharacterWorlds(
-  count: number,
+  count: number
 ): Array<ReturnType<typeof createConceptCharacterWorldFixture>> {
   return Array.from({ length: count }, (_, i) => createConceptCharacterWorldFixture(i + 1));
 }
@@ -159,7 +159,7 @@ describe('concept-ideator', () => {
           contentPreferences: context.contentPreferences,
         },
         'test-api-key',
-        undefined,
+        undefined
       );
     });
 
@@ -184,7 +184,7 @@ describe('concept-ideator', () => {
           contentPreferences: context.contentPreferences,
         },
         'test-api-key',
-        undefined,
+        undefined
       );
     });
 
@@ -236,13 +236,9 @@ describe('concept-ideator', () => {
       expect(mockGenerateCharacterWorlds).toHaveBeenCalledWith(
         expect.any(Object),
         'test-api-key',
-        options,
+        options
       );
-      expect(mockGenerateEngines).toHaveBeenCalledWith(
-        expect.any(Object),
-        'test-api-key',
-        options,
-      );
+      expect(mockGenerateEngines).toHaveBeenCalledWith(expect.any(Object), 'test-api-key', options);
     });
   });
 });

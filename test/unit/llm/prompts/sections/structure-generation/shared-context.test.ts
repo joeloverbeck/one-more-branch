@@ -83,7 +83,8 @@ describe('structure-generation shared context builders', () => {
       conceptId: 'concept_1',
       signatureScenario: 'A harbor tribunal hearing collapses into ritual violence.',
       loglineCompressible: true,
-      logline: 'A framed captain must weaponize tribunal ritual before the harbor courts burn the truth.',
+      logline:
+        'A framed captain must weaponize tribunal ritual before the harbor courts burn the truth.',
       premisePromises: [
         'The tribunal itself becomes the battleground.',
         'An ally inside the system is morally compromised.',
@@ -202,6 +203,8 @@ describe('structure-generation shared context builders', () => {
   });
 
   it('keeps directional guidance centralized by story kernel direction', () => {
-    expect(buildDirectionalGuidanceSection(baseContext.storyKernel)).toContain('Pyrrhic crossroads');
+    expect(buildDirectionalGuidanceSection(baseContext.storyKernel)).toContain(
+      'Pyrrhic crossroads'
+    );
   });
 });

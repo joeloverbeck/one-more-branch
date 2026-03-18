@@ -29,7 +29,6 @@ export async function generatePage(
   metrics: FullPipelineMetrics;
   deviationInfo?: DeviationInfo;
 }> {
-
   const totalStart = Date.now();
   const effectiveSceneDirection =
     selectedSceneDirection ?? continuationParams?.selectedSceneDirection;
@@ -129,10 +128,16 @@ export async function generateNextPage(
     );
   }
 
-  return generatePage('continuation', story, apiKey, {
-    parentPage,
-    choiceIndex,
-  }, onGenerationStage);
+  return generatePage(
+    'continuation',
+    story,
+    apiKey,
+    {
+      parentPage,
+      choiceIndex,
+    },
+    onGenerationStage
+  );
 }
 
 export async function getOrGeneratePage(

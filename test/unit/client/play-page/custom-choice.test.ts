@@ -201,7 +201,9 @@ describe('custom choice input', () => {
     deltaSelect.value = 'GOAL_PRIORITY_CHANGE';
 
     mockCustomChoiceResponse({
-      choices: [{ text: 'Custom action', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE' }],
+      choices: [
+        { text: 'Custom action', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+      ],
     });
 
     getAddButton().click();

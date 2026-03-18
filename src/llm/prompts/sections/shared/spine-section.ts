@@ -13,7 +13,7 @@ export function buildSpineSection(spine?: StorySpine): string {
     return '';
   }
 
-return `STORY SPINE (invariant narrative backbone — every scene must serve this):
+  return `STORY SPINE (invariant narrative backbone — every scene must serve this):
 Story Pattern: ${spine.storySpineType}
 Conflict Axis: ${spine.conflictAxis}
 Conflict Type: ${spine.conflictType}

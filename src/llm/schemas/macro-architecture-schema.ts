@@ -106,9 +106,8 @@ export const MACRO_ARCHITECTURE_SCHEMA: JsonSchema = {
         },
         setpieceBank: {
           type: 'array',
-          description: '6 concept-specific escalating situations in rising intensity, forming a causal chain from opening to climax.',
-          minItems: 6,
-          maxItems: 6,
+          description:
+            'Exactly 6 concept-specific escalating situations in rising intensity, forming a causal chain from opening to climax. You MUST produce exactly 6 items.',
           items: { type: 'string' },
         },
         acts: {

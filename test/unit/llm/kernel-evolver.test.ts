@@ -147,21 +147,15 @@ describe('kernel-evolver', () => {
 
   describe('parseKernelEvolutionResponse', () => {
     it('rejects non-object responses', () => {
-      expect(() => parseKernelEvolutionResponse('invalid')).toThrow(
-        'response must be an object',
-      );
+      expect(() => parseKernelEvolutionResponse('invalid')).toThrow('response must be an object');
     });
 
     it('rejects null responses', () => {
-      expect(() => parseKernelEvolutionResponse(null)).toThrow(
-        'response must be an object',
-      );
+      expect(() => parseKernelEvolutionResponse(null)).toThrow('response must be an object');
     });
 
     it('rejects array responses', () => {
-      expect(() => parseKernelEvolutionResponse([])).toThrow(
-        'response must be an object',
-      );
+      expect(() => parseKernelEvolutionResponse([])).toThrow('response must be an object');
     });
 
     it('returns StoryKernel[] for valid payload', () => {
@@ -189,9 +183,7 @@ describe('kernel-evolver', () => {
     it('rejects invalid kernel items', () => {
       const payload = createValidPayload();
       (payload.kernels[0] as unknown as Record<string, unknown>)['dramaticThesis'] = '';
-      expect(() => parseKernelEvolutionResponse(payload)).toThrow(
-        'not a valid StoryKernel',
-      );
+      expect(() => parseKernelEvolutionResponse(payload)).toThrow('not a valid StoryKernel');
     });
 
     it('rejects duplicate valueAtStake (case-insensitive)', () => {
@@ -200,9 +192,7 @@ describe('kernel-evolver', () => {
         ...payload.kernels[5],
         valueAtStake: payload.kernels[0].valueAtStake.toUpperCase(),
       };
-      expect(() => parseKernelEvolutionResponse(payload)).toThrow(
-        'duplicate valueAtStake',
-      );
+      expect(() => parseKernelEvolutionResponse(payload)).toThrow('duplicate valueAtStake');
     });
 
     it('rejects duplicate opposingForce (case-insensitive)', () => {
@@ -211,9 +201,7 @@ describe('kernel-evolver', () => {
         ...payload.kernels[5],
         opposingForce: payload.kernels[0].opposingForce.toUpperCase(),
       };
-      expect(() => parseKernelEvolutionResponse(payload)).toThrow(
-        'duplicate opposingForce',
-      );
+      expect(() => parseKernelEvolutionResponse(payload)).toThrow('duplicate opposingForce');
     });
 
     it('rejects insufficient directionOfChange diversity', () => {
@@ -222,7 +210,7 @@ describe('kernel-evolver', () => {
       };
       // All 6 have 'POSITIVE' which is only 1 distinct value
       expect(() => parseKernelEvolutionResponse(payload)).toThrow(
-        'at least 3 distinct directionOfChange',
+        'at least 3 distinct directionOfChange'
       );
     });
 
@@ -236,7 +224,9 @@ describe('kernel-evolver', () => {
         'IRONIC',
       ];
       const payload = {
-        kernels: Array.from({ length: 6 }, (_, index) => createKernel(index + 1, directions[index])),
+        kernels: Array.from({ length: 6 }, (_, index) =>
+          createKernel(index + 1, directions[index])
+        ),
       };
       const parsed = parseKernelEvolutionResponse(payload);
       expect(parsed).toHaveLength(6);
@@ -357,9 +347,7 @@ describe('kernel-evolver', () => {
       const messages = buildKernelEvolverPrompt(context);
       const systemMessage = messages[0]?.content ?? '';
 
-      expect(systemMessage).toContain(
-        'CRITICAL: Diversity means different dramatic propositions',
-      );
+      expect(systemMessage).toContain('CRITICAL: Diversity means different dramatic propositions');
     });
   });
 

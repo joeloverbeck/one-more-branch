@@ -70,7 +70,10 @@ function buildThematicValenceTrajectory(
   return points;
 }
 
-function buildNarrativeFocusTrajectory(parentPage: Page, ancestors: Page[]): NarrativeFocusTrajectory {
+function buildNarrativeFocusTrajectory(
+  parentPage: Page,
+  ancestors: Page[]
+): NarrativeFocusTrajectory {
   const allPages = [...ancestors].reverse();
   allPages.push(parentPage);
 

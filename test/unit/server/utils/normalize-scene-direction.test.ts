@@ -33,15 +33,11 @@ describe('normalizeSelectedSceneDirection', () => {
   });
 
   it('returns undefined when pacingMode is invalid', () => {
-    expect(
-      normalizeSelectedSceneDirection({ ...validInput, pacingMode: 'TURBO' })
-    ).toBeUndefined();
+    expect(normalizeSelectedSceneDirection({ ...validInput, pacingMode: 'TURBO' })).toBeUndefined();
   });
 
   it('returns undefined when sceneDirection is empty or whitespace-only', () => {
-    expect(
-      normalizeSelectedSceneDirection({ ...validInput, sceneDirection: '' })
-    ).toBeUndefined();
+    expect(normalizeSelectedSceneDirection({ ...validInput, sceneDirection: '' })).toBeUndefined();
     expect(
       normalizeSelectedSceneDirection({ ...validInput, sceneDirection: '   ' })
     ).toBeUndefined();
@@ -87,6 +83,21 @@ describe('normalizeSelectedSceneDirection', () => {
 
   it('returns a valid SelectedSceneDirection when all fields are correct', () => {
     const result = normalizeSelectedSceneDirection(validInput);
+
+    expect(result).toEqual({
+      scenePurpose: 'CONFRONTATION',
+      valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
+      pacingMode: 'ACCELERATING',
+      sceneDirection: 'The hero faces the villain.',
+      dramaticJustification: 'This advances the conflict.',
+    });
+  });
+
+  it('ignores ideator-only diversityLane metadata', () => {
+    const result = normalizeSelectedSceneDirection({
+      ...validInput,
+      diversityLane: 'ESCALATION',
+    });
 
     expect(result).toEqual({
       scenePurpose: 'CONFRONTATION',

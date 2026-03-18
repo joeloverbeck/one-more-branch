@@ -65,7 +65,9 @@ export function isThreatType(value: unknown): value is ThreatType {
 }
 
 export function isConstraintType(value: unknown): value is ConstraintType {
-  return typeof value === 'string' && Object.values(ConstraintType).includes(value as ConstraintType);
+  return (
+    typeof value === 'string' && Object.values(ConstraintType).includes(value as ConstraintType)
+  );
 }
 
 export type StateIdPrefix = 'inv' | 'hp' | 'cs' | 'th' | 'cn' | 'td' | 'pr';
@@ -161,10 +163,7 @@ export interface AgedTrackedPromise extends TrackedPromise {
   readonly age: number;
 }
 
-export function computePromiseAge(
-  promise: TrackedPromise,
-  currentPromiseEpoch: number
-): number {
+export function computePromiseAge(promise: TrackedPromise, currentPromiseEpoch: number): number {
   return Math.max(0, currentPromiseEpoch - promise.detectedAtPromiseEpoch);
 }
 

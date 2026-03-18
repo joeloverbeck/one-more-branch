@@ -8,7 +8,7 @@ import { mergeConceptStages } from './concept-ideator.js';
 export async function evolveConceptIdeas(
   context: ConceptEvolverContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptEvolutionResult> {
   const seedResult = await generateEvolvedConceptSeeds(context, apiKey, options);
 
@@ -23,7 +23,7 @@ export async function evolveConceptIdeas(
       contentPackets: context.contentPackets,
     },
     apiKey,
-    options,
+    options
   );
 
   const engineResult = await generateConceptEngines(
@@ -38,13 +38,13 @@ export async function evolveConceptIdeas(
       contentPackets: context.contentPackets,
     },
     apiKey,
-    options,
+    options
   );
 
   const concepts = mergeConceptStages(
     seedResult.seeds,
     architectResult.characterWorlds,
-    engineResult.engines,
+    engineResult.engines
   );
 
   return {

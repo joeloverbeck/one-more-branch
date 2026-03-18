@@ -29,10 +29,7 @@ function buildSchemaProperties(
 
     if (field.type === 'nullable_enum' && field.values) {
       properties[key] = {
-        anyOf: [
-          { type: 'string', enum: [...field.values] },
-          { type: 'null' },
-        ],
+        anyOf: [{ type: 'string', enum: [...field.values] }, { type: 'null' }],
         description: field.description,
       };
       continue;
@@ -103,7 +100,7 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
         superObjective: {
           type: 'string',
           description:
-            'The character\'s overarching dramatic goal — the single deepest drive that shapes all their actions. ' +
+            "The character's overarching dramatic goal — the single deepest drive that shapes all their actions. " +
             'E.g. "To prove she deserves to exist on her own terms." 1 sentence.',
         },
         stakes: {
@@ -120,15 +117,11 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
         },
         personalDilemmas: {
           type: 'array',
-          description:
-            'Competing loyalties or values that create internal conflict. 1-3 items.',
+          description: 'Competing loyalties or values that create internal conflict. 1-3 items.',
           items: { type: 'string' },
         },
         emotionSalience: {
-          anyOf: [
-            { type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH'] },
-            { type: 'null' },
-          ],
+          anyOf: [{ type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH'] }, { type: 'null' }],
           description:
             'How emotionally expressive this character is. LOW = stoic/guarded, MEDIUM = situationally expressive, HIGH = emotionally driven.',
         },
@@ -150,13 +143,13 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
         coreBeliefs: {
           type: 'array',
           description:
-            '2-3 fundamental beliefs that drive this character\'s behavior. ' +
+            "2-3 fundamental beliefs that drive this character's behavior. " +
             'These should sound like things the character would think or say.',
           items: { type: 'string' },
         },
         conflictPriority: {
           type: 'string',
-          description: 'When this character\'s goals conflict, what wins? One sentence.',
+          description: "When this character's goals conflict, what wins? One sentence.",
         },
         falseBeliefs: {
           type: 'array',
@@ -195,23 +188,23 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
           properties: {
             underThreat: {
               type: 'string',
-              description: 'How this character\'s voice and behavior change when threatened.',
+              description: "How this character's voice and behavior change when threatened.",
             },
             inIntimacy: {
               type: 'string',
-              description: 'How this character\'s voice and behavior change in intimate moments.',
+              description: "How this character's voice and behavior change in intimate moments.",
             },
             whenLying: {
               type: 'string',
-              description: 'How this character\'s voice and behavior change when lying.',
+              description: "How this character's voice and behavior change when lying.",
             },
             whenAshamed: {
               type: 'string',
-              description: 'How this character\'s voice and behavior change when ashamed.',
+              description: "How this character's voice and behavior change when ashamed.",
             },
             whenWinning: {
               type: 'string',
-              description: 'How this character\'s voice and behavior change when winning.',
+              description: "How this character's voice and behavior change when winning.",
             },
           },
         },
@@ -255,7 +248,7 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
         constraints: {
           type: 'array',
           description:
-            '2-4 external limitations restricting this character\'s options. ' +
+            "2-4 external limitations restricting this character's options. " +
             'Creates dramatic tension by defining what they CANNOT do.',
           items: { type: 'string' },
         },
@@ -276,7 +269,7 @@ export const CHARACTER_DECOMPOSITION_SCHEMA: JsonSchema = {
         sociology: {
           type: 'string',
           description:
-            'The character\'s social position: class, family structure, economic circumstances, ' +
+            "The character's social position: class, family structure, economic circumstances, " +
             'and social world. 2-4 sentences grounding them in material reality.',
         },
         speechFingerprint: {

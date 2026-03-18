@@ -89,31 +89,37 @@ export function createEvolutionService(deps: EvolutionServiceDeps = defaultDeps)
       const kernel = requireKernel(input.kernel);
       const onGenerationStage = input.onGenerationStage;
 
-      const seedResult = await runGenerationStage(onGenerationStage, 'SEEDING_EVOLVED_CONCEPTS', () =>
-        deps.generateEvolvedConceptSeeds(
-          {
-            parentConcepts,
-            kernel,
-            protagonistDetails: input.protagonistDetails,
-            genreVibes: input.genreVibes,
-            moodKeywords: input.moodKeywords,
-            contentPreferences: input.contentPreferences,
-          },
-          apiKey,
-        ),
+      const seedResult = await runGenerationStage(
+        onGenerationStage,
+        'SEEDING_EVOLVED_CONCEPTS',
+        () =>
+          deps.generateEvolvedConceptSeeds(
+            {
+              parentConcepts,
+              kernel,
+              protagonistDetails: input.protagonistDetails,
+              genreVibes: input.genreVibes,
+              moodKeywords: input.moodKeywords,
+              contentPreferences: input.contentPreferences,
+            },
+            apiKey
+          )
       );
-      const architectResult = await runGenerationStage(onGenerationStage, 'ARCHITECTING_CONCEPTS', () =>
-        deps.generateConceptCharacterWorlds(
-          {
-            seeds: seedResult.seeds,
-            kernel,
-            protagonistDetails: input.protagonistDetails,
-            genreVibes: input.genreVibes,
-            moodKeywords: input.moodKeywords,
-            contentPreferences: input.contentPreferences,
-          },
-          apiKey,
-        ),
+      const architectResult = await runGenerationStage(
+        onGenerationStage,
+        'ARCHITECTING_CONCEPTS',
+        () =>
+          deps.generateConceptCharacterWorlds(
+            {
+              seeds: seedResult.seeds,
+              kernel,
+              protagonistDetails: input.protagonistDetails,
+              genreVibes: input.genreVibes,
+              moodKeywords: input.moodKeywords,
+              contentPreferences: input.contentPreferences,
+            },
+            apiKey
+          )
       );
       const engineResult = await runGenerationStage(onGenerationStage, 'ENGINEERING_CONCEPTS', () =>
         deps.generateConceptEngines(
@@ -126,13 +132,13 @@ export function createEvolutionService(deps: EvolutionServiceDeps = defaultDeps)
             moodKeywords: input.moodKeywords,
             contentPreferences: input.contentPreferences,
           },
-          apiKey,
-        ),
+          apiKey
+        )
       );
       const concepts = mergeConceptStages(
         seedResult.seeds,
         architectResult.characterWorlds,
-        engineResult.engines,
+        engineResult.engines
       );
       const evaluation = await runGenerationStage(onGenerationStage, 'EVALUATING_CONCEPTS', () =>
         deps.evaluateConcepts(
@@ -145,11 +151,14 @@ export function createEvolutionService(deps: EvolutionServiceDeps = defaultDeps)
               apiKey,
             },
           },
-          apiKey,
-        ),
+          apiKey
+        )
       );
-      const verification = await runGenerationStage(onGenerationStage, 'ANALYZING_SPECIFICITY', () =>
-        deps.verifyConcepts({ evaluatedConcepts: evaluation.evaluatedConcepts, kernel }, apiKey),
+      const verification = await runGenerationStage(
+        onGenerationStage,
+        'ANALYZING_SPECIFICITY',
+        () =>
+          deps.verifyConcepts({ evaluatedConcepts: evaluation.evaluatedConcepts, kernel }, apiKey)
       );
 
       return {

@@ -67,7 +67,8 @@ export function isConceptSeed(value: unknown): value is ConceptSeed {
     isNonEmptyString(value['protagonistDetails']) &&
     (value['genreVibes'] === undefined || typeof value['genreVibes'] === 'string') &&
     (value['moodKeywords'] === undefined || typeof value['moodKeywords'] === 'string') &&
-    (value['contentPreferences'] === undefined || typeof value['contentPreferences'] === 'string') &&
+    (value['contentPreferences'] === undefined ||
+      typeof value['contentPreferences'] === 'string') &&
     (value['excludedGenres'] === undefined ||
       (Array.isArray(value['excludedGenres']) &&
         value['excludedGenres'].every((g: unknown) => isGenreFrame(g)))) &&

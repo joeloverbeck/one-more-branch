@@ -4,11 +4,7 @@ import type {
   DeepRelationshipResult,
   RelationshipArchetype,
 } from './character-pipeline-types.js';
-import {
-  CharacterDepth,
-  RelationshipValence,
-  StoryFunction,
-} from './character-enums.js';
+import { CharacterDepth, RelationshipValence, StoryFunction } from './character-enums.js';
 import type {
   DecomposedCharacter,
   DecomposedRelationship,
@@ -56,7 +52,7 @@ function trimTerminalPunctuation(value: string): string {
 }
 
 function mapArchetypeValenceToNumber(
-  valence: RelationshipArchetype['valence'],
+  valence: RelationshipArchetype['valence']
 ): DecomposedRelationship['valence'] {
   switch (valence) {
     case RelationshipValence.POSITIVE:
@@ -70,9 +66,7 @@ function mapArchetypeValenceToNumber(
   return 0;
 }
 
-function mapRelationshipToDecomposed(
-  relationship: CastRelationship,
-): DecomposedRelationship {
+function mapRelationshipToDecomposed(relationship: CastRelationship): DecomposedRelationship {
   return {
     valence: relationship.numericValence,
     dynamic: relationship.relationshipType,
@@ -85,18 +79,18 @@ function mapRelationshipToDecomposed(
 function findRelationshipWithProtagonist(
   relationships: DeepRelationshipResult['relationships'],
   characterName: string,
-  protagonistName: string,
+  protagonistName: string
 ): CastRelationship | null {
   const protagonistRelationship =
     relationships.find(
       (relationship) =>
         sameCharacter(relationship.fromCharacter, characterName) &&
-        sameCharacter(relationship.toCharacter, protagonistName),
+        sameCharacter(relationship.toCharacter, protagonistName)
     ) ??
     relationships.find(
       (relationship) =>
         sameCharacter(relationship.fromCharacter, protagonistName) &&
-        sameCharacter(relationship.toCharacter, characterName),
+        sameCharacter(relationship.toCharacter, characterName)
     );
 
   return protagonistRelationship ?? null;
@@ -105,18 +99,18 @@ function findRelationshipWithProtagonist(
 function findArchetypeWithProtagonist(
   archetypes: readonly RelationshipArchetype[],
   characterName: string,
-  protagonistName: string,
+  protagonistName: string
 ): RelationshipArchetype | null {
   const protagonistArchetype =
     archetypes.find(
       (archetype) =>
         sameCharacter(archetype.fromCharacter, characterName) &&
-        sameCharacter(archetype.toCharacter, protagonistName),
+        sameCharacter(archetype.toCharacter, protagonistName)
     ) ??
     archetypes.find(
       (archetype) =>
         sameCharacter(archetype.fromCharacter, protagonistName) &&
-        sameCharacter(archetype.toCharacter, characterName),
+        sameCharacter(archetype.toCharacter, characterName)
     );
 
   return protagonistArchetype ?? null;
@@ -124,7 +118,7 @@ function findArchetypeWithProtagonist(
 
 function buildFullRawDescription(
   char: SavedDevelopedCharacter,
-  webContext: CharacterWebContext,
+  webContext: CharacterWebContext
 ): string {
   const characterKernel = char.characterKernel;
   const tridimensionalProfile = char.tridimensionalProfile;
@@ -163,7 +157,7 @@ function buildFullThematicStance(char: SavedDevelopedCharacter): string {
 
 function buildLightweightRawDescription(
   assignment: CastRoleAssignment,
-  protagonistArchetype: RelationshipArchetype | null,
+  protagonistArchetype: RelationshipArchetype | null
 ): string {
   const relationshipClause =
     protagonistArchetype === null
@@ -175,7 +169,7 @@ function buildLightweightRawDescription(
 
 function buildLightweightThematicStance(
   assignment: CastRoleAssignment,
-  protagonistArchetype: RelationshipArchetype | null,
+  protagonistArchetype: RelationshipArchetype | null
 ): string {
   if (protagonistArchetype === null) {
     return `${trimTerminalPunctuation(assignment.conflictRelationship)}. This defines how this ${formatStoryFunction(assignment.storyFunction)} pressures the story.`;
@@ -184,56 +178,42 @@ function buildLightweightThematicStance(
   return `${trimTerminalPunctuation(protagonistArchetype.essentialTension)}. This defines how this ${formatStoryFunction(assignment.storyFunction)} pressures the protagonist.`;
 }
 
-function buildLightweightMotivations(
-  assignment: CastRoleAssignment,
-): string {
+function buildLightweightMotivations(assignment: CastRoleAssignment): string {
   return `${trimTerminalPunctuation(assignment.narrativeRole)}. ${trimTerminalPunctuation(assignment.conflictRelationship)}.`;
 }
 
-function buildLightweightDecisionPattern(
-  assignment: CastRoleAssignment,
-): string {
+function buildLightweightDecisionPattern(assignment: CastRoleAssignment): string {
   return `Acts according to a ${formatCharacterDepth(assignment.characterDepth)} ${formatStoryFunction(assignment.storyFunction)} role, pushing through ${trimTerminalPunctuation(assignment.conflictRelationship).toLowerCase()}.`;
 }
 
-function buildLightweightCoreBeliefs(
-  assignment: CastRoleAssignment,
-): readonly string[] {
+function buildLightweightCoreBeliefs(assignment: CastRoleAssignment): readonly string[] {
   return [
     `${trimTerminalPunctuation(assignment.narrativeRole)}.`,
     `${trimTerminalPunctuation(assignment.conflictRelationship)}.`,
   ];
 }
 
-function buildLightweightCoreTraits(
-  assignment: CastRoleAssignment,
-): readonly string[] {
+function buildLightweightCoreTraits(assignment: CastRoleAssignment): readonly string[] {
   return [
     formatStoryFunction(assignment.storyFunction),
     formatCharacterDepth(assignment.characterDepth),
   ];
 }
 
-function buildLightweightAppearance(
-  assignment: CastRoleAssignment,
-): string {
+function buildLightweightAppearance(assignment: CastRoleAssignment): string {
   return `No dedicated presentation yet; presence should read as ${trimTerminalPunctuation(assignment.narrativeRole).toLowerCase()}.`;
 }
 
-function buildLightweightKnowledgeBoundaries(
-  assignment: CastRoleAssignment,
-): string {
+function buildLightweightKnowledgeBoundaries(assignment: CastRoleAssignment): string {
   return `Only web-level role knowledge is established so far: ${trimTerminalPunctuation(assignment.narrativeRole)}.`;
 }
 
-function buildLightweightConflictPriority(
-  assignment: CastRoleAssignment,
-): string {
+function buildLightweightConflictPriority(assignment: CastRoleAssignment): string {
   return assignment.conflictRelationship;
 }
 
 function mapArchetypeToDecomposedRelationship(
-  archetype: RelationshipArchetype,
+  archetype: RelationshipArchetype
 ): DecomposedRelationship {
   return {
     valence: mapArchetypeValenceToNumber(archetype.valence),
@@ -244,7 +224,9 @@ function mapArchetypeToDecomposedRelationship(
   };
 }
 
-function assertFullCharacterReady(char: SavedDevelopedCharacter): asserts char is SavedDevelopedCharacter & {
+function assertFullCharacterReady(
+  char: SavedDevelopedCharacter
+): asserts char is SavedDevelopedCharacter & {
   readonly characterKernel: NonNullable<SavedDevelopedCharacter['characterKernel']>;
   readonly tridimensionalProfile: NonNullable<SavedDevelopedCharacter['tridimensionalProfile']>;
   readonly agencyModel: NonNullable<SavedDevelopedCharacter['agencyModel']>;
@@ -268,11 +250,11 @@ function assertFullCharacterReady(char: SavedDevelopedCharacter): asserts char i
 
 export function toDecomposedCharacter(
   char: SavedDevelopedCharacter,
-  webContext: CharacterWebContext,
+  webContext: CharacterWebContext
 ): DecomposedCharacter {
   const resolvedProtagonistName = requireNonEmptyName(
     'protagonistName',
-    webContext.protagonistName,
+    webContext.protagonistName
   );
   assertFullCharacterReady(char);
 
@@ -281,12 +263,11 @@ export function toDecomposedCharacter(
     : findRelationshipWithProtagonist(
         char.deepRelationships.relationships,
         char.characterName,
-        resolvedProtagonistName,
+        resolvedProtagonistName
       );
 
-  const protagonistRel = protagonistRelationship === null
-    ? null
-    : mapRelationshipToDecomposed(protagonistRelationship);
+  const protagonistRel =
+    protagonistRelationship === null ? null : mapRelationshipToDecomposed(protagonistRelationship);
 
   return {
     name: webContext.assignment.characterName,
@@ -318,7 +299,7 @@ export function toDecomposedCharacter(
 export function toDecomposedCharacterFromWeb(
   assignment: CastRoleAssignment,
   archetypes: readonly RelationshipArchetype[],
-  protagonistName: string,
+  protagonistName: string
 ): DecomposedCharacter {
   const resolvedProtagonistName = requireNonEmptyName('protagonistName', protagonistName);
   const protagonistArchetype = assignment.isProtagonist
@@ -332,7 +313,9 @@ export function toDecomposedCharacterFromWeb(
     superObjective: buildLightweightMotivations(assignment),
     thematicStance: buildLightweightThematicStance(assignment, protagonistArchetype),
     protagonistRelationship:
-      protagonistArchetype === null ? null : mapArchetypeToDecomposedRelationship(protagonistArchetype),
+      protagonistArchetype === null
+        ? null
+        : mapArchetypeToDecomposedRelationship(protagonistArchetype),
     knowledgeBoundaries: buildLightweightKnowledgeBoundaries(assignment),
     decisionPattern: buildLightweightDecisionPattern(assignment),
     coreBeliefs: buildLightweightCoreBeliefs(assignment),

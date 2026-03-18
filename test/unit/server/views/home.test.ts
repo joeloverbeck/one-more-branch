@@ -17,5 +17,4 @@ describe('home page template', () => {
     expect(template).toContain("<%= story.overallTheme || 'No theme generated yet.' %>");
     expect(template).toContain('<dt>Tone</dt>');
   });
-
 });

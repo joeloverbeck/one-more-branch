@@ -67,7 +67,10 @@ describe('repairAccountantIdFieldMismatches', () => {
 
   it('filters multiple mismatched IDs across different fields', () => {
     const payload = createValidPayload();
-    const intents = payload.stateIntents as Record<string, { removeIds?: string[]; resolveIds?: string[] }>;
+    const intents = payload.stateIntents as Record<
+      string,
+      { removeIds?: string[]; resolveIds?: string[] }
+    >;
     intents.threats!.removeIds = ['pr-1', 'th-5'];
     intents.threads!.resolveIds = ['pr-17', 'inv-3'];
     intents.inventory!.removeIds = ['hp-2'];
@@ -95,7 +98,10 @@ describe('repairAccountantIdFieldMismatches', () => {
 
   it('handles empty arrays without errors', () => {
     const payload = createValidPayload();
-    const intents = payload.stateIntents as Record<string, { removeIds?: string[]; resolveIds?: string[] }>;
+    const intents = payload.stateIntents as Record<
+      string,
+      { removeIds?: string[]; resolveIds?: string[] }
+    >;
     intents.threats!.removeIds = [];
     intents.threads!.resolveIds = [];
 

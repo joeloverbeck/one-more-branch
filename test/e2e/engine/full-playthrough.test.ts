@@ -227,7 +227,9 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): PageWrite
         secondaryEmotions: ['satisfaction', 'urgency'],
         dominantMotivation: 'Gather intelligence on patrol patterns',
       },
-      newCanonFacts: [{ text: 'Checkpoints store patrol schedules on physical boards', factType: 'LAW' }],
+      newCanonFacts: [
+        { text: 'Checkpoints store patrol schedules on physical boards', factType: 'LAW' },
+      ],
       sceneSummary: 'Test summary of the scene events and consequences.',
       rawResponse: `continuation-checkpoint-${stepIndex}`,
     });
@@ -262,7 +264,9 @@ function buildWriterResult(selectedChoice: string, stepIndex: number): PageWrite
         secondaryEmotions: ['unease', 'contemplation'],
         dominantMotivation: 'Establish a secure base for operations',
       },
-      newCanonFacts: [{ text: 'Stalled districts experience severe time dilation', factType: 'LAW' }],
+      newCanonFacts: [
+        { text: 'Stalled districts experience severe time dilation', factType: 'LAW' },
+      ],
       sceneSummary: 'Test summary of the scene events and consequences.',
       rawResponse: `continuation-stalled-${stepIndex}`,
     });

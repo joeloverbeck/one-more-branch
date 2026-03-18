@@ -107,8 +107,12 @@ describe('story recap modal', () => {
     await jest.advanceTimersByTimeAsync(0);
 
     const body = document.getElementById('recap-modal-body') as HTMLElement;
-    const labels = Array.from(body.querySelectorAll('.recap-page-label')).map((el) => el.textContent);
-    const summaries = Array.from(body.querySelectorAll('.recap-summary')).map((el) => el.textContent);
+    const labels = Array.from(body.querySelectorAll('.recap-page-label')).map(
+      (el) => el.textContent
+    );
+    const summaries = Array.from(body.querySelectorAll('.recap-summary')).map(
+      (el) => el.textContent
+    );
 
     expect(labels).toEqual(['Scene 1', 'Scene 2']);
     expect(summaries).toEqual(['First scene summary.', 'Second scene summary.']);
@@ -133,7 +137,12 @@ describe('story recap modal', () => {
     document.body.innerHTML = buildPlayPageHtml({
       recapSummaries: [{ pageId: 1, summary: 'Scene one summary.' }],
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
       ],
     });
     fetchMock.mockImplementation((url: string) => {
@@ -152,7 +161,11 @@ describe('story recap modal', () => {
     trigger.click();
     await jest.advanceTimersByTimeAsync(0);
 
-    expect(document.getElementById('recap-modal-body')?.textContent).toContain('Scene one summary.');
-    expect(document.getElementById('recap-modal-body')?.textContent).toContain('Scene two summary.');
+    expect(document.getElementById('recap-modal-body')?.textContent).toContain(
+      'Scene one summary.'
+    );
+    expect(document.getElementById('recap-modal-body')?.textContent).toContain(
+      'Scene two summary.'
+    );
   });
 });

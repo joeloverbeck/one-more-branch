@@ -9,8 +9,18 @@ const WORLD_FACT_ELABORATED_SCHEMA = {
     domain: {
       type: 'string' as const,
       enum: [
-        'geography', 'ecology', 'history', 'society', 'culture', 'religion',
-        'governance', 'economy', 'faction', 'technology', 'magic', 'language',
+        'geography',
+        'ecology',
+        'history',
+        'society',
+        'culture',
+        'religion',
+        'governance',
+        'economy',
+        'faction',
+        'technology',
+        'magic',
+        'language',
       ],
       description: 'World fact domain.',
     },
@@ -41,7 +51,10 @@ const WORLD_FACT_ELABORATED_SCHEMA = {
     },
     storyFunctions: {
       type: 'array' as const,
-      items: { type: 'string' as const, enum: ['EPIC', 'EPISTEMIC', 'DRAMATIC', 'ATMOSPHERIC', 'THEMATIC'] },
+      items: {
+        type: 'string' as const,
+        enum: ['EPIC', 'EPISTEMIC', 'DRAMATIC', 'ATMOSPHERIC', 'THEMATIC'],
+      },
       description: 'What story functions this fact serves.',
     },
     sceneAffordances: {

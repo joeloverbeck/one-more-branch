@@ -36,7 +36,7 @@ interface GenerationRequest<TParsed> {
 
 async function fetchGeneration<TParsed>(
   apiKey: string,
-  request: GenerationRequest<TParsed>,
+  request: GenerationRequest<TParsed>
 ): Promise<TParsed & { rawResponse: string }> {
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
@@ -71,7 +71,7 @@ async function fetchGeneration<TParsed>(
     responseData,
     request.responseLabel,
     request.model,
-    request.maxTokens,
+    request.maxTokens
   );
 
   const parsedMessage = parseMessageJsonContent(content);
@@ -91,11 +91,7 @@ async function fetchGeneration<TParsed>(
 
 function parseSeedResponse(parsed: unknown): Omit<WorldSeedGenerationResult, 'rawResponse'> {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError(
-      'World seed response must be an object',
-      'WORLD_SEED_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError('World seed response must be an object', 'WORLD_SEED_PARSE_ERROR', true);
   }
 
   return { worldSeed: parsed as WorldSeed };
@@ -103,7 +99,7 @@ function parseSeedResponse(parsed: unknown): Omit<WorldSeedGenerationResult, 'ra
 
 export async function generateWorldSeed(
   context: WorldSeedPromptContext,
-  apiKey: string,
+  apiKey: string
 ): Promise<WorldSeedGenerationResult> {
   const config = getConfig().llm;
   const primaryModel = getStageModel('worldbuildingSeed');
@@ -126,8 +122,8 @@ export async function generateWorldSeed(
           parseResponse: parseSeedResponse,
         }),
       primaryModel,
-      'worldbuildingSeed',
-    ),
+      'worldbuildingSeed'
+    )
   );
 
   logResponse(logger, 'worldbuildingSeed', result.rawResponse);

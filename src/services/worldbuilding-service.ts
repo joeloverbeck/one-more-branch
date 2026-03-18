@@ -18,7 +18,7 @@ import { canonicalizeDecomposedWorld } from './worldbuilding-canonicalizer.js';
 export async function createWorldbuilding(
   name: string,
   inputs: WorldbuildingPipelineInputs,
-  sourceConceptId?: string,
+  sourceConceptId?: string
 ): Promise<SavedWorldbuilding> {
   const now = new Date().toISOString();
   const wb: SavedWorldbuilding = {
@@ -43,7 +43,7 @@ export async function createWorldbuilding(
 export async function runWorldSeedGeneration(
   id: string,
   apiKey: string,
-  onStage?: GenerationStageCallback,
+  onStage?: GenerationStageCallback
 ): Promise<SavedWorldbuilding> {
   const wb = await loadWorldbuilding(id);
   if (!wb) throw new Error(`Worldbuilding not found: ${id}`);
@@ -56,7 +56,7 @@ export async function runWorldSeedGeneration(
         startingSituation: wb.inputs.startingSituation,
         tone: wb.inputs.tone,
       },
-      apiKey,
+      apiKey
     );
 
     return updateWorldbuilding(id, (existing) => ({
@@ -73,7 +73,7 @@ export async function runWorldSeedGeneration(
 export async function runWorldElaborationGeneration(
   id: string,
   apiKey: string,
-  onStage?: GenerationStageCallback,
+  onStage?: GenerationStageCallback
 ): Promise<SavedWorldbuilding> {
   const wb = await loadWorldbuilding(id);
   if (!wb) throw new Error(`Worldbuilding not found: ${id}`);
@@ -87,7 +87,7 @@ export async function runWorldElaborationGeneration(
         userNotes: wb.inputs.userNotes,
         tone: wb.inputs.tone,
       },
-      apiKey,
+      apiKey
     );
 
     const canonicalized = canonicalizeDecomposedWorld(result.decomposedWorld);
@@ -107,15 +107,12 @@ export async function decomposeRawWorldbuilding(
   rawText: string,
   apiKey: string,
   tone: string,
-  onStage?: GenerationStageCallback,
+  onStage?: GenerationStageCallback
 ): Promise<SavedWorldbuilding> {
   const now = new Date().toISOString();
 
   return runGenerationStage(onStage, 'DECOMPOSING_WORLD', async () => {
-    const result = await decomposeWorldbuilding(
-      { worldbuilding: rawText, tone },
-      apiKey,
-    );
+    const result = await decomposeWorldbuilding({ worldbuilding: rawText, tone }, apiKey);
 
     const canonicalized = canonicalizeDecomposedWorld(result.decomposedWorld);
 
@@ -138,9 +135,7 @@ export async function decomposeRawWorldbuilding(
   });
 }
 
-export async function loadWorldbuildingById(
-  id: string,
-): Promise<SavedWorldbuilding | null> {
+export async function loadWorldbuildingById(id: string): Promise<SavedWorldbuilding | null> {
   return loadWorldbuilding(id);
 }
 
@@ -149,7 +144,7 @@ export async function listWorldbuildings(): Promise<SavedWorldbuilding[]> {
 }
 
 export async function listWorldbuildingsByConcept(
-  conceptId: string,
+  conceptId: string
 ): Promise<SavedWorldbuilding[]> {
   const all = await listAll();
   return all.filter((wb) => wb.sourceConceptId === conceptId);
@@ -157,7 +152,7 @@ export async function listWorldbuildingsByConcept(
 
 export async function patchWorldbuilding(
   id: string,
-  updates: Partial<Pick<SavedWorldbuilding, 'name' | 'inputs'>>,
+  updates: Partial<Pick<SavedWorldbuilding, 'name' | 'inputs'>>
 ): Promise<SavedWorldbuilding> {
   return updateWorldbuilding(id, (existing) => ({
     ...existing,

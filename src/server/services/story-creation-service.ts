@@ -9,6 +9,7 @@ export type StoryFormInput = {
   title?: string;
   characterConcept?: string;
   worldbuilding?: string;
+  worldbuildingId?: string;
   tone?: string;
   protagonistCharacterId?: string;
   npcCharacterIds?: string[];
@@ -23,6 +24,7 @@ export type TrimmedStoryInput = {
   title: string;
   characterConcept?: string;
   worldbuilding?: string;
+  worldbuildingId?: string;
   tone?: string;
   protagonistCharacterId: string;
   npcCharacterIds?: string[];
@@ -69,8 +71,11 @@ export function validateStoryInput(input: StoryFormInput): ValidationResult {
     valid: true,
     trimmed: {
       title: trimmedTitle,
-      ...(input.characterConcept?.trim() ? { characterConcept: input.characterConcept.trim() } : {}),
+      ...(input.characterConcept?.trim()
+        ? { characterConcept: input.characterConcept.trim() }
+        : {}),
       worldbuilding: input.worldbuilding?.trim(),
+      ...(input.worldbuildingId?.trim() ? { worldbuildingId: input.worldbuildingId.trim() } : {}),
       tone: input.tone?.trim(),
       protagonistCharacterId: trimmedProtagonistId,
       ...(input.npcCharacterIds && input.npcCharacterIds.length > 0

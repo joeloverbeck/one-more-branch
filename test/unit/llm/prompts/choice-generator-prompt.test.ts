@@ -5,7 +5,12 @@ import {
 import { ThreatType, ThreadType, Urgency } from '../../../../src/models/state/keyed-entry';
 import type { ProtagonistAffect } from '../../../../src/models/protagonist-affect';
 import type { ActiveState } from '../../../../src/models/state';
-import type { StoryStructure, StoryAct, AccumulatedStructureState, StoryMilestone } from '../../../../src/models/story-arc';
+import type {
+  StoryStructure,
+  StoryAct,
+  AccumulatedStructureState,
+  StoryMilestone,
+} from '../../../../src/models/story-arc';
 import type { StorySpine } from '../../../../src/models/story-spine';
 import { buildMinimalDecomposedCharacter } from '../../../fixtures/decomposed';
 
@@ -124,11 +129,14 @@ describe('buildChoiceGeneratorPrompt', () => {
     const context = makeContext({
       activeState: makeActiveState({
         currentLocation: 'Haunted library',
-        activeThreats: [
-          { id: 'th-1', text: 'Ghost patrol', threatType: ThreatType.CREATURE },
-        ],
+        activeThreats: [{ id: 'th-1', text: 'Ghost patrol', threatType: ThreatType.CREATURE }],
         openThreads: [
-          { id: 'ot-1', text: 'Missing key', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+          {
+            id: 'ot-1',
+            text: 'Missing key',
+            threadType: ThreadType.MYSTERY,
+            urgency: Urgency.HIGH,
+          },
         ],
       }),
     });

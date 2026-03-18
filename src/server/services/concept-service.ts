@@ -112,7 +112,7 @@ export class ConceptEvaluationStageError extends Error {
 
   constructor(
     public readonly ideatedConcepts: readonly ConceptSpec[],
-    public readonly cause: unknown,
+    public readonly cause: unknown
   ) {
     super('Concept evaluation stage failed');
   }
@@ -223,21 +223,24 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
       const seedResult = await runGenerationStage(onGenerationStage, 'SEEDING_CONCEPTS', () =>
         deps.generateConceptSeeds(
           { ...seeds, protagonistDetails, excludedGenres: input.excludedGenres, kernel },
-          apiKey,
-        ),
+          apiKey
+        )
       );
-      const architectResult = await runGenerationStage(onGenerationStage, 'ARCHITECTING_CONCEPTS', () =>
-        deps.generateConceptCharacterWorlds(
+      const architectResult = await runGenerationStage(
+        onGenerationStage,
+        'ARCHITECTING_CONCEPTS',
+        () =>
+          deps.generateConceptCharacterWorlds(
             {
               seeds: seedResult.seeds,
               protagonistDetails,
               genreVibes: seeds.genreVibes,
               moodKeywords: seeds.moodKeywords,
               contentPreferences: seeds.contentPreferences,
-            kernel,
-          },
-          apiKey,
-        ),
+              kernel,
+            },
+            apiKey
+          )
       );
       const engineResult = await runGenerationStage(onGenerationStage, 'ENGINEERING_CONCEPTS', () =>
         deps.generateConceptEngines(
@@ -250,13 +253,13 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
             contentPreferences: seeds.contentPreferences,
             kernel,
           },
-          apiKey,
-        ),
+          apiKey
+        )
       );
       const concepts = mergeConceptStages(
         seedResult.seeds,
         architectResult.characterWorlds,
-        engineResult.engines,
+        engineResult.engines
       );
       const evaluation = await runGenerationStage(onGenerationStage, 'EVALUATING_CONCEPTS', () =>
         deps
@@ -268,14 +271,17 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
                 apiKey,
               },
             },
-            apiKey,
+            apiKey
           )
           .catch((error: unknown) => {
             throw new ConceptEvaluationStageError(concepts, error);
-          }),
+          })
       );
-      const verification = await runGenerationStage(onGenerationStage, 'ANALYZING_SPECIFICITY', () =>
-        deps.verifyConcepts({ evaluatedConcepts: evaluation.evaluatedConcepts, kernel }, apiKey),
+      const verification = await runGenerationStage(
+        onGenerationStage,
+        'ANALYZING_SPECIFICITY',
+        () =>
+          deps.verifyConcepts({ evaluatedConcepts: evaluation.evaluatedConcepts, kernel }, apiKey)
       );
 
       return {
@@ -296,21 +302,24 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
       const seedResult = await runGenerationStage(onGenerationStage, 'SEEDING_CONCEPTS', () =>
         deps.generateConceptSeeds(
           { ...seeds, protagonistDetails, excludedGenres: input.excludedGenres, kernel },
-          apiKey,
-        ),
+          apiKey
+        )
       );
-      const architectResult = await runGenerationStage(onGenerationStage, 'ARCHITECTING_CONCEPTS', () =>
-        deps.generateConceptCharacterWorlds(
-          {
-            seeds: seedResult.seeds,
-            protagonistDetails,
-            genreVibes: seeds.genreVibes,
-            moodKeywords: seeds.moodKeywords,
-            contentPreferences: seeds.contentPreferences,
-            kernel,
-          },
-          apiKey,
-        ),
+      const architectResult = await runGenerationStage(
+        onGenerationStage,
+        'ARCHITECTING_CONCEPTS',
+        () =>
+          deps.generateConceptCharacterWorlds(
+            {
+              seeds: seedResult.seeds,
+              protagonistDetails,
+              genreVibes: seeds.genreVibes,
+              moodKeywords: seeds.moodKeywords,
+              contentPreferences: seeds.contentPreferences,
+              kernel,
+            },
+            apiKey
+          )
       );
 
       return { seeds: seedResult.seeds, characterWorlds: architectResult.characterWorlds };
@@ -324,15 +333,18 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
       if (!Array.isArray(input.seeds) || input.seeds.length === 0) {
         throw new Error('At least one concept seed is required');
       }
-      if (!Array.isArray(input.characterWorlds) || input.characterWorlds.length !== input.seeds.length) {
+      if (
+        !Array.isArray(input.characterWorlds) ||
+        input.characterWorlds.length !== input.seeds.length
+      ) {
         throw new Error('characterWorlds must match seeds length');
       }
 
       const engineResult = await runGenerationStage(onGenerationStage, 'ENGINEERING_CONCEPTS', () =>
         deps.generateConceptEngines(
           { seeds: input.seeds, characterWorlds: input.characterWorlds, kernel },
-          apiKey,
-        ),
+          apiKey
+        )
       );
       const concepts = mergeConceptStages(input.seeds, input.characterWorlds, engineResult.engines);
       const evaluation = await runGenerationStage(onGenerationStage, 'EVALUATING_CONCEPTS', () =>
@@ -342,14 +354,17 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
               concepts,
               userSeeds: { apiKey },
             },
-            apiKey,
+            apiKey
           )
           .catch((error: unknown) => {
             throw new ConceptEvaluationStageError(concepts, error);
-          }),
+          })
       );
-      const verification = await runGenerationStage(onGenerationStage, 'ANALYZING_SPECIFICITY', () =>
-        deps.verifyConcepts({ evaluatedConcepts: evaluation.evaluatedConcepts, kernel }, apiKey),
+      const verification = await runGenerationStage(
+        onGenerationStage,
+        'ANALYZING_SPECIFICITY',
+        () =>
+          deps.verifyConcepts({ evaluatedConcepts: evaluation.evaluatedConcepts, kernel }, apiKey)
       );
 
       return {
@@ -361,7 +376,7 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
     },
 
     async developSingleConcept(
-      input: DevelopSingleConceptInput,
+      input: DevelopSingleConceptInput
     ): Promise<DevelopSingleConceptResult> {
       const apiKey = requireApiKey(input.apiKey);
       const kernel = requireKernel(input.kernel);
@@ -401,26 +416,31 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
             moodKeywords: seed.moodKeywords,
             contentPreferences: seed.contentPreferences,
           },
-          apiKey,
-        ),
+          apiKey
+        )
       );
       const concepts = mergeConceptStages([seedFields], [characterWorld], [engineResult.engine]);
       const concept = concepts[0] as ConceptSpec;
 
-      const { evaluatedConcept } = await runGenerationStage(onGenerationStage, 'EVALUATING_CONCEPTS', () =>
-        evaluateSingleConcept(
-          concept,
-          {
-            genreVibes: seed.genreVibes,
-            moodKeywords: seed.moodKeywords,
-            contentPreferences: seed.contentPreferences,
-            apiKey,
-          },
-          apiKey,
-        ),
+      const { evaluatedConcept } = await runGenerationStage(
+        onGenerationStage,
+        'EVALUATING_CONCEPTS',
+        () =>
+          evaluateSingleConcept(
+            concept,
+            {
+              genreVibes: seed.genreVibes,
+              moodKeywords: seed.moodKeywords,
+              contentPreferences: seed.contentPreferences,
+              apiKey,
+            },
+            apiKey
+          )
       );
-      const verification = await runGenerationStage(onGenerationStage, 'ANALYZING_SPECIFICITY', () =>
-        verifySingleConcept(evaluatedConcept, kernel, apiKey),
+      const verification = await runGenerationStage(
+        onGenerationStage,
+        'ANALYZING_SPECIFICITY',
+        () => verifySingleConcept(evaluatedConcept, kernel, apiKey)
       );
 
       return { concept, evaluatedConcept, verification };
@@ -438,8 +458,8 @@ export function createConceptService(deps: ConceptServiceDeps = defaultDeps): Co
             weaknesses: normalized.weaknesses,
             verification: normalized.verification,
           },
-          normalized.apiKey,
-        ),
+          normalized.apiKey
+        )
       );
     },
   };

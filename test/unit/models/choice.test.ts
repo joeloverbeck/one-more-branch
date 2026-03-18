@@ -145,9 +145,9 @@ describe('Choice utilities', () => {
     });
 
     it('returns false when primaryDelta is missing', () => {
-      expect(
-        isChoice({ text: 'Go', choiceType: ChoiceType.INTERVENE, nextPageId: null })
-      ).toBe(false);
+      expect(isChoice({ text: 'Go', choiceType: ChoiceType.INTERVENE, nextPageId: null })).toBe(
+        false
+      );
     });
 
     it('returns false when choiceType is invalid string', () => {

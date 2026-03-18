@@ -112,7 +112,44 @@ NPC-PROTAGONIST RELATIONSHIPS:
 
 {{#if structure && accumulatedStructureState}}
 === STORY STRUCTURE ===
-{{structureSection (same format as continuation prompt)}}
+Overall Theme: {{structure.overallTheme}}
+Premise: {{structure.premise}}
+Opening image: {{structure.openingImage}}
+Closing image: {{structure.closingImage}}
+
+CURRENT ACT: {{act.name}} (Act {{actIndex + 1}} of {{structure.acts.length}})
+Objective: {{act.objective}}
+Stakes: {{act.stakes}}
+{{#if act.actQuestion}}Act Question: {{act.actQuestion}}{{/if}}
+{{#if act.exitReversal}}Expected Exit Reversal: {{act.exitReversal}}{{/if}}
+{{#if act.promiseTargets}}Promise Targets: {{act.promiseTargets joined by ', '}}{{/if}}
+
+=== STRUCTURE PRIORITIES ===
+Immediate milestone completion target: {{activeMilestone.exitCondition || activeMilestone.objective}}
+- Treat the active milestone exit condition as the default completion contract for the current scene.
+- Use the milestone objective only as fallback context when the exit condition is absent.
+{{#if act.actQuestion}}- Use the act question as the act-level compass for scene direction and drift checks.{{/if}}
+{{#if act.exitReversal}}- Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.{{/if}}
+{{#if act.exitReversal}}- Only elevate the exit reversal into a direct scene requirement when the scene is approaching an act transition or the active milestone is the act's final milestone.{{/if}}
+
+BEATS IN THIS ACT:
+  [x] CONCLUDED ({{beat.role}}): {{beat.description}}
+    Resolution: {{beatProgression.resolution}}
+  [>] ACTIVE ({{beat.role}}): {{beat.description}}
+    Objective: {{beat.objective}}
+    {{#if beat.exitCondition}}Exit condition: {{beat.exitCondition}}{{/if}}
+    {{#if beat.escalationType}}Escalation mechanism: {{beat.escalationType}}{{/if}}
+    {{#if beat.crisisType}}Crisis type: {{beat.crisisType}}{{/if}}
+    {{#if beat.expectedGapMagnitude}}Expected gap magnitude: {{beat.expectedGapMagnitude}}{{/if}}
+    {{#if beat.isMidpoint}}Midpoint: true ({{beat.midpointType}}){{/if}}
+    {{#if beat.uniqueScenarioHook}}Scenario hook: {{beat.uniqueScenarioHook}}{{/if}}
+    {{#if beat.approachVectors}}Approach vectors: {{beat.approachVectors joined by ', '}}{{/if}}
+  [ ] PENDING ({{beat.role}}): {{beat.description}}
+    Objective: {{beat.objective}}
+    {{#if beat.exitCondition}}Exit condition: {{beat.exitCondition}}{{/if}}
+
+REMAINING ACTS:
+  - Act {{N}}: {{act.name}} - {{act.objective}}
 {{/if}}
 
 {{#if globalCanon.length > 0}}

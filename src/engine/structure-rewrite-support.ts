@@ -1,4 +1,8 @@
-import type { AccumulatedStructureState, MilestoneDeviation, StoryStructure } from '../models/story-arc';
+import type {
+  AccumulatedStructureState,
+  MilestoneDeviation,
+  StoryStructure,
+} from '../models/story-arc';
 import type {
   CompletedBeat,
   PlannedBeat,
@@ -24,7 +28,9 @@ export function extractCompletedBeats(
   for (const progression of concludedProgressions) {
     const indices = parseMilestoneIndices(progression.milestoneId);
     if (!indices) {
-      console.warn(`Invalid milestone ID format in concluded progression: ${progression.milestoneId}`);
+      console.warn(
+        `Invalid milestone ID format in concluded progression: ${progression.milestoneId}`
+      );
       continue;
     }
 
@@ -82,7 +88,9 @@ export function extractPlannedBeats(
   includeCurrentBeat = false
 ): readonly PlannedBeat[] {
   const concludedMilestoneIds = new Set(
-    structureState.milestoneProgressions.filter((p) => p.status === 'concluded').map((p) => p.milestoneId)
+    structureState.milestoneProgressions
+      .filter((p) => p.status === 'concluded')
+      .map((p) => p.milestoneId)
   );
 
   const currentMilestoneId = `${structureState.currentActIndex + 1}.${structureState.currentMilestoneIndex + 1}`;
@@ -110,7 +118,10 @@ export function extractPlannedBeats(
         continue;
       }
       if (includeCurrentBeat) {
-        if (actIdx === structureState.currentActIndex && milestoneIdx < structureState.currentMilestoneIndex) {
+        if (
+          actIdx === structureState.currentActIndex &&
+          milestoneIdx < structureState.currentMilestoneIndex
+        ) {
           continue;
         }
       } else {
@@ -187,7 +198,9 @@ export function buildRewriteContext(
 /**
  * Gets milestone IDs that should be preserved (concluded milestones).
  */
-export function getPreservedMilestoneIds(structureState: AccumulatedStructureState): readonly string[] {
+export function getPreservedMilestoneIds(
+  structureState: AccumulatedStructureState
+): readonly string[] {
   return structureState.milestoneProgressions
     .filter((milestoneProgression) => milestoneProgression.status === 'concluded')
     .map((milestoneProgression) => milestoneProgression.milestoneId);
@@ -212,7 +225,8 @@ export function validatePreservedBeats(
       return false;
     }
 
-    const originalBeat = originalStructure.acts[indices.actIndex]?.milestones[indices.milestoneIndex];
+    const originalBeat =
+      originalStructure.acts[indices.actIndex]?.milestones[indices.milestoneIndex];
     const newBeat = newStructure.acts[indices.actIndex]?.milestones[indices.milestoneIndex];
 
     if (!originalBeat || !newBeat) {

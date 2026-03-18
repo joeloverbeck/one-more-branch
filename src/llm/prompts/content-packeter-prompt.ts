@@ -43,7 +43,7 @@ export function buildContentPacketerPrompt(context: ContentPacketerContext): Cha
 
   if (kernelBlock) {
     userSections.push(
-      `STORY KERNEL (use as gravitational anchor, not a constraint):\n${kernelBlock}`,
+      `STORY KERNEL (use as gravitational anchor, not a constraint):\n${kernelBlock}`
     );
   }
 
@@ -52,7 +52,7 @@ export function buildContentPacketerPrompt(context: ContentPacketerContext): Cha
 - Return JSON matching exactly: { "packets": [ ... ] }
 - Each packet object must have: contentId, sourceSparkIds, contentKind, coreAnomaly, humanAnchor, socialEngine, choicePressure, signatureImage, escalationPath, wildnessInvariant, dullCollapse, interactionVerbs.
 - interactionVerbs: exactly 4-6 action verbs per packet.
-- 12-16 packets total.`,
+- 12-16 packets total.`
   );
 
   return [

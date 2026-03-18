@@ -22,7 +22,7 @@ function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
         `- [${p.contentId}] coreAnomaly: ${p.coreAnomaly}
   wildnessInvariant: ${p.wildnessInvariant}
   socialEngine: ${p.socialEngine}
-  signatureImage: ${p.signatureImage}`,
+  signatureImage: ${p.signatureImage}`
     )
     .join('\n');
 
@@ -78,7 +78,7 @@ export function buildConceptSeederPrompt(context: ConceptSeederContext): ChatMes
   if (protagonistDetails) {
     systemSections.push(
       `PROTAGONIST IDENTITY CONSTRAINT (ABSOLUTE — OVERRIDES ALL OTHER CONSIDERATIONS):
-The user has specified their protagonist. Every concept seed MUST feature a protagonist that matches the user's description. You may NOT substitute, replace, or override the user's protagonist with a different character you find more interesting. The user's protagonist IS the protagonist — period. Creativity applies to the world, conflict, and genre around them, never to replacing who they are.`,
+The user has specified their protagonist. Every concept seed MUST feature a protagonist that matches the user's description. You may NOT substitute, replace, or override the user's protagonist with a different character you find more interesting. The user's protagonist IS the protagonist — period. Creativity applies to the world, conflict, and genre around them, never to replacing who they are.`
     );
   }
   systemSections.push(DIVERSITY_CONSTRAINTS);
@@ -89,7 +89,7 @@ The user has specified their protagonist. Every concept seed MUST feature a prot
 
   if (protagonistDetails) {
     userSections.push(
-      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — DO NOT REPLACE OR OVERRIDE):\n${protagonistDetails}\nEvery concept seed's playerFantasy and oneLineHook MUST center this protagonist. Generating concepts about a different character is a hard failure.`,
+      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — DO NOT REPLACE OR OVERRIDE):\n${protagonistDetails}\nEvery concept seed's playerFantasy and oneLineHook MUST center this protagonist. Generating concepts about a different character is a hard failure.`
     );
   }
 
@@ -101,7 +101,7 @@ The user has specified their protagonist. Every concept seed MUST feature a prot
 
   if (mandateParts.length > 0) {
     userSections.push(
-      `USER CREATIVE MANDATE (every concept MUST embody ALL of the following):\n${mandateParts.join('\n')}\nThese are non-negotiable. Each concept must centrally express every listed quality, though HOW each manifests may differ creatively across concepts.`,
+      `USER CREATIVE MANDATE (every concept MUST embody ALL of the following):\n${mandateParts.join('\n')}\nThese are non-negotiable. Each concept must centrally express every listed quality, though HOW each manifests may differ creatively across concepts.`
     );
   }
   if (context.contentPackets && context.contentPackets.length > 0) {
@@ -132,7 +132,7 @@ The user has specified their protagonist. Every concept seed MUST feature a prot
     `OUTPUT REQUIREMENTS:
 - Return JSON matching schema shape: { "concepts": [ConceptSeed, ...] }.
 - Populate every required field for each seed.
-- conflictType must be structurally coherent with conflictAxis (e.g., INDIVIDUAL_VS_SYSTEM pairs naturally with PERSON_VS_SOCIETY).`,
+- conflictType must be structurally coherent with conflictAxis (e.g., INDIVIDUAL_VS_SYSTEM pairs naturally with PERSON_VS_SOCIETY).`
   );
 
   return [

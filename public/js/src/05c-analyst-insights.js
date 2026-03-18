@@ -75,35 +75,40 @@ function parseAnalystDataFromDom() {
 function parseInsightsContextFromDom() {
   var node = document.getElementById('insights-context');
   if (!node || typeof node.textContent !== 'string') {
-    return { actDisplayInfo: null, sceneSummary: null };
+    return { playStructureInfo: null, sceneSummary: null };
   }
 
   try {
     var parsed = JSON.parse(node.textContent);
     return parsed && typeof parsed === 'object'
       ? parsed
-      : { actDisplayInfo: null, sceneSummary: null };
+      : { playStructureInfo: null, sceneSummary: null };
   } catch (_) {
-    return { actDisplayInfo: null, sceneSummary: null };
+    return { playStructureInfo: null, sceneSummary: null };
   }
 }
 
-function getActDisplaySubtitle(actDisplayInfo) {
-  if (!actDisplayInfo) {
+function getPlayStructureFrame(context) {
+  if (!context || typeof context !== 'object') {
     return null;
   }
-  if (typeof actDisplayInfo === 'string' && actDisplayInfo.length > 0) {
-    return actDisplayInfo;
-  }
-  if (
-    typeof actDisplayInfo === 'object' &&
-    typeof actDisplayInfo.displayString === 'string' &&
-    actDisplayInfo.displayString.length > 0
-  ) {
-    return actDisplayInfo.displayString;
+
+  var playStructureInfo = context.playStructureInfo;
+  if (!playStructureInfo || typeof playStructureInfo !== 'object') {
+    return null;
   }
 
-  return null;
+  var pageStructure = playStructureInfo.pageStructure;
+  if (
+    !pageStructure ||
+    typeof pageStructure !== 'object' ||
+    typeof pageStructure.displayString !== 'string' ||
+    pageStructure.displayString.length === 0
+  ) {
+    return null;
+  }
+
+  return pageStructure;
 }
 
 function formatAnalystEnum(value) {
@@ -152,32 +157,31 @@ function renderStructureTab(ar, ctx) {
     : '';
   var completionGateValue = completionGateSatisfied ? 'SATISFIED' : 'PENDING';
   var momentum = MOMENTUM_META[ar.sceneMomentum] || MOMENTUM_META.STASIS;
-  var actDisplayInfo = ctx && typeof ctx === 'object' ? ctx.actDisplayInfo : null;
+  var pageStructure = getPlayStructureFrame(ctx);
   var actQuestion =
-    actDisplayInfo &&
-    typeof actDisplayInfo === 'object' &&
-    typeof actDisplayInfo.actQuestion === 'string' &&
-    actDisplayInfo.actQuestion.length > 0
-      ? actDisplayInfo.actQuestion
+    pageStructure &&
+    typeof pageStructure.actQuestion === 'string' &&
+    pageStructure.actQuestion.length > 0
+      ? pageStructure.actQuestion
       : '';
-  var exitCondition =
-    actDisplayInfo &&
-    typeof actDisplayInfo === 'object' &&
-    typeof actDisplayInfo.exitCondition === 'string' &&
-    actDisplayInfo.exitCondition.length > 0
-      ? actDisplayInfo.exitCondition
+  var exitCriteria =
+    pageStructure &&
+    typeof pageStructure.milestoneExitCriteria === 'string' &&
+    pageStructure.milestoneExitCriteria.length > 0
+      ? pageStructure.milestoneExitCriteria
+      : '';
+  var actEndReversal =
+    pageStructure &&
+    typeof pageStructure.actEndReversal === 'string' &&
+    pageStructure.actEndReversal.length > 0
+      ? pageStructure.actEndReversal
       : '';
 
   var html = '<details class="insights-section" open>'
     + '<summary><h4>Milestone Progress</h4></summary>'
-    + (actQuestion
-      ? "<p class=\"insights-copy\"><strong>Act's Dramatic Question:</strong> "
-        + escapeHtml(actQuestion)
-        + '</p>'
-      : '')
-    + (exitCondition
+    + (exitCriteria
       ? '<p class="insights-copy"><strong>Milestone Exit Criteria:</strong> '
-        + escapeHtml(exitCondition)
+        + escapeHtml(exitCriteria)
         + '</p>'
       : '')
     + '<div class="milestone-gauge">'
@@ -191,6 +195,22 @@ function renderStructureTab(ar, ctx) {
       ? '<p class="completion-gate-reason">' + escapeHtml(completionGateReason) + '</p>'
       : '')
     + '</details>';
+
+  if (actQuestion || actEndReversal) {
+    html += '<details class="insights-section" open>'
+      + '<summary><h4>Act Trajectory</h4></summary>'
+      + (actQuestion
+        ? "<p class=\"insights-copy\"><strong>Act's Dramatic Question:</strong> "
+          + escapeHtml(actQuestion)
+          + '</p>'
+        : '')
+      + (actEndReversal
+        ? '<p class="insights-copy"><strong>Act-End Reversal:</strong> '
+          + escapeHtml(actEndReversal)
+          + '</p>'
+        : '')
+      + '</details>';
+  }
 
   // Milestone Resolution
   if (typeof ar.milestoneResolution === 'string' && ar.milestoneResolution.length > 0) {
@@ -496,7 +516,8 @@ function renderInsightsBody(analystResult, context) {
 
   var ctx = context && typeof context === 'object' ? context : {};
   var headerHtml = '';
-  var actDisplaySubtitle = getActDisplaySubtitle(ctx.actDisplayInfo);
+  var pageStructure = getPlayStructureFrame(ctx);
+  var actDisplaySubtitle = pageStructure ? pageStructure.displayString : null;
 
   if (actDisplaySubtitle) {
     headerHtml += '<p class="insights-milestone-subtitle">' + escapeHtml(actDisplaySubtitle) + '</p>';
@@ -586,7 +607,7 @@ function createAnalystInsightsController(initialAnalystResult, initialContext) {
     : null;
   var insightsContext = initialContext && typeof initialContext === 'object'
     ? initialContext
-    : { actDisplayInfo: null, sceneSummary: null };
+    : { playStructureInfo: null, sceneSummary: null };
   var modal = document.getElementById('insights-modal');
   var modalBody = document.getElementById('insights-modal-body');
   var closeButton = document.getElementById('insights-close-btn');

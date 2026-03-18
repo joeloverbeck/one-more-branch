@@ -5,7 +5,10 @@ import {
   composeContinuationDataRules,
 } from '../../../../src/llm/prompts/system-prompt';
 import type { StructureRewriteContext } from '../../../../src/llm/structure-rewrite-types';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../../fixtures/decomposed';
+import {
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../../fixtures/decomposed';
 
 function getSystemMessage(messages: { role: string; content: string }[]): string {
   return messages.find((message) => message.role === 'system')?.content ?? '';
@@ -20,8 +23,21 @@ function getUserMessage(messages: { role: string; content: string }[]): string {
 describe('buildStructureRewritePrompt', () => {
   const baseContext: StructureRewriteContext = {
     tone: 'tactical political thriller',
-    decomposedCharacters: [buildMinimalDecomposedCharacter('A former royal scout', { rawDescription: 'A former royal scout with a forged identity' })],
-    decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'A flooded republic where cities travel on chained barges.', scope: 'global' }], rawWorldbuilding: 'A flooded republic where cities travel on chained barges.' },
+    decomposedCharacters: [
+      buildMinimalDecomposedCharacter('A former royal scout', {
+        rawDescription: 'A former royal scout with a forged identity',
+      }),
+    ],
+    decomposedWorld: {
+      facts: [
+        {
+          domain: 'geography' as const,
+          fact: 'A flooded republic where cities travel on chained barges.',
+          scope: 'global',
+        },
+      ],
+      rawWorldbuilding: 'A flooded republic where cities travel on chained barges.',
+    },
     completedBeats: [
       {
         actIndex: 0,
@@ -80,7 +96,9 @@ describe('buildStructureRewritePrompt', () => {
 
     expect(user).toContain('CANON - DO NOT CHANGE');
     expect(user).toContain('Act 1, Milestone 1 (1.1) [setup] "Sluice Flight"');
-    expect(user).toContain('Causal link: Because the protagonist leaked evidence in the prior hearing.');
+    expect(user).toContain(
+      'Causal link: Because the protagonist leaked evidence in the prior hearing.'
+    );
     expect(user).toContain('Expected gap magnitude: WIDE');
     expect(user).toContain(
       'Resolution: You escaped through maintenance sluices with the ledger intact.'
@@ -111,7 +129,10 @@ describe('buildStructureRewritePrompt', () => {
             'Tidal districts flood nightly',
             'Courts are controlled by merchant families',
           ],
-          constraintSet: ['No direct violence in tribunal halls', 'Witnesses disappear after curfew'],
+          constraintSet: [
+            'No direct violence in tribunal halls',
+            'Witnesses disappear after curfew',
+          ],
           keyInstitutions: ['Harbor Tribunal', 'Tide Guard'],
           settingScale: 'LOCAL',
           whatIfQuestion: 'What if justice requires admitting your own guilt?',
@@ -234,9 +255,7 @@ describe('buildStructureRewritePrompt', () => {
     expect(user).toContain(
       'role: "setup" | "escalation" | "turning_point" | "reflection" | "resolution"'
     );
-    expect(user).toContain(
-      'crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null'
-    );
+    expect(user).toContain('crisisType: BEST_BAD_CHOICE | IRRECONCILABLE_GOODS | null');
     expect(user).toContain('expectedGapMagnitude: NARROW | MODERATE | WIDE | CHASM | null');
   });
 

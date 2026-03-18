@@ -117,11 +117,9 @@ ${context.reconciliationFailureReasons
 
   const payoffFeedbackSection =
     context.mode === 'continuation'
-      ? buildPayoffFeedbackSection(
-          context.parentThreadPayoffAssessments ?? [],
-          undefined,
-          { includePromiseIds: false }
-        )
+      ? buildPayoffFeedbackSection(context.parentThreadPayoffAssessments ?? [], undefined, {
+          includePromiseIds: false,
+        })
       : '';
 
   const spineSection = buildSpineSection(context.spine);

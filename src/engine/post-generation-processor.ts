@@ -12,14 +12,13 @@ import {
   isDeviation,
   parsePageId,
 } from '../models';
-import type {
-  Page,
-  Story,
-  VersionedStoryStructure,
-} from '../models';
+import type { Page, Story, VersionedStoryStructure } from '../models';
 import { createInitialStructureState } from '../models/story-arc';
 import type { NpcAgenda } from '../models/state/npc-agenda';
-import type { NpcRelationship, AccumulatedNpcRelationships } from '../models/state/npc-relationship';
+import type {
+  NpcRelationship,
+  AccumulatedNpcRelationships,
+} from '../models/state/npc-relationship';
 import { createEmptyAccumulatedNpcRelationships } from '../models/state/npc-relationship';
 import { withPromiseAge } from '../models/state/index.js';
 import type { StateReconciliationResult } from './state-reconciler-types';
@@ -151,9 +150,9 @@ export async function processPostGeneration(
           : parentState!.accumulatedActiveState,
         structure: currentStructureVersion?.structure ?? story.structure ?? undefined,
         accumulatedStructureState: isOpening
-          ? (story.structure
-              ? createInitialStructureState(story.structure)
-              : createEmptyAccumulatedStructureState())
+          ? story.structure
+            ? createInitialStructureState(story.structure)
+            : createEmptyAccumulatedStructureState()
           : parentState!.structureState,
         storyBible: getLastStoryBible() ?? undefined,
         tone: story.tone,
@@ -178,9 +177,9 @@ export async function processPostGeneration(
 
   // --- Run analyst evaluation ---
   const parentStructureState = isOpening
-    ? (story.structure
-        ? createInitialStructureState(story.structure)
-        : createEmptyAccumulatedStructureState())
+    ? story.structure
+      ? createInitialStructureState(story.structure)
+      : createEmptyAccumulatedStructureState()
     : parentState!.structureState;
 
   const activeStructureForAnalyst = currentStructureVersion?.structure ?? story.structure;
@@ -298,15 +297,15 @@ export async function processPostGeneration(
     deviationInfo: rawDeviationInfo,
     structureRewriteDurationMs,
   } = await handleDeviationIfDetected({
-      result,
-      story: storyAfterSpine,
-      currentStructureVersion,
-      parentStructureState,
-      newPageId,
-      apiKey,
-      logContext,
-      onGenerationStage,
-    });
+    result,
+    story: storyAfterSpine,
+    currentStructureVersion,
+    parentStructureState,
+    newPageId,
+    apiKey,
+    logContext,
+    onGenerationStage,
+  });
 
   // Enrich deviation info with spine rewrite metadata
   const deviationInfo: DeviationInfo | undefined = rawDeviationInfo

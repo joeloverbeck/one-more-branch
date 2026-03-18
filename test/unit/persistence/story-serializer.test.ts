@@ -76,7 +76,7 @@ function buildDecomposedCharacter(): DecomposedCharacter {
       currentTension: 'Frodo doubts him',
       leverage: 'Knowledge of the ring',
     },
-    knowledgeBoundaries: 'Does not know Sauron\'s exact plans',
+    knowledgeBoundaries: "Does not know Sauron's exact plans",
     falseBeliefs: ['Saruman is still good'],
     secretsKept: ['The true nature of the Palantir'],
     decisionPattern: 'Cautious but decisive',
@@ -194,7 +194,9 @@ describe('story-serializer', () => {
       expect(result.structure!.acts[0].milestones[0].exitCondition).toBe(
         'The protagonist is drawn into the conflict.'
       );
-      expect(result.structure!.acts[0].milestones[0].secondaryEscalationType).toBe('REVELATION_SHIFT');
+      expect(result.structure!.acts[0].milestones[0].secondaryEscalationType).toBe(
+        'REVELATION_SHIFT'
+      );
       expect(result.structure!.overallTheme).toBe('Redemption');
       expect(result.structure!.anchorMoments).toEqual(createDefaultAnchorMoments(1));
       expect(result.structure!.generatedAt).toEqual(new Date('2025-01-01T12:00:00.000Z'));
@@ -229,7 +231,10 @@ describe('story-serializer', () => {
       expect(result.structureVersions).toHaveLength(1);
       expect(result.structureVersions[0].id).toBe(story.structureVersions[0].id);
       expect(result.structureVersions[0].createdAtPageId).toBe(3);
-      expect(result.structureVersions[0].preservedMilestoneIds).toEqual(['milestone-1', 'milestone-2']);
+      expect(result.structureVersions[0].preservedMilestoneIds).toEqual([
+        'milestone-1',
+        'milestone-2',
+      ]);
     });
 
     it('preserves decomposed characters', () => {
@@ -240,7 +245,9 @@ describe('story-serializer', () => {
       expect(result.decomposedCharacters).toHaveLength(1);
       const roundTripped = result.decomposedCharacters![0];
       expect(roundTripped.name).toBe(char.name);
-      expect(roundTripped.speechFingerprint.catchphrases).toEqual([...char.speechFingerprint.catchphrases]);
+      expect(roundTripped.speechFingerprint.catchphrases).toEqual([
+        ...char.speechFingerprint.catchphrases,
+      ]);
       expect(roundTripped.thematicStance).toBe(char.thematicStance);
       expect(roundTripped.protagonistRelationship).toEqual(char.protagonistRelationship);
       expect(roundTripped.falseBeliefs).toEqual([...char.falseBeliefs!]);
@@ -369,8 +376,7 @@ describe('story-serializer', () => {
                 name: 'Opening',
                 description: 'The beginning',
                 objective: 'Introduce hero',
-                causalLink:
-                  'Introduces the protagonist and launches the narrative trajectory.',
+                causalLink: 'Introduces the protagonist and launches the narrative trajectory.',
                 role: 'setup',
                 isMidpoint: false,
                 midpointType: null,

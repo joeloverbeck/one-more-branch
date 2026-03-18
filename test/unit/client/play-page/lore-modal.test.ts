@@ -79,7 +79,9 @@ describe('story lore modal', () => {
     expect(charactersPanel.style.display).not.toBe('none');
     expect(charactersPanel.textContent).toContain('Bobby Western');
 
-    const characterButton = charactersPanel.querySelector('.lore-character-name') as HTMLButtonElement;
+    const characterButton = charactersPanel.querySelector(
+      '.lore-character-name'
+    ) as HTMLButtonElement;
     const factsList = charactersPanel.querySelector('.lore-character-facts') as HTMLElement;
     expect(factsList.style.display).toBe('none');
 
@@ -134,7 +136,14 @@ describe('story lore modal', () => {
 
   it('renders tagged CanonFact objects received via AJAX choice response', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      choices: [{ text: 'Continue', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 2 }],
+      choices: [
+        {
+          text: 'Continue',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 2,
+        },
+      ],
     });
     loadAppAndInit();
 
@@ -147,7 +156,9 @@ describe('story lore modal', () => {
             id: 2,
             narrativeText: 'A new scene.',
             sceneSummary: 'Summary',
-            choices: [{ text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' }],
+            choices: [
+              { text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+            ],
             isEnding: false,
             analystResult: null,
             openThreads: [],
@@ -191,10 +202,7 @@ describe('story lore modal', () => {
 
   it('handles mixed string and object world facts gracefully', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      worldFacts: [
-        'Plain string fact',
-        { text: 'Object fact', factType: 'LAW' },
-      ],
+      worldFacts: ['Plain string fact', { text: 'Object fact', factType: 'LAW' }],
       characterCanon: {},
     });
     loadAppAndInit();
@@ -212,7 +220,14 @@ describe('story lore modal', () => {
 
   it('updates lore count/content from choice response and keeps trigger at sidebar bottom', async () => {
     document.body.innerHTML = buildPlayPageHtml({
-      choices: [{ text: 'Continue', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 2 }],
+      choices: [
+        {
+          text: 'Continue',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 2,
+        },
+      ],
     });
     loadAppAndInit();
 
@@ -225,7 +240,9 @@ describe('story lore modal', () => {
             id: 2,
             narrativeText: 'A new branch unfolds.',
             sceneSummary: 'Summary',
-            choices: [{ text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' }],
+            choices: [
+              { text: 'Next', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+            ],
             isEnding: false,
             analystResult: null,
             openThreads: [],

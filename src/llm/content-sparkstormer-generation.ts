@@ -12,11 +12,7 @@ import { buildContentSparkstormerSchema } from './schemas/content-sparkstormer-s
 
 function validateSpark(value: unknown, index: number): ContentSpark {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new LLMError(
-      `sparks[${index}] must be an object`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`sparks[${index}] must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const data = value as Record<string, unknown>;
@@ -25,7 +21,7 @@ function validateSpark(value: unknown, index: number): ContentSpark {
     throw new LLMError(
       `sparks[${index}].sparkId must be a non-empty string`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -33,7 +29,7 @@ function validateSpark(value: unknown, index: number): ContentSpark {
     throw new LLMError(
       `sparks[${index}].contentKind must be a valid ContentKind`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -41,7 +37,7 @@ function validateSpark(value: unknown, index: number): ContentSpark {
     throw new LLMError(
       `sparks[${index}].spark must be a non-empty string`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -49,7 +45,7 @@ function validateSpark(value: unknown, index: number): ContentSpark {
     throw new LLMError(
       `sparks[${index}].imageSeed must be a non-empty string`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -61,7 +57,7 @@ function validateSpark(value: unknown, index: number): ContentSpark {
     throw new LLMError(
       `sparks[${index}].collisionTags must be a non-empty array of non-empty strings`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -81,22 +77,14 @@ function validateSpark(value: unknown, index: number): ContentSpark {
 
 export function parseSparkstormerResponse(parsed: unknown): readonly ContentSpark[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError(
-      'Sparkstormer response must be an object',
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError('Sparkstormer response must be an object', 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const data = parsed as Record<string, unknown>;
   const sparks = data['sparks'];
 
   if (!Array.isArray(sparks) || sparks.length === 0) {
-    throw new LLMError(
-      'sparks must be a non-empty array',
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError('sparks must be a non-empty array', 'STRUCTURE_PARSE_ERROR', true);
   }
 
   return sparks.map((spark, index) => validateSpark(spark, index));
@@ -105,7 +93,7 @@ export function parseSparkstormerResponse(parsed: unknown): readonly ContentSpar
 export async function generateSparks(
   context: SparkstormerContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<SparkstormerResult> {
   const messages = buildSparkstormerPrompt(context);
   const result = await runLlmStage({

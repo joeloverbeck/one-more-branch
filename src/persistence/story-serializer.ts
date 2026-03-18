@@ -47,7 +47,9 @@ const VALID_WORLD_FACT_TYPES: ReadonlySet<string> = new Set([
   'MYSTERY',
 ]);
 
-function parsePersistedAnchorMoments(data: StoryStructureFileData): StoryStructure['anchorMoments'] {
+function parsePersistedAnchorMoments(
+  data: StoryStructureFileData
+): StoryStructure['anchorMoments'] {
   return normalizeAnchorMoments(data.anchorMoments, data.acts.length);
 }
 
@@ -80,23 +82,23 @@ function structureToFileData(structure: StoryStructure): StoryStructureFileData 
         promiseTargets: [...normalizedActFields.promiseTargets],
         obligationTargets: [...normalizedActFields.obligationTargets],
         milestones: act.milestones.map((milestone) => ({
-        id: milestone.id,
-        name: milestone.name,
-        description: milestone.description,
-        objective: milestone.objective,
-        causalLink: milestone.causalLink,
-        exitCondition: milestone.exitCondition,
-        role: milestone.role,
-        escalationType: milestone.escalationType,
-        secondaryEscalationType: milestone.secondaryEscalationType,
-        crisisType: milestone.crisisType,
-        expectedGapMagnitude: milestone.expectedGapMagnitude,
-        isMidpoint: milestone.isMidpoint === true,
-        midpointType: parseMidpointType(milestone.midpointType) ?? null,
-        uniqueScenarioHook: milestone.uniqueScenarioHook,
-        approachVectors: milestone.approachVectors ? [...milestone.approachVectors] : null,
-        setpieceSourceIndex: milestone.setpieceSourceIndex,
-        obligatorySceneTag: milestone.obligatorySceneTag,
+          id: milestone.id,
+          name: milestone.name,
+          description: milestone.description,
+          objective: milestone.objective,
+          causalLink: milestone.causalLink,
+          exitCondition: milestone.exitCondition,
+          role: milestone.role,
+          escalationType: milestone.escalationType,
+          secondaryEscalationType: milestone.secondaryEscalationType,
+          crisisType: milestone.crisisType,
+          expectedGapMagnitude: milestone.expectedGapMagnitude,
+          isMidpoint: milestone.isMidpoint === true,
+          midpointType: parseMidpointType(milestone.midpointType) ?? null,
+          uniqueScenarioHook: milestone.uniqueScenarioHook,
+          approachVectors: milestone.approachVectors ? [...milestone.approachVectors] : null,
+          setpieceSourceIndex: milestone.setpieceSourceIndex,
+          obligatorySceneTag: milestone.obligatorySceneTag,
         })),
       };
     }),
@@ -285,9 +287,7 @@ export function serializeStory(story: Story): StoryFileData {
             conflictPriority: char.conflictPriority,
             appearance: char.appearance,
             rawDescription: char.rawDescription,
-            ...(char.stakes && char.stakes.length > 0
-              ? { stakes: [...char.stakes] }
-              : {}),
+            ...(char.stakes && char.stakes.length > 0 ? { stakes: [...char.stakes] } : {}),
             ...(char.pressurePoint ? { pressurePoint: char.pressurePoint } : {}),
             ...(char.personalDilemmas && char.personalDilemmas.length > 0
               ? { personalDilemmas: [...char.personalDilemmas] }
@@ -311,14 +311,29 @@ export function serializeStory(story: Story): StoryFileData {
               ...(f.thematicTag ? { thematicTag: f.thematicTag } : {}),
               ...(f.sensoryHook ? { sensoryHook: f.sensoryHook } : {}),
               ...(f.exampleEvidence ? { exampleEvidence: f.exampleEvidence } : {}),
-              ...(f.tensionWithIds && f.tensionWithIds.length > 0 ? { tensionWithIds: [...f.tensionWithIds] } : {}),
-              ...(f.implicationOfIds && f.implicationOfIds.length > 0 ? { implicationOfIds: [...f.implicationOfIds] } : {}),
-              ...(f.storyFunctions && f.storyFunctions.length > 0 ? { storyFunctions: [...f.storyFunctions] } : {}),
-              ...(f.sceneAffordances && f.sceneAffordances.length > 0 ? { sceneAffordances: [...f.sceneAffordances] } : {}),
+              ...(f.tensionWithIds && f.tensionWithIds.length > 0
+                ? { tensionWithIds: [...f.tensionWithIds] }
+                : {}),
+              ...(f.implicationOfIds && f.implicationOfIds.length > 0
+                ? { implicationOfIds: [...f.implicationOfIds] }
+                : {}),
+              ...(f.storyFunctions && f.storyFunctions.length > 0
+                ? { storyFunctions: [...f.storyFunctions] }
+                : {}),
+              ...(f.sceneAffordances && f.sceneAffordances.length > 0
+                ? { sceneAffordances: [...f.sceneAffordances] }
+                : {}),
             })),
-            ...(story.decomposedWorld.rawWorldbuilding ? { rawWorldbuilding: story.decomposedWorld.rawWorldbuilding } : {}),
-            ...(story.decomposedWorld.worldLogline ? { worldLogline: story.decomposedWorld.worldLogline } : {}),
-            ...(story.decomposedWorld.openQuestions && story.decomposedWorld.openQuestions.length > 0 ? { openQuestions: [...story.decomposedWorld.openQuestions] } : {}),
+            ...(story.decomposedWorld.rawWorldbuilding
+              ? { rawWorldbuilding: story.decomposedWorld.rawWorldbuilding }
+              : {}),
+            ...(story.decomposedWorld.worldLogline
+              ? { worldLogline: story.decomposedWorld.worldLogline }
+              : {}),
+            ...(story.decomposedWorld.openQuestions &&
+            story.decomposedWorld.openQuestions.length > 0
+              ? { openQuestions: [...story.decomposedWorld.openQuestions] }
+              : {}),
           },
         }
       : {}),
@@ -414,54 +429,48 @@ export function deserializeStory(data: StoryFileData): Story {
     premisePromises: [...(data.premisePromises ?? [])],
     ...(data.decomposedCharacters
       ? {
-          decomposedCharacters: data.decomposedCharacters.map(
-            (char): DecomposedCharacter => {
-              // Auto-migrate legacy motivations → superObjective
-              const superObjective = char.superObjective ?? char.motivations;
-              return {
-                name: char.name,
-                speechFingerprint: {
-                  catchphrases: [...char.speechFingerprint.catchphrases],
-                  vocabularyProfile: char.speechFingerprint.vocabularyProfile,
-                  sentencePatterns: char.speechFingerprint.sentencePatterns,
-                  verbalTics: [...char.speechFingerprint.verbalTics],
-                  dialogueSamples: [...char.speechFingerprint.dialogueSamples],
-                  metaphorFrames: char.speechFingerprint.metaphorFrames,
-                  antiExamples: [...char.speechFingerprint.antiExamples],
-                  discourseMarkers: [...char.speechFingerprint.discourseMarkers],
-                  registerShifts: char.speechFingerprint.registerShifts,
-                },
-                coreTraits: [...char.coreTraits],
-                ...(superObjective ? { superObjective } : {}),
-                thematicStance: char.thematicStance,
-                protagonistRelationship: char.protagonistRelationship
-                  ? { ...char.protagonistRelationship }
-                  : null,
-                knowledgeBoundaries: char.knowledgeBoundaries,
-                ...(char.falseBeliefs ? { falseBeliefs: [...char.falseBeliefs] } : {}),
-                ...(char.secretsKept ? { secretsKept: [...char.secretsKept] } : {}),
-                decisionPattern: char.decisionPattern,
-                coreBeliefs: [...char.coreBeliefs],
-                conflictPriority: char.conflictPriority,
-                appearance: char.appearance,
-                rawDescription: char.rawDescription,
-                ...(char.stakes && char.stakes.length > 0
-                  ? { stakes: [...char.stakes] }
-                  : {}),
-                ...(char.pressurePoint ? { pressurePoint: char.pressurePoint } : {}),
-                ...(char.personalDilemmas && char.personalDilemmas.length > 0
-                  ? { personalDilemmas: [...char.personalDilemmas] }
-                  : {}),
-                ...(isEmotionSalience(char.emotionSalience)
-                  ? { emotionSalience: char.emotionSalience }
-                  : {}),
-                ...(isStoryFunction(char.storyFunction)
-                  ? { storyFunction: char.storyFunction }
-                  : {}),
-                ...(char.narrativeRole ? { narrativeRole: char.narrativeRole } : {}),
-              };
-            }
-          ),
+          decomposedCharacters: data.decomposedCharacters.map((char): DecomposedCharacter => {
+            // Auto-migrate legacy motivations → superObjective
+            const superObjective = char.superObjective ?? char.motivations;
+            return {
+              name: char.name,
+              speechFingerprint: {
+                catchphrases: [...char.speechFingerprint.catchphrases],
+                vocabularyProfile: char.speechFingerprint.vocabularyProfile,
+                sentencePatterns: char.speechFingerprint.sentencePatterns,
+                verbalTics: [...char.speechFingerprint.verbalTics],
+                dialogueSamples: [...char.speechFingerprint.dialogueSamples],
+                metaphorFrames: char.speechFingerprint.metaphorFrames,
+                antiExamples: [...char.speechFingerprint.antiExamples],
+                discourseMarkers: [...char.speechFingerprint.discourseMarkers],
+                registerShifts: char.speechFingerprint.registerShifts,
+              },
+              coreTraits: [...char.coreTraits],
+              ...(superObjective ? { superObjective } : {}),
+              thematicStance: char.thematicStance,
+              protagonistRelationship: char.protagonistRelationship
+                ? { ...char.protagonistRelationship }
+                : null,
+              knowledgeBoundaries: char.knowledgeBoundaries,
+              ...(char.falseBeliefs ? { falseBeliefs: [...char.falseBeliefs] } : {}),
+              ...(char.secretsKept ? { secretsKept: [...char.secretsKept] } : {}),
+              decisionPattern: char.decisionPattern,
+              coreBeliefs: [...char.coreBeliefs],
+              conflictPriority: char.conflictPriority,
+              appearance: char.appearance,
+              rawDescription: char.rawDescription,
+              ...(char.stakes && char.stakes.length > 0 ? { stakes: [...char.stakes] } : {}),
+              ...(char.pressurePoint ? { pressurePoint: char.pressurePoint } : {}),
+              ...(char.personalDilemmas && char.personalDilemmas.length > 0
+                ? { personalDilemmas: [...char.personalDilemmas] }
+                : {}),
+              ...(isEmotionSalience(char.emotionSalience)
+                ? { emotionSalience: char.emotionSalience }
+                : {}),
+              ...(isStoryFunction(char.storyFunction) ? { storyFunction: char.storyFunction } : {}),
+              ...(char.narrativeRole ? { narrativeRole: char.narrativeRole } : {}),
+            };
+          }),
         }
       : {}),
     ...(data.decomposedWorld
@@ -477,14 +486,26 @@ export function deserializeStory(data: StoryFileData): Story {
               ...(f.thematicTag ? { thematicTag: f.thematicTag } : {}),
               ...(f.sensoryHook ? { sensoryHook: f.sensoryHook } : {}),
               ...(f.exampleEvidence ? { exampleEvidence: f.exampleEvidence } : {}),
-              ...(f.tensionWithIds && f.tensionWithIds.length > 0 ? { tensionWithIds: f.tensionWithIds } : {}),
-              ...(f.implicationOfIds && f.implicationOfIds.length > 0 ? { implicationOfIds: f.implicationOfIds } : {}),
+              ...(f.tensionWithIds && f.tensionWithIds.length > 0
+                ? { tensionWithIds: f.tensionWithIds }
+                : {}),
+              ...(f.implicationOfIds && f.implicationOfIds.length > 0
+                ? { implicationOfIds: f.implicationOfIds }
+                : {}),
               ...(f.storyFunctions ? { storyFunctions: f.storyFunctions } : {}),
-              ...(f.sceneAffordances && f.sceneAffordances.length > 0 ? { sceneAffordances: f.sceneAffordances } : {}),
+              ...(f.sceneAffordances && f.sceneAffordances.length > 0
+                ? { sceneAffordances: f.sceneAffordances }
+                : {}),
             })),
-            ...(data.decomposedWorld.rawWorldbuilding ? { rawWorldbuilding: data.decomposedWorld.rawWorldbuilding } : {}),
-            ...(data.decomposedWorld.worldLogline ? { worldLogline: data.decomposedWorld.worldLogline } : {}),
-            ...(data.decomposedWorld.openQuestions && data.decomposedWorld.openQuestions.length > 0 ? { openQuestions: data.decomposedWorld.openQuestions } : {}),
+            ...(data.decomposedWorld.rawWorldbuilding
+              ? { rawWorldbuilding: data.decomposedWorld.rawWorldbuilding }
+              : {}),
+            ...(data.decomposedWorld.worldLogline
+              ? { worldLogline: data.decomposedWorld.worldLogline }
+              : {}),
+            ...(data.decomposedWorld.openQuestions && data.decomposedWorld.openQuestions.length > 0
+              ? { openQuestions: data.decomposedWorld.openQuestions }
+              : {}),
           } as DecomposedWorld,
         }
       : {}),

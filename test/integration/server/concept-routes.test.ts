@@ -22,7 +22,9 @@ const mockDevelopSingleConcept = jest.fn();
 const mockStressTestConcept = jest.fn();
 
 jest.mock('@/server/services/concept-service', () => ({
-  ConceptEvaluationStageError: class extends Error { name = 'ConceptEvaluationStageError'; },
+  ConceptEvaluationStageError: class extends Error {
+    name = 'ConceptEvaluationStageError';
+  },
   createConceptService: jest.fn(),
   conceptService: {
     ideateConcepts: jest.fn(),
@@ -56,7 +58,9 @@ type RouteLayer = {
   route?: {
     path?: string;
     methods?: Record<string, boolean>;
-    stack?: Array<{ handle: (req: Request, res: Response, next: NextFunction) => Promise<void> | void }>;
+    stack?: Array<{
+      handle: (req: Request, res: Response, next: NextFunction) => Promise<void> | void;
+    }>;
   };
 };
 
@@ -65,7 +69,7 @@ function getRouteHandler(
   path: string
 ): (req: Request, res: Response, next: NextFunction) => Promise<void> | void {
   const layer = (conceptRoutes.stack as unknown as RouteLayer[]).find(
-    (item) => item.route?.path === path && item.route?.methods?.[method],
+    (item) => item.route?.path === path && item.route?.methods?.[method]
   );
   const handler = layer?.route?.stack?.[0]?.handle;
 
@@ -193,11 +197,14 @@ describe('Concept Route Integration', () => {
       expect.objectContaining({
         title: 'Concepts - One More Branch',
         concepts: savedConcepts,
-      }),
+      })
     );
 
     const renderCalls = render.mock.calls as Array<
-      [string, { genreGroups: Array<{ genre: string; displayLabel: string; concepts: Array<unknown> }> }]
+      [
+        string,
+        { genreGroups: Array<{ genre: string; displayLabel: string; concepts: Array<unknown> }> },
+      ]
     >;
     const viewModel = renderCalls[0]?.[1];
     expect(viewModel).toBeDefined();
@@ -205,7 +212,9 @@ describe('Concept Route Integration', () => {
       throw new Error('Expected view model to be passed to render');
     }
     expect(Array.isArray(viewModel.genreGroups)).toBe(true);
-    expect(Object.fromEntries(viewModel.genreGroups.map((group) => [group.genre, group.concepts.length]))).toEqual({
+    expect(
+      Object.fromEntries(viewModel.genreGroups.map((group) => [group.genre, group.concepts.length]))
+    ).toEqual({
       DARK_FANTASY: 2,
       SPACE_OPERA: 1,
     });
@@ -278,7 +287,7 @@ describe('Concept Route Integration', () => {
         },
       } as Request,
       { status, json } as unknown as Response,
-      noopNext,
+      noopNext
     );
     await flushPromises();
 
@@ -286,7 +295,7 @@ describe('Concept Route Integration', () => {
       expect.objectContaining({
         seed: mockSeed,
         apiKey: 'valid-key-12345',
-      }),
+      })
     );
     expect(progressStartSpy).toHaveBeenCalledWith('route-progress-3', 'concept-generation');
     expect(progressCompleteSpy).toHaveBeenCalledWith('route-progress-3');
@@ -310,7 +319,7 @@ describe('Concept Route Integration', () => {
         },
       } as Request,
       { status, json } as unknown as Response,
-      noopNext,
+      noopNext
     );
     await flushPromises();
 
@@ -335,7 +344,7 @@ describe('Concept Route Integration', () => {
         },
       } as Request,
       { status, json } as unknown as Response,
-      noopNext,
+      noopNext
     );
     await flushPromises();
 
@@ -367,14 +376,14 @@ describe('Concept Route Integration', () => {
         },
       } as Request,
       { status, json } as unknown as Response,
-      noopNext,
+      noopNext
     );
     await flushPromises();
 
     expect(mockedSaveConcept).toHaveBeenCalledWith(
       expect.objectContaining({
         name: longHook,
-      }),
+      })
     );
     expect(status).not.toHaveBeenCalled();
     expect(json).toHaveBeenCalledTimes(1);
@@ -410,7 +419,7 @@ describe('Concept Route Integration', () => {
     mockedUpdateConcept.mockImplementation(
       (_id: string, updater: (existing: typeof savedConcept) => typeof savedConcept) => {
         return Promise.resolve(updater(savedConcept));
-      },
+      }
     );
 
     const status = jest.fn().mockReturnThis();
@@ -424,7 +433,7 @@ describe('Concept Route Integration', () => {
         },
       } as unknown as Request,
       { status, json } as unknown as Response,
-      noopNext,
+      noopNext
     );
     await flushPromises();
 
@@ -433,7 +442,7 @@ describe('Concept Route Integration', () => {
         concept: createConceptSpecFixture(1),
         scores: createConceptScoresFixture(),
         weaknesses: ['weak urgency'],
-      }),
+      })
     );
     expect(status).not.toHaveBeenCalled();
     expect(json).toHaveBeenCalledWith(
@@ -442,16 +451,16 @@ describe('Concept Route Integration', () => {
         hardenedConcept: stressResult.hardenedConcept,
         driftRisks: stressResult.driftRisks,
         playerBreaks: stressResult.playerBreaks,
-      }),
+      })
     );
 
     const updaterArg = mockedUpdateConcept.mock.calls[0]![1] as (
-      existing: typeof savedConcept,
+      existing: typeof savedConcept
     ) => Record<string, unknown>;
     const updatedRecord = updaterArg(savedConcept);
     expect(updatedRecord['preHardenedConcept']).toEqual(savedConcept.evaluatedConcept);
     expect((updatedRecord['evaluatedConcept'] as Record<string, unknown>)['concept']).toEqual(
-      stressResult.hardenedConcept,
+      stressResult.hardenedConcept
     );
   });
 });

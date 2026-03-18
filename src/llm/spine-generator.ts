@@ -78,7 +78,7 @@ async function fetchStage<T>(
   maxTokens: number,
   schema: JsonSchema,
   stageName: string,
-  parse: (parsed: unknown) => T,
+  parse: (parsed: unknown) => T
 ): Promise<{ result: T; rawResponse: string }> {
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
@@ -130,11 +130,7 @@ async function fetchStage<T>(
 
 function parseFoundation(raw: unknown, index: number): SpineFoundation {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
-    throw new LLMError(
-      `Foundation ${index + 1} must be an object`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`Foundation ${index + 1} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const data = raw as Record<string, unknown>;
@@ -143,7 +139,7 @@ function parseFoundation(raw: unknown, index: number): SpineFoundation {
     throw new LLMError(
       `Foundation ${index + 1} invalid conflictAxis: ${String(data['conflictAxis'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -151,7 +147,7 @@ function parseFoundation(raw: unknown, index: number): SpineFoundation {
     throw new LLMError(
       `Foundation ${index + 1} invalid characterArcType: ${String(data['characterArcType'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -197,14 +193,18 @@ function parseFoundationResponse(parsed: unknown): readonly SpineFoundation[] {
 
   const data = parsed as Record<string, unknown>;
   if (!Array.isArray(data['foundations'])) {
-    throw new LLMError('Foundation response missing foundations array', 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      'Foundation response missing foundations array',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   if (data['foundations'].length < 5 || data['foundations'].length > 6) {
     throw new LLMError(
       `Foundation response must have 5-6 foundations (received: ${data['foundations'].length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -225,11 +225,7 @@ interface ArcEngineElaboration {
 
 function parseArcEngineElaboration(raw: unknown, index: number): ArcEngineElaboration {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
-    throw new LLMError(
-      `Arc engine ${index + 1} must be an object`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`Arc engine ${index + 1} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const data = raw as Record<string, unknown>;
@@ -238,7 +234,7 @@ function parseArcEngineElaboration(raw: unknown, index: number): ArcEngineElabor
     throw new LLMError(
       `Arc engine ${index + 1} invalid storySpineType: ${String(data['storySpineType'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -246,7 +242,7 @@ function parseArcEngineElaboration(raw: unknown, index: number): ArcEngineElabor
     throw new LLMError(
       `Arc engine ${index + 1} invalid conflictType: ${String(data['conflictType'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -255,7 +251,7 @@ function parseArcEngineElaboration(raw: unknown, index: number): ArcEngineElabor
     throw new LLMError(
       `Arc engine ${index + 1} missing protagonistNeedVsWant`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   const nw = needVsWant as Record<string, unknown>;
@@ -263,14 +259,14 @@ function parseArcEngineElaboration(raw: unknown, index: number): ArcEngineElabor
     throw new LLMError(
       `Arc engine ${index + 1} protagonistNeedVsWant missing need/want`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   if (!isNeedWantDynamic(nw['dynamic'])) {
     throw new LLMError(
       `Arc engine ${index + 1} invalid need-want dynamic: ${String(nw['dynamic'])}`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -287,7 +283,7 @@ function parseArcEngineElaboration(raw: unknown, index: number): ArcEngineElabor
 
 function parseArcEngineResponse(
   parsed: unknown,
-  expectedCount: number,
+  expectedCount: number
 ): readonly ArcEngineElaboration[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError('Arc engine response must be an object', 'STRUCTURE_PARSE_ERROR', true);
@@ -298,7 +294,7 @@ function parseArcEngineResponse(
     throw new LLMError(
       'Arc engine response missing elaborations array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -306,7 +302,7 @@ function parseArcEngineResponse(
     throw new LLMError(
       `Arc engine response must have exactly ${expectedCount} elaborations (received: ${data['elaborations'].length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -326,11 +322,7 @@ interface SynthesisResult {
 
 function parseSynthesis(raw: unknown, index: number): SynthesisResult {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
-    throw new LLMError(
-      `Synthesis ${index + 1} must be an object`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`Synthesis ${index + 1} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const data = raw as Record<string, unknown>;
@@ -339,7 +331,7 @@ function parseSynthesis(raw: unknown, index: number): SynthesisResult {
     throw new LLMError(
       `Synthesis ${index + 1} missing centralDramaticQuestion`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -348,7 +340,7 @@ function parseSynthesis(raw: unknown, index: number): SynthesisResult {
     throw new LLMError(
       `Synthesis ${index + 1} missing primaryAntagonisticForce`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   const af = antag as Record<string, unknown>;
@@ -356,7 +348,7 @@ function parseSynthesis(raw: unknown, index: number): SynthesisResult {
     throw new LLMError(
       `Synthesis ${index + 1} primaryAntagonisticForce missing fields`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -378,7 +370,7 @@ function parseSynthesis(raw: unknown, index: number): SynthesisResult {
 
 function parseSynthesisResponse(
   parsed: unknown,
-  expectedCount: number,
+  expectedCount: number
 ): readonly SynthesisResult[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError('Synthesis response must be an object', 'STRUCTURE_PARSE_ERROR', true);
@@ -386,18 +378,14 @@ function parseSynthesisResponse(
 
   const data = parsed as Record<string, unknown>;
   if (!Array.isArray(data['syntheses'])) {
-    throw new LLMError(
-      'Synthesis response missing syntheses array',
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError('Synthesis response missing syntheses array', 'STRUCTURE_PARSE_ERROR', true);
   }
 
   if (data['syntheses'].length !== expectedCount) {
     throw new LLMError(
       `Synthesis response must have exactly ${expectedCount} syntheses (received: ${data['syntheses'].length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -409,7 +397,7 @@ function parseSynthesisResponse(
 function assembleSpineOptions(
   foundations: readonly SpineFoundation[],
   arcEngines: readonly ArcEngineElaboration[],
-  syntheses: readonly SynthesisResult[],
+  syntheses: readonly SynthesisResult[]
 ): readonly SpineOption[] {
   return foundations.map((foundation, i) => {
     const arcEngine = arcEngines[i]!;
@@ -432,7 +420,7 @@ function assembleSpineOptions(
 
 function mergeFoundationAndArcEngine(
   foundation: SpineFoundation,
-  arcEngine: ArcEngineElaboration,
+  arcEngine: ArcEngineElaboration
 ): SpineArcEngine {
   return {
     ...foundation,
@@ -448,7 +436,7 @@ export async function generateStorySpines(
   context: SpinePromptContext,
   apiKey: string,
   options?: Partial<GenerationOptions>,
-  callbacks?: SpinePipelineCallbacks,
+  callbacks?: SpinePipelineCallbacks
 ): Promise<SpineGenerationResult> {
   const config = getConfig().llm;
   const temperature = options?.temperature ?? config.temperature;
@@ -458,7 +446,7 @@ export async function generateStorySpines(
   // Compute protagonist summary once for downstream stages
   const protagonistSummary = context.decomposedCharacters?.[0]
     ? formatStandaloneCharacterSummary(context.decomposedCharacters[0])
-    : context.characterConcept ?? '';
+    : (context.characterConcept ?? '');
 
   // --- Stage 1: Thematic Foundation Ideation ---
   callbacks?.onStageStarted?.('GENERATING_SPINE_FOUNDATION');
@@ -477,11 +465,11 @@ export async function generateStorySpines(
           maxTokens,
           SPINE_FOUNDATION_SCHEMA,
           'spineFoundation',
-          parseFoundationResponse,
+          parseFoundationResponse
         ),
       foundationModel,
-      'spineFoundation',
-    ),
+      'spineFoundation'
+    )
   );
   logResponse(logger, 'spineFoundation', foundationResult.rawResponse);
   rawResponses.push(foundationResult.rawResponse);
@@ -512,11 +500,11 @@ export async function generateStorySpines(
           maxTokens,
           SPINE_ARC_ENGINE_SCHEMA,
           'spineArcEngine',
-          (parsed) => parseArcEngineResponse(parsed, foundations.length),
+          (parsed) => parseArcEngineResponse(parsed, foundations.length)
         ),
       arcEngineModel,
-      'spineArcEngine',
-    ),
+      'spineArcEngine'
+    )
   );
   logResponse(logger, 'spineArcEngine', arcEngineResult.rawResponse);
   rawResponses.push(arcEngineResult.rawResponse);
@@ -548,11 +536,11 @@ export async function generateStorySpines(
           maxTokens,
           SPINE_SYNTHESIS_SCHEMA,
           'spineSynthesis',
-          (parsed) => parseSynthesisResponse(parsed, foundations.length),
+          (parsed) => parseSynthesisResponse(parsed, foundations.length)
         ),
       synthesisModel,
-      'spineSynthesis',
-    ),
+      'spineSynthesis'
+    )
   );
   logResponse(logger, 'spineSynthesis', synthesisResult.rawResponse);
   rawResponses.push(synthesisResult.rawResponse);

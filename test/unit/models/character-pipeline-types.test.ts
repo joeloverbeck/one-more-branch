@@ -2,7 +2,10 @@ import {
   isRelationshipArchetype,
   CHARACTER_DEV_STAGE_NAMES,
 } from '../../../src/models/character-pipeline-types.js';
-import { PipelineRelationshipType, RelationshipValence } from '../../../src/models/character-enums.js';
+import {
+  PipelineRelationshipType,
+  RelationshipValence,
+} from '../../../src/models/character-enums.js';
 
 describe('character-pipeline-types', () => {
   describe('isRelationshipArchetype', () => {

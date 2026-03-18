@@ -145,7 +145,6 @@ describe('opening data rules composition', () => {
       expect(rules).not.toContain('OPENING CANON QUALITY:');
     });
   });
-
 });
 
 describe('continuation data rules composition', () => {

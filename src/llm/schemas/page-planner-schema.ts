@@ -35,7 +35,7 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
         isEnding: {
           type: 'boolean',
           description:
-            'True only when this scene is the story\'s final conclusion. Default to false.',
+            "True only when this scene is the story's final conclusion. Default to false.",
         },
       },
       required: [...PAGE_PLANNER_REQUIRED_FIELDS],

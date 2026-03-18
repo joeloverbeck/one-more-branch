@@ -31,7 +31,7 @@ export interface LlmRouteErrorResult {
 
 export function buildLlmRouteErrorResult(
   error: LLMError,
-  options: BuildLlmRouteErrorOptions = {},
+  options: BuildLlmRouteErrorOptions = {}
 ): LlmRouteErrorResult {
   const publicMessage = formatLLMError(error);
   const includeDebug = options.includeDebug ?? process.env['NODE_ENV'] !== 'production';

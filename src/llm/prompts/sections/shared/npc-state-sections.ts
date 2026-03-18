@@ -26,9 +26,7 @@ ${lines.join('\n\n')}
 `;
 }
 
-export function buildNpcRelationshipsSection(
-  relationships?: AccumulatedNpcRelationships
-): string {
+export function buildNpcRelationshipsSection(relationships?: AccumulatedNpcRelationships): string {
   if (!relationships) {
     return '';
   }

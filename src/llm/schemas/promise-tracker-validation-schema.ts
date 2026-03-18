@@ -11,9 +11,7 @@ const PromiseTypeSchema = z
   ])
   .catch('FORESHADOWING');
 
-const PromiseScopeSchema = z
-  .enum(['SCENE', 'BEAT', 'ACT', 'STORY'])
-  .catch('BEAT');
+const PromiseScopeSchema = z.enum(['SCENE', 'BEAT', 'ACT', 'STORY']).catch('BEAT');
 
 const UrgencySchema = z.enum(['LOW', 'MEDIUM', 'HIGH']).catch('MEDIUM');
 

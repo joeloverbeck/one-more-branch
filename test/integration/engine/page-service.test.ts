@@ -19,11 +19,7 @@ import {
   updateStoryStructure,
 } from '@/models';
 import { storage } from '@/persistence';
-import {
-  generateFirstPage,
-  generateNextPage,
-  getOrGeneratePage,
-} from '@/engine';
+import { generateFirstPage, generateNextPage, getOrGeneratePage } from '@/engine';
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StateReconciliationResult } from '@/engine/state-reconciler-types';
 import { createInitialStructureState } from '@/models/story-arc';
@@ -44,7 +40,10 @@ import {
   createMockProtagonistAffect,
   createMockStoryStructure,
 } from '../../fixtures/llm-results';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
+import {
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../fixtures/decomposed';
 import type { Story, CreateStoryData } from '@/models/story';
 import type { StorySpine } from '@/models/story-spine';
 import type { NpcAgenda } from '@/models/state/npc-agenda';
@@ -120,7 +119,9 @@ const TEST_PREFIX = 'TEST PGSVC-INT page-service integration';
 function createTestStory(data: CreateStoryData): Story {
   return {
     ...createStory(data),
-    decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist', { rawDescription: data.characterConcept })],
+    decomposedCharacters: [
+      buildMinimalDecomposedCharacter('Protagonist', { rawDescription: data.characterConcept }),
+    ],
     decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
   };
 }
@@ -244,7 +245,11 @@ function buildOpeningResult(): ReconciliationWriterPayload {
     ...createMockPageWriterResult({
       narrative: 'You step into the fog-shrouded city as whispers follow your every step.',
       choices: [
-        { text: 'Follow the whispers', choiceType: 'INTERVENE', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
+        {
+          text: 'Follow the whispers',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+        },
         {
           text: 'Seek shelter in the tavern',
           choiceType: 'INVESTIGATE',
@@ -286,7 +291,9 @@ function buildOpeningResult(): ReconciliationWriterPayload {
   };
 }
 
-function buildContinuationResult(overrides?: Partial<PageWriterResult>): ReconciliationWriterPayload {
+function buildContinuationResult(
+  overrides?: Partial<PageWriterResult>
+): ReconciliationWriterPayload {
   return {
     ...createMockPageWriterResult({
       narrative: 'The whispers lead you deeper into the maze of alleys.',
@@ -732,7 +739,10 @@ describe('page-service integration', () => {
       expect(page.inventoryChanges.added).toContain('Weathered map');
 
       // Verify canon updates
-      expect(updatedStory.globalCanon).toContainEqual({ text: 'The city fog carries voices of the dead', factType: 'LAW' });
+      expect(updatedStory.globalCanon).toContainEqual({
+        text: 'The city fog carries voices of the dead',
+        factType: 'LAW',
+      });
       expect(updatedStory.globalCharacterCanon['The Watcher']).toContain(
         'Observes from the bell tower'
       );
@@ -786,7 +796,6 @@ describe('page-service integration', () => {
             stateIntents: pagePlan.stateIntents,
             writerBrief: pagePlan.writerBrief,
             dramaticQuestion: pagePlan.dramaticQuestion,
-  
           }),
         }),
         expect.any(Object)
@@ -798,7 +807,6 @@ describe('page-service integration', () => {
           stateIntents: pagePlan.stateIntents,
           writerBrief: pagePlan.writerBrief,
           dramaticQuestion: pagePlan.dramaticQuestion,
-
         }),
         expect.objectContaining({
           narrative: expect.any(String),
@@ -859,7 +867,10 @@ describe('page-service integration', () => {
 
       mockedGenerateOpeningPage.mockResolvedValue({
         ...buildOpeningResult(),
-        newCanonFacts: [{ text: 'Fact One', factType: 'LAW' }, { text: 'Fact Two', factType: 'LAW' }],
+        newCanonFacts: [
+          { text: 'Fact One', factType: 'LAW' },
+          { text: 'Fact Two', factType: 'LAW' },
+        ],
         newCharacterCanonFacts: {
           Hero: ['Has a scar'],
           Villain: ['Wears a mask'],
@@ -992,7 +1003,6 @@ describe('page-service integration', () => {
 
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
-
           accumulatedInventory: expect.arrayContaining([
             expect.objectContaining({ text: 'Torch' }),
           ]),
@@ -1002,7 +1012,6 @@ describe('page-service integration', () => {
           ]),
 
           accumulatedCharacterState: expect.objectContaining({
-
             Companion: expect.arrayContaining([expect.objectContaining({ text: 'Loyal' })]),
           }),
         }),
@@ -1011,9 +1020,7 @@ describe('page-service integration', () => {
           apiKey: 'test-api-key',
 
           writerValidationContext: expect.objectContaining({
-
             removableIds: expect.objectContaining({
-
               threats: expect.any(Array),
 
               constraints: expect.any(Array),
@@ -1201,7 +1208,6 @@ describe('page-service integration', () => {
           stateIntents: pagePlan.stateIntents,
           writerBrief: pagePlan.writerBrief,
           dramaticQuestion: pagePlan.dramaticQuestion,
-
         }),
         expect.any(Object)
       );
@@ -1212,7 +1218,6 @@ describe('page-service integration', () => {
           stateIntents: pagePlan.stateIntents,
           writerBrief: pagePlan.writerBrief,
           dramaticQuestion: pagePlan.dramaticQuestion,
-
         }),
         expect.objectContaining({
           narrative: expect.any(String),
@@ -1248,10 +1253,7 @@ describe('page-service integration', () => {
           tone: 'dramatic',
           npcs: [{ name: 'Holt', description: 'Grizzled barkeep who knows everyone' }],
         }),
-        decomposedCharacters: [
-          buildMinimalDecomposedCharacter('Protagonist'),
-          holtCharacter,
-        ],
+        decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist'), holtCharacter],
         decomposedWorld: MINIMAL_DECOMPOSED_WORLD,
       };
       await storage.saveStory(baseStory);
@@ -1261,9 +1263,7 @@ describe('page-service integration', () => {
       const reloadedStory = await storage.loadStory(baseStory.id);
       expect(reloadedStory).not.toBeNull();
       expect(reloadedStory!.decomposedCharacters).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ name: 'Holt' }),
-        ])
+        expect.arrayContaining([expect.objectContaining({ name: 'Holt' })])
       );
 
       const parentPage = createPage({
@@ -1284,9 +1284,7 @@ describe('page-service integration', () => {
 
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(
         expect.objectContaining({
-          decomposedCharacters: expect.arrayContaining([
-            expect.objectContaining({ name: 'Holt' }),
-          ]),
+          decomposedCharacters: expect.arrayContaining([expect.objectContaining({ name: 'Holt' })]),
         }),
         expect.any(Object),
         expect.objectContaining({
@@ -2037,12 +2035,18 @@ describe('page-service integration', () => {
       const result = await getOrGeneratePage(baseStory, parentPage, 0, 'test-api-key');
 
       // Verify story was updated with new canon
-      expect(result.story.globalCanon).toContainEqual({ text: 'A new world fact discovered', factType: 'LAW' });
+      expect(result.story.globalCanon).toContainEqual({
+        text: 'A new world fact discovered',
+        factType: 'LAW',
+      });
       expect(result.story.globalCharacterCanon['Sage']).toContain('Knows ancient secrets');
 
       // Verify persistence
       const reloadedStory = await storage.loadStory(baseStory.id);
-      expect(reloadedStory?.globalCanon).toContainEqual({ text: 'A new world fact discovered', factType: 'LAW' });
+      expect(reloadedStory?.globalCanon).toContainEqual({
+        text: 'A new world fact discovered',
+        factType: 'LAW',
+      });
       expect(reloadedStory?.globalCharacterCanon['Sage']).toContain('Knows ancient secrets');
     });
 
@@ -2353,12 +2357,12 @@ describe('page-service integration', () => {
       await storage.saveStory(storyWithoutDecomposed);
       createdStoryIds.add(storyWithoutDecomposed.id);
 
-      await expect(
-        generateFirstPage(storyWithoutDecomposed, 'test-api-key')
-      ).rejects.toMatchObject({
-        name: 'EngineError',
-        code: 'STORY_NOT_PREPARED',
-      });
+      await expect(generateFirstPage(storyWithoutDecomposed, 'test-api-key')).rejects.toMatchObject(
+        {
+          name: 'EngineError',
+          code: 'STORY_NOT_PREPARED',
+        }
+      );
     });
   });
 
@@ -2392,14 +2396,7 @@ describe('page-service integration', () => {
         suggestedSpeech: 'I will not fail.',
       };
 
-      await getOrGeneratePage(
-        baseStory,
-        parentPage,
-        0,
-        'test-api-key',
-        undefined,
-        guidance
-      );
+      await getOrGeneratePage(baseStory, parentPage, 0, 'test-api-key', undefined, guidance);
 
       // Verify guidance was passed to writer prompt
       expect(mockedGenerateWriterPage).toHaveBeenCalledWith(

@@ -20,7 +20,10 @@ import {
   WRITER_SECONDARY_EMOTION_REQUIRED_FIELDS,
 } from '../../../src/llm/writer-contract';
 import { createEmptyActiveState } from '../../../src/models';
-import { buildMinimalDecomposedCharacter, MINIMAL_DECOMPOSED_WORLD } from '../../fixtures/decomposed';
+import {
+  buildMinimalDecomposedCharacter,
+  MINIMAL_DECOMPOSED_WORLD,
+} from '../../fixtures/decomposed';
 
 describe('contract centralization alignment', () => {
   it('keeps planner contract aligned with planner schema and prompt', () => {

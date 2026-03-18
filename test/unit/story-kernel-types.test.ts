@@ -50,25 +50,25 @@ describe('story-kernel types', () => {
       isStoryKernel({
         ...validKernel,
         directionOfChange: 'UNKNOWN',
-      }),
+      })
     ).toBe(false);
     expect(
       isStoryKernel({
         ...validKernel,
         conflictAxis: 'INVALID_AXIS',
-      }),
+      })
     ).toBe(false);
     expect(
       isStoryKernel({
         ...validKernel,
         dramaticStance: 'INVALID_STANCE',
-      }),
+      })
     ).toBe(false);
     expect(
       isStoryKernel({
         ...validKernel,
         thematicQuestion: '   ',
-      }),
+      })
     ).toBe(false);
     expect(
       isStoryKernel({
@@ -76,7 +76,7 @@ describe('story-kernel types', () => {
         valueAtStake: validKernel.valueAtStake,
         opposingForce: validKernel.opposingForce,
         directionOfChange: validKernel.directionOfChange,
-      }),
+      })
     ).toBe(false);
     expect(isStoryKernel(null)).toBe(false);
     expect(isStoryKernel('not-an-object')).toBe(false);
@@ -145,7 +145,10 @@ describe('story-kernel types', () => {
   });
 
   it('keeps scoring weights normalized to 100', () => {
-    const totalWeight = Object.values(KERNEL_SCORING_WEIGHTS).reduce((sum, weight) => sum + weight, 0);
+    const totalWeight = Object.values(KERNEL_SCORING_WEIGHTS).reduce(
+      (sum, weight) => sum + weight,
+      0
+    );
 
     expect(totalWeight).toBe(100);
   });

@@ -83,8 +83,21 @@ describe('llm client integration (mocked fetch)', () => {
     const result = await generateOpeningPage(
       {
         tone: 'mythic science fantasy',
-        decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist', { rawDescription: 'A disgraced astronomer' })],
-        decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'The night sky has stopped moving', scope: 'global' }], rawWorldbuilding: 'A city where the night sky has stopped moving' },
+        decomposedCharacters: [
+          buildMinimalDecomposedCharacter('Protagonist', {
+            rawDescription: 'A disgraced astronomer',
+          }),
+        ],
+        decomposedWorld: {
+          facts: [
+            {
+              domain: 'geography' as const,
+              fact: 'The night sky has stopped moving',
+              scope: 'global',
+            },
+          ],
+          rawWorldbuilding: 'A city where the night sky has stopped moving',
+        },
       },
       { apiKey: 'test-key' }
     );
@@ -115,7 +128,9 @@ describe('llm client integration (mocked fetch)', () => {
       constraintsRemoved: [],
       threadsAdded: [],
       threadsResolved: [],
-      newCanonFacts: [{ text: 'The observatory machinery reacts to movement near the orrery', factType: 'LAW' }],
+      newCanonFacts: [
+        { text: 'The observatory machinery reacts to movement near the orrery', factType: 'LAW' },
+      ],
       newCharacterCanonFacts: [],
       inventoryAdded: [],
       inventoryRemoved: [],
@@ -139,8 +154,21 @@ describe('llm client integration (mocked fetch)', () => {
     const result = await generatePageWriterOutput(
       {
         tone: 'mythic science fantasy',
-        decomposedCharacters: [buildMinimalDecomposedCharacter('Protagonist', { rawDescription: 'A disgraced astronomer' })],
-        decomposedWorld: { facts: [{ domain: 'geography' as const, fact: 'The night sky has stopped moving', scope: 'global' }], rawWorldbuilding: 'A city where the night sky has stopped moving' },
+        decomposedCharacters: [
+          buildMinimalDecomposedCharacter('Protagonist', {
+            rawDescription: 'A disgraced astronomer',
+          }),
+        ],
+        decomposedWorld: {
+          facts: [
+            {
+              domain: 'geography' as const,
+              fact: 'The night sky has stopped moving',
+              scope: 'global',
+            },
+          ],
+          rawWorldbuilding: 'A city where the night sky has stopped moving',
+        },
         globalCanon: [],
         globalCharacterCanon: {},
         previousNarrative: 'The star map flares and hidden gears begin turning.',

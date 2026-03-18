@@ -11,10 +11,7 @@
 
 import { buildPage } from '@/engine/page-builder';
 import type { PageBuildContext } from '@/engine/page-builder';
-import {
-  createMockFinalResult,
-  createMockAnalystResult,
-} from '../../fixtures/llm-results';
+import { createMockFinalResult, createMockAnalystResult } from '../../fixtures/llm-results';
 import {
   createEmptyAccumulatedStructureState,
   parsePageId,
@@ -143,10 +140,7 @@ describe('page-builder pipeline integration', () => {
       });
 
       // --- Page 2: continuation, no new detections, promises age ---
-      const page2 = buildPage(
-        createMockFinalResult(),
-        makeContinuationContext(2, page1)
-      );
+      const page2 = buildPage(createMockFinalResult(), makeContinuationContext(2, page1));
 
       expect(page2.accumulatedPromises).toHaveLength(2);
       expect(page2.accumulatedPromises[0]).toMatchObject({ id: 'pr-1', detectedAtPromiseEpoch: 0 });
@@ -187,10 +181,7 @@ describe('page-builder pipeline integration', () => {
       // Age through pages 2-5 (age 0 -> 1 -> 2 -> 3 -> 4)
       let currentPage = scenePage1;
       for (let i = 2; i <= 6; i++) {
-        currentPage = buildPage(
-          createMockFinalResult(),
-          makeContinuationContext(i, currentPage)
-        );
+        currentPage = buildPage(createMockFinalResult(), makeContinuationContext(i, currentPage));
       }
 
       // After 5 continuations, the SCENE promise has age 5 which exceeds threshold 4
@@ -293,7 +284,11 @@ describe('page-builder pipeline integration', () => {
       // Build page 1 with an open thread
       const page1Result = createMockFinalResult({
         threadsAdded: [
-          { text: 'Mystery of the missing key', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+          {
+            text: 'Mystery of the missing key',
+            threadType: ThreadType.MYSTERY,
+            urgency: Urgency.HIGH,
+          },
         ],
       });
       const page1 = buildPage(page1Result, makeOpeningContext());
@@ -383,7 +378,11 @@ describe('page-builder pipeline integration', () => {
           threatsAdded: [{ text: 'Goblin scouts', threatType: ThreatType.CREATURE }],
           threatsRemoved: [],
           threadsAdded: [
-            { text: 'Find the hidden passage', threadType: ThreadType.QUEST, urgency: Urgency.MEDIUM },
+            {
+              text: 'Find the hidden passage',
+              threadType: ThreadType.QUEST,
+              urgency: Urgency.MEDIUM,
+            },
           ],
           threadsResolved: [],
         }),
@@ -448,7 +447,6 @@ describe('page-builder pipeline integration', () => {
 
       // Thread ages: td-1 gone (resolved), td-2 aged from 0→1
       expect(page3.threadAges).toEqual({ 'td-2': 1 });
-
     });
   });
 

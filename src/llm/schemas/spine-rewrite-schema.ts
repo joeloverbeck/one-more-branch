@@ -124,8 +124,7 @@ export const SPINE_REWRITE_SCHEMA: JsonSchema = {
         },
         toneAvoid: {
           type: 'array',
-          description:
-            '3-5 tonal anti-patterns the rewritten story must never drift toward.',
+          description: '3-5 tonal anti-patterns the rewritten story must never drift toward.',
           items: { type: 'string' },
         },
         wantNeedCollisionPoint: {

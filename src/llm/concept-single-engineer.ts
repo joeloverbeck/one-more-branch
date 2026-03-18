@@ -14,7 +14,7 @@ export function parseSingleConceptEngineerResponse(parsed: unknown): ConceptEngi
     throw new LLMError(
       'Single concept engineer response must be an object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -23,7 +23,7 @@ export function parseSingleConceptEngineerResponse(parsed: unknown): ConceptEngi
     throw new LLMError(
       'Single concept engineer response missing concept object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -33,7 +33,7 @@ export function parseSingleConceptEngineerResponse(parsed: unknown): ConceptEngi
 export async function generateSingleConceptEngine(
   context: SingleEngineerPromptContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<{ engine: ConceptEngineFields; rawResponse: string }> {
   const messages = buildSingleConceptEngineerPrompt(context);
   const result = await runLlmStage({

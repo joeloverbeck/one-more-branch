@@ -31,7 +31,7 @@ function requireNonEmptyString(value: unknown, fieldName: string, label: string)
 function requireNonEmptyStringArray(
   value: unknown,
   fieldName: string,
-  label: string,
+  label: string
 ): readonly string[] {
   if (!Array.isArray(value)) {
     throw new LLMError(`${label} has invalid ${fieldName}`, 'STRUCTURE_PARSE_ERROR', true);
@@ -44,7 +44,7 @@ function requireNonEmptyStringArray(
     throw new LLMError(
       `${label} ${fieldName} must contain at least 1 item`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   return items;
@@ -53,7 +53,7 @@ function requireNonEmptyStringArray(
 function parseClampedScore(
   value: unknown,
   fieldName: keyof ConceptDimensionScores,
-  label: string,
+  label: string
 ): number {
   if (typeof value !== 'number' || Number.isNaN(value) || !Number.isFinite(value)) {
     throw new LLMError(`${label} has invalid ${fieldName} score`, 'STRUCTURE_PARSE_ERROR', true);
@@ -84,7 +84,7 @@ function parseScores(value: unknown): ConceptDimensionScores {
     sceneGenerativePower: parseClampedScore(
       data['sceneGenerativePower'],
       'sceneGenerativePower',
-      label,
+      label
     ),
     contentCharge: parseClampedScore(data['contentCharge'], 'contentCharge', label),
   };
@@ -106,21 +106,18 @@ function parseScoreEvidence(value: unknown): ConceptScoreEvidence {
     sceneGenerativePower: requireNonEmptyStringArray(
       data['sceneGenerativePower'],
       'sceneGenerativePower',
-      ev,
+      ev
     ),
     contentCharge: requireNonEmptyStringArray(data['contentCharge'], 'contentCharge', ev),
   };
 }
 
-export function parseSingleScoringResponse(
-  parsed: unknown,
-  concept: ConceptSpec,
-): ScoredConcept {
+export function parseSingleScoringResponse(parsed: unknown, concept: ConceptSpec): ScoredConcept {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Single concept scoring response must be an object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   const data = parsed as Record<string, unknown>;
@@ -128,7 +125,7 @@ export function parseSingleScoringResponse(
     throw new LLMError(
       'Single concept scoring response missing scoredConcept',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   const sc = data['scoredConcept'] as Record<string, unknown>;
@@ -145,13 +142,13 @@ export function parseSingleScoringResponse(
 
 export function parseSingleDeepEvalResponse(
   parsed: unknown,
-  scored: ScoredConcept,
+  scored: ScoredConcept
 ): EvaluatedConcept {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Single concept deep-eval response must be an object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   const data = parsed as Record<string, unknown>;
@@ -159,7 +156,7 @@ export function parseSingleDeepEvalResponse(
     throw new LLMError(
       'Single concept deep-eval response missing evaluatedConcept',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
   const ec = data['evaluatedConcept'] as Record<string, unknown>;
@@ -179,7 +176,7 @@ export async function evaluateSingleConcept(
   concept: ConceptSpec,
   userSeeds: ConceptSeedInput,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<{ scoredConcept: ScoredConcept; evaluatedConcept: EvaluatedConcept }> {
   return runTwoPhaseLlmStage({
     firstStage: {

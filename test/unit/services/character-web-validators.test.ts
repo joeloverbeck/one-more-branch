@@ -22,15 +22,21 @@ describe('validateWebPatchPayload', () => {
     });
 
     it('rejects an empty string', () => {
-      expect(() => validateWebPatchPayload({ castDynamicsSummary: '' })).toThrow('non-empty string');
+      expect(() => validateWebPatchPayload({ castDynamicsSummary: '' })).toThrow(
+        'non-empty string'
+      );
     });
 
     it('rejects a whitespace-only string', () => {
-      expect(() => validateWebPatchPayload({ castDynamicsSummary: '   ' })).toThrow('non-empty string');
+      expect(() => validateWebPatchPayload({ castDynamicsSummary: '   ' })).toThrow(
+        'non-empty string'
+      );
     });
 
     it('rejects non-string values', () => {
-      expect(() => validateWebPatchPayload({ castDynamicsSummary: 123 })).toThrow('non-empty string');
+      expect(() => validateWebPatchPayload({ castDynamicsSummary: 123 })).toThrow(
+        'non-empty string'
+      );
     });
   });
 
@@ -50,12 +56,14 @@ describe('validateWebPatchPayload', () => {
     });
 
     it('rejects non-array assignments', () => {
-      expect(() => validateWebPatchPayload({ assignments: 'not-array' })).toThrow('must be an array');
+      expect(() => validateWebPatchPayload({ assignments: 'not-array' })).toThrow(
+        'must be an array'
+      );
     });
 
     it('rejects assignment entries that are not objects', () => {
       expect(() => validateWebPatchPayload({ assignments: ['string'] })).toThrow(
-        'assignments[0] must be an object',
+        'assignments[0] must be an object'
       );
     });
 
@@ -63,7 +71,7 @@ describe('validateWebPatchPayload', () => {
       expect(() =>
         validateWebPatchPayload({
           assignments: [{ narrativeRole: 'role', conflictRelationship: 'rel' }],
-        }),
+        })
       ).toThrow('"characterName"');
     });
 
@@ -71,7 +79,7 @@ describe('validateWebPatchPayload', () => {
       expect(() =>
         validateWebPatchPayload({
           assignments: [{ characterName: 'Alice', conflictRelationship: 'rel' }],
-        }),
+        })
       ).toThrow('"narrativeRole"');
     });
 
@@ -79,7 +87,7 @@ describe('validateWebPatchPayload', () => {
       expect(() =>
         validateWebPatchPayload({
           assignments: [{ characterName: 'Alice', narrativeRole: 'role' }],
-        }),
+        })
       ).toThrow('"conflictRelationship"');
     });
   });
@@ -101,13 +109,13 @@ describe('validateWebPatchPayload', () => {
 
     it('rejects non-array relationshipArchetypes', () => {
       expect(() => validateWebPatchPayload({ relationshipArchetypes: {} })).toThrow(
-        'must be an array',
+        'must be an array'
       );
     });
 
     it('rejects entries that are not objects', () => {
       expect(() => validateWebPatchPayload({ relationshipArchetypes: [null] })).toThrow(
-        'relationshipArchetypes[0] must be an object',
+        'relationshipArchetypes[0] must be an object'
       );
     });
 
@@ -115,7 +123,7 @@ describe('validateWebPatchPayload', () => {
       expect(() =>
         validateWebPatchPayload({
           relationshipArchetypes: [{ toCharacter: 'Bob', essentialTension: 'tension' }],
-        }),
+        })
       ).toThrow('"fromCharacter"');
     });
 
@@ -123,7 +131,7 @@ describe('validateWebPatchPayload', () => {
       expect(() =>
         validateWebPatchPayload({
           relationshipArchetypes: [{ fromCharacter: 'Alice', essentialTension: 'tension' }],
-        }),
+        })
       ).toThrow('"toCharacter"');
     });
 
@@ -131,7 +139,7 @@ describe('validateWebPatchPayload', () => {
       expect(() =>
         validateWebPatchPayload({
           relationshipArchetypes: [{ fromCharacter: 'Alice', toCharacter: 'Bob' }],
-        }),
+        })
       ).toThrow('"essentialTension"');
     });
   });

@@ -1,0 +1,48 @@
+{
+  "id": "92e410f0-7a75-46fa-8841-7dd17d6b5c95",
+  "name": "SACRIFICE — Can Iker dismantle Valentina's arrangement — the lease, the ",
+  "createdAt": "2026-03-16T02:06:41.635Z",
+  "updatedAt": "2026-03-16T02:06:41.635Z",
+  "spineOption": {
+    "centralDramaticQuestion": "Can Iker dismantle Valentina's arrangement — the lease, the program slot, the gilded dependency — at the cost of the only sustained experience of being genuinely singular to another person he has ever had, and discover whether the loss proves the feeling was real?",
+    "protagonistNeedVsWant": {
+      "need": "To learn that genuine singularity — the feeling of being irreplaceable to someone — can only be real when it is chosen at cost rather than received inside an architecture designed to make leaving feel impossible.",
+      "want": "To preserve the feeling of being extraordinary to Valentina while also preserving the pre-Valentina self — the engineer, the guitarist, the boy from Gros — by finding a version of the arrangement that does not require him to dismantle either.",
+      "dynamic": "IRRECONCILABLE"
+    },
+    "primaryAntagonisticForce": {
+      "description": "The irreconcilable structural reality that the feeling of being genuinely singular to Valentina — the only evidence Iker has ever had of his own irreplaceability — was produced inside an architecture designed to make leaving feel impossible, so that dismantling the arrangement is the only act that could make the feeling real, and making it real requires its destruction.",
+      "pressureMechanism": "Every attempt Iker makes to preserve both the feeling and the pre-Valentina self — to find the version of the arrangement that does not require him to choose — reveals another layer of the architecture that makes coexistence impossible, so his want produces not synthesis but an accelerating series of concessions that progressively replace the engineer, the guitarist, the boy from Gros with the extraordinary object of her design."
+    },
+    "storySpineType": "SACRIFICE",
+    "conflictAxis": "KNOWLEDGE_VS_INNOCENCE",
+    "conflictType": "PERSON_VS_PERSON",
+    "characterArcType": "POSITIVE_CHANGE",
+    "toneFeel": [
+      "aching",
+      "salt-edged",
+      "luminous-then-dark",
+      "physically present",
+      "quietly devastating"
+    ],
+    "toneAvoid": [
+      "triumphant",
+      "saccharine",
+      "morally tidy",
+      "melodramatic",
+      "pornographic-flat"
+    ],
+    "wantNeedCollisionPoint": "When Iker finds the signed lease and attempts to negotiate a version of the arrangement that preserves the feeling without the cage — proposing conditions, asking for time — he discovers that the architecture has no negotiable version, and the attempt to preserve both selves is the final concession that makes the pre-Valentina self irrecoverable.",
+    "protagonistDeepestFear": "That choosing his own future — the engineering track, the Gros life, the pre-Valentina self — means voluntarily surrendering the only evidence he has ever had that he is genuinely singular to someone who did not need him to perform or pretend, and that no version of his chosen life will ever produce that feeling again."
+  },
+  "sourceConceptId": "be54c82d-2a94-4f04-bf61-a8698c3b77fd",
+  "protagonistCharacterId": "char-76e412d4-89b1-4a43-8d66-f325b8942b00",
+  "npcCharacterIds": [
+    "char-700a955d-67b8-4c03-9274-f629dec2cde9",
+    "char-89f76d63-3479-43d9-9fb3-f79b14734a74",
+    "char-eb535f4c-ed79-4651-9129-6ad1891aae9e"
+  ],
+  "worldbuildingId": "82b49e54-ebf9-4387-b7a1-feec1c74e3af",
+  "tone": "sex, seduction, erotica, big breasts, possession, obsession, desire, secrecy, transgression, taboo, intimacy, sugar mommy, dependency, luxury, wealth, passion",
+  "startingSituation": "Six weeks after his breakup with Amaia, Iker is hired for a single evening's work moving furniture and equipment at one of Gorka's restaurant venues before a private event \\u2014 the kind of cash-in-hand labor that circulates through Gros on short notice. Valentina is there overseeing the setup, dressed in a silk blouse cut low enough to be a statement. Iker doesn't know it, but Valentina is the one who got Iker hired; for weeks, she had been growing obsessed with Iker after she once saw him through the windows of the local gym; the vision of Iker, that handsome, strong, dedicated 18-year-old convinced him that she had to make Iker hers, entangling him in a passionate sexual affair behind her husband Gorka's back. Valentina got Iker hired for that evening's work at the venue to engineer an encounter with Iker. She asks him to carry something to a back room, and in that temporal privacy, she makes her first connection with him, initiating her possessive seduction."
+}

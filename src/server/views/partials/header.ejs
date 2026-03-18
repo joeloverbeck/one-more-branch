@@ -3,11 +3,12 @@
   <div class="container">
     <a href="/" class="logo">One More Branch</a>
     <nav>
-      <div class="nav-dropdown<%= cp === '/' || cp.startsWith('/stories') ? ' nav-dropdown--active' : '' %>">
-        <button class="nav-dropdown__trigger" type="button">Stories</button>
+      <a href="/"<%= cp === '/' ? ' class="active"' : '' %>>Stories</a>
+      <div class="nav-dropdown<%= cp.startsWith('/spines') || cp.startsWith('/create-story') ? ' nav-dropdown--active' : '' %>">
+        <button class="nav-dropdown__trigger" type="button">Architecture</button>
         <div class="nav-dropdown__menu">
-          <a href="/" class="nav-dropdown__item<%= cp === '/' ? ' nav-dropdown__item--active' : '' %>">Existing Stories</a>
-          <a href="/stories/new" class="nav-dropdown__item<%= cp === '/stories/new' ? ' nav-dropdown__item--active' : '' %>">New Adventure</a>
+          <a href="/spines" class="nav-dropdown__item<%= cp === '/spines' ? ' nav-dropdown__item--active' : '' %>">Generate Spines</a>
+          <a href="/create-story" class="nav-dropdown__item<%= cp === '/create-story' ? ' nav-dropdown__item--active' : '' %>">Create Story</a>
         </div>
       </div>
       <div class="nav-dropdown<%= cp.startsWith('/kernels') || cp.startsWith('/evolve-kernels') ? ' nav-dropdown--active' : '' %>">

@@ -3,19 +3,22 @@ import type {
   SceneIdeatorOpeningContext,
   SceneIdeatorContinuationContext,
 } from '../../../../src/llm/scene-ideator-types';
+import type { SceneIdeationSlate } from '../../../../src/llm/scene-ideation-slate';
 import {
   buildSceneIdeatorPrompt,
   buildIdeatorGuidanceSection,
   formatOverdueThreadsSection,
   formatPendingPromisesSection,
 } from '../../../../src/llm/prompts/scene-ideator-prompt';
+import { DEFAULT_SCENE_IDEA_COUNT } from '../../../../src/llm/scene-ideation-contract';
+import { SCENE_IDEA_LANES } from '../../../../src/models/scene-direction-taxonomy';
 import {
   Urgency,
   ThreadType,
   PromiseType,
   PromiseScope,
 } from '../../../../src/models/state/keyed-entry';
-import type { ThreadEntry, TrackedPromise } from '../../../../src/models/state/keyed-entry';
+import type { AgedTrackedPromise, ThreadEntry } from '../../../../src/models/state/keyed-entry';
 
 describe('buildSceneIdeatorPrompt', () => {
   const openingContext: SceneIdeatorOpeningContext = {
@@ -56,6 +59,11 @@ describe('buildSceneIdeatorPrompt', () => {
     expect(messages[0].content).toContain('scene direction architect');
   });
 
+  it('system message describes four narrative dimensions', () => {
+    const messages = buildSceneIdeatorPrompt(openingContext);
+    expect(messages[0].content).toContain('classified by four narrative dimensions');
+  });
+
   it('system message contains content policy', () => {
     const messages = buildSceneIdeatorPrompt(openingContext);
     expect(messages[0].content).toContain('CONTENT GUIDELINES:');
@@ -64,14 +72,33 @@ describe('buildSceneIdeatorPrompt', () => {
   it('system message contains diversity constraint', () => {
     const messages = buildSceneIdeatorPrompt(openingContext);
     expect(messages[0].content).toContain('DIVERSITY CONSTRAINT:');
+    expect(messages[0].content).toContain('diversityLane');
+  });
+
+  it('system message defines diversity as a slate-level contract and forbids mirrored/cosmetic variants', () => {
+    const messages = buildSceneIdeatorPrompt(openingContext);
+    expect(messages[0].content).toContain('Each option is assigned a different diversityLane');
+    expect(messages[0].content).toContain('Do not produce mirrored opposites');
+    expect(messages[0].content).toContain('tonal variants');
+    expect(messages[0].content).toContain('different kinds of next scenes');
   });
 
   it('system message contains field instructions', () => {
     const messages = buildSceneIdeatorPrompt(openingContext);
     expect(messages[0].content).toContain('FIELD INSTRUCTIONS:');
+    for (const lane of SCENE_IDEA_LANES) {
+      expect(messages[0].content).toContain(lane);
+    }
   });
 
   describe('opening mode', () => {
+    it('uses the shared scene ideation count and slate block', () => {
+      const messages = buildSceneIdeatorPrompt(openingContext);
+      expect(messages[0].content).toContain(`generate exactly ${DEFAULT_SCENE_IDEA_COUNT}`);
+      expect(messages[1].content).toContain('IDEATION SLATE:');
+      expect(messages[1].content).toContain(`Generate exactly ${DEFAULT_SCENE_IDEA_COUNT} options.`);
+    });
+
     it('user message contains "OPENING scene"', () => {
       const messages = buildSceneIdeatorPrompt(openingContext);
       expect(messages[1].content).toContain('OPENING scene');
@@ -88,6 +115,67 @@ describe('buildSceneIdeatorPrompt', () => {
   });
 
   describe('continuation mode', () => {
+    it('describes the lane-aware output shape', () => {
+      const messages = buildSceneIdeatorPrompt(continuationContext);
+      expect(messages[1].content).toContain('OUTPUT SHAPE:');
+      expect(messages[1].content).toContain('diversityLane, scenePurpose');
+    });
+
+    it('renders one ideation-slate lane line per slot in the provided slate', () => {
+      const customSlate: SceneIdeationSlate = {
+        targetOptionCount: 4,
+        slots: [
+          { index: 0, lane: 'REVELATION', rationale: 'Lead with discovery.' },
+          {
+            index: 1,
+            lane: 'CONSEQUENCE_OR_PAYOFF',
+            rationale: 'Cash out overdue pressure.',
+            requiredSignals: ['overdueThreads', 'agedPromises'],
+          },
+          {
+            index: 2,
+            lane: 'RELATIONAL_REALIGNMENT',
+            rationale: 'Force a trust shift.',
+            discouragedSignals: ['duplicatePressure'],
+          },
+          { index: 3, lane: 'ESCALATION', rationale: 'Keep one pressure-forward lane.' },
+        ],
+      };
+
+      const messages = buildSceneIdeatorPrompt(continuationContext, customSlate);
+      expect(messages[1].content).toContain('IDEATION SLATE:');
+      expect(messages[1].content).toContain('Generate exactly 4 options.');
+      expect(messages[1].content).toContain('Option 1 lane: REVELATION');
+      expect(messages[1].content).toContain('Option 2 lane: CONSEQUENCE_OR_PAYOFF');
+      expect(messages[1].content).toContain('Option 3 lane: RELATIONAL_REALIGNMENT');
+      expect(messages[1].content).toContain('Option 4 lane: ESCALATION');
+      expect(messages[1].content).toContain(
+        '- Required context to honor: overdueThreads, agedPromises'
+      );
+      expect(messages[1].content).toContain('- Avoid redundancy with: duplicatePressure');
+    });
+
+    it('uses a provided slate verbatim instead of re-deriving the option count or lane order', () => {
+      const customSlate: SceneIdeationSlate = {
+        targetOptionCount: 4,
+        slots: [
+          { index: 0, lane: 'IDENTITY_OR_TRANSFORMATION', rationale: 'Identity test first.' },
+          { index: 1, lane: 'TEMPTATION_OR_OPPORTUNITY', rationale: 'Temptation second.' },
+          { index: 2, lane: 'REVELATION', rationale: 'Reframe third.' },
+          { index: 3, lane: 'ESCALATION', rationale: 'Pressure last.' },
+        ],
+      };
+
+      const messages = buildSceneIdeatorPrompt(continuationContext, customSlate);
+      expect(messages[0].content).toContain('generate exactly 4 distinct');
+      expect(messages[1].content).toContain(
+        'array of exactly 4 scene direction objects, each with diversityLane'
+      );
+      expect(messages[1].content).toContain('Option 1 lane: IDENTITY_OR_TRANSFORMATION');
+      expect(messages[1].content).not.toContain(`Generate exactly ${DEFAULT_SCENE_IDEA_COUNT} options.`);
+      expect(messages[1].content).not.toContain('Option 1 lane: ESCALATION');
+    });
+
     it('user message contains "PREVIOUS SCENE SUMMARY"', () => {
       const messages = buildSceneIdeatorPrompt(continuationContext);
       expect(messages[1].content).toContain('PREVIOUS SCENE SUMMARY');
@@ -154,9 +242,7 @@ describe('buildSceneIdeatorPrompt', () => {
     it('renders health conditions when present', () => {
       const ctx: SceneIdeatorContinuationContext = {
         ...continuationContext,
-        accumulatedHealth: [
-          { id: 'hp-1', text: 'Broken arm' },
-        ],
+        accumulatedHealth: [{ id: 'hp-1', text: 'Broken arm' }],
       };
       const messages = buildSceneIdeatorPrompt(ctx);
       expect(messages[1].content).toContain('YOUR HEALTH:');
@@ -177,7 +263,12 @@ describe('buildSceneIdeatorPrompt', () => {
         activeState: {
           ...continuationContext.activeState,
           openThreads: [
-            { id: 'td-1', text: 'Find the lost sword', threadType: ThreadType.QUEST, urgency: Urgency.HIGH },
+            {
+              id: 'td-1',
+              text: 'Find the lost sword',
+              threadType: ThreadType.QUEST,
+              urgency: Urgency.HIGH,
+            },
           ],
         },
         threadAges: { 'td-1': 5 },
@@ -254,10 +345,8 @@ describe('formatOverdueThreadsSection', () => {
     urgency: Urgency
   ): ThreadEntry => ({ id, text, threadType, urgency });
 
-  it('returns empty string when no threads are overdue per urgency thresholds', () => {
-    const threads = [mkThread('td-1', 'Minor clue', ThreadType.MYSTERY, Urgency.LOW)];
-    const ages = { 'td-1': 5 };
-    expect(formatOverdueThreadsSection(threads, ages)).toBe('');
+  it('returns empty string when given no overdue threads', () => {
+    expect(formatOverdueThreadsSection([], {})).toBe('');
   });
 
   it('shows thread text instead of thread ID', () => {
@@ -315,50 +404,43 @@ describe('formatOverdueThreadsSection', () => {
     expect(result).toMatch(/^OVERDUE THREADS \(consider addressing\):/);
   });
 
-  it('respects urgency thresholds: HIGH=4, MEDIUM=7, LOW=10', () => {
+  it('renders whatever overdue set it is given without reapplying threshold logic', () => {
     const threads = [
       mkThread('td-h', 'High urgency', ThreadType.DANGER, Urgency.HIGH),
       mkThread('td-m', 'Medium urgency', ThreadType.QUEST, Urgency.MEDIUM),
-      mkThread('td-l', 'Low urgency', ThreadType.MYSTERY, Urgency.LOW),
     ];
-    // HIGH at age 3 (below 4), MEDIUM at age 6 (below 7), LOW at age 9 (below 10)
-    const ages = { 'td-h': 3, 'td-m': 6, 'td-l': 9 };
-    expect(formatOverdueThreadsSection(threads, ages)).toBe('');
-
-    // HIGH at age 4 (at threshold), MEDIUM at age 7, LOW at age 10
-    const agesAtThreshold = { 'td-h': 4, 'td-m': 7, 'td-l': 10 };
-    const result = formatOverdueThreadsSection(threads, agesAtThreshold);
+    const ages = { 'td-h': 4, 'td-m': 7 };
+    const result = formatOverdueThreadsSection(threads, ages);
     expect(result).toContain('High urgency');
     expect(result).toContain('Medium urgency');
-    expect(result).toContain('Low urgency');
   });
 });
 
 describe('formatPendingPromisesSection', () => {
-  const mkPromise = (overrides: Partial<TrackedPromise> & { id: string }): TrackedPromise => ({
+  const mkPromise = (
+    overrides: Partial<AgedTrackedPromise> & { id: string }
+  ): AgedTrackedPromise => ({
     description: 'A promise',
     promiseType: PromiseType.CHEKHOV_GUN,
     scope: PromiseScope.BEAT,
     resolutionHint: 'Some hint',
     suggestedUrgency: Urgency.LOW,
+    detectedAtPromiseEpoch: 0,
     age: 0,
     ...overrides,
   });
 
-  it('returns empty string when no promises match filter', () => {
-    const promises = [mkPromise({ id: 'pr-1', suggestedUrgency: Urgency.LOW, age: 1 })];
-    expect(formatPendingPromisesSection(promises)).toBe('');
+  it('returns empty string when given no pending promises', () => {
+    expect(formatPendingPromisesSection([])).toBe('');
   });
 
-  it('keeps existing filter: suggestedUrgency === HIGH || age >= 5', () => {
+  it('renders whatever pending set it is given without owning the filter rules', () => {
     const highUrgency = mkPromise({ id: 'pr-1', suggestedUrgency: Urgency.HIGH, age: 1 });
     const oldPromise = mkPromise({ id: 'pr-2', suggestedUrgency: Urgency.LOW, age: 6 });
-    const excluded = mkPromise({ id: 'pr-3', suggestedUrgency: Urgency.LOW, age: 2 });
 
-    const result = formatPendingPromisesSection([highUrgency, oldPromise, excluded]);
+    const result = formatPendingPromisesSection([highUrgency, oldPromise]);
     expect(result).toContain(highUrgency.description);
     expect(result).toContain(oldPromise.description);
-    expect(result).not.toContain('pr-3');
   });
 
   it('sorts by scope priority: SCENE first, then BEAT, then ACT, then STORY', () => {

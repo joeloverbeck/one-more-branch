@@ -7,7 +7,7 @@ export interface ContentKindGroup {
 }
 
 export function groupContentPacketsByKind(
-  packets: readonly SavedContentPacket[],
+  packets: readonly SavedContentPacket[]
 ): ContentKindGroup[] {
   const map = new Map<string, SavedContentPacket[]>();
 

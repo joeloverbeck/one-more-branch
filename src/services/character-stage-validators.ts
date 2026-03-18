@@ -21,12 +21,16 @@ function requireStringArray(record: Record<string, unknown>, field: string): voi
   }
 }
 
-function requireEnum(record: Record<string, unknown>, field: string, allowed: readonly string[]): void {
+function requireEnum(
+  record: Record<string, unknown>,
+  field: string,
+  allowed: readonly string[]
+): void {
   const value = record[field];
   if (typeof value !== 'string' || !allowed.includes(value)) {
     throw new EngineError(
       `Field "${field}" must be one of: ${allowed.join(', ')}`,
-      'VALIDATION_FAILED',
+      'VALIDATION_FAILED'
     );
   }
 }
@@ -61,10 +65,7 @@ function validateCharacterKernelPayload(payload: unknown): void {
 
 function validateTridimensionalProfilePayload(payload: unknown): void {
   if (!isObjectRecord(payload)) {
-    throw new EngineError(
-      'Tridimensional profile payload must be an object',
-      'VALIDATION_FAILED',
-    );
+    throw new EngineError('Tridimensional profile payload must be an object', 'VALIDATION_FAILED');
   }
 
   requireString(payload, 'physiology');
@@ -88,10 +89,7 @@ function validateAgencyModelPayload(payload: unknown): void {
 
 function validateRelationship(rel: unknown, index: number): void {
   if (!isObjectRecord(rel)) {
-    throw new EngineError(
-      `Relationship at index ${index} must be an object`,
-      'VALIDATION_FAILED',
-    );
+    throw new EngineError(`Relationship at index ${index} must be an object`, 'VALIDATION_FAILED');
   }
 
   requireString(rel, 'fromCharacter');
@@ -102,7 +100,7 @@ function validateRelationship(rel: unknown, index: number): void {
   if (typeof rel['numericValence'] !== 'number') {
     throw new EngineError(
       `Relationship at index ${index}: "numericValence" must be a number`,
-      'VALIDATION_FAILED',
+      'VALIDATION_FAILED'
     );
   }
 
@@ -113,17 +111,11 @@ function validateRelationship(rel: unknown, index: number): void {
 
 function validateDeepRelationshipsPayload(payload: unknown): void {
   if (!isObjectRecord(payload)) {
-    throw new EngineError(
-      'Deep relationships payload must be an object',
-      'VALIDATION_FAILED',
-    );
+    throw new EngineError('Deep relationships payload must be an object', 'VALIDATION_FAILED');
   }
 
   if (!Array.isArray(payload['relationships'])) {
-    throw new EngineError(
-      'Field "relationships" must be an array',
-      'VALIDATION_FAILED',
-    );
+    throw new EngineError('Field "relationships" must be an array', 'VALIDATION_FAILED');
   }
 
   for (let i = 0; i < payload['relationships'].length; i++) {
@@ -136,10 +128,7 @@ function validateDeepRelationshipsPayload(payload: unknown): void {
 
 function validateSpeechFingerprint(fp: unknown): void {
   if (!isObjectRecord(fp)) {
-    throw new EngineError(
-      'Field "speechFingerprint" must be an object',
-      'VALIDATION_FAILED',
-    );
+    throw new EngineError('Field "speechFingerprint" must be an object', 'VALIDATION_FAILED');
   }
 
   requireStringArray(fp, 'catchphrases');
@@ -155,10 +144,7 @@ function validateSpeechFingerprint(fp: unknown): void {
 
 function validateTextualPresentationPayload(payload: unknown): void {
   if (!isObjectRecord(payload)) {
-    throw new EngineError(
-      'Textual presentation payload must be an object',
-      'VALIDATION_FAILED',
-    );
+    throw new EngineError('Textual presentation payload must be an object', 'VALIDATION_FAILED');
   }
 
   validateSpeechFingerprint(payload['speechFingerprint']);

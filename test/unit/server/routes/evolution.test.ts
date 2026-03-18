@@ -45,10 +45,10 @@ type RouteLayer = {
 
 function getRouteHandler(
   method: 'get' | 'post',
-  path: string,
+  path: string
 ): (req: Request, res: Response) => Promise<void> | void {
   const layer = (evolutionRoutes.stack as unknown as RouteLayer[]).find(
-    (item) => item.route?.path === path && item.route?.methods?.[method],
+    (item) => item.route?.path === path && item.route?.methods?.[method]
   );
   const handler = layer?.route?.stack?.[0]?.handle;
   if (!handler) {
@@ -62,7 +62,9 @@ function flushPromises(): Promise<void> {
 }
 
 function createSavedConcept(conceptId: string, sourceKernelId: string): SavedConcept {
-  const evaluatedConcept = createEvaluatedConceptFixture(Number.parseInt(conceptId.slice(-1), 10) || 1);
+  const evaluatedConcept = createEvaluatedConceptFixture(
+    Number.parseInt(conceptId.slice(-1), 10) || 1
+  );
   return {
     id: conceptId,
     name: `Concept ${conceptId}`,
@@ -153,13 +155,16 @@ describe('evolutionRoutes', () => {
 
     void getRouteHandler('get', '/api/concepts-by-kernel/:kernelId')(
       { params: { kernelId: 'kernel-1' } } as unknown as Request,
-      { json } as unknown as Response,
+      { json } as unknown as Response
     );
     await flushPromises();
 
     expect(json).toHaveBeenCalledWith({
       success: true,
-      concepts: [expect.objectContaining({ id: 'concept-1' }), expect.objectContaining({ id: 'concept-3' })],
+      concepts: [
+        expect.objectContaining({ id: 'concept-1' }),
+        expect.objectContaining({ id: 'concept-3' }),
+      ],
     });
   });
 
@@ -169,7 +174,7 @@ describe('evolutionRoutes', () => {
 
     void getRouteHandler('post', '/api/evolve')(
       { body: { conceptIds: ['concept-1', 'concept-2'], kernelId: 'kernel-1' } } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -182,8 +187,10 @@ describe('evolutionRoutes', () => {
     const json = jest.fn().mockReturnThis();
 
     void getRouteHandler('post', '/api/evolve')(
-      { body: { conceptIds: ['concept-1'], kernelId: 'kernel-1', apiKey: 'valid-key-12345' } } as Request,
-      { status, json } as unknown as Response,
+      {
+        body: { conceptIds: ['concept-1'], kernelId: 'kernel-1', apiKey: 'valid-key-12345' },
+      } as Request,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -203,7 +210,7 @@ describe('evolutionRoutes', () => {
           apiKey: 'valid-key-12345',
         },
       } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -220,7 +227,7 @@ describe('evolutionRoutes', () => {
 
     void getRouteHandler('post', '/api/evolve')(
       { body: { conceptIds: ['concept-1', 'concept-2'], apiKey: 'valid-key-12345' } } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -245,7 +252,7 @@ describe('evolutionRoutes', () => {
           apiKey: 'valid-key-12345',
         },
       } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -270,7 +277,7 @@ describe('evolutionRoutes', () => {
           apiKey: 'valid-key-12345',
         },
       } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -298,7 +305,7 @@ describe('evolutionRoutes', () => {
           apiKey: 'valid-key-12345',
         },
       } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -315,8 +322,14 @@ describe('evolutionRoutes', () => {
       .mockResolvedValueOnce(createSavedConcept('concept-1', 'kernel-1'))
       .mockResolvedValueOnce(createSavedConcept('concept-2', 'kernel-1'));
 
-    const evaluatedConcepts = [createEvaluatedConceptFixture(41), createEvaluatedConceptFixture(42)];
-    const verifications = [createConceptVerificationFixture(1), createConceptVerificationFixture(2)];
+    const evaluatedConcepts = [
+      createEvaluatedConceptFixture(41),
+      createEvaluatedConceptFixture(42),
+    ];
+    const verifications = [
+      createConceptVerificationFixture(1),
+      createConceptVerificationFixture(2),
+    ];
 
     const progressStartSpy = jest.spyOn(generationProgressService, 'start');
     const progressMarkStartedSpy = jest.spyOn(generationProgressService, 'markStageStarted');
@@ -346,7 +359,7 @@ describe('evolutionRoutes', () => {
           progressId: ' evolve-progress-1 ',
         },
       } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
@@ -358,13 +371,13 @@ describe('evolutionRoutes', () => {
     expect(progressMarkStartedSpy).toHaveBeenCalledWith(
       'evolve-progress-1',
       'SEEDING_EVOLVED_CONCEPTS',
-      1,
+      1
     );
     expect(progressMarkCompletedSpy).toHaveBeenCalledWith(
       'evolve-progress-1',
       'ENGINEERING_CONCEPTS',
       1,
-      undefined,
+      undefined
     );
     expect(progressCompleteSpy).toHaveBeenCalledWith('evolve-progress-1');
     expect(status).not.toHaveBeenCalled();
@@ -377,7 +390,7 @@ describe('evolutionRoutes', () => {
       .mockResolvedValueOnce(createSavedConcept('concept-1', 'kernel-1'))
       .mockResolvedValueOnce(createSavedConcept('concept-2', 'kernel-1'));
     mockedEvolveConcepts.mockRejectedValue(
-      new LLMError('rate limit', 'HTTP_429', true, { httpStatus: 429 }),
+      new LLMError('rate limit', 'HTTP_429', true, { httpStatus: 429 })
     );
 
     const status = jest.fn().mockReturnThis();
@@ -393,13 +406,13 @@ describe('evolutionRoutes', () => {
           progressId: 'evolve-progress-2',
         },
       } as Request,
-      { status, json } as unknown as Response,
+      { status, json } as unknown as Response
     );
     await flushPromises();
 
     expect(progressFailSpy).toHaveBeenCalledWith(
       'evolve-progress-2',
-      'Rate limit exceeded. Please wait a moment and try again.',
+      'Rate limit exceeded. Please wait a moment and try again.'
     );
     expect(status).toHaveBeenCalledWith(500);
     expect(json).toHaveBeenCalledWith(
@@ -408,7 +421,7 @@ describe('evolutionRoutes', () => {
         error: 'Rate limit exceeded. Please wait a moment and try again.',
         code: 'HTTP_429',
         retryable: true,
-      }),
+      })
     );
   });
 });

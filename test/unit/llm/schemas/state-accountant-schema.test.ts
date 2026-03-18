@@ -27,22 +27,22 @@ describe('STATE_ACCOUNTANT_SCHEMA', () => {
       properties: Record<string, unknown>;
     };
     const threatTypeEnum = (
-      (stateIntents.properties.threats as {
+      stateIntents.properties.threats as {
         properties: Record<string, { items: { properties: Record<string, { enum?: string[] }> } }>;
-      }).properties.add.items.properties.threatType
-    ).enum;
+      }
+    ).properties.add.items.properties.threatType.enum;
 
     const constraintTypeEnum = (
-      (stateIntents.properties.constraints as {
+      stateIntents.properties.constraints as {
         properties: Record<string, { items: { properties: Record<string, { enum?: string[] }> } }>;
-      }).properties.add.items.properties.constraintType
-    ).enum;
+      }
+    ).properties.add.items.properties.constraintType.enum;
 
     const threadTypeEnum = (
-      (stateIntents.properties.threads as {
+      stateIntents.properties.threads as {
         properties: Record<string, { items: { properties: Record<string, { enum?: string[] }> } }>;
-      }).properties.add.items.properties.threadType
-    ).enum;
+      }
+    ).properties.add.items.properties.threadType.enum;
 
     expect(threatTypeEnum).toEqual(['HOSTILE_AGENT', 'ENVIRONMENTAL', 'CREATURE']);
     expect(constraintTypeEnum).toEqual(['PHYSICAL', 'ENVIRONMENTAL', 'TEMPORAL']);

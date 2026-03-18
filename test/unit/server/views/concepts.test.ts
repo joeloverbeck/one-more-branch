@@ -44,7 +44,13 @@ describe('concepts page template', () => {
         genreFrames: string[];
         seeds: unknown[];
         seedGenreGroups: { genre: string; displayLabel: string; seeds: unknown[] }[];
-        genreGroups: { genre: string; displayLabel: string; concepts: unknown[]; conventions: string[]; obligations: string[] }[];
+        genreGroups: {
+          genre: string;
+          displayLabel: string;
+          concepts: unknown[];
+          conventions: string[];
+          obligations: string[];
+        }[];
       },
       options: { filename: string }
     ) => string;
@@ -53,12 +59,42 @@ describe('concepts page template', () => {
       template,
       {
         title: 'Concepts',
-        concepts: [{ id: '1', evaluatedConcept: { concept: { genreFrame: 'ADVENTURE', conflictAxis: 'SURVIVAL', conflictType: 'PERSON_VS_NATURE', settingScale: 'LOCAL' } } }],
+        concepts: [
+          {
+            id: '1',
+            evaluatedConcept: {
+              concept: {
+                genreFrame: 'ADVENTURE',
+                conflictAxis: 'SURVIVAL',
+                conflictType: 'PERSON_VS_NATURE',
+                settingScale: 'LOCAL',
+              },
+            },
+          },
+        ],
         genreFrames: ['ADVENTURE'],
         seeds: [],
         seedGenreGroups: [],
         genreGroups: [
-          { genre: 'ADVENTURE', displayLabel: 'Adventure', concepts: [{ id: '1', evaluatedConcept: { concept: { genreFrame: 'ADVENTURE', conflictAxis: 'SURVIVAL', conflictType: 'PERSON_VS_NATURE', settingScale: 'LOCAL' } } }], conventions: [], obligations: [] },
+          {
+            genre: 'ADVENTURE',
+            displayLabel: 'Adventure',
+            concepts: [
+              {
+                id: '1',
+                evaluatedConcept: {
+                  concept: {
+                    genreFrame: 'ADVENTURE',
+                    conflictAxis: 'SURVIVAL',
+                    conflictType: 'PERSON_VS_NATURE',
+                    settingScale: 'LOCAL',
+                  },
+                },
+              },
+            ],
+            conventions: [],
+            obligations: [],
+          },
         ],
       },
       { filename: conceptsPath }
@@ -73,7 +109,13 @@ describe('concepts page template', () => {
     const template = fs.readFileSync(conceptsPath, 'utf8');
     const renderTemplate = renderEjs as (
       source: string,
-      data: { title: string; concepts: unknown[]; genreFrames: string[]; seeds: unknown[]; seedGenreGroups: unknown[] },
+      data: {
+        title: string;
+        concepts: unknown[];
+        genreFrames: string[];
+        seeds: unknown[];
+        seedGenreGroups: unknown[];
+      },
       options: { filename: string }
     ) => string;
 

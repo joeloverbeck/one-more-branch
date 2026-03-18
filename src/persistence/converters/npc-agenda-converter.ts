@@ -44,7 +44,5 @@ export function fileDataToNpcAgendaArray(data: NpcAgendaFileData[]): readonly Np
 export function fileDataToAccumulatedNpcAgendas(
   data: Record<string, NpcAgendaFileData>
 ): AccumulatedNpcAgendas {
-  return Object.fromEntries(
-    Object.entries(data).map(([key, a]) => [key, fileDataToNpcAgenda(a)])
-  );
+  return Object.fromEntries(Object.entries(data).map(([key, a]) => [key, fileDataToNpcAgenda(a)]));
 }

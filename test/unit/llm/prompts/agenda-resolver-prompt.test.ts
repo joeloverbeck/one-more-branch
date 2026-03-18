@@ -59,8 +59,8 @@ describe('buildAgendaResolverPrompt', () => {
               valence: -1,
               dynamic: 'uneasy ally',
               history: 'Former military comrades, now on opposite sides.',
-              currentTension: 'Distrusts the protagonist\'s motives.',
-              leverage: 'Knows the protagonist\'s old contacts.',
+              currentTension: "Distrusts the protagonist's motives.",
+              leverage: "Knows the protagonist's old contacts.",
             },
             knowledgeBoundaries: 'Knows smugglers but not military plans.',
             appearance: 'Lean, scarred, always scanning exits.',
@@ -274,8 +274,16 @@ describe('buildAgendaResolverPrompt', () => {
         deviationContext: {
           reason: 'Protagonist refused the quest',
           newMilestones: [
-            { name: 'Reluctant Return', objective: 'Deal with consequences of refusal', role: 'turning_point' },
-            { name: 'Forced Hand', objective: 'External pressure forces action', role: 'escalation' },
+            {
+              name: 'Reluctant Return',
+              objective: 'Deal with consequences of refusal',
+              role: 'turning_point',
+            },
+            {
+              name: 'Forced Hand',
+              objective: 'External pressure forces action',
+              role: 'escalation',
+            },
           ],
         },
       });
@@ -284,7 +292,9 @@ describe('buildAgendaResolverPrompt', () => {
 
       expect(user).toContain('STRUCTURAL DEVIATION ALERT:');
       expect(user).toContain('Deviation reason: Protagonist refused the quest');
-      expect(user).toContain('- Reluctant Return (turning_point): Deal with consequences of refusal');
+      expect(user).toContain(
+        '- Reluctant Return (turning_point): Deal with consequences of refusal'
+      );
       expect(user).toContain('- Forced Hand (escalation): External pressure forces action');
       expect(user).toContain('Realign NPC goals and off-screen behavior');
     });
@@ -310,9 +320,7 @@ describe('buildAgendaResolverPrompt', () => {
         },
         deviationContext: {
           reason: 'Protagonist fled the city',
-          newMilestones: [
-            { name: 'Exile', objective: 'Survive in the wasteland', role: 'setup' },
-          ],
+          newMilestones: [{ name: 'Exile', objective: 'Survive in the wasteland', role: 'setup' }],
         },
       });
       const messages = buildAgendaResolverPrompt(context);

@@ -26,10 +26,7 @@ export interface WebPatchPayload {
 
 function validateAssignmentEntry(entry: unknown, index: number): void {
   if (!isObjectRecord(entry)) {
-    throw new EngineError(
-      `assignments[${index}] must be an object`,
-      'VALIDATION_FAILED',
-    );
+    throw new EngineError(`assignments[${index}] must be an object`, 'VALIDATION_FAILED');
   }
 
   requireString(entry, 'characterName');
@@ -41,7 +38,7 @@ function validateRelationshipEntry(entry: unknown, index: number): void {
   if (!isObjectRecord(entry)) {
     throw new EngineError(
       `relationshipArchetypes[${index}] must be an object`,
-      'VALIDATION_FAILED',
+      'VALIDATION_FAILED'
     );
   }
 
@@ -62,15 +59,18 @@ export function validateWebPatchPayload(payload: unknown): WebPatchPayload {
   if (!hasSummary && !hasAssignments && !hasRelationships) {
     throw new EngineError(
       'Web patch payload must contain at least one of: castDynamicsSummary, assignments, relationshipArchetypes',
-      'VALIDATION_FAILED',
+      'VALIDATION_FAILED'
     );
   }
 
   if (hasSummary) {
-    if (typeof payload['castDynamicsSummary'] !== 'string' || payload['castDynamicsSummary'].trim().length === 0) {
+    if (
+      typeof payload['castDynamicsSummary'] !== 'string' ||
+      payload['castDynamicsSummary'].trim().length === 0
+    ) {
       throw new EngineError(
         'Field "castDynamicsSummary" must be a non-empty string',
-        'VALIDATION_FAILED',
+        'VALIDATION_FAILED'
       );
     }
   }
@@ -87,10 +87,7 @@ export function validateWebPatchPayload(payload: unknown): WebPatchPayload {
 
   if (hasRelationships) {
     if (!Array.isArray(payload['relationshipArchetypes'])) {
-      throw new EngineError(
-        'Field "relationshipArchetypes" must be an array',
-        'VALIDATION_FAILED',
-      );
+      throw new EngineError('Field "relationshipArchetypes" must be an array', 'VALIDATION_FAILED');
     }
 
     for (let i = 0; i < payload['relationshipArchetypes'].length; i++) {

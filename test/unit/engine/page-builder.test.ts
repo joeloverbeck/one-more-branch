@@ -187,7 +187,11 @@ describe('page-builder', () => {
             { id: 'th-1', text: 'Guardian patrol', threatType: ThreatType.HOSTILE_AGENT },
           ],
           activeConstraints: [
-            { id: 'cn-1', text: 'Noise attracts guards', constraintType: ConstraintType.ENVIRONMENTAL },
+            {
+              id: 'cn-1',
+              text: 'Noise attracts guards',
+              constraintType: ConstraintType.ENVIRONMENTAL,
+            },
           ],
           openThreads: [{ id: 'td-1', text: 'Missing key' }],
         },
@@ -558,8 +562,20 @@ describe('page-builder', () => {
       // age 4 -> aged to 5. The filter is `promise.age > sceneExpiryThreshold` where threshold is 4.
       // So age 5 > 4, SCENE promise expires. BEAT has no expiry -> survives.
       const trackedExpiring = [
-        makeTrackedPromise('pr-1', 'Scene promise expiring', 4, PromiseType.FORESHADOWING, PromiseScope.SCENE),
-        makeTrackedPromise('pr-2', 'Milestone promise same age', 4, PromiseType.FORESHADOWING, PromiseScope.BEAT),
+        makeTrackedPromise(
+          'pr-1',
+          'Scene promise expiring',
+          4,
+          PromiseType.FORESHADOWING,
+          PromiseScope.SCENE
+        ),
+        makeTrackedPromise(
+          'pr-2',
+          'Milestone promise same age',
+          4,
+          PromiseType.FORESHADOWING,
+          PromiseScope.BEAT
+        ),
       ];
       const result = computeAccumulatedPromises(
         trackedExpiring,
@@ -876,9 +892,9 @@ describe('page-builder', () => {
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
         delayedConsequencesTriggered: [],
-knowledgeAsymmetryDetected: [],
-dramaticIronyOpportunities: [],
-rawResponse: '',
+        knowledgeAsymmetryDetected: [],
+        dramaticIronyOpportunities: [],
+        rawResponse: '',
       };
     }
 
@@ -896,8 +912,18 @@ rawResponse: '',
 
     it('adds analyst-detected thread IDs when threadsResolved is empty', () => {
       const analyst = makeAnalystResult([
-        { threadId: 'td-13', threadText: 'Thread 13', satisfactionLevel: 'ADEQUATE', reasoning: 'r' },
-        { threadId: 'td-14', threadText: 'Thread 14', satisfactionLevel: 'WELL_EARNED', reasoning: 'r' },
+        {
+          threadId: 'td-13',
+          threadText: 'Thread 13',
+          satisfactionLevel: 'ADEQUATE',
+          reasoning: 'r',
+        },
+        {
+          threadId: 'td-14',
+          threadText: 'Thread 14',
+          satisfactionLevel: 'WELL_EARNED',
+          reasoning: 'r',
+        },
       ]);
       const parentOpenThreads = [
         { id: 'td-13', text: 'Thread 13' },
@@ -910,7 +936,12 @@ rawResponse: '',
     it('does not duplicate IDs already in threadsResolved', () => {
       const analyst = makeAnalystResult([
         { threadId: 'td-5', threadText: 'Thread 5', satisfactionLevel: 'ADEQUATE', reasoning: 'r' },
-        { threadId: 'td-13', threadText: 'Thread 13', satisfactionLevel: 'ADEQUATE', reasoning: 'r' },
+        {
+          threadId: 'td-13',
+          threadText: 'Thread 13',
+          satisfactionLevel: 'ADEQUATE',
+          reasoning: 'r',
+        },
       ]);
       const parentOpenThreads = [
         { id: 'td-5', text: 'Thread 5' },
@@ -922,7 +953,12 @@ rawResponse: '',
 
     it('skips analyst thread IDs not present in parent open threads', () => {
       const analyst = makeAnalystResult([
-        { threadId: 'td-99', threadText: 'Ghost thread', satisfactionLevel: 'ADEQUATE', reasoning: 'r' },
+        {
+          threadId: 'td-99',
+          threadText: 'Ghost thread',
+          satisfactionLevel: 'ADEQUATE',
+          reasoning: 'r',
+        },
       ]);
       const parentOpenThreads = [{ id: 'td-1', text: 'Thread 1' }];
       const result = augmentThreadsResolvedFromAnalyst([], analyst, parentOpenThreads);
@@ -1000,9 +1036,9 @@ rawResponse: '',
         obligatorySceneFulfilled: null,
         premisePromiseFulfilled: null,
         delayedConsequencesTriggered: [],
-knowledgeAsymmetryDetected: [],
-dramaticIronyOpportunities: [],
-rawResponse: '',
+        knowledgeAsymmetryDetected: [],
+        dramaticIronyOpportunities: [],
+        rawResponse: '',
       };
     }
 
@@ -1034,7 +1070,12 @@ rawResponse: '',
           activeConstraints: [],
           openThreads: [
             { id: 'td-12', text: 'Explore the castle', threadType: 'QUEST', urgency: 'LOW' },
-            { id: 'td-13', text: 'Find the hidden passage', threadType: 'MYSTERY', urgency: 'HIGH' },
+            {
+              id: 'td-13',
+              text: 'Find the hidden passage',
+              threadType: 'MYSTERY',
+              urgency: 'HIGH',
+            },
             { id: 'td-14', text: 'Rescue the prisoner', threadType: 'QUEST', urgency: 'MEDIUM' },
           ],
         },

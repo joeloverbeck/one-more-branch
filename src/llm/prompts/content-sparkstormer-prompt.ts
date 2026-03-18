@@ -35,7 +35,9 @@ export function buildSparkstormerPrompt(context: SparkstormerContext): ChatMessa
   ];
 
   if (kernelBlock) {
-    userSections.push(`STORY KERNEL (use as gravitational anchor, not a constraint):\n${kernelBlock}`);
+    userSections.push(
+      `STORY KERNEL (use as gravitational anchor, not a constraint):\n${kernelBlock}`
+    );
   }
 
   if (contentPreferences) {
@@ -47,7 +49,7 @@ export function buildSparkstormerPrompt(context: SparkstormerContext): ChatMessa
 - Return JSON matching exactly: { "sparks": [ ... ] }
 - Each spark object must have: sparkId, contentKind, spark, imageSeed, collisionTags.
 - sparkId format: "spark-01", "spark-02", etc.
-- 30-40 sparks total.`,
+- 30-40 sparks total.`
   );
 
   return [

@@ -59,7 +59,7 @@ export const CHARACTER_WEB_GENERATION_SCHEMA: JsonSchema = {
                     ],
                   },
                 ],
-                description: 'The character\'s dramatic function in the story.',
+                description: "The character's dramatic function in the story.",
               },
               characterDepth: {
                 anyOf: [
@@ -162,8 +162,7 @@ export const CHARACTER_WEB_GENERATION_SCHEMA: JsonSchema = {
               },
               incompatibility: {
                 type: 'string',
-                description:
-                  'The incompatible loyalty or goal that makes this triangle unstable.',
+                description: 'The incompatible loyalty or goal that makes this triangle unstable.',
               },
             },
           },
@@ -183,8 +182,7 @@ export const CHARACTER_WEB_GENERATION_SCHEMA: JsonSchema = {
               },
               faultLine: {
                 type: 'string',
-                description:
-                  'The specific issue or event that could shatter this alliance.',
+                description: 'The specific issue or event that could shatter this alliance.',
               },
             },
           },

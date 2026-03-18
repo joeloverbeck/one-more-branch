@@ -174,12 +174,13 @@ function buildAgendaResolverSystemPrompt(context: AgendaResolverPromptContext): 
 }
 
 export function buildAgendaResolverPrompt(context: AgendaResolverPromptContext): ChatMessage[] {
-  const characterDefinitionsSection = context.decomposedCharacters.length > 0
-    ? `CHARACTERS (structured profiles with speech fingerprints):
+  const characterDefinitionsSection =
+    context.decomposedCharacters.length > 0
+      ? `CHARACTERS (structured profiles with speech fingerprints):
 ${context.decomposedCharacters.map((c) => formatDecomposedCharacterForPrompt(c)).join('\n\n')}
 
 `
-    : '';
+      : '';
 
   const structureSection = context.structure
     ? `STORY STRUCTURE CONTEXT:

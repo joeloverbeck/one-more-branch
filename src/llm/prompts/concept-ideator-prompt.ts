@@ -1,6 +1,4 @@
-import {
-  type ConceptIdeatorContext,
-} from '../../models/concept-generator.js';
+import { type ConceptIdeatorContext } from '../../models/concept-generator.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildConceptTaxonomyGuidance, CONCEPT_QUALITY_ANCHORS } from './concept-prompt-shared.js';

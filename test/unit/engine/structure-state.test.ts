@@ -5,9 +5,7 @@ import {
   applyStructureProgression,
 } from '../../../src/engine/structure-state';
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
-import {
-  createInitialStructureState,
-} from '../../../src/models/story-arc';
+import { createInitialStructureState } from '../../../src/models/story-arc';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
 
 function createGenerationResult(): StructureGenerationResult {
@@ -174,7 +172,9 @@ describe('structure-state', () => {
       const result = advanceStructureState(structure, currentState, 'A decision is made.');
 
       expect(result.updatedState).not.toBe(currentState);
-      expect(result.updatedState.milestoneProgressions).not.toBe(currentState.milestoneProgressions);
+      expect(result.updatedState.milestoneProgressions).not.toBe(
+        currentState.milestoneProgressions
+      );
       expect(currentState).toEqual(before);
     });
 
@@ -419,13 +419,7 @@ describe('structure-state', () => {
       const state = createInitialStructureState(structure);
 
       // At milestone 1.1, skip to milestone 2.1
-      const result = advanceWithMilestoneSkip(
-        structure,
-        state,
-        'Call answered.',
-        '2.1',
-        'Bridged'
-      );
+      const result = advanceWithMilestoneSkip(structure, state, 'Call answered.', '2.1', 'Bridged');
 
       expect(result.isComplete).toBe(false);
       expect(result.updatedState.currentActIndex).toBe(1);
@@ -453,13 +447,7 @@ describe('structure-state', () => {
       };
 
       // Skip from 2.1 past 2.2 — since 2.2 is the last milestone, this triggers completion
-      const result = advanceWithMilestoneSkip(
-        structure,
-        state,
-        'Trust gained.',
-        '2.2',
-        'Bridged'
-      );
+      const result = advanceWithMilestoneSkip(structure, state, 'Trust gained.', '2.2', 'Bridged');
 
       // Should land on 2.2 as active (not complete, since target reached)
       expect(result.updatedState.currentActIndex).toBe(1);

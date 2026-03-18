@@ -54,19 +54,10 @@ const SUPPLEMENTARY_CHOICES_SCHEMA = {
               primaryDelta: { type: 'string', enum: WRITER_PRIMARY_DELTA_ENUM },
               choiceSubtype: { anyOf: [{ type: 'string' }, { type: 'null' }] },
               choiceShape: {
-                anyOf: [
-                  { type: 'string', enum: WRITER_CHOICE_SHAPE_ENUM },
-                  { type: 'null' },
-                ],
+                anyOf: [{ type: 'string', enum: WRITER_CHOICE_SHAPE_ENUM }, { type: 'null' }],
               },
             },
-            required: [
-              'text',
-              'choiceType',
-              'primaryDelta',
-              'choiceSubtype',
-              'choiceShape',
-            ],
+            required: ['text', 'choiceType', 'primaryDelta', 'choiceSubtype', 'choiceShape'],
             additionalProperties: false,
           },
         },
@@ -107,7 +98,10 @@ export function buildSupplementaryMessages(
 ): ChatMessage[] {
   const truncatedNarrative = truncateNarrative(narrative);
   const existingChoicesSummary = existingChoices
-    .map((c, i) => `  ${i + 1}. "${String(c['text'])}" (${String(c['choiceType'])} / ${String(c['primaryDelta'])})`)
+    .map(
+      (c, i) =>
+        `  ${i + 1}. "${String(c['text'])}" (${String(c['choiceType'])} / ${String(c['primaryDelta'])})`
+    )
     .join('\n');
 
   const systemMessage: ChatMessage = {
@@ -153,9 +147,7 @@ function isValidSupplementaryChoice(candidate: unknown): candidate is Supplement
   );
 }
 
-export function validateSupplementaryResponse(
-  rawChoices: unknown
-): SupplementaryChoice[] | null {
+export function validateSupplementaryResponse(rawChoices: unknown): SupplementaryChoice[] | null {
   if (!Array.isArray(rawChoices)) {
     return null;
   }
@@ -210,7 +202,12 @@ async function callSupplementaryChoices(
     }
 
     const data = await readJsonResponse(response);
-    const content = extractResponseContent(data, 'writer-choice-repair', model, SUPPLEMENTARY_MAX_TOKENS);
+    const content = extractResponseContent(
+      data,
+      'writer-choice-repair',
+      model,
+      SUPPLEMENTARY_MAX_TOKENS
+    );
     const parsedMessage = parseMessageJsonContent(content);
     logResponse(logger, 'writerChoiceRepair', parsedMessage.rawText);
     const parsed = parsedMessage.parsed;

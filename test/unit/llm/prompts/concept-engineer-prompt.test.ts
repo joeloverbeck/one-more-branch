@@ -28,7 +28,7 @@ function createContext(seedCount = 6): ConceptEngineerContext {
   return {
     seeds: Array.from({ length: seedCount }, (_, i) => createConceptSeedFixture(i + 1)),
     characterWorlds: Array.from({ length: seedCount }, (_, i) =>
-      createConceptCharacterWorldFixture(i + 1),
+      createConceptCharacterWorldFixture(i + 1)
     ),
     kernel: {
       dramaticThesis: 'Control destroys trust',

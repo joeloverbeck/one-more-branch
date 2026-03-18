@@ -1,6 +1,9 @@
 import { LLMError } from '@/llm/llm-client-types';
 import type { StoryKernel } from '@/models/story-kernel';
-import { createEvolutionService, type EvolveConceptsInput } from '@/server/services/evolution-service';
+import {
+  createEvolutionService,
+  type EvolveConceptsInput,
+} from '@/server/services/evolution-service';
 import {
   createConceptCharacterWorldFixture,
   createConceptEngineFixture,
@@ -42,7 +45,7 @@ function createInput(overrides: Partial<EvolveConceptsInput> = {}): EvolveConcep
 
 function expectCompletedStage(
   event: { stage: string; status: string; attempt: number; durationMs?: number },
-  stage: string,
+  stage: string
 ): void {
   expect(event).toMatchObject({ stage, status: 'completed', attempt: 1 });
   expect(typeof event.durationMs).toBe('number');
@@ -81,8 +84,14 @@ describe('evolution-service', () => {
     it('calls evolver then evaluator then verifier with expected inputs', async () => {
       const callOrder: string[] = [];
       const scoredConcepts = [createScoredConceptFixture(1), createScoredConceptFixture(2)];
-      const evaluatedConcepts = [createEvaluatedConceptFixture(1), createEvaluatedConceptFixture(2)];
-      const verifications = [createConceptVerificationFixture(1), createConceptVerificationFixture(2)];
+      const evaluatedConcepts = [
+        createEvaluatedConceptFixture(1),
+        createEvaluatedConceptFixture(2),
+      ];
+      const verifications = [
+        createConceptVerificationFixture(1),
+        createConceptVerificationFixture(2),
+      ];
       const deps = createEvolutionStageDeps();
       deps.generateEvolvedConceptSeeds.mockImplementation(() => {
         callOrder.push('seeder');
@@ -134,7 +143,7 @@ describe('evolution-service', () => {
           parentConcepts: createInput().parentConcepts,
           kernel: createStoryKernel(),
         },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(deps.generateConceptCharacterWorlds).toHaveBeenCalledWith(
         {
@@ -145,7 +154,7 @@ describe('evolution-service', () => {
           moodKeywords: undefined,
           contentPreferences: undefined,
         },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(deps.generateConceptEngines).toHaveBeenCalledWith(
         {
@@ -157,18 +166,18 @@ describe('evolution-service', () => {
           moodKeywords: undefined,
           contentPreferences: undefined,
         },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(evaluateConcepts).toHaveBeenCalledWith(
         {
           concepts: [createConceptSpecFixture(1), createConceptSpecFixture(2)],
           userSeeds: { apiKey: 'valid-key-12345' },
         },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(verifyConcepts).toHaveBeenCalledWith(
         { evaluatedConcepts, kernel: createStoryKernel() },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(result).toEqual({
         evolvedConcepts: [createConceptSpecFixture(1), createConceptSpecFixture(2)],
@@ -179,7 +188,8 @@ describe('evolution-service', () => {
     });
 
     it('emits stage callbacks for evolve, evaluate, and verify in order', async () => {
-      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+        [];
       const deps = createEvolutionStageDeps();
       const service = createEvolutionService({
         ...deps,
@@ -199,20 +209,39 @@ describe('evolution-service', () => {
           onGenerationStage: (event) => {
             events.push(event);
           },
-        }),
+        })
       );
 
       expect(events).toHaveLength(10);
-      expect(events[0]).toEqual({ stage: 'SEEDING_EVOLVED_CONCEPTS', status: 'started', attempt: 1 });
-      expectCompletedStage(events[1] as { stage: string; status: string; attempt: number; durationMs?: number }, 'SEEDING_EVOLVED_CONCEPTS');
+      expect(events[0]).toEqual({
+        stage: 'SEEDING_EVOLVED_CONCEPTS',
+        status: 'started',
+        attempt: 1,
+      });
+      expectCompletedStage(
+        events[1] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'SEEDING_EVOLVED_CONCEPTS'
+      );
       expect(events[2]).toEqual({ stage: 'ARCHITECTING_CONCEPTS', status: 'started', attempt: 1 });
-      expectCompletedStage(events[3] as { stage: string; status: string; attempt: number; durationMs?: number }, 'ARCHITECTING_CONCEPTS');
+      expectCompletedStage(
+        events[3] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'ARCHITECTING_CONCEPTS'
+      );
       expect(events[4]).toEqual({ stage: 'ENGINEERING_CONCEPTS', status: 'started', attempt: 1 });
-      expectCompletedStage(events[5] as { stage: string; status: string; attempt: number; durationMs?: number }, 'ENGINEERING_CONCEPTS');
+      expectCompletedStage(
+        events[5] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'ENGINEERING_CONCEPTS'
+      );
       expect(events[6]).toEqual({ stage: 'EVALUATING_CONCEPTS', status: 'started', attempt: 1 });
-      expectCompletedStage(events[7] as { stage: string; status: string; attempt: number; durationMs?: number }, 'EVALUATING_CONCEPTS');
+      expectCompletedStage(
+        events[7] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'EVALUATING_CONCEPTS'
+      );
       expect(events[8]).toEqual({ stage: 'ANALYZING_SPECIFICITY', status: 'started', attempt: 1 });
-      expectCompletedStage(events[9] as { stage: string; status: string; attempt: number; durationMs?: number }, 'ANALYZING_SPECIFICITY');
+      expectCompletedStage(
+        events[9] as { stage: string; status: string; attempt: number; durationMs?: number },
+        'ANALYZING_SPECIFICITY'
+      );
     });
 
     it('rejects fewer than 2 parent concepts', async () => {
@@ -223,7 +252,7 @@ describe('evolution-service', () => {
       });
 
       await expect(
-        service.evolveConcepts(createInput({ parentConcepts: [createEvaluatedConceptFixture(1)] })),
+        service.evolveConcepts(createInput({ parentConcepts: [createEvaluatedConceptFixture(1)] }))
       ).rejects.toThrow('Select 2-3 parent concepts');
     });
 
@@ -243,8 +272,8 @@ describe('evolution-service', () => {
               createEvaluatedConceptFixture(3),
               createEvaluatedConceptFixture(4),
             ],
-          }),
-        ),
+          })
+        )
       ).rejects.toThrow('Select 2-3 parent concepts');
     });
 
@@ -256,7 +285,7 @@ describe('evolution-service', () => {
       });
 
       await expect(service.evolveConcepts(createInput({ apiKey: ' short ' }))).rejects.toThrow(
-        'OpenRouter API key is required',
+        'OpenRouter API key is required'
       );
     });
 
@@ -276,10 +305,10 @@ describe('evolution-service', () => {
               opposingForce: '',
               directionOfChange: 'IRONIC',
               thematicQuestion: '',
-            antithesis: 'Counter-argument challenges the thesis.',
+              antithesis: 'Counter-argument challenges the thesis.',
             },
-          }),
-        ),
+          })
+        )
       ).rejects.toThrow('Story kernel is required');
     });
 

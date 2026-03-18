@@ -116,6 +116,14 @@ Stakes: {{act.stakes}}
 {{#if act.exitReversal}}Expected Exit Reversal: {{act.exitReversal}}{{/if}}
 {{#if act.promiseTargets}}Promise Targets: {{act.promiseTargets joined by ', '}}{{/if}}
 
+=== STRUCTURE PRIORITIES ===
+Immediate milestone completion target: {{activeMilestone.exitCondition || activeMilestone.objective}}
+- Treat the active milestone exit condition as the default completion contract for the current scene.
+- Use the milestone objective only as fallback context when the exit condition is absent.
+{{#if act.actQuestion}}- Use the act question as the act-level compass for scene direction and drift checks.{{/if}}
+{{#if act.exitReversal}}- Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.{{/if}}
+{{#if act.exitReversal}}- Only elevate the exit reversal into a direct scene requirement when the scene is approaching an act transition or the active milestone is the act's final milestone.{{/if}}
+
 BEATS IN THIS ACT:
   [x] CONCLUDED ({{beat.role}}): {{beat.description}}
     Resolution: {{beatProgression.resolution}}
@@ -136,7 +144,7 @@ REMAINING ACTS:
   - Act {{N}}: {{act.name}} - {{act.objective}}
 ```
 
-Act-level fields `actQuestion`, `exitReversal`, and `promiseTargets` are rendered defensively — only when non-empty. Active milestones show all architecture v2 fields when present.
+Act-level fields `actQuestion`, `exitReversal`, and `promiseTargets` are rendered defensively only when non-empty. The `STRUCTURE PRIORITIES` block makes the intended authority order explicit: `exitCondition` is the immediate milestone-completion contract, `objective` is fallback only when `exitCondition` is absent, `actQuestion` steers act-level direction, and `exitReversal` is an act-end horizon rather than the scene's default completion gate.
 
 ## Protagonist Identity Directive
 

@@ -1,7 +1,4 @@
-import {
-  SPEECH_REQUIRED_FIELDS,
-  SPEECH_SCHEMA_FIELDS,
-} from '../entity-decomposition-contract.js';
+import { SPEECH_REQUIRED_FIELDS, SPEECH_SCHEMA_FIELDS } from '../entity-decomposition-contract.js';
 import type { JsonSchema } from '../llm-client-types.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -118,8 +115,7 @@ export const CHAR_PRESENTATION_GENERATION_SCHEMA: JsonSchema = {
               },
               emotionalLeakage: {
                 type: 'string',
-                description:
-                  "What feelings slip through despite the character's control.",
+                description: "What feelings slip through despite the character's control.",
               },
             },
           },

@@ -1,5 +1,8 @@
 import type { ContentPacket } from '../../models/content-packet.js';
-import type { ConceptEvolverSeederContext, EvaluatedConcept } from '../../models/concept-generator.js';
+import type {
+  ConceptEvolverSeederContext,
+  EvaluatedConcept,
+} from '../../models/concept-generator.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { buildSeederTaxonomyGuidance, SEEDER_QUALITY_ANCHORS } from './concept-prompt-shared.js';
@@ -17,7 +20,7 @@ function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
         `- [${p.contentId}] coreAnomaly: ${p.coreAnomaly}
   wildnessInvariant: ${p.wildnessInvariant}
   socialEngine: ${p.socialEngine}
-  signatureImage: ${p.signatureImage}`,
+  signatureImage: ${p.signatureImage}`
     )
     .join('\n');
 
@@ -28,9 +31,7 @@ ${packetEntries}`;
 }
 
 function buildWildnessInvariantsBlock(packets: readonly ContentPacket[]): string {
-  const invariants = packets
-    .map((p) => `- [${p.contentId}]: ${p.wildnessInvariant}`)
-    .join('\n');
+  const invariants = packets.map((p) => `- [${p.contentId}]: ${p.wildnessInvariant}`).join('\n');
 
   return `WILDNESS INVARIANTS:
 The following invariants from content packets MUST be preserved or intensified in evolved seeds. Do not normalize, dilute, or replace them with generic genre equivalents.
@@ -79,7 +80,7 @@ function buildParentPayload(parentConcepts: readonly EvaluatedConcept[]): string
 }
 
 export function buildConceptEvolverSeederPrompt(
-  context: ConceptEvolverSeederContext,
+  context: ConceptEvolverSeederContext
 ): ChatMessage[] {
   const genreVibes = normalize(context.genreVibes);
   const moodKeywords = normalize(context.moodKeywords);
@@ -100,7 +101,7 @@ export function buildConceptEvolverSeederPrompt(
     buildSeederTaxonomyGuidance(context.excludedGenres),
     SEEDER_QUALITY_ANCHORS,
     DIVERSITY_CONSTRAINTS,
-    KERNEL_CONSTRAINTS,
+    KERNEL_CONSTRAINTS
   );
 
   const userSections: string[] = [
@@ -126,7 +127,7 @@ ${buildParentPayload(context.parentConcepts)}`,
   const protagonistDetails = normalize(context.protagonistDetails);
   if (protagonistDetails) {
     userSections.push(
-      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — OFFSPRING MUST RETAIN THIS PROTAGONIST):\n${protagonistDetails}\nEvolution mutates genre, conflict, and mechanics — it NEVER replaces the user's protagonist. Every offspring must center this character.`,
+      `MANDATORY PROTAGONIST (NON-NEGOTIABLE — OFFSPRING MUST RETAIN THIS PROTAGONIST):\n${protagonistDetails}\nEvolution mutates genre, conflict, and mechanics — it NEVER replaces the user's protagonist. Every offspring must center this character.`
     );
   }
 
@@ -138,7 +139,7 @@ ${buildParentPayload(context.parentConcepts)}`,
 
   if (mandateParts.length > 0) {
     userSections.push(
-      `USER CREATIVE MANDATE (evolved offspring MUST embody ALL of the following):\n${mandateParts.join('\n')}\nMutation changes form, not tonal identity. Every offspring must centrally express all listed qualities.`,
+      `USER CREATIVE MANDATE (evolved offspring MUST embody ALL of the following):\n${mandateParts.join('\n')}\nMutation changes form, not tonal identity. Every offspring must centrally express all listed qualities.`
     );
   }
 
@@ -154,7 +155,7 @@ ${buildParentPayload(context.parentConcepts)}`,
 - Every seed must be complete and schema-valid.
 - Do not copy any parent unchanged.
 - Preserve useful parent strengths while directly addressing parent weaknesses.
-- conflictType must be structurally coherent with conflictAxis.`,
+- conflictType must be structurally coherent with conflictAxis.`
   );
 
   return [

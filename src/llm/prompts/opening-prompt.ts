@@ -45,9 +45,7 @@ ${context.reconciliationFailureReasons
 `
       : '';
 
-  const storyBibleSection = context.storyBible
-    ? formatStoryBibleSection(context.storyBible)
-    : '';
+  const storyBibleSection = context.storyBible ? formatStoryBibleSection(context.storyBible) : '';
   const openingImageSection =
     context.structure && context.structure.openingImage.trim().length > 0
       ? `OPENING IMAGE CONTRACT:
@@ -107,7 +105,9 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
     toneAvoid: context.toneAvoid,
     genreFrame: context.genreFrame,
   };
-  const messages: ChatMessage[] = [{ role: 'system', content: buildOpeningSystemPrompt(toneParams) }];
+  const messages: ChatMessage[] = [
+    { role: 'system', content: buildOpeningSystemPrompt(toneParams) },
+  ];
 
   messages.push({ role: 'user', content: userPrompt });
 

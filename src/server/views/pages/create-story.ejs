@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container" id="create-story-page">
+    <section class="form-section">
+      <h1>Create Story</h1>
+      <p class="spine-section-subtitle">
+        Select a saved spine and give your story a title to begin the architecture pipeline.
+      </p>
+
+      <% if (savedSpines.length === 0) { %>
+        <div class="empty-state">
+          <p>No saved spines available. <a href="/spines">Generate spines first</a>.</p>
+        </div>
+      <% } else { %>
+        <form id="create-story-form">
+          <div class="form-group">
+            <label for="createStorySpineId">Saved Spine *</label>
+            <select id="createStorySpineId" required>
+              <option value="">Select a spine...</option>
+              <% savedSpines.forEach(function(s) { %>
+                <option value="<%= s.id %>"
+                  data-spine='<%- JSON.stringify(s) %>'
+                ><%= s.name %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <div id="spine-summary-panel" style="display: none;">
+            <h3>Spine Summary</h3>
+            <div id="spine-summary-content" class="spine-summary"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="createStoryTitle">Story Title *</label>
+            <input
+              type="text"
+              id="createStoryTitle"
+              required
+              placeholder="Enter your story title"
+              maxlength="200"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="createStoryApiKey">OpenRouter API Key *</label>
+            <input
+              type="password"
+              id="createStoryApiKey"
+              required
+              placeholder="sk-or-..."
+              autocomplete="off"
+            >
+            <p class="form-help">
+              Get your API key from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter</a>.
+              Your key is never stored on the server.
+            </p>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              id="create-story-btn"
+              class="btn btn-primary btn-large"
+              disabled
+            >
+              Create Story
+            </button>
+          </div>
+        </form>
+
+        <section id="create-story-progress-section" class="loading-overlay" style="display: none;">
+          <div id="create-story-progress-content" class="loading-overlay-content"></div>
+        </section>
+      <% } %>
+
+      <div id="create-story-error" class="form-error" style="display: none;"></div>
+    </section>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

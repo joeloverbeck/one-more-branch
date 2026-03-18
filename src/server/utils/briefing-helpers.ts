@@ -1,4 +1,9 @@
-import type { DecomposedCharacter, DecomposedWorld, NpcAgenda, WorldFactDomain } from '../../models';
+import type {
+  DecomposedCharacter,
+  DecomposedWorld,
+  NpcAgenda,
+  WorldFactDomain,
+} from '../../models';
 
 export interface ProtagonistBriefing {
   readonly name: string;

@@ -25,7 +25,7 @@ function buildContentPacketInvariantDirective(packets: readonly ContentPacket[])
   const packetSummaries = packets
     .map(
       (p) =>
-        `- ${p.contentId}: wildnessInvariant="${p.wildnessInvariant}", dullCollapse="${p.dullCollapse}"`,
+        `- ${p.contentId}: wildnessInvariant="${p.wildnessInvariant}", dullCollapse="${p.dullCollapse}"`
     )
     .join('\n');
 
@@ -67,7 +67,12 @@ function buildUserPayload(context: ConceptVerifierContext): string {
 }
 
 export function buildConceptSpecificityPrompt(context: ConceptVerifierContext): ChatMessage[] {
-  const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, SPECIFICITY_DIRECTIVES, KERNEL_FIDELITY_DIRECTIVE];
+  const systemSections: string[] = [
+    ROLE_INTRO,
+    CONTENT_POLICY,
+    SPECIFICITY_DIRECTIVES,
+    KERNEL_FIDELITY_DIRECTIVE,
+  ];
 
   if (context.contentPackets && context.contentPackets.length > 0) {
     systemSections.push(buildContentPacketInvariantDirective(context.contentPackets));

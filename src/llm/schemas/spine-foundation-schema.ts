@@ -43,13 +43,7 @@ export const SPINE_FOUNDATION_SCHEMA: JsonSchema = {
               },
               characterArcType: {
                 type: 'string',
-                enum: [
-                  'POSITIVE_CHANGE',
-                  'FLAT',
-                  'DISILLUSIONMENT',
-                  'FALL',
-                  'CORRUPTION',
-                ],
+                enum: ['POSITIVE_CHANGE', 'FLAT', 'DISILLUSIONMENT', 'FALL', 'CORRUPTION'],
                 description: 'The character arc trajectory.',
               },
               protagonistDeepestFear: {
@@ -65,8 +59,7 @@ export const SPINE_FOUNDATION_SCHEMA: JsonSchema = {
               },
               toneAvoid: {
                 type: 'array',
-                description:
-                  '3-5 tonal anti-patterns the story must never drift toward.',
+                description: '3-5 tonal anti-patterns the story must never drift toward.',
                 items: { type: 'string' },
               },
               thematicPremise: {

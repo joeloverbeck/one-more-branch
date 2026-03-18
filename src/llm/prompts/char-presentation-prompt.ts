@@ -72,9 +72,7 @@ function buildPresentationKernelSection(storyKernel?: StoryKernel): string {
   );
 }
 
-export function buildCharPresentationPrompt(
-  context: CharPresentationPromptContext
-): ChatMessage[] {
+export function buildCharPresentationPrompt(context: CharPresentationPromptContext): ChatMessage[] {
   const { webContext, characterKernel, tridimensionalProfile, agencyModel, deepRelationships } =
     context;
   const { assignment } = webContext;
@@ -161,7 +159,9 @@ Personal Dilemmas: ${formatStringList(deepRelationships.personalDilemmas)}`);
       : '';
 
   if (worldSection.length > 0) {
-    userSections.push(`${worldSection}\n\nCONSTRAINT: Ground speech patterns, vocabulary, and appearance in the world's cultures, languages, and aesthetic norms. Use worldbuilding to determine dialect, dress conventions, and knowledge boundaries.`);
+    userSections.push(
+      `${worldSection}\n\nCONSTRAINT: Ground speech patterns, vocabulary, and appearance in the world's cultures, languages, and aesthetic norms. Use worldbuilding to determine dialect, dress conventions, and knowledge boundaries.`
+    );
   }
 
   if (context.userNotes) {

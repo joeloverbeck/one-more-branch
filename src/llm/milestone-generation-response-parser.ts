@@ -11,6 +11,7 @@ import {
   MIDPOINT_TYPES,
   MILESTONE_ROLES,
 } from '../models/story-arc.js';
+import { logger } from '../logging/index.js';
 import { LLMError } from './llm-client-types.js';
 
 export interface MilestoneGenerationAct {
@@ -69,7 +70,11 @@ function parseNullableEnum<T extends string>(
   }
 
   if (typeof value !== 'string' || !allowed.includes(value as T)) {
-    throw new LLMError(`${label} must be one of ${allowed.join(', ')} or null`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} must be one of ${allowed.join(', ')} or null`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   return value as T;
@@ -88,7 +93,10 @@ function parseApproachVectorList(
   }
 
   const parsed = value.map((entry, index) => {
-    if (typeof entry !== 'string' || !APPROACH_VECTORS.includes(entry as (typeof APPROACH_VECTORS)[number])) {
+    if (
+      typeof entry !== 'string' ||
+      !APPROACH_VECTORS.includes(entry as (typeof APPROACH_VECTORS)[number])
+    ) {
       throw new LLMError(
         `${label}[${index}] must be a valid approach vector`,
         'STRUCTURE_PARSE_ERROR',
@@ -124,7 +132,11 @@ function parseObligatorySceneTag(value: unknown, label: string): string | null {
   }
 
   if (typeof value !== 'string' || !isGenreObligationTag(value)) {
-    throw new LLMError(`${label} must be a valid genre obligation tag or null`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} must be a valid genre obligation tag or null`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   return value;
@@ -183,24 +195,42 @@ function parseMilestone(
     `${label}.expectedGapMagnitude`
   );
   const isMidpoint = record['isMidpoint'] === true;
-  const midpointType = parseNullableEnum(record['midpointType'], MIDPOINT_TYPES, `${label}.midpointType`);
-  const uniqueScenarioHook = parseNullableString(record['uniqueScenarioHook'], `${label}.uniqueScenarioHook`);
+  const midpointType = parseNullableEnum(
+    record['midpointType'],
+    MIDPOINT_TYPES,
+    `${label}.midpointType`
+  );
+  const uniqueScenarioHook = parseNullableString(
+    record['uniqueScenarioHook'],
+    `${label}.uniqueScenarioHook`
+  );
   const approachVectors = parseApproachVectorList(
     record['approachVectors'],
     `${label}.approachVectors`
   );
-  const setpieceSourceIndex = parseSetpieceIndex(record['setpieceSourceIndex'], `${label}.setpieceSourceIndex`);
+  const setpieceSourceIndex = parseSetpieceIndex(
+    record['setpieceSourceIndex'],
+    `${label}.setpieceSourceIndex`
+  );
   const obligatorySceneTag = parseObligatorySceneTag(
     record['obligatorySceneTag'],
     `${label}.obligatorySceneTag`
   );
 
   if (!isMidpoint && midpointType !== null) {
-    throw new LLMError(`${label} has midpointType but isMidpoint is false`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} has midpointType but isMidpoint is false`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   if (isMidpoint && midpointType === null) {
-    throw new LLMError(`${label} is midpoint-tagged but missing midpointType`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} is midpoint-tagged but missing midpointType`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   const requiresEscalationFields = role === 'escalation' || role === 'turning_point';
@@ -212,7 +242,11 @@ function parseMilestone(
       throw new LLMError(`${label} must include crisisType`, 'STRUCTURE_PARSE_ERROR', true);
     }
     if (expectedGapMagnitude === null) {
-      throw new LLMError(`${label} must include expectedGapMagnitude`, 'STRUCTURE_PARSE_ERROR', true);
+      throw new LLMError(
+        `${label} must include expectedGapMagnitude`,
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
     }
     if (uniqueScenarioHook === null) {
       throw new LLMError(`${label} must include uniqueScenarioHook`, 'STRUCTURE_PARSE_ERROR', true);
@@ -253,7 +287,11 @@ function parseMilestone(
       );
     }
     if (approachVectors !== null) {
-      throw new LLMError(`${label} must set approachVectors to null`, 'STRUCTURE_PARSE_ERROR', true);
+      throw new LLMError(
+        `${label} must set approachVectors to null`,
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
     }
   }
 
@@ -312,7 +350,11 @@ export function parseMilestoneGenerationResponseObject(
     }
 
     const milestonesValue = record['milestones'];
-    if (!Array.isArray(milestonesValue) || milestonesValue.length < 2 || milestonesValue.length > 4) {
+    if (
+      !Array.isArray(milestonesValue) ||
+      milestonesValue.length < 2 ||
+      milestonesValue.length > 4
+    ) {
       throw new LLMError(
         `acts[${actPosition}].milestones must contain 2-4 items`,
         'STRUCTURE_PARSE_ERROR',
@@ -330,18 +372,17 @@ export function parseMilestoneGenerationResponseObject(
       if (milestone.isMidpoint) {
         midpointCount += 1;
         const expectedMidpoint = macroArchitecture.anchorMoments.midpoint;
-        if (expectedMidpoint.actIndex !== actPosition || expectedMidpoint.milestoneSlot !== milestoneIndex) {
-          throw new LLMError(
-            `Midpoint must appear at acts[${expectedMidpoint.actIndex}].milestones[${expectedMidpoint.milestoneSlot}]`,
-            'STRUCTURE_PARSE_ERROR',
-            true
+        if (
+          expectedMidpoint.actIndex !== actPosition ||
+          expectedMidpoint.milestoneSlot !== milestoneIndex
+        ) {
+          logger.warn(
+            `Midpoint placed at acts[${actPosition}].milestones[${milestoneIndex}] instead of expected acts[${expectedMidpoint.actIndex}].milestones[${expectedMidpoint.milestoneSlot}]; accepting LLM placement`
           );
         }
         if (milestone.midpointType !== expectedMidpoint.midpointType) {
-          throw new LLMError(
-            `Midpoint type must match ${expectedMidpoint.midpointType}`,
-            'STRUCTURE_PARSE_ERROR',
-            true
+          logger.warn(
+            `Midpoint type is ${milestone.midpointType} instead of expected ${expectedMidpoint.midpointType}; accepting LLM choice`
           );
         }
       }

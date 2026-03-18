@@ -14,7 +14,7 @@ const TEST_PREFIX = 'TEST: CHABUIPIP-06';
 
 function createSavedDevelopedCharacter(
   id: string,
-  overrides?: Partial<Pick<SavedDevelopedCharacter, 'sourceWebId' | 'updatedAt'>>,
+  overrides?: Partial<Pick<SavedDevelopedCharacter, 'sourceWebId' | 'updatedAt'>>
 ): SavedDevelopedCharacter {
   const now = new Date().toISOString();
   return {
@@ -57,7 +57,7 @@ describe('developed-character-repository', () => {
     const charId = `${TEST_PREFIX}-${randomUUID()}`;
 
     await expect(loadDevelopedCharacter(charId)).rejects.toThrow(
-      `Developed character not found: ${charId}`,
+      `Developed character not found: ${charId}`
     );
   });
 
@@ -88,7 +88,7 @@ describe('developed-character-repository', () => {
     createdCharIds.delete(charId);
 
     await expect(loadDevelopedCharacter(charId)).rejects.toThrow(
-      `Developed character not found: ${charId}`,
+      `Developed character not found: ${charId}`
     );
   });
 
@@ -102,9 +102,7 @@ describe('developed-character-repository', () => {
     await saveDevelopedCharacter(createSavedDevelopedCharacter(id2));
 
     const allChars = await listDevelopedCharacters();
-    const testIds = allChars
-      .filter((c) => c.id === id1 || c.id === id2)
-      .map((c) => c.id);
+    const testIds = allChars.filter((c) => c.id === id1 || c.id === id2).map((c) => c.id);
 
     expect(testIds).toHaveLength(2);
     expect(testIds).toContain(id1);
@@ -149,7 +147,7 @@ describe('developed-character-repository', () => {
     });
 
     await expect(loadDevelopedCharacter(charId)).rejects.toThrow(
-      'Invalid developed character after legacy field removal',
+      'Invalid developed character after legacy field removal'
     );
   });
 });

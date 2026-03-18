@@ -23,8 +23,12 @@ export function validateLorekeeperResponse(
   }
 
   const validated = LorekeeperResultSchema.parse(parsed);
-  const [sceneWorldContextField, relevantCharactersField, relevantCanonFactsField, relevantHistoryField] =
-    LOREKEEPER_REQUIRED_FIELDS;
+  const [
+    sceneWorldContextField,
+    relevantCharactersField,
+    relevantCanonFactsField,
+    relevantHistoryField,
+  ] = LOREKEEPER_REQUIRED_FIELDS;
   const [
     nameField,
     roleField,

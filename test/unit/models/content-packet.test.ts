@@ -16,17 +16,12 @@ describe('isContentKind', () => {
     expect(isContentKind(value)).toBe(true);
   });
 
-  it.each([
-    ['INVALID'],
-    ['entity'],
-    [''],
-    [null],
-    [undefined],
-    [42],
-    [true],
-  ])('rejects invalid value: %p', (value) => {
-    expect(isContentKind(value)).toBe(false);
-  });
+  it.each([['INVALID'], ['entity'], [''], [null], [undefined], [42], [true]])(
+    'rejects invalid value: %p',
+    (value) => {
+      expect(isContentKind(value)).toBe(false);
+    }
+  );
 });
 
 describe('isContentPacketRole', () => {
@@ -34,16 +29,12 @@ describe('isContentPacketRole', () => {
     expect(isContentPacketRole(value)).toBe(true);
   });
 
-  it.each([
-    ['INVALID'],
-    ['primary_seed'],
-    [''],
-    [null],
-    [undefined],
-    [42],
-  ])('rejects invalid value: %p', (value) => {
-    expect(isContentPacketRole(value)).toBe(false);
-  });
+  it.each([['INVALID'], ['primary_seed'], [''], [null], [undefined], [42]])(
+    'rejects invalid value: %p',
+    (value) => {
+      expect(isContentPacketRole(value)).toBe(false);
+    }
+  );
 });
 
 describe('isRiskAppetite', () => {
@@ -51,16 +42,12 @@ describe('isRiskAppetite', () => {
     expect(isRiskAppetite(value)).toBe(true);
   });
 
-  it.each([
-    ['INVALID'],
-    ['low'],
-    [''],
-    [null],
-    [undefined],
-    [42],
-  ])('rejects invalid value: %p', (value) => {
-    expect(isRiskAppetite(value)).toBe(false);
-  });
+  it.each([['INVALID'], ['low'], [''], [null], [undefined], [42]])(
+    'rejects invalid value: %p',
+    (value) => {
+      expect(isRiskAppetite(value)).toBe(false);
+    }
+  );
 });
 
 function makeValidSavedContentPacket(): Record<string, unknown> {

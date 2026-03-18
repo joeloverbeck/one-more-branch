@@ -7,6 +7,7 @@ import {
   getNpcRelationshipPanelData,
   getOpenThreadPanelData,
   getOpenThreadPanelRows,
+  getPlayStructureInfo,
   getTrackedPromisesPanelData,
 } from '@/server/utils/view-helpers';
 import {
@@ -334,6 +335,86 @@ describe('getActDisplayInfo', () => {
       expect(result?.exitReversal).toBeNull();
       expect(result?.promiseTargets).toEqual([]);
       expect(result?.obligationTargets).toEqual([]);
+    });
+
+    it('keeps display semantics tied to persisted page indices when accumulated state has advanced', () => {
+      const structure: StoryStructure = {
+        acts: [
+          {
+            id: 'act-1',
+            name: 'Opening',
+            objective: 'Secure the map',
+            stakes: 'If the rival gets there first, the city falls.',
+            entryCondition: 'The hunt has begun',
+            actQuestion: 'Will the crew seize the initiative?',
+            exitReversal: 'The map leads into enemy territory.',
+            promiseTargets: ['Reveal the map is incomplete'],
+            obligationTargets: ['inciting_incident'],
+            milestones: [
+              {
+                id: '1.1',
+                name: 'Break-In',
+                description: 'Steal the map fragment.',
+                objective: 'Extract the fragment.',
+                exitCondition: 'The crew escapes with proof.',
+                role: 'setup',
+              },
+              {
+                id: '1.2',
+                name: 'Lockdown',
+                description: 'The city seals itself.',
+                objective: 'Survive the crackdown.',
+                exitCondition: 'The crew chooses a route out.',
+                role: 'escalation',
+              },
+            ],
+          },
+        ],
+        overallTheme: 'Trust under pressure',
+        premise: 'A crew races for a fragment before the regime responds.',
+        openingImage: 'An opening image placeholder.',
+        closingImage: 'A closing image placeholder.',
+        pacingBudget: { targetPagesMin: 2, targetPagesMax: 6 },
+        generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+      };
+      const versionId = createTestVersionId('0003');
+      const story: Story = {
+        ...baseStory,
+        structureVersions: [createTestVersionedStructure(versionId, structure)],
+      };
+      const page: Page = {
+        ...basePage,
+        structureVersionId: versionId,
+        pageActIndex: 0,
+        pageMilestoneIndex: 0,
+        accumulatedStructureState: {
+          ...createEmptyAccumulatedStructureState(),
+          currentActIndex: 0,
+          currentMilestoneIndex: 1,
+          milestoneProgressions: [
+            { milestoneId: '1.1', status: 'concluded', resolution: 'The crew escaped clean.' },
+            { milestoneId: '1.2', status: 'active' },
+          ],
+        },
+      };
+
+      const result = getActDisplayInfo(story, page);
+
+      expect(result).toEqual({
+        actNumber: 1,
+        actName: 'Opening',
+        milestoneId: '1.1',
+        milestoneName: 'Break-In',
+        displayString: 'Act 1: Opening - Milestone 1.1: Break-In',
+        actObjective: 'Secure the map',
+        actStakes: 'If the rival gets there first, the city falls.',
+        milestoneObjective: 'Extract the fragment.',
+        actQuestion: 'Will the crew seize the initiative?',
+        exitCondition: 'The crew escapes with proof.',
+        exitReversal: 'The map leads into enemy territory.',
+        promiseTargets: ['Reveal the map is incomplete'],
+        obligationTargets: ['inciting_incident'],
+      });
     });
   });
 
@@ -1004,6 +1085,220 @@ describe('getNpcAgendaPanelData', () => {
   });
 });
 
+describe('getPlayStructureInfo', () => {
+  const baseStory = createStory({
+    title: 'Test Story',
+    characterConcept: 'A test character',
+    worldbuilding: 'Test world',
+    tone: 'Adventure',
+  });
+
+  const basePage = createPage({
+    id: 1,
+    narrativeText: 'Test narrative',
+    sceneSummary: 'Test summary of the scene events and consequences.',
+    choices: [createChoice('Choice 1'), createChoice('Choice 2')],
+    isEnding: false,
+    parentPageId: null,
+    parentChoiceIndex: null,
+  });
+
+  function createMultiBeatStructure(): StoryStructure {
+    return {
+      acts: [
+        {
+          id: 'act-1',
+          name: 'The Beginning',
+          objective: 'Establish',
+          stakes: 'Survival',
+          entryCondition: 'Story start',
+          actQuestion: 'Will they understand the threat before it reaches them?',
+          exitReversal: 'The thing hunting them already knows their names.',
+          promiseTargets: ['The darkness has a memory'],
+          obligationTargets: ['inciting_incident'],
+          milestones: [
+            {
+              id: '1.1',
+              name: 'The Sound in the Dark',
+              description: 'First milestone',
+              objective: 'Discover the sound',
+              exitCondition: 'They confirm the sound is following them.',
+              role: 'setup' as const,
+            },
+            {
+              id: '1.2',
+              name: 'The Face in the Shadows',
+              description: 'Second milestone',
+              objective: 'Confront the shadow',
+              exitCondition: 'They survive seeing the thing clearly.',
+              role: 'escalation' as const,
+            },
+            {
+              id: '1.3',
+              name: 'First Blood',
+              description: 'Third milestone',
+              objective: 'Survive the encounter',
+              exitCondition: 'They escape the first direct attack.',
+              role: 'turning_point' as const,
+            },
+          ],
+        },
+        {
+          id: 'act-2',
+          name: 'The Journey',
+          objective: 'Travel',
+          stakes: 'Time',
+          entryCondition: 'After act 1',
+          actQuestion: 'Can they stay ahead of what they awakened?',
+          exitReversal: 'The road home is already gone.',
+          promiseTargets: ['The road demands a price'],
+          obligationTargets: ['midpoint_reversal'],
+          milestones: [
+            {
+              id: '2.1',
+              name: 'The Road Ahead',
+              description: 'First milestone of act 2',
+              objective: 'Set out',
+              exitCondition: 'They commit to the road with no way back.',
+              role: 'setup' as const,
+            },
+          ],
+        },
+      ],
+      overallTheme: 'Survival',
+      premise: 'A dark journey',
+      openingImage: 'An opening image placeholder.',
+      closingImage: 'A closing image placeholder.',
+      pacingBudget: { targetPagesMin: 5, targetPagesMax: 15 },
+      generatedAt: new Date('2026-01-01T00:00:00.000Z'),
+    };
+  }
+
+  it('returns page and next-target structures when page and accumulated state still match', () => {
+    const structure = createMultiBeatStructure();
+    const versionId = createTestVersionId('0001');
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [createTestVersionedStructure(versionId, structure)],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: versionId,
+      pageActIndex: 0,
+      pageMilestoneIndex: 1,
+      accumulatedStructureState: {
+        ...createEmptyAccumulatedStructureState(),
+        currentActIndex: 0,
+        currentMilestoneIndex: 1,
+      },
+    };
+
+    const result = getPlayStructureInfo(story, page);
+
+    expect(result?.pageStructure).toEqual(
+      expect.objectContaining({
+        milestoneId: '1.2',
+        milestoneName: 'The Face in the Shadows',
+        displayString: 'Act 1: The Beginning - Milestone 1.2: The Face in the Shadows',
+        milestoneExitCriteria: 'They survive seeing the thing clearly.',
+      })
+    );
+    expect(result?.nextStructureTarget).toEqual(
+      expect.objectContaining({
+        milestoneId: '1.2',
+        milestoneName: 'The Face in the Shadows',
+        displayString: 'Act 1: The Beginning - Milestone 1.2: The Face in the Shadows',
+      })
+    );
+  });
+
+  it('separates page history from next target when accumulated state has already advanced', () => {
+    const structure = createMultiBeatStructure();
+    const versionId = createTestVersionId('0001');
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [createTestVersionedStructure(versionId, structure)],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: versionId,
+      pageActIndex: 0,
+      pageMilestoneIndex: 0,
+      accumulatedStructureState: {
+        ...createEmptyAccumulatedStructureState(),
+        currentActIndex: 0,
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Found the path' },
+          { milestoneId: '1.2', status: 'active' },
+        ],
+      },
+    };
+
+    const result = getPlayStructureInfo(story, page);
+
+    expect(result?.pageStructure).toEqual(
+      expect.objectContaining({
+        milestoneId: '1.1',
+        milestoneName: 'The Sound in the Dark',
+        displayString: 'Act 1: The Beginning - Milestone 1.1: The Sound in the Dark',
+      })
+    );
+    expect(result?.nextStructureTarget).toEqual(
+      expect.objectContaining({
+        milestoneId: '1.2',
+        milestoneName: 'The Face in the Shadows',
+        displayString: 'Act 1: The Beginning - Milestone 1.2: The Face in the Shadows',
+        milestoneObjective: 'Confront the shadow',
+        milestoneExitCriteria: 'They survive seeing the thing clearly.',
+      })
+    );
+  });
+
+  it('switches the next target to the next act after an act-ending milestone', () => {
+    const structure = createMultiBeatStructure();
+    const versionId = createTestVersionId('0001');
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [createTestVersionedStructure(versionId, structure)],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: versionId,
+      pageActIndex: 0,
+      pageMilestoneIndex: 2,
+      accumulatedStructureState: {
+        ...createEmptyAccumulatedStructureState(),
+        currentActIndex: 1,
+        currentMilestoneIndex: 0,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Done' },
+          { milestoneId: '1.2', status: 'concluded', resolution: 'Done' },
+          { milestoneId: '1.3', status: 'concluded', resolution: 'Act complete' },
+          { milestoneId: '2.1', status: 'active' },
+        ],
+      },
+    };
+
+    const result = getPlayStructureInfo(story, page);
+
+    expect(result?.pageStructure).toEqual(
+      expect.objectContaining({
+        milestoneId: '1.3',
+        milestoneName: 'First Blood',
+      })
+    );
+    expect(result?.nextStructureTarget).toEqual(
+      expect.objectContaining({
+        actNumber: 2,
+        actName: 'The Journey',
+        milestoneId: '2.1',
+        milestoneName: 'The Road Ahead',
+      })
+    );
+  });
+});
+
 describe('getMilestoneInfo', () => {
   const baseStory = createStory({
     title: 'Test Story',
@@ -1273,6 +1568,38 @@ describe('getMilestoneInfo', () => {
     const result = getMilestoneInfo(story, page);
 
     expect(result).toEqual({
+      type: 'milestone',
+      milestoneName: 'The Sound in the Dark',
+    });
+  });
+
+  it('can report a concluded milestone banner while page display remains on the historical milestone slot', () => {
+    const structure = createMultiBeatStructure();
+    const versionId = createTestVersionId('0001');
+    const story: Story = {
+      ...baseStory,
+      structureVersions: [createTestVersionedStructure(versionId, structure)],
+    };
+    const page: Page = {
+      ...basePage,
+      structureVersionId: versionId,
+      pageActIndex: 0,
+      pageMilestoneIndex: 0,
+      analystResult: createAnalystWithBeatConcluded(),
+      accumulatedStructureState: {
+        ...createEmptyAccumulatedStructureState(),
+        currentActIndex: 0,
+        currentMilestoneIndex: 1,
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Found the sound' },
+          { milestoneId: '1.2', status: 'active' },
+          { milestoneId: '1.3', status: 'pending' },
+        ],
+      },
+    };
+
+    expect(getActDisplayInfo(story, page)?.milestoneId).toBe('1.1');
+    expect(getMilestoneInfo(story, page)).toEqual({
       type: 'milestone',
       milestoneName: 'The Sound in the Dark',
     });

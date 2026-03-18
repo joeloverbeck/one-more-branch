@@ -3,10 +3,7 @@ import { runGenerationStage } from '../engine/generation-pipeline-helpers.js';
 import { EngineError, type GenerationStageCallback } from '../engine/types.js';
 import { runCharacterStage } from '../llm/character-stage-runner.js';
 import { generateCharacterWeb } from '../llm/character-web-generation.js';
-import type {
-  CastPipelineInputs,
-  CharacterDevStage,
-} from '../models/character-pipeline-types.js';
+import type { CastPipelineInputs, CharacterDevStage } from '../models/character-pipeline-types.js';
 import {
   toDecomposedCharacter,
   toDecomposedCharacterFromWeb,
@@ -39,16 +36,22 @@ import {
 import { loadKernel } from '../persistence/kernel-repository.js';
 
 export interface CharacterWebService {
-  createWeb(name: string, sourceConceptId: string, userNotes?: string, worldbuilding?: string, sourceWorldbuildingId?: string): Promise<SavedCharacterWeb>;
+  createWeb(
+    name: string,
+    sourceConceptId: string,
+    userNotes?: string,
+    worldbuilding?: string,
+    sourceWorldbuildingId?: string
+  ): Promise<SavedCharacterWeb>;
   generateWeb(
     webId: string,
     apiKey: string,
-    onStage?: GenerationStageCallback,
+    onStage?: GenerationStageCallback
   ): Promise<SavedCharacterWeb>;
   regenerateWeb(
     webId: string,
     apiKey: string,
-    onStage?: GenerationStageCallback,
+    onStage?: GenerationStageCallback
   ): Promise<SavedCharacterWeb>;
   loadWeb(webId: string): Promise<SavedCharacterWeb | null>;
   listWebs(): Promise<SavedCharacterWeb[]>;
@@ -58,13 +61,13 @@ export interface CharacterWebService {
     charId: string,
     stage: CharacterDevStage,
     apiKey: string,
-    onStage?: GenerationStageCallback,
+    onStage?: GenerationStageCallback
   ): Promise<SavedDevelopedCharacter>;
   regenerateCharacterStage(
     charId: string,
     stage: CharacterDevStage,
     apiKey: string,
-    onStage?: GenerationStageCallback,
+    onStage?: GenerationStageCallback
   ): Promise<SavedDevelopedCharacter>;
   loadCharacter(charId: string): Promise<SavedDevelopedCharacter | null>;
   listCharactersForWeb(webId: string): Promise<SavedDevelopedCharacter[]>;
@@ -73,7 +76,7 @@ export interface CharacterWebService {
   patchCharacterStage(
     charId: string,
     stage: CharacterDevStage,
-    payload: unknown,
+    payload: unknown
   ): Promise<SavedDevelopedCharacter>;
   patchWeb(webId: string, payload: unknown): Promise<SavedCharacterWeb>;
   removeAssignment(webId: string, characterName: string): Promise<SavedCharacterWeb>;
@@ -92,7 +95,10 @@ interface CharacterWebServiceDeps {
   readonly deleteDevelopedCharacter: typeof deleteDevelopedCharacter;
   readonly generateCharacterWeb: typeof generateCharacterWeb;
   readonly runCharacterStage: typeof runCharacterStage;
-  readonly toDecomposedCharacter: (char: SavedDevelopedCharacter, webContext: CharacterWebContext) => DecomposedCharacter;
+  readonly toDecomposedCharacter: (
+    char: SavedDevelopedCharacter,
+    webContext: CharacterWebContext
+  ) => DecomposedCharacter;
   readonly toDecomposedCharacterFromWeb: typeof toDecomposedCharacterFromWeb;
   readonly loadConcept: (conceptId: string) => Promise<SavedConcept | null>;
   readonly loadKernel: (kernelId: string) => Promise<SavedKernel | null>;
@@ -144,10 +150,7 @@ function normalizeName(value: string): string {
   return normalizeForComparison(value);
 }
 
-function requireWeb(
-  webId: string,
-  web: SavedCharacterWeb | null,
-): SavedCharacterWeb {
+function requireWeb(webId: string, web: SavedCharacterWeb | null): SavedCharacterWeb {
   if (web === null) {
     throw new EngineError(`Character web not found: ${webId}`, 'RESOURCE_NOT_FOUND');
   }
@@ -155,18 +158,15 @@ function requireWeb(
   return web;
 }
 
-function buildWebContext(
-  web: SavedCharacterWeb,
-  characterName: string,
-): CharacterWebContext {
+function buildWebContext(web: SavedCharacterWeb, characterName: string): CharacterWebContext {
   const assignment = web.assignments.find(
-    (candidate) => normalizeName(candidate.characterName) === normalizeName(characterName),
+    (candidate) => normalizeName(candidate.characterName) === normalizeName(characterName)
   );
 
   if (assignment === undefined) {
     throw new EngineError(
       `Character ${characterName} not found in web ${web.id} assignments`,
-      'VALIDATION_FAILED',
+      'VALIDATION_FAILED'
     );
   }
 
@@ -179,15 +179,12 @@ function buildWebContext(
 }
 
 function isMissingCharacterError(error: unknown, charId: string): boolean {
-  return (
-    error instanceof Error &&
-    error.message === `Developed character not found: ${charId}`
-  );
+  return error instanceof Error && error.message === `Developed character not found: ${charId}`;
 }
 
 async function loadRequiredCharacter(
   deps: CharacterWebServiceDeps,
-  charId: string,
+  charId: string
 ): Promise<SavedDevelopedCharacter> {
   try {
     return await deps.loadDevelopedCharacter(charId);
@@ -203,9 +200,11 @@ async function loadRequiredCharacter(
 function resetCharacterFromStage(
   character: SavedDevelopedCharacter,
   stage: CharacterDevStage,
-  updatedAt: string,
+  updatedAt: string
 ): SavedDevelopedCharacter {
-  const completedStages = character.completedStages.filter((completedStage) => completedStage < stage);
+  const completedStages = character.completedStages.filter(
+    (completedStage) => completedStage < stage
+  );
 
   return {
     ...character,
@@ -224,7 +223,7 @@ async function deriveInputsFromConcept(
   sourceConceptId: string,
   userNotes?: string,
   worldbuilding?: string,
-  sourceWorldbuildingId?: string,
+  sourceWorldbuildingId?: string
 ): Promise<CastPipelineInputs> {
   const concept = await deps.loadConcept(sourceConceptId);
   if (concept === null) {
@@ -233,10 +232,7 @@ async function deriveInputsFromConcept(
 
   const kernel = await deps.loadKernel(concept.sourceKernelId);
   if (kernel === null) {
-    throw new EngineError(
-      `Kernel not found: ${concept.sourceKernelId}`,
-      'RESOURCE_NOT_FOUND',
-    );
+    throw new EngineError(`Kernel not found: ${concept.sourceKernelId}`, 'RESOURCE_NOT_FOUND');
   }
 
   const k = kernel.evaluatedKernel.kernel;
@@ -247,8 +243,7 @@ async function deriveInputsFromConcept(
 
   const c = concept.evaluatedConcept.concept;
   const conceptSummary =
-    (c.oneLineHook ?? '') +
-    (c.elevatorParagraph ? `\n${c.elevatorParagraph}` : '');
+    (c.oneLineHook ?? '') + (c.elevatorParagraph ? `\n${c.elevatorParagraph}` : '');
 
   let decomposedWorld;
   if (sourceWorldbuildingId) {
@@ -273,8 +268,10 @@ async function deriveInputsFromConcept(
 
 function sortAssignmentsForStoryPrep(web: SavedCharacterWeb): SavedCharacterWeb['assignments'] {
   return [...web.assignments].sort((left, right) => {
-    const leftIsProtagonist = normalizeName(left.characterName) === normalizeName(web.protagonistName);
-    const rightIsProtagonist = normalizeName(right.characterName) === normalizeName(web.protagonistName);
+    const leftIsProtagonist =
+      normalizeName(left.characterName) === normalizeName(web.protagonistName);
+    const rightIsProtagonist =
+      normalizeName(right.characterName) === normalizeName(web.protagonistName);
 
     if (leftIsProtagonist === rightIsProtagonist) {
       return 0;
@@ -285,12 +282,12 @@ function sortAssignmentsForStoryPrep(web: SavedCharacterWeb): SavedCharacterWeb[
 }
 
 export function createCharacterWebService(
-  deps: CharacterWebServiceDeps = defaultDeps,
+  deps: CharacterWebServiceDeps = defaultDeps
 ): CharacterWebService {
   const generateWebInternal = async (
     webId: string,
     apiKey: string,
-    onStage?: GenerationStageCallback,
+    onStage?: GenerationStageCallback
   ): Promise<SavedCharacterWeb> => {
     const trimmedWebId = trimRequired('Character web id', webId);
     const web = requireWeb(trimmedWebId, await deps.loadCharacterWeb(trimmedWebId));
@@ -301,25 +298,30 @@ export function createCharacterWebService(
       deps,
       web.sourceConceptId,
       web.inputs.userNotes,
-      web.inputs.worldbuilding,
+      web.inputs.worldbuilding
     );
 
-    return runGenerationStage(onStage, 'GENERATING_CHARACTER_WEB', async () => {
-      const generation = await deps.generateCharacterWeb(derivedInputs, trimmedApiKey);
-      const protagonistAssignment = getProtagonistAssignment(generation.assignments);
+    return runGenerationStage(
+      onStage,
+      'GENERATING_CHARACTER_WEB',
+      async () => {
+        const generation = await deps.generateCharacterWeb(derivedInputs, trimmedApiKey);
+        const protagonistAssignment = getProtagonistAssignment(generation.assignments);
 
-      const updatedWeb: SavedCharacterWeb = {
-        ...web,
-        updatedAt: deps.now(),
-        protagonistName: protagonistAssignment.characterName,
-        assignments: generation.assignments,
-        relationshipArchetypes: generation.relationshipArchetypes,
-        castDynamicsSummary: generation.castDynamicsSummary,
-      };
+        const updatedWeb: SavedCharacterWeb = {
+          ...web,
+          updatedAt: deps.now(),
+          protagonistName: protagonistAssignment.characterName,
+          assignments: generation.assignments,
+          relationshipArchetypes: generation.relationshipArchetypes,
+          castDynamicsSummary: generation.castDynamicsSummary,
+        };
 
-      await deps.saveCharacterWeb(updatedWeb);
-      return updatedWeb;
-    }, attempt);
+        await deps.saveCharacterWeb(updatedWeb);
+        return updatedWeb;
+      },
+      attempt
+    );
   };
 
   return {
@@ -328,7 +330,7 @@ export function createCharacterWebService(
       sourceConceptId: string,
       userNotes?: string,
       worldbuilding?: string,
-      sourceWorldbuildingId?: string,
+      sourceWorldbuildingId?: string
     ): Promise<SavedCharacterWeb> {
       const trimmedConceptId = trimRequired('Source concept id', sourceConceptId);
       const now = deps.now();
@@ -356,7 +358,7 @@ export function createCharacterWebService(
     async generateWeb(
       webId: string,
       apiKey: string,
-      onStage?: GenerationStageCallback,
+      onStage?: GenerationStageCallback
     ): Promise<SavedCharacterWeb> {
       return generateWebInternal(webId, apiKey, onStage);
     },
@@ -364,7 +366,7 @@ export function createCharacterWebService(
     async regenerateWeb(
       webId: string,
       apiKey: string,
-      onStage?: GenerationStageCallback,
+      onStage?: GenerationStageCallback
     ): Promise<SavedCharacterWeb> {
       return generateWebInternal(webId, apiKey, onStage);
     },
@@ -391,32 +393,33 @@ export function createCharacterWebService(
 
     async initializeCharacter(
       webId: string,
-      characterName: string,
+      characterName: string
     ): Promise<SavedDevelopedCharacter> {
       const trimmedWebId = trimRequired('Character web id', webId);
       const trimmedCharacterName = trimRequired('Character name', characterName);
       const web = requireWeb(trimmedWebId, await deps.loadCharacterWeb(trimmedWebId));
       const assignment = web.assignments.find(
-        (candidate) => normalizeName(candidate.characterName) === normalizeName(trimmedCharacterName),
+        (candidate) =>
+          normalizeName(candidate.characterName) === normalizeName(trimmedCharacterName)
       );
 
       if (assignment === undefined) {
         throw new EngineError(
           `Character ${trimmedCharacterName} is not assigned in character web ${trimmedWebId}`,
-          'VALIDATION_FAILED',
+          'VALIDATION_FAILED'
         );
       }
 
       const existingCharacters = await deps.listDevelopedCharactersByWebId(trimmedWebId);
       const duplicate = existingCharacters.find(
         (candidate) =>
-          normalizeName(candidate.characterName) === normalizeName(assignment.characterName),
+          normalizeName(candidate.characterName) === normalizeName(assignment.characterName)
       );
 
       if (duplicate !== undefined) {
         throw new EngineError(
           `Developed character already exists for ${assignment.characterName} in character web ${trimmedWebId}`,
-          'RESOURCE_CONFLICT',
+          'RESOURCE_CONFLICT'
         );
       }
 
@@ -443,13 +446,13 @@ export function createCharacterWebService(
       charId: string,
       stage: CharacterDevStage,
       apiKey: string,
-      onStage?: GenerationStageCallback,
+      onStage?: GenerationStageCallback
     ): Promise<SavedDevelopedCharacter> {
       const trimmedCharId = trimRequired('Character id', charId);
       const character = await loadRequiredCharacter(deps, trimmedCharId);
       const web = requireWeb(
         character.sourceWebId,
-        await deps.loadCharacterWeb(character.sourceWebId),
+        await deps.loadCharacterWeb(character.sourceWebId)
       );
 
       const derivedInputs = await deriveInputsFromConcept(
@@ -457,13 +460,13 @@ export function createCharacterWebService(
         web.sourceConceptId,
         web.inputs.userNotes,
         web.inputs.worldbuilding,
-        web.inputs.sourceWorldbuildingId,
+        web.inputs.sourceWorldbuildingId
       );
 
       const otherDevelopedCharacters =
         stage === 4
           ? (await deps.listDevelopedCharactersByWebId(character.sourceWebId)).filter(
-              (candidate) => candidate.id !== character.id,
+              (candidate) => candidate.id !== character.id
             )
           : undefined;
 
@@ -487,13 +490,13 @@ export function createCharacterWebService(
       charId: string,
       stage: CharacterDevStage,
       apiKey: string,
-      onStage?: GenerationStageCallback,
+      onStage?: GenerationStageCallback
     ): Promise<SavedDevelopedCharacter> {
       const trimmedCharId = trimRequired('Character id', charId);
       const character = await loadRequiredCharacter(deps, trimmedCharId);
       const web = requireWeb(
         character.sourceWebId,
-        await deps.loadCharacterWeb(character.sourceWebId),
+        await deps.loadCharacterWeb(character.sourceWebId)
       );
 
       const derivedInputs = await deriveInputsFromConcept(
@@ -501,14 +504,14 @@ export function createCharacterWebService(
         web.sourceConceptId,
         web.inputs.userNotes,
         web.inputs.worldbuilding,
-        web.inputs.sourceWorldbuildingId,
+        web.inputs.sourceWorldbuildingId
       );
 
       const resetCharacter = resetCharacterFromStage(character, stage, deps.now());
       const otherDevelopedCharacters =
         stage === 4
           ? (await deps.listDevelopedCharactersByWebId(character.sourceWebId)).filter(
-              (candidate) => candidate.id !== character.id,
+              (candidate) => candidate.id !== character.id
             )
           : undefined;
 
@@ -576,7 +579,7 @@ export function createCharacterWebService(
         return deps.toDecomposedCharacterFromWeb(
           assignment,
           web.relationshipArchetypes,
-          web.protagonistName,
+          web.protagonistName
         );
       });
     },
@@ -584,7 +587,7 @@ export function createCharacterWebService(
     async patchCharacterStage(
       charId: string,
       stage: CharacterDevStage,
-      payload: unknown,
+      payload: unknown
     ): Promise<SavedDevelopedCharacter> {
       const trimmedCharId = trimRequired('Character id', charId);
       const character = await loadRequiredCharacter(deps, trimmedCharId);
@@ -592,7 +595,7 @@ export function createCharacterWebService(
       if (!character.completedStages.includes(stage)) {
         throw new EngineError(
           `Stage ${stage} has not been completed yet — cannot patch`,
-          'VALIDATION_FAILED',
+          'VALIDATION_FAILED'
         );
       }
 
@@ -607,7 +610,10 @@ export function createCharacterWebService(
       };
 
       const fieldName = stageFieldMap[stage];
-      const existingData = character[fieldName as keyof typeof character] as unknown as Record<string, unknown>;
+      const existingData = character[fieldName as keyof typeof character] as unknown as Record<
+        string,
+        unknown
+      >;
       const patchData = payload as Record<string, unknown>;
       const mergedData = { ...existingData, ...patchData };
 
@@ -630,7 +636,7 @@ export function createCharacterWebService(
       if (validated.assignments !== undefined) {
         updatedAssignments = web.assignments.map((existing) => {
           const patch = validated.assignments!.find(
-            (entry) => normalizeName(entry.characterName) === normalizeName(existing.characterName),
+            (entry) => normalizeName(entry.characterName) === normalizeName(existing.characterName)
           );
 
           if (patch === undefined) {
@@ -648,14 +654,14 @@ export function createCharacterWebService(
           (entry) =>
             !web.assignments.some(
               (existing) =>
-                normalizeName(existing.characterName) === normalizeName(entry.characterName),
-            ),
+                normalizeName(existing.characterName) === normalizeName(entry.characterName)
+            )
         );
 
         if (unknownNames.length > 0) {
           throw new EngineError(
             `Unknown character names: ${unknownNames.map((entry) => entry.characterName).join(', ')}`,
-            'VALIDATION_FAILED',
+            'VALIDATION_FAILED'
           );
         }
       }
@@ -666,7 +672,7 @@ export function createCharacterWebService(
           const patch = validated.relationshipArchetypes!.find(
             (entry) =>
               normalizeName(entry.fromCharacter) === normalizeName(existing.fromCharacter) &&
-              normalizeName(entry.toCharacter) === normalizeName(existing.toCharacter),
+              normalizeName(entry.toCharacter) === normalizeName(existing.toCharacter)
           );
 
           if (patch === undefined) {
@@ -684,14 +690,14 @@ export function createCharacterWebService(
             !web.relationshipArchetypes.some(
               (existing) =>
                 normalizeName(existing.fromCharacter) === normalizeName(entry.fromCharacter) &&
-                normalizeName(existing.toCharacter) === normalizeName(entry.toCharacter),
-            ),
+                normalizeName(existing.toCharacter) === normalizeName(entry.toCharacter)
+            )
         );
 
         if (unknownPairs.length > 0) {
           throw new EngineError(
             `Unknown relationship pairs: ${unknownPairs.map((entry) => `${entry.fromCharacter} → ${entry.toCharacter}`).join(', ')}`,
-            'VALIDATION_FAILED',
+            'VALIDATION_FAILED'
           );
         }
       }
@@ -708,29 +714,26 @@ export function createCharacterWebService(
       return updatedWeb;
     },
 
-    async removeAssignment(
-      webId: string,
-      characterName: string,
-    ): Promise<SavedCharacterWeb> {
+    async removeAssignment(webId: string, characterName: string): Promise<SavedCharacterWeb> {
       const trimmedWebId = trimRequired('Character web id', webId);
       const trimmedName = trimRequired('Character name', characterName);
       const web = requireWeb(trimmedWebId, await deps.loadCharacterWeb(trimmedWebId));
 
       const assignment = web.assignments.find(
-        (candidate) => normalizeName(candidate.characterName) === normalizeName(trimmedName),
+        (candidate) => normalizeName(candidate.characterName) === normalizeName(trimmedName)
       );
 
       if (assignment === undefined) {
         throw new EngineError(
           `Character ${trimmedName} not found in web ${trimmedWebId} assignments`,
-          'VALIDATION_FAILED',
+          'VALIDATION_FAILED'
         );
       }
 
       if (assignment.isProtagonist) {
         throw new EngineError(
           `Cannot remove protagonist ${assignment.characterName} from web`,
-          'VALIDATION_FAILED',
+          'VALIDATION_FAILED'
         );
       }
 
@@ -740,12 +743,12 @@ export function createCharacterWebService(
         ...web,
         updatedAt: deps.now(),
         assignments: web.assignments.filter(
-          (entry) => normalizeName(entry.characterName) !== normalizedTarget,
+          (entry) => normalizeName(entry.characterName) !== normalizedTarget
         ),
         relationshipArchetypes: web.relationshipArchetypes.filter(
           (entry) =>
             normalizeName(entry.fromCharacter) !== normalizedTarget &&
-            normalizeName(entry.toCharacter) !== normalizedTarget,
+            normalizeName(entry.toCharacter) !== normalizedTarget
         ),
       };
 
@@ -753,7 +756,7 @@ export function createCharacterWebService(
 
       const developedCharacters = await deps.listDevelopedCharactersByWebId(trimmedWebId);
       const matching = developedCharacters.find(
-        (candidate) => normalizeName(candidate.characterName) === normalizedTarget,
+        (candidate) => normalizeName(candidate.characterName) === normalizedTarget
       );
 
       if (matching !== undefined) {

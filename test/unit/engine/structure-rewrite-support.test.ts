@@ -10,7 +10,10 @@ import {
 import type { StructureGenerationResult } from '../../../src/engine/structure-types';
 import { createStory } from '../../../src/models/story';
 import { createInitialVersionedStructure } from '../../../src/models/structure-version';
-import { createMilestoneDeviation, createInitialStructureState } from '../../../src/models/story-arc';
+import {
+  createMilestoneDeviation,
+  createInitialStructureState,
+} from '../../../src/models/story-arc';
 import type { AccumulatedStructureState, StoryStructure } from '../../../src/models/story-arc';
 import {
   buildMinimalDecomposedCharacter,
@@ -556,7 +559,9 @@ describe('structure-rewrite-support', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 1,
         currentMilestoneIndex: 0,
-        milestoneProgressions: [{ milestoneId: '2.1', status: 'concluded', resolution: 'Resolved.' }],
+        milestoneProgressions: [
+          { milestoneId: '2.1', status: 'concluded', resolution: 'Resolved.' },
+        ],
         pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
@@ -582,7 +587,9 @@ describe('structure-rewrite-support', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
         currentMilestoneIndex: 1,
-        milestoneProgressions: [{ milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' },
+        ],
         pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
@@ -608,7 +615,9 @@ describe('structure-rewrite-support', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
         currentMilestoneIndex: 1,
-        milestoneProgressions: [{ milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' },
+        ],
         pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
@@ -634,7 +643,9 @@ describe('structure-rewrite-support', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
         currentMilestoneIndex: 1,
-        milestoneProgressions: [{ milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' },
+        ],
         pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
@@ -660,7 +671,9 @@ describe('structure-rewrite-support', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
         currentMilestoneIndex: 1,
-        milestoneProgressions: [{ milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' }],
+        milestoneProgressions: [
+          { milestoneId: '1.1', status: 'concluded', resolution: 'Resolved.' },
+        ],
         pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };
@@ -733,7 +746,9 @@ describe('structure-rewrite-support', () => {
       const state: AccumulatedStructureState = {
         currentActIndex: 0,
         currentMilestoneIndex: 0,
-        milestoneProgressions: [{ milestoneId: 'invalid-id', status: 'concluded', resolution: 'Resolved.' }],
+        milestoneProgressions: [
+          { milestoneId: 'invalid-id', status: 'concluded', resolution: 'Resolved.' },
+        ],
         pagesInCurrentMilestone: 0,
         pacingNudge: null,
       };

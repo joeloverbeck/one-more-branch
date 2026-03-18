@@ -74,7 +74,11 @@ function nullableEnum<T extends string>(
     return null;
   }
   if (typeof value !== 'string' || !allowed.includes(value as T)) {
-    throw new LLMError(`${label} must be one of ${allowed.join(', ')} or null`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} must be one of ${allowed.join(', ')} or null`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
   return value as T;
 }
@@ -86,12 +90,14 @@ function parseApproachVectors(value: unknown, label: string): string[] | null {
   if (!Array.isArray(value)) {
     throw new LLMError(`${label} must be an array or null`, 'STRUCTURE_PARSE_ERROR', true);
   }
-  const vectors = value.map((entry, index) =>
-    nonEmptyString(entry, `${label}[${index}]`)
-  );
+  const vectors = value.map((entry, index) => nonEmptyString(entry, `${label}[${index}]`));
   for (const vector of vectors) {
     if (!APPROACH_VECTORS.includes(vector as (typeof APPROACH_VECTORS)[number])) {
-      throw new LLMError(`${label} contains invalid approach vector`, 'STRUCTURE_PARSE_ERROR', true);
+      throw new LLMError(
+        `${label} contains invalid approach vector`,
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
     }
   }
   if (new Set(vectors).size !== vectors.length) {
@@ -122,10 +128,18 @@ function parseGeneratedMilestone(
   const record = value as Record<string, unknown>;
   const role = nonEmptyString(record['role'], `${label}.role`);
   if (!MILESTONE_ROLES.includes(role as (typeof MILESTONE_ROLES)[number])) {
-    throw new LLMError(`${label}.role must be a valid milestone role`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label}.role must be a valid milestone role`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
-  const escalationType = nullableEnum(record['escalationType'], ESCALATION_TYPES, `${label}.escalationType`);
+  const escalationType = nullableEnum(
+    record['escalationType'],
+    ESCALATION_TYPES,
+    `${label}.escalationType`
+  );
   const secondaryEscalationType = nullableEnum(
     record['secondaryEscalationType'],
     ESCALATION_TYPES,
@@ -137,24 +151,59 @@ function parseGeneratedMilestone(
     GAP_MAGNITUDES,
     `${label}.expectedGapMagnitude`
   );
-  const midpointType = nullableEnum(record['midpointType'], MIDPOINT_TYPES, `${label}.midpointType`);
+  const midpointType = nullableEnum(
+    record['midpointType'],
+    MIDPOINT_TYPES,
+    `${label}.midpointType`
+  );
   const isMidpoint = record['isMidpoint'] === true;
-  const uniqueScenarioHook = nullableString(record['uniqueScenarioHook'], `${label}.uniqueScenarioHook`);
-  const approachVectors = parseApproachVectors(record['approachVectors'], `${label}.approachVectors`);
-  const setpieceSourceIndex = parseSetpieceIndex(record['setpieceSourceIndex'], `${label}.setpieceSourceIndex`);
-  const obligatorySceneTag = nullableString(record['obligatorySceneTag'], `${label}.obligatorySceneTag`);
+  const uniqueScenarioHook = nullableString(
+    record['uniqueScenarioHook'],
+    `${label}.uniqueScenarioHook`
+  );
+  const approachVectors = parseApproachVectors(
+    record['approachVectors'],
+    `${label}.approachVectors`
+  );
+  const setpieceSourceIndex = parseSetpieceIndex(
+    record['setpieceSourceIndex'],
+    `${label}.setpieceSourceIndex`
+  );
+  const obligatorySceneTag = nullableString(
+    record['obligatorySceneTag'],
+    `${label}.obligatorySceneTag`
+  );
 
   if (obligatorySceneTag !== null && !isGenreObligationTag(obligatorySceneTag)) {
-    throw new LLMError(`${label}.obligatorySceneTag must be a valid genre obligation tag`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label}.obligatorySceneTag must be a valid genre obligation tag`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
-  if (setpieceSourceIndex !== null && (setpieceSourceIndex < 0 || setpieceSourceIndex >= verifiedSetpieceCount)) {
-    throw new LLMError(`${label}.setpieceSourceIndex must reference a valid verified setpiece index`, 'STRUCTURE_PARSE_ERROR', true);
+  if (
+    setpieceSourceIndex !== null &&
+    (setpieceSourceIndex < 0 || setpieceSourceIndex >= verifiedSetpieceCount)
+  ) {
+    throw new LLMError(
+      `${label}.setpieceSourceIndex must reference a valid verified setpiece index`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
   if (isMidpoint && midpointType === null) {
-    throw new LLMError(`${label} is midpoint-tagged but missing midpointType`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} is midpoint-tagged but missing midpointType`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
   if (!isMidpoint && midpointType !== null) {
-    throw new LLMError(`${label} has midpointType but isMidpoint is false`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} has midpointType but isMidpoint is false`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   const requiresEscalationFields = role === 'escalation' || role === 'turning_point';
@@ -166,13 +215,21 @@ function parseGeneratedMilestone(
       throw new LLMError(`${label} must include crisisType`, 'STRUCTURE_PARSE_ERROR', true);
     }
     if (expectedGapMagnitude === null) {
-      throw new LLMError(`${label} must include expectedGapMagnitude`, 'STRUCTURE_PARSE_ERROR', true);
+      throw new LLMError(
+        `${label} must include expectedGapMagnitude`,
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
     }
     if (uniqueScenarioHook === null) {
       throw new LLMError(`${label} must include uniqueScenarioHook`, 'STRUCTURE_PARSE_ERROR', true);
     }
     if (approachVectors === null || approachVectors.length < 2 || approachVectors.length > 3) {
-      throw new LLMError(`${label} must include 2-3 approachVectors`, 'STRUCTURE_PARSE_ERROR', true);
+      throw new LLMError(
+        `${label} must include 2-3 approachVectors`,
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
     }
   } else {
     if (
@@ -183,7 +240,11 @@ function parseGeneratedMilestone(
       uniqueScenarioHook !== null ||
       approachVectors !== null
     ) {
-      throw new LLMError(`${label} has escalation-only fields populated for a non-escalation milestone`, 'STRUCTURE_PARSE_ERROR', true);
+      throw new LLMError(
+        `${label} has escalation-only fields populated for a non-escalation milestone`,
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
     }
   }
 
@@ -236,7 +297,11 @@ function parseGeneratedAct(
     promiseTargets: stringArray(record['promiseTargets'], `${label}.promiseTargets`),
     obligationTargets: stringArray(record['obligationTargets'], `${label}.obligationTargets`),
     milestones: milestonesValue.map((milestone, milestoneIndex) =>
-      parseGeneratedMilestone(milestone, `${label}.milestones[${milestoneIndex}]`, verifiedSetpieceCount)
+      parseGeneratedMilestone(
+        milestone,
+        `${label}.milestones[${milestoneIndex}]`,
+        verifiedSetpieceCount
+      )
     ),
   };
 }
@@ -247,7 +312,11 @@ function parseStructureRepairResponseObject(
   verifiedSetpieceCount: number
 ): StructureRepairResult {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError('Structure repair response must be an object', 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      'Structure repair response must be an object',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   const record = parsed as Record<string, unknown>;
@@ -269,11 +338,19 @@ function parseStructureRepairResponseObject(
       rawActIndex < 0 ||
       rawActIndex >= actCount
     ) {
-      throw new LLMError(`repairedActs[${index}].actIndex must reference a valid act`, 'STRUCTURE_PARSE_ERROR', true);
+      throw new LLMError(
+        `repairedActs[${index}].actIndex must reference a valid act`,
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
     }
     const actIndex = rawActIndex;
     if (seen.has(actIndex)) {
-      throw new LLMError(`repairedActs contains duplicate actIndex ${actIndex}`, 'STRUCTURE_PARSE_ERROR', true);
+      throw new LLMError(
+        `repairedActs contains duplicate actIndex ${actIndex}`,
+        'STRUCTURE_PARSE_ERROR',
+        true
+      );
     }
     seen.add(actIndex);
 
@@ -363,15 +440,18 @@ export function validateStructureSemantics(
       : {
           passed: false,
           check: 'milestone-count',
-          details: milestoneCountFailures.map(({ actIndex, count }) => `act ${actIndex} has ${count}`).join('; '),
+          details: milestoneCountFailures
+            .map(({ actIndex, count }) => `act ${actIndex} has ${count}`)
+            .join('; '),
           affectedActIndices: milestoneCountFailures.map(({ actIndex }) => actIndex),
         }
   );
 
   const escalationTypeFailures = flatMilestones
-    .filter(({ milestone }) =>
-      (milestone.role === 'escalation' || milestone.role === 'turning_point') &&
-      milestone.escalationType === null
+    .filter(
+      ({ milestone }) =>
+        (milestone.role === 'escalation' || milestone.role === 'turning_point') &&
+        milestone.escalationType === null
     )
     .map(({ actIndex, milestoneIndex }) => ({ actIndex, milestoneIndex }));
   validations.push(
@@ -392,7 +472,9 @@ export function validateStructureSemantics(
     const actsMissingTrace = result.acts
       .map((act, actIndex) => ({
         actIndex,
-        hasTrace: act.milestones.some((milestone) => typeof milestone.setpieceSourceIndex === 'number'),
+        hasTrace: act.milestones.some(
+          (milestone) => typeof milestone.setpieceSourceIndex === 'number'
+        ),
       }))
       .filter(({ hasTrace }) => !hasTrace)
       .map(({ actIndex }) => actIndex);
@@ -403,7 +485,8 @@ export function validateStructureSemantics(
             passed: false,
             check: 'setpiece-coverage',
             details: `Expected at least ${MIN_UNIQUE_TRACED_SETPIECES} unique traced setpieces, received ${uniqueSetpieces}`,
-            affectedActIndices: actsMissingTrace.length > 0 ? actsMissingTrace : result.acts.map((_, index) => index),
+            affectedActIndices:
+              actsMissingTrace.length > 0 ? actsMissingTrace : result.acts.map((_, index) => index),
           }
     );
   } else {
@@ -414,7 +497,8 @@ export function validateStructureSemantics(
     ? getGenreObligationTags(context.conceptSpec.genreFrame).map((entry) => entry.tag)
     : [];
   const plannedObligations = [...collectPlannedObligations(result)];
-  const obligationContract = plannedObligations.length > 0 ? plannedObligations : expectedObligations;
+  const obligationContract =
+    plannedObligations.length > 0 ? plannedObligations : expectedObligations;
   if (expectedObligations.length > 0) {
     const tagged = collectTaggedObligations(result);
     const missing = obligationContract.filter((tag) => !tagged.has(tag));
@@ -476,7 +560,10 @@ export function validateStructureSemantics(
 
   const exitReversalFailures = result.acts
     .map((act, actIndex) => ({ actIndex, exitReversal: act.exitReversal }))
-    .filter(({ actIndex, exitReversal }) => actIndex < result.acts.length - 1 && exitReversal.trim().length === 0)
+    .filter(
+      ({ actIndex, exitReversal }) =>
+        actIndex < result.acts.length - 1 && exitReversal.trim().length === 0
+    )
     .map(({ actIndex }) => actIndex);
   validations.push(
     exitReversalFailures.length === 0
@@ -566,7 +653,11 @@ export async function validateAndRepairStructure(
   apiKey: string,
   options?: Partial<GenerationOptions>,
   setpieceBank?: readonly string[]
-): Promise<{ result: StructureGenerationResult; repaired: boolean; diagnostics: ValidationResult[] }> {
+): Promise<{
+  result: StructureGenerationResult;
+  repaired: boolean;
+  diagnostics: ValidationResult[];
+}> {
   const initialDiagnostics = validateStructureSemantics(result, context, { setpieceBank });
   const failures = failingDiagnostics(initialDiagnostics);
   if (failures.length === 0) {
@@ -622,7 +713,9 @@ export async function validateAndRepairStructure(
 
   if (remainingFailures.length > 0) {
     for (const failure of remainingFailures) {
-      logger.warn(`Structure validation still failing after repair [${failure.check}]: ${failure.details ?? 'no details'}`);
+      logger.warn(
+        `Structure validation still failing after repair [${failure.check}]: ${failure.details ?? 'no details'}`
+      );
     }
   }
 

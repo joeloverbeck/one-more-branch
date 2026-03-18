@@ -16,13 +16,16 @@ export interface MilestoneConclusionResult {
   readonly milestoneResolution: string;
 }
 
-export function resolveMilestoneConclusion(context: MilestoneConclusionContext): MilestoneConclusionResult {
+export function resolveMilestoneConclusion(
+  context: MilestoneConclusionContext
+): MilestoneConclusionResult {
   let milestoneConcluded =
     'milestoneConcluded' in context.result && typeof context.result.milestoneConcluded === 'boolean'
       ? context.result.milestoneConcluded
       : false;
   const milestoneResolution =
-    'milestoneResolution' in context.result && typeof context.result.milestoneResolution === 'string'
+    'milestoneResolution' in context.result &&
+    typeof context.result.milestoneResolution === 'string'
       ? context.result.milestoneResolution
       : '';
 

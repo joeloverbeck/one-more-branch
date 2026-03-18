@@ -1,9 +1,5 @@
 import type { ConflictAxis, ConflictType } from './conflict-taxonomy.js';
-import type {
-  CharacterArcType,
-  StorySpineType,
-  ProtagonistNeedVsWant,
-} from './story-spine.js';
+import type { CharacterArcType, StorySpineType, ProtagonistNeedVsWant } from './story-spine.js';
 
 export interface SpineFoundation {
   readonly conflictAxis: ConflictAxis;

@@ -6,12 +6,12 @@ describe('genre convention / obligation disjointness', () => {
     const conventionTags = new Set(
       Object.values(GENRE_CONVENTIONS_BY_GENRE)
         .flat()
-        .map((e) => e.tag),
+        .map((e) => e.tag)
     );
     const obligationTags = new Set(
       Object.values(GENRE_OBLIGATION_TAGS_BY_GENRE)
         .flat()
-        .map((e) => e.tag),
+        .map((e) => e.tag)
     );
 
     const overlap = [...conventionTags].filter((t) => obligationTags.has(t));

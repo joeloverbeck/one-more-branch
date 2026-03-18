@@ -34,7 +34,7 @@ export async function loadSeed(seedId: string): Promise<ConceptSeed | null> {
 
 export async function updateSeed(
   seedId: string,
-  updater: (existing: ConceptSeed) => ConceptSeed,
+  updater: (existing: ConceptSeed) => ConceptSeed
 ): Promise<ConceptSeed> {
   return seedRepository.update(seedId, updater);
 }

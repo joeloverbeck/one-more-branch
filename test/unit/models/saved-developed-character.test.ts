@@ -7,7 +7,7 @@ import {
 } from '../../../src/models/saved-developed-character.js';
 
 function makeValidCharacter(
-  overrides: Partial<SavedDevelopedCharacter> = {},
+  overrides: Partial<SavedDevelopedCharacter> = {}
 ): SavedDevelopedCharacter {
   return {
     id: 'char-1',

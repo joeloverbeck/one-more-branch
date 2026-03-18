@@ -50,7 +50,7 @@ interface KernelStageExecutionContext {
 
 async function executeKernelStage<T>(
   context: KernelStageExecutionContext,
-  work: () => Promise<T>,
+  work: () => Promise<T>
 ): Promise<T> {
   const attempt = 1;
   context.onStage?.({
@@ -96,7 +96,7 @@ async function executeKernelStage<T>(
 export async function runKernelStage(
   input: KernelSeedInput,
   onStage?: GenerationStageCallback,
-  deps: KernelStageRunnerDeps = defaultDeps,
+  deps: KernelStageRunnerDeps = defaultDeps
 ): Promise<KernelStageResult> {
   const apiKey = requireApiKey(input.apiKey);
   const seeds = {
@@ -111,7 +111,7 @@ export async function runKernelStage(
       logStage: 'kernel-ideator',
       onStage,
     },
-    () => deps.generateKernels(seeds, apiKey),
+    () => deps.generateKernels(seeds, apiKey)
   );
 
   const evaluation: KernelEvaluationResult = await executeKernelStage(
@@ -129,8 +129,8 @@ export async function runKernelStage(
             apiKey,
           },
         },
-        apiKey,
-      ),
+        apiKey
+      )
   );
 
   return {

@@ -13,9 +13,7 @@ import {
   materializeStoryMilestone,
   normalizeStructureActFields,
 } from '../models/story-structure-normalization';
-import {
-  createStoryStructure,
-} from './structure-factory';
+import { createStoryStructure } from './structure-factory';
 import type { StructureGenerationResult } from './structure-types';
 
 export interface StructureRewriter {
@@ -138,7 +136,9 @@ export function mergePreservedWithRegenerated(
     }, 0);
 
     const seenMilestoneSignature = new Set(
-      mergedMilestones.map((milestone) => milestoneSignature(milestone.description, milestone.objective))
+      mergedMilestones.map((milestone) =>
+        milestoneSignature(milestone.description, milestone.objective)
+      )
     );
 
     for (const milestone of regeneratedAct?.milestones ?? []) {

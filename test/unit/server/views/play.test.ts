@@ -26,11 +26,11 @@ describe('play page template', () => {
       expect(template).toContain('class="act-indicator act-indicator--clickable"');
     });
 
-    it('has conditional for actDisplayInfo', () => {
+    it('has conditional for playStructureInfo page structure', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 
-      expect(template).toContain('<% if (actDisplayInfo) { %>');
-      expect(template).toContain('actDisplayInfo.displayString');
+      expect(template).toContain('const pageStructure = playStructureInfo?.pageStructure ?? null;');
+      expect(template).toContain('pageStructure.displayString');
     });
 
     it('wraps title and act in story-title-section', () => {
@@ -42,12 +42,15 @@ describe('play page template', () => {
       );
     });
 
-    it('includes the new structure detail labels in the expandable panel', () => {
+    it('includes separated structure cards in the expandable panel', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 
+      expect(template).toContain('This Page');
+      expect(template).toContain('Next Objective');
+      expect(template).toContain('Act Arc');
       expect(template).toContain('Act Question');
-      expect(template).toContain('Milestone Exit Condition');
-      expect(template).toContain('Exit Reversal');
+      expect(template).toContain('Milestone Exit Criteria');
+      expect(template).toContain('Act-End Reversal');
     });
   });
 
@@ -120,11 +123,11 @@ describe('play page template', () => {
       expect(template).toContain('JSON.stringify(page.analystResult ?? null)');
     });
 
-    it('contains insights-context JSON element with actDisplayInfo, sceneSummary, and resolvedThreadMeta', () => {
+    it('contains insights-context JSON element with playStructureInfo, sceneSummary, and resolvedThreadMeta', () => {
       const template = fs.readFileSync(playPath, 'utf8');
 
       expect(template).toContain('<script type="application/json" id="insights-context">');
-      expect(template).toContain('actDisplayInfo');
+      expect(template).toContain('playStructureInfo');
       expect(template).toContain('sceneSummary');
       expect(template).toContain('resolvedThreadMeta');
       expect(template).not.toContain('actDisplayInfo ? actDisplayInfo.displayString : null');

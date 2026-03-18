@@ -171,8 +171,8 @@ export function isStory(value: unknown): value is Story {
     Array.isArray(obj['globalCanon']) &&
     (obj['conceptSpec'] === undefined || isConceptSpec(obj['conceptSpec'])) &&
     (obj['storyKernel'] === undefined || isStoryKernel(obj['storyKernel'])) &&
-    (Array.isArray(obj['premisePromises']) &&
-      (obj['premisePromises'] as unknown[]).every((item) => typeof item === 'string')) &&
+    Array.isArray(obj['premisePromises']) &&
+    (obj['premisePromises'] as unknown[]).every((item) => typeof item === 'string') &&
     isGlobalCharacterCanon(obj['globalCharacterCanon']) &&
     (structure === null || isStoryStructure(structure)) &&
     (structureVersions === undefined ||

@@ -40,7 +40,7 @@ export function buildStructurePrompt(
   const setpieceBankSection = buildSetpieceBankSection(context.conceptVerification);
   const premisePromiseSection = buildStructureGenerationPremisePromiseSection(
     context.conceptVerification,
-    'CONSTRAINT: Design act stakes and escalation/turning_point milestone objectives so the story can credibly deliver these audience expectations over time.\nAvoid generic escalation that ignores the concept\'s promised experience.',
+    "CONSTRAINT: Design act stakes and escalation/turning_point milestone objectives so the story can credibly deliver these audience expectations over time.\nAvoid generic escalation that ignores the concept's promised experience.",
     'PREMISE PROMISE CONTRACT (from upstream concept verification):'
   );
   const genreConventionsSection = buildGenreConventionsSection(context.conceptSpec?.genreFrame);

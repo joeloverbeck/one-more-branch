@@ -134,7 +134,9 @@ export const FIXTURES = {
 
   changesAddingThreat: {
     newLocation: null,
-    threatsAdded: [{ text: 'Fire spreading from the east wing', threatType: ThreatType.ENVIRONMENTAL }],
+    threatsAdded: [
+      { text: 'Fire spreading from the east wing', threatType: ThreatType.ENVIRONMENTAL },
+    ],
     threatsRemoved: [],
     constraintsAdded: [],
     constraintsRemoved: [],
@@ -167,11 +169,18 @@ export const FIXTURES = {
     threatsAdded: [{ text: 'The tunnel is unstable', threatType: ThreatType.ENVIRONMENTAL }],
     threatsRemoved: ['th-1'],
     constraintsAdded: [
-      { text: 'Complete darkness requires careful movement', constraintType: ConstraintType.ENVIRONMENTAL },
+      {
+        text: 'Complete darkness requires careful movement',
+        constraintType: ConstraintType.ENVIRONMENTAL,
+      },
     ],
     constraintsRemoved: [],
     threadsAdded: [
-      { text: 'Strange sounds echo from below', threadType: ThreadType.MYSTERY, urgency: Urgency.HIGH },
+      {
+        text: 'Strange sounds echo from below',
+        threadType: ThreadType.MYSTERY,
+        urgency: Urgency.HIGH,
+      },
     ],
     threadsResolved: ['td-1'],
   } as ActiveStateChanges,

@@ -1,5 +1,8 @@
 import type { ConceptSpec } from '../../models/concept-generator.js';
-import type { CharacterKernel, TridimensionalProfile } from '../../models/character-pipeline-types.js';
+import type {
+  CharacterKernel,
+  TridimensionalProfile,
+} from '../../models/character-pipeline-types.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import type { CharacterDevPromptContext } from './char-kernel-prompt.js';
@@ -48,7 +51,7 @@ function buildAgencyKernelSection(storyKernel?: StoryKernel): string {
   return (
     baseSection +
     '\n\n' +
-    'CONSTRAINT: Use the value spectrum to ground core beliefs at a specific moral position. Use the thematic question to shape the character\'s deepest false belief. Use moral argument to inform the character\'s decision pattern.'
+    "CONSTRAINT: Use the value spectrum to ground core beliefs at a specific moral position. Use the thematic question to shape the character's deepest false belief. Use moral argument to inform the character's decision pattern."
   );
 }
 
@@ -121,7 +124,9 @@ export function buildCharAgencyPrompt(context: CharAgencyPromptContext): ChatMes
       : '';
 
   if (worldSection.length > 0) {
-    userSections.push(`${worldSection}\n\nCONSTRAINT: Calibrate beliefs, knowledge, and false beliefs to world facts. Characters should know and misunderstand things consistent with their position in this specific world.`);
+    userSections.push(
+      `${worldSection}\n\nCONSTRAINT: Calibrate beliefs, knowledge, and false beliefs to world facts. Characters should know and misunderstand things consistent with their position in this specific world.`
+    );
   }
 
   if (context.userNotes) {

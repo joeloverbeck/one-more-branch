@@ -1,4 +1,4 @@
-import type { Page, Story, StoryAct, StoryStructure } from '../../models/index.js';
+import type { Page, Story, StoryAct, StoryStructure, StructureVersionId } from '../../models/index.js';
 import type { KnowledgeAsymmetry } from '../../models/state/knowledge-state.js';
 import type { TrackedPromise } from '../../models/state/index.js';
 import type { AccumulatedNpcAgendas } from '../../models/state/npc-agenda.js';
@@ -26,6 +26,27 @@ export interface ActDisplayInfo {
   readonly exitReversal: string | null;
   readonly promiseTargets: readonly string[];
   readonly obligationTargets: readonly string[];
+}
+
+export interface PlayStructureFrame {
+  readonly actNumber: number;
+  readonly actName: string;
+  readonly milestoneId: string;
+  readonly milestoneName: string;
+  readonly displayString: string;
+  readonly actObjective: string | null;
+  readonly actStakes: string | null;
+  readonly milestoneObjective: string | null;
+  readonly actQuestion: string | null;
+  readonly milestoneExitCriteria: string | null;
+  readonly actEndReversal: string | null;
+  readonly promiseTargets: readonly string[];
+  readonly obligationTargets: readonly string[];
+}
+
+export interface PlayStructureInfo {
+  readonly pageStructure: PlayStructureFrame;
+  readonly nextStructureTarget: PlayStructureFrame;
 }
 
 export interface OpenThreadPanelRow {
@@ -128,23 +149,20 @@ function normalizeDisplayText(value: string | null | undefined): string | null {
   return value;
 }
 
-export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | null {
-  if (!page.structureVersionId) return null;
-
-  const versions = story.structureVersions;
-  if (!versions?.length) return null;
-
-  const structureVersion = getStructureVersion(story, page.structureVersionId);
+function getPlayStructureFrame(
+  story: Story,
+  structureVersionId: StructureVersionId,
+  actIndex: number,
+  milestoneIndex: number
+): PlayStructureFrame | null {
+  const structureVersion = getStructureVersion(story, structureVersionId);
   if (!structureVersion) return null;
 
-  const displayActIndex = page.pageActIndex;
-  const displayMilestoneIndex = page.pageMilestoneIndex;
-
-  const currentAct: StoryAct | undefined = structureVersion.structure.acts[displayActIndex];
+  const currentAct: StoryAct | undefined = structureVersion.structure.acts[actIndex];
   if (!currentAct) return null;
 
-  const actNumber = extractActNumber(currentAct.id, displayActIndex);
-  const currentMilestone = currentAct.milestones[displayMilestoneIndex];
+  const actNumber = extractActNumber(currentAct.id, actIndex);
+  const currentMilestone = currentAct.milestones[milestoneIndex];
   if (!currentMilestone) return null;
 
   return {
@@ -157,10 +175,77 @@ export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | nu
     actStakes: normalizeDisplayText(currentAct.stakes),
     milestoneObjective: normalizeDisplayText(currentMilestone.objective),
     actQuestion: normalizeDisplayText(currentAct.actQuestion),
-    exitCondition: normalizeDisplayText(currentMilestone.exitCondition),
-    exitReversal: normalizeDisplayText(currentAct.exitReversal),
+    milestoneExitCriteria: normalizeDisplayText(currentMilestone.exitCondition),
+    actEndReversal: normalizeDisplayText(currentAct.exitReversal),
     promiseTargets: currentAct.promiseTargets,
     obligationTargets: currentAct.obligationTargets,
+  };
+}
+
+export function getActDisplayInfo(story: Story, page: Page): ActDisplayInfo | null {
+  if (!page.structureVersionId) return null;
+
+  const versions = story.structureVersions;
+  if (!versions?.length) return null;
+
+  const frame = getPlayStructureFrame(
+    story,
+    page.structureVersionId,
+    page.pageActIndex,
+    page.pageMilestoneIndex
+  );
+  if (!frame) return null;
+
+  return {
+    actNumber: frame.actNumber,
+    actName: frame.actName,
+    milestoneId: frame.milestoneId,
+    milestoneName: frame.milestoneName,
+    displayString: frame.displayString,
+    actObjective: frame.actObjective,
+    actStakes: frame.actStakes,
+    milestoneObjective: frame.milestoneObjective,
+    actQuestion: frame.actQuestion,
+    exitCondition: frame.milestoneExitCriteria,
+    exitReversal: frame.actEndReversal,
+    promiseTargets: frame.promiseTargets,
+    obligationTargets: frame.obligationTargets,
+  };
+}
+
+export function getPlayStructureInfo(story: Story, page: Page): PlayStructureInfo | null {
+  if (!page.structureVersionId) {
+    return null;
+  }
+
+  const versions = story.structureVersions;
+  if (!versions?.length) {
+    return null;
+  }
+
+  const pageStructure = getPlayStructureFrame(
+    story,
+    page.structureVersionId,
+    page.pageActIndex,
+    page.pageMilestoneIndex
+  );
+  if (!pageStructure) {
+    return null;
+  }
+
+  const nextStructureTarget = getPlayStructureFrame(
+    story,
+    page.structureVersionId,
+    page.accumulatedStructureState.currentActIndex,
+    page.accumulatedStructureState.currentMilestoneIndex
+  );
+  if (!nextStructureTarget) {
+    return null;
+  }
+
+  return {
+    pageStructure,
+    nextStructureTarget,
   };
 }
 
@@ -226,7 +311,11 @@ export function getKeyedEntryPanelData(
 }
 
 export function getThreatPanelData(
-  entries: readonly { readonly id: string; readonly text: string; readonly threatType: ThreatType }[],
+  entries: readonly {
+    readonly id: string;
+    readonly text: string;
+    readonly threatType: ThreatType;
+  }[],
   limit: number = KEYED_ENTRY_PANEL_LIMIT
 ): ThreatPanelData {
   const visibleRows: ThreatPanelRow[] = entries.slice(0, limit).map((entry) => ({

@@ -1,4 +1,8 @@
-import { isDriftRiskMitigationType, type ConceptStressTestResult, type ConceptStressTesterContext } from '../models/index.js';
+import {
+  isDriftRiskMitigationType,
+  type ConceptStressTestResult,
+  type ConceptStressTesterContext,
+} from '../models/index.js';
 import { runLlmStage } from './llm-stage-runner.js';
 import { parseConceptSpec } from './concept-spec-parser.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
@@ -16,7 +20,11 @@ function requireNonEmptyString(value: unknown, fieldName: string, label: string)
 
 function parseDriftRisks(value: unknown): ConceptStressTestResult['driftRisks'] {
   if (!Array.isArray(value) || value.length === 0) {
-    throw new LLMError('Concept stress-test response must include non-empty driftRisks', 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      'Concept stress-test response must include non-empty driftRisks',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   return value.map((item, index) => {
@@ -44,7 +52,7 @@ function parsePlayerBreaks(value: unknown): ConceptStressTestResult['playerBreak
     throw new LLMError(
       'Concept stress-test response must include non-empty playerBreaks',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -63,9 +71,15 @@ function parsePlayerBreaks(value: unknown): ConceptStressTestResult['playerBreak
   });
 }
 
-export function parseConceptStressTestResponse(parsed: unknown): Omit<ConceptStressTestResult, 'rawResponse'> {
+export function parseConceptStressTestResponse(
+  parsed: unknown
+): Omit<ConceptStressTestResult, 'rawResponse'> {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError('Concept stress-test response must be an object', 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      'Concept stress-test response must be an object',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   const data = parsed as Record<string, unknown>;
@@ -80,7 +94,7 @@ export function parseConceptStressTestResponse(parsed: unknown): Omit<ConceptStr
 export async function stressTestConcept(
   context: ConceptStressTesterContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptStressTestResult> {
   const messages = buildConceptStressTesterPrompt(context);
   const result = await runLlmStage({

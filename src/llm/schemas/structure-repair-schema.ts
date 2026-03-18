@@ -101,23 +101,14 @@ export const STRUCTURE_REPAIR_SCHEMA: JsonSchema = {
                           ],
                         },
                         crisisType: {
-                          anyOf: [
-                            { type: 'string', enum: [...CRISIS_TYPES] },
-                            { type: 'null' },
-                          ],
+                          anyOf: [{ type: 'string', enum: [...CRISIS_TYPES] }, { type: 'null' }],
                         },
                         expectedGapMagnitude: {
-                          anyOf: [
-                            { type: 'string', enum: [...GAP_MAGNITUDES] },
-                            { type: 'null' },
-                          ],
+                          anyOf: [{ type: 'string', enum: [...GAP_MAGNITUDES] }, { type: 'null' }],
                         },
                         isMidpoint: { type: 'boolean' },
                         midpointType: {
-                          anyOf: [
-                            { type: 'string', enum: [...MIDPOINT_TYPES] },
-                            { type: 'null' },
-                          ],
+                          anyOf: [{ type: 'string', enum: [...MIDPOINT_TYPES] }, { type: 'null' }],
                         },
                         uniqueScenarioHook: {
                           anyOf: [{ type: 'string' }, { type: 'null' }],

@@ -49,14 +49,7 @@ export const AGENDA_RESOLVER_SCHEMA: JsonSchema = {
           items: {
             type: 'object',
             additionalProperties: false,
-            required: [
-              'npcName',
-              'valence',
-              'dynamic',
-              'history',
-              'currentTension',
-              'leverage',
-            ],
+            required: ['npcName', 'valence', 'dynamic', 'history', 'currentTension', 'leverage'],
             properties: {
               npcName: {
                 type: 'string',
@@ -78,13 +71,11 @@ export const AGENDA_RESOLVER_SCHEMA: JsonSchema = {
               },
               currentTension: {
                 type: 'string',
-                description:
-                  'Updated current tension in the relationship (1-2 sentences).',
+                description: 'Updated current tension in the relationship (1-2 sentences).',
               },
               leverage: {
                 type: 'string',
-                description:
-                  'Updated leverage one party holds over the other (1 sentence).',
+                description: 'Updated leverage one party holds over the other (1 sentence).',
               },
             },
           },

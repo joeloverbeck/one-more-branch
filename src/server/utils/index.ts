@@ -25,7 +25,11 @@ export {
 export { buildBeginErrorResponse, buildChoiceErrorResponse } from './play-error-handler.js';
 export type { ErrorResponsePayload } from './play-error-handler.js';
 export type { PagePanelData } from './page-panel-data.js';
-export { extractNpcBriefings, extractProtagonistBriefing, groupWorldFacts } from './briefing-helpers.js';
+export {
+  extractNpcBriefings,
+  extractProtagonistBriefing,
+  groupWorldFacts,
+} from './briefing-helpers.js';
 export {
   getActDisplayInfo,
   getConstraintPanelData,
@@ -36,6 +40,7 @@ export {
   getNpcRelationshipPanelData,
   getOpenThreadPanelData,
   getOpenThreadPanelRows,
+  getPlayStructureInfo,
   getThreatPanelData,
   getTrackedPromisesPanelData,
 } from './view-helpers.js';
@@ -58,6 +63,8 @@ export type {
   NpcRelationshipPanelRow,
   OpenThreadPanelData,
   OpenThreadPanelRow,
+  PlayStructureFrame,
+  PlayStructureInfo,
   ThreatPanelData,
   ThreatPanelRow,
   TrackedPromisePanelData,

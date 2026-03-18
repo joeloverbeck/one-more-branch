@@ -47,7 +47,7 @@ kernelRoutes.get(
       kernels,
       conflictAxisGroups,
     });
-  }),
+  })
 );
 
 kernelRoutes.get(
@@ -56,7 +56,7 @@ kernelRoutes.get(
     const kernels = await listKernels();
     const conflictAxisGroups = groupKernelsByConflictAxis(kernels);
     return res.json({ success: true, kernels, conflictAxisGroups });
-  }),
+  })
 );
 
 kernelRoutes.get(
@@ -70,7 +70,7 @@ kernelRoutes.get(
     }
 
     return res.json({ success: true, kernel });
-  }),
+  })
 );
 
 kernelRoutes.post(
@@ -134,7 +134,7 @@ kernelRoutes.post(
       logger.error('Error generating kernels:', { error: err.message, stack: err.stack });
       return res.status(500).json({ success: false, error: err.message });
     }
-  }),
+  })
 );
 
 kernelRoutes.post(
@@ -160,7 +160,7 @@ kernelRoutes.post(
     const defaultName =
       trimmedName && trimmedName.length > 0
         ? trimmedName
-        : body.evaluatedKernel.kernel.dramaticThesis ?? 'Untitled Kernel';
+        : (body.evaluatedKernel.kernel.dramaticThesis ?? 'Untitled Kernel');
 
     const savedKernel: SavedKernel = {
       id,
@@ -173,7 +173,7 @@ kernelRoutes.post(
 
     await saveKernel(savedKernel);
     return res.json({ success: true, kernel: savedKernel });
-  }),
+  })
 );
 
 kernelRoutes.put(
@@ -210,7 +210,7 @@ kernelRoutes.put(
     });
 
     return res.json({ success: true, kernel: updated });
-  }),
+  })
 );
 
 kernelRoutes.delete(
@@ -224,5 +224,5 @@ kernelRoutes.delete(
 
     await deleteKernel(kernelId as string);
     return res.json({ success: true });
-  }),
+  })
 );

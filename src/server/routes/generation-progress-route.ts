@@ -12,7 +12,7 @@ export interface RouteGenerationProgress {
 
 export function createRouteGenerationProgress(
   progressInput: unknown,
-  flowType: GenerationFlowType,
+  flowType: GenerationFlowType
 ): RouteGenerationProgress {
   const progressId = parseProgressId(progressInput);
 

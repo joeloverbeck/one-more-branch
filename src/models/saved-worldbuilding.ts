@@ -1,6 +1,9 @@
 import type { DecomposedWorld } from './decomposed-world.js';
 import type { WorldSeed } from './world-seed.js';
-import type { WorldbuildingDevStage, WorldbuildingPipelineInputs } from './worldbuilding-pipeline-types.js';
+import type {
+  WorldbuildingDevStage,
+  WorldbuildingPipelineInputs,
+} from './worldbuilding-pipeline-types.js';
 
 export type WorldbuildingSourceKind = 'PIPELINE' | 'RAW_DECOMPOSED';
 

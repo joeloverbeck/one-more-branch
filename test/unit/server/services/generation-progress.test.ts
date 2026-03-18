@@ -112,6 +112,8 @@ describe('generation-progress service', () => {
       'worldbuilding-seed',
       'worldbuilding-elaboration',
       'worldbuilding-decompose',
+      'spine-generation',
+      'create-story',
     ]);
 
     const service = createGenerationProgressService();

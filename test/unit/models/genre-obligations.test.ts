@@ -25,9 +25,7 @@ describe('genre obligations registry', () => {
   });
 
   it('returns per-genre entries through the accessor', () => {
-    expect(getGenreObligationTags('THRILLER')).toEqual(
-      GENRE_OBLIGATION_TAGS_BY_GENRE.THRILLER,
-    );
+    expect(getGenreObligationTags('THRILLER')).toEqual(GENRE_OBLIGATION_TAGS_BY_GENRE.THRILLER);
   });
 
   it('validates obligation tags with a strict type guard', () => {

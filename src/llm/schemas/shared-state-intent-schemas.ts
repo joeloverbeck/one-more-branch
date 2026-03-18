@@ -159,12 +159,14 @@ const CanonWorldAddItemSchema = z.object({
 
 export const CanonIntentsSchema = z.object({
   worldAdd: z.array(CanonWorldAddItemSchema).default([]),
-  characterAdd: z.array(
-    z.object({
-      characterName: z.string(),
-      facts: z.array(z.string()),
-    })
-  ).default([]),
+  characterAdd: z
+    .array(
+      z.object({
+        characterName: z.string(),
+        facts: z.array(z.string()),
+      })
+    )
+    .default([]),
 });
 
 export const StateIntentsSchema = z.object({
@@ -182,7 +184,11 @@ export function addStateIntentRefinements(
   stateIntents: z.infer<typeof StateIntentsSchema>,
   ctx: z.RefinementCtx
 ): void {
-  addRequiredTrimmedTextIssue(stateIntents.currentLocation, ['stateIntents', 'currentLocation'], ctx);
+  addRequiredTrimmedTextIssue(
+    stateIntents.currentLocation,
+    ['stateIntents', 'currentLocation'],
+    ctx
+  );
 
   addDuplicateIssues(
     stateIntents.threats.add.map((entry) => entry.text),

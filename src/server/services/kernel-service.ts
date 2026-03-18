@@ -51,7 +51,7 @@ export function createKernelService(deps: KernelServiceDeps = defaultDeps): Kern
           sparkLine: trimSeed(input.sparkLine),
           apiKey,
         },
-        input.onGenerationStage,
+        input.onGenerationStage
       );
 
       return {

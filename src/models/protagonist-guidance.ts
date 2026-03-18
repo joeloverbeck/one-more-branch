@@ -7,9 +7,7 @@ export interface ProtagonistGuidance {
 /**
  * Returns true if all guidance fields are absent or empty strings after trimming.
  */
-export function isProtagonistGuidanceEmpty(
-  guidance: ProtagonistGuidance | undefined
-): boolean {
+export function isProtagonistGuidanceEmpty(guidance: ProtagonistGuidance | undefined): boolean {
   if (!guidance) {
     return true;
   }

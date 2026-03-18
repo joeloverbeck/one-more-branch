@@ -1,4 +1,7 @@
-import { buildCharAgencyPrompt, type CharAgencyPromptContext } from './prompts/char-agency-prompt.js';
+import {
+  buildCharAgencyPrompt,
+  type CharAgencyPromptContext,
+} from './prompts/char-agency-prompt.js';
 import { CHAR_AGENCY_GENERATION_SCHEMA } from './schemas/char-agency-schema.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';

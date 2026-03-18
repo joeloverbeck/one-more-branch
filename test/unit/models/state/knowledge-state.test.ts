@@ -1,6 +1,4 @@
-import {
-  isKnowledgeAsymmetry,
-} from '../../../../src/models/state/knowledge-state.js';
+import { isKnowledgeAsymmetry } from '../../../../src/models/state/knowledge-state.js';
 
 describe('isKnowledgeAsymmetry', () => {
   it('returns true for a valid knowledge asymmetry object', () => {

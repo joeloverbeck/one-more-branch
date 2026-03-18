@@ -59,14 +59,14 @@ function buildConceptList(concepts: readonly ConceptSpec[], conceptIds: readonly
   return concepts
     .map(
       (concept, index) =>
-        `${index + 1}. ${JSON.stringify({ conceptId: conceptIds[index], concept }, null, 2)}`,
+        `${index + 1}. ${JSON.stringify({ conceptId: conceptIds[index], concept }, null, 2)}`
     )
     .join('\n\n');
 }
 
 function buildScoredConceptList(
   scoredConcepts: readonly ScoredConcept[],
-  conceptIds: readonly string[],
+  conceptIds: readonly string[]
 ): string {
   return scoredConcepts
     .map(
@@ -79,15 +79,15 @@ function buildScoredConceptList(
             overallScore: item.overallScore,
           },
           null,
-          2,
-        )}`,
+          2
+        )}`
     )
     .join('\n\n');
 }
 
 export function buildConceptEvaluatorScoringPrompt(
   context: ConceptEvaluatorContext,
-  conceptIds: readonly string[],
+  conceptIds: readonly string[]
 ): ChatMessage[] {
   const systemSections: string[] = [
     ROLE_INTRO,
@@ -125,7 +125,7 @@ export function buildConceptEvaluatorScoringPrompt(
 export function buildConceptEvaluatorDeepEvalPrompt(
   context: ConceptEvaluatorContext,
   scoredConcepts: readonly ScoredConcept[],
-  conceptIds: readonly string[],
+  conceptIds: readonly string[]
 ): ChatMessage[] {
   const systemSections: string[] = [
     ROLE_INTRO,

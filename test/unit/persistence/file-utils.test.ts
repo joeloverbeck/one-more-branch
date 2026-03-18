@@ -49,7 +49,9 @@ describe('file-utils', () => {
 
     expect(getKernelFilePath('kernel-123')).toBe(path.join(kernelsDir, 'kernel-123.json'));
     expect(generationsDir).toBe(path.join(kernelsDir, 'generated'));
-    expect(getKernelGenerationFilePath('batch-123')).toBe(path.join(generationsDir, 'batch-123.json'));
+    expect(getKernelGenerationFilePath('batch-123')).toBe(
+      path.join(generationsDir, 'batch-123.json')
+    );
   });
 
   it('ensures the stories directory exists', async () => {

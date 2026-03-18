@@ -42,7 +42,7 @@ describe('runGenerationStage', () => {
       () => {
         jest.advanceTimersByTime(25);
         return Promise.resolve('ok');
-      },
+      }
     );
 
     await expect(resultPromise).resolves.toBe('ok');
@@ -73,7 +73,7 @@ describe('runGenerationStage', () => {
       () => {
         jest.advanceTimersByTime(10);
         return Promise.reject(error);
-      },
+      }
     );
 
     await expect(resultPromise).rejects.toThrow(error);

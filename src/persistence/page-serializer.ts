@@ -160,9 +160,7 @@ export function deserializePage(data: PageFileData): Page {
     data.accumulatedStructureState
   );
   const structureVersionId =
-    data.structureVersionId === null
-      ? null
-      : parseStructureVersionId(data.structureVersionId);
+    data.structureVersionId === null ? null : parseStructureVersionId(data.structureVersionId);
 
   const activeStateChanges = fileDataToActiveStateChanges(data.activeStateChanges);
   const accumulatedActiveState = fileDataToAccumulatedActiveState(data.accumulatedActiveState);
@@ -232,7 +230,8 @@ export function deserializePage(data: PageFileData): Page {
       data.accumulatedNpcRelationships
     ),
     pageActIndex: data.pageActIndex ?? data.accumulatedStructureState.currentActIndex,
-    pageMilestoneIndex: data.pageMilestoneIndex ?? data.accumulatedStructureState.currentMilestoneIndex,
+    pageMilestoneIndex:
+      data.pageMilestoneIndex ?? data.accumulatedStructureState.currentMilestoneIndex,
     isEnding: data.isEnding,
     parentPageId: data.parentPageId === null ? null : parsePageId(data.parentPageId),
     parentChoiceIndex: data.parentChoiceIndex,

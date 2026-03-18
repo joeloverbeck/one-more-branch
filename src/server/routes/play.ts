@@ -28,8 +28,8 @@ import {
   normalizeSelectedSceneDirection,
   extractNpcBriefings,
   extractProtagonistBriefing,
-  getActDisplayInfo,
   getMilestoneInfo,
+  getPlayStructureInfo,
   groupWorldFacts,
   wrapAsyncRoute,
 } from '../utils/index.js';
@@ -190,7 +190,8 @@ playRoutes.post(
           progress.fail('Choice already explored');
           return res.status(400).json({
             success: false,
-            error: 'Choice already explored; scene ideation is only available for unexplored choices',
+            error:
+              'Choice already explored; scene ideation is only available for unexplored choices',
           });
         }
 
@@ -346,7 +347,7 @@ playRoutes.get(
 
       const recapSummaries = await collectRecapSummaries(storyId as StoryId, page);
 
-      const actDisplayInfo = getActDisplayInfo(story, page);
+      const playStructureInfo = getPlayStructureInfo(story, page);
       const milestoneInfo = getMilestoneInfo(story, page);
       const parentPage = await loadParentPageForInsights(storyId as StoryId, page.parentPageId);
       const panels = buildPagePanelData(page, parentPage);
@@ -363,7 +364,7 @@ playRoutes.get(
         page,
         recapSummaries,
         pageId,
-        actDisplayInfo,
+        playStructureInfo,
         milestoneInfo,
         openThreadPanelRows: panels.openThreadPanelData.rows,
         openThreadOverflowSummary: panels.openThreadPanelData.overflowSummary,
@@ -431,7 +432,7 @@ playRoutes.post(
       });
 
       const story = await storyEngine.loadStory(storyId as StoryId);
-      const actDisplayInfo = story ? getActDisplayInfo(story, result.page) : null;
+      const playStructureInfo = story ? getPlayStructureInfo(story, result.page) : null;
       const milestoneInfo = story ? getMilestoneInfo(story, result.page) : null;
       const recapSummaries = await collectRecapSummaries(storyId as StoryId, result.page);
       const parentPage = await loadParentPageForInsights(
@@ -472,7 +473,7 @@ playRoutes.post(
         globalCanon: story?.globalCanon ?? [],
         globalCharacterCanon: story?.globalCharacterCanon ?? {},
         recapSummaries,
-        actDisplayInfo,
+        playStructureInfo,
         milestoneInfo,
         wasGenerated: result.wasGenerated,
         deviationInfo: result.deviationInfo,

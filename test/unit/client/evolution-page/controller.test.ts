@@ -1,4 +1,7 @@
-import { createConceptVerificationFixture, createEvaluatedConceptFixture } from '../../../fixtures/concept-generator';
+import {
+  createConceptVerificationFixture,
+  createEvaluatedConceptFixture,
+} from '../../../fixtures/concept-generator';
 import { buildEvolutionPageHtml } from '../fixtures/html-fixtures';
 import { loadAppAndInit } from '../helpers/app-loader';
 
@@ -47,52 +50,62 @@ describe('evolution page controller', () => {
     fetchMock.mockImplementation((input: RequestInfo | URL) => {
       const url = getUrl(input);
       if (url === '/kernels/api/list') {
-        return Promise.resolve(mockJsonResponse({
-          success: true,
-          kernels: [{ id: 'kernel-1', name: 'Kernel 1' }],
-        }));
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            kernels: [{ id: 'kernel-1', name: 'Kernel 1' }],
+          })
+        );
       }
       if (url === '/kernels/api/kernel-1') {
-        return Promise.resolve(mockJsonResponse({
-          success: true,
-          kernel: {
-            id: 'kernel-1',
-            name: 'Kernel 1',
-            evaluatedKernel: {
-              kernel: {
-                dramaticThesis: 'Thesis',
-                valueAtStake: 'Value',
-                opposingForce: 'Force',
-                thematicQuestion: 'Question',
-              antithesis: 'Counter-argument challenges the thesis.',
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            kernel: {
+              id: 'kernel-1',
+              name: 'Kernel 1',
+              evaluatedKernel: {
+                kernel: {
+                  dramaticThesis: 'Thesis',
+                  valueAtStake: 'Value',
+                  opposingForce: 'Force',
+                  thematicQuestion: 'Question',
+                  antithesis: 'Counter-argument challenges the thesis.',
+                },
+                overallScore: 82,
               },
-              overallScore: 82,
             },
-          },
-        }));
+          })
+        );
       }
       if (url === '/evolve/api/concepts-by-kernel/kernel-1') {
-        return Promise.resolve(mockJsonResponse({
-          success: true,
-          concepts: [
-            { id: 'c1', name: 'Concept 1', evaluatedConcept: createEvaluatedConceptFixture(1) },
-            { id: 'c2', name: 'Concept 2', evaluatedConcept: createEvaluatedConceptFixture(2) },
-            { id: 'c3', name: 'Concept 3', evaluatedConcept: createEvaluatedConceptFixture(3) },
-            { id: 'c4', name: 'Concept 4', evaluatedConcept: createEvaluatedConceptFixture(4) },
-          ],
-        }));
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            concepts: [
+              { id: 'c1', name: 'Concept 1', evaluatedConcept: createEvaluatedConceptFixture(1) },
+              { id: 'c2', name: 'Concept 2', evaluatedConcept: createEvaluatedConceptFixture(2) },
+              { id: 'c3', name: 'Concept 3', evaluatedConcept: createEvaluatedConceptFixture(3) },
+              { id: 'c4', name: 'Concept 4', evaluatedConcept: createEvaluatedConceptFixture(4) },
+            ],
+          })
+        );
       }
       if (url.startsWith('/generation-progress/')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
       }
 
-      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
+      return Promise.resolve(
+        mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404)
+      );
     });
 
     document.body.innerHTML = buildEvolutionPageHtml();
     loadAppAndInit();
 
-    const kernelSelector = document.getElementById('evolution-kernel-selector') as HTMLSelectElement;
+    const kernelSelector = document.getElementById(
+      'evolution-kernel-selector'
+    ) as HTMLSelectElement;
     const apiKeyInput = document.getElementById('evolutionApiKey') as HTMLInputElement;
     const evolveBtn = document.getElementById('evolve-btn') as HTMLButtonElement;
 
@@ -113,7 +126,9 @@ describe('evolution page controller', () => {
     cards[2]?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     cards[3]?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
-    const selectedCards = document.querySelectorAll('#evolution-parent-concepts .spine-card-selected');
+    const selectedCards = document.querySelectorAll(
+      '#evolution-parent-concepts .spine-card-selected'
+    );
     expect(selectedCards).toHaveLength(3);
 
     const selectionCounter = document.getElementById('evolution-selection-counter');
@@ -123,66 +138,81 @@ describe('evolution page controller', () => {
 
   it('posts evolve payload, renders results, and saves selected offspring with matching verification', async () => {
     const evolvedConcepts = [createEvaluatedConceptFixture(10), createEvaluatedConceptFixture(11)];
-    const verifications = [createConceptVerificationFixture(10), createConceptVerificationFixture(11)];
+    const verifications = [
+      createConceptVerificationFixture(10),
+      createConceptVerificationFixture(11),
+    ];
 
     fetchMock.mockImplementation((input: RequestInfo | URL) => {
       const url = getUrl(input);
       if (url === '/kernels/api/list') {
-        return Promise.resolve(mockJsonResponse({
-          success: true,
-          kernels: [{ id: 'kernel-1', name: 'Kernel 1' }],
-        }));
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            kernels: [{ id: 'kernel-1', name: 'Kernel 1' }],
+          })
+        );
       }
       if (url === '/kernels/api/kernel-1') {
-        return Promise.resolve(mockJsonResponse({
-          success: true,
-          kernel: {
-            id: 'kernel-1',
-            name: 'Kernel 1',
-            evaluatedKernel: {
-              kernel: {
-                dramaticThesis: 'Thesis',
-                valueAtStake: 'Value',
-                opposingForce: 'Force',
-                thematicQuestion: 'Question',
-              antithesis: 'Counter-argument challenges the thesis.',
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            kernel: {
+              id: 'kernel-1',
+              name: 'Kernel 1',
+              evaluatedKernel: {
+                kernel: {
+                  dramaticThesis: 'Thesis',
+                  valueAtStake: 'Value',
+                  opposingForce: 'Force',
+                  thematicQuestion: 'Question',
+                  antithesis: 'Counter-argument challenges the thesis.',
+                },
+                overallScore: 82,
               },
-              overallScore: 82,
             },
-          },
-        }));
+          })
+        );
       }
       if (url === '/evolve/api/concepts-by-kernel/kernel-1') {
-        return Promise.resolve(mockJsonResponse({
-          success: true,
-          concepts: [
-            { id: 'c1', name: 'Concept 1', evaluatedConcept: createEvaluatedConceptFixture(1) },
-            { id: 'c2', name: 'Concept 2', evaluatedConcept: createEvaluatedConceptFixture(2) },
-            { id: 'c3', name: 'Concept 3', evaluatedConcept: createEvaluatedConceptFixture(3) },
-          ],
-        }));
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            concepts: [
+              { id: 'c1', name: 'Concept 1', evaluatedConcept: createEvaluatedConceptFixture(1) },
+              { id: 'c2', name: 'Concept 2', evaluatedConcept: createEvaluatedConceptFixture(2) },
+              { id: 'c3', name: 'Concept 3', evaluatedConcept: createEvaluatedConceptFixture(3) },
+            ],
+          })
+        );
       }
       if (url.startsWith('/generation-progress/')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
       }
       if (url === '/evolve/api/evolve') {
-        return Promise.resolve(mockJsonResponse({
-          success: true,
-          evaluatedConcepts: evolvedConcepts,
-          verifications,
-        }));
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            evaluatedConcepts: evolvedConcepts,
+            verifications,
+          })
+        );
       }
       if (url === '/concepts/api/save') {
         return Promise.resolve(mockJsonResponse({ success: true, concept: { id: 'saved-1' } }));
       }
 
-      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
+      return Promise.resolve(
+        mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404)
+      );
     });
 
     document.body.innerHTML = buildEvolutionPageHtml();
     loadAppAndInit();
 
-    const kernelSelector = document.getElementById('evolution-kernel-selector') as HTMLSelectElement;
+    const kernelSelector = document.getElementById(
+      'evolution-kernel-selector'
+    ) as HTMLSelectElement;
     const apiKeyInput = document.getElementById('evolutionApiKey') as HTMLInputElement;
     const evolveBtn = document.getElementById('evolve-btn') as HTMLButtonElement;
 
@@ -194,7 +224,9 @@ describe('evolution page controller', () => {
     kernelSelector.dispatchEvent(new Event('change'));
     await flushPromises();
 
-    const parentCards = Array.from(document.querySelectorAll('#evolution-parent-concepts .concept-card'));
+    const parentCards = Array.from(
+      document.querySelectorAll('#evolution-parent-concepts .concept-card')
+    );
     parentCards[0]?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     parentCards[1]?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(evolveBtn.disabled).toBe(false);
@@ -202,7 +234,9 @@ describe('evolution page controller', () => {
     evolveBtn.click();
     await flushPromises();
 
-    const evolveCallIndex = fetchMock.mock.calls.findIndex((call: [RequestInfo | URL]) => getUrl(call[0]) === '/evolve/api/evolve');
+    const evolveCallIndex = fetchMock.mock.calls.findIndex(
+      (call: [RequestInfo | URL]) => getUrl(call[0]) === '/evolve/api/evolve'
+    );
     expect(evolveCallIndex).toBeGreaterThanOrEqual(0);
     expect(getRequestBody(evolveCallIndex)).toMatchObject({
       conceptIds: ['c1', 'c2'],
@@ -218,7 +252,9 @@ describe('evolution page controller', () => {
     saveBtn.click();
     await flushPromises();
 
-    const saveCallIndex = fetchMock.mock.calls.findIndex((call: [RequestInfo | URL]) => getUrl(call[0]) === '/concepts/api/save');
+    const saveCallIndex = fetchMock.mock.calls.findIndex(
+      (call: [RequestInfo | URL]) => getUrl(call[0]) === '/concepts/api/save'
+    );
     expect(saveCallIndex).toBeGreaterThanOrEqual(0);
     expect(getRequestBody(saveCallIndex)).toMatchObject({
       evaluatedConcept: evolvedConcepts[0],
@@ -236,66 +272,79 @@ describe('evolution page controller', () => {
     fetchMock.mockImplementation((input: RequestInfo | URL) => {
       const url = getUrl(input);
       if (url === '/kernels/api/list') {
-        return Promise.resolve(mockJsonResponse({
-          success: true,
-          kernels: [{ id: 'kernel-1', name: 'Kernel 1' }],
-        }));
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            kernels: [{ id: 'kernel-1', name: 'Kernel 1' }],
+          })
+        );
       }
       if (url === '/kernels/api/kernel-1') {
-        return Promise.resolve(mockJsonResponse({
-          success: true,
-          kernel: {
-            id: 'kernel-1',
-            name: 'Kernel 1',
-            evaluatedKernel: {
-              kernel: {
-                dramaticThesis: 'Thesis',
-                valueAtStake: 'Value',
-                opposingForce: 'Force',
-                thematicQuestion: 'Question',
-              antithesis: 'Counter-argument challenges the thesis.',
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            kernel: {
+              id: 'kernel-1',
+              name: 'Kernel 1',
+              evaluatedKernel: {
+                kernel: {
+                  dramaticThesis: 'Thesis',
+                  valueAtStake: 'Value',
+                  opposingForce: 'Force',
+                  thematicQuestion: 'Question',
+                  antithesis: 'Counter-argument challenges the thesis.',
+                },
+                overallScore: 82,
               },
-              overallScore: 82,
             },
-          },
-        }));
+          })
+        );
       }
       if (url === '/evolve/api/concepts-by-kernel/kernel-1') {
-        return Promise.resolve(mockJsonResponse({
-          success: true,
-          concepts: [
-            { id: 'c1', name: 'Concept 1', evaluatedConcept: createEvaluatedConceptFixture(1) },
-            { id: 'c2', name: 'Concept 2', evaluatedConcept: createEvaluatedConceptFixture(2) },
-          ],
-        }));
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            concepts: [
+              { id: 'c1', name: 'Concept 1', evaluatedConcept: createEvaluatedConceptFixture(1) },
+              { id: 'c2', name: 'Concept 2', evaluatedConcept: createEvaluatedConceptFixture(2) },
+            ],
+          })
+        );
       }
       if (url.startsWith('/generation-progress/')) {
         return Promise.resolve(mockJsonResponse({ status: 'failed' }));
       }
       if (url === '/evolve/api/evolve') {
-        return Promise.resolve(mockJsonResponse(
-          {
-            success: false,
-            error: 'API request error: Provider returned error',
-            code: 'HTTP_400',
-            retryable: false,
-            debug: {
-              model: 'openai/gpt-4o-mini',
-              rawError: '{"error":{"message":"Provider rejected content","code":"provider_error"}}',
+        return Promise.resolve(
+          mockJsonResponse(
+            {
+              success: false,
+              error: 'API request error: Provider returned error',
+              code: 'HTTP_400',
+              retryable: false,
+              debug: {
+                model: 'openai/gpt-4o-mini',
+                rawError:
+                  '{"error":{"message":"Provider rejected content","code":"provider_error"}}',
+              },
             },
-          },
-          false,
-          500,
-        ));
+            false,
+            500
+          )
+        );
       }
 
-      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404));
+      return Promise.resolve(
+        mockJsonResponse({ success: false, error: 'Unexpected URL' }, false, 404)
+      );
     });
 
     document.body.innerHTML = buildEvolutionPageHtml();
     loadAppAndInit();
 
-    const kernelSelector = document.getElementById('evolution-kernel-selector') as HTMLSelectElement;
+    const kernelSelector = document.getElementById(
+      'evolution-kernel-selector'
+    ) as HTMLSelectElement;
     const apiKeyInput = document.getElementById('evolutionApiKey') as HTMLInputElement;
     const evolveBtn = document.getElementById('evolve-btn') as HTMLButtonElement;
 
@@ -307,7 +356,9 @@ describe('evolution page controller', () => {
     kernelSelector.dispatchEvent(new Event('change'));
     await flushPromises();
 
-    const parentCards = Array.from(document.querySelectorAll('#evolution-parent-concepts .concept-card'));
+    const parentCards = Array.from(
+      document.querySelectorAll('#evolution-parent-concepts .concept-card')
+    );
     parentCards[0]?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     parentCards[1]?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
@@ -318,13 +369,13 @@ describe('evolution page controller', () => {
       'Concept evolution error code:',
       'HTTP_400',
       '| Retryable:',
-      false,
+      false
     );
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'Concept evolution debug info:',
       expect.objectContaining({
         model: 'openai/gpt-4o-mini',
-      }),
+      })
     );
   });
 });

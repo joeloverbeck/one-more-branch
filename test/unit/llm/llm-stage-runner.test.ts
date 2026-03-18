@@ -1,4 +1,5 @@
 const mockLogPrompt = jest.fn();
+const mockLogResponse = jest.fn();
 const mockLogger = {
   info: jest.fn(),
   debug: jest.fn(),
@@ -15,7 +16,9 @@ jest.mock('../../../src/logging/index.js', () => ({
   get logPrompt(): typeof mockLogPrompt {
     return mockLogPrompt;
   },
-  logResponse: jest.fn(),
+  get logResponse(): typeof mockLogResponse {
+    return mockLogResponse;
+  },
 }));
 
 import type { LlmStageRunnerParams } from '../../../src/llm/llm-stage-runner';
@@ -43,7 +46,7 @@ function responseWithMessageContent(content: string): Response {
 function responseWithChoice(
   content: string,
   finishReason: string,
-  usage?: { completion_tokens: number; prompt_tokens: number },
+  usage?: { completion_tokens: number; prompt_tokens: number }
 ): Response {
   return createJsonResponse(200, {
     id: 'or-llm-stage-runner-2',
@@ -74,6 +77,7 @@ describe('llm-stage-runner', () => {
     jest.useFakeTimers();
     fetchMock.mockReset();
     mockLogPrompt.mockReset();
+    mockLogResponse.mockReset();
     global.fetch = fetchMock as unknown as typeof fetch;
   });
 
@@ -109,7 +113,7 @@ describe('llm-stage-runner', () => {
       responseWithChoice('{"ok":true}', 'length', {
         completion_tokens: 8192,
         prompt_tokens: 3000,
-      }),
+      })
     );
 
     await expect(
@@ -120,7 +124,7 @@ describe('llm-stage-runner', () => {
         schema: CONCEPT_IDEATION_SCHEMA,
         messages: [{ role: 'user', content: 'test message' }],
         parseResponse: (parsed) => parsed as { ok: boolean },
-      }),
+      })
     ).rejects.toMatchObject({
       code: 'OUTPUT_TRUNCATED',
       retryable: false,
@@ -151,13 +155,33 @@ describe('llm-stage-runner', () => {
         parseResponse: () => {
           throw new LLMError('parse failed', 'STRUCTURE_PARSE_ERROR', false);
         },
-      }),
+      })
     ).rejects.toMatchObject({
       message: 'parse failed',
       code: 'STRUCTURE_PARSE_ERROR',
       retryable: false,
       context: { rawContent },
     });
+  });
+
+  it('logs response even when parseResponse throws', async () => {
+    const rawContent = JSON.stringify({ not: 'valid-for-parser' });
+    fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
+
+    await expect(
+      runLlmStage({
+        stageModel: 'conceptEvaluator',
+        promptType: 'conceptEvaluator',
+        apiKey: 'test-api-key',
+        schema: CONCEPT_IDEATION_SCHEMA,
+        messages: [{ role: 'user', content: 'test message' }],
+        parseResponse: () => {
+          throw new LLMError('parse failed', 'STRUCTURE_PARSE_ERROR', false);
+        },
+      })
+    ).rejects.toThrow('parse failed');
+
+    expect(mockLogResponse).toHaveBeenCalledWith(mockLogger, 'conceptEvaluator', rawContent);
   });
 
   it('retries retryable HTTP errors via withRetry policy', async () => {
@@ -222,8 +246,12 @@ describe('llm-stage-runner', () => {
 
   it('runs two-phase stages sequentially and combines parsed/raw outputs', async () => {
     fetchMock
-      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify({ phase: 1, value: 'alpha' })))
-      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify({ phase: 2, value: 'beta' })));
+      .mockResolvedValueOnce(
+        responseWithMessageContent(JSON.stringify({ phase: 1, value: 'alpha' }))
+      )
+      .mockResolvedValueOnce(
+        responseWithMessageContent(JSON.stringify({ phase: 2, value: 'beta' }))
+      );
 
     const result = await runTwoPhaseLlmStage({
       firstStage: {
@@ -234,9 +262,7 @@ describe('llm-stage-runner', () => {
         messages: [{ role: 'user', content: 'phase one' }],
         parseResponse: (parsed) => parsed as { phase: number; value: string },
       },
-      secondStage: (
-        firstStageParsed,
-      ): LlmStageRunnerParams<{ phase: number; value: string }> => ({
+      secondStage: (firstStageParsed): LlmStageRunnerParams<{ phase: number; value: string }> => ({
         stageModel: 'conceptEvaluator',
         promptType: 'conceptEvaluator',
         apiKey: 'test-api-key',
@@ -244,7 +270,12 @@ describe('llm-stage-runner', () => {
         messages: [{ role: 'user', content: `phase two from ${firstStageParsed.value}` }],
         parseResponse: (parsed) => parsed as { phase: number; value: string },
       }),
-      combineResult: ({ firstStageParsed, firstStageRawResponse, secondStageParsed, secondStageRawResponse }) => ({
+      combineResult: ({
+        firstStageParsed,
+        firstStageRawResponse,
+        secondStageParsed,
+        secondStageRawResponse,
+      }) => ({
         firstStageParsed,
         firstStageRawResponse,
         secondStageParsed,

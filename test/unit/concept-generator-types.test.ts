@@ -21,7 +21,7 @@ describe('concept-generator types', () => {
 
   function expectTypeGuardBehavior<T extends string>(
     values: readonly T[],
-    guard: (value: unknown) => boolean,
+    guard: (value: unknown) => boolean
   ): void {
     for (const value of values) {
       expect(guard(value)).toBe(true);
@@ -104,7 +104,7 @@ describe('concept-generator types', () => {
   it('keeps scoring weights normalized to 100', () => {
     const totalWeight = Object.values(CONCEPT_SCORING_WEIGHTS).reduce(
       (sum, weight) => sum + weight,
-      0,
+      0
     );
 
     expect(totalWeight).toBe(100);

@@ -208,7 +208,8 @@ describe('buildStructurePrompt', () => {
         conceptId: 'concept_1',
         signatureScenario: 'A harbor trial collapses into ritual violence.',
         loglineCompressible: true,
-        logline: 'An investigator must weaponize tribunal ritual before the tide courts bury the city\'s evidence.',
+        logline:
+          "An investigator must weaponize tribunal ritual before the tide courts bury the city's evidence.",
         premisePromises: ['promise 1', 'promise 2', 'promise 3'],
         setpieceCausalChainBroken: false,
         inevitabilityStatement: 'The city cannot avoid public reckoning.',
@@ -237,7 +238,8 @@ describe('buildStructurePrompt', () => {
         conceptId: 'concept_1',
         signatureScenario: 'A harbor trial collapses into ritual violence.',
         loglineCompressible: true,
-        logline: 'An investigator must weaponize tribunal ritual before the tide courts bury the city\'s evidence.',
+        logline:
+          "An investigator must weaponize tribunal ritual before the tide courts bury the city's evidence.",
         premisePromises: [
           'The protagonist must weaponize a public legal ritual.',
           'A trusted ally becomes complicit in the purge machinery.',

@@ -64,8 +64,7 @@ export async function resolveNpcAgendas(
       sceneSummary: context.writerSceneSummary,
       decomposedCharacters: context.decomposedCharacters,
       currentAgendas: context.parentAccumulatedNpcAgendas,
-      structure:
-        context.currentStructureVersion?.structure ?? context.storyStructure ?? undefined,
+      structure: context.currentStructureVersion?.structure ?? context.storyStructure ?? undefined,
       spine: context.spine,
       activeState: context.parentActiveState,
       analystSignals: context.analystSignals,
@@ -83,16 +82,10 @@ export async function resolveNpcAgendas(
           model: m,
         }),
       primaryModel,
-      'agendaResolver',
+      'agendaResolver'
     );
     const durationMs = Date.now() - agendaStart;
-    emitGenerationStage(
-      context.onGenerationStage,
-      'RESOLVING_AGENDAS',
-      'completed',
-      1,
-      durationMs
-    );
+    emitGenerationStage(context.onGenerationStage, 'RESOLVING_AGENDAS', 'completed', 1, durationMs);
     return { result, durationMs };
   } catch (error) {
     const durationMs = Date.now() - agendaStart;

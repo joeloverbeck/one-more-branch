@@ -84,7 +84,7 @@ export const SPEECH_SCHEMA_FIELDS: SchemaFieldMap<
   registerShifts: {
     type: 'string',
     description:
-      'How this character\'s speech changes across context (stress, formality, intimacy). ' +
+      "How this character's speech changes across context (stress, formality, intimacy). " +
       'E.g. "Formal in public, clipped and profane under stress." 1-2 sentences.',
   },
 };
@@ -103,7 +103,7 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
   superObjective: {
     type: 'string',
     description:
-      'The character\'s overarching dramatic goal — the single deepest drive that shapes all their actions. ' +
+      "The character's overarching dramatic goal — the single deepest drive that shapes all their actions. " +
       'E.g. "To prove she deserves to exist on her own terms." 1 sentence.',
   },
   stakes: {
@@ -133,13 +133,20 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
   storyFunction: {
     type: 'nullable_enum',
     description:
-      'This character\'s structural role in the story. ' +
+      "This character's structural role in the story. " +
       'ANTAGONIST: primary opposition. RIVAL: competing for same goal. ALLY: active support. ' +
       'MENTOR: guidance/wisdom. CATALYST: triggers change. OBSTACLE: blocks progress. ' +
       'FOIL: contrasts protagonist. TRICKSTER: disrupts order. INNOCENT: represents stakes.',
     values: [
-      'ANTAGONIST', 'RIVAL', 'ALLY', 'MENTOR', 'CATALYST',
-      'OBSTACLE', 'FOIL', 'TRICKSTER', 'INNOCENT',
+      'ANTAGONIST',
+      'RIVAL',
+      'ALLY',
+      'MENTOR',
+      'CATALYST',
+      'OBSTACLE',
+      'FOIL',
+      'TRICKSTER',
+      'INNOCENT',
     ],
   },
   narrativeRole: {
@@ -157,7 +164,7 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
   protagonistRelationship: {
     type: 'nullable_object',
     description:
-      'This NPC\'s relationship with the protagonist. null for the protagonist\'s own entry. ' +
+      "This NPC's relationship with the protagonist. null for the protagonist's own entry. " +
       'For NPCs, describe the relationship with valence (-5 to +5), dynamic label, history, tension, and leverage.',
   },
   knowledgeBoundaries: {
@@ -178,12 +185,12 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
   coreBeliefs: {
     type: 'array',
     description:
-      '2-3 fundamental beliefs that drive this character\'s behavior. ' +
+      "2-3 fundamental beliefs that drive this character's behavior. " +
       'These should sound like things the character would think or say.',
   },
   conflictPriority: {
     type: 'string',
-    description: 'When this character\'s goals conflict, what wins? One sentence.',
+    description: "When this character's goals conflict, what wins? One sentence.",
   },
   falseBeliefs: {
     type: 'array',
@@ -214,7 +221,7 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
   formativeWound: {
     type: 'string',
     description:
-      'The defining early experience that shaped this character\'s defenses. 1-2 sentences. ' +
+      "The defining early experience that shaped this character's defenses. 1-2 sentences. " +
       'E.g. "Abandoned by her father at age seven, she learned that depending on others means getting hurt."',
   },
   misbelief: {
@@ -250,7 +257,7 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
   constraints: {
     type: 'array',
     description:
-      '2-4 external limitations restricting this character\'s options. ' +
+      "2-4 external limitations restricting this character's options. " +
       'Creates dramatic tension by defining what they CANNOT do.',
   },
   desires: {
@@ -262,13 +269,12 @@ export const CHARACTER_SCHEMA_FIELDS: SchemaFieldMap<
   currentIntentions: {
     type: 'array',
     description:
-      '2-4 active plans this character is executing. ' +
-      'What they would DO in the next scene.',
+      '2-4 active plans this character is executing. ' + 'What they would DO in the next scene.',
   },
   sociology: {
     type: 'string',
     description:
-      'The character\'s social position: class, family structure, economic circumstances, ' +
+      "The character's social position: class, family structure, economic circumstances, " +
       'and social world. 2-4 sentences grounding them in material reality.',
   },
   ruptureTriggers: {
@@ -398,5 +404,5 @@ export const SPEECH_EXTRACTION_BULLETS: readonly string[] = [
 export const AGENCY_PRINCIPLES: readonly string[] = [
   'DECISION PATTERN: Capture how each character makes choices under uncertainty and pressure. Identify whether they are impulsive, methodical, avoidant, or decisive, and what they optimize for.',
   'CORE BELIEFS: Extract 2-3 operational beliefs that this character truly acts on. These should be practical internal axioms, not abstract virtue labels.',
-  'CONFLICT PRIORITY: State what wins when this character\'s goals conflict (for example loyalty vs survival, ambition vs duty).',
+  "CONFLICT PRIORITY: State what wins when this character's goals conflict (for example loyalty vs survival, ambition vs duty).",
 ];

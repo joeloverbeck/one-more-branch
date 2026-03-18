@@ -145,8 +145,8 @@ function buildFullAnalystResult(): AnalystResult {
     delayedConsequencesCreated: [],
     delayedConsequencesTriggered: [],
     knowledgeAsymmetryDetected: [],
-dramaticIronyOpportunities: [],
-rawResponse: '',
+    dramaticIronyOpportunities: [],
+    rawResponse: '',
   };
 }
 
@@ -286,7 +286,7 @@ describe('page-serializer converter extraction integration', () => {
       dynamic: 'rival',
       history: 'A long-standing enmity.',
       currentTension: 'Currently plotting against the protagonist.',
-      leverage: 'Knows the protagonist\'s secret.',
+      leverage: "Knows the protagonist's secret.",
     };
     const page = buildTestPage({
       npcRelationshipUpdates: [relationship],

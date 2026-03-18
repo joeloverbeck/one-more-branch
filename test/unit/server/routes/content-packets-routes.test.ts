@@ -52,10 +52,10 @@ type RouteLayer = {
 
 function getRouteHandler(
   method: 'get' | 'post' | 'patch' | 'delete',
-  path: string,
+  path: string
 ): (req: Request, res: Response) => Promise<void> | void {
   const layer = (contentPacketRoutes.stack as unknown as RouteLayer[]).find(
-    (item) => item.route?.path === path && item.route?.methods?.[method],
+    (item) => item.route?.path === path && item.route?.methods?.[method]
   );
   const handler = layer?.route?.stack?.[0]?.handle;
   if (!handler) {
@@ -296,11 +296,9 @@ describe('content-packets routes', () => {
           name: 'My Packet',
           contentKind: 'ENTITY',
           pinned: false,
-        }),
+        })
       );
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ success: true }),
-      );
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });
   });
 
@@ -416,11 +414,9 @@ describe('content-packets routes', () => {
         expect.objectContaining({
           collisionPatterns: ['pattern1'],
           riskAppetite: 'HIGH',
-        }),
+        })
       );
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ success: true }),
-      );
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });
 
     it('requires apiKey for taste profile generation', async () => {
@@ -444,7 +440,7 @@ describe('content-packets routes', () => {
   describe('route registration', () => {
     it('all routes use wrapAsyncRoute (handler count matches expectations)', () => {
       const routeLayers = (contentPacketRoutes.stack as unknown as RouteLayer[]).filter(
-        (layer) => layer.route,
+        (layer) => layer.route
       );
       // 8 routes: GET /, GET /api/list, GET /api/:packetId, POST /api/generate,
       // POST /api/:packetId/save, PATCH /api/:packetId/pin, DELETE /api/:packetId,

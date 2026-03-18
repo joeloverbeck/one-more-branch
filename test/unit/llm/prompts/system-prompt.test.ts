@@ -106,7 +106,6 @@ describe('composeOpeningDataRules', () => {
     expect(rules).not.toContain('CHARACTER CANON vs CHARACTER STATE:');
     expect(rules).not.toContain('REMOVAL QUALITY');
   });
-
 });
 
 describe('composeContinuationDataRules', () => {
@@ -160,6 +159,5 @@ describe('composeContinuationDataRules', () => {
       expect(rules).toContain('INVENTORY MANAGEMENT:');
       expect(rules).toContain('HEALTH MANAGEMENT:');
     });
-
   });
 });

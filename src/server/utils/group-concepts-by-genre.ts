@@ -13,7 +13,7 @@ export interface GenreGroup {
 
 function lookupGlosses(
   genre: string,
-  source: Record<string, readonly { readonly gloss: string }[]>,
+  source: Record<string, readonly { readonly gloss: string }[]>
 ): readonly string[] {
   const entries = source[genre as GenreFrame];
   return entries ? entries.map((e) => e.gloss) : [];

@@ -54,7 +54,10 @@ const validAccountantPayload = {
       add: [{ characterName: 'Mara', states: ['Focused under pressure'] }],
       removeIds: [],
     },
-    canon: { worldAdd: [{ text: 'The archive lockout triggers at moonset.', factType: 'LAW' }], characterAdd: [] },
+    canon: {
+      worldAdd: [{ text: 'The archive lockout triggers at moonset.', factType: 'LAW' }],
+      characterAdd: [],
+    },
   },
 };
 

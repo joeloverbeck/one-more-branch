@@ -14,19 +14,14 @@ function parseKernelIds(input: unknown): string[] {
     return [];
   }
 
-  return input
-    .map((id) => (typeof id === 'string' ? id.trim() : ''))
-    .filter((id) => id.length > 0);
+  return input.map((id) => (typeof id === 'string' ? id.trim() : '')).filter((id) => id.length > 0);
 }
 
-kernelEvolutionRoutes.get(
-  '/',
-  (_req: Request, res: Response) => {
-    return res.render('pages/kernel-evolution', {
-      title: 'Evolve Kernels - One More Branch',
-    });
-  },
-);
+kernelEvolutionRoutes.get('/', (_req: Request, res: Response) => {
+  return res.render('pages/kernel-evolution', {
+    title: 'Evolve Kernels - One More Branch',
+  });
+});
 
 kernelEvolutionRoutes.post(
   '/api/evolve',
@@ -74,13 +69,14 @@ kernelEvolutionRoutes.post(
     const progress = createRouteGenerationProgress(body.progressId, 'kernel-evolution');
 
     const referenceSeeds = kernels[0]!.seeds;
-    const userSeeds = (referenceSeeds.thematicInterests || referenceSeeds.emotionalCore || referenceSeeds.sparkLine)
-      ? {
-          thematicInterests: referenceSeeds.thematicInterests,
-          emotionalCore: referenceSeeds.emotionalCore,
-          sparkLine: referenceSeeds.sparkLine,
-        }
-      : undefined;
+    const userSeeds =
+      referenceSeeds.thematicInterests || referenceSeeds.emotionalCore || referenceSeeds.sparkLine
+        ? {
+            thematicInterests: referenceSeeds.thematicInterests,
+            emotionalCore: referenceSeeds.emotionalCore,
+            sparkLine: referenceSeeds.sparkLine,
+          }
+        : undefined;
 
     try {
       const result = await kernelEvolutionService.evolveKernels({
@@ -108,5 +104,5 @@ kernelEvolutionRoutes.post(
       logger.error('Error evolving kernels:', { error: err.message, stack: err.stack });
       return res.status(500).json({ success: false, error: err.message });
     }
-  }),
+  })
 );

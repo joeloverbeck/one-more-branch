@@ -22,9 +22,14 @@ const KERNEL_FIDELITY_DIRECTIVE = `KERNEL FIDELITY DIRECTIVE:
 
 export function buildSingleConceptSpecificityPrompt(
   evaluated: EvaluatedConcept,
-  kernel: StoryKernel,
+  kernel: StoryKernel
 ): ChatMessage[] {
-  const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, SPECIFICITY_DIRECTIVES, KERNEL_FIDELITY_DIRECTIVE];
+  const systemSections: string[] = [
+    ROLE_INTRO,
+    CONTENT_POLICY,
+    SPECIFICITY_DIRECTIVES,
+    KERNEL_FIDELITY_DIRECTIVE,
+  ];
 
   const conceptInput = {
     oneLineHook: evaluated.concept.oneLineHook,

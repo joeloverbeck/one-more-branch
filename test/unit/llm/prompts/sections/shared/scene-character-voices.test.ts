@@ -2,7 +2,9 @@ import type { DecomposedCharacter } from '../../../../../../src/models/decompose
 import type { StoryBible } from '../../../../../../src/llm/lorekeeper-types';
 import { buildSceneCharacterVoicesSection } from '../../../../../../src/llm/prompts/sections/shared/scene-character-voices';
 
-function makeFingerprint(overrides: Partial<DecomposedCharacter['speechFingerprint']> = {}): DecomposedCharacter['speechFingerprint'] {
+function makeFingerprint(
+  overrides: Partial<DecomposedCharacter['speechFingerprint']> = {}
+): DecomposedCharacter['speechFingerprint'] {
   return {
     catchphrases: ['"By the old gods"'],
     vocabularyProfile: 'Archaic, formal register',
@@ -17,7 +19,10 @@ function makeFingerprint(overrides: Partial<DecomposedCharacter['speechFingerpri
   };
 }
 
-function makeDecomposed(name: string, overrides: Partial<DecomposedCharacter> = {}): DecomposedCharacter {
+function makeDecomposed(
+  name: string,
+  overrides: Partial<DecomposedCharacter> = {}
+): DecomposedCharacter {
   return {
     name,
     speechFingerprint: makeFingerprint(),

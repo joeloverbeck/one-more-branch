@@ -419,9 +419,9 @@ describe('State utilities', () => {
 
     it('adds and merges canon facts with case-insensitive dedupe', () => {
       expect(addCanonFact([factA], factB)).toEqual([factA, factB]);
-      expect(
-        addCanonFact([kingdomFact], { text: 'THE KINGDOM EXISTS', factType: 'NORM' })
-      ).toEqual([kingdomFact]);
+      expect(addCanonFact([kingdomFact], { text: 'THE KINGDOM EXISTS', factType: 'NORM' })).toEqual(
+        [kingdomFact]
+      );
       expect(mergeCanonFacts([factA], [factA, factB])).toEqual([factA, factB]);
     });
   });

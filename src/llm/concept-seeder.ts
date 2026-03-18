@@ -1,4 +1,8 @@
-import type { ConceptSeedFields, ConceptSeederContext, ConceptSeederResult } from '../models/index.js';
+import type {
+  ConceptSeedFields,
+  ConceptSeederContext,
+  ConceptSeederResult,
+} from '../models/index.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import { runLlmStage } from './llm-stage-runner.js';
@@ -16,7 +20,7 @@ export function parseConceptSeederResponse(parsed: unknown): readonly ConceptSee
     throw new LLMError(
       'Concept seeder response missing concepts array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -24,7 +28,7 @@ export function parseConceptSeederResponse(parsed: unknown): readonly ConceptSee
     throw new LLMError(
       `Concept seeder response must include 6-8 seeds (received: ${data['concepts'].length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -34,7 +38,7 @@ export function parseConceptSeederResponse(parsed: unknown): readonly ConceptSee
 export async function generateConceptSeeds(
   context: ConceptSeederContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptSeederResult> {
   const messages = buildConceptSeederPrompt(context);
   const result = await runLlmStage({

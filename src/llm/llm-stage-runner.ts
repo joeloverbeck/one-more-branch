@@ -45,6 +45,7 @@ async function fetchAndParseLlmStage<TParsed>(
   model: string,
   temperature: number,
   maxTokens: number,
+  promptType: PromptType
 ): Promise<LlmStageRunnerResult<TParsed>> {
   const response = await fetch(OPENROUTER_API_URL, {
     method: 'POST',
@@ -81,6 +82,7 @@ async function fetchAndParseLlmStage<TParsed>(
     allowRepair: params.allowJsonRepair ?? true,
   });
   const responseText = parsedMessage.rawText;
+  logResponse(logger, promptType, responseText);
   try {
     return {
       parsed: params.parseResponse(parsedMessage.parsed),
@@ -97,7 +99,7 @@ async function fetchAndParseLlmStage<TParsed>(
 }
 
 export async function runLlmStage<TParsed>(
-  params: LlmStageRunnerParams<TParsed>,
+  params: LlmStageRunnerParams<TParsed>
 ): Promise<LlmStageRunnerResult<TParsed>> {
   const config = getConfig().llm;
   const primaryModel = params.options?.model ?? getStageModel(params.stageModel);
@@ -108,17 +110,16 @@ export async function runLlmStage<TParsed>(
 
   const result = await withRetry(() =>
     withModelFallback(
-      (m) => fetchAndParseLlmStage(params, m, temperature, maxTokens),
+      (m) => fetchAndParseLlmStage(params, m, temperature, maxTokens, params.promptType),
       primaryModel,
-      params.stageModel,
+      params.stageModel
     )
   );
-  logResponse(logger, params.promptType, result.rawResponse);
   return result;
 }
 
 export async function runTwoPhaseLlmStage<TFirstParsed, TSecondParsed, TResult>(
-  params: RunTwoPhaseLlmStageParams<TFirstParsed, TSecondParsed, TResult>,
+  params: RunTwoPhaseLlmStageParams<TFirstParsed, TSecondParsed, TResult>
 ): Promise<TResult> {
   const firstStageResult = await runLlmStage(params.firstStage);
   const secondStageResult = await runLlmStage(params.secondStage(firstStageResult.parsed));

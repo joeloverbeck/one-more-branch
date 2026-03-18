@@ -31,8 +31,12 @@ export function emitGenerationStage(
   attempt: number,
   durationMs?: number
 ): void {
-  const event: { stage: GenerationStage; status: 'started' | 'completed'; attempt: number; durationMs?: number } =
-    { stage, status, attempt };
+  const event: {
+    stage: GenerationStage;
+    status: 'started' | 'completed';
+    attempt: number;
+    durationMs?: number;
+  } = { stage, status, attempt };
   if (durationMs !== undefined) {
     event.durationMs = durationMs;
   }
@@ -75,12 +79,7 @@ export async function runEngineStageAttempt<T>(
   context: EngineStageAttemptContext,
   operation: () => Promise<T>
 ): Promise<{ result: T; durationMs: number }> {
-  emitGenerationStage(
-    context.onGenerationStage,
-    context.publicStage,
-    'started',
-    context.attempt
-  );
+  emitGenerationStage(context.onGenerationStage, context.publicStage, 'started', context.attempt);
   logger.info('Generation stage started', {
     ...context.logContext,
     attempt: context.attempt,

@@ -592,7 +592,10 @@ describe('state-reconciler', () => {
       stateIntents: {
         ...buildPlan().stateIntents,
         canon: {
-          worldAdd: [{ text: '  Iron   gates remain sealed ', factType: 'LAW' }, { text: 'iron gates remain sealed', factType: 'LAW' }],
+          worldAdd: [
+            { text: '  Iron   gates remain sealed ', factType: 'LAW' },
+            { text: 'iron gates remain sealed', factType: 'LAW' },
+          ],
           characterAdd: [
             {
               characterName: 'Mara',

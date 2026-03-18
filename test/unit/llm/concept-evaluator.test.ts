@@ -146,7 +146,7 @@ describe('concept-evaluator', () => {
     payload.scoredConcepts[2]!.scores.hookStrength = 2;
 
     const expectedConcepts = Array.from({ length: payload.scoredConcepts.length }, (_, index) =>
-      createValidConcept(index + 1),
+      createValidConcept(index + 1)
     );
     const parsed = parseConceptScoringResponse(payload, expectedConcepts);
 
@@ -161,7 +161,7 @@ describe('concept-evaluator', () => {
     payload.scoredConcepts[0]!.scores.noveltyLeverage = -1;
 
     const expectedConcepts = Array.from({ length: payload.scoredConcepts.length }, (_, index) =>
-      createValidConcept(index + 1),
+      createValidConcept(index + 1)
     );
     const parsed = parseConceptScoringResponse(payload, expectedConcepts);
     const target = parsed.find((item) => item.concept.oneLineHook === 'Hook 1');
@@ -173,7 +173,7 @@ describe('concept-evaluator', () => {
 
   it('parseConceptScoringResponse rejects missing scoredConcepts', () => {
     expect(() => parseConceptScoringResponse({}, [createValidConcept(1)])).toThrow(
-      'missing scoredConcepts array',
+      'missing scoredConcepts array'
     );
   });
 
@@ -183,19 +183,22 @@ describe('concept-evaluator', () => {
     const expectedConcepts = Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1));
 
     expect(() => parseConceptScoringResponse(payload, expectedConcepts)).toThrow(
-      'must include exactly 6 concepts',
+      'must include exactly 6 concepts'
     );
   });
 
   it('buildConceptEvaluatorScoringPrompt includes all-concept scoring instructions', () => {
     const conceptIds = Array.from({ length: 6 }, (_, index) => `concept_${index + 1}`);
-    const messages = buildConceptEvaluatorScoringPrompt({
-      concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
-      userSeeds: {
-        apiKey: 'test-api-key',
-        genreVibes: 'sci-fi noir',
+    const messages = buildConceptEvaluatorScoringPrompt(
+      {
+        concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
+        userSeeds: {
+          apiKey: 'test-api-key',
+          genreVibes: 'sci-fi noir',
+        },
       },
-    }, conceptIds);
+      conceptIds
+    );
 
     const systemMessage = messages[0]?.content ?? '';
     const userMessage = messages[1]?.content ?? '';
@@ -207,12 +210,15 @@ describe('concept-evaluator', () => {
 
   it('buildConceptEvaluatorScoringPrompt references enrichment fields in rubric', () => {
     const conceptIds = Array.from({ length: 6 }, (_, index) => `concept_${index + 1}`);
-    const messages = buildConceptEvaluatorScoringPrompt({
-      concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
-      userSeeds: {
-        apiKey: 'test-api-key',
+    const messages = buildConceptEvaluatorScoringPrompt(
+      {
+        concepts: Array.from({ length: 6 }, (_, index) => createValidConcept(index + 1)),
+        userSeeds: {
+          apiKey: 'test-api-key',
+        },
       },
-    }, conceptIds);
+      conceptIds
+    );
 
     const systemMessage = messages[0]?.content ?? '';
     expect(systemMessage).toContain('whatIfQuestion quality');
@@ -239,7 +245,7 @@ describe('concept-evaluator', () => {
           passes: true,
         },
       ],
-      conceptIds,
+      conceptIds
     );
 
     const systemMessage = messages[0]?.content ?? '';
@@ -251,10 +257,13 @@ describe('concept-evaluator', () => {
 
   it('scoring prompt rubric includes contentCharge dimension', () => {
     const conceptIds = ['concept_1'];
-    const messages = buildConceptEvaluatorScoringPrompt({
-      concepts: [createValidConcept(1)],
-      userSeeds: { apiKey: 'test-api-key' },
-    }, conceptIds);
+    const messages = buildConceptEvaluatorScoringPrompt(
+      {
+        concepts: [createValidConcept(1)],
+        userSeeds: { apiKey: 'test-api-key' },
+      },
+      conceptIds
+    );
 
     const systemMessage = messages[0]?.content ?? '';
     expect(systemMessage).toContain('contentCharge');
@@ -263,10 +272,13 @@ describe('concept-evaluator', () => {
 
   it('scoring prompt weights include contentCharge', () => {
     const conceptIds = ['concept_1'];
-    const messages = buildConceptEvaluatorScoringPrompt({
-      concepts: [createValidConcept(1)],
-      userSeeds: { apiKey: 'test-api-key' },
-    }, conceptIds);
+    const messages = buildConceptEvaluatorScoringPrompt(
+      {
+        concepts: [createValidConcept(1)],
+        userSeeds: { apiKey: 'test-api-key' },
+      },
+      conceptIds
+    );
 
     const systemMessage = messages[0]?.content ?? '';
     expect(systemMessage).toContain('contentCharge: weight');
@@ -319,7 +331,7 @@ describe('concept-evaluator', () => {
           genreVibes: 'noir',
         },
       },
-      'test-api-key',
+      'test-api-key'
     );
 
     expect(result.scoredConcepts).toHaveLength(6);

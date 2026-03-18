@@ -1,7 +1,4 @@
-import {
-  CharacterDepth,
-  StoryFunction,
-} from '../../../src/models/character-enums.js';
+import { CharacterDepth, StoryFunction } from '../../../src/models/character-enums.js';
 import type { CastRoleAssignment } from '../../../src/models/character-pipeline-types.js';
 import {
   getProtagonistAssignment,
@@ -104,18 +101,16 @@ describe('isSavedCharacterWeb', () => {
 
 describe('getProtagonistAssignment', () => {
   it('returns the sole protagonist assignment', () => {
-    const protagonist = getProtagonistAssignment(
-      [
-        {
-          characterName: 'Alice',
-          isProtagonist: true,
-          storyFunction: StoryFunction.ALLY,
-          characterDepth: CharacterDepth.ROUND,
-          narrativeRole: 'hero',
-          conflictRelationship: 'internal',
-        },
-      ] satisfies readonly CastRoleAssignment[],
-    );
+    const protagonist = getProtagonistAssignment([
+      {
+        characterName: 'Alice',
+        isProtagonist: true,
+        storyFunction: StoryFunction.ALLY,
+        characterDepth: CharacterDepth.ROUND,
+        narrativeRole: 'hero',
+        conflictRelationship: 'internal',
+      },
+    ] satisfies readonly CastRoleAssignment[]);
 
     expect(protagonist.characterName).toBe('Alice');
   });
@@ -131,7 +126,7 @@ describe('getProtagonistAssignment', () => {
           narrativeRole: 'hero',
           conflictRelationship: 'internal',
         },
-      ] satisfies readonly CastRoleAssignment[]),
+      ] satisfies readonly CastRoleAssignment[])
     ).toThrow('Character web requires exactly one protagonist assignment; found 0');
   });
 
@@ -154,7 +149,7 @@ describe('getProtagonistAssignment', () => {
           narrativeRole: 'hero',
           conflictRelationship: 'internal',
         },
-      ] satisfies readonly CastRoleAssignment[]),
+      ] satisfies readonly CastRoleAssignment[])
     ).toThrow('Character web requires exactly one protagonist assignment; found 2');
   });
 });

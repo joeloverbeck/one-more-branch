@@ -94,7 +94,9 @@ export interface StorySpine {
 }
 
 export function isStorySpineType(value: unknown): value is StorySpineType {
-  return typeof value === 'string' && (STORY_SPINE_TYPE_VALUES as readonly string[]).includes(value);
+  return (
+    typeof value === 'string' && (STORY_SPINE_TYPE_VALUES as readonly string[]).includes(value)
+  );
 }
 
 export function isCharacterArcType(value: unknown): value is CharacterArcType {

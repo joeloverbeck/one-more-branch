@@ -257,7 +257,10 @@ export { formatDecomposedWorldForPrompt } from './decomposed-world';
 export type { WorldSeed } from './world-seed';
 export type { SavedWorldbuilding, WorldbuildingSourceKind } from './saved-worldbuilding';
 export { isSavedWorldbuilding } from './saved-worldbuilding';
-export type { WorldbuildingDevStage, WorldbuildingPipelineInputs } from './worldbuilding-pipeline-types';
+export type {
+  WorldbuildingDevStage,
+  WorldbuildingPipelineInputs,
+} from './worldbuilding-pipeline-types';
 export { WORLDBUILDING_STAGE_NAMES } from './worldbuilding-pipeline-types';
 
 export type {
@@ -375,15 +378,13 @@ export { isConceptSeed, parseConceptSeedEntity } from './concept-seed';
 export type { SavedKernel, GeneratedKernelBatch } from './saved-kernel';
 export { isSavedKernel, isGeneratedKernelBatch } from './saved-kernel';
 
-export type {
-  ScenePurpose,
-  ValuePolarityShift,
-  PacingMode,
-} from './scene-direction-taxonomy';
+export type { ScenePurpose, ValuePolarityShift, PacingMode, SceneIdeaLane } from './scene-direction-taxonomy';
 export {
+  SCENE_IDEA_LANES,
   SCENE_PURPOSE_VALUES,
   VALUE_POLARITY_SHIFT_VALUES,
   PACING_MODE_VALUES,
+  isSceneIdeaLane,
   isScenePurpose,
   isValuePolarityShift,
   isPacingMode,
@@ -424,3 +425,6 @@ export {
 
 export type { SavedContentPacket, SavedTasteProfile } from './saved-content-packet';
 export { isSavedContentPacket, isSavedTasteProfile } from './saved-content-packet';
+
+export type { SavedSpine } from './saved-spine';
+export { isSavedSpine } from './saved-spine';

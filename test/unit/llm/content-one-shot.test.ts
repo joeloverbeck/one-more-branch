@@ -91,29 +91,27 @@ describe('parseContentOneShotResponse', () => {
     expect(() =>
       parseContentOneShotResponse({
         packets: [makeValidPacket({ contentKind: 'INVALID_KIND' })],
-      }),
+      })
     ).toThrow(/invalid contentKind/);
   });
 
   it('rejects responses with fewer than 1 packet', () => {
-    expect(() =>
-      parseContentOneShotResponse({ packets: [] }),
-    ).toThrow(/at least 1 packet/);
+    expect(() => parseContentOneShotResponse({ packets: [] })).toThrow(/at least 1 packet/);
   });
 
   it('rejects packets with missing required fields', () => {
     const { title: _, ...missingTitle } = makeValidPacket();
     void _;
-    expect(() =>
-      parseContentOneShotResponse({ packets: [missingTitle] }),
-    ).toThrow(/missing or empty required field: title/);
+    expect(() => parseContentOneShotResponse({ packets: [missingTitle] })).toThrow(
+      /missing or empty required field: title/
+    );
   });
 
   it('rejects packets with empty string fields', () => {
     expect(() =>
       parseContentOneShotResponse({
         packets: [makeValidPacket({ coreAnomaly: '  ' })],
-      }),
+      })
     ).toThrow(/missing or empty required field: coreAnomaly/);
   });
 
@@ -122,9 +120,7 @@ describe('parseContentOneShotResponse', () => {
   });
 
   it('rejects responses missing packets array', () => {
-    expect(() => parseContentOneShotResponse({ notPackets: [] })).toThrow(
-      /missing packets array/,
-    );
+    expect(() => parseContentOneShotResponse({ notPackets: [] })).toThrow(/missing packets array/);
   });
 });
 

@@ -62,9 +62,9 @@ describe('updateCharacter', () => {
   it('throws on missing character', async () => {
     mockedFileUtils.readJsonFile.mockResolvedValue(null);
 
-    await expect(
-      updateCharacter('nonexistent', (c) => c)
-    ).rejects.toThrow('Character not found: nonexistent');
+    await expect(updateCharacter('nonexistent', (c) => c)).rejects.toThrow(
+      'Character not found: nonexistent'
+    );
   });
 
   it('throws when updater produces invalid data', async () => {
@@ -72,7 +72,10 @@ describe('updateCharacter', () => {
     mockedFileUtils.readJsonFile.mockResolvedValue(existing);
 
     await expect(
-      updateCharacter('char-1', () => ({ broken: true }) as unknown as StandaloneDecomposedCharacter)
+      updateCharacter(
+        'char-1',
+        () => ({ broken: true }) as unknown as StandaloneDecomposedCharacter
+      )
     ).rejects.toThrow('Invalid character data after update');
   });
 });

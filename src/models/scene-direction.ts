@@ -5,9 +5,15 @@
  * A SelectedSceneDirection is what the user confirms (with possible free-text edits).
  */
 
-import type { ScenePurpose, ValuePolarityShift, PacingMode } from './scene-direction-taxonomy.js';
+import type {
+  ScenePurpose,
+  ValuePolarityShift,
+  PacingMode,
+  SceneIdeaLane,
+} from './scene-direction-taxonomy.js';
 
 export interface SceneDirectionOption {
+  readonly diversityLane: SceneIdeaLane;
   readonly scenePurpose: ScenePurpose;
   readonly valuePolarityShift: ValuePolarityShift;
   readonly pacingMode: PacingMode;

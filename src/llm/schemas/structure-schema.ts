@@ -154,7 +154,8 @@ export const STRUCTURE_GENERATION_SCHEMA: JsonSchema = {
               entryCondition: { type: 'string' },
               actQuestion: {
                 type: 'string',
-                description: 'Optional for the current pipeline migration. Dramatic question this act answers.',
+                description:
+                  'Optional for the current pipeline migration. Dramatic question this act answers.',
               },
               exitReversal: {
                 type: 'string',

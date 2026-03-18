@@ -258,7 +258,9 @@ describe('story-structure-section', () => {
         milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
       };
 
-      expect(buildEscalationCheckSection('setup', testStructure.acts[0]!.milestones, state)).toBe('');
+      expect(buildEscalationCheckSection('setup', testStructure.acts[0]!.milestones, state)).toBe(
+        ''
+      );
     });
 
     it('returns empty string when milestone role is resolution', () => {
@@ -270,9 +272,9 @@ describe('story-structure-section', () => {
         milestoneProgressions: [{ milestoneId: '1.1', status: 'active' }],
       };
 
-      expect(buildEscalationCheckSection('resolution', testStructure.acts[0]!.milestones, state)).toBe(
-        ''
-      );
+      expect(
+        buildEscalationCheckSection('resolution', testStructure.acts[0]!.milestones, state)
+      ).toBe('');
     });
 
     it('returns empty string when milestone role is undefined', () => {
@@ -284,7 +286,9 @@ describe('story-structure-section', () => {
         milestoneProgressions: [],
       };
 
-      expect(buildEscalationCheckSection(undefined, testStructure.acts[0]!.milestones, state)).toBe('');
+      expect(buildEscalationCheckSection(undefined, testStructure.acts[0]!.milestones, state)).toBe(
+        ''
+      );
     });
 
     it('returns escalation check with previous resolution for escalation role', () => {
@@ -436,7 +440,11 @@ describe('story-structure-section', () => {
         ],
       };
 
-      const result = buildEscalationCheckSection('escalation', testStructure.acts[0]!.milestones, state);
+      const result = buildEscalationCheckSection(
+        'escalation',
+        testStructure.acts[0]!.milestones,
+        state
+      );
 
       expect(result).toContain('=== MIDPOINT QUALITY CHECK ===');
       expect(result).toContain('Expected midpoint type: FALSE_VICTORY');

@@ -15,14 +15,11 @@ const CONFLICT_AXIS_LABELS: Record<string, string> = {
 };
 
 const DRAMATIC_STANCE_LABELS: Record<string, string> = {
-  COMIC:
-    'Renewal, community triumph, social integration. Human bonds affirmed or restored.',
-  ROMANTIC:
-    'Heroic transcendence, individual will triumphs over adversity.',
-  TRAGIC:
-    'Cost of hubris or desire, inevitable loss. The price of greatness.',
+  COMIC: 'Renewal, community triumph, social integration. Human bonds affirmed or restored.',
+  ROMANTIC: 'Heroic transcendence, individual will triumphs over adversity.',
+  TRAGIC: 'Cost of hubris or desire, inevitable loss. The price of greatness.',
   IRONIC:
-    'Subversive, deconstructive, anti-heroic. Questions conventional assumptions. NOTE: distinct from directionOfChange IRONIC (outcome trajectory); dramaticStance IRONIC describes the story\'s philosophical worldview.',
+    "Subversive, deconstructive, anti-heroic. Questions conventional assumptions. NOTE: distinct from directionOfChange IRONIC (outcome trajectory); dramaticStance IRONIC describes the story's philosophical worldview.",
 };
 
 export const CONFLICT_AXIS_GUIDANCE = `CONFLICT AXIS TAXONOMY:

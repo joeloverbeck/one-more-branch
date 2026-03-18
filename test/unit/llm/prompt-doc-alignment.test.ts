@@ -170,6 +170,11 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     sourcePath: 'src/llm/prompts/concept-single-evaluator-prompt.ts',
     docPath: 'prompts/concept-single-evaluator-prompt.md',
   },
+  {
+    promptType: 'sceneIdeator',
+    sourcePath: 'src/llm/prompts/scene-ideator-prompt.ts',
+    docPath: 'prompts/scene-ideator-prompt.md',
+  },
 ];
 
 function readRepoFile(relativePath: string): string {
@@ -209,4 +214,31 @@ describe('prompt documentation alignment', () => {
     expect(docContent).toContain('conflictTension');
   });
 
+  it('documents the scene ideator lane/count/slate contract', () => {
+    const docContent = readRepoFile('prompts/scene-ideator-prompt.md');
+    expect(docContent).toContain('Shared ideation contract');
+    expect(docContent).toContain('exactly 5 dramatically distinct scene direction options');
+    expect(docContent).toContain('classified by four narrative dimensions');
+    expect(docContent).toContain('IDEATION SLATE:');
+    expect(docContent).toContain('diversityLane');
+    expect(docContent).toContain('AgedTrackedPromise[]');
+    expect(docContent).not.toContain('exactly 3 options');
+  });
+
+  it('documents shared structure priority guidance across planner, lorekeeper, and evaluator docs', () => {
+    const plannerDoc = readRepoFile('prompts/page-planner-prompt.md');
+    const lorekeeperDoc = readRepoFile('prompts/lorekeeper-prompt.md');
+    const evaluatorDoc = readRepoFile('prompts/structure-evaluator-prompt.md');
+
+    expect(plannerDoc).toContain('=== STRUCTURE PRIORITIES ===');
+    expect(plannerDoc).toContain(
+      'Treat the active milestone exit condition as the default completion contract for the current scene.'
+    );
+    expect(lorekeeperDoc).toContain('=== STRUCTURE PRIORITIES ===');
+    expect(lorekeeperDoc).toContain(
+      'Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.'
+    );
+    expect(evaluatorDoc).toContain('=== ACT TRAJECTORY CHECK ===');
+    expect(evaluatorDoc).toContain('Immediate milestone completion target');
+  });
 });

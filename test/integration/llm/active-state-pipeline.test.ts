@@ -63,7 +63,9 @@ describe('Active state pipeline integration', () => {
       health: { add: ['Your lungs burn from smoke inhalation'], removeIds: [] },
       characterState: { add: [], removeIds: [] },
       canon: {
-        worldAdd: [{ text: 'The Golden Flagon tavern is the oldest building in Millhaven', factType: 'LAW' }],
+        worldAdd: [
+          { text: 'The Golden Flagon tavern is the oldest building in Millhaven', factType: 'LAW' },
+        ],
         characterAdd: [{ characterName: 'Innkeeper Bram', facts: ['Elderly man with a limp'] }],
       },
     },
@@ -96,9 +98,21 @@ describe('Active state pipeline integration', () => {
 
     // Step 3: Build page via page-builder (choices come from choice generator, not writer)
     const choices = [
-      { text: 'Rush to save the innkeeper', choiceType: ChoiceType.INTERVENE, primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE },
-      { text: 'Flee through the back door', choiceType: ChoiceType.WITHDRAW, primaryDelta: PrimaryDelta.LOCATION_ACCESS_CHANGE },
-      { text: 'Search for water', choiceType: ChoiceType.INVESTIGATE, primaryDelta: PrimaryDelta.INFORMATION_STATE_CHANGE },
+      {
+        text: 'Rush to save the innkeeper',
+        choiceType: ChoiceType.INTERVENE,
+        primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE,
+      },
+      {
+        text: 'Flee through the back door',
+        choiceType: ChoiceType.WITHDRAW,
+        primaryDelta: PrimaryDelta.LOCATION_ACCESS_CHANGE,
+      },
+      {
+        text: 'Search for water',
+        choiceType: ChoiceType.INVESTIGATE,
+        primaryDelta: PrimaryDelta.INFORMATION_STATE_CHANGE,
+      },
     ];
     const context = createEmptyStructureContext();
     const page = buildFirstPage(
@@ -139,9 +153,7 @@ describe('Active state pipeline integration', () => {
     expect(page.accumulatedActiveState.activeThreats[0]?.text).toBe(
       'The tavern is engulfed in flames and could collapse at any moment'
     );
-    expect(page.accumulatedActiveState.activeThreats[0]?.threatType).toBe(
-      ThreatType.ENVIRONMENTAL
-    );
+    expect(page.accumulatedActiveState.activeThreats[0]?.threatType).toBe(ThreatType.ENVIRONMENTAL);
     expect(page.accumulatedActiveState.activeConstraints).toHaveLength(1);
     expect(page.accumulatedActiveState.activeConstraints[0]?.id).toBe('cn-1');
     expect(page.accumulatedActiveState.activeConstraints[0]?.text).toBe(
@@ -215,14 +227,25 @@ describe('Active state pipeline integration', () => {
     });
 
     const context = createEmptyStructureContext();
-    const page = buildFirstPage({
-      ...generationResult,
-      ...reconciliation,
-      choices: [
-        { text: 'Option A', choiceType: ChoiceType.INTERVENE, primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE },
-        { text: 'Option B', choiceType: ChoiceType.INVESTIGATE, primaryDelta: PrimaryDelta.INFORMATION_STATE_CHANGE },
-      ],
-    }, context);
+    const page = buildFirstPage(
+      {
+        ...generationResult,
+        ...reconciliation,
+        choices: [
+          {
+            text: 'Option A',
+            choiceType: ChoiceType.INTERVENE,
+            primaryDelta: PrimaryDelta.GOAL_PRIORITY_CHANGE,
+          },
+          {
+            text: 'Option B',
+            choiceType: ChoiceType.INVESTIGATE,
+            primaryDelta: PrimaryDelta.INFORMATION_STATE_CHANGE,
+          },
+        ],
+      },
+      context
+    );
 
     expect(page.activeStateChanges.newLocation).toBeNull();
     expect(page.activeStateChanges.threatsAdded).toEqual([]);

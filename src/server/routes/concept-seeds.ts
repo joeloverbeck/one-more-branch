@@ -27,7 +27,7 @@ function hasAtLeastOneConceptSeed(body: {
   contentPreferences?: string;
 }): boolean {
   return [body.genreVibes, body.moodKeywords, body.contentPreferences].some((value) =>
-    value?.trim(),
+    value?.trim()
   );
 }
 
@@ -63,7 +63,7 @@ conceptSeedRoutes.get(
       genreGroups,
       genreFrames: GENRE_FRAMES,
     });
-  }),
+  })
 );
 
 conceptSeedRoutes.get(
@@ -71,7 +71,7 @@ conceptSeedRoutes.get(
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const seeds = await listSeeds();
     return res.json({ success: true, seeds });
-  }),
+  })
 );
 
 conceptSeedRoutes.get(
@@ -83,7 +83,7 @@ conceptSeedRoutes.get(
       return res.status(404).json({ success: false, error: 'Seed not found' });
     }
     return res.json({ success: true, seed });
-  }),
+  })
 );
 
 conceptSeedRoutes.post(
@@ -174,7 +174,7 @@ conceptSeedRoutes.post(
       logger.error('Error during seed generation:', { error: err.message, stack: err.stack });
       return res.status(500).json({ success: false, error: err.message });
     }
-  }),
+  })
 );
 
 conceptSeedRoutes.post(
@@ -239,7 +239,7 @@ conceptSeedRoutes.post(
 
     await saveSeed(conceptSeed);
     return res.json({ success: true, seed: conceptSeed });
-  }),
+  })
 );
 
 conceptSeedRoutes.put(
@@ -260,7 +260,7 @@ conceptSeedRoutes.put(
     });
 
     return res.json({ success: true, seed: updated });
-  }),
+  })
 );
 
 conceptSeedRoutes.delete(
@@ -274,5 +274,5 @@ conceptSeedRoutes.delete(
 
     await deleteSeed(seedId as string);
     return res.json({ success: true });
-  }),
+  })
 );

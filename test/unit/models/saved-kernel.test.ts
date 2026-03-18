@@ -60,7 +60,7 @@ describe('saved-kernel model guards', () => {
         updatedAt: '2026-02-19T00:00:00.000Z',
         seeds: {},
         evaluatedKernel,
-      }),
+      })
     ).toBe(false);
     expect(
       isSavedKernel({
@@ -70,7 +70,7 @@ describe('saved-kernel model guards', () => {
         updatedAt: '2026-02-19T00:00:00.000Z',
         seeds: null,
         evaluatedKernel,
-      }),
+      })
     ).toBe(false);
     expect(
       isSavedKernel({
@@ -86,7 +86,7 @@ describe('saved-kernel model guards', () => {
             emotionalDepth: 6,
           },
         },
-      }),
+      })
     ).toBe(false);
     expect(isSavedKernel(null)).toBe(false);
   });
@@ -110,7 +110,7 @@ describe('saved-kernel model guards', () => {
         id: 'batch-1',
         seeds: {},
         evaluatedKernels: [],
-      }),
+      })
     ).toBe(false);
     expect(
       isGeneratedKernelBatch({
@@ -118,7 +118,7 @@ describe('saved-kernel model guards', () => {
         generatedAt: '2026-02-19T00:00:00.000Z',
         seeds: [],
         evaluatedKernels: [],
-      }),
+      })
     ).toBe(false);
     expect(
       isGeneratedKernelBatch({
@@ -126,7 +126,7 @@ describe('saved-kernel model guards', () => {
         generatedAt: '2026-02-19T00:00:00.000Z',
         seeds: {},
         evaluatedKernels: [{ ...evaluatedKernel, tradeoffSummary: '' }],
-      }),
+      })
     ).toBe(false);
     expect(isGeneratedKernelBatch('nope')).toBe(false);
   });

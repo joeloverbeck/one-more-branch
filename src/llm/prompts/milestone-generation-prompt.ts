@@ -21,9 +21,7 @@ function buildSetpieceBankSection(setpieceBank: readonly string[]): string {
     return '';
   }
 
-  const numbered = setpieceBank
-    .map((setpiece, index) => `${index}. ${setpiece}`)
-    .join('\n');
+  const numbered = setpieceBank.map((setpiece, index) => `${index}. ${setpiece}`).join('\n');
 
   return `VERIFIED SETPIECE BANK (zero-based indices):
 ${numbered}
@@ -36,18 +34,18 @@ For escalation and turning_point milestones, prefer tracing to a verified setpie
 function buildMacroArchitectureSection(macroArchitecture: MacroArchitectureResult): string {
   return `LOCKED MACRO ARCHITECTURE (immutable; do not rewrite):
 ${JSON.stringify(
-    {
-      overallTheme: macroArchitecture.overallTheme,
-      premise: macroArchitecture.premise,
-      openingImage: macroArchitecture.openingImage,
-      closingImage: macroArchitecture.closingImage,
-      pacingBudget: macroArchitecture.pacingBudget,
-      anchorMoments: macroArchitecture.anchorMoments,
-      acts: macroArchitecture.acts,
-    },
-    null,
-    2
-  )}
+  {
+    overallTheme: macroArchitecture.overallTheme,
+    premise: macroArchitecture.premise,
+    openingImage: macroArchitecture.openingImage,
+    closingImage: macroArchitecture.closingImage,
+    pacingBudget: macroArchitecture.pacingBudget,
+    anchorMoments: macroArchitecture.anchorMoments,
+    acts: macroArchitecture.acts,
+  },
+  null,
+  2
+)}
 
 `;
 }
@@ -70,7 +68,9 @@ export function buildMilestoneGenerationPrompt(
     context.conceptVerification,
     'Milestones must deliver these promises through concrete situations, not abstract summaries.'
   );
-  const genreObligationsSection = buildStructureGenerationGenreObligationsSection(context.conceptSpec);
+  const genreObligationsSection = buildStructureGenerationGenreObligationsSection(
+    context.conceptSpec
+  );
   const kernelSection = buildStructureGenerationKernelSection(context.storyKernel, {
     guidanceText:
       'Use the kernel to sharpen milestone-level reversals, crises, and value pressure rather than re-planning the macro act sequence.',

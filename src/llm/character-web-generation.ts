@@ -11,10 +11,7 @@ import type {
   ConflictTriangle,
   RelationshipArchetype,
 } from '../models/character-pipeline-types.js';
-import {
-  isStoryFunction,
-  isCharacterDepth,
-} from '../models/character-enums.js';
+import { isStoryFunction, isCharacterDepth } from '../models/character-enums.js';
 import { isRelationshipArchetype } from '../models/character-pipeline-types.js';
 import { runLlmStage } from './llm-stage-runner.js';
 
@@ -29,11 +26,7 @@ export interface CharacterWebGenerationResult {
 
 function parseAssignment(raw: unknown, index: number): CastRoleAssignment {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
-    throw new LLMError(
-      `Assignment ${index + 1} must be an object`,
-      'STRUCTURE_PARSE_ERROR',
-      true
-    );
+    throw new LLMError(`Assignment ${index + 1} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const data = raw as Record<string, unknown>;
@@ -86,9 +79,8 @@ function parseAssignment(raw: unknown, index: number): CastRoleAssignment {
     );
   }
 
-  const privateAgenda = typeof data['privateAgenda'] === 'string'
-    ? data['privateAgenda'].trim()
-    : '';
+  const privateAgenda =
+    typeof data['privateAgenda'] === 'string' ? data['privateAgenda'].trim() : '';
 
   return {
     characterName: data['characterName'].trim(),
@@ -146,7 +138,10 @@ function parseCharacterWebResponse(
     );
   }
 
-  if (typeof data['castDynamicsSummary'] !== 'string' || data['castDynamicsSummary'].trim().length === 0) {
+  if (
+    typeof data['castDynamicsSummary'] !== 'string' ||
+    data['castDynamicsSummary'].trim().length === 0
+  ) {
     throw new LLMError(
       'Character web response missing castDynamicsSummary',
       'STRUCTURE_PARSE_ERROR',
@@ -164,7 +159,11 @@ function parseCharacterWebResponse(
     .filter((t): t is Record<string, unknown> => typeof t === 'object' && t !== null)
     .map((t) => ({
       characters: Array.isArray(t['characters'])
-        ? (t['characters'].filter((c): c is string => typeof c === 'string').slice(0, 3) as [string, string, string])
+        ? (t['characters'].filter((c): c is string => typeof c === 'string').slice(0, 3) as [
+            string,
+            string,
+            string,
+          ])
         : ([] as unknown as [string, string, string]),
       incompatibility: typeof t['incompatibility'] === 'string' ? t['incompatibility'].trim() : '',
     }))
@@ -175,7 +174,10 @@ function parseCharacterWebResponse(
     .filter((f): f is Record<string, unknown> => typeof f === 'object' && f !== null)
     .map((f) => ({
       allies: Array.isArray(f['allies'])
-        ? (f['allies'].filter((a): a is string => typeof a === 'string').slice(0, 2) as [string, string])
+        ? (f['allies'].filter((a): a is string => typeof a === 'string').slice(0, 2) as [
+            string,
+            string,
+          ])
         : ([] as unknown as [string, string]),
       faultLine: typeof f['faultLine'] === 'string' ? f['faultLine'].trim() : '',
     }))

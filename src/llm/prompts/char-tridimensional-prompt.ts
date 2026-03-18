@@ -32,7 +32,7 @@ function buildTridimensionalConceptSection(conceptSpec?: ConceptSpec): string {
   return (
     baseSection +
     '\n\n' +
-    'CONSTRAINT: Use genre frame and world architecture to ground physiology and sociology in the setting. Use setting axioms to determine what physical and social traits are possible. Use setting scale to calibrate the character\'s social reach.'
+    "CONSTRAINT: Use genre frame and world architecture to ground physiology and sociology in the setting. Use setting axioms to determine what physical and social traits are possible. Use setting scale to calibrate the character's social reach."
   );
 }
 
@@ -45,7 +45,7 @@ function buildTridimensionalKernelSection(storyKernel?: StoryKernel): string {
   return (
     baseSection +
     '\n\n' +
-    'CONSTRAINT: Use the dramatic stance to calibrate the character\'s psychological tone. Use the value spectrum to inform their moral standards and personal premise.'
+    "CONSTRAINT: Use the dramatic stance to calibrate the character's psychological tone. Use the value spectrum to inform their moral standards and personal premise."
   );
 }
 
@@ -113,7 +113,9 @@ export function buildCharTridimensionalPrompt(
       : '';
 
   if (worldSection.length > 0) {
-    userSections.push(`${worldSection}\n\nCONSTRAINT: Ground sociology in the worldbuilding — class systems, occupations, cultural norms, and institutions must reflect the world as described. Use world geography, climate, and resources to inform physiology where relevant.`);
+    userSections.push(
+      `${worldSection}\n\nCONSTRAINT: Ground sociology in the worldbuilding — class systems, occupations, cultural norms, and institutions must reflect the world as described. Use world geography, climate, and resources to inform physiology where relevant.`
+    );
   }
 
   if (context.userNotes) {

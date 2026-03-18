@@ -131,7 +131,9 @@ export function validateStateAccountantResponse(
   if (repairedEntries.length > 0) {
     console.warn(
       '[accountant-shape-repair] Repaired legacy characterState.add entries:',
-      repairedEntries.map((entry) => `index ${entry.index}: ${entry.fromFields.join('+')}`).join(', ')
+      repairedEntries
+        .map((entry) => `index ${entry.index}: ${entry.fromFields.join('+')}`)
+        .join(', ')
     );
   }
 

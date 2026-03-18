@@ -170,9 +170,7 @@ function extractStructureResult(
   };
 }
 
-function extractPromiseResult(
-  ar: AnalystResult
-): PromiseTrackerResult & { rawResponse: string } {
+function extractPromiseResult(ar: AnalystResult): PromiseTrackerResult & { rawResponse: string } {
   return {
     promisesDetected: ar.promisesDetected,
     promisesResolved: ar.promisesResolved,
@@ -544,8 +542,16 @@ describe('story-engine integration', () => {
       if (context.narrative.includes('harbor lights')) {
         return Promise.resolve({
           choices: [
-            { text: 'Investigate the ember trail', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
-            { text: 'Question the ferryman', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
+            {
+              text: 'Investigate the ember trail',
+              choiceType: 'INTERVENE' as const,
+              primaryDelta: 'GOAL_PRIORITY_CHANGE' as const,
+            },
+            {
+              text: 'Question the ferryman',
+              choiceType: 'INVESTIGATE' as const,
+              primaryDelta: 'INFORMATION_STATE_CHANGE' as const,
+            },
           ],
           rawResponse: '{}',
         });
@@ -553,16 +559,32 @@ describe('story-engine integration', () => {
       if (context.narrative.includes('embers down alleys')) {
         return Promise.resolve({
           choices: [
-            { text: 'Enter the ash-marked chapel', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
-            { text: 'Return to the docks with proof', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
+            {
+              text: 'Enter the ash-marked chapel',
+              choiceType: 'INTERVENE' as const,
+              primaryDelta: 'GOAL_PRIORITY_CHANGE' as const,
+            },
+            {
+              text: 'Return to the docks with proof',
+              choiceType: 'INVESTIGATE' as const,
+              primaryDelta: 'INFORMATION_STATE_CHANGE' as const,
+            },
           ],
           rawResponse: '{}',
         });
       }
       return Promise.resolve({
         choices: [
-          { text: 'Accept passage to the hidden pier', choiceType: 'INTERVENE' as const, primaryDelta: 'GOAL_PRIORITY_CHANGE' as const },
-          { text: 'Detain the ferryman for answers', choiceType: 'INVESTIGATE' as const, primaryDelta: 'INFORMATION_STATE_CHANGE' as const },
+          {
+            text: 'Accept passage to the hidden pier',
+            choiceType: 'INTERVENE' as const,
+            primaryDelta: 'GOAL_PRIORITY_CHANGE' as const,
+          },
+          {
+            text: 'Detain the ferryman for answers',
+            choiceType: 'INVESTIGATE' as const,
+            primaryDelta: 'INFORMATION_STATE_CHANGE' as const,
+          },
         ],
         rawResponse: '{}',
       });

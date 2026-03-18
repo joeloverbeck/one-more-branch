@@ -35,7 +35,9 @@ export function isContentKind(value: unknown): value is ContentKind {
 }
 
 export function isContentPacketRole(value: unknown): value is ContentPacketRole {
-  return typeof value === 'string' && CONTENT_PACKET_ROLE_VALUES.includes(value as ContentPacketRole);
+  return (
+    typeof value === 'string' && CONTENT_PACKET_ROLE_VALUES.includes(value as ContentPacketRole)
+  );
 }
 
 export function isRiskAppetite(value: unknown): value is RiskAppetite {

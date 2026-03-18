@@ -20,12 +20,8 @@ export function canonicalizeDecomposedWorld(world: DecomposedWorld): DecomposedW
     }
     factIds.add(id);
 
-    const tensionWithIds = (fact.tensionWithIds ?? []).filter((refId) =>
-      refId !== id,
-    );
-    const implicationOfIds = (fact.implicationOfIds ?? []).filter((refId) =>
-      refId !== id,
-    );
+    const tensionWithIds = (fact.tensionWithIds ?? []).filter((refId) => refId !== id);
+    const implicationOfIds = (fact.implicationOfIds ?? []).filter((refId) => refId !== id);
 
     return {
       id,

@@ -21,14 +21,11 @@ import { createRouteGenerationProgress } from './generation-progress-route.js';
 
 export const characterRoutes = Router();
 
-characterRoutes.get(
-  '/',
-  (_req: Request, res: Response) => {
-    res.render('pages/characters', {
-      title: 'Character Profiles - One More Branch',
-    });
-  }
-);
+characterRoutes.get('/', (_req: Request, res: Response) => {
+  res.render('pages/characters', {
+    title: 'Character Profiles - One More Branch',
+  });
+});
 
 characterRoutes.post(
   '/decompose',
@@ -56,9 +53,7 @@ characterRoutes.post(
     }
 
     if (apiKey.length < 10) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'OpenRouter API key is required' });
+      return res.status(400).json({ success: false, error: 'OpenRouter API key is required' });
     }
 
     const progress = createRouteGenerationProgress(body.progressId, 'character-decomposition');
@@ -71,10 +66,7 @@ characterRoutes.post(
     }
 
     try {
-      const result = await decomposeCharacter(
-        { characterName, characterDescription },
-        apiKey
-      );
+      const result = await decomposeCharacter({ characterName, characterDescription }, apiKey);
 
       const characterId = `char-${randomUUID()}`;
       const now = new Date().toISOString();
@@ -151,7 +143,9 @@ characterRoutes.patch(
     }
 
     if (!isEditableCharacterField(fieldPath)) {
-      return res.status(400).json({ success: false, error: `Field "${fieldPath}" is not editable` });
+      return res
+        .status(400)
+        .json({ success: false, error: `Field "${fieldPath}" is not editable` });
     }
 
     const validationError = validateCharacterFieldValue(fieldPath, body.value);

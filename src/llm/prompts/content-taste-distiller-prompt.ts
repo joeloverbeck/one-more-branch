@@ -18,16 +18,14 @@ function normalize(value: string | undefined): string | undefined {
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
 }
 
-export function buildContentTasteDistillerPrompt(
-  context: TasteDistillerContext,
-): ChatMessage[] {
+export function buildContentTasteDistillerPrompt(context: TasteDistillerContext): ChatMessage[] {
   const moodOrGenre = normalize(context.moodOrGenre);
   const contentPreferences = normalize(context.contentPreferences);
 
   const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, RULES];
 
   const userSections: string[] = [
-    'Distill the user\'s imaginative taste from the exemplar ideas below.',
+    "Distill the user's imaginative taste from the exemplar ideas below.",
     `EXEMPLAR IDEAS:\n${context.exemplarIdeas.map((idea, i) => `${i + 1}. ${idea}`).join('\n')}`,
   ];
 
@@ -46,7 +44,7 @@ export function buildContentTasteDistillerPrompt(
     `OUTPUT REQUIREMENTS:
 - Return JSON matching exactly: { "tasteProfile": { ... } }
 - Do not repeat the exemplar ideas back in paraphrase.
-- collisionPatterns, favoredMechanisms, humanAnchors, socialEngines, toneBlend, sceneAppetites, antiPatterns, and surfaceDoNotRepeat must each contain 4-8 specific items.`,
+- collisionPatterns, favoredMechanisms, humanAnchors, socialEngines, toneBlend, sceneAppetites, antiPatterns, and surfaceDoNotRepeat must each contain 4-8 specific items.`
   );
 
   return [

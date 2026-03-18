@@ -18,9 +18,7 @@ import type {
   SavedDevelopedCharacter,
 } from '../../../src/models/saved-developed-character.js';
 
-function createAssignment(
-  overrides: Partial<CastRoleAssignment> = {},
-): CastRoleAssignment {
+function createAssignment(overrides: Partial<CastRoleAssignment> = {}): CastRoleAssignment {
   return {
     characterName: 'Mara Voss',
     isProtagonist: false,
@@ -51,9 +49,7 @@ function createArchetypes(): readonly RelationshipArchetype[] {
   ];
 }
 
-function createWebContext(
-  overrides: Partial<CharacterWebContext> = {},
-): CharacterWebContext {
+function createWebContext(overrides: Partial<CharacterWebContext> = {}): CharacterWebContext {
   return {
     assignment: createAssignment(),
     protagonistName: 'Iria Vale',
@@ -64,7 +60,7 @@ function createWebContext(
 }
 
 function createCharacter(
-  overrides: Partial<SavedDevelopedCharacter> = {},
+  overrides: Partial<SavedDevelopedCharacter> = {}
 ): SavedDevelopedCharacter {
   return {
     id: 'char-mara',
@@ -106,7 +102,8 @@ function createCharacter(
           valence: RelationshipValence.AMBIVALENT,
           numericValence: -1,
           history: 'They once split a score cleanly, then spent years proving that was a mistake.',
-          currentTension: 'They must share the route long enough to seize it, but neither can bear to owe the other.',
+          currentTension:
+            'They must share the route long enough to seize it, but neither can bear to owe the other.',
           leverage: 'Mara knows which forged manifest would destroy Iria in court.',
         },
       ],
@@ -127,7 +124,8 @@ function createCharacter(
         registerShifts: 'Gets flatter and colder when cornered.',
       },
       appearance: 'Salt-stained finery worn like a dare.',
-      knowledgeBoundaries: 'Knows the debt network and the archive route, but misreads how far Iria will bend.',
+      knowledgeBoundaries:
+        'Knows the debt network and the archive route, but misreads how far Iria will bend.',
       conflictPriority: 'Control of the route matters more than temporary alliance.',
     },
     completedStages: [1, 2, 3, 4, 5],
@@ -149,8 +147,7 @@ describe('toDecomposedCharacter', () => {
       protagonistRelationship: {
         valence: -1,
         dynamic: 'RIVAL',
-        history:
-          'They once split a score cleanly, then spent years proving that was a mistake.',
+        history: 'They once split a score cleanly, then spent years proving that was a mistake.',
         currentTension:
           'They must share the route long enough to seize it, but neither can bear to owe the other.',
         leverage: 'Mara knows which forged manifest would destroy Iria in court.',
@@ -179,7 +176,7 @@ describe('toDecomposedCharacter', () => {
           isProtagonist: true,
           storyFunction: StoryFunction.CATALYST,
         }),
-      }),
+      })
     );
 
     expect(result.protagonistRelationship).toBeNull();
@@ -205,7 +202,7 @@ describe('toDecomposedCharacter', () => {
           personalDilemmas: ['Cut Pell loose or drag him under.'],
         },
       }),
-      createWebContext(),
+      createWebContext()
     );
 
     expect(result.protagonistRelationship).toBeNull();
@@ -217,8 +214,8 @@ describe('toDecomposedCharacter', () => {
         createCharacter({
           agencyModel: null,
         }),
-        createWebContext(),
-      ),
+        createWebContext()
+      )
     ).toThrow('Character Mara Voss is missing completed stage data');
   });
 });
@@ -228,7 +225,7 @@ describe('toDecomposedCharacterFromWeb', () => {
     const result = toDecomposedCharacterFromWeb(
       createAssignment(),
       createArchetypes(),
-      'Iria Vale',
+      'Iria Vale'
     );
 
     expect(result).toEqual({
@@ -252,12 +249,9 @@ describe('toDecomposedCharacterFromWeb', () => {
       protagonistRelationship: {
         valence: 0,
         dynamic: 'RIVAL',
-        history:
-          'They need each other to survive, but each reads compromise as surrender.',
-        currentTension:
-          'They need each other to survive, but each reads compromise as surrender.',
-        leverage:
-          'They need each other to survive, but each reads compromise as surrender.',
+        history: 'They need each other to survive, but each reads compromise as surrender.',
+        currentTension: 'They need each other to survive, but each reads compromise as surrender.',
+        leverage: 'They need each other to survive, but each reads compromise as surrender.',
       },
       knowledgeBoundaries:
         'Only web-level role knowledge is established so far: A brilliant salvager who keeps outbidding the crew.',
@@ -287,12 +281,12 @@ describe('toDecomposedCharacterFromWeb', () => {
           essentialTension: 'Debt keeps them aligned only until the money runs out.',
         },
       ],
-      'Iria Vale',
+      'Iria Vale'
     );
 
     expect(result.protagonistRelationship).toBeNull();
     expect(result.thematicStance).toBe(
-      'She needs the protagonist but refuses to yield control. This defines how this rival pressures the story.',
+      'She needs the protagonist but refuses to yield control. This defines how this rival pressures the story.'
     );
   });
 
@@ -300,7 +294,7 @@ describe('toDecomposedCharacterFromWeb', () => {
     const result = toDecomposedCharacterFromWeb(
       createAssignment(),
       createArchetypes(),
-      'Someone Else',
+      'Someone Else'
     );
 
     expect(result.protagonistRelationship).toBeNull();
@@ -314,7 +308,7 @@ describe('toDecomposedCharacterFromWeb', () => {
         storyFunction: StoryFunction.CATALYST,
       }),
       createArchetypes(),
-      'Iria Vale',
+      'Iria Vale'
     );
 
     expect(result.protagonistRelationship).toBeNull();

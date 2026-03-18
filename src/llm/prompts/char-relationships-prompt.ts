@@ -40,21 +40,21 @@ function formatStringList(values: readonly string[]): string {
 
 function formatOtherDevelopedCharacters(
   characters: readonly SavedDevelopedCharacter[],
-  focalCharacterName: string,
+  focalCharacterName: string
 ): string {
   return characters
     .filter((character) => character.characterName !== focalCharacterName)
     .map((character) => {
-      const sections = [
-        `- ${character.characterName}`,
-      ];
+      const sections = [`- ${character.characterName}`];
 
       if (character.characterKernel) {
         sections.push(`  Super-objective: ${character.characterKernel.superObjective}`);
       }
 
       if (character.tridimensionalProfile) {
-        sections.push(`  Core traits: ${formatStringList(character.tridimensionalProfile.coreTraits)}`);
+        sections.push(
+          `  Core traits: ${formatStringList(character.tridimensionalProfile.coreTraits)}`
+        );
       }
 
       if (character.agencyModel) {
@@ -89,7 +89,7 @@ function buildRelationshipsKernelSection(storyKernel?: StoryKernel): string {
   return (
     baseSection +
     '\n\n' +
-    'CONSTRAINT: Use the value spectrum to position each relationship at a distinct point of moral tension. Use the thematic question to seed secrets and dilemmas that force the character to confront the story\'s central argument.'
+    "CONSTRAINT: Use the value spectrum to position each relationship at a distinct point of moral tension. Use the thematic question to seed secrets and dilemmas that force the character to confront the story's central argument."
   );
 }
 
@@ -100,9 +100,7 @@ export function buildCharRelationshipsPrompt(
   const { assignment } = webContext;
 
   const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, DESIGN_GUIDELINES];
-  const userSections: string[] = [
-    `Generate deep relationships for ${assignment.characterName}.`,
-  ];
+  const userSections: string[] = [`Generate deep relationships for ${assignment.characterName}.`];
 
   userSections.push(`CHARACTER ROLE IN CAST:
 - Name: ${assignment.characterName}
@@ -183,7 +181,9 @@ export function buildCharRelationshipsPrompt(
       : '';
 
   if (worldSection.length > 0) {
-    userSections.push(`${worldSection}\n\nCONSTRAINT: Ground relationship dynamics in the world's social structures, political factions, and cultural norms. Use worldbuilding to determine what alliances, hierarchies, and taboos shape how characters relate.`);
+    userSections.push(
+      `${worldSection}\n\nCONSTRAINT: Ground relationship dynamics in the world's social structures, political factions, and cultural norms. Use worldbuilding to determine what alliances, hierarchies, and taboos shape how characters relate.`
+    );
   }
 
   if (context.userNotes) {

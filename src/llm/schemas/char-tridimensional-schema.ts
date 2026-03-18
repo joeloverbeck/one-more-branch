@@ -21,8 +21,7 @@ export const CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA: JsonSchema = {
       properties: {
         characterName: {
           type: 'string',
-          description:
-            "The character's name, matching the name from the character web assignment.",
+          description: "The character's name, matching the name from the character web assignment.",
         },
         physiology: {
           type: 'string',

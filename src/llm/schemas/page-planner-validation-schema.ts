@@ -1,8 +1,5 @@
 import { z } from 'zod';
-import {
-  addDuplicateIssues,
-  addRequiredTrimmedTextIssue,
-} from './shared-state-intent-schemas.js';
+import { addDuplicateIssues, addRequiredTrimmedTextIssue } from './shared-state-intent-schemas.js';
 
 export const PagePlannerResultSchema = z
   .object({

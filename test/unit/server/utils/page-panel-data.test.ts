@@ -1,10 +1,4 @@
-import {
-  createChoice,
-  createPage,
-  PromiseType,
-  ThreadType,
-  Urgency,
-} from '@/models';
+import { createChoice, createPage, PromiseType, ThreadType, Urgency } from '@/models';
 import type { AnalystResult } from '@/llm/analyst-types';
 import { buildInsightsPromiseMeta, buildInsightsThreadMeta } from '@/server/utils/page-panel-data';
 
@@ -72,8 +66,18 @@ describe('page-panel-data insights metadata', () => {
         activeThreats: [],
         activeConstraints: [],
         openThreads: [
-          { id: 'td-1', text: 'Find the sigil', threadType: ThreadType.QUEST, urgency: Urgency.HIGH },
-          { id: 'td-2', text: 'Watch the courtyard', threadType: ThreadType.INFORMATION, urgency: Urgency.LOW },
+          {
+            id: 'td-1',
+            text: 'Find the sigil',
+            threadType: ThreadType.QUEST,
+            urgency: Urgency.HIGH,
+          },
+          {
+            id: 'td-2',
+            text: 'Watch the courtyard',
+            threadType: ThreadType.INFORMATION,
+            urgency: Urgency.LOW,
+          },
         ],
       },
       accumulatedPromises: [
@@ -133,7 +137,12 @@ describe('page-panel-data insights metadata', () => {
         activeThreats: [],
         activeConstraints: [],
         openThreads: [
-          { id: 'td-2', text: 'Watch the courtyard', threadType: ThreadType.INFORMATION, urgency: Urgency.LOW },
+          {
+            id: 'td-2',
+            text: 'Watch the courtyard',
+            threadType: ThreadType.INFORMATION,
+            urgency: Urgency.LOW,
+          },
         ],
       },
       analystResult: makeAnalystResult({ promisesResolved: ['pr-1'] }),

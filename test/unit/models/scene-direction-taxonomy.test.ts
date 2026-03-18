@@ -1,7 +1,9 @@
 import {
+  SCENE_IDEA_LANES,
   SCENE_PURPOSE_VALUES,
   VALUE_POLARITY_SHIFT_VALUES,
   PACING_MODE_VALUES,
+  isSceneIdeaLane,
   isScenePurpose,
   isValuePolarityShift,
   isPacingMode,
@@ -11,6 +13,28 @@ import {
 } from '../../../src/models/scene-direction-taxonomy';
 
 describe('Scene direction taxonomy', () => {
+  describe('SCENE_IDEA_LANES', () => {
+    it('contains exactly 6 values', () => {
+      expect(SCENE_IDEA_LANES).toHaveLength(6);
+    });
+
+    it('contains no duplicate values', () => {
+      const unique = new Set(SCENE_IDEA_LANES);
+      expect(unique.size).toBe(SCENE_IDEA_LANES.length);
+    });
+
+    it('includes all expected scene idea lane values', () => {
+      expect(SCENE_IDEA_LANES).toEqual([
+        'ESCALATION',
+        'REVELATION',
+        'RELATIONAL_REALIGNMENT',
+        'TEMPTATION_OR_OPPORTUNITY',
+        'CONSEQUENCE_OR_PAYOFF',
+        'IDENTITY_OR_TRANSFORMATION',
+      ]);
+    });
+  });
+
   describe('SCENE_PURPOSE_VALUES', () => {
     it('contains exactly 17 values', () => {
       expect(SCENE_PURPOSE_VALUES).toHaveLength(17);
@@ -117,6 +141,22 @@ describe('Scene direction taxonomy', () => {
       expect(isScenePurpose('exposition')).toBe(false);
       expect(isScenePurpose('Exposition')).toBe(false);
       expect(isScenePurpose('INCITING_INCIDEN')).toBe(false);
+    });
+  });
+
+  describe('isSceneIdeaLane', () => {
+    it('returns true for every valid scene idea lane value', () => {
+      for (const value of SCENE_IDEA_LANES) {
+        expect(isSceneIdeaLane(value)).toBe(true);
+      }
+    });
+
+    it('returns false for non-lane values', () => {
+      expect(isSceneIdeaLane('')).toBe(false);
+      expect(isSceneIdeaLane('ESCALATION_')).toBe(false);
+      expect(isSceneIdeaLane('escalation')).toBe(false);
+      expect(isSceneIdeaLane(null)).toBe(false);
+      expect(isSceneIdeaLane(undefined)).toBe(false);
     });
   });
 

@@ -46,7 +46,7 @@ function createContentPacketFixture(index = 1): ContentPacket {
 function createContext(count = 2): ConceptVerifierContext {
   return {
     evaluatedConcepts: Array.from({ length: count }, (_, i) =>
-      createEvaluatedConceptFixture(i + 1),
+      createEvaluatedConceptFixture(i + 1)
     ),
     kernel: createStoryKernel(),
   };
@@ -54,15 +54,15 @@ function createContext(count = 2): ConceptVerifierContext {
 
 function createContextWithContentPackets(
   conceptCount = 2,
-  packetCount = 1,
+  packetCount = 1
 ): ConceptVerifierContext {
   return {
     evaluatedConcepts: Array.from({ length: conceptCount }, (_, i) =>
-      createEvaluatedConceptFixture(i + 1),
+      createEvaluatedConceptFixture(i + 1)
     ),
     kernel: createStoryKernel(),
     contentPackets: Array.from({ length: packetCount }, (_, i) =>
-      createContentPacketFixture(i + 1),
+      createContentPacketFixture(i + 1)
     ),
   };
 }

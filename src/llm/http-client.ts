@@ -101,7 +101,10 @@ function extractLikelyJsonSubstring(input: string): string | null {
   return trimmed.slice(start, end + 1).trim();
 }
 
-function parseJsonWithFallbacks(jsonText: string, options?: ParseMessageJsonOptions): JsonRoot | null {
+function parseJsonWithFallbacks(
+  jsonText: string,
+  options?: ParseMessageJsonOptions
+): JsonRoot | null {
   const repaired = options?.allowRepair === false ? null : repairMalformedJson(jsonText);
   const candidates = [
     jsonText,
@@ -192,7 +195,7 @@ function repairMalformedJson(input: string): string | null {
 
 export function parseMessageJsonContent(
   content: unknown,
-  options?: ParseMessageJsonOptions,
+  options?: ParseMessageJsonOptions
 ): { parsed: JsonRoot; rawText: string } {
   const rawText = normalizeMessageContent(content);
   const parsed = parseJsonWithFallbacks(rawText, options);
@@ -320,7 +323,7 @@ export function extractResponseContent(
   data: OpenRouterResponse,
   stage: string,
   model: string,
-  maxTokens: number,
+  maxTokens: number
 ): unknown {
   const choice = data.choices[0];
   const content = choice?.message?.content;

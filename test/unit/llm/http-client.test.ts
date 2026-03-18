@@ -42,7 +42,7 @@ describe('http-client', () => {
 
     it('does not repair malformed JSON when allowRepair is false', () => {
       expect(() =>
-        parseMessageJsonContent('{"ok":true,"nested":{"count":2}', { allowRepair: false }),
+        parseMessageJsonContent('{"ok":true,"nested":{"count":2}', { allowRepair: false })
       ).toThrow('Invalid JSON response from OpenRouter');
     });
 
@@ -180,7 +180,7 @@ describe('http-client', () => {
     function makeResponse(
       content: string | null,
       finishReason = 'stop',
-      usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number },
+      usage?: { prompt_tokens: number; completion_tokens: number; total_tokens: number }
     ): OpenRouterResponse {
       return {
         id: 'test-id',

@@ -65,12 +65,25 @@ function createMacroPayload(): {
     closingImage: 'The same dais occupied by witnesses instead of judges.',
     pacingBudget: { targetPagesMin: 20, targetPagesMax: 40 },
     anchorMoments: {
-      incitingIncident: { actIndex: 0, description: 'The guard is framed in front of the harbor court.' },
+      incitingIncident: {
+        actIndex: 0,
+        description: 'The guard is framed in front of the harbor court.',
+      },
       midpoint: { actIndex: 1, milestoneSlot: 1, midpointType: 'FALSE_DEFEAT' },
       climax: { actIndex: 2, description: 'The harbor court loses control of the verdict.' },
-      signatureScenarioPlacement: { actIndex: 1, description: 'A ritual hearing becomes a public trap.' },
+      signatureScenarioPlacement: {
+        actIndex: 1,
+        description: 'A ritual hearing becomes a public trap.',
+      },
     },
-    setpieceBank: ['setpiece 0', 'setpiece 1', 'setpiece 2', 'setpiece 3', 'setpiece 4', 'setpiece 5'],
+    setpieceBank: [
+      'setpiece 0',
+      'setpiece 1',
+      'setpiece 2',
+      'setpiece 3',
+      'setpiece 4',
+      'setpiece 5',
+    ],
     initialNpcAgendas: [
       {
         npcName: 'Judge Corven',
@@ -208,7 +221,8 @@ function createMilestonePayload(): {
             name: 'Ritual hearing ambush',
             description: 'The guard turns the hearing oath ritual into a public trap.',
             objective: 'Force a judge to confess on the record.',
-            causalLink: 'Because the intercepted code identifies which judge must speak for the purge.',
+            causalLink:
+              'Because the intercepted code identifies which judge must speak for the purge.',
             exitCondition: 'A confession is made in front of the crowd.',
             role: 'turning_point',
             escalationType: 'REVERSAL_OF_FORTUNE',
@@ -422,11 +436,19 @@ describe('structure-generator', () => {
     expect(getRequestBody(0).response_format).toEqual(MACRO_ARCHITECTURE_SCHEMA);
     expect(getRequestBody(1).response_format).toEqual(MILESTONE_GENERATION_SCHEMA);
 
-    const milestoneMessages = getRequestBody(1).messages as Array<{ role: string; content: string }>;
+    const milestoneMessages = getRequestBody(1).messages as Array<{
+      role: string;
+      content: string;
+    }>;
     expect(milestoneMessages[1]?.content).toContain('LOCKED MACRO ARCHITECTURE');
     expect(milestoneMessages[1]?.content).toContain('"actQuestion": "Who arranged the frame-up?"');
 
-    expect(mockLogPrompt).toHaveBeenNthCalledWith(1, mockLogger, 'macroArchitecture', expect.any(Array));
+    expect(mockLogPrompt).toHaveBeenNthCalledWith(
+      1,
+      mockLogger,
+      'macroArchitecture',
+      expect.any(Array)
+    );
     expect(mockLogPrompt).toHaveBeenNthCalledWith(
       2,
       mockLogger,
@@ -507,7 +529,9 @@ describe('structure-generator', () => {
     fetchMock
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMacroPayload())))
       .mockResolvedValueOnce(
-        responseWithMessageContent(`\`\`\`json\n${JSON.stringify(createMilestonePayload())}\n\`\`\``)
+        responseWithMessageContent(
+          `\`\`\`json\n${JSON.stringify(createMilestonePayload())}\n\`\`\``
+        )
       );
 
     const result = await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
@@ -516,24 +540,23 @@ describe('structure-generator', () => {
     expect(result.acts[2]?.milestones[1]?.name).toBe('Harbor verdict');
   });
 
-  it('throws parse errors from milestone generation when the midpoint placement is wrong', async () => {
-    const badMilestones = createMilestonePayload();
-    badMilestones.acts[1]!.milestones[1]!.isMidpoint = false;
-    badMilestones.acts[1]!.milestones[1]!.midpointType = null;
-    badMilestones.acts[1]!.milestones[0]!.isMidpoint = true;
-    badMilestones.acts[1]!.milestones[0]!.midpointType = 'FALSE_DEFEAT';
+  it('warns but succeeds when the midpoint placement differs from the macro anchor', async () => {
+    const shiftedMilestones = createMilestonePayload();
+    shiftedMilestones.acts[1]!.milestones[1]!.isMidpoint = false;
+    shiftedMilestones.acts[1]!.milestones[1]!.midpointType = null;
+    shiftedMilestones.acts[1]!.milestones[0]!.isMidpoint = true;
+    shiftedMilestones.acts[1]!.milestones[0]!.midpointType = 'FALSE_DEFEAT';
 
     fetchMock
       .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(createMacroPayload())))
-      .mockResolvedValue(responseWithMessageContent(JSON.stringify(badMilestones)));
+      .mockResolvedValueOnce(responseWithMessageContent(JSON.stringify(shiftedMilestones)));
 
-    const pending = generateStoryStructure(context, 'test-api-key');
-    const expectation = expect(pending).rejects.toMatchObject({ code: 'STRUCTURE_PARSE_ERROR' });
+    const result = await generateStoryStructure(context, 'test-api-key', { promptOptions: {} });
 
-    await advanceRetryDelays();
-    await expectation;
-
-    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(result.acts).toHaveLength(3);
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('instead of expected acts[1].milestones[1]')
+    );
   });
 
   it('retries retryable HTTP failures', async () => {

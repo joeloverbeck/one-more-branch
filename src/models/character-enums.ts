@@ -75,8 +75,6 @@ export function isPipelineRelationshipType(value: unknown): value is PipelineRel
 
 export function isRelationshipValence(value: unknown): value is RelationshipValence {
   return (
-    typeof value === 'string' &&
-    RELATIONSHIP_VALENCE_VALUES.includes(value as RelationshipValence)
+    typeof value === 'string' && RELATIONSHIP_VALENCE_VALUES.includes(value as RelationshipValence)
   );
 }
-

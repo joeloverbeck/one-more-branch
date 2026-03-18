@@ -309,4 +309,57 @@ describe('buildSharedStructureContext', () => {
     const result = buildSharedStructureContext(testStructure, state);
     expect(result).not.toContain('CURRENT STATE (for milestone evaluation)');
   });
+
+  it('distinguishes immediate milestone completion from act-level trajectory guidance', () => {
+    const structureWithPriorityGuidance: StoryStructure = {
+      ...testStructure,
+      acts: testStructure.acts.map((act, actIndex) =>
+        actIndex !== 0
+          ? act
+          : {
+              ...act,
+              actQuestion: 'Can the fugitive keep the evidence alive long enough to matter?',
+              exitReversal: 'The evidence survives, but the conspiracy proves much larger.',
+              milestones: act.milestones.map((milestone, milestoneIndex) =>
+                milestoneIndex !== 1
+                  ? milestone
+                  : {
+                      ...milestone,
+                      exitCondition:
+                        'The evidence is secured somewhere the purge cannot immediately destroy it.',
+                    }
+              ),
+            }
+      ),
+    };
+    const state: AccumulatedStructureState = {
+      currentActIndex: 0,
+      currentMilestoneIndex: 1,
+      milestoneProgressions: [{ milestoneId: '1.2', status: 'active' }],
+      pagesInCurrentMilestone: 0,
+      pacingNudge: null,
+    };
+
+    const result = buildSharedStructureContext(structureWithPriorityGuidance, state);
+
+    expect(result).toContain('=== STRUCTURE PRIORITIES ===');
+    expect(result).toContain(
+      'Immediate milestone completion target: The evidence is secured somewhere the purge cannot immediately destroy it.'
+    );
+    expect(result).toContain(
+      'Treat the active milestone exit condition as the default completion contract for the current scene.'
+    );
+    expect(result).toContain(
+      'Use the milestone objective only as fallback context when the exit condition is absent: Protect evidence'
+    );
+    expect(result).toContain(
+      'Use the act question as the act-level compass for scene direction and drift checks.'
+    );
+    expect(result).toContain(
+      'Treat the expected exit reversal as the act-end horizon, not the default completion requirement for this scene.'
+    );
+    expect(result).toContain(
+      'Only elevate the exit reversal into a direct scene requirement when the scene is approaching an act transition.'
+    );
+  });
 });

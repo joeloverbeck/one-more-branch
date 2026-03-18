@@ -21,7 +21,9 @@ function hasObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
-export function repairAccountantLegacyShapeMismatches(rawJson: unknown): AccountantShapeRepairResult {
+export function repairAccountantLegacyShapeMismatches(
+  rawJson: unknown
+): AccountantShapeRepairResult {
   if (!hasObject(rawJson)) {
     return { repairedJson: rawJson, repairedEntries: [] };
   }

@@ -296,10 +296,6 @@ describe('generateCharacterWeb', () => {
 
     await generateCharacterWeb({ kernelSummary: 'Test', worldbuilding: '' }, 'test-api-key');
 
-    expect(mockLogPrompt).toHaveBeenCalledWith(
-      mockLogger,
-      'characterWeb',
-      expect.any(Array)
-    );
+    expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'characterWeb', expect.any(Array));
   });
 });

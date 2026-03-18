@@ -54,7 +54,7 @@ describe('buildContentTasteDistillerPrompt', () => {
     const userMessage = messages.find((m) => m.role === 'user');
     expect(userMessage!.content).toContain('Mood / genre: cosmic horror');
     expect(userMessage!.content).toContain(
-      'Content preferences: body horror, institutional critique',
+      'Content preferences: body horror, institutional critique'
     );
   });
 
@@ -102,7 +102,7 @@ describe('parseTasteDistillerResponse', () => {
     const profile = makeValidTasteProfile();
     profile['riskAppetite'] = 'EXTREME';
     expect(() => parseTasteDistillerResponse({ tasteProfile: profile })).toThrow(
-      /riskAppetite must be one of/,
+      /riskAppetite must be one of/
     );
   });
 
@@ -110,7 +110,7 @@ describe('parseTasteDistillerResponse', () => {
     const profile = makeValidTasteProfile();
     profile['collisionPatterns'] = [];
     expect(() => parseTasteDistillerResponse({ tasteProfile: profile })).toThrow(
-      /collisionPatterns must be a non-empty array/,
+      /collisionPatterns must be a non-empty array/
     );
   });
 
@@ -118,7 +118,7 @@ describe('parseTasteDistillerResponse', () => {
     const profile = makeValidTasteProfile();
     profile['humanAnchors'] = ['valid', '  '];
     expect(() => parseTasteDistillerResponse({ tasteProfile: profile })).toThrow(
-      /humanAnchors must be a non-empty array of non-empty strings/,
+      /humanAnchors must be a non-empty array of non-empty strings/
     );
   });
 
@@ -126,7 +126,7 @@ describe('parseTasteDistillerResponse', () => {
     const profile = makeValidTasteProfile();
     delete profile['toneBlend'];
     expect(() => parseTasteDistillerResponse({ tasteProfile: profile })).toThrow(
-      /toneBlend must be a non-empty array/,
+      /toneBlend must be a non-empty array/
     );
   });
 
@@ -136,13 +136,13 @@ describe('parseTasteDistillerResponse', () => {
 
   it('rejects response missing tasteProfile', () => {
     expect(() => parseTasteDistillerResponse({ notTasteProfile: {} })).toThrow(
-      /missing tasteProfile object/,
+      /missing tasteProfile object/
     );
   });
 
   it('rejects tasteProfile that is not an object', () => {
     expect(() => parseTasteDistillerResponse({ tasteProfile: 'string' })).toThrow(
-      /missing tasteProfile object/,
+      /missing tasteProfile object/
     );
   });
 });

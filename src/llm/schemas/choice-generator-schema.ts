@@ -27,7 +27,7 @@ export const CHOICE_GENERATOR_SCHEMA: JsonSchema = {
                 type: 'string',
                 enum: WRITER_CHOICE_TYPE_ENUM,
                 description:
-                  'What the protagonist is mainly DOING. INVESTIGATE=learning, REVEAL=telling, PERSUADE=changing another\'s decision without force, CONNECT=aligning with/protecting/trusting someone, DECEIVE=misleading, CONTEST=open opposition, COMMIT=binding yourself through cost/promise, INTERVENE=acting on a system/object/environment, NAVIGATE=route/order/target selection, WITHDRAW=reducing contact/exposure, SUBMIT=yielding to external demand.',
+                  "What the protagonist is mainly DOING. INVESTIGATE=learning, REVEAL=telling, PERSUADE=changing another's decision without force, CONNECT=aligning with/protecting/trusting someone, DECEIVE=misleading, CONTEST=open opposition, COMMIT=binding yourself through cost/promise, INTERVENE=acting on a system/object/environment, NAVIGATE=route/order/target selection, WITHDRAW=reducing contact/exposure, SUBMIT=yielding to external demand.",
               },
               primaryDelta: {
                 type: 'string',
@@ -41,10 +41,7 @@ export const CHOICE_GENERATOR_SCHEMA: JsonSchema = {
                   'Optional free-text subtype for nuance, e.g. "CONFESSION", "BARGAIN", "DISGUISE". Null if not applicable.',
               },
               choiceShape: {
-                anyOf: [
-                  { type: 'string', enum: WRITER_CHOICE_SHAPE_ENUM },
-                  { type: 'null' },
-                ],
+                anyOf: [{ type: 'string', enum: WRITER_CHOICE_SHAPE_ENUM }, { type: 'null' }],
                 description:
                   'What kind of pressure this choice creates. RELAXED=no urgency, OBVIOUS=clearly correct path, TRADEOFF=gain X lose Y, DILEMMA=two bad options, GAMBLE=unknown outcome, TEMPTATION=easy but costly, SACRIFICE=costly but right, FLAVOR=cosmetic difference. Null if not applicable.',
               },

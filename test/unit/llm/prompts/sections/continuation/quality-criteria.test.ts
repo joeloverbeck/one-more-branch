@@ -140,9 +140,7 @@ describe('continuation quality-criteria sections', () => {
     });
 
     it('includes threat/constraint quantity discipline with soft cap', () => {
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain(
-        'THREAT/CONSTRAINT QUANTITY DISCIPLINE'
-      );
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('THREAT/CONSTRAINT QUANTITY DISCIPLINE');
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('3-8 threats and 3-8 constraints');
     });
 
@@ -160,9 +158,7 @@ describe('continuation quality-criteria sections', () => {
       expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain(
         'THREAT/CONSTRAINT SELF-CHECK (before you finalize JSON)'
       );
-      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain(
-        'Will the total threats exceed 8?'
-      );
+      expect(CONTINUATION_ACTIVE_STATE_QUALITY).toContain('Will the total threats exceed 8?');
     });
   });
 });

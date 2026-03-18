@@ -48,9 +48,9 @@ function makeAnalystResult(overrides: Partial<AnalystResult> = {}): AnalystResul
     obligatorySceneFulfilled: null,
     premisePromiseFulfilled: null,
     delayedConsequencesTriggered: [],
-knowledgeAsymmetryDetected: [],
-dramaticIronyOpportunities: [],
-rawResponse: '',
+    knowledgeAsymmetryDetected: [],
+    dramaticIronyOpportunities: [],
+    rawResponse: '',
     ...overrides,
   };
 }
@@ -126,8 +126,18 @@ describe('computeNarrativeStateLifecycle', () => {
     const result = computeNarrativeStateLifecycle({
       isOpening: false,
       parentOpenThreads: [
-        makeThread({ id: 'td-1', text: 'Old thread', threadType: ThreadType.MYSTERY, urgency: Urgency.LOW }),
-        makeThread({ id: 'td-2', text: 'Another old thread', threadType: ThreadType.DANGER, urgency: Urgency.HIGH }),
+        makeThread({
+          id: 'td-1',
+          text: 'Old thread',
+          threadType: ThreadType.MYSTERY,
+          urgency: Urgency.LOW,
+        }),
+        makeThread({
+          id: 'td-2',
+          text: 'Another old thread',
+          threadType: ThreadType.DANGER,
+          urgency: Urgency.HIGH,
+        }),
       ],
       parentThreadAges: { 'td-1': 0, 'td-2': 3 },
       parentPromiseAgeEpoch: 10,

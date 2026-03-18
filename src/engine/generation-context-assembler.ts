@@ -1,13 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import type {
-  PagePlanContext,
-  ReconciliationFailureReason,
-} from '../llm';
-import type {
-  Page,
-  Story,
-  VersionedStoryStructure,
-} from '../models';
+import type { PagePlanContext, ReconciliationFailureReason } from '../llm';
+import type { Page, Story, VersionedStoryStructure } from '../models';
 import { storage } from '../persistence';
 import type { AncestorContext } from './ancestor-collector';
 import { collectAncestorContext } from './ancestor-collector';
@@ -73,8 +66,7 @@ export async function assembleGenerationContext(
   const requestId = randomUUID();
   const parentPage = continuationParams?.parentPage;
   const choiceIndex = continuationParams?.choiceIndex;
-  const choice =
-    parentPage && choiceIndex !== undefined ? parentPage.choices[choiceIndex] : null;
+  const choice = parentPage && choiceIndex !== undefined ? parentPage.choices[choiceIndex] : null;
 
   if (!isOpening && !choice) {
     throw new EngineError(
@@ -93,12 +85,8 @@ export async function assembleGenerationContext(
   // --- Collect parent state ---
   const parentState = parentPage ? collectParentState(parentPage) : null;
   const currentStructureVersion =
-    parentPage && parentState
-      ? resolveActiveStructureVersion(story, parentPage)
-      : null;
-  const ancestorContext = parentPage
-    ? await collectAncestorContext(story.id, parentPage)
-    : null;
+    parentPage && parentState ? resolveActiveStructureVersion(story, parentPage) : null;
+  const ancestorContext = parentPage ? await collectAncestorContext(story.id, parentPage) : null;
   const maxPageId = parentPage ? await storage.getMaxPageId(story.id) : null;
 
   // --- Build previous state for reconciler ---
@@ -136,7 +124,7 @@ export async function assembleGenerationContext(
         apiKey,
         onGenerationStage,
       })
-    : (() : ReturnType<typeof createWriterWithLorekeeper> => {
+    : ((): ReturnType<typeof createWriterWithLorekeeper> => {
         const continuationContext = buildContinuationContext(
           story,
           parentPage!,
@@ -161,23 +149,22 @@ export async function assembleGenerationContext(
 
   // --- Plan context builder ---
   const buildPlanContext = isOpening
-    ? (failureReasons?: readonly ReconciliationFailureReason[]): PagePlanContext =>
-        ({
-          mode: 'opening' as const,
-          tone: story.tone,
-          toneFeel: story.toneFeel,
-          toneAvoid: story.toneAvoid,
-          genreFrame: story.conceptSpec?.genreFrame,
-          startingSituation: story.startingSituation,
-          structure: story.structure ?? undefined,
-          spine: story.spine,
-          storyKernel: story.storyKernel,
-          initialNpcAgendas: story.initialNpcAgendas,
-          decomposedCharacters: story.decomposedCharacters!,
-          decomposedWorld: story.decomposedWorld!,
-          reconciliationFailureReasons: failureReasons,
-          selectedSceneDirection,
-        })
+    ? (failureReasons?: readonly ReconciliationFailureReason[]): PagePlanContext => ({
+        mode: 'opening' as const,
+        tone: story.tone,
+        toneFeel: story.toneFeel,
+        toneAvoid: story.toneAvoid,
+        genreFrame: story.conceptSpec?.genreFrame,
+        startingSituation: story.startingSituation,
+        structure: story.structure ?? undefined,
+        spine: story.spine,
+        storyKernel: story.storyKernel,
+        initialNpcAgendas: story.initialNpcAgendas,
+        decomposedCharacters: story.decomposedCharacters!,
+        decomposedWorld: story.decomposedWorld!,
+        reconciliationFailureReasons: failureReasons,
+        selectedSceneDirection,
+      })
     : (() => {
         const continuationContext = buildContinuationContext(
           story,

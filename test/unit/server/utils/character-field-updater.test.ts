@@ -150,11 +150,7 @@ describe('applyCharacterFieldUpdate', () => {
 
   it('creates parent object when undefined', () => {
     const original = makeCharacter();
-    const updated = applyCharacterFieldUpdate(
-      original,
-      'stressVariants.underThreat',
-      'freezes'
-    );
+    const updated = applyCharacterFieldUpdate(original, 'stressVariants.underThreat', 'freezes');
 
     expect(updated.stressVariants?.underThreat).toBe('freezes');
   });

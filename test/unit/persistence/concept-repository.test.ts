@@ -84,7 +84,7 @@ describe('concept-repository persisted payload validation', () => {
     });
 
     await expect(loadConcept(conceptId)).rejects.toThrow(
-      `Invalid SavedConcept payload at ${getConceptFilePath(conceptId)}`,
+      `Invalid SavedConcept payload at ${getConceptFilePath(conceptId)}`
     );
   });
 
@@ -107,7 +107,7 @@ describe('concept-repository persisted payload validation', () => {
     });
 
     await expect(listConcepts()).rejects.toThrow(
-      `Invalid SavedConcept payload at ${getConceptFilePath(invalidConceptId)}`,
+      `Invalid SavedConcept payload at ${getConceptFilePath(invalidConceptId)}`
     );
   });
 
@@ -130,8 +130,7 @@ describe('concept-repository persisted payload validation', () => {
       updateConcept(conceptId, (existing) => ({
         ...existing,
         name: `${TEST_PREFIX} updated`,
-      })),
+      }))
     ).rejects.toThrow(`Invalid SavedConcept payload at ${getConceptFilePath(conceptId)}`);
   });
-
 });

@@ -128,7 +128,9 @@ export function normalizeAnchorMoments(value: unknown, actCount: number): Anchor
       ? (data['incitingIncident'] as Record<string, unknown>)
       : null;
   const midpoint =
-    typeof data['midpoint'] === 'object' && data['midpoint'] !== null && !Array.isArray(data['midpoint'])
+    typeof data['midpoint'] === 'object' &&
+    data['midpoint'] !== null &&
+    !Array.isArray(data['midpoint'])
       ? (data['midpoint'] as Record<string, unknown>)
       : null;
   const climax =
@@ -252,7 +254,8 @@ function normalizeMilestoneFields(
     expectedGapMagnitude: parseGapMagnitude(value.expectedGapMagnitude),
     isMidpoint,
     midpointType,
-    uniqueScenarioHook: typeof value.uniqueScenarioHook === 'string' ? value.uniqueScenarioHook : null,
+    uniqueScenarioHook:
+      typeof value.uniqueScenarioHook === 'string' ? value.uniqueScenarioHook : null,
     approachVectors: parseApproachVectors(value.approachVectors),
     setpieceSourceIndex: parseSetpieceSourceIndex(value.setpieceSourceIndex),
     obligatorySceneTag: parseObligatorySceneTag(value.obligatorySceneTag),

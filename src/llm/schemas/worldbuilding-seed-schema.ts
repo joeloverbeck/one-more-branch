@@ -29,7 +29,8 @@ export const WORLDBUILDING_SEED_SCHEMA: JsonSchema = {
         },
         invariants: {
           type: 'array',
-          description: '3-6 invariants: what is always true, what it enables/constrains, what it costs people.',
+          description:
+            '3-6 invariants: what is always true, what it enables/constrains, what it costs people.',
           items: {
             type: 'object',
             additionalProperties: false,
@@ -57,7 +58,8 @@ export const WORLDBUILDING_SEED_SCHEMA: JsonSchema = {
         },
         culturalFaultLines: {
           type: 'array',
-          description: '1-4 cultural fault lines: tensions between groups with narrative potential.',
+          description:
+            '1-4 cultural fault lines: tensions between groups with narrative potential.',
           items: {
             type: 'object',
             additionalProperties: false,
@@ -90,7 +92,13 @@ export const WORLDBUILDING_SEED_SCHEMA: JsonSchema = {
           items: {
             type: 'object',
             additionalProperties: false,
-            required: ['name', 'publicFace', 'hiddenPressure', 'sensorySignature', 'likelySceneUse'],
+            required: [
+              'name',
+              'publicFace',
+              'hiddenPressure',
+              'sensorySignature',
+              'likelySceneUse',
+            ],
             properties: {
               name: { type: 'string' },
               publicFace: { type: 'string' },

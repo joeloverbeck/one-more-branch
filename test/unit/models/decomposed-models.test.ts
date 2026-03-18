@@ -180,9 +180,13 @@ describe('formatSpeechFingerprintForWriter', () => {
     expect(result).toContain('Vocabulary: Desert nomad dialect');
     expect(result).toContain('Catchphrases: "Bless the Maker"');
     expect(result).toContain('"The desert takes, the desert gives."');
-    expect(result).toContain('Metaphor frames: Treats fate as weather that must be read, not controlled.');
+    expect(result).toContain(
+      'Metaphor frames: Treats fate as weather that must be read, not controlled.'
+    );
     expect(result).toContain('Discourse markers: Listen,');
-    expect(result).toContain('Register shifts: Ceremonial in rituals, sparse and direct in danger.');
+    expect(result).toContain(
+      'Register shifts: Ceremonial in rituals, sparse and direct in danger.'
+    );
     expect(result).toContain('Anti-examples (how they do NOT sound):');
   });
 
@@ -234,9 +238,24 @@ describe('formatDecomposedWorldForPrompt', () => {
   it('includes factType tags when present', () => {
     const world: DecomposedWorld = {
       facts: [
-        { domain: 'magic', fact: 'Iron disrupts magical fields', scope: 'Worldwide', factType: 'LAW' },
-        { domain: 'religion', fact: 'The clans believe the old gods sleep', scope: 'North', factType: 'BELIEF' },
-        { domain: 'society', fact: 'Tavern talk claims the duke is a fraud', scope: 'Capital', factType: 'RUMOR' },
+        {
+          domain: 'magic',
+          fact: 'Iron disrupts magical fields',
+          scope: 'Worldwide',
+          factType: 'LAW',
+        },
+        {
+          domain: 'religion',
+          fact: 'The clans believe the old gods sleep',
+          scope: 'North',
+          factType: 'BELIEF',
+        },
+        {
+          domain: 'society',
+          fact: 'Tavern talk claims the duke is a fraud',
+          scope: 'Capital',
+          factType: 'RUMOR',
+        },
       ],
       rawWorldbuilding: 'some raw text',
     };
@@ -248,9 +267,7 @@ describe('formatDecomposedWorldForPrompt', () => {
 
   it('omits factType tag when factType is undefined', () => {
     const world: DecomposedWorld = {
-      facts: [
-        { domain: 'magic', fact: 'Magic exists in this world', scope: 'Worldwide' },
-      ],
+      facts: [{ domain: 'magic', fact: 'Magic exists in this world', scope: 'Worldwide' }],
       rawWorldbuilding: 'some raw text',
     };
     const result = formatDecomposedWorldForPrompt(world);

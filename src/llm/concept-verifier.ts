@@ -51,13 +51,13 @@ function getConceptId(index: number): string {
 function ensureExactIdCoverage(
   parsedConceptIds: readonly string[],
   expectedConceptIds: readonly string[],
-  label: string,
+  label: string
 ): void {
   if (parsedConceptIds.length !== expectedConceptIds.length) {
     throw new LLMError(
       `${label} must include exactly ${expectedConceptIds.length} items (received: ${parsedConceptIds.length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -65,30 +65,34 @@ function ensureExactIdCoverage(
   const received = new Set(parsedConceptIds);
 
   if (received.size !== parsedConceptIds.length) {
-    throw new LLMError(
-      `${label} contains duplicate conceptIds`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`${label} contains duplicate conceptIds`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   if (expected.size !== received.size || [...expected].some((key) => !received.has(key))) {
     throw new LLMError(
       `${label} concept set does not match requested candidates`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 }
 
 function parseLoadBearingCheck(value: unknown, label: string): LoadBearingCheck {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new LLMError(`${label} loadBearingCheck must be an object`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} loadBearingCheck must be an object`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   const data = value as Record<string, unknown>;
   if (typeof data['passes'] !== 'boolean') {
-    throw new LLMError(`${label} loadBearingCheck has invalid passes`, 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      `${label} loadBearingCheck has invalid passes`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   return {
@@ -97,7 +101,7 @@ function parseLoadBearingCheck(value: unknown, label: string): LoadBearingCheck 
     genericCollapse: requireNonEmptyString(
       data['genericCollapse'],
       'genericCollapse',
-      `${label} loadBearingCheck`,
+      `${label} loadBearingCheck`
     ),
   };
 }
@@ -107,7 +111,7 @@ function parseKernelFidelityCheck(value: unknown, label: string): KernelFidelity
     throw new LLMError(
       `${label} kernelFidelityCheck must be an object`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -116,7 +120,7 @@ function parseKernelFidelityCheck(value: unknown, label: string): KernelFidelity
     throw new LLMError(
       `${label} kernelFidelityCheck has invalid passes`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -125,12 +129,12 @@ function parseKernelFidelityCheck(value: unknown, label: string): KernelFidelity
     reasoning: requireNonEmptyString(
       data['reasoning'],
       'reasoning',
-      `${label} kernelFidelityCheck`,
+      `${label} kernelFidelityCheck`
     ),
     kernelDrift: requireNonEmptyString(
       data['kernelDrift'],
       'kernelDrift',
-      `${label} kernelFidelityCheck`,
+      `${label} kernelFidelityCheck`
     ),
   };
 }
@@ -140,7 +144,7 @@ function parseSetpieces(value: unknown, label: string): readonly string[] {
     throw new LLMError(
       `${label} escalatingSetpieces must be an array`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -151,22 +155,16 @@ function parseSetpieces(value: unknown, label: string): readonly string[] {
     throw new LLMError(
       `${label} escalatingSetpieces must have ${VERIFICATION_CONSTRAINTS.escalatingSetpiecesMin}-${VERIFICATION_CONSTRAINTS.escalatingSetpiecesMax} items (received: ${value.length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
-  return value.map((item, i) =>
-    requireNonEmptyString(item, `escalatingSetpieces[${i}]`, label),
-  );
+  return value.map((item, i) => requireNonEmptyString(item, `escalatingSetpieces[${i}]`, label));
 }
 
 function parsePremisePromises(value: unknown, label: string): readonly string[] {
   if (!Array.isArray(value)) {
-    throw new LLMError(
-      `${label} premisePromises must be an array`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`${label} premisePromises must be an array`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   if (
@@ -176,12 +174,12 @@ function parsePremisePromises(value: unknown, label: string): readonly string[] 
     throw new LLMError(
       `${label} premisePromises must have ${VERIFICATION_CONSTRAINTS.premisePromisesMin}-${VERIFICATION_CONSTRAINTS.premisePromisesMax} items (received: ${value.length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
   return value.map((item, index) =>
-    requireNonEmptyString(item, `premisePromises[${index}]`, label),
+    requireNonEmptyString(item, `premisePromises[${index}]`, label)
   );
 }
 
@@ -190,7 +188,7 @@ function parseSetpieceCausalLinks(value: unknown, label: string): readonly strin
     throw new LLMError(
       `${label} setpieceCausalLinks must be an array`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -201,12 +199,12 @@ function parseSetpieceCausalLinks(value: unknown, label: string): readonly strin
     throw new LLMError(
       `${label} setpieceCausalLinks must have ${VERIFICATION_CONSTRAINTS.setpieceCausalLinksMin}-${VERIFICATION_CONSTRAINTS.setpieceCausalLinksMax} items (received: ${value.length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
   return value.map((item, index) =>
-    requireNonEmptyString(item, `setpieceCausalLinks[${index}]`, label),
+    requireNonEmptyString(item, `setpieceCausalLinks[${index}]`, label)
   );
 }
 
@@ -225,24 +223,20 @@ function parseSpecificityAnalysis(value: unknown, index: number): ConceptSpecifi
     throw new LLMError(
       `${label} logline must be ${VERIFICATION_CONSTRAINTS.loglineMaxWords} words or fewer`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
   return {
     conceptId,
-    signatureScenario: requireNonEmptyString(
-      data['signatureScenario'],
-      'signatureScenario',
-      label,
-    ),
+    signatureScenario: requireNonEmptyString(data['signatureScenario'], 'signatureScenario', label),
     loglineCompressible: requireBoolean(data['loglineCompressible'], 'loglineCompressible', label),
     logline,
     premisePromises: parsePremisePromises(data['premisePromises'], label),
     inevitabilityStatement: requireNonEmptyString(
       data['inevitabilityStatement'],
       'inevitabilityStatement',
-      label,
+      label
     ),
     loadBearingCheck: parseLoadBearingCheck(data['loadBearingCheck'], label),
     kernelFidelityCheck: parseKernelFidelityCheck(data['kernelFidelityCheck'], label),
@@ -260,11 +254,7 @@ function parseScenarioAnalysis(value: unknown, index: number): ConceptScenarioAn
   const conceptId = requireConceptId(data['conceptId'], label);
   const score = data['conceptIntegrityScore'];
   if (typeof score !== 'number' || !Number.isFinite(score)) {
-    throw new LLMError(
-      `${label} has invalid conceptIntegrityScore`,
-      'STRUCTURE_PARSE_ERROR',
-      true,
-    );
+    throw new LLMError(`${label} has invalid conceptIntegrityScore`, 'STRUCTURE_PARSE_ERROR', true);
   }
 
   const clampedScore = Math.max(0, Math.min(100, Math.round(score)));
@@ -275,7 +265,7 @@ function parseScenarioAnalysis(value: unknown, index: number): ConceptScenarioAn
     setpieceCausalChainBroken: requireBoolean(
       data['setpieceCausalChainBroken'],
       'setpieceCausalChainBroken',
-      label,
+      label
     ),
     setpieceCausalLinks: parseSetpieceCausalLinks(data['setpieceCausalLinks'], label),
     conceptIntegrityScore: clampedScore,
@@ -284,13 +274,13 @@ function parseScenarioAnalysis(value: unknown, index: number): ConceptScenarioAn
 
 export function parseConceptSpecificityResponse(
   parsed: unknown,
-  expectedConceptIds: readonly string[],
+  expectedConceptIds: readonly string[]
 ): readonly ConceptSpecificityAnalysis[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Concept specificity response must be an object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -299,18 +289,18 @@ export function parseConceptSpecificityResponse(
     throw new LLMError(
       'Concept specificity response missing specificityAnalyses array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
   const analyses = data['specificityAnalyses'].map((item, index) =>
-    parseSpecificityAnalysis(item, index),
+    parseSpecificityAnalysis(item, index)
   );
 
   ensureExactIdCoverage(
     analyses.map((a) => a.conceptId),
     expectedConceptIds,
-    'Concept specificity response',
+    'Concept specificity response'
   );
 
   return analyses;
@@ -318,13 +308,13 @@ export function parseConceptSpecificityResponse(
 
 export function parseConceptScenarioResponse(
   parsed: unknown,
-  expectedConceptIds: readonly string[],
+  expectedConceptIds: readonly string[]
 ): readonly ConceptScenarioAnalysis[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Concept scenario response must be an object',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -333,18 +323,18 @@ export function parseConceptScenarioResponse(
     throw new LLMError(
       'Concept scenario response missing scenarioAnalyses array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
   const analyses = data['scenarioAnalyses'].map((item, index) =>
-    parseScenarioAnalysis(item, index),
+    parseScenarioAnalysis(item, index)
   );
 
   ensureExactIdCoverage(
     analyses.map((a) => a.conceptId),
     expectedConceptIds,
-    'Concept scenario response',
+    'Concept scenario response'
   );
 
   return analyses;
@@ -352,7 +342,7 @@ export function parseConceptScenarioResponse(
 
 function combineVerifications(
   specificityAnalyses: readonly ConceptSpecificityAnalysis[],
-  scenarioAnalyses: readonly ConceptScenarioAnalysis[],
+  scenarioAnalyses: readonly ConceptScenarioAnalysis[]
 ): readonly ConceptVerification[] {
   const scenarioByConceptId = new Map(scenarioAnalyses.map((s) => [s.conceptId, s]));
 
@@ -362,7 +352,7 @@ function combineVerifications(
       throw new LLMError(
         `Scenario analysis missing for ${specificity.conceptId}`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
 
@@ -384,7 +374,7 @@ function combineVerifications(
 export async function verifyConcepts(
   context: ConceptVerifierContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<ConceptVerificationResult> {
   const expectedConceptIds = context.evaluatedConcepts.map((_, index) => getConceptId(index));
 
@@ -409,9 +399,8 @@ export async function verifyConcepts(
       options,
       schema: CONCEPT_SCENARIO_SCHEMA,
       messages: buildConceptScenarioPrompt(context, specificityAnalyses),
-      parseResponse: (
-        parsed,
-      ): readonly ConceptScenarioAnalysis[] => parseConceptScenarioResponse(parsed, expectedConceptIds),
+      parseResponse: (parsed): readonly ConceptScenarioAnalysis[] =>
+        parseConceptScenarioResponse(parsed, expectedConceptIds),
     }),
     combineResult: ({
       firstStageParsed,

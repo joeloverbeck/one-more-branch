@@ -189,7 +189,9 @@ ${dataRules}
 ${protagonistSpeechSection}${sceneCharacterVoicesSection}TONE/GENRE: ${context.tone}
 
 ${buildSpineSection(context.spine)}${plannerSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
-${context.pagePlan?.isEnding ? `
+${
+  context.pagePlan?.isEnding
+    ? `
 === ENDING DIRECTIVE ===
 The planner has determined this is the story's conclusion. Write this scene as a satisfying ending:
 - Make the ending feel earned and meaningful
@@ -197,7 +199,9 @@ The planner has determined this is the story's conclusion. Write this scene as a
 - Do NOT leave major narrative threads unresolved
 - protagonistAffect should capture the protagonist's final emotional state
 
-` : ''}REQUIREMENTS (follow all):
+`
+    : ''
+}REQUIREMENTS (follow all):
 1. Choose the scene opening based on what matters next
    - Option A (immediate continuation): Start exactly where the previous scene ended with an action, dialogue, or reaction in the next 1-2 milestones
    - Option B (time cut): If nothing meaningful happens for a while (travel, waiting, resting, routine), SKIP time and open at the next scene where the choice's consequences matter

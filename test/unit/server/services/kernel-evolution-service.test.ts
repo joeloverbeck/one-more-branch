@@ -55,7 +55,7 @@ function createInput(overrides: Partial<EvolveKernelsInput> = {}): EvolveKernels
 
 function expectCompletedStage(
   event: { stage: string; status: string; attempt: number; durationMs?: number },
-  stage: string,
+  stage: string
 ): void {
   expect(event).toMatchObject({ stage, status: 'completed', attempt: 1 });
   expect(typeof event.durationMs).toBe('number');
@@ -120,14 +120,14 @@ describe('kernel-evolution-service', () => {
       expect(callOrder).toEqual(['evolver', 'evaluator']);
       expect(evolveKernels).toHaveBeenCalledWith(
         { parentKernels: createInput().parentKernels, userSeeds: undefined },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(evaluateKernels).toHaveBeenCalledWith(
         {
           kernels: evolvedKernels,
           userSeeds: { apiKey: 'valid-key-12345' },
         },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(result).toEqual({
         evolvedKernels,
@@ -137,7 +137,8 @@ describe('kernel-evolution-service', () => {
     });
 
     it('emits stage callbacks for evolve and evaluate in order', async () => {
-      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+        [];
       const service = createKernelEvolutionService({
         evolveKernels: jest.fn().mockResolvedValue({
           kernels: Array.from({ length: 6 }, (_, index) => createKernel(index + 1)),
@@ -160,19 +161,19 @@ describe('kernel-evolution-service', () => {
               durationMs: event.durationMs,
             });
           },
-        }),
+        })
       );
 
       expect(events).toHaveLength(4);
       expect(events[0]).toEqual({ stage: 'EVOLVING_KERNELS', status: 'started', attempt: 1 });
       expectCompletedStage(
         events[1] as { stage: string; status: string; attempt: number; durationMs?: number },
-        'EVOLVING_KERNELS',
+        'EVOLVING_KERNELS'
       );
       expect(events[2]).toEqual({ stage: 'EVALUATING_KERNELS', status: 'started', attempt: 1 });
       expectCompletedStage(
         events[3] as { stage: string; status: string; attempt: number; durationMs?: number },
-        'EVALUATING_KERNELS',
+        'EVALUATING_KERNELS'
       );
     });
 
@@ -183,7 +184,8 @@ describe('kernel-evolution-service', () => {
         .mockReturnValueOnce(118)
         .mockReturnValueOnce(200)
         .mockReturnValueOnce(245);
-      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+      const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+        [];
       const service = createKernelEvolutionService({
         evolveKernels: jest.fn().mockResolvedValue({
           kernels: Array.from({ length: 6 }, (_, index) => createKernel(index + 1)),
@@ -201,13 +203,16 @@ describe('kernel-evolution-service', () => {
           onGenerationStage: (event) => {
             events.push(event);
           },
-        }),
+        })
       );
 
       expect(dateNowSpy).toHaveBeenCalledTimes(4);
-      const completedEvents = events.filter(
-        (event) => event.status === 'completed',
-      ) as Array<{ stage: string; status: string; attempt: number; durationMs: number }>;
+      const completedEvents = events.filter((event) => event.status === 'completed') as Array<{
+        stage: string;
+        status: string;
+        attempt: number;
+        durationMs: number;
+      }>;
 
       expect(completedEvents).toEqual([
         { stage: 'EVOLVING_KERNELS', status: 'completed', attempt: 1, durationMs: 18 },
@@ -240,14 +245,14 @@ describe('kernel-evolution-service', () => {
 
       expect(evolveKernels).toHaveBeenCalledWith(
         { parentKernels: createInput().parentKernels, userSeeds: seeds },
-        'valid-key-12345',
+        'valid-key-12345'
       );
       expect(evaluateKernels).toHaveBeenCalledWith(
         {
           kernels: evolvedKernels,
           userSeeds: { apiKey: 'valid-key-12345', ...seeds },
         },
-        'valid-key-12345',
+        'valid-key-12345'
       );
     });
 
@@ -258,7 +263,7 @@ describe('kernel-evolution-service', () => {
       });
 
       await expect(
-        service.evolveKernels(createInput({ parentKernels: [createEvaluatedKernel(1)] })),
+        service.evolveKernels(createInput({ parentKernels: [createEvaluatedKernel(1)] }))
       ).rejects.toThrow('Select 2-3 parent kernels');
     });
 
@@ -277,8 +282,8 @@ describe('kernel-evolution-service', () => {
               createEvaluatedKernel(3),
               createEvaluatedKernel(4),
             ],
-          }),
-        ),
+          })
+        )
       ).rejects.toThrow('Select 2-3 parent kernels');
     });
 
@@ -303,8 +308,8 @@ describe('kernel-evolution-service', () => {
               createEvaluatedKernel(2),
               createEvaluatedKernel(3),
             ],
-          }),
-        ),
+          })
+        )
       ).resolves.toBeDefined();
     });
 
@@ -314,9 +319,9 @@ describe('kernel-evolution-service', () => {
         evaluateKernels: jest.fn(),
       });
 
-      await expect(
-        service.evolveKernels(createInput({ apiKey: ' short ' })),
-      ).rejects.toThrow('OpenRouter API key is required');
+      await expect(service.evolveKernels(createInput({ apiKey: ' short ' }))).rejects.toThrow(
+        'OpenRouter API key is required'
+      );
     });
 
     it('propagates evolver errors', async () => {

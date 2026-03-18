@@ -115,13 +115,15 @@ function createTextualPresentation(): TextualPresentation {
       registerShifts: 'Under pressure she becomes colder and more ceremonial.',
     },
     appearance: 'Always immaculate above the collar, no matter how wrecked the rest of her looks.',
-    knowledgeBoundaries: 'Knows the admiralty codebook, suspects Tomas is compromised, misreads who ordered the purge.',
-    conflictPriority: 'Protecting the mission milestones affection until guilt breaks her discipline.',
+    knowledgeBoundaries:
+      'Knows the admiralty codebook, suspects Tomas is compromised, misreads who ordered the purge.',
+    conflictPriority:
+      'Protecting the mission milestones affection until guilt breaks her discipline.',
   };
 }
 
 function createCharacter(
-  overrides: Partial<SavedDevelopedCharacter> = {},
+  overrides: Partial<SavedDevelopedCharacter> = {}
 ): SavedDevelopedCharacter {
   return {
     id: 'char-iria',
@@ -198,13 +200,13 @@ describe('runCharacterStage', () => {
           inputs,
           webContext: createWebContext(),
         },
-        createDeps(),
-      ),
+        createDeps()
+      )
     ).rejects.toEqual(
       expect.objectContaining<Partial<EngineError>>({
         name: 'EngineError',
         code: 'VALIDATION_FAILED',
-      }),
+      })
     );
   });
 
@@ -218,8 +220,8 @@ describe('runCharacterStage', () => {
           inputs,
           webContext: createWebContext(),
         },
-        createDeps(),
-      ),
+        createDeps()
+      )
     ).rejects.toThrow('Iria Vale is missing required character kernel data');
   });
 
@@ -231,7 +233,8 @@ describe('runCharacterStage', () => {
       rawResponse: 'stage-1-raw',
     });
 
-    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> = [];
+    const events: Array<{ stage: string; status: string; attempt: number; durationMs?: number }> =
+      [];
     const result = await runCharacterStage(
       {
         character: createCharacter(),
@@ -241,7 +244,7 @@ describe('runCharacterStage', () => {
         webContext: createWebContext(),
         onGenerationStage: (event) => events.push(event),
       },
-      deps,
+      deps
     );
 
     expect(deps.generateCharKernel).toHaveBeenCalledWith(
@@ -249,7 +252,7 @@ describe('runCharacterStage', () => {
         webContext: createWebContext(),
         ...inputs,
       },
-      'test-api-key-123',
+      'test-api-key-123'
     );
     expect(events).toEqual([
       { stage: 'GENERATING_CHAR_KERNEL', status: 'started', attempt: 1 },
@@ -286,7 +289,7 @@ describe('runCharacterStage', () => {
         inputs,
         webContext: createWebContext(),
       },
-      deps,
+      deps
     );
 
     expect(deps.generateCharTridimensional).toHaveBeenCalledWith(
@@ -295,7 +298,7 @@ describe('runCharacterStage', () => {
         characterKernel,
         ...inputs,
       },
-      'test-api-key-123',
+      'test-api-key-123'
     );
     expect(result.updatedCharacter.tridimensionalProfile).toEqual(tridimensionalProfile);
     expect(result.updatedCharacter.completedStages).toEqual([1, 2]);
@@ -323,7 +326,7 @@ describe('runCharacterStage', () => {
         inputs,
         webContext: createWebContext(),
       },
-      deps,
+      deps
     );
 
     expect(deps.generateCharAgency).toHaveBeenCalledWith(
@@ -333,7 +336,7 @@ describe('runCharacterStage', () => {
         tridimensionalProfile,
         ...inputs,
       },
-      'test-api-key-123',
+      'test-api-key-123'
     );
     expect(result.updatedCharacter.agencyModel).toEqual(agencyModel);
     expect(result.updatedCharacter.completedStages).toEqual([1, 2, 3]);
@@ -365,7 +368,7 @@ describe('runCharacterStage', () => {
         webContext: createWebContext(),
         otherDevelopedCharacters,
       },
-      deps,
+      deps
     );
 
     expect(deps.generateCharRelationships).toHaveBeenCalledWith(
@@ -377,7 +380,7 @@ describe('runCharacterStage', () => {
         otherDevelopedCharacters,
         ...inputs,
       },
-      'test-api-key-123',
+      'test-api-key-123'
     );
     expect(result.updatedCharacter.deepRelationships).toEqual(deepRelationships);
     expect(result.updatedCharacter.completedStages).toEqual([1, 2, 3, 4]);
@@ -409,7 +412,7 @@ describe('runCharacterStage', () => {
         inputs,
         webContext: createWebContext(),
       },
-      deps,
+      deps
     );
 
     expect(deps.generateCharPresentation).toHaveBeenCalledWith(
@@ -421,7 +424,7 @@ describe('runCharacterStage', () => {
         deepRelationships,
         ...inputs,
       },
-      'test-api-key-123',
+      'test-api-key-123'
     );
     expect(result.updatedCharacter.textualPresentation).toEqual(textualPresentation);
     expect(result.updatedCharacter.completedStages).toEqual([1, 2, 3, 4, 5]);

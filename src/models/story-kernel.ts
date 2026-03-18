@@ -5,7 +5,9 @@ export const DIRECTION_OF_CHANGE_VALUES = ['POSITIVE', 'NEGATIVE', 'IRONIC', 'AM
 export type DirectionOfChange = (typeof DIRECTION_OF_CHANGE_VALUES)[number];
 
 export function isDirectionOfChange(value: unknown): value is DirectionOfChange {
-  return typeof value === 'string' && (DIRECTION_OF_CHANGE_VALUES as readonly string[]).includes(value);
+  return (
+    typeof value === 'string' && (DIRECTION_OF_CHANGE_VALUES as readonly string[]).includes(value)
+  );
 }
 
 export const DRAMATIC_STANCE_VALUES = ['COMIC', 'ROMANTIC', 'TRAGIC', 'IRONIC'] as const;

@@ -4,7 +4,12 @@ import {
   buildPayoffFeedbackSection,
 } from '../../../../../../src/llm/prompts/sections/planner/thread-pacing-directive';
 import { THREAD_PACING } from '../../../../../../src/config/thread-pacing-config';
-import { PromiseScope, PromiseType, ThreadType, Urgency } from '../../../../../../src/models/state/keyed-entry';
+import {
+  PromiseScope,
+  PromiseType,
+  ThreadType,
+  Urgency,
+} from '../../../../../../src/models/state/keyed-entry';
 import type {
   ThreadEntry,
   TrackedPromise,
@@ -138,7 +143,9 @@ describe('buildTrackedPromisesSection', () => {
   });
 
   it('uses soft encouragement language, not mandate wording', () => {
-    const promises = [makeTrackedPromise('pr-1', THREAD_PACING.PROMISE_AGING_NOTICE_PAGES, 'Old hint')];
+    const promises = [
+      makeTrackedPromise('pr-1', THREAD_PACING.PROMISE_AGING_NOTICE_PAGES, 'Old hint'),
+    ];
     const result = buildTrackedPromisesSection(promises);
     expect(result).toContain('opportunities for reincorporation');
     expect(result).toContain('not mandatory milestones');

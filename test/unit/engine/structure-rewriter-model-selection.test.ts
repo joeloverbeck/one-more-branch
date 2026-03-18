@@ -194,15 +194,16 @@ describe('structure-rewriter default generator model selection', () => {
 
     fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({
-        choices: [
-          {
-            message: {
-              content: JSON.stringify(createValidStructureResponse()),
+      json: () =>
+        Promise.resolve({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify(createValidStructureResponse()),
+              },
             },
-          },
-        ],
-      }),
+          ],
+        }),
     } as Response);
   });
 

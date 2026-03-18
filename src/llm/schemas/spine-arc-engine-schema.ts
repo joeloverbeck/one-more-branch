@@ -17,11 +17,7 @@ export const SPINE_ARC_ENGINE_SCHEMA: JsonSchema = {
           items: {
             type: 'object',
             additionalProperties: false,
-            required: [
-              'storySpineType',
-              'conflictType',
-              'protagonistNeedVsWant',
-            ],
+            required: ['storySpineType', 'conflictType', 'protagonistNeedVsWant'],
             properties: {
               storySpineType: {
                 type: 'string',
@@ -64,19 +60,16 @@ export const SPINE_ARC_ENGINE_SCHEMA: JsonSchema = {
                 properties: {
                   need: {
                     type: 'string',
-                    description:
-                      'The inner transformation the protagonist must undergo.',
+                    description: 'The inner transformation the protagonist must undergo.',
                   },
                   want: {
                     type: 'string',
-                    description:
-                      'The outer goal the protagonist consciously pursues.',
+                    description: 'The outer goal the protagonist consciously pursues.',
                   },
                   dynamic: {
                     type: 'string',
                     enum: ['CONVERGENT', 'DIVERGENT', 'SUBSTITUTIVE', 'IRRECONCILABLE'],
-                    description:
-                      'How need and want relate.',
+                    description: 'How need and want relate.',
                   },
                 },
               },

@@ -1,11 +1,7 @@
 import type { AnalystResult } from '../llm/analyst-types';
 import type { StageDegradation } from '../llm/generation-pipeline-types';
 import { logger } from '../logging/index.js';
-import type {
-  AccumulatedStructureState,
-  Story,
-  StoryStructure,
-} from '../models';
+import type { AccumulatedStructureState, Story, StoryStructure } from '../models';
 import { rewriteSpine } from '../llm/spine-rewriter.js';
 
 export interface SpineDeviationContext {

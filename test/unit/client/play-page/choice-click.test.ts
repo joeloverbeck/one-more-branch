@@ -54,7 +54,11 @@ describe('play page choice click handler', () => {
         id: 2,
         narrativeText: 'You went left and found a cave.',
         choices: [
-          { text: 'Enter the cave', choiceType: 'INVESTIGATE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+          {
+            text: 'Enter the cave',
+            choiceType: 'INVESTIGATE',
+            primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          },
           { text: 'Walk away', choiceType: 'WITHDRAW', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
         ],
         isEnding: false,
@@ -77,24 +81,96 @@ describe('play page choice click handler', () => {
         resolvedPromiseMeta: {},
       },
       wasGenerated: true,
-      actDisplayInfo: {
-        displayString: 'Act I - The Beginning',
-        actObjective: 'Leave the village.',
-        actQuestion: 'Will the hero leave home behind?',
-        exitCondition: 'The hero commits to the road.',
+      playStructureInfo: {
+        pageStructure: {
+          displayString: 'Act 1: The Beginning - Milestone 1.1: The Beginning',
+          actNumber: 1,
+          actName: 'The Beginning',
+          milestoneId: '1.1',
+          milestoneName: 'The Beginning',
+          actObjective: 'Leave the village.',
+          actQuestion: 'Will the hero leave home behind?',
+          milestoneExitCriteria: 'The hero commits to the road.',
+        },
+        nextStructureTarget: {
+          displayString: 'Act 1: The Beginning - Milestone 1.1: The Beginning',
+          actNumber: 1,
+          actName: 'The Beginning',
+          milestoneId: '1.1',
+          milestoneName: 'The Beginning',
+          actObjective: 'Leave the village.',
+          actQuestion: 'Will the hero leave home behind?',
+          milestoneExitCriteria: 'The hero commits to the road.',
+        },
       },
       deviationInfo: null,
       ...overrides,
     };
   }
 
+  const fiveOptionIdeationResponse = {
+    success: true,
+    options: [
+      {
+        diversityLane: 'ESCALATION',
+        scenePurpose: 'RISING_COMPLICATION',
+        valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
+        pacingMode: 'ACCELERATING',
+        sceneDirection: 'The hero faces a dark cave',
+        dramaticJustification: 'Builds tension',
+      },
+      {
+        diversityLane: 'REVELATION',
+        scenePurpose: 'REVELATION',
+        valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
+        pacingMode: 'DECELERATING',
+        sceneDirection: 'A hidden ally appears',
+        dramaticJustification: 'Provides relief',
+      },
+      {
+        diversityLane: 'RELATIONAL_REALIGNMENT',
+        scenePurpose: 'NEGOTIATION',
+        valuePolarityShift: 'IRONIC_SHIFT',
+        pacingMode: 'OSCILLATING',
+        sceneDirection: 'A rival offers alliance if the hero betrays the village elder',
+        dramaticJustification: 'Reframes the social power dynamic',
+      },
+      {
+        diversityLane: 'TEMPTATION_OR_OPPORTUNITY',
+        scenePurpose: 'PREPARATION',
+        valuePolarityShift: 'NEGATIVE_TO_DOUBLE_POSITIVE',
+        pacingMode: 'BUILDING_SLOW',
+        sceneDirection: 'A contraband map opens a faster path to the ruins',
+        dramaticJustification: 'Offers a lucrative shortcut with implied cost',
+      },
+      {
+        diversityLane: 'CONSEQUENCE_OR_PAYOFF',
+        scenePurpose: 'CONFRONTATION',
+        valuePolarityShift: 'POSITIVE_TO_DOUBLE_NEGATIVE',
+        pacingMode: 'SUSTAINED_HIGH',
+        sceneDirection: 'The patrol captain recognizes the hero from a past betrayal',
+        dramaticJustification: 'Cashes out prior danger into immediate fallout',
+      },
+    ],
+  };
+
   it('sends fetch with correct body on choice click', async () => {
     setupAndInit({
       storyId: 'story-abc',
       pageId: 3,
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -122,8 +198,18 @@ describe('play page choice click handler', () => {
   it('updates narrative DOM on successful choice', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -159,8 +245,18 @@ describe('play page choice click handler', () => {
       storyId: 'story-xyz',
       pageId: 1,
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -177,11 +273,21 @@ describe('play page choice click handler', () => {
     expect(pushStateSpy).toHaveBeenCalledWith({}, '', '/play/story-xyz?page=2');
   });
 
-  it('updates act indicator on successful choice with actDisplayInfo', async () => {
+  it('updates act indicator on successful choice with playStructureInfo', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -190,7 +296,16 @@ describe('play page choice click handler', () => {
       .mockResolvedValueOnce(
         mockJsonResponse(
           makeSuccessfulChoiceResponse({
-            actDisplayInfo: { displayString: 'Act II - Rising Action', actNumber: 2 },
+            playStructureInfo: {
+              pageStructure: {
+                displayString: 'Act 2: Rising Action - Milestone 2.1: Public Fracture',
+                actNumber: 2,
+              },
+              nextStructureTarget: {
+                displayString: 'Act 2: Rising Action - Milestone 2.1: Public Fracture',
+                actNumber: 2,
+              },
+            },
           })
         )
       );
@@ -199,7 +314,7 @@ describe('play page choice click handler', () => {
     await jest.runAllTimersAsync();
 
     const actIndicator = document.querySelector('.act-indicator');
-    expect(actIndicator?.textContent).toContain('Act II - Rising Action');
+    expect(actIndicator?.textContent).toContain('Act 2: Rising Action');
   });
 
   it('refreshes the expanded act structure details with new fields', async () => {
@@ -209,8 +324,18 @@ describe('play page choice click handler', () => {
         actObjective: 'Leave the village.',
       },
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -219,13 +344,27 @@ describe('play page choice click handler', () => {
       .mockResolvedValueOnce(
         mockJsonResponse(
           makeSuccessfulChoiceResponse({
-            actDisplayInfo: {
-              displayString: 'Act II - Rising Action',
-              actNumber: 2,
-              actObjective: 'Hold the alliance together.',
-              actQuestion: 'Can the alliance survive betrayal?',
-              exitCondition: 'The alliance chooses a public side.',
-              exitReversal: 'The council fractures in front of the court.',
+            playStructureInfo: {
+              pageStructure: {
+                displayString: 'Act 1: The Beginning - Milestone 1.1: Opening Gambit',
+                actNumber: 1,
+                actName: 'The Beginning',
+                milestoneId: '1.1',
+                milestoneName: 'Opening Gambit',
+                actObjective: 'Leave the village.',
+              },
+              nextStructureTarget: {
+                displayString: 'Act 2: Rising Action - Milestone 2.1: Public Fracture',
+                actNumber: 2,
+                actName: 'Rising Action',
+                milestoneId: '2.1',
+                milestoneName: 'Public Fracture',
+                actObjective: 'Hold the alliance together.',
+                actQuestion: 'Can the alliance survive betrayal?',
+                milestoneObjective: 'Force the council to choose a side.',
+                milestoneExitCriteria: 'The alliance chooses a public side.',
+                actEndReversal: 'The council fractures in front of the court.',
+              },
             },
           })
         )
@@ -234,20 +373,33 @@ describe('play page choice click handler', () => {
     clickChoice(0);
     await jest.runAllTimersAsync();
 
-    const details = document.getElementById('act-structure-details');
+    const details = document.getElementById('play-structure-details');
+    expect(details?.textContent).toContain('This Page');
+    expect(details?.textContent).toContain('Next Objective');
+    expect(details?.textContent).toContain('Act Arc');
     expect(details?.textContent).toContain('Act Question');
     expect(details?.textContent).toContain('Can the alliance survive betrayal?');
-    expect(details?.textContent).toContain('Milestone Exit Condition');
+    expect(details?.textContent).toContain('Milestone Exit Criteria');
     expect(details?.textContent).toContain('The alliance chooses a public side.');
-    expect(details?.textContent).toContain('Exit Reversal');
+    expect(details?.textContent).toContain('Act-End Reversal');
     expect(details?.textContent).toContain('The council fractures in front of the court.');
   });
 
   it('hides loading overlay after fetch completes', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -265,8 +417,18 @@ describe('play page choice click handler', () => {
   it('shows error message on failed response', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -291,8 +453,18 @@ describe('play page choice click handler', () => {
   it('renders ending banner when isEnding is true', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -350,8 +522,18 @@ describe('play page choice click handler', () => {
   it('includes protagonistGuidance in body when provided', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -380,8 +562,18 @@ describe('play page choice click handler', () => {
   it('does not include protagonistGuidance when all fields are empty', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -402,8 +594,18 @@ describe('play page choice click handler', () => {
   it('clears protagonist guidance after generated response', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -431,8 +633,18 @@ describe('play page choice click handler', () => {
   it('renders state changes section on successful choice', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -468,8 +680,18 @@ describe('play page choice click handler', () => {
   it('renders deviation banner when deviation info is present', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -500,44 +722,20 @@ describe('play page choice click handler', () => {
   it('does not stop loading prematurely when ideation path is taken', async () => {
     setupAndInit({
       choices: [
-        { text: 'Unexplored path', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+        {
+          text: 'Unexplored path',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+        },
         { text: 'Another path', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
       ],
     });
-
-    // The ideation fetch returns options with correct shape
-    const ideationResponse = {
-      success: true,
-      options: [
-        {
-          scenePurpose: 'RISING_COMPLICATION',
-          valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
-          pacingMode: 'ACCELERATING',
-          sceneDirection: 'The hero faces a dark cave',
-          dramaticJustification: 'Builds tension',
-        },
-        {
-          scenePurpose: 'REVELATION',
-          valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
-          pacingMode: 'DECELERATING',
-          sceneDirection: 'A hidden ally appears',
-          dramaticJustification: 'Provides relief',
-        },
-        {
-          scenePurpose: 'CONFRONTATION',
-          valuePolarityShift: 'IRONIC_SHIFT',
-          pacingMode: 'SUSTAINED_HIGH',
-          sceneDirection: 'A confrontation with the rival',
-          dramaticJustification: 'Heightens conflict',
-        },
-      ],
-    };
 
     let choicePostCalled = false;
 
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
       if (typeof url === 'string' && url.includes('ideate-scene')) {
-        return Promise.resolve(mockJsonResponse(ideationResponse));
+        return Promise.resolve(mockJsonResponse(fiveOptionIdeationResponse));
       }
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
@@ -554,7 +752,10 @@ describe('play page choice click handler', () => {
     await jest.runAllTimersAsync();
 
     // Ideation UI should be rendered - select a card first
-    const card = document.querySelector('.scene-direction-card') as HTMLElement;
+    const cards = document.querySelectorAll('.scene-direction-card');
+    expect(cards).toHaveLength(5);
+
+    const card = cards[0] as HTMLElement;
     expect(card).not.toBeNull();
     card.click();
     await jest.runAllTimersAsync();
@@ -568,46 +769,40 @@ describe('play page choice click handler', () => {
 
     // The choice POST should have been made (proceedWithChoice ran to completion)
     expect(choicePostCalled).toBe(true);
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => call[1]?.method === 'POST' && typeof call[0] === 'string' && call[0].includes('/choice')
+    );
+    const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
+    expect(body.selectedSceneDirection).toEqual({
+      scenePurpose: 'RISING_COMPLICATION',
+      valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
+      pacingMode: 'ACCELERATING',
+      sceneDirection: 'The hero faces a dark cave',
+      dramaticJustification: 'Builds tension',
+    });
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        body.selectedSceneDirection as Record<string, unknown>,
+        'diversityLane'
+      )
+    ).toBe(false);
   });
 
   it('removes scene-ideation-wrapper after full ideation-to-choice flow', async () => {
     setupAndInit({
       choices: [
-        { text: 'Unexplored path', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE' },
+        {
+          text: 'Unexplored path',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+        },
         { text: 'Another path', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE' },
       ],
     });
 
-    const ideationResponse = {
-      success: true,
-      options: [
-        {
-          scenePurpose: 'RISING_COMPLICATION',
-          valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
-          pacingMode: 'ACCELERATING',
-          sceneDirection: 'The hero faces a dark cave',
-          dramaticJustification: 'Builds tension',
-        },
-        {
-          scenePurpose: 'REVELATION',
-          valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
-          pacingMode: 'DECELERATING',
-          sceneDirection: 'A hidden ally appears',
-          dramaticJustification: 'Provides relief',
-        },
-        {
-          scenePurpose: 'CONFRONTATION',
-          valuePolarityShift: 'IRONIC_SHIFT',
-          pacingMode: 'SUSTAINED_HIGH',
-          sceneDirection: 'A confrontation with the rival',
-          dramaticJustification: 'Heightens conflict',
-        },
-      ],
-    };
-
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
       if (typeof url === 'string' && url.includes('ideate-scene')) {
-        return Promise.resolve(mockJsonResponse(ideationResponse));
+        return Promise.resolve(mockJsonResponse(fiveOptionIdeationResponse));
       }
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
@@ -624,6 +819,7 @@ describe('play page choice click handler', () => {
 
     // Ideation UI should be rendered with .scene-ideation-wrapper
     expect(document.querySelector('.scene-ideation-wrapper')).not.toBeNull();
+    expect(document.querySelectorAll('.scene-direction-card')).toHaveLength(5);
 
     // Select a card and confirm
     const card = document.querySelector('.scene-direction-card') as HTMLElement;
@@ -645,8 +841,18 @@ describe('play page choice click handler', () => {
   it('choice click works after #choices has been detached and restored', async () => {
     setupAndInit({
       choices: [
-        { text: 'Go left', choiceType: 'INTERVENE', primaryDelta: 'LOCATION_ACCESS_CHANGE', nextPageId: 2 },
-        { text: 'Go right', choiceType: 'COMMIT', primaryDelta: 'GOAL_PRIORITY_CHANGE', nextPageId: 3 },
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
       ],
     });
 
@@ -670,7 +876,9 @@ describe('play page choice click handler', () => {
       .mockResolvedValueOnce(mockJsonResponse(makeSuccessfulChoiceResponse()));
 
     // Click the new choice button - should work because delegation is on choicesSection
-    const newButton = newChoicesDiv.querySelector('.choice-btn[data-choice-index="0"]') as HTMLButtonElement;
+    const newButton = newChoicesDiv.querySelector(
+      '.choice-btn[data-choice-index="0"]'
+    ) as HTMLButtonElement;
     newButton.click();
     await jest.runAllTimersAsync();
 

@@ -129,14 +129,14 @@ describe('parseContentPacketerResponse', () => {
   it('validates interactionVerbs has 4-6 items', () => {
     const tooFew = makeValidPacket({ interactionVerbs: ['a', 'b', 'c'] });
     expect(() => parseContentPacketerResponse({ packets: [tooFew] })).toThrow(
-      /interactionVerbs must be an array of 4-6/,
+      /interactionVerbs must be an array of 4-6/
     );
 
     const tooMany = makeValidPacket({
       interactionVerbs: ['a', 'b', 'c', 'd', 'e', 'f', 'g'],
     });
     expect(() => parseContentPacketerResponse({ packets: [tooMany] })).toThrow(
-      /interactionVerbs must be an array of 4-6/,
+      /interactionVerbs must be an array of 4-6/
     );
 
     const justRight4 = makeValidPacket({ interactionVerbs: ['a', 'b', 'c', 'd'] });
@@ -167,7 +167,7 @@ describe('parseContentPacketerResponse', () => {
 
     const packet = makeValidPacket({ contentKind: 'INVALID_KIND' });
     expect(() => parseContentPacketerResponse({ packets: [packet] })).toThrow(
-      /contentKind must be a valid ContentKind/,
+      /contentKind must be a valid ContentKind/
     );
   });
 
@@ -188,7 +188,7 @@ describe('parseContentPacketerResponse', () => {
       const packet = makeValidPacket();
       delete packet[field];
       expect(() => parseContentPacketerResponse({ packets: [packet] })).toThrow(
-        new RegExp(`${field} must be a non-empty string`),
+        new RegExp(`${field} must be a non-empty string`)
       );
     }
   });
@@ -197,20 +197,20 @@ describe('parseContentPacketerResponse', () => {
     const packet = makeValidPacket();
     delete packet['sourceSparkIds'];
     expect(() => parseContentPacketerResponse({ packets: [packet] })).toThrow(
-      /sourceSparkIds must be a non-empty array/,
+      /sourceSparkIds must be a non-empty array/
     );
   });
 
   it('rejects packets with empty sourceSparkIds', () => {
     const packet = makeValidPacket({ sourceSparkIds: [] });
     expect(() => parseContentPacketerResponse({ packets: [packet] })).toThrow(
-      /sourceSparkIds must be a non-empty array/,
+      /sourceSparkIds must be a non-empty array/
     );
   });
 
   it('rejects empty packets array', () => {
     expect(() => parseContentPacketerResponse({ packets: [] })).toThrow(
-      /packets must be a non-empty array/,
+      /packets must be a non-empty array/
     );
   });
 
@@ -220,7 +220,7 @@ describe('parseContentPacketerResponse', () => {
 
   it('rejects response missing packets key', () => {
     expect(() => parseContentPacketerResponse({ notPackets: [] })).toThrow(
-      /packets must be a non-empty array/,
+      /packets must be a non-empty array/
     );
   });
 

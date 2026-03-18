@@ -8,7 +8,11 @@ import { KERNEL_EVOLUTION_SCHEMA } from './schemas/kernel-evolver-schema.js';
 
 export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKernel[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    throw new LLMError('Kernel evolution response must be an object', 'STRUCTURE_PARSE_ERROR', true);
+    throw new LLMError(
+      'Kernel evolution response must be an object',
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
   }
 
   const data = parsed as Record<string, unknown>;
@@ -17,7 +21,7 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
     throw new LLMError(
       'Kernel evolution response missing kernels array',
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -27,7 +31,7 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
     throw new LLMError(
       `Kernel evolution response must include exactly 6 kernels (received: ${kernelItems.length})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -38,7 +42,7 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
       throw new LLMError(
         `Kernel evolution response item ${i + 1} is not a valid StoryKernel`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
     kernels.push(item);
@@ -51,7 +55,7 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
       throw new LLMError(
         `Kernel evolution response contains duplicate valueAtStake: ${kernel.valueAtStake}`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
     valueAtStakeSet.add(normalized);
@@ -64,7 +68,7 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
       throw new LLMError(
         `Kernel evolution response contains duplicate opposingForce: ${kernel.opposingForce}`,
         'STRUCTURE_PARSE_ERROR',
-        true,
+        true
       );
     }
     opposingForceSet.add(normalized);
@@ -78,7 +82,7 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
     throw new LLMError(
       `Kernel evolution response must use at least 3 distinct directionOfChange values (found: ${directionSet.size})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -87,7 +91,7 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
     throw new LLMError(
       `Kernel evolution response must use at least 4 distinct conflictAxis values (found: ${conflictAxisSet.size})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -96,7 +100,7 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
     throw new LLMError(
       `Kernel evolution response must use at least 3 distinct dramaticStance values (found: ${dramaticStanceSet.size})`,
       'STRUCTURE_PARSE_ERROR',
-      true,
+      true
     );
   }
 
@@ -106,7 +110,7 @@ export function parseKernelEvolutionResponse(parsed: unknown): readonly StoryKer
 export async function evolveKernels(
   context: KernelEvolverContext,
   apiKey: string,
-  options?: Partial<GenerationOptions>,
+  options?: Partial<GenerationOptions>
 ): Promise<KernelEvolutionResult> {
   const messages = buildKernelEvolverPrompt(context);
   const result = await runLlmStage({

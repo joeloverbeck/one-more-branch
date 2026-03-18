@@ -55,11 +55,9 @@ export class ConsoleLogger implements Logger {
         console.info(fullMessage);
         break;
       case 'warn':
-
         console.warn(fullMessage);
         break;
       case 'error':
-
         console.error(fullMessage);
         break;
     }

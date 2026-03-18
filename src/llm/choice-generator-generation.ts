@@ -13,7 +13,10 @@ import { CHOICE_GENERATOR_SCHEMA } from './schemas/choice-generator-schema.js';
 import { validateChoiceGeneratorResponse } from './schemas/choice-generator-response-transformer.js';
 import { repairCorruptedChoices } from './validation/writer-choice-repair.js';
 import { repairInsufficientChoices } from './validation/writer-choice-insufficiency-repair.js';
-import type { GenerationObservabilityContext, GenerationOptions } from './generation-pipeline-types.js';
+import type {
+  GenerationObservabilityContext,
+  GenerationOptions,
+} from './generation-pipeline-types.js';
 import { LLMError, type ChatMessage } from './llm-client-types.js';
 import type { ChoiceGeneratorResult } from './choice-generator-types.js';
 
