@@ -213,4 +213,15 @@ describe('prompt documentation alignment', () => {
     expect(docContent).toContain('dramaticClarity');
     expect(docContent).toContain('conflictTension');
   });
+
+  it('documents the scene ideator lane/count/slate contract', () => {
+    const docContent = readRepoFile('prompts/scene-ideator-prompt.md');
+    expect(docContent).toContain('Shared ideation contract');
+    expect(docContent).toContain('exactly 5 dramatically distinct scene direction options');
+    expect(docContent).toContain('classified by four narrative dimensions');
+    expect(docContent).toContain('IDEATION SLATE:');
+    expect(docContent).toContain('diversityLane');
+    expect(docContent).toContain('AgedTrackedPromise[]');
+    expect(docContent).not.toContain('exactly 3 options');
+  });
 });

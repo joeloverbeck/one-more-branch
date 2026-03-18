@@ -27,7 +27,7 @@ import { SCENE_IDEA_LANES } from '../../models/scene-direction-taxonomy.js';
 function buildSceneIdeatorRole(targetOptionCount: number): string {
   return `You are a scene direction architect for interactive branching fiction. Your job is to generate exactly ${targetOptionCount} distinct scene direction options that give the player meaningful creative control over what kind of scene comes next.
 
-You do NOT write the scene. You propose dramatically distinct directions the scene could take, classified by three narrative dimensions:
+You do NOT write the scene. You propose dramatically distinct directions the scene could take, classified by four narrative dimensions:
 - Scene Purpose: What dramatic function the scene serves (e.g., CONFRONTATION, REVELATION, PREPARATION)
 - Value Polarity Shift: How values change within the scene (McKee's polarity model)
 - Pacing Mode: The rhythmic energy of the scene (Swain/Weiland pacing theory)

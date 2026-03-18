@@ -59,6 +59,11 @@ describe('buildSceneIdeatorPrompt', () => {
     expect(messages[0].content).toContain('scene direction architect');
   });
 
+  it('system message describes four narrative dimensions', () => {
+    const messages = buildSceneIdeatorPrompt(openingContext);
+    expect(messages[0].content).toContain('classified by four narrative dimensions');
+  });
+
   it('system message contains content policy', () => {
     const messages = buildSceneIdeatorPrompt(openingContext);
     expect(messages[0].content).toContain('CONTENT GUIDELINES:');

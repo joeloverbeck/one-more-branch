@@ -30,7 +30,7 @@ Generation stage: `IDEATING_SCENE`.
 ```text
 You are a scene direction architect for interactive branching fiction. Your job is to generate exactly 5 distinct scene direction options that give the player meaningful creative control over what kind of scene comes next.
 
-You do NOT write the scene. You propose dramatically distinct directions the scene could take, classified by three narrative dimensions:
+You do NOT write the scene. You propose dramatically distinct directions the scene could take, classified by four narrative dimensions:
 - Scene Purpose: What dramatic function the scene serves (e.g., CONFRONTATION, REVELATION, PREPARATION)
 - Value Polarity Shift: How values change within the scene (McKee's polarity model)
 - Pacing Mode: The rhythmic energy of the scene (Swain/Weiland pacing theory)
@@ -160,7 +160,7 @@ Location: {{activeState.currentLocation}}
 {{#if structure and accumulatedStructureState}}
 CURRENT STRUCTURE POSITION:
 Act {{currentActIndex + 1}}/{{structure.acts.length}}: {{currentAct.objective}}
-Beat: {{currentBeat.name}} ({{currentBeat.role}}) — {{currentBeat.description}}
+Milestone: {{currentMilestone.name}} ({{currentMilestone.role}}) — {{currentMilestone.description}}
 {{/if}}
 
 {{#if accumulatedNpcAgendas has entries}}
@@ -195,11 +195,11 @@ RECENT STORY CONTEXT:
 {{/if}}
 
 {{#if threadAges has entries with age >= 3}}
-OVERDUE THREADS (consider addressing): {{top 5 aged threads as "id (age pages)" joined by '; '}}
+OVERDUE THREADS (consider addressing): {{top 5 aged threads as "text (threadType, urgency, age pages)" joined by '; '}}
 {{/if}}
 
 {{#if accumulatedPromises has HIGH urgency or age >= 5}}
-PENDING PROMISES (consider fulfilling): {{top 5 urgent promises as "description [promiseType, age: N]" joined by '; '}}
+PENDING PROMISES (consider fulfilling): {{top 5 urgent promises as "description [promiseType, scope, age: N]" joined by '; '}}
 {{/if}}
 
 {{#if protagonistGuidance (non-empty)}}
@@ -279,7 +279,7 @@ OUTPUT SHAPE:
 | `activeState` | `ActiveState` | Current location, threats, constraints, threads |
 | `ancestorSummaries` | `AncestorSummary[]` | Scene summaries from ancestor pages |
 | `threadAges` | `Record<string, number>` (optional) | Pages since each thread was opened |
-| `accumulatedPromises` | `TrackedPromise[]` | Active narrative promises with lifecycle state |
+| `accumulatedPromises` | `AgedTrackedPromise[]` | Active narrative promises with lifecycle state and computed age |
 | `accumulatedNpcAgendas` | `AccumulatedNpcAgendas` (optional) | NPC agenda state |
 | `accumulatedNpcRelationships` | `AccumulatedNpcRelationships` (optional) | NPC relationship state |
 | `accumulatedInventory` | `KeyedEntry[]` | Current inventory items |
