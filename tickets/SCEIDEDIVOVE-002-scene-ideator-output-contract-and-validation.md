@@ -20,6 +20,8 @@ The structured scene ideator response does not include `diversityLane`, the sche
 
 1. The backend contract should become stricter before the prompt is rewritten, otherwise prompt changes can produce data the parser cannot explain or audit cleanly.
 2. `diversityLane` belongs in the structured ideator output so the diversity contract is machine-verifiable. The selected direction payload can keep the lane or safely ignore it, but the backend should not hide the field in prompt prose only.
+3. Ticket `SCEIDEDIVOVE-006` now centralizes continuation pressure heuristics in `src/llm/scene-ideation-context-signals.ts`. This ticket should consume that shared signal/slate architecture rather than introducing any new prompt-local or parser-local fallback heuristics.
+4. The current prompt still emits the legacy 3-option contract. This ticket should treat that as an intentional temporary mismatch to be resolved with ticket `SCEIDEDIVOVE-003`, not as a reason to preserve the old count contract in parser/schema code.
 
 ## What to Change
 
@@ -96,4 +98,3 @@ Error messages should still be specific enough to diagnose which constraint fail
 
 1. `npm run test:unit -- --runTestsByPath test/unit/llm/scene-ideator.test.ts test/unit/llm/schemas/anthropic-schema-compatibility.test.ts`
 2. `npm run typecheck`
-

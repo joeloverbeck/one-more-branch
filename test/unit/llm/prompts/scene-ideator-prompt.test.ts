@@ -15,7 +15,7 @@ import {
   PromiseType,
   PromiseScope,
 } from '../../../../src/models/state/keyed-entry';
-import type { ThreadEntry, TrackedPromise } from '../../../../src/models/state/keyed-entry';
+import type { AgedTrackedPromise, ThreadEntry } from '../../../../src/models/state/keyed-entry';
 
 describe('buildSceneIdeatorPrompt', () => {
   const openingContext: SceneIdeatorOpeningContext = {
@@ -257,10 +257,8 @@ describe('formatOverdueThreadsSection', () => {
     urgency: Urgency
   ): ThreadEntry => ({ id, text, threadType, urgency });
 
-  it('returns empty string when no threads are overdue per urgency thresholds', () => {
-    const threads = [mkThread('td-1', 'Minor clue', ThreadType.MYSTERY, Urgency.LOW)];
-    const ages = { 'td-1': 5 };
-    expect(formatOverdueThreadsSection(threads, ages)).toBe('');
+  it('returns empty string when given no overdue threads', () => {
+    expect(formatOverdueThreadsSection([], {})).toBe('');
   });
 
   it('shows thread text instead of thread ID', () => {
@@ -318,50 +316,43 @@ describe('formatOverdueThreadsSection', () => {
     expect(result).toMatch(/^OVERDUE THREADS \(consider addressing\):/);
   });
 
-  it('respects urgency thresholds: HIGH=4, MEDIUM=7, LOW=10', () => {
+  it('renders whatever overdue set it is given without reapplying threshold logic', () => {
     const threads = [
       mkThread('td-h', 'High urgency', ThreadType.DANGER, Urgency.HIGH),
       mkThread('td-m', 'Medium urgency', ThreadType.QUEST, Urgency.MEDIUM),
-      mkThread('td-l', 'Low urgency', ThreadType.MYSTERY, Urgency.LOW),
     ];
-    // HIGH at age 3 (below 4), MEDIUM at age 6 (below 7), LOW at age 9 (below 10)
-    const ages = { 'td-h': 3, 'td-m': 6, 'td-l': 9 };
-    expect(formatOverdueThreadsSection(threads, ages)).toBe('');
-
-    // HIGH at age 4 (at threshold), MEDIUM at age 7, LOW at age 10
-    const agesAtThreshold = { 'td-h': 4, 'td-m': 7, 'td-l': 10 };
-    const result = formatOverdueThreadsSection(threads, agesAtThreshold);
+    const ages = { 'td-h': 4, 'td-m': 7 };
+    const result = formatOverdueThreadsSection(threads, ages);
     expect(result).toContain('High urgency');
     expect(result).toContain('Medium urgency');
-    expect(result).toContain('Low urgency');
   });
 });
 
 describe('formatPendingPromisesSection', () => {
-  const mkPromise = (overrides: Partial<TrackedPromise> & { id: string }): TrackedPromise => ({
+  const mkPromise = (
+    overrides: Partial<AgedTrackedPromise> & { id: string }
+  ): AgedTrackedPromise => ({
     description: 'A promise',
     promiseType: PromiseType.CHEKHOV_GUN,
     scope: PromiseScope.BEAT,
     resolutionHint: 'Some hint',
     suggestedUrgency: Urgency.LOW,
+    detectedAtPromiseEpoch: 0,
     age: 0,
     ...overrides,
   });
 
-  it('returns empty string when no promises match filter', () => {
-    const promises = [mkPromise({ id: 'pr-1', suggestedUrgency: Urgency.LOW, age: 1 })];
-    expect(formatPendingPromisesSection(promises)).toBe('');
+  it('returns empty string when given no pending promises', () => {
+    expect(formatPendingPromisesSection([])).toBe('');
   });
 
-  it('keeps existing filter: suggestedUrgency === HIGH || age >= 5', () => {
+  it('renders whatever pending set it is given without owning the filter rules', () => {
     const highUrgency = mkPromise({ id: 'pr-1', suggestedUrgency: Urgency.HIGH, age: 1 });
     const oldPromise = mkPromise({ id: 'pr-2', suggestedUrgency: Urgency.LOW, age: 6 });
-    const excluded = mkPromise({ id: 'pr-3', suggestedUrgency: Urgency.LOW, age: 2 });
 
-    const result = formatPendingPromisesSection([highUrgency, oldPromise, excluded]);
+    const result = formatPendingPromisesSection([highUrgency, oldPromise]);
     expect(result).toContain(highUrgency.description);
     expect(result).toContain(oldPromise.description);
-    expect(result).not.toContain('pr-3');
   });
 
   it('sorts by scope priority: SCENE first, then BEAT, then ACT, then STORY', () => {

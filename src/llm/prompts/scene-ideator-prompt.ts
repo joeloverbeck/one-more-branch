@@ -15,12 +15,11 @@ import {
   buildHealthSection,
 } from './sections/shared/resource-state-sections.js';
 import type { ThreadEntry, AgedTrackedPromise } from '../../models/state/keyed-entry.js';
-import { Urgency } from '../../models/state/keyed-entry.js';
-import { getOverdueThreads } from './sections/planner/index.js';
 import type {
   SceneIdeatorContext,
   SceneIdeatorContinuationContext,
 } from '../scene-ideator-types.js';
+import { buildSceneIdeationContextSignals } from '../scene-ideation-context-signals.js';
 
 const SCENE_IDEATOR_ROLE = `You are a scene direction architect for interactive branching fiction. Your job is to generate exactly 3 distinct scene direction options that give the player meaningful creative control over what kind of scene comes next.
 
@@ -99,12 +98,11 @@ const SCOPE_PRIORITY: Readonly<Record<string, number>> = {
 };
 
 export function formatOverdueThreadsSection(
-  openThreads: readonly ThreadEntry[],
+  overdueThreads: readonly ThreadEntry[],
   threadAges: Readonly<Record<string, number>>
 ): string {
-  const overdue = getOverdueThreads(openThreads, threadAges);
-  if (overdue.length === 0) return '';
-  const sorted = [...overdue]
+  if (overdueThreads.length === 0) return '';
+  const sorted = [...overdueThreads]
     .sort((a, b) => (threadAges[b.id] ?? 0) - (threadAges[a.id] ?? 0))
     .slice(0, 5);
   const list = sorted
@@ -114,13 +112,10 @@ export function formatOverdueThreadsSection(
 }
 
 export function formatPendingPromisesSection(
-  accumulatedPromises: readonly AgedTrackedPromise[]
+  pendingPromises: readonly AgedTrackedPromise[]
 ): string {
-  const filtered = accumulatedPromises.filter(
-    (p) => p.suggestedUrgency === Urgency.HIGH || p.age >= 5
-  );
-  if (filtered.length === 0) return '';
-  const sorted = [...filtered]
+  if (pendingPromises.length === 0) return '';
+  const sorted = [...pendingPromises]
     .sort((a, b) => {
       const scopeDelta = (SCOPE_PRIORITY[a.scope] ?? 4) - (SCOPE_PRIORITY[b.scope] ?? 4);
       return scopeDelta !== 0 ? scopeDelta : b.age - a.age;
@@ -166,6 +161,7 @@ export function buildIdeatorGuidanceSection(guidance: ProtagonistGuidance | unde
 
 function buildContinuationSections(context: SceneIdeatorContinuationContext): string {
   const sections: string[] = [];
+  const signals = buildSceneIdeationContextSignals(context);
 
   sections.push(`PREVIOUS SCENE SUMMARY:\n${context.previousNarrative}\n`);
   sections.push(`PLAYER'S CHOSEN ACTION:\n${context.selectedChoice}\n`);
@@ -184,11 +180,9 @@ function buildContinuationSections(context: SceneIdeatorContinuationContext): st
     sections.push(`RECENT STORY CONTEXT:\n${summaryText}\n`);
   }
 
-  if (context.threadAges) {
-    sections.push(formatOverdueThreadsSection(context.activeState.openThreads, context.threadAges));
-  }
+  sections.push(formatOverdueThreadsSection(signals.overdueThreads, context.threadAges ?? {}));
 
-  sections.push(formatPendingPromisesSection(context.accumulatedPromises));
+  sections.push(formatPendingPromisesSection(signals.pendingPromises));
 
   sections.push(buildIdeatorGuidanceSection(context.protagonistGuidance));
 

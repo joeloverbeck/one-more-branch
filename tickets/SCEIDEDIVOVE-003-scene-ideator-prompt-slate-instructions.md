@@ -15,11 +15,14 @@ The current prompt asks for “exactly 3 distinct” options in one generic bloc
 1. `src/llm/prompts/scene-ideator-prompt.ts` currently embeds the role, diversity rules, count instructions, and output shape as hard-coded strings.
 2. `buildSceneIdeatorPrompt()` currently does not consume a slate builder and does not emit an `IDEATION SLATE` section.
 3. `test/unit/llm/prompts/scene-ideator-prompt.test.ts` already covers the current prompt structure, so this ticket can update that suite rather than inventing a second prompt-test seam.
+4. Ticket `SCEIDEDIVOVE-006` extracted shared continuation heuristics into `src/llm/scene-ideation-context-signals.ts`, so overdue-thread and pending-promise filtering should not be reimplemented during the prompt rewrite.
 
 ## Architecture Check
 
 1. The prompt should consume a prebuilt slate rather than recomputing lane heuristics inline. That keeps prompt generation declarative and makes tests assert on rendered instructions rather than hidden business logic.
 2. Slot-specific instructions are the architectural fix here. Merely changing `3` to `5` would increase output volume without solving slate collapse.
+3. The prompt rewrite should build on the shared continuation-signal seam from ticket `006`: prompt assembly should render existing filtered context plus the deterministic slate, not recreate pressure thresholds or duplicate lane-selection logic.
+4. Once this ticket lands, the old prompt-only 3-option contract should disappear completely. Do not leave a parallel legacy phrasing path behind for “compatibility”.
 
 ## What to Change
 
@@ -85,4 +88,3 @@ Preserve the existing context assembly behavior unless it is directly required f
 
 1. `npm run test:unit -- --runTestsByPath test/unit/llm/prompts/scene-ideator-prompt.test.ts`
 2. `npm run typecheck`
-
