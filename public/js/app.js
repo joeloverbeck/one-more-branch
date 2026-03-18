@@ -2755,7 +2755,7 @@ var NPC_COHERENCE_META = {
 
   function toggleActStructureDetails() {
     var indicator = document.getElementById('act-indicator');
-    var details = document.getElementById('act-structure-details');
+    var details = document.getElementById('play-structure-details');
     if (!indicator || !details) return;
 
     var isExpanded = indicator.getAttribute('aria-expanded') === 'true';
@@ -2779,7 +2779,7 @@ var NPC_COHERENCE_META = {
 
   function expandActStructureDetails() {
     var indicator = document.getElementById('act-indicator');
-    var details = document.getElementById('act-structure-details');
+    var details = document.getElementById('play-structure-details');
     if (!indicator || !details) return;
     indicator.setAttribute('aria-expanded', 'true');
     indicator.classList.add('act-indicator--expanded');
@@ -2788,7 +2788,7 @@ var NPC_COHERENCE_META = {
 
   function collapseActStructureDetails() {
     var indicator = document.getElementById('act-indicator');
-    var details = document.getElementById('act-structure-details');
+    var details = document.getElementById('play-structure-details');
     if (!indicator || !details) return;
     indicator.setAttribute('aria-expanded', 'false');
     indicator.classList.remove('act-indicator--expanded');
@@ -5390,35 +5390,40 @@ function parseAnalystDataFromDom() {
 function parseInsightsContextFromDom() {
   var node = document.getElementById('insights-context');
   if (!node || typeof node.textContent !== 'string') {
-    return { actDisplayInfo: null, sceneSummary: null };
+    return { playStructureInfo: null, sceneSummary: null };
   }
 
   try {
     var parsed = JSON.parse(node.textContent);
     return parsed && typeof parsed === 'object'
       ? parsed
-      : { actDisplayInfo: null, sceneSummary: null };
+      : { playStructureInfo: null, sceneSummary: null };
   } catch (_) {
-    return { actDisplayInfo: null, sceneSummary: null };
+    return { playStructureInfo: null, sceneSummary: null };
   }
 }
 
-function getActDisplaySubtitle(actDisplayInfo) {
-  if (!actDisplayInfo) {
+function getPlayStructureFrame(context) {
+  if (!context || typeof context !== 'object') {
     return null;
   }
-  if (typeof actDisplayInfo === 'string' && actDisplayInfo.length > 0) {
-    return actDisplayInfo;
-  }
-  if (
-    typeof actDisplayInfo === 'object' &&
-    typeof actDisplayInfo.displayString === 'string' &&
-    actDisplayInfo.displayString.length > 0
-  ) {
-    return actDisplayInfo.displayString;
+
+  var playStructureInfo = context.playStructureInfo;
+  if (!playStructureInfo || typeof playStructureInfo !== 'object') {
+    return null;
   }
 
-  return null;
+  var pageStructure = playStructureInfo.pageStructure;
+  if (
+    !pageStructure ||
+    typeof pageStructure !== 'object' ||
+    typeof pageStructure.displayString !== 'string' ||
+    pageStructure.displayString.length === 0
+  ) {
+    return null;
+  }
+
+  return pageStructure;
 }
 
 function formatAnalystEnum(value) {
@@ -5467,32 +5472,31 @@ function renderStructureTab(ar, ctx) {
     : '';
   var completionGateValue = completionGateSatisfied ? 'SATISFIED' : 'PENDING';
   var momentum = MOMENTUM_META[ar.sceneMomentum] || MOMENTUM_META.STASIS;
-  var actDisplayInfo = ctx && typeof ctx === 'object' ? ctx.actDisplayInfo : null;
+  var pageStructure = getPlayStructureFrame(ctx);
   var actQuestion =
-    actDisplayInfo &&
-    typeof actDisplayInfo === 'object' &&
-    typeof actDisplayInfo.actQuestion === 'string' &&
-    actDisplayInfo.actQuestion.length > 0
-      ? actDisplayInfo.actQuestion
+    pageStructure &&
+    typeof pageStructure.actQuestion === 'string' &&
+    pageStructure.actQuestion.length > 0
+      ? pageStructure.actQuestion
       : '';
-  var exitCondition =
-    actDisplayInfo &&
-    typeof actDisplayInfo === 'object' &&
-    typeof actDisplayInfo.exitCondition === 'string' &&
-    actDisplayInfo.exitCondition.length > 0
-      ? actDisplayInfo.exitCondition
+  var exitCriteria =
+    pageStructure &&
+    typeof pageStructure.milestoneExitCriteria === 'string' &&
+    pageStructure.milestoneExitCriteria.length > 0
+      ? pageStructure.milestoneExitCriteria
+      : '';
+  var actEndReversal =
+    pageStructure &&
+    typeof pageStructure.actEndReversal === 'string' &&
+    pageStructure.actEndReversal.length > 0
+      ? pageStructure.actEndReversal
       : '';
 
   var html = '<details class="insights-section" open>'
     + '<summary><h4>Milestone Progress</h4></summary>'
-    + (actQuestion
-      ? "<p class=\"insights-copy\"><strong>Act's Dramatic Question:</strong> "
-        + escapeHtml(actQuestion)
-        + '</p>'
-      : '')
-    + (exitCondition
+    + (exitCriteria
       ? '<p class="insights-copy"><strong>Milestone Exit Criteria:</strong> '
-        + escapeHtml(exitCondition)
+        + escapeHtml(exitCriteria)
         + '</p>'
       : '')
     + '<div class="milestone-gauge">'
@@ -5506,6 +5510,22 @@ function renderStructureTab(ar, ctx) {
       ? '<p class="completion-gate-reason">' + escapeHtml(completionGateReason) + '</p>'
       : '')
     + '</details>';
+
+  if (actQuestion || actEndReversal) {
+    html += '<details class="insights-section" open>'
+      + '<summary><h4>Act Trajectory</h4></summary>'
+      + (actQuestion
+        ? "<p class=\"insights-copy\"><strong>Act's Dramatic Question:</strong> "
+          + escapeHtml(actQuestion)
+          + '</p>'
+        : '')
+      + (actEndReversal
+        ? '<p class="insights-copy"><strong>Act-End Reversal:</strong> '
+          + escapeHtml(actEndReversal)
+          + '</p>'
+        : '')
+      + '</details>';
+  }
 
   // Milestone Resolution
   if (typeof ar.milestoneResolution === 'string' && ar.milestoneResolution.length > 0) {
@@ -5811,7 +5831,8 @@ function renderInsightsBody(analystResult, context) {
 
   var ctx = context && typeof context === 'object' ? context : {};
   var headerHtml = '';
-  var actDisplaySubtitle = getActDisplaySubtitle(ctx.actDisplayInfo);
+  var pageStructure = getPlayStructureFrame(ctx);
+  var actDisplaySubtitle = pageStructure ? pageStructure.displayString : null;
 
   if (actDisplaySubtitle) {
     headerHtml += '<p class="insights-milestone-subtitle">' + escapeHtml(actDisplaySubtitle) + '</p>';
@@ -5901,7 +5922,7 @@ function createAnalystInsightsController(initialAnalystResult, initialContext) {
     : null;
   var insightsContext = initialContext && typeof initialContext === 'object'
     ? initialContext
-    : { actDisplayInfo: null, sceneSummary: null };
+    : { playStructureInfo: null, sceneSummary: null };
   var modal = document.getElementById('insights-modal');
   var modalBody = document.getElementById('insights-modal-body');
   var closeButton = document.getElementById('insights-close-btn');
@@ -7023,87 +7044,91 @@ function createRecapModalController(initialData) {
 
 // ── Controllers ───────────────────────────────────────────────────
 
-function buildInsightsContext(actDisplayInfo, sceneSummary, resolvedThreadMeta, resolvedPromiseMeta) {
+function buildInsightsContext(playStructureInfo, sceneSummary, resolvedThreadMeta, resolvedPromiseMeta) {
   return {
-    actDisplayInfo: actDisplayInfo || null,
+    playStructureInfo: playStructureInfo || null,
     sceneSummary: sceneSummary || null,
     resolvedThreadMeta: resolvedThreadMeta || {},
     resolvedPromiseMeta: resolvedPromiseMeta || {},
   };
 }
 
-function buildActStructureDetailsHtml(actDisplayInfo) {
-  if (!actDisplayInfo) {
+function buildPlayStructureFieldHtml(label, text) {
+  if (!text) {
     return '';
   }
 
-  var items = '';
+  return (
+    '<div class="play-structure-details__item">' +
+    '<span class="play-structure-details__label">' +
+    escapeHtml(label) +
+    '</span>' +
+    '<span class="play-structure-details__text">' +
+    escapeHtml(text) +
+    '</span>' +
+    '</div>'
+  );
+}
 
-  if (actDisplayInfo.actObjective) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Act Objective</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.actObjective) +
-      '</span>' +
-      '</div>';
-  }
+function buildPlayStructureCardHtml(eyebrow, title, fields, extraClass) {
+  return (
+    '<section class="play-structure-card ' +
+    extraClass +
+    '">' +
+    '<div class="play-structure-card__eyebrow">' +
+    escapeHtml(eyebrow) +
+    '</div>' +
+    '<div class="play-structure-card__title">' +
+    escapeHtml(title) +
+    '</div>' +
+    fields +
+    '</section>'
+  );
+}
 
-  if (actDisplayInfo.actStakes) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Stakes</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.actStakes) +
-      '</span>' +
-      '</div>';
-  }
-
-  if (actDisplayInfo.milestoneObjective) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Milestone Objective</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.milestoneObjective) +
-      '</span>' +
-      '</div>';
-  }
-
-  if (actDisplayInfo.actQuestion) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Act Question</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.actQuestion) +
-      '</span>' +
-      '</div>';
-  }
-
-  if (actDisplayInfo.exitCondition) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Milestone Exit Condition</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.exitCondition) +
-      '</span>' +
-      '</div>';
-  }
-
-  if (actDisplayInfo.exitReversal) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Exit Reversal</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.exitReversal) +
-      '</span>' +
-      '</div>';
-  }
-
-  if (!items) {
+function buildPlayStructureDetailsHtml(playStructureInfo) {
+  if (!playStructureInfo || !playStructureInfo.pageStructure || !playStructureInfo.nextStructureTarget) {
     return '';
   }
 
-  return '<div class="act-structure-details" id="act-structure-details" hidden>' + items + '</div>';
+  var pageStructure = playStructureInfo.pageStructure;
+  var nextStructureTarget = playStructureInfo.nextStructureTarget;
+  var actArc = nextStructureTarget || pageStructure;
+
+  var nextFields =
+    buildPlayStructureFieldHtml('Milestone Objective', nextStructureTarget.milestoneObjective) +
+    buildPlayStructureFieldHtml(
+      'Milestone Exit Criteria',
+      nextStructureTarget.milestoneExitCriteria
+    );
+
+  var actFields =
+    buildPlayStructureFieldHtml('Act Objective', actArc.actObjective) +
+    buildPlayStructureFieldHtml('Stakes', actArc.actStakes) +
+    buildPlayStructureFieldHtml('Act Question', actArc.actQuestion) +
+    buildPlayStructureFieldHtml('Act-End Reversal', actArc.actEndReversal);
+
+  var cards =
+    buildPlayStructureCardHtml(
+      'This Page',
+      pageStructure.displayString,
+      '',
+      'play-structure-card--page'
+    ) +
+    buildPlayStructureCardHtml(
+      'Next Objective',
+      nextStructureTarget.displayString,
+      nextFields,
+      'play-structure-card--target'
+    ) +
+    buildPlayStructureCardHtml(
+      'Act Arc',
+      'Act ' + actArc.actNumber + ': ' + actArc.actName,
+      actFields,
+      'play-structure-card--act'
+    );
+
+  return '<div class="play-structure-details" id="play-structure-details" hidden>' + cards + '</div>';
 }
 
 function initPlayPage() {
@@ -7374,7 +7399,7 @@ function initPlayPage() {
     insightsController.update(
       data.page.analystResult,
       buildInsightsContext(
-        data.actDisplayInfo,
+        data.playStructureInfo,
         data.page.sceneSummary,
         data.page.resolvedThreadMeta,
         data.page.resolvedPromiseMeta
@@ -7437,17 +7462,18 @@ function initPlayPage() {
 
     // Update act indicator based on response
     var existingWrapper = document.getElementById('act-indicator-wrapper');
-    if (data.actDisplayInfo) {
-      var newActNumber = data.actDisplayInfo.actNumber;
+    var pageStructure = data.playStructureInfo ? data.playStructureInfo.pageStructure : null;
+    if (pageStructure) {
+      var newActNumber = pageStructure.actNumber;
       var actChanged = previousActNumber !== null && newActNumber !== previousActNumber;
-      var detailsHtml = buildActStructureDetailsHtml(data.actDisplayInfo);
+      var detailsHtml = buildPlayStructureDetailsHtml(data.playStructureInfo);
 
       var wrapperHtml =
         '<span class="act-indicator act-indicator--clickable" id="act-indicator"' +
         ' role="button" tabindex="0" aria-expanded="false"' +
-        ' aria-controls="act-structure-details">' +
+        ' aria-controls="play-structure-details">' +
         '<span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>' +
-        escapeHtml(data.actDisplayInfo.displayString) +
+        escapeHtml(pageStructure.displayString) +
         '</span>';
 
       if (existingWrapper) {
@@ -7466,7 +7492,7 @@ function initPlayPage() {
       }
 
       // Place details panel after .story-header (outside the flex row)
-      var existingDetails = document.getElementById('act-structure-details');
+      var existingDetails = document.getElementById('play-structure-details');
       if (existingDetails) {
         existingDetails.remove();
       }
@@ -7484,7 +7510,7 @@ function initPlayPage() {
       previousActNumber = newActNumber;
     } else if (existingWrapper) {
       existingWrapper.remove();
-      var orphanedDetails = document.getElementById('act-structure-details');
+      var orphanedDetails = document.getElementById('play-structure-details');
       if (orphanedDetails) {
         orphanedDetails.remove();
       }

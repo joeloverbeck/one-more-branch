@@ -96,13 +96,18 @@ describe('analyst insights modal', () => {
     });
   });
 
-  it('displays milestone info subtitle when actDisplayInfo is provided', async () => {
+  it('displays milestone info subtitle when playStructureInfo is provided', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       analystResult: createMockAnalystResult(),
-      actDisplayInfo: {
-        displayString: 'Act 1: The Setup - Milestone 1.2: The Discovery',
-        actQuestion: 'Will the team survive first contact?',
-        exitCondition: 'The team escapes the breach alive.',
+      playStructureInfo: {
+        pageStructure: {
+          displayString: 'Act 1: The Setup - Milestone 1.2: The Discovery',
+          actQuestion: 'Will the team survive first contact?',
+          milestoneExitCriteria: 'The team escapes the breach alive.',
+        },
+        nextStructureTarget: {
+          displayString: 'Act 1: The Setup - Milestone 1.2: The Discovery',
+        },
       },
     });
     loadAppAndInit();
@@ -117,13 +122,19 @@ describe('analyst insights modal', () => {
     expect(subtitle?.textContent).toBe('Act 1: The Setup - Milestone 1.2: The Discovery');
   });
 
-  it('displays act question and milestone exit criteria in the structure tab', async () => {
+  it('displays milestone criteria separately from act trajectory in the structure tab', async () => {
     document.body.innerHTML = buildPlayPageHtml({
       analystResult: createMockAnalystResult(),
-      actDisplayInfo: {
-        displayString: 'Act 1: The Setup - Milestone 1.2: The Discovery',
-        actQuestion: 'Will the team survive first contact?',
-        exitCondition: 'The team escapes the breach alive.',
+      playStructureInfo: {
+        pageStructure: {
+          displayString: 'Act 1: The Setup - Milestone 1.2: The Discovery',
+          actQuestion: 'Will the team survive first contact?',
+          milestoneExitCriteria: 'The team escapes the breach alive.',
+          actEndReversal: 'Survival reveals the station is already compromised.',
+        },
+        nextStructureTarget: {
+          displayString: 'Act 1: The Setup - Milestone 1.2: The Discovery',
+        },
       },
     });
     loadAppAndInit();
@@ -137,6 +148,11 @@ describe('analyst insights modal', () => {
     expect(modalBody.textContent).toContain('Will the team survive first contact?');
     expect(modalBody.textContent).toContain('Milestone Exit Criteria:');
     expect(modalBody.textContent).toContain('The team escapes the breach alive.');
+    expect(modalBody.textContent).toContain('Act Trajectory');
+    expect(modalBody.textContent).toContain('Act-End Reversal:');
+    expect(modalBody.textContent).toContain(
+      'Survival reveals the station is already compromised.'
+    );
   });
 
   it('displays scene summary when provided', async () => {
@@ -475,7 +491,14 @@ describe('analyst insights modal', () => {
             trackedPromisesOverflowSummary: null,
           },
           wasGenerated: true,
-          actDisplayInfo: { displayString: 'Act 2: Rising Action - Milestone 2.1: Confrontation' },
+          playStructureInfo: {
+            pageStructure: {
+              displayString: 'Act 2: Rising Action - Milestone 2.1: Confrontation',
+            },
+            nextStructureTarget: {
+              displayString: 'Act 2: Rising Action - Milestone 2.1: Confrontation',
+            },
+          },
           deviationInfo: null,
         })
       );

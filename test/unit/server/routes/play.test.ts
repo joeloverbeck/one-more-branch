@@ -122,7 +122,7 @@ describe('playRoutes', () => {
         page,
         recapSummaries: [],
         pageId: 2,
-        actDisplayInfo: null,
+        playStructureInfo: null,
         milestoneInfo: null,
         openThreadPanelRows: [
           {
@@ -324,7 +324,7 @@ describe('playRoutes', () => {
       );
     });
 
-    it('passes actDisplayInfo when story has structure versions', async () => {
+    it('passes playStructureInfo when story has structure versions', async () => {
       const structure: StoryStructure = {
         acts: [
           {
@@ -408,26 +408,43 @@ describe('playRoutes', () => {
       expect(render).toHaveBeenCalledWith(
         'pages/play',
         expect.objectContaining({
-          actDisplayInfo: {
-            actNumber: 1,
-            actName: 'The Beginning',
-            milestoneId: '1.1',
-            milestoneName: 'The Setup',
-            displayString: 'Act 1: The Beginning - Milestone 1.1: The Setup',
-            actObjective: 'Start the journey',
-            actStakes: 'High',
-            milestoneObjective: 'Start moving.',
-            actQuestion: 'Will the hero leave home behind?',
-            exitCondition: 'The hero commits to the road.',
-            exitReversal: 'The safe road collapses.',
-            promiseTargets: ['The hero can still save the kingdom'],
-            obligationTargets: ['call_to_adventure'],
+          playStructureInfo: {
+            pageStructure: {
+              actNumber: 1,
+              actName: 'The Beginning',
+              milestoneId: '1.1',
+              milestoneName: 'The Setup',
+              displayString: 'Act 1: The Beginning - Milestone 1.1: The Setup',
+              actObjective: 'Start the journey',
+              actStakes: 'High',
+              milestoneObjective: 'Start moving.',
+              actQuestion: 'Will the hero leave home behind?',
+              milestoneExitCriteria: 'The hero commits to the road.',
+              actEndReversal: 'The safe road collapses.',
+              promiseTargets: ['The hero can still save the kingdom'],
+              obligationTargets: ['call_to_adventure'],
+            },
+            nextStructureTarget: {
+              actNumber: 1,
+              actName: 'The Beginning',
+              milestoneId: '1.1',
+              milestoneName: 'The Setup',
+              displayString: 'Act 1: The Beginning - Milestone 1.1: The Setup',
+              actObjective: 'Start the journey',
+              actStakes: 'High',
+              milestoneObjective: 'Start moving.',
+              actQuestion: 'Will the hero leave home behind?',
+              milestoneExitCriteria: 'The hero commits to the road.',
+              actEndReversal: 'The safe road collapses.',
+              promiseTargets: ['The hero can still save the kingdom'],
+              obligationTargets: ['call_to_adventure'],
+            },
           },
         })
       );
     });
 
-    it('keeps actDisplayInfo page-scoped when milestone progress has already advanced', async () => {
+    it('keeps page structure page-scoped when milestone progress has already advanced', async () => {
       const structure: StoryStructure = {
         acts: [
           {
@@ -562,11 +579,24 @@ describe('playRoutes', () => {
       expect(status).not.toHaveBeenCalled();
       const renderPayload = (render.mock.calls[0] as [string, Record<string, unknown>] | undefined)?.[1];
       expect(renderPayload).toBeDefined();
-      expect(renderPayload?.['actDisplayInfo']).toEqual(
+      const playStructureInfo = renderPayload?.['playStructureInfo'] as
+        | {
+            pageStructure?: Record<string, unknown>;
+            nextStructureTarget?: Record<string, unknown>;
+          }
+        | undefined;
+      expect(playStructureInfo?.pageStructure).toEqual(
         expect.objectContaining({
           milestoneId: '1.1',
           milestoneName: 'The Heist',
           displayString: 'Act 1: The Beginning - Milestone 1.1: The Heist',
+        })
+      );
+      expect(playStructureInfo?.nextStructureTarget).toEqual(
+        expect.objectContaining({
+          milestoneId: '1.2',
+          milestoneName: 'The Lockdown',
+          displayString: 'Act 1: The Beginning - Milestone 1.2: The Lockdown',
         })
       );
       expect(renderPayload?.['milestoneInfo']).toEqual({
@@ -575,7 +605,7 @@ describe('playRoutes', () => {
       });
     });
 
-    it('passes null actDisplayInfo when page has no structure', async () => {
+    it('passes null playStructureInfo when page has no structure', async () => {
       const story = createStory({
         title: 'Simple Story',
         characterConcept: 'A hero',
@@ -606,7 +636,7 @@ describe('playRoutes', () => {
       expect(render).toHaveBeenCalledWith(
         'pages/play',
         expect.objectContaining({
-          actDisplayInfo: null,
+          playStructureInfo: null,
         })
       );
     });
@@ -1584,7 +1614,7 @@ describe('playRoutes', () => {
       expect(payload?.page?.analystResult).toEqual(analystResult);
     });
 
-    it('includes actDisplayInfo in response when page has structure state', async () => {
+    it('includes playStructureInfo in response when page has structure state', async () => {
       const structure: StoryStructure = {
         acts: [
           {
@@ -1697,26 +1727,43 @@ describe('playRoutes', () => {
       expect(json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          actDisplayInfo: {
-            actNumber: 2,
-            actName: 'Act Two',
-            milestoneId: '2.1',
-            milestoneName: 'Rising Pressure',
-            displayString: 'Act 2: Act Two - Milestone 2.1: Rising Pressure',
-            actObjective: 'Face challenges',
-            actStakes: 'Higher',
-            milestoneObjective: 'Force commitment.',
-            actQuestion: 'Can the hero hold the alliance together?',
-            exitCondition: 'The alliance chooses a side in public.',
-            exitReversal: 'The alliance fractures under pressure.',
-            promiseTargets: ['The hero can still save the kingdom'],
-            obligationTargets: ['midpoint_reversal'],
+          playStructureInfo: {
+            pageStructure: {
+              actNumber: 2,
+              actName: 'Act Two',
+              milestoneId: '2.1',
+              milestoneName: 'Rising Pressure',
+              displayString: 'Act 2: Act Two - Milestone 2.1: Rising Pressure',
+              actObjective: 'Face challenges',
+              actStakes: 'Higher',
+              milestoneObjective: 'Force commitment.',
+              actQuestion: 'Can the hero hold the alliance together?',
+              milestoneExitCriteria: 'The alliance chooses a side in public.',
+              actEndReversal: 'The alliance fractures under pressure.',
+              promiseTargets: ['The hero can still save the kingdom'],
+              obligationTargets: ['midpoint_reversal'],
+            },
+            nextStructureTarget: {
+              actNumber: 2,
+              actName: 'Act Two',
+              milestoneId: '2.1',
+              milestoneName: 'Rising Pressure',
+              displayString: 'Act 2: Act Two - Milestone 2.1: Rising Pressure',
+              actObjective: 'Face challenges',
+              actStakes: 'Higher',
+              milestoneObjective: 'Force commitment.',
+              actQuestion: 'Can the hero hold the alliance together?',
+              milestoneExitCriteria: 'The alliance chooses a side in public.',
+              actEndReversal: 'The alliance fractures under pressure.',
+              promiseTargets: ['The hero can still save the kingdom'],
+              obligationTargets: ['midpoint_reversal'],
+            },
           },
         })
       );
     });
 
-    it('preserves page-scoped actDisplayInfo when choice result has already advanced to the next milestone', async () => {
+    it('preserves page history separately from the next target when choice result has already advanced', async () => {
       const structure: StoryStructure = {
         acts: [
           {
@@ -1859,11 +1906,24 @@ describe('playRoutes', () => {
       const jsonPayload = (json.mock.calls[0] as [Record<string, unknown>] | undefined)?.[0];
       expect(jsonPayload).toBeDefined();
       expect(jsonPayload?.['success']).toBe(true);
-      expect(jsonPayload?.['actDisplayInfo']).toEqual(
+      const playStructureInfo = jsonPayload?.['playStructureInfo'] as
+        | {
+            pageStructure?: Record<string, unknown>;
+            nextStructureTarget?: Record<string, unknown>;
+          }
+        | undefined;
+      expect(playStructureInfo?.pageStructure).toEqual(
         expect.objectContaining({
           milestoneId: '1.1',
           milestoneName: 'Archive Theft',
           displayString: 'Act 1: Act One - Milestone 1.1: Archive Theft',
+        })
+      );
+      expect(playStructureInfo?.nextStructureTarget).toEqual(
+        expect.objectContaining({
+          milestoneId: '1.2',
+          milestoneName: 'Sweep Response',
+          displayString: 'Act 1: Act One - Milestone 1.2: Sweep Response',
         })
       );
       expect(jsonPayload?.['milestoneInfo']).toEqual({
@@ -1872,7 +1932,7 @@ describe('playRoutes', () => {
       });
     });
 
-    it('includes null actDisplayInfo when page has no structure state', async () => {
+    it('includes null playStructureInfo when page has no structure state', async () => {
       const story = createStory({
         title: 'Simple Story',
         characterConcept: 'A hero',
@@ -1910,7 +1970,7 @@ describe('playRoutes', () => {
       expect(json).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          actDisplayInfo: null,
+          playStructureInfo: null,
         })
       );
     });

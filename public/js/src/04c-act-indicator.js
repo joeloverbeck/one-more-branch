@@ -2,7 +2,7 @@
 
   function toggleActStructureDetails() {
     var indicator = document.getElementById('act-indicator');
-    var details = document.getElementById('act-structure-details');
+    var details = document.getElementById('play-structure-details');
     if (!indicator || !details) return;
 
     var isExpanded = indicator.getAttribute('aria-expanded') === 'true';
@@ -26,7 +26,7 @@
 
   function expandActStructureDetails() {
     var indicator = document.getElementById('act-indicator');
-    var details = document.getElementById('act-structure-details');
+    var details = document.getElementById('play-structure-details');
     if (!indicator || !details) return;
     indicator.setAttribute('aria-expanded', 'true');
     indicator.classList.add('act-indicator--expanded');
@@ -35,7 +35,7 @@
 
   function collapseActStructureDetails() {
     var indicator = document.getElementById('act-indicator');
-    var details = document.getElementById('act-structure-details');
+    var details = document.getElementById('play-structure-details');
     if (!indicator || !details) return;
     indicator.setAttribute('aria-expanded', 'false');
     indicator.classList.remove('act-indicator--expanded');

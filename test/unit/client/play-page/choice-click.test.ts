@@ -81,11 +81,27 @@ describe('play page choice click handler', () => {
         resolvedPromiseMeta: {},
       },
       wasGenerated: true,
-      actDisplayInfo: {
-        displayString: 'Act I - The Beginning',
-        actObjective: 'Leave the village.',
-        actQuestion: 'Will the hero leave home behind?',
-        exitCondition: 'The hero commits to the road.',
+      playStructureInfo: {
+        pageStructure: {
+          displayString: 'Act 1: The Beginning - Milestone 1.1: The Beginning',
+          actNumber: 1,
+          actName: 'The Beginning',
+          milestoneId: '1.1',
+          milestoneName: 'The Beginning',
+          actObjective: 'Leave the village.',
+          actQuestion: 'Will the hero leave home behind?',
+          milestoneExitCriteria: 'The hero commits to the road.',
+        },
+        nextStructureTarget: {
+          displayString: 'Act 1: The Beginning - Milestone 1.1: The Beginning',
+          actNumber: 1,
+          actName: 'The Beginning',
+          milestoneId: '1.1',
+          milestoneName: 'The Beginning',
+          actObjective: 'Leave the village.',
+          actQuestion: 'Will the hero leave home behind?',
+          milestoneExitCriteria: 'The hero commits to the road.',
+        },
       },
       deviationInfo: null,
       ...overrides,
@@ -257,7 +273,7 @@ describe('play page choice click handler', () => {
     expect(pushStateSpy).toHaveBeenCalledWith({}, '', '/play/story-xyz?page=2');
   });
 
-  it('updates act indicator on successful choice with actDisplayInfo', async () => {
+  it('updates act indicator on successful choice with playStructureInfo', async () => {
     setupAndInit({
       choices: [
         {
@@ -280,7 +296,16 @@ describe('play page choice click handler', () => {
       .mockResolvedValueOnce(
         mockJsonResponse(
           makeSuccessfulChoiceResponse({
-            actDisplayInfo: { displayString: 'Act II - Rising Action', actNumber: 2 },
+            playStructureInfo: {
+              pageStructure: {
+                displayString: 'Act 2: Rising Action - Milestone 2.1: Public Fracture',
+                actNumber: 2,
+              },
+              nextStructureTarget: {
+                displayString: 'Act 2: Rising Action - Milestone 2.1: Public Fracture',
+                actNumber: 2,
+              },
+            },
           })
         )
       );
@@ -289,7 +314,7 @@ describe('play page choice click handler', () => {
     await jest.runAllTimersAsync();
 
     const actIndicator = document.querySelector('.act-indicator');
-    expect(actIndicator?.textContent).toContain('Act II - Rising Action');
+    expect(actIndicator?.textContent).toContain('Act 2: Rising Action');
   });
 
   it('refreshes the expanded act structure details with new fields', async () => {
@@ -319,13 +344,27 @@ describe('play page choice click handler', () => {
       .mockResolvedValueOnce(
         mockJsonResponse(
           makeSuccessfulChoiceResponse({
-            actDisplayInfo: {
-              displayString: 'Act II - Rising Action',
-              actNumber: 2,
-              actObjective: 'Hold the alliance together.',
-              actQuestion: 'Can the alliance survive betrayal?',
-              exitCondition: 'The alliance chooses a public side.',
-              exitReversal: 'The council fractures in front of the court.',
+            playStructureInfo: {
+              pageStructure: {
+                displayString: 'Act 1: The Beginning - Milestone 1.1: Opening Gambit',
+                actNumber: 1,
+                actName: 'The Beginning',
+                milestoneId: '1.1',
+                milestoneName: 'Opening Gambit',
+                actObjective: 'Leave the village.',
+              },
+              nextStructureTarget: {
+                displayString: 'Act 2: Rising Action - Milestone 2.1: Public Fracture',
+                actNumber: 2,
+                actName: 'Rising Action',
+                milestoneId: '2.1',
+                milestoneName: 'Public Fracture',
+                actObjective: 'Hold the alliance together.',
+                actQuestion: 'Can the alliance survive betrayal?',
+                milestoneObjective: 'Force the council to choose a side.',
+                milestoneExitCriteria: 'The alliance chooses a public side.',
+                actEndReversal: 'The council fractures in front of the court.',
+              },
             },
           })
         )
@@ -334,12 +373,15 @@ describe('play page choice click handler', () => {
     clickChoice(0);
     await jest.runAllTimersAsync();
 
-    const details = document.getElementById('act-structure-details');
+    const details = document.getElementById('play-structure-details');
+    expect(details?.textContent).toContain('This Page');
+    expect(details?.textContent).toContain('Next Objective');
+    expect(details?.textContent).toContain('Act Arc');
     expect(details?.textContent).toContain('Act Question');
     expect(details?.textContent).toContain('Can the alliance survive betrayal?');
-    expect(details?.textContent).toContain('Milestone Exit Condition');
+    expect(details?.textContent).toContain('Milestone Exit Criteria');
     expect(details?.textContent).toContain('The alliance chooses a public side.');
-    expect(details?.textContent).toContain('Exit Reversal');
+    expect(details?.textContent).toContain('Act-End Reversal');
     expect(details?.textContent).toContain('The council fractures in front of the court.');
   });
 

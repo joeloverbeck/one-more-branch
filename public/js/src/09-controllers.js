@@ -1,86 +1,90 @@
 // ── Controllers ───────────────────────────────────────────────────
 
-function buildInsightsContext(actDisplayInfo, sceneSummary, resolvedThreadMeta, resolvedPromiseMeta) {
+function buildInsightsContext(playStructureInfo, sceneSummary, resolvedThreadMeta, resolvedPromiseMeta) {
   return {
-    actDisplayInfo: actDisplayInfo || null,
+    playStructureInfo: playStructureInfo || null,
     sceneSummary: sceneSummary || null,
     resolvedThreadMeta: resolvedThreadMeta || {},
     resolvedPromiseMeta: resolvedPromiseMeta || {},
   };
 }
 
-function buildActStructureDetailsHtml(actDisplayInfo) {
-  if (!actDisplayInfo) {
+function buildPlayStructureFieldHtml(label, text) {
+  if (!text) {
     return '';
   }
 
-  var items = '';
+  return (
+    '<div class="play-structure-details__item">' +
+    '<span class="play-structure-details__label">' +
+    escapeHtml(label) +
+    '</span>' +
+    '<span class="play-structure-details__text">' +
+    escapeHtml(text) +
+    '</span>' +
+    '</div>'
+  );
+}
 
-  if (actDisplayInfo.actObjective) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Act Objective</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.actObjective) +
-      '</span>' +
-      '</div>';
-  }
+function buildPlayStructureCardHtml(eyebrow, title, fields, extraClass) {
+  return (
+    '<section class="play-structure-card ' +
+    extraClass +
+    '">' +
+    '<div class="play-structure-card__eyebrow">' +
+    escapeHtml(eyebrow) +
+    '</div>' +
+    '<div class="play-structure-card__title">' +
+    escapeHtml(title) +
+    '</div>' +
+    fields +
+    '</section>'
+  );
+}
 
-  if (actDisplayInfo.actStakes) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Stakes</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.actStakes) +
-      '</span>' +
-      '</div>';
-  }
-
-  if (actDisplayInfo.milestoneObjective) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Milestone Objective</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.milestoneObjective) +
-      '</span>' +
-      '</div>';
-  }
-
-  if (actDisplayInfo.actQuestion) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Act Question</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.actQuestion) +
-      '</span>' +
-      '</div>';
-  }
-
-  if (actDisplayInfo.exitCondition) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Milestone Exit Condition</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.exitCondition) +
-      '</span>' +
-      '</div>';
-  }
-
-  if (actDisplayInfo.exitReversal) {
-    items +=
-      '<div class="act-structure-details__item">' +
-      '<span class="act-structure-details__label">Exit Reversal</span>' +
-      '<span class="act-structure-details__text">' +
-      escapeHtml(actDisplayInfo.exitReversal) +
-      '</span>' +
-      '</div>';
-  }
-
-  if (!items) {
+function buildPlayStructureDetailsHtml(playStructureInfo) {
+  if (!playStructureInfo || !playStructureInfo.pageStructure || !playStructureInfo.nextStructureTarget) {
     return '';
   }
 
-  return '<div class="act-structure-details" id="act-structure-details" hidden>' + items + '</div>';
+  var pageStructure = playStructureInfo.pageStructure;
+  var nextStructureTarget = playStructureInfo.nextStructureTarget;
+  var actArc = nextStructureTarget || pageStructure;
+
+  var nextFields =
+    buildPlayStructureFieldHtml('Milestone Objective', nextStructureTarget.milestoneObjective) +
+    buildPlayStructureFieldHtml(
+      'Milestone Exit Criteria',
+      nextStructureTarget.milestoneExitCriteria
+    );
+
+  var actFields =
+    buildPlayStructureFieldHtml('Act Objective', actArc.actObjective) +
+    buildPlayStructureFieldHtml('Stakes', actArc.actStakes) +
+    buildPlayStructureFieldHtml('Act Question', actArc.actQuestion) +
+    buildPlayStructureFieldHtml('Act-End Reversal', actArc.actEndReversal);
+
+  var cards =
+    buildPlayStructureCardHtml(
+      'This Page',
+      pageStructure.displayString,
+      '',
+      'play-structure-card--page'
+    ) +
+    buildPlayStructureCardHtml(
+      'Next Objective',
+      nextStructureTarget.displayString,
+      nextFields,
+      'play-structure-card--target'
+    ) +
+    buildPlayStructureCardHtml(
+      'Act Arc',
+      'Act ' + actArc.actNumber + ': ' + actArc.actName,
+      actFields,
+      'play-structure-card--act'
+    );
+
+  return '<div class="play-structure-details" id="play-structure-details" hidden>' + cards + '</div>';
 }
 
 function initPlayPage() {
@@ -351,7 +355,7 @@ function initPlayPage() {
     insightsController.update(
       data.page.analystResult,
       buildInsightsContext(
-        data.actDisplayInfo,
+        data.playStructureInfo,
         data.page.sceneSummary,
         data.page.resolvedThreadMeta,
         data.page.resolvedPromiseMeta
@@ -414,17 +418,18 @@ function initPlayPage() {
 
     // Update act indicator based on response
     var existingWrapper = document.getElementById('act-indicator-wrapper');
-    if (data.actDisplayInfo) {
-      var newActNumber = data.actDisplayInfo.actNumber;
+    var pageStructure = data.playStructureInfo ? data.playStructureInfo.pageStructure : null;
+    if (pageStructure) {
+      var newActNumber = pageStructure.actNumber;
       var actChanged = previousActNumber !== null && newActNumber !== previousActNumber;
-      var detailsHtml = buildActStructureDetailsHtml(data.actDisplayInfo);
+      var detailsHtml = buildPlayStructureDetailsHtml(data.playStructureInfo);
 
       var wrapperHtml =
         '<span class="act-indicator act-indicator--clickable" id="act-indicator"' +
         ' role="button" tabindex="0" aria-expanded="false"' +
-        ' aria-controls="act-structure-details">' +
+        ' aria-controls="play-structure-details">' +
         '<span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>' +
-        escapeHtml(data.actDisplayInfo.displayString) +
+        escapeHtml(pageStructure.displayString) +
         '</span>';
 
       if (existingWrapper) {
@@ -443,7 +448,7 @@ function initPlayPage() {
       }
 
       // Place details panel after .story-header (outside the flex row)
-      var existingDetails = document.getElementById('act-structure-details');
+      var existingDetails = document.getElementById('play-structure-details');
       if (existingDetails) {
         existingDetails.remove();
       }
@@ -461,7 +466,7 @@ function initPlayPage() {
       previousActNumber = newActNumber;
     } else if (existingWrapper) {
       existingWrapper.remove();
-      var orphanedDetails = document.getElementById('act-structure-details');
+      var orphanedDetails = document.getElementById('play-structure-details');
       if (orphanedDetails) {
         orphanedDetails.remove();
       }

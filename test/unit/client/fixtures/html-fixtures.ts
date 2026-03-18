@@ -38,12 +38,43 @@ export interface PlayPageOptions {
   actDisplayInfo?: {
     displayString: string;
     actNumber?: number;
+    actName?: string | null;
+    milestoneId?: string | null;
+    milestoneName?: string | null;
     actObjective?: string | null;
     actStakes?: string | null;
     milestoneObjective?: string | null;
     actQuestion?: string | null;
     exitCondition?: string | null;
     exitReversal?: string | null;
+  } | null;
+  playStructureInfo?: {
+    pageStructure: {
+      displayString: string;
+      actNumber?: number;
+      actName?: string | null;
+      milestoneId?: string | null;
+      milestoneName?: string | null;
+      actObjective?: string | null;
+      actStakes?: string | null;
+      milestoneObjective?: string | null;
+      actQuestion?: string | null;
+      milestoneExitCriteria?: string | null;
+      actEndReversal?: string | null;
+    };
+    nextStructureTarget: {
+      displayString: string;
+      actNumber?: number;
+      actName?: string | null;
+      milestoneId?: string | null;
+      milestoneName?: string | null;
+      actObjective?: string | null;
+      actStakes?: string | null;
+      milestoneObjective?: string | null;
+      actQuestion?: string | null;
+      milestoneExitCriteria?: string | null;
+      actEndReversal?: string | null;
+    };
   } | null;
   stateChanges?: string[];
   hasCustomChoiceInput?: boolean;
@@ -77,6 +108,38 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   const activeConstraints = options.activeConstraints ?? [];
   const trackedPromises = options.trackedPromises ?? [];
   const actDisplayInfo = options.actDisplayInfo ?? null;
+  const playStructureInfo =
+    options.playStructureInfo ??
+    (actDisplayInfo
+      ? {
+          pageStructure: {
+            displayString: actDisplayInfo.displayString,
+            actNumber: actDisplayInfo.actNumber ?? 0,
+            actName: actDisplayInfo.actName ?? null,
+            milestoneId: actDisplayInfo.milestoneId ?? null,
+            milestoneName: actDisplayInfo.milestoneName ?? null,
+            actObjective: actDisplayInfo.actObjective ?? null,
+            actStakes: actDisplayInfo.actStakes ?? null,
+            milestoneObjective: actDisplayInfo.milestoneObjective ?? null,
+            actQuestion: actDisplayInfo.actQuestion ?? null,
+            milestoneExitCriteria: actDisplayInfo.exitCondition ?? null,
+            actEndReversal: actDisplayInfo.exitReversal ?? null,
+          },
+          nextStructureTarget: {
+            displayString: actDisplayInfo.displayString,
+            actNumber: actDisplayInfo.actNumber ?? 0,
+            actName: actDisplayInfo.actName ?? null,
+            milestoneId: actDisplayInfo.milestoneId ?? null,
+            milestoneName: actDisplayInfo.milestoneName ?? null,
+            actObjective: actDisplayInfo.actObjective ?? null,
+            actStakes: actDisplayInfo.actStakes ?? null,
+            milestoneObjective: actDisplayInfo.milestoneObjective ?? null,
+            actQuestion: actDisplayInfo.actQuestion ?? null,
+            milestoneExitCriteria: actDisplayInfo.exitCondition ?? null,
+            actEndReversal: actDisplayInfo.exitReversal ?? null,
+          },
+        }
+      : null);
   const stateChanges = options.stateChanges ?? [];
   const hasCustomChoiceInput = options.hasCustomChoiceInput ?? true;
   const analystResult = options.analystResult ?? null;
@@ -171,30 +234,25 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
         </aside>`
       : '';
 
-  const actStructureItems = actDisplayInfo
-    ? [
-        actDisplayInfo.actObjective
-          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Act Objective</span><span class="act-structure-details__text">${actDisplayInfo.actObjective}</span></div>`
-          : '',
-        actDisplayInfo.actStakes
-          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Stakes</span><span class="act-structure-details__text">${actDisplayInfo.actStakes}</span></div>`
-          : '',
-        actDisplayInfo.milestoneObjective
-          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Milestone Objective</span><span class="act-structure-details__text">${actDisplayInfo.milestoneObjective}</span></div>`
-          : '',
-        actDisplayInfo.actQuestion
-          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Act Question</span><span class="act-structure-details__text">${actDisplayInfo.actQuestion}</span></div>`
-          : '',
-        actDisplayInfo.exitCondition
-          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Milestone Exit Condition</span><span class="act-structure-details__text">${actDisplayInfo.exitCondition}</span></div>`
-          : '',
-        actDisplayInfo.exitReversal
-          ? `<div class="act-structure-details__item"><span class="act-structure-details__label">Exit Reversal</span><span class="act-structure-details__text">${actDisplayInfo.exitReversal}</span></div>`
-          : '',
-      ]
-        .filter(Boolean)
-        .join('')
-    : '';
+  const pageStructure = playStructureInfo?.pageStructure ?? null;
+  const nextStructureTarget = playStructureInfo?.nextStructureTarget ?? null;
+  const actArc = nextStructureTarget ?? pageStructure;
+  const pageStructureHtml =
+    pageStructure
+      ? `<section class="play-structure-card play-structure-card--page"><div class="play-structure-card__eyebrow">This Page</div><div class="play-structure-card__title">${pageStructure.displayString}</div></section>`
+      : '';
+  const nextStructureTargetHtml =
+    nextStructureTarget
+      ? `<section class="play-structure-card play-structure-card--target"><div class="play-structure-card__eyebrow">Next Objective</div><div class="play-structure-card__title">${nextStructureTarget.displayString}</div>${nextStructureTarget.milestoneObjective ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Milestone Objective</span><span class="play-structure-details__text">${nextStructureTarget.milestoneObjective}</span></div>` : ''}${nextStructureTarget.milestoneExitCriteria ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Milestone Exit Criteria</span><span class="play-structure-details__text">${nextStructureTarget.milestoneExitCriteria}</span></div>` : ''}</section>`
+      : '';
+  const actArcHtml =
+    actArc
+      ? `<section class="play-structure-card play-structure-card--act"><div class="play-structure-card__eyebrow">Act Arc</div><div class="play-structure-card__title">Act ${actArc.actNumber ?? 0}: ${actArc.actName ?? ''}</div>${actArc.actObjective ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Act Objective</span><span class="play-structure-details__text">${actArc.actObjective}</span></div>` : ''}${actArc.actStakes ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Stakes</span><span class="play-structure-details__text">${actArc.actStakes}</span></div>` : ''}${actArc.actQuestion ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Act Question</span><span class="play-structure-details__text">${actArc.actQuestion}</span></div>` : ''}${actArc.actEndReversal ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Act-End Reversal</span><span class="play-structure-details__text">${actArc.actEndReversal}</span></div>` : ''}</section>`
+      : '';
+  const playStructureDetailsHtml =
+    pageStructureHtml && nextStructureTargetHtml && actArcHtml
+      ? `<div class="play-structure-details" id="play-structure-details" hidden>${pageStructureHtml}${nextStructureTargetHtml}${actArcHtml}</div>`
+      : '';
 
   const sidebarHtml = `<div class="sidebar-widgets" id="sidebar-widgets">${threadsHtml}${threatsHtml}${constraintsHtml}${trackedPromisesHtml}</div>`;
 
@@ -330,13 +388,13 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
             <div class="story-header" id="story-header">
               <div class="story-title-section">
                 <h2>Test Story</h2>
-                ${actDisplayInfo ? `<div class="act-indicator-wrapper" id="act-indicator-wrapper" data-act-number="${actDisplayInfo.actNumber ?? 0}"><span class="act-indicator act-indicator--clickable" id="act-indicator" role="button" tabindex="0" aria-expanded="false" aria-controls="act-structure-details"><span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>${actDisplayInfo.displayString}</span></div>` : ''}
+                ${pageStructure ? `<div class="act-indicator-wrapper" id="act-indicator-wrapper" data-act-number="${pageStructure.actNumber ?? 0}"><span class="act-indicator act-indicator--clickable" id="act-indicator" role="button" tabindex="0" aria-expanded="false" aria-controls="play-structure-details"><span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>${pageStructure.displayString}</span></div>` : ''}
               </div>
               <div class="story-header-actions" id="story-header-actions">
                 <span class="page-indicator">Page ${pageId}</span>
               </div>
             </div>
-            ${actStructureItems ? `<div class="act-structure-details" id="act-structure-details" hidden>${actStructureItems}</div>` : ''}
+            ${playStructureDetailsHtml}
             <div class="story-actions-strip" id="story-actions-strip">
               <button type="button" class="recap-btn" id="recap-btn" aria-haspopup="dialog" aria-controls="recap-modal">
                 <span class="recap-btn__icon" aria-hidden="true">&#x1f4dc;</span>
@@ -404,7 +462,7 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
         </div>
       </div>
       <script type="application/json" id="analyst-data">${JSON.stringify(analystResult)}</script>
-      <script type="application/json" id="insights-context">${JSON.stringify({ actDisplayInfo, sceneSummary, resolvedThreadMeta: options.resolvedThreadMeta ?? {}, resolvedPromiseMeta: options.resolvedPromiseMeta ?? {} })}</script>
+      <script type="application/json" id="insights-context">${JSON.stringify({ playStructureInfo, sceneSummary, resolvedThreadMeta: options.resolvedThreadMeta ?? {}, resolvedPromiseMeta: options.resolvedPromiseMeta ?? {} })}</script>
       <script type="application/json" id="recap-data">${JSON.stringify(recapSummaries)}</script>
       <script type="application/json" id="lore-data">${JSON.stringify({ worldFacts, characterCanon })}</script>
     </main>

@@ -40,6 +40,7 @@ export {
   getNpcRelationshipPanelData,
   getOpenThreadPanelData,
   getOpenThreadPanelRows,
+  getPlayStructureInfo,
   getThreatPanelData,
   getTrackedPromisesPanelData,
 } from './view-helpers.js';
@@ -62,6 +63,8 @@ export type {
   NpcRelationshipPanelRow,
   OpenThreadPanelData,
   OpenThreadPanelRow,
+  PlayStructureFrame,
+  PlayStructureInfo,
   ThreatPanelData,
   ThreatPanelRow,
   TrackedPromisePanelData,
