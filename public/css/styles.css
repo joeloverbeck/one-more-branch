@@ -3770,6 +3770,13 @@ main {
   gap: 1rem;
 }
 
+@media (min-width: 960px) {
+  .scene-direction-options {
+    align-items: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .scene-direction-card {
   border: 1px solid var(--border-color);
   border-radius: var(--radius);

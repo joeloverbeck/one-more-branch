@@ -92,6 +92,52 @@ describe('play page choice click handler', () => {
     };
   }
 
+  const fiveOptionIdeationResponse = {
+    success: true,
+    options: [
+      {
+        diversityLane: 'ESCALATION',
+        scenePurpose: 'RISING_COMPLICATION',
+        valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
+        pacingMode: 'ACCELERATING',
+        sceneDirection: 'The hero faces a dark cave',
+        dramaticJustification: 'Builds tension',
+      },
+      {
+        diversityLane: 'REVELATION',
+        scenePurpose: 'REVELATION',
+        valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
+        pacingMode: 'DECELERATING',
+        sceneDirection: 'A hidden ally appears',
+        dramaticJustification: 'Provides relief',
+      },
+      {
+        diversityLane: 'RELATIONAL_REALIGNMENT',
+        scenePurpose: 'NEGOTIATION',
+        valuePolarityShift: 'IRONIC_SHIFT',
+        pacingMode: 'OSCILLATING',
+        sceneDirection: 'A rival offers alliance if the hero betrays the village elder',
+        dramaticJustification: 'Reframes the social power dynamic',
+      },
+      {
+        diversityLane: 'TEMPTATION_OR_OPPORTUNITY',
+        scenePurpose: 'PREPARATION',
+        valuePolarityShift: 'NEGATIVE_TO_DOUBLE_POSITIVE',
+        pacingMode: 'BUILDING_SLOW',
+        sceneDirection: 'A contraband map opens a faster path to the ruins',
+        dramaticJustification: 'Offers a lucrative shortcut with implied cost',
+      },
+      {
+        diversityLane: 'CONSEQUENCE_OR_PAYOFF',
+        scenePurpose: 'CONFRONTATION',
+        valuePolarityShift: 'POSITIVE_TO_DOUBLE_NEGATIVE',
+        pacingMode: 'SUSTAINED_HIGH',
+        sceneDirection: 'The patrol captain recognizes the hero from a past betrayal',
+        dramaticJustification: 'Cashes out prior danger into immediate fallout',
+      },
+    ],
+  };
+
   it('sends fetch with correct body on choice click', async () => {
     setupAndInit({
       storyId: 'story-abc',
@@ -643,39 +689,11 @@ describe('play page choice click handler', () => {
       ],
     });
 
-    // The ideation fetch returns options with correct shape
-    const ideationResponse = {
-      success: true,
-      options: [
-        {
-          scenePurpose: 'RISING_COMPLICATION',
-          valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
-          pacingMode: 'ACCELERATING',
-          sceneDirection: 'The hero faces a dark cave',
-          dramaticJustification: 'Builds tension',
-        },
-        {
-          scenePurpose: 'REVELATION',
-          valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
-          pacingMode: 'DECELERATING',
-          sceneDirection: 'A hidden ally appears',
-          dramaticJustification: 'Provides relief',
-        },
-        {
-          scenePurpose: 'CONFRONTATION',
-          valuePolarityShift: 'IRONIC_SHIFT',
-          pacingMode: 'SUSTAINED_HIGH',
-          sceneDirection: 'A confrontation with the rival',
-          dramaticJustification: 'Heightens conflict',
-        },
-      ],
-    };
-
     let choicePostCalled = false;
 
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
       if (typeof url === 'string' && url.includes('ideate-scene')) {
-        return Promise.resolve(mockJsonResponse(ideationResponse));
+        return Promise.resolve(mockJsonResponse(fiveOptionIdeationResponse));
       }
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
@@ -692,7 +710,10 @@ describe('play page choice click handler', () => {
     await jest.runAllTimersAsync();
 
     // Ideation UI should be rendered - select a card first
-    const card = document.querySelector('.scene-direction-card') as HTMLElement;
+    const cards = document.querySelectorAll('.scene-direction-card');
+    expect(cards).toHaveLength(5);
+
+    const card = cards[0] as HTMLElement;
     expect(card).not.toBeNull();
     card.click();
     await jest.runAllTimersAsync();
@@ -706,6 +727,23 @@ describe('play page choice click handler', () => {
 
     // The choice POST should have been made (proceedWithChoice ran to completion)
     expect(choicePostCalled).toBe(true);
+    const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
+      (call) => call[1]?.method === 'POST' && typeof call[0] === 'string' && call[0].includes('/choice')
+    );
+    const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
+    expect(body.selectedSceneDirection).toEqual({
+      scenePurpose: 'RISING_COMPLICATION',
+      valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
+      pacingMode: 'ACCELERATING',
+      sceneDirection: 'The hero faces a dark cave',
+      dramaticJustification: 'Builds tension',
+    });
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        body.selectedSceneDirection as Record<string, unknown>,
+        'diversityLane'
+      )
+    ).toBe(false);
   });
 
   it('removes scene-ideation-wrapper after full ideation-to-choice flow', async () => {
@@ -720,36 +758,9 @@ describe('play page choice click handler', () => {
       ],
     });
 
-    const ideationResponse = {
-      success: true,
-      options: [
-        {
-          scenePurpose: 'RISING_COMPLICATION',
-          valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
-          pacingMode: 'ACCELERATING',
-          sceneDirection: 'The hero faces a dark cave',
-          dramaticJustification: 'Builds tension',
-        },
-        {
-          scenePurpose: 'REVELATION',
-          valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
-          pacingMode: 'DECELERATING',
-          sceneDirection: 'A hidden ally appears',
-          dramaticJustification: 'Provides relief',
-        },
-        {
-          scenePurpose: 'CONFRONTATION',
-          valuePolarityShift: 'IRONIC_SHIFT',
-          pacingMode: 'SUSTAINED_HIGH',
-          sceneDirection: 'A confrontation with the rival',
-          dramaticJustification: 'Heightens conflict',
-        },
-      ],
-    };
-
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
       if (typeof url === 'string' && url.includes('ideate-scene')) {
-        return Promise.resolve(mockJsonResponse(ideationResponse));
+        return Promise.resolve(mockJsonResponse(fiveOptionIdeationResponse));
       }
       if (typeof url === 'string' && url.includes('generation-progress')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
@@ -766,6 +777,7 @@ describe('play page choice click handler', () => {
 
     // Ideation UI should be rendered with .scene-ideation-wrapper
     expect(document.querySelector('.scene-ideation-wrapper')).not.toBeNull();
+    expect(document.querySelectorAll('.scene-direction-card')).toHaveLength(5);
 
     // Select a card and confirm
     const card = document.querySelector('.scene-direction-card') as HTMLElement;

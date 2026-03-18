@@ -32,6 +32,7 @@ describe('briefing begin adventure', () => {
 
   const mockSceneOptions = [
     {
+      diversityLane: 'ESCALATION',
       scenePurpose: 'EXPOSITION',
       valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
       pacingMode: 'BUILDING_SLOW',
@@ -39,11 +40,36 @@ describe('briefing begin adventure', () => {
       dramaticJustification: 'Establishes the mysterious setting.',
     },
     {
+      diversityLane: 'REVELATION',
       scenePurpose: 'INCITING_INCIDENT',
       valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
       pacingMode: 'ACCELERATING',
       sceneDirection: 'A stranger arrives with urgent news.',
       dramaticJustification: 'Disrupts the status quo.',
+    },
+    {
+      diversityLane: 'RELATIONAL_REALIGNMENT',
+      scenePurpose: 'NEGOTIATION',
+      valuePolarityShift: 'IRONIC_SHIFT',
+      pacingMode: 'DECELERATING',
+      sceneDirection: 'An estranged sibling offers help in exchange for a humiliating favor.',
+      dramaticJustification: 'Shifts trust and leverage before the journey starts.',
+    },
+    {
+      diversityLane: 'TEMPTATION_OR_OPPORTUNITY',
+      scenePurpose: 'PREPARATION',
+      valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
+      pacingMode: 'BUILDING_SLOW',
+      sceneDirection: 'A smuggler reveals a hidden route that could bypass the royal patrols.',
+      dramaticJustification: 'Opens a tempting shortcut with implied cost.',
+    },
+    {
+      diversityLane: 'CONSEQUENCE_OR_PAYOFF',
+      scenePurpose: 'REVELATION',
+      valuePolarityShift: 'POSITIVE_TO_DOUBLE_NEGATIVE',
+      pacingMode: 'SUSTAINED_HIGH',
+      sceneDirection: 'The hero learns their family already promised them to the crown in secret.',
+      dramaticJustification: 'Cashes out prior obligations as immediate story pressure.',
     },
   ];
 
@@ -76,13 +102,19 @@ describe('briefing begin adventure', () => {
     expect(ideationCall).toBeDefined();
 
     // Step 2: Ideation UI should be rendered - select a direction card
-    const directionCard = document.querySelector('.scene-direction-card') as HTMLElement;
+    const cards = document.querySelectorAll('.scene-direction-card');
+    expect(cards).toHaveLength(5);
+
+    const confirmBtn = document.querySelector('.scene-ideation-confirm') as HTMLButtonElement;
+    expect(confirmBtn).not.toBeNull();
+    expect(confirmBtn.disabled).toBe(true);
+
+    const directionCard = cards[0] as HTMLElement;
     expect(directionCard).not.toBeNull();
     directionCard.click();
 
     // Step 3: Click "Confirm Direction" to proceed to beginAdventure
-    const confirmBtn = document.querySelector('.scene-ideation-confirm') as HTMLButtonElement;
-    expect(confirmBtn).not.toBeNull();
+    expect(confirmBtn.disabled).toBe(false);
     confirmBtn.click();
     await jest.runAllTimersAsync();
 
@@ -95,8 +127,18 @@ describe('briefing begin adventure', () => {
     expect(body.apiKey).toBe('sk-or-valid-test-key-12345');
     expect(body.progressId).toBe('briefing-progress-uuid');
     expect(body.selectedSceneDirection).toBeDefined();
-    expect((body.selectedSceneDirection as Record<string, unknown>).scenePurpose).toBe(
-      'EXPOSITION'
-    );
+    expect(body.selectedSceneDirection).toEqual({
+      scenePurpose: 'EXPOSITION',
+      valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
+      pacingMode: 'BUILDING_SLOW',
+      sceneDirection: 'The hero awakens in a dark forest.',
+      dramaticJustification: 'Establishes the mysterious setting.',
+    });
+    expect(
+      Object.prototype.hasOwnProperty.call(
+        body.selectedSceneDirection as Record<string, unknown>,
+        'diversityLane'
+      )
+    ).toBe(false);
   });
 });
