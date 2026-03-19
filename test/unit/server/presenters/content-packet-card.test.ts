@@ -1,4 +1,4 @@
-import type { ContentPacket, GeneratedContentPacket } from '@/models/content-packet';
+import type { ConceptSeedPacket, GeneratedContentPacket } from '@/models/content-packet';
 import type { SavedContentPacket } from '@/models/saved-content-packet';
 import {
   buildGeneratedContentPacketCardViewModel,
@@ -6,7 +6,7 @@ import {
   CONTENT_PACKET_CARD_FIELD_REGISTRY,
 } from '@/server/presenters/content-packet-card';
 
-function makeContentPacket(overrides: Partial<ContentPacket> = {}): ContentPacket {
+function makeConceptSeedPacket(overrides: Partial<ConceptSeedPacket> = {}): ConceptSeedPacket {
   return {
     contentId: 'pkt-01',
     contentKind: 'ENTITY',
@@ -30,7 +30,7 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
     updatedAt: '2026-03-19T10:00:00.000Z',
     pinned: true,
     assetVersion: 2,
-    packet: makeContentPacket(),
+    packet: makeConceptSeedPacket(),
     context: {
       premiseSummary: 'A charged premise summary',
       situationFrame: 'A volatile situation frame',
@@ -71,7 +71,7 @@ function makeGeneratedPacket(
   overrides: Partial<GeneratedContentPacket> = {}
 ): GeneratedContentPacket {
   return {
-    packet: makeContentPacket(),
+    packet: makeConceptSeedPacket(),
     context: {
       premiseSummary: 'A charged premise summary',
       situationFrame: 'A volatile situation frame',
@@ -96,7 +96,7 @@ function makeGeneratedPacket(
 
 describe('content packet card presenter', () => {
   it('keeps the registry exhaustive and in canonical order', () => {
-    const expectedFieldOrder = Object.keys(makeContentPacket());
+    const expectedFieldOrder = Object.keys(makeConceptSeedPacket());
 
     expect(CONTENT_PACKET_CARD_FIELD_REGISTRY.map((field) => field.key)).toEqual(expectedFieldOrder);
     expect(new Set(CONTENT_PACKET_CARD_FIELD_REGISTRY.map((field) => field.key)).size).toBe(

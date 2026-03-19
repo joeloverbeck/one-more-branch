@@ -2,7 +2,7 @@ import {
   cloneContentPacketContext,
   cloneContentPacketOrigin,
   isGeneratedContentPacket,
-  projectContentPacket,
+  projectConceptSeedPacket,
 } from '../../models/content-packet.js';
 import {
   isContentEvaluation,
@@ -33,7 +33,7 @@ export function createSavedContentPacketArtifact(
     updatedAt: input.now,
     pinned: false,
     assetVersion: 2,
-    packet: projectContentPacket(input.candidate),
+    packet: projectConceptSeedPacket(input.candidate),
     context: cloneContentPacketContext(input.candidate.context),
     origin: cloneContentPacketOrigin(input.candidate.origin),
     evaluation: input.evaluation,

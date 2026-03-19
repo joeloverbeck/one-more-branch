@@ -153,7 +153,7 @@ OUTPUT REQUIREMENTS:
 |---|---|
 | `evaluatedConcepts` | Array of evaluated concepts from the evaluator stage |
 | `kernel` | StoryKernel with `dramaticThesis`, `valueAtStake`, `opposingForce`, `directionOfChange`, `thematicQuestion` — always required |
-| `contentPackets` | Lean `ContentPacket[]` projection with `contentId`, `wildnessInvariant`, `dullCollapse` |
+| `conceptSeedPackets` | Lean `ConceptSeedPacket[]` projection with `contentId`, `wildnessInvariant`, `dullCollapse` |
 
 ## Downstream Integration
 
@@ -166,7 +166,7 @@ When a saved concept has a `verificationResult`, spine generation receives:
 
 ## Content Packet Integration (WILCONPIP)
 
-WILCONPIP-13 added an additive invariant-removal negative test to the load-bearing check. When `contentPackets` are provided:
+WILCONPIP-13 added an additive invariant-removal negative test to the load-bearing check. When `conceptSeedPackets` are provided:
 
 - The prompt injects content packet context with `contentId`, `wildnessInvariant`, and `dullCollapse`
 - The load-bearing check now runs TWO negative tests:

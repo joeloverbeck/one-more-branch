@@ -1,6 +1,6 @@
 import type {
+  ConceptSeedPacket,
   ContentEvaluation,
-  ContentPacket,
   ContentPacketContext,
   ContentPacketOrigin,
   ContentPacketSourceArtifact,
@@ -54,7 +54,7 @@ export const CONTENT_PACKET_CARD_FIELD_REGISTRY = [
   { key: 'dullCollapse', label: 'Dull Collapse' },
   { key: 'interactionVerbs', label: 'Interaction Verbs' },
 ] as const satisfies ReadonlyArray<{
-  readonly key: keyof ContentPacket;
+  readonly key: keyof ConceptSeedPacket;
   readonly label: string;
 }>;
 
@@ -66,8 +66,8 @@ export interface BuildGeneratedContentPacketCardViewModelOptions {
 }
 
 function getPacketFieldValue(
-  packet: ContentPacket,
-  key: keyof ContentPacket
+  packet: ConceptSeedPacket,
+  key: keyof ConceptSeedPacket
 ): string | readonly string[] {
   return packet[key];
 }
@@ -90,7 +90,7 @@ function buildContextDetails(context: ContentPacketContext): readonly ContentPac
 }
 
 function buildPacketDetails(
-  packet: ContentPacket,
+  packet: ConceptSeedPacket,
   includeContentKind: boolean
 ): readonly ContentPacketCardDetail[] {
   return CONTENT_PACKET_CARD_FIELD_REGISTRY.filter(

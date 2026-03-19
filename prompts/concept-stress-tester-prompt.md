@@ -128,11 +128,11 @@ OUTPUT REQUIREMENTS:
 | `scores` | Dimension scores for that concept |
 | `weaknesses` | Evaluator-provided weak points/tradeoffs |
 | `verification` | (Optional) Verifier output: signature scenario, setpiece bank, load-bearing check. When present, injects a VERIFICATION INTELLIGENCE section into the user prompt to make hardening premise-protective. |
-| `contentPackets` | Lean `ContentPacket[]` projection with `contentId`, `wildnessInvariant`, `dullCollapse` |
+| `conceptSeedPackets` | Lean `ConceptSeedPacket[]` projection with `contentId`, `wildnessInvariant`, `dullCollapse` |
 
 ## Content Packet Integration (WILCONPIP)
 
-WILCONPIP-15 added a wildness invariant erosion check. When `contentPackets` are provided:
+WILCONPIP-15 added a wildness invariant erosion check. When `conceptSeedPackets` are provided:
 
 - The prompt injects content packet context with `contentId`, `wildnessInvariant`, and `dullCollapse`
 - A new `WILDNESS INVARIANT EROSION CHECK` section in the system message directs the stress tester to:

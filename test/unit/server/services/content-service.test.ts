@@ -1,15 +1,15 @@
 import { createContentService } from '@/server/services/content-service';
 import type {
+  ConceptSeedOneShotLineagedPacket,
+  ConceptSeedPacketerPacket,
   TasteProfile,
   ContentSpark,
   ContentEvaluation,
   GeneratedContentPacket,
   ContentOneShotContext,
-  ContentOneShotLineagedPacket,
   TasteDistillerContext,
   SparkstormerContext,
   ContentPacketerContext,
-  ContentPacketerPacket,
   ContentEvaluatorContext,
 } from '@/models/content-packet';
 import type { GenerationStageEvent } from '@/engine/types';
@@ -38,7 +38,7 @@ function createSpark(id = 'spark_1'): ContentSpark {
   };
 }
 
-function createPacketerPacket(id = 'content_1'): ContentPacketerPacket {
+function createPacketerPacket(id = 'content_1'): ConceptSeedPacketerPacket {
   return {
     contentId: id,
     premiseSummary: 'A test premise',
@@ -78,8 +78,8 @@ function createEvaluation(id = 'content_1'): ContentEvaluation {
 }
 
 function createOneShotPacket(
-  overrides: Partial<ContentOneShotLineagedPacket> = {}
-): ContentOneShotLineagedPacket {
+  overrides: Partial<ConceptSeedOneShotLineagedPacket> = {}
+): ConceptSeedOneShotLineagedPacket {
   return {
     contentId: 'pkt-01',
     sourceExemplarIds: ['exemplar-01'],

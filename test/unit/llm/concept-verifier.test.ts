@@ -27,7 +27,7 @@ import { CONCEPT_SPECIFICITY_SCHEMA } from '../../../src/llm/schemas/concept-spe
 import { CONCEPT_SCENARIO_SCHEMA } from '../../../src/llm/schemas/concept-scenario-schema';
 import type { ConceptVerifierContext } from '../../../src/models';
 import type { StoryKernel } from '../../../src/models/story-kernel';
-import type { ContentPacket } from '../../../src/models/content-packet';
+import type { ConceptSeedPacket } from '../../../src/models/content-packet';
 import {
   createEvaluatedConceptFixture,
   createConceptVerificationFixture,
@@ -53,10 +53,9 @@ function createStoryKernel(): StoryKernel {
   };
 }
 
-function createContentPacketFixture(index = 1): ContentPacket {
+function createConceptSeedPacketFixture(index = 1): ConceptSeedPacket {
   return {
     contentId: `content_${index}`,
-    sourceSparkIds: [`spark_${index}`],
     contentKind: 'ENTITY',
     coreAnomaly: `Anomaly ${index}`,
     humanAnchor: `Anchor ${index}`,
@@ -681,7 +680,7 @@ describe('concept-verifier', () => {
       expect(mockLogPrompt).toHaveBeenCalledTimes(2);
     });
 
-    it('passes content packets through to both prompt builders', async () => {
+    it('passes concept seed packets through to both prompt builders', async () => {
       const specificityPayload = createValidSpecificityPayload(2);
       const scenarioPayload = createValidScenarioPayload(2);
 
@@ -691,7 +690,7 @@ describe('concept-verifier', () => {
 
       const context: ConceptVerifierContext = {
         ...createContext(2),
-        contentPackets: [createContentPacketFixture(1)],
+        conceptSeedPackets: [createConceptSeedPacketFixture(1)],
       };
 
       const result = await verifyConcepts(context, 'test-api-key');
@@ -703,18 +702,18 @@ describe('concept-verifier', () => {
         messages: Array<{ content: string }>;
       };
       const firstSystemMessage = firstCallBody.messages[0].content;
-      expect(firstSystemMessage).toContain('CONTENT PACKET INVARIANT-REMOVAL TEST');
+      expect(firstSystemMessage).toContain('CONCEPT SEED PACKET INVARIANT-REMOVAL TEST');
       expect(firstSystemMessage).toContain('Wildness invariant 1');
 
       const secondCallBody = JSON.parse((fetchMock.mock.calls[1][1] as { body: string }).body) as {
         messages: Array<{ content: string }>;
       };
       const secondSystemMessage = secondCallBody.messages[0].content;
-      expect(secondSystemMessage).toContain('CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS');
+      expect(secondSystemMessage).toContain('CONCEPT SEED PACKET SETPIECE EXPLOITATION REQUIREMENTS');
       expect(secondSystemMessage).toContain('Signature image 1');
     });
 
-    it('existing verifier calls without contentPackets produce identical results', async () => {
+    it('existing verifier calls without conceptSeedPackets produce identical results', async () => {
       const specificityPayload = createValidSpecificityPayload(2);
       const scenarioPayload = createValidScenarioPayload(2);
 
@@ -731,14 +730,14 @@ describe('concept-verifier', () => {
         messages: Array<{ content: string }>;
       };
       const firstSystemMessage = firstCallBody.messages[0].content;
-      expect(firstSystemMessage).not.toContain('CONTENT PACKET INVARIANT-REMOVAL TEST');
+      expect(firstSystemMessage).not.toContain('CONCEPT SEED PACKET INVARIANT-REMOVAL TEST');
 
       const secondCallBody = JSON.parse((fetchMock.mock.calls[1][1] as { body: string }).body) as {
         messages: Array<{ content: string }>;
       };
       const secondSystemMessage = secondCallBody.messages[0].content;
       expect(secondSystemMessage).not.toContain(
-        'CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS'
+        'CONCEPT SEED PACKET SETPIECE EXPLOITATION REQUIREMENTS'
       );
     });
   });

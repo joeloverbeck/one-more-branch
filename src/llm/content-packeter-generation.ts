@@ -1,6 +1,6 @@
 import {
   isContentKind,
-  type ContentPacketerPacket,
+  type ConceptSeedPacketerPacket,
   type ContentPacketerContext,
   type ContentPacketerResult,
 } from '../models/content-packet.js';
@@ -22,7 +22,7 @@ function validateStringField(data: Record<string, unknown>, field: string, index
   return value;
 }
 
-function validatePacket(value: unknown, index: number): ContentPacketerPacket {
+function validatePacket(value: unknown, index: number): ConceptSeedPacketerPacket {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new LLMError(`packets[${index}] must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
@@ -99,7 +99,7 @@ function validatePacket(value: unknown, index: number): ContentPacketerPacket {
   };
 }
 
-export function parseContentPacketerResponse(parsed: unknown): readonly ContentPacketerPacket[] {
+export function parseContentPacketerResponse(parsed: unknown): readonly ConceptSeedPacketerPacket[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Content packeter response must be an object',

@@ -25,13 +25,12 @@ import {
 import { buildConceptStressTesterPrompt } from '../../../src/llm/prompts/concept-stress-tester-prompt';
 import { CONCEPT_STRESS_TEST_SCHEMA } from '../../../src/llm/schemas/concept-stress-tester-schema';
 import type { ConceptSpec, ConceptStressTesterContext } from '../../../src/models';
-import type { ContentPacket } from '../../../src/models/content-packet';
+import type { ConceptSeedPacket } from '../../../src/models/content-packet';
 import { createConceptSpecFixture } from '../../fixtures/concept-generator';
 
-function createContentPacket(id: string): ContentPacket {
+function createConceptSeedPacket(id: string): ConceptSeedPacket {
   return {
     contentId: id,
-    sourceSparkIds: ['spark_1'],
     contentKind: 'ENTITY',
     coreAnomaly: `Test anomaly ${id}`,
     humanAnchor: `Test anchor ${id}`,
@@ -226,19 +225,19 @@ describe('concept-stress-tester', () => {
     expect(mockLogPrompt).toHaveBeenCalledTimes(1);
   });
 
-  it('ConceptStressTesterContext accepts contentPackets field', () => {
+  it('ConceptStressTesterContext accepts conceptSeedPackets field', () => {
     const context: ConceptStressTesterContext = {
       ...createContext(),
-      contentPackets: [createContentPacket('cp_1')],
+      conceptSeedPackets: [createConceptSeedPacket('cp_1')],
     };
-    expect(context.contentPackets).toHaveLength(1);
-    expect(context.contentPackets![0].wildnessInvariant).toContain('cp_1');
+    expect(context.conceptSeedPackets).toHaveLength(1);
+    expect(context.conceptSeedPackets![0].wildnessInvariant).toContain('cp_1');
   });
 
   it('buildConceptStressTesterPrompt includes WILDNESS INVARIANT section when content packets provided', () => {
     const context: ConceptStressTesterContext = {
       ...createContext(),
-      contentPackets: [createContentPacket('cp_1'), createContentPacket('cp_2')],
+      conceptSeedPackets: [createConceptSeedPacket('cp_1'), createConceptSeedPacket('cp_2')],
     };
     const messages = buildConceptStressTesterPrompt(context);
     const userMessage = messages[1]?.content ?? '';
@@ -251,7 +250,7 @@ describe('concept-stress-tester', () => {
   it('buildConceptStressTesterPrompt includes dull-collapse comparison instructions when content packets provided', () => {
     const context: ConceptStressTesterContext = {
       ...createContext(),
-      contentPackets: [createContentPacket('cp_1')],
+      conceptSeedPackets: [createConceptSeedPacket('cp_1')],
     };
     const messages = buildConceptStressTesterPrompt(context);
     const userMessage = messages[1]?.content ?? '';
@@ -272,7 +271,7 @@ describe('concept-stress-tester', () => {
   it('prompt instructs LLM to flag invariant erosion as a drift risk with WILDNESS_INVARIANT mitigation type', () => {
     const context: ConceptStressTesterContext = {
       ...createContext(),
-      contentPackets: [createContentPacket('cp_1')],
+      conceptSeedPackets: [createConceptSeedPacket('cp_1')],
     };
     const messages = buildConceptStressTesterPrompt(context);
     const userMessage = messages[1]?.content ?? '';
@@ -283,7 +282,7 @@ describe('concept-stress-tester', () => {
   it('prompt instructs LLM to compare dullCollapse against genericCollapse', () => {
     const context: ConceptStressTesterContext = {
       ...createContext(),
-      contentPackets: [createContentPacket('cp_1')],
+      conceptSeedPackets: [createConceptSeedPacket('cp_1')],
     };
     const messages = buildConceptStressTesterPrompt(context);
     const userMessage = messages[1]?.content ?? '';
@@ -300,7 +299,7 @@ describe('concept-stress-tester', () => {
 
     const context: ConceptStressTesterContext = {
       ...createContext(),
-      contentPackets: [createContentPacket('cp_1')],
+      conceptSeedPackets: [createConceptSeedPacket('cp_1')],
     };
     await stressTestConcept(context, 'test-api-key');
 
@@ -312,7 +311,7 @@ describe('concept-stress-tester', () => {
     expect(userMessage).toContain('cp_1');
   });
 
-  it('existing stress tester calls without contentPackets produce identical results', async () => {
+  it('existing stress tester calls without conceptSeedPackets produce identical results', async () => {
     const payload = createValidPayload();
     const rawContent = JSON.stringify(payload);
     fetchMock.mockResolvedValue(responseWithMessageContent(rawContent));
@@ -341,7 +340,7 @@ describe('concept-stress-tester', () => {
   it('buildConceptStressTesterPrompt omits wildness section for empty content packets array', () => {
     const context: ConceptStressTesterContext = {
       ...createContext(),
-      contentPackets: [],
+      conceptSeedPackets: [],
     };
     const messages = buildConceptStressTesterPrompt(context);
     const userMessage = messages[1]?.content ?? '';

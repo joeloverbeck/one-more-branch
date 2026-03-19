@@ -92,7 +92,7 @@ export function formatContentExemplarId(index: number): string {
 }
 
 // Lean downstream projection used by concept-stage prompts and saved-asset consumers.
-export interface ContentPacket {
+export interface ConceptSeedPacket {
   readonly contentId: string;
   readonly contentKind: ContentKind;
   readonly coreAnomaly: string;
@@ -107,27 +107,27 @@ export interface ContentPacket {
 }
 
 // Flat LLM output shape for quick generation before service-layer asset-candidate assembly.
-export interface ContentOneShotPacket extends ContentPacket, ContentPacketContext {}
+export interface ConceptSeedOneShotPacket extends ConceptSeedPacket, ContentPacketContext {}
 
 // Quick-generation packet with explicit exemplar lineage before service-layer asset-candidate assembly.
-export interface ContentOneShotLineagedPacket extends ContentOneShotPacket {
+export interface ConceptSeedOneShotLineagedPacket extends ConceptSeedOneShotPacket {
   readonly sourceExemplarIds: readonly string[];
 }
 
 // Flat LLM output shape for pipeline generation before service-layer asset-candidate assembly.
-export interface ContentPacketerPacket extends ContentOneShotPacket {
+export interface ConceptSeedPacketerPacket extends ConceptSeedOneShotPacket {
   readonly sourceSparkIds: readonly string[];
 }
 
 // Canonical save-ready generation object returned by the service/route layer.
 export interface GeneratedContentPacket {
-  readonly packet: ContentPacket;
+  readonly packet: ConceptSeedPacket;
   readonly context: ContentPacketContext;
   readonly origin: ContentPacketOrigin;
 }
 
-export interface ContentPacketProjectionSource {
-  readonly packet: ContentPacket;
+export interface ConceptSeedPacketProjectionSource {
+  readonly packet: ConceptSeedPacket;
 }
 
 export interface ContentEvaluationScores {
@@ -186,7 +186,7 @@ export interface ContentOneShotContext {
 }
 
 export interface ContentOneShotResult {
-  readonly packets: readonly ContentOneShotLineagedPacket[];
+  readonly packets: readonly ConceptSeedOneShotLineagedPacket[];
   readonly rawResponse: string;
 }
 
@@ -199,14 +199,14 @@ export interface ContentPacketerContext {
 }
 
 export interface ContentPacketerResult {
-  readonly packets: readonly ContentPacketerPacket[];
+  readonly packets: readonly ConceptSeedPacketerPacket[];
   readonly rawResponse: string;
 }
 
 // --- Content evaluator types ---
 
 export interface ContentEvaluatorContext {
-  readonly packets: readonly ContentPacket[];
+  readonly packets: readonly ConceptSeedPacket[];
   readonly tasteProfile?: TasteProfile;
 }
 
@@ -231,7 +231,7 @@ function isStringArray(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
-export function cloneContentPacket(packet: ContentPacket): ContentPacket {
+export function cloneConceptSeedPacket(packet: ConceptSeedPacket): ConceptSeedPacket {
   return {
     contentId: packet.contentId,
     contentKind: packet.contentKind,
@@ -247,10 +247,10 @@ export function cloneContentPacket(packet: ContentPacket): ContentPacket {
   };
 }
 
-export function projectContentPacket(
-  value: ContentPacket | ContentPacketProjectionSource
-): ContentPacket {
-  return cloneContentPacket('packet' in value ? value.packet : value);
+export function projectConceptSeedPacket(
+  value: ConceptSeedPacket | ConceptSeedPacketProjectionSource
+): ConceptSeedPacket {
+  return cloneConceptSeedPacket('packet' in value ? value.packet : value);
 }
 
 export function cloneContentPacketContext(context: ContentPacketContext): ContentPacketContext {
@@ -282,7 +282,7 @@ export function cloneContentPacketOrigin(origin: ContentPacketOrigin): ContentPa
   };
 }
 
-export function isContentPacket(value: unknown): value is ContentPacket {
+export function isConceptSeedPacket(value: unknown): value is ConceptSeedPacket {
   if (!isObjectRecord(value)) {
     return false;
   }
@@ -385,7 +385,7 @@ export function isGeneratedContentPacket(value: unknown): value is GeneratedCont
   }
 
   return (
-    isContentPacket(value['packet']) &&
+    isConceptSeedPacket(value['packet']) &&
     isContentPacketContext(value['context']) &&
     isContentPacketOrigin(value['origin'])
   );

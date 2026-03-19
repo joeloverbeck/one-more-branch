@@ -1,4 +1,4 @@
-import type { ContentPacket } from './content-packet.js';
+import type { ConceptSeedPacket } from './content-packet.js';
 import type { ConflictAxis, ConflictType } from './conflict-taxonomy.js';
 import { CONFLICT_AXES, isConflictAxis, isConflictType } from './conflict-taxonomy.js';
 import type { StoryKernel } from './story-kernel.js';
@@ -304,7 +304,7 @@ export interface ConceptSeederContext {
   readonly contentPreferences?: string;
   readonly kernel?: StoryKernel;
   readonly excludedGenres?: readonly GenreFrame[];
-  readonly contentPackets?: readonly ContentPacket[];
+  readonly conceptSeedPackets?: readonly ConceptSeedPacket[];
 }
 
 export interface ConceptSeederResult {
@@ -320,7 +320,7 @@ export interface ConceptEvolverSeederContext {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
-  readonly contentPackets?: readonly ContentPacket[];
+  readonly conceptSeedPackets?: readonly ConceptSeedPacket[];
 }
 
 export interface ConceptEvolverSeederResult {
@@ -335,7 +335,7 @@ export interface ConceptArchitectContext {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
-  readonly contentPackets?: readonly ContentPacket[];
+  readonly conceptSeedPackets?: readonly ConceptSeedPacket[];
 }
 
 export interface ConceptArchitectResult {
@@ -351,7 +351,7 @@ export interface ConceptEngineerContext {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
-  readonly contentPackets?: readonly ContentPacket[];
+  readonly conceptSeedPackets?: readonly ConceptSeedPacket[];
 }
 
 export interface ConceptEngineerResult {
@@ -381,7 +381,7 @@ export interface ConceptEvolverContext {
   readonly genreVibes?: string;
   readonly moodKeywords?: string;
   readonly contentPreferences?: string;
-  readonly contentPackets?: readonly ContentPacket[];
+  readonly conceptSeedPackets?: readonly ConceptSeedPacket[];
 }
 
 export interface ConceptEvolutionResult {
@@ -405,7 +405,7 @@ export interface ConceptStressTesterContext {
   readonly scores: ConceptDimensionScores;
   readonly weaknesses: readonly string[];
   readonly verification?: ConceptVerification;
-  readonly contentPackets?: readonly ContentPacket[];
+  readonly conceptSeedPackets?: readonly ConceptSeedPacket[];
 }
 
 export interface ConceptStressTestResult {
@@ -457,7 +457,7 @@ export interface ConceptVerification {
 export interface ConceptVerifierContext {
   readonly evaluatedConcepts: readonly EvaluatedConcept[];
   readonly kernel: StoryKernel;
-  readonly contentPackets?: readonly ContentPacket[];
+  readonly conceptSeedPackets?: readonly ConceptSeedPacket[];
 }
 
 export interface ConceptVerificationResult {

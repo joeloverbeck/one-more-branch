@@ -2,7 +2,7 @@ import {
   formatContentExemplarId,
   isContentKind,
   type ContentOneShotContext,
-  type ContentOneShotLineagedPacket,
+  type ConceptSeedOneShotLineagedPacket,
   type ContentOneShotResult,
 } from '../models/content-packet.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
@@ -27,7 +27,7 @@ const REQUIRED_PACKET_FIELDS = [
   'dullCollapse',
 ] as const;
 
-function parsePacket(raw: unknown, index: number): ContentOneShotLineagedPacket {
+function parsePacket(raw: unknown, index: number): ConceptSeedOneShotLineagedPacket {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     throw new LLMError(`Packet at index ${index} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
@@ -102,7 +102,7 @@ function parsePacket(raw: unknown, index: number): ContentOneShotLineagedPacket 
   };
 }
 
-export function parseContentOneShotResponse(parsed: unknown): readonly ContentOneShotLineagedPacket[] {
+export function parseContentOneShotResponse(parsed: unknown): readonly ConceptSeedOneShotLineagedPacket[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Content one-shot response must be an object',

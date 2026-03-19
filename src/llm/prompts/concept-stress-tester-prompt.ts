@@ -5,7 +5,7 @@ import {
   type ConceptStressTesterContext,
   type ConceptVerification,
 } from '../../models/concept-generator.js';
-import type { ContentPacket } from '../../models/content-packet.js';
+import type { ConceptSeedPacket } from '../../models/content-packet.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 
@@ -79,7 +79,7 @@ DIRECTIVES:
 - If load-bearing check identified generic collapse into "${verification.loadBearingCheck.genericCollapse}", your hardening must WIDEN the distance from that generic form, not narrow it.`;
 }
 
-function buildWildnessInvariantSection(packets: readonly ContentPacket[]): string {
+function buildWildnessInvariantSection(packets: readonly ConceptSeedPacket[]): string {
   const invariants = packets
     .map((p) => `- [${p.contentId}] wildnessInvariant: "${p.wildnessInvariant}"`)
     .join('\n');
@@ -128,8 +128,8 @@ export function buildConceptStressTesterPrompt(context: ConceptStressTesterConte
     userSections.push(buildVerificationIntelligenceSection(context.verification));
   }
 
-  if (context.contentPackets && context.contentPackets.length > 0) {
-    userSections.push(buildWildnessInvariantSection(context.contentPackets));
+  if (context.conceptSeedPackets && context.conceptSeedPackets.length > 0) {
+    userSections.push(buildWildnessInvariantSection(context.conceptSeedPackets));
   }
 
   const mitigationTypeList = DRIFT_RISK_MITIGATION_TYPES.join(', ');

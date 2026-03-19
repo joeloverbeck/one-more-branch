@@ -241,7 +241,7 @@ Runtime behavior:
 | `contentPreferences` | Optional content boundaries/preferences |
 | `concepts` | ConceptSpec array from ideator output (scoring pass) |
 | `scoredConcepts` | All ScoredConcept objects from scoring pass (deep-eval pass) |
-| `contentPackets` | Optional lean `ContentPacket[]` projection used by upstream stages (evaluator scores their integration, not the full saved asset) |
+| `conceptSeedPackets` | Optional lean `ConceptSeedPacket[]` projection used by upstream stages (evaluator scores their integration, not the full saved asset) |
 
 ## Content Packet Integration (WILCONPIP)
 

@@ -4,7 +4,7 @@ import {
   isContentPacketOrigin,
   isContentPacketSourceArtifact,
   isSavedContentPacket,
-  projectSavedContentPacket,
+  projectSavedConceptSeedPacket,
 } from '../../../src/models/saved-content-packet';
 
 function makeValidSavedContentPacket(): SavedContentPacket {
@@ -181,10 +181,10 @@ describe('isSavedContentPacket', () => {
   });
 });
 
-describe('projectSavedContentPacket', () => {
+describe('projectSavedConceptSeedPacket', () => {
   it('returns a cloned lean packet projection', () => {
     const savedPacket = makeValidSavedContentPacket();
-    const projected = projectSavedContentPacket(savedPacket);
+    const projected = projectSavedConceptSeedPacket(savedPacket);
 
     expect(projected).toEqual(savedPacket.packet);
     expect(projected).not.toBe(savedPacket.packet);

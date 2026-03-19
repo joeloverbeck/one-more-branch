@@ -88,7 +88,7 @@ OUTPUT REQUIREMENTS:
 
 | Field | Source | Required |
 |-------|--------|----------|
-| packets | Lean `ContentPacket[]` projection from Content Packeter output | Yes |
+| packets | Lean `ConceptSeedPacket[]` projection from Content Packeter output | Yes |
 | tasteProfile | Taste Distiller output | No |
 
 ## Notes

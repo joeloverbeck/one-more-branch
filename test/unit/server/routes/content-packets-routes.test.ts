@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import type { NextFunction, Request, Response } from 'express';
-import type { ContentPacket, ContentEvaluation, GeneratedContentPacket } from '@/models/content-packet';
+import type { ConceptSeedPacket, ContentEvaluation, GeneratedContentPacket } from '@/models/content-packet';
 import type { SavedContentPacket } from '@/models/saved-content-packet';
 
 jest.mock('@/persistence/content-packet-repository', () => ({
@@ -89,7 +89,7 @@ function mockReq(overrides: Partial<Request> = {}): Request {
   } as unknown as Request;
 }
 
-function makeContentPacket(overrides: Partial<ContentPacket> = {}): ContentPacket {
+function makeConceptSeedPacket(overrides: Partial<ConceptSeedPacket> = {}): ConceptSeedPacket {
   return {
     contentId: 'pkt-01',
     contentKind: 'ENTITY',
@@ -108,7 +108,7 @@ function makeContentPacket(overrides: Partial<ContentPacket> = {}): ContentPacke
 
 function makeGeneratedPacket(overrides: Partial<GeneratedContentPacket> = {}): GeneratedContentPacket {
   return {
-    packet: makeContentPacket(),
+    packet: makeConceptSeedPacket(),
     context: {
       premiseSummary: 'A premise summary',
       situationFrame: 'A situation frame',
@@ -155,7 +155,7 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
     updatedAt: '2026-03-19T10:00:00.000Z',
     pinned: false,
     assetVersion: 2,
-    packet: makeContentPacket(),
+    packet: makeConceptSeedPacket(),
     context: {
       premiseSummary: 'A premise summary',
       situationFrame: 'A situation frame',
@@ -272,7 +272,7 @@ describe('content-packets routes', () => {
   describe('GET /api/:packetId', () => {
     it('returns packet when found', async () => {
       const packet = makeSavedPacket({
-        packet: makeContentPacket({ coreAnomaly: 'Found' }),
+        packet: makeConceptSeedPacket({ coreAnomaly: 'Found' }),
       });
       (loadContentPacket as jest.Mock).mockResolvedValue(packet);
 
@@ -389,7 +389,7 @@ describe('content-packets routes', () => {
         sparks: [],
         packets: [
           makeGeneratedPacket({
-            packet: makeContentPacket({ contentId: 'pkt-02', coreAnomaly: 'pipeline-test' }),
+            packet: makeConceptSeedPacket({ contentId: 'pkt-02', coreAnomaly: 'pipeline-test' }),
             origin: {
               generationMode: 'pipeline',
               sourceArtifacts: [
@@ -521,7 +521,7 @@ describe('content-packets routes', () => {
       const req = mockReq({
         params: { packetId: 'new-p1' },
         body: {
-          candidate: makeContentPacket(),
+          candidate: makeConceptSeedPacket(),
         },
       });
       const res = mockRes();
@@ -559,7 +559,7 @@ describe('content-packets routes', () => {
     it('persists a full v2 saved asset when given a valid candidate and evaluation', async () => {
       const handler = getRouteHandler('post', '/api/:packetId/save');
       const candidate = makeGeneratedPacket({
-        packet: makeContentPacket({ contentId: 'pkt-77' }),
+        packet: makeConceptSeedPacket({ contentId: 'pkt-77' }),
       });
       const evaluation = makeEvaluation({ contentId: 'pkt-77' });
       const req = mockReq({

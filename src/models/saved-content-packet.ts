@@ -1,19 +1,19 @@
 import type {
+  ConceptSeedPacket,
   ContentEvaluation,
   ContentEvaluationScores,
-  ContentPacket,
   ContentPacketContext,
   ContentPacketOrigin,
   ContentPacketRole,
   RiskAppetite,
 } from './content-packet.js';
 import {
+  isConceptSeedPacket,
   isContentPacketContext,
   isContentPacketOrigin,
-  isContentPacket,
   isContentPacketRole,
   isRiskAppetite,
-  projectContentPacket,
+  projectConceptSeedPacket,
 } from './content-packet.js';
 export {
   isContentPacketContext,
@@ -29,7 +29,7 @@ export interface SavedContentPacket {
   readonly updatedAt: string;
   readonly pinned: boolean;
   readonly assetVersion: 2;
-  readonly packet: ContentPacket;
+  readonly packet: ConceptSeedPacket;
   readonly context: ContentPacketContext;
   readonly origin: ContentPacketOrigin;
   readonly evaluation?: ContentEvaluation;
@@ -137,7 +137,7 @@ export function isSavedContentPacket(value: unknown): value is SavedContentPacke
     isIsoDateString(value['updatedAt']) &&
     typeof value['pinned'] === 'boolean' &&
     value['assetVersion'] === 2 &&
-    isContentPacket(value['packet']) &&
+    isConceptSeedPacket(value['packet']) &&
     isContentPacketContext(value['context']) &&
     isContentPacketOrigin(value['origin']) &&
     (value['evaluation'] === undefined || isContentEvaluation(value['evaluation']))
@@ -150,8 +150,8 @@ export function getSavedContentPacketRecommendedRole(
   return packet.evaluation?.recommendedRole ?? 'UNSCORED';
 }
 
-export function projectSavedContentPacket(packet: SavedContentPacket): ContentPacket {
-  return projectContentPacket(packet);
+export function projectSavedConceptSeedPacket(packet: SavedContentPacket): ConceptSeedPacket {
+  return projectConceptSeedPacket(packet);
 }
 
 export function isSavedTasteProfile(value: unknown): value is SavedTasteProfile {

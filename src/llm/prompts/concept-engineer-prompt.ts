@@ -1,4 +1,4 @@
-import type { ContentPacket } from '../../models/content-packet.js';
+import type { ConceptSeedPacket } from '../../models/content-packet.js';
 import type {
   ConceptEngineerContext,
   ConceptSeedFields,
@@ -39,7 +39,7 @@ WEILAND ARC ENGINEERING:
 - wantNeedCollisionSketch should describe the moment where the protagonist's conscious goal (want) directly prevents their inner transformation (need).`;
 }
 
-function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
+function buildConceptSeedPacketsBlock(packets: readonly ConceptSeedPacket[]): string {
   const packetEntries = packets
     .map(
       (p) =>
@@ -51,8 +51,8 @@ function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
     )
     .join('\n');
 
-  return `CONTENT PACKETS — ENGINEERING CONSTRAINTS:
-The following content packets anchor these concepts. When engineering conflict forces:
+  return `CONCEPT SEED PACKETS — ENGINEERING CONSTRAINTS:
+The following concept seed packets anchor these concepts. When engineering conflict forces:
 - pressureSource, incitingDisruption, or ironicTwist MUST emerge directly from the packet's socialEngine or escalationPath.
 - elevatorParagraph MUST preserve the packet's signature image or wildnessInvariant — do not let the pitch flatten into generic genre language.
 - protagonistLie / protagonistTruth SHOULD collide with the packet's core contradiction.
@@ -102,8 +102,8 @@ export function buildConceptEngineerPrompt(context: ConceptEngineerContext): Cha
     userSections.push(kernelBlock);
   }
 
-  if (context.contentPackets && context.contentPackets.length > 0) {
-    userSections.push(buildContentPacketsBlock(context.contentPackets));
+  if (context.conceptSeedPackets && context.conceptSeedPackets.length > 0) {
+    userSections.push(buildConceptSeedPacketsBlock(context.conceptSeedPackets));
   }
 
   const protagonistDetails = normalize(context.protagonistDetails);

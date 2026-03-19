@@ -70,11 +70,11 @@ OUTPUT REQUIREMENTS:
 | moodKeywords | User input | No |
 | contentPreferences | User input | No |
 | kernel | Selected StoryKernel | No |
-| contentPackets | Lean `ContentPacket[]` projection (not the full saved asset) | No |
+| conceptSeedPackets | Lean `ConceptSeedPacket[]` projection (not the full saved asset) | No |
 
 ## Content Packet Integration (WILCONPIP)
 
-When `contentPackets` are provided, the prompt injects a `CONTENT PACKETS` block. The seeder must:
+When `conceptSeedPackets` are provided, the prompt injects a `CONCEPT SEED PACKETS` block. The seeder must:
 
 - Assign each concept seed exactly 1 `primaryContentId` from available packets
 - May optionally fuse 1 `secondaryContentId` from a different packet

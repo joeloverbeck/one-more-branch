@@ -139,7 +139,7 @@ OUTPUT REQUIREMENTS:
 | `evaluatedConcepts` | Array of evaluated concepts from the evaluator stage |
 | `kernel` | StoryKernel with `dramaticThesis`, `valueAtStake`, `opposingForce`, `directionOfChange`, `thematicQuestion` |
 | `specificityAnalyses` | Array of `ConceptSpecificityAnalysis` from stage 1, providing `signatureScenario` for each concept |
-| `contentPackets` | Lean `ContentPacket[]` projection with `signatureImage`, `escalationPath`, `socialEngine` |
+| `conceptSeedPackets` | Lean `ConceptSeedPacket[]` projection with `signatureImage`, `escalationPath`, `socialEngine` |
 
 ## Downstream Integration
 
@@ -150,7 +150,7 @@ The architecture pipeline (`MacroArchitectureResult.setpieceBank`) generates its
 
 ## Content Packet Integration (WILCONPIP)
 
-When `contentPackets` are provided, the prompt injects a `CONTENT PACKETS` block containing `signatureImage`, `escalationPath`, and `socialEngine` for each packet. The scenario generator must:
+When `conceptSeedPackets` are provided, the prompt injects a `CONCEPT SEED PACKETS` block containing `signatureImage`, `escalationPath`, and `socialEngine` for each packet. The scenario generator must:
 
 - Directly exploit packet `signatureImage` or `escalationPath` in at least 2 of 6 setpieces
 - Show at least 1 packet's `socialEngine` in action (institution/market/ritual operating in the scene)

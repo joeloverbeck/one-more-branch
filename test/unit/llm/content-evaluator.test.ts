@@ -1,9 +1,9 @@
 import { buildContentEvaluatorPrompt } from '../../../src/llm/prompts/content-evaluator-prompt';
 import { parseContentEvaluatorResponse } from '../../../src/llm/content-evaluator-generation';
 import { buildContentEvaluatorSchema } from '../../../src/llm/schemas/content-evaluator-schema';
-import type { ContentEvaluatorContext, ContentPacket } from '../../../src/models/content-packet';
+import type { ConceptSeedPacket, ContentEvaluatorContext } from '../../../src/models/content-packet';
 
-function makePacket(overrides: Partial<ContentPacket> = {}): ContentPacket {
+function makePacket(overrides: Partial<ConceptSeedPacket> = {}): ConceptSeedPacket {
   return {
     contentId: 'pkt-01',
     sourceSparkIds: ['spark-01'],

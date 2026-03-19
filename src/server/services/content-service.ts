@@ -5,19 +5,19 @@ import { evaluateContentPackets } from '../../llm/content-evaluator-generation.j
 import { generateContentOneShot } from '../../llm/content-one-shot-generation.js';
 import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
-import { formatContentExemplarId, projectContentPacket } from '../../models/content-packet.js';
+import { formatContentExemplarId, projectConceptSeedPacket } from '../../models/content-packet.js';
 import type {
+  ConceptSeedOneShotLineagedPacket,
+  ConceptSeedOneShotPacket,
+  ConceptSeedPacket,
+  ConceptSeedPacketerPacket,
   ContentEvaluation,
   GeneratedContentPacket,
   ContentOneShotContext,
-  ContentPacket,
-  ContentPacketerPacket,
   ContentPacketContext,
   ContentPacketOrigin,
   ContentPacketSourceArtifact,
   ContentSpark,
-  ContentOneShotLineagedPacket,
-  ContentOneShotPacket,
   SparkstormerContext,
   TasteDistillerContext,
   TasteProfile,
@@ -71,7 +71,7 @@ export interface PackageContentInput {
 }
 
 export interface EvaluatePacketsInput {
-  readonly packets: readonly ContentPacket[];
+  readonly packets: readonly ConceptSeedPacket[];
   readonly tasteProfile?: TasteProfile;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
@@ -160,7 +160,9 @@ function requireExemplarIdeas(ideas: readonly string[]): readonly string[] {
   return filtered;
 }
 
-function buildPacketContext(packet: ContentOneShotPacket | ContentPacketerPacket): ContentPacketContext {
+function buildPacketContext(
+  packet: ConceptSeedOneShotPacket | ConceptSeedPacketerPacket
+): ContentPacketContext {
   return {
     premiseSummary: packet.premiseSummary,
     situationFrame: packet.situationFrame,
@@ -170,7 +172,7 @@ function buildPacketContext(packet: ContentOneShotPacket | ContentPacketerPacket
 }
 
 function buildQuickSourceArtifacts(
-  packet: ContentOneShotLineagedPacket,
+  packet: ConceptSeedOneShotLineagedPacket,
   exemplarsById: ReadonlyMap<string, string>
 ): readonly ContentPacketSourceArtifact[] {
   return packet.sourceExemplarIds.map((sourceId) => {
@@ -188,7 +190,7 @@ function buildQuickSourceArtifacts(
 }
 
 function buildPipelineSourceArtifacts(
-  packet: ContentPacketerPacket,
+  packet: ConceptSeedPacketerPacket,
   sparksById: ReadonlyMap<string, ContentSpark>
 ): readonly ContentPacketSourceArtifact[] {
   return packet.sourceSparkIds.map((sparkId) => {
@@ -209,11 +211,11 @@ function buildPipelineSourceArtifacts(
 }
 
 function buildGeneratedPacket(
-  packet: ContentOneShotPacket | ContentPacketerPacket,
+  packet: ConceptSeedOneShotPacket | ConceptSeedPacketerPacket,
   origin: ContentPacketOrigin
 ): GeneratedContentPacket {
   return {
-    packet: projectContentPacket(packet),
+    packet: projectConceptSeedPacket(packet),
     context: buildPacketContext(packet),
     origin,
   };

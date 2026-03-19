@@ -1,11 +1,11 @@
 import {
-  cloneContentPacket,
-  type ContentPacket,
+  cloneConceptSeedPacket,
+  type ConceptSeedPacket,
   isContentKind,
-  isContentPacket,
+  isConceptSeedPacket,
   isContentPacketRole,
   isRiskAppetite,
-  projectContentPacket,
+  projectConceptSeedPacket,
   CONTENT_KIND_VALUES,
   CONTENT_PACKET_ROLE_VALUES,
   RISK_APPETITE_VALUES,
@@ -67,25 +67,25 @@ function makeValidContentPacket(): Record<string, unknown> {
   };
 }
 
-describe('isContentPacket', () => {
+describe('isConceptSeedPacket', () => {
   it('validates a complete canonical content packet', () => {
-    expect(isContentPacket(makeValidContentPacket())).toBe(true);
+    expect(isConceptSeedPacket(makeValidContentPacket())).toBe(true);
   });
 
   it('rejects when contentId is missing', () => {
     const packet = makeValidContentPacket();
     delete packet['contentId'];
-    expect(isContentPacket(packet)).toBe(false);
+    expect(isConceptSeedPacket(packet)).toBe(false);
   });
 
   it('rejects when interactionVerbs is empty', () => {
     const packet = { ...makeValidContentPacket(), interactionVerbs: [] };
-    expect(isContentPacket(packet)).toBe(false);
+    expect(isConceptSeedPacket(packet)).toBe(false);
   });
 
   it('clones canonical packets without sharing the interaction verbs array', () => {
-    const packet = makeValidContentPacket() as ContentPacket;
-    const cloned = cloneContentPacket(packet);
+    const packet = makeValidContentPacket() as ConceptSeedPacket;
+    const cloned = cloneConceptSeedPacket(packet);
 
     expect(cloned).toEqual(packet);
     expect(cloned).not.toBe(packet);
@@ -93,13 +93,23 @@ describe('isContentPacket', () => {
   });
 
   it('projects packet-bearing sources to a lean canonical packet clone', () => {
-    const packet = makeValidContentPacket() as ContentPacket;
-    const projected = projectContentPacket({
+    const packet = makeValidContentPacket() as ConceptSeedPacket;
+    const projected = projectConceptSeedPacket({
       packet,
     });
 
     expect(projected).toEqual(packet);
     expect(projected).not.toBe(packet);
+  });
+
+  it('projects a direct projection object to a cloned concept seed packet', () => {
+    const packet = makeValidContentPacket() as ConceptSeedPacket;
+
+    const projected = projectConceptSeedPacket(packet);
+
+    expect(projected).toEqual(packet);
+    expect(projected).not.toBe(packet);
+    expect(projected.interactionVerbs).not.toBe(packet.interactionVerbs);
   });
 });
 

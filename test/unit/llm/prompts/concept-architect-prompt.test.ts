@@ -1,13 +1,12 @@
-import type { ContentPacket } from '../../../../src/models/content-packet';
+import type { ConceptSeedPacket } from '../../../../src/models/content-packet';
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
 import { buildConceptArchitectPrompt } from '../../../../src/llm/prompts/concept-architect-prompt';
 import type { ConceptArchitectContext } from '../../../../src/models';
 import { createConceptSeedFixture } from '../../../fixtures/concept-generator';
 
-function createContentPacketFixture(id = 'content_1'): ContentPacket {
+function createConceptSeedPacketFixture(id = 'content_1'): ConceptSeedPacket {
   return {
     contentId: id,
-    sourceSparkIds: ['spark_1'],
     contentKind: 'INSTITUTION',
     coreAnomaly: 'A hospital that heals by redistributing pain',
     humanAnchor: 'A nurse addicted to absorbing others suffering',
@@ -139,30 +138,30 @@ describe('concept-architect-prompt', () => {
       expect(userMessage).toContain('settingAxioms');
     });
 
-    it('includes content packet grounding instructions when packets provided', () => {
-      const packet = createContentPacketFixture();
+    it('includes concept seed packet grounding instructions when packets provided', () => {
+      const packet = createConceptSeedPacketFixture();
       const context: ConceptArchitectContext = {
         ...createContext(),
-        contentPackets: [packet],
+        conceptSeedPackets: [packet],
       };
       const messages = buildConceptArchitectPrompt(context);
       const userMessage = messages[1]?.content ?? '';
-      expect(userMessage).toContain('CONTENT PACKETS');
+      expect(userMessage).toContain('CONCEPT SEED PACKETS');
       expect(userMessage).toContain(packet.coreAnomaly);
       expect(userMessage).toContain(packet.socialEngine);
     });
 
-    it('omits content packet section when packets undefined', () => {
+    it('omits concept seed packet section when packets undefined', () => {
       const messages = buildConceptArchitectPrompt(createContext());
       const userMessage = messages[1]?.content ?? '';
-      expect(userMessage).not.toContain('CONTENT PACKETS');
+      expect(userMessage).not.toContain('CONCEPT SEED PACKETS');
     });
 
     it('instructs at least one keyInstitution from packet socialEngine', () => {
-      const packet = createContentPacketFixture();
+      const packet = createConceptSeedPacketFixture();
       const context: ConceptArchitectContext = {
         ...createContext(),
-        contentPackets: [packet],
+        conceptSeedPackets: [packet],
       };
       const messages = buildConceptArchitectPrompt(context);
       const userMessage = messages[1]?.content ?? '';
@@ -172,16 +171,16 @@ describe('concept-architect-prompt', () => {
 
     it('grounds from lean packet fields without leaking saved-asset-only context', () => {
       const packet = {
-        ...createContentPacketFixture(),
+        ...createConceptSeedPacketFixture(),
         premiseSummary: 'LEAK premise summary',
         situationFrame: 'LEAK situation frame',
         worldState: 'LEAK world state',
         origin: { generationMode: 'pipeline' },
         evaluation: { recommendedRole: 'PRIMARY_SEED' },
-      } as unknown as ContentPacket;
+      } as unknown as ConceptSeedPacket;
       const context: ConceptArchitectContext = {
         ...createContext(),
-        contentPackets: [packet],
+        conceptSeedPackets: [packet],
       };
       const messages = buildConceptArchitectPrompt(context);
       const userMessage = messages[1]?.content ?? '';

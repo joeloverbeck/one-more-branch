@@ -3,11 +3,12 @@ import { parseContentPacketerResponse } from '../../../src/llm/content-packeter-
 import { buildContentPacketerSchema } from '../../../src/llm/schemas/content-packeter-schema';
 import type {
   ContentPacketerContext,
+  ConceptSeedPacketerPacket,
   ContentSpark,
   TasteProfile,
 } from '../../../src/models/content-packet';
 
-type TestContentPacketerPacket = Record<string, unknown> & {
+type TestConceptSeedPacketerPacket = Record<string, unknown> & {
   contentId: string;
   sourceSparkIds: string[];
   contentKind: string;
@@ -59,7 +60,9 @@ function makeContext(overrides: Partial<ContentPacketerContext> = {}): ContentPa
   };
 }
 
-function makeValidPacket(overrides: Partial<TestContentPacketerPacket> = {}): TestContentPacketerPacket {
+function makeValidPacket(
+  overrides: Partial<TestConceptSeedPacketerPacket> = {}
+): TestConceptSeedPacketerPacket {
   return {
     contentId: 'pkt-01',
     sourceSparkIds: ['spark-01'],
@@ -158,6 +161,15 @@ describe('parseContentPacketerResponse', () => {
     expect(result[0].wildnessInvariant).toBe(packet.wildnessInvariant);
     expect(result[0].dullCollapse).toBe(packet.dullCollapse);
     expect(result[0].interactionVerbs).toEqual(packet.interactionVerbs);
+  });
+
+  it('returns the renamed projection-based generation packet contract', () => {
+    const packet = makeValidPacket();
+    const result: readonly ConceptSeedPacketerPacket[] = parseContentPacketerResponse({
+      packets: [packet],
+    });
+
+    expect(result[0]?.contentId).toBe(packet.contentId);
   });
 
   it('validates interactionVerbs has 4-6 items', () => {

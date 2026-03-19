@@ -1,11 +1,10 @@
-import type { ContentPacket } from '../../../../src/models/content-packet';
+import type { ConceptSeedPacket } from '../../../../src/models/content-packet';
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
 import { buildConceptSeederPrompt } from '../../../../src/llm/prompts/concept-seeder-prompt';
 
-function createContentPacketFixture(id = 'content_1'): ContentPacket {
+function createConceptSeedPacketFixture(id = 'content_1'): ConceptSeedPacket {
   return {
     contentId: id,
-    sourceSparkIds: ['spark_1'],
     contentKind: 'ENTITY',
     coreAnomaly: 'A sentient fog that digests memory',
     humanAnchor: 'A grief counselor who lost her own memories',
@@ -177,35 +176,35 @@ describe('concept-seeder-prompt', () => {
       expect(userMessage).toContain('ConceptSeed');
     });
 
-    it('includes CONTENT PACKETS section when packets provided', () => {
-      const packet = createContentPacketFixture();
+    it('includes CONCEPT SEED PACKETS section when packets provided', () => {
+      const packet = createConceptSeedPacketFixture();
       const messages = buildConceptSeederPrompt({
         genreVibes: 'noir',
-        contentPackets: [packet],
+        conceptSeedPackets: [packet],
       });
       const userMessage = messages[1]?.content ?? '';
-      expect(userMessage).toContain('CONTENT PACKETS');
+      expect(userMessage).toContain('CONCEPT SEED PACKETS');
     });
 
-    it('omits CONTENT PACKETS section when packets undefined', () => {
+    it('omits CONCEPT SEED PACKETS section when packets undefined', () => {
       const messages = buildConceptSeederPrompt({ genreVibes: 'noir' });
       const userMessage = messages[1]?.content ?? '';
-      expect(userMessage).not.toContain('CONTENT PACKETS');
+      expect(userMessage).not.toContain('CONCEPT SEED PACKETS');
     });
 
-    it('omits CONTENT PACKETS section when packets array is empty', () => {
+    it('omits CONCEPT SEED PACKETS section when packets array is empty', () => {
       const messages = buildConceptSeederPrompt({
         genreVibes: 'noir',
-        contentPackets: [],
+        conceptSeedPackets: [],
       });
       const userMessage = messages[1]?.content ?? '';
-      expect(userMessage).not.toContain('CONTENT PACKETS');
+      expect(userMessage).not.toContain('CONCEPT SEED PACKETS');
     });
 
     it('includes each packet coreAnomaly, wildnessInvariant, socialEngine, signatureImage', () => {
-      const packet = createContentPacketFixture();
+      const packet = createConceptSeedPacketFixture();
       const messages = buildConceptSeederPrompt({
-        contentPackets: [packet],
+        conceptSeedPackets: [packet],
       });
       const userMessage = messages[1]?.content ?? '';
       expect(userMessage).toContain(packet.coreAnomaly);
@@ -216,15 +215,15 @@ describe('concept-seeder-prompt', () => {
 
     it('grounds from lean packet fields without leaking saved-asset-only context', () => {
       const packet = {
-        ...createContentPacketFixture(),
+        ...createConceptSeedPacketFixture(),
         premiseSummary: 'LEAK premise summary',
         situationFrame: 'LEAK situation frame',
         worldState: 'LEAK world state',
         origin: { generationMode: 'pipeline' },
         evaluation: { recommendedRole: 'PRIMARY_SEED' },
-      } as unknown as ContentPacket;
+      } as unknown as ConceptSeedPacket;
       const messages = buildConceptSeederPrompt({
-        contentPackets: [packet],
+        conceptSeedPackets: [packet],
       });
       const userMessage = messages[1]?.content ?? '';
 

@@ -1,13 +1,12 @@
-import type { ContentPacket } from '../../../../src/models/content-packet';
+import type { ConceptSeedPacket } from '../../../../src/models/content-packet';
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
 import { buildConceptEvolverSeederPrompt } from '../../../../src/llm/prompts/concept-evolver-seeder-prompt';
 import type { ConceptEvolverSeederContext } from '../../../../src/models';
 import { createEvaluatedConceptFixture } from '../../../fixtures/concept-generator';
 
-function createContentPacketFixture(id = 'content_1'): ContentPacket {
+function createConceptSeedPacketFixture(id = 'content_1'): ConceptSeedPacket {
   return {
     contentId: id,
-    sourceSparkIds: ['spark_1'],
     contentKind: 'ENTITY',
     coreAnomaly: 'A sentient fog that digests memory',
     humanAnchor: 'A grief counselor who lost her own memories',
@@ -155,16 +154,16 @@ describe('concept-evolver-seeder-prompt', () => {
       expect(userMessage).toContain('exactly 6 items');
     });
 
-    it('includes CONTENT PACKETS section when packets provided', () => {
-      const packet = createContentPacketFixture();
+    it('includes CONCEPT SEED PACKETS section when packets provided', () => {
+      const packet = createConceptSeedPacketFixture();
       const context: ConceptEvolverSeederContext = {
         ...createContext(),
-        contentPackets: [packet],
+        conceptSeedPackets: [packet],
       };
       const messages = buildConceptEvolverSeederPrompt(context);
       const userMessage = messages[1]?.content ?? '';
 
-      expect(userMessage).toContain('CONTENT PACKETS');
+      expect(userMessage).toContain('CONCEPT SEED PACKETS');
       expect(userMessage).toContain(packet.coreAnomaly);
       expect(userMessage).toContain(packet.wildnessInvariant);
       expect(userMessage).toContain(packet.socialEngine);
@@ -172,10 +171,10 @@ describe('concept-evolver-seeder-prompt', () => {
     });
 
     it('includes WILDNESS INVARIANTS section listing invariants from packets', () => {
-      const packet = createContentPacketFixture();
+      const packet = createConceptSeedPacketFixture();
       const context: ConceptEvolverSeederContext = {
         ...createContext(),
-        contentPackets: [packet],
+        conceptSeedPackets: [packet],
       };
       const messages = buildConceptEvolverSeederPrompt(context);
       const userMessage = messages[1]?.content ?? '';
@@ -185,10 +184,10 @@ describe('concept-evolver-seeder-prompt', () => {
     });
 
     it('instructs "preserve or intensify" wildness invariants', () => {
-      const packet = createContentPacketFixture();
+      const packet = createConceptSeedPacketFixture();
       const context: ConceptEvolverSeederContext = {
         ...createContext(),
-        contentPackets: [packet],
+        conceptSeedPackets: [packet],
       };
       const messages = buildConceptEvolverSeederPrompt(context);
       const userMessage = messages[1]?.content ?? '';
@@ -196,38 +195,38 @@ describe('concept-evolver-seeder-prompt', () => {
       expect(userMessage).toContain('preserved or intensified');
     });
 
-    it('omits CONTENT PACKETS and WILDNESS INVARIANTS sections when packets undefined', () => {
+    it('omits CONCEPT SEED PACKETS and WILDNESS INVARIANTS sections when packets undefined', () => {
       const messages = buildConceptEvolverSeederPrompt(createContext());
       const userMessage = messages[1]?.content ?? '';
 
-      expect(userMessage).not.toContain('CONTENT PACKETS');
+      expect(userMessage).not.toContain('CONCEPT SEED PACKETS');
       expect(userMessage).not.toContain('WILDNESS INVARIANTS');
     });
 
-    it('omits CONTENT PACKETS and WILDNESS INVARIANTS sections when packets empty', () => {
+    it('omits CONCEPT SEED PACKETS and WILDNESS INVARIANTS sections when packets empty', () => {
       const context: ConceptEvolverSeederContext = {
         ...createContext(),
-        contentPackets: [],
+        conceptSeedPackets: [],
       };
       const messages = buildConceptEvolverSeederPrompt(context);
       const userMessage = messages[1]?.content ?? '';
 
-      expect(userMessage).not.toContain('CONTENT PACKETS');
+      expect(userMessage).not.toContain('CONCEPT SEED PACKETS');
       expect(userMessage).not.toContain('WILDNESS INVARIANTS');
     });
 
     it('grounds from lean packet fields without leaking saved-asset-only context', () => {
       const packet = {
-        ...createContentPacketFixture(),
+        ...createConceptSeedPacketFixture(),
         premiseSummary: 'LEAK premise summary',
         situationFrame: 'LEAK situation frame',
         worldState: 'LEAK world state',
         origin: { generationMode: 'pipeline' },
         evaluation: { recommendedRole: 'PRIMARY_SEED' },
-      } as unknown as ContentPacket;
+      } as unknown as ConceptSeedPacket;
       const context: ConceptEvolverSeederContext = {
         ...createContext(),
-        contentPackets: [packet],
+        conceptSeedPackets: [packet],
       };
       const messages = buildConceptEvolverSeederPrompt(context);
       const userMessage = messages[1]?.content ?? '';

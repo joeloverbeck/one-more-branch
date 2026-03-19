@@ -35,7 +35,7 @@ EXEMPLAR IDEAS:
 {{optional STORY KERNEL block}}
 
 OUTPUT REQUIREMENTS:
-- Return JSON: { "packets": ContentOneShotLineagedPacket[] }
+- Return JSON: { "packets": ConceptSeedOneShotLineagedPacket[] }
 - Exactly 18 packets
 - Enumerate exemplar ideas with stable IDs like `exemplar-01`
 - Each packet must include `contentId`, `contentKind`, `sourceExemplarIds`, `premiseSummary`, `situationFrame`, `worldState`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, and `interactionVerbs`
@@ -95,7 +95,7 @@ OUTPUT REQUIREMENTS:
 | Spark count | 30-40 | N/A (skipped) |
 | Packet count | 12-16 | 18 |
 | Evaluation | Separate scoring + role labels | None (all packets returned) |
-| Packet contract | Generated packet includes setup context and is later projected to lean `ContentPacket` fields | Generated packet includes setup context and is later projected to lean `ContentPacket` fields |
+| Packet contract | Generated packet includes setup context and is later projected to lean `ConceptSeedPacket` fields | Generated packet includes setup context and is later projected to lean `ConceptSeedPacket` fields |
 
 ## Notes
 

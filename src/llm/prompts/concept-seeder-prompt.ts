@@ -1,4 +1,4 @@
-import type { ContentPacket } from '../../models/content-packet.js';
+import type { ConceptSeedPacket } from '../../models/content-packet.js';
 import type { ConceptSeederContext } from '../../models/concept-generator.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -15,7 +15,7 @@ const DIVERSITY_CONSTRAINTS = `DIVERSITY CONSTRAINTS:
 - Each seed should feel materially different in play, not cosmetic variants.
 - CRITICAL: Diversity means different genres and play textures. It does NOT mean distributing user vibes across concepts. Every concept must centrally embody ALL user-specified vibes, moods, and content preferences.`;
 
-function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
+function buildConceptSeedPacketsBlock(packets: readonly ConceptSeedPacket[]): string {
   const packetEntries = packets
     .map(
       (p) =>
@@ -26,8 +26,8 @@ function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
     )
     .join('\n');
 
-  return `CONTENT PACKETS:
-The following content packets provide concrete imaginative payloads. Each concept seed MUST use exactly 1 primaryContentId from these packets. Each seed may optionally fuse 1 secondaryContentId. The concept MUST preserve the packet's wildnessInvariant — do not sand it off or normalize it into generic genre language. The seed must carry forward a signatureImageHook derived from the packet's signatureImage.
+  return `CONCEPT SEED PACKETS:
+The following concept seed packets provide concrete imaginative payloads. Each concept seed MUST use exactly 1 primaryContentId from these packets. Each seed may optionally fuse 1 secondaryContentId. The concept MUST preserve the packet's wildnessInvariant; do not sand it off or normalize it into generic genre language. The seed must carry forward a signatureImageHook derived from the packet's signatureImage.
 
 ${packetEntries}`;
 }
@@ -104,8 +104,8 @@ The user has specified their protagonist. Every concept seed MUST feature a prot
       `USER CREATIVE MANDATE (every concept MUST embody ALL of the following):\n${mandateParts.join('\n')}\nThese are non-negotiable. Each concept must centrally express every listed quality, though HOW each manifests may differ creatively across concepts.`
     );
   }
-  if (context.contentPackets && context.contentPackets.length > 0) {
-    userSections.push(buildContentPacketsBlock(context.contentPackets));
+  if (context.conceptSeedPackets && context.conceptSeedPackets.length > 0) {
+    userSections.push(buildConceptSeedPacketsBlock(context.conceptSeedPackets));
   }
 
   if (kernel) {
