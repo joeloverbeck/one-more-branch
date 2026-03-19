@@ -1,6 +1,14 @@
 import { randomUUID } from 'crypto';
+import { mkdirSync } from 'fs';
+import { rm } from 'fs/promises';
+import { tmpdir } from 'os';
+import * as path from 'path';
 import type { SavedContentPacket } from '@/models/saved-content-packet';
-import { getContentPacketFilePath, writeJsonFile } from '@/persistence/file-utils';
+import {
+  getContentPacketFilePath,
+  getContentPacketsDir,
+  writeJsonFile,
+} from '@/persistence/file-utils';
 import {
   contentPacketExists,
   deleteContentPacket,
@@ -11,6 +19,23 @@ import {
 } from '@/persistence/content-packet-repository';
 
 const TEST_PREFIX = 'TEST: WILCONPIP-02-CP';
+const TEST_CONTENT_PACKETS_DIR = path.join(tmpdir(), 'one-more-branch-content-packet-repository-tests');
+
+jest.mock('@/persistence/file-utils', () => {
+  const actual = jest.requireActual<typeof import('@/persistence/file-utils')>(
+    '@/persistence/file-utils'
+  );
+
+  return {
+    ...actual,
+    ensureContentPacketsDir: (): void => {
+      mkdirSync(TEST_CONTENT_PACKETS_DIR, { recursive: true });
+    },
+    getContentPacketsDir: (): string => TEST_CONTENT_PACKETS_DIR,
+    getContentPacketFilePath: (contentPacketId: string): string =>
+      path.join(TEST_CONTENT_PACKETS_DIR, `${contentPacketId}.json`),
+  };
+});
 
 function createSavedContentPacket(id: string, updatedAt?: string): SavedContentPacket {
   const now = new Date().toISOString();
@@ -19,6 +44,7 @@ function createSavedContentPacket(id: string, updatedAt?: string): SavedContentP
     createdAt: now,
     updatedAt: updatedAt ?? now,
     pinned: false,
+    assetVersion: 2,
     packet: {
       contentId: 'pkt-01',
       contentKind: 'ENTITY',
@@ -32,8 +58,21 @@ function createSavedContentPacket(id: string, updatedAt?: string): SavedContentP
       dullCollapse: 'Just a weird building with moving walls',
       interactionVerbs: ['inhabit', 'reshape', 'negotiate', 'adapt'],
     },
-    provenance: {
+    context: {
+      premiseSummary: 'A sentient building rewrites itself around tenant emotions.',
+      situationFrame: 'A longtime janitor is the only person who remembers every prior layout.',
+      worldState: 'Residents already treat architectural shifts as part of ordinary life.',
+    },
+    origin: {
       generationMode: 'quick',
+      sourceArtifacts: [
+        {
+          artifactType: 'EXEMPLAR',
+          sourceId: 'exemplar-01',
+          contentKind: 'ENTITY',
+          summary: 'A building whose rooms rearrange around emotional conflict',
+        },
+      ],
     },
   };
 }
@@ -41,11 +80,16 @@ function createSavedContentPacket(id: string, updatedAt?: string): SavedContentP
 describe('content-packet-repository', () => {
   const createdIds = new Set<string>();
 
+  beforeEach(async () => {
+    await rm(getContentPacketsDir(), { recursive: true, force: true });
+  });
+
   afterEach(async () => {
     for (const id of createdIds) {
       await deleteContentPacket(id);
     }
     createdIds.clear();
+    await rm(getContentPacketsDir(), { recursive: true, force: true });
   });
 
   it('saves and loads a valid content packet', async () => {
@@ -120,6 +164,7 @@ describe('content-packet-repository', () => {
     const id = `${TEST_PREFIX}-${randomUUID()}`;
     createdIds.add(id);
 
+    mkdirSync(getContentPacketsDir(), { recursive: true });
     await writeJsonFile(getContentPacketFilePath(id), {
       id,
       createdAt: new Date().toISOString(),

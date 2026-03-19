@@ -2,14 +2,14 @@ import type {
   ContentEvaluation,
   ContentEvaluationScores,
   ContentPacket,
-  ContentPacketProvenance,
   ContentPacketRole,
   RiskAppetite,
 } from './content-packet.js';
 import {
+  isContentKind,
   isContentPacket,
-  isContentPacketProvenance,
   isContentPacketRole,
+  projectContentPacket,
   isRiskAppetite,
 } from './content-packet.js';
 
@@ -20,9 +20,32 @@ export interface SavedContentPacket {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly pinned: boolean;
+  readonly assetVersion: 2;
   readonly packet: ContentPacket;
-  readonly provenance?: ContentPacketProvenance;
+  readonly context: ContentPacketContext;
+  readonly origin: ContentPacketOrigin;
   readonly evaluation?: ContentEvaluation;
+}
+
+export interface ContentPacketContext {
+  readonly premiseSummary: string;
+  readonly situationFrame: string;
+  readonly worldState: string;
+  readonly viewpointPressure?: string;
+}
+
+export interface ContentPacketSourceArtifact {
+  readonly artifactType: 'EXEMPLAR' | 'SPARK';
+  readonly sourceId: string;
+  readonly contentKind?: ContentPacket['contentKind'];
+  readonly summary: string;
+  readonly imageSeed?: string;
+  readonly collisionTags?: readonly string[];
+}
+
+export interface ContentPacketOrigin {
+  readonly generationMode: 'quick' | 'pipeline';
+  readonly sourceArtifacts: readonly ContentPacketSourceArtifact[];
 }
 
 export interface SavedTasteProfile {
@@ -98,6 +121,77 @@ export function isContentEvaluation(value: unknown): value is ContentEvaluation 
   );
 }
 
+export function isContentPacketContext(value: unknown): value is ContentPacketContext {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  const allowedKeys = new Set([
+    'premiseSummary',
+    'situationFrame',
+    'worldState',
+    'viewpointPressure',
+  ]);
+
+  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+    return false;
+  }
+
+  return (
+    isNonEmptyString(value['premiseSummary']) &&
+    isNonEmptyString(value['situationFrame']) &&
+    isNonEmptyString(value['worldState']) &&
+    (value['viewpointPressure'] === undefined || isNonEmptyString(value['viewpointPressure']))
+  );
+}
+
+export function isContentPacketSourceArtifact(value: unknown): value is ContentPacketSourceArtifact {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  const allowedKeys = new Set([
+    'artifactType',
+    'sourceId',
+    'contentKind',
+    'summary',
+    'imageSeed',
+    'collisionTags',
+  ]);
+
+  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+    return false;
+  }
+
+  return (
+    (value['artifactType'] === 'EXEMPLAR' || value['artifactType'] === 'SPARK') &&
+    isNonEmptyString(value['sourceId']) &&
+    (value['contentKind'] === undefined || isContentKind(value['contentKind'])) &&
+    isNonEmptyString(value['summary']) &&
+    (value['imageSeed'] === undefined || isNonEmptyString(value['imageSeed'])) &&
+    (value['collisionTags'] === undefined || isStringArray(value['collisionTags']))
+  );
+}
+
+export function isContentPacketOrigin(value: unknown): value is ContentPacketOrigin {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  const allowedKeys = new Set(['generationMode', 'sourceArtifacts']);
+
+  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+    return false;
+  }
+
+  return (
+    (value['generationMode'] === 'quick' || value['generationMode'] === 'pipeline') &&
+    Array.isArray(value['sourceArtifacts']) &&
+    value['sourceArtifacts'].length > 0 &&
+    value['sourceArtifacts'].every((artifact) => isContentPacketSourceArtifact(artifact))
+  );
+}
+
 // --- Public type guards ---
 
 export function isSavedContentPacket(value: unknown): value is SavedContentPacket {
@@ -110,8 +204,10 @@ export function isSavedContentPacket(value: unknown): value is SavedContentPacke
     'createdAt',
     'updatedAt',
     'pinned',
+    'assetVersion',
     'packet',
-    'provenance',
+    'context',
+    'origin',
     'evaluation',
   ]);
 
@@ -124,8 +220,10 @@ export function isSavedContentPacket(value: unknown): value is SavedContentPacke
     isIsoDateString(value['createdAt']) &&
     isIsoDateString(value['updatedAt']) &&
     typeof value['pinned'] === 'boolean' &&
+    value['assetVersion'] === 2 &&
     isContentPacket(value['packet']) &&
-    (value['provenance'] === undefined || isContentPacketProvenance(value['provenance'])) &&
+    isContentPacketContext(value['context']) &&
+    isContentPacketOrigin(value['origin']) &&
     (value['evaluation'] === undefined || isContentEvaluation(value['evaluation']))
   );
 }
@@ -134,6 +232,10 @@ export function getSavedContentPacketRecommendedRole(
   packet: SavedContentPacket
 ): ContentPacketRole | 'UNSCORED' {
   return packet.evaluation?.recommendedRole ?? 'UNSCORED';
+}
+
+export function projectSavedContentPacket(packet: SavedContentPacket): ContentPacket {
+  return projectContentPacket(packet);
 }
 
 export function isSavedTasteProfile(value: unknown): value is SavedTasteProfile {

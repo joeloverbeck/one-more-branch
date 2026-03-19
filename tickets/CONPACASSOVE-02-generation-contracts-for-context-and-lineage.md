@@ -15,11 +15,13 @@ The LLM generation layer still emits packet bodies that are too narrow for persi
 1. `src/llm/content-packeter-generation.ts` currently requires `sourceSparkIds` but not `premiseSummary`, `situationFrame`, or `worldState`.
 2. `src/llm/content-one-shot-generation.ts` currently parses only canonical packet fields, which means quick generation has no saved-asset context contract today.
 3. `prompts/content-packeter-prompt.md` and `prompts/content-one-shot-prompt.md` still document plain `ContentPacket[]` output, so the docs and runtime schemas are currently aligned on the wrong shape.
+4. Ticket `CONPACASSOVE-01` should establish the canonical saved-asset and projection model types first, but it should not attempt to retrofit the save route before generation can supply the required inputs. This ticket is the place where those save-ready inputs become available.
 
 ## Architecture Check
 
 1. The generation layer should emit a complete save-ready candidate shape, because that is the last place where full lineage and context are still available without reconstruction.
 2. No compatibility shim should let old packet-only generation outputs continue through parsing. Missing context or missing pipeline lineage must remain hard failures.
+3. `/api/generate` should surface save-ready generated objects directly once this ticket lands, so ticket `CONPACASSOVE-03` can validate and persist them without reconstructing context or origin fields.
 
 ## What to Change
 
@@ -105,4 +107,3 @@ Update generation result types or service adapters so `/api/generate` can later 
 
 1. `npm run test:unit -- --runTestsByPath test/unit/llm/content-packeter.test.ts test/unit/llm/content-one-shot.test.ts test/unit/llm/content-sparkstormer.test.ts test/unit/server/services/content-service.test.ts`
 2. `npm run typecheck`
-

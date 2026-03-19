@@ -15,11 +15,13 @@ The current save flow silently narrows generated packets into a thin saved shape
 1. `public/js/src/11-content-packets.js` currently saves the generated packet payload that the page already has, but that payload and the server route are still packet-centric rather than asset-candidate-centric.
 2. `src/server/routes/content-packets.ts` currently accepts any object under `body.packet` and delegates validation to `createSavedContentPacketArtifact`.
 3. `src/server/services/content-packet-artifact.ts` currently clones canonical packet fields and synthesizes quick or pipeline provenance from `sourceSparkIds`, which is exactly the save-time shape loss the spec forbids.
+4. Ticket `CONPACASSOVE-01` may tighten the saved asset model before this ticket lands. That is acceptable, but this ticket remains responsible for making the browser payload and save route actually satisfy the new model instead of weakening it.
 
 ## Architecture Check
 
 1. Explicit asset assembly in one builder keeps validation, projection, context mapping, and origin mapping in one place instead of scattering save semantics across the browser, route, and repository.
 2. No fallback reconstruction of missing context or origin data is allowed. The route must reject incomplete payloads rather than guessing.
+3. This ticket must consume the richer generation outputs introduced by `CONPACASSOVE-02`; it should not invent placeholder context or lineage just to satisfy the `SavedContentPacket` type introduced in `CONPACASSOVE-01`.
 
 ## What to Change
 
@@ -93,4 +95,3 @@ Rewrite `createSavedContentPacketArtifact()` as an explicit builder that:
 
 1. `npm run test:unit -- --runTestsByPath test/unit/server/services/content-packet-artifact.test.ts test/unit/server/routes/content-packets-routes.test.ts test/unit/client/content-packets-page/controller.test.ts`
 2. `npm run typecheck`
-

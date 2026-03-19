@@ -66,6 +66,7 @@ export interface ContentSpark {
   readonly collisionTags: readonly string[];
 }
 
+// Lean downstream projection used by concept-stage prompts and saved-asset consumers.
 export interface ContentPacket {
   readonly contentId: string;
   readonly contentKind: ContentKind;
@@ -85,8 +86,13 @@ export interface ContentPacketProvenance {
   readonly sourceSparkIds?: readonly string[];
 }
 
+// Richer generation-time packet shape with transient lineage fields.
 export interface ContentPacketerPacket extends ContentPacket {
   readonly sourceSparkIds: readonly string[];
+}
+
+export interface ContentPacketProjectionSource {
+  readonly packet: ContentPacket;
 }
 
 export interface ContentEvaluationScores {
@@ -184,6 +190,28 @@ function isNonEmptyString(value: unknown): value is string {
 
 function isNonEmptyStringArray(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.length > 0 && value.every((item) => isNonEmptyString(item));
+}
+
+export function cloneContentPacket(packet: ContentPacket): ContentPacket {
+  return {
+    contentId: packet.contentId,
+    contentKind: packet.contentKind,
+    coreAnomaly: packet.coreAnomaly,
+    humanAnchor: packet.humanAnchor,
+    socialEngine: packet.socialEngine,
+    choicePressure: packet.choicePressure,
+    signatureImage: packet.signatureImage,
+    escalationPath: packet.escalationPath,
+    wildnessInvariant: packet.wildnessInvariant,
+    dullCollapse: packet.dullCollapse,
+    interactionVerbs: [...packet.interactionVerbs],
+  };
+}
+
+export function projectContentPacket(
+  value: ContentPacket | ContentPacketProjectionSource
+): ContentPacket {
+  return cloneContentPacket('packet' in value ? value.packet : value);
 }
 
 export function isContentPacket(value: unknown): value is ContentPacket {

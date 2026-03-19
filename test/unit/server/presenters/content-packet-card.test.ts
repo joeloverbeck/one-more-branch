@@ -29,7 +29,24 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
     createdAt: '2026-03-19T10:00:00.000Z',
     updatedAt: '2026-03-19T10:00:00.000Z',
     pinned: true,
+    assetVersion: 2,
     packet: makeContentPacket(),
+    context: {
+      premiseSummary: 'A charged premise summary',
+      situationFrame: 'A volatile situation frame',
+      worldState: 'A legible world state',
+    },
+    origin: {
+      generationMode: 'quick',
+      sourceArtifacts: [
+        {
+          artifactType: 'EXEMPLAR',
+          sourceId: 'exemplar-01',
+          contentKind: 'ENTITY',
+          summary: 'An exemplar that drove the packet',
+        },
+      ],
+    },
     evaluation: {
       contentId: 'pkt-01',
       scores: {

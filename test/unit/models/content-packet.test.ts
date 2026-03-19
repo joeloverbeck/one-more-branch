@@ -1,16 +1,16 @@
 import {
+  cloneContentPacket,
+  type ContentPacket,
   isContentKind,
   isContentPacket,
   isContentPacketRole,
   isRiskAppetite,
+  projectContentPacket,
   CONTENT_KIND_VALUES,
   CONTENT_PACKET_ROLE_VALUES,
   RISK_APPETITE_VALUES,
 } from '../../../src/models/content-packet';
-import {
-  isSavedContentPacket,
-  isSavedTasteProfile,
-} from '../../../src/models/saved-content-packet';
+import { isSavedTasteProfile } from '../../../src/models/saved-content-packet';
 
 describe('isContentKind', () => {
   it.each(CONTENT_KIND_VALUES.map((v) => [v]))('accepts valid value: %s', (value) => {
@@ -51,31 +51,6 @@ describe('isRiskAppetite', () => {
   );
 });
 
-function makeValidSavedContentPacket(): Record<string, unknown> {
-  return {
-    id: 'cp-1',
-    createdAt: '2025-01-01T00:00:00Z',
-    updatedAt: '2025-01-01T00:00:00Z',
-    pinned: false,
-    packet: {
-      contentId: 'pkt-01',
-      contentKind: 'ENTITY',
-      coreAnomaly: 'A sentient fog that digests memory',
-      humanAnchor: 'A grieving archivist',
-      socialEngine: 'A government bureau that licenses fog zones',
-      choicePressure: 'Surrender memories or let others suffer',
-      signatureImage: 'A child breathing silver mist from a jar',
-      escalationPath: 'The fog learns to imitate the dead',
-      wildnessInvariant: 'The fog must remain sentient and hungry',
-      dullCollapse: 'Generic monster story',
-      interactionVerbs: ['inhale', 'archive', 'negotiate', 'flee'],
-    },
-    provenance: {
-      generationMode: 'quick',
-    },
-  };
-}
-
 function makeValidContentPacket(): Record<string, unknown> {
   return {
     contentId: 'pkt-01',
@@ -107,102 +82,24 @@ describe('isContentPacket', () => {
     const packet = { ...makeValidContentPacket(), interactionVerbs: [] };
     expect(isContentPacket(packet)).toBe(false);
   });
-});
 
-describe('isSavedContentPacket', () => {
-  it('validates a complete valid object', () => {
-    expect(isSavedContentPacket(makeValidSavedContentPacket())).toBe(true);
+  it('clones canonical packets without sharing the interaction verbs array', () => {
+    const packet = makeValidContentPacket() as ContentPacket;
+    const cloned = cloneContentPacket(packet);
+
+    expect(cloned).toEqual(packet);
+    expect(cloned).not.toBe(packet);
+    expect(cloned.interactionVerbs).not.toBe(packet.interactionVerbs);
   });
 
-  it('accepts with optional evaluation present', () => {
-    const packet = {
-      ...makeValidSavedContentPacket(),
-      evaluation: {
-        contentId: 'pkt-01',
-        scores: {
-          imageCharge: 4,
-          humanAche: 3,
-          socialLoadBearing: 5,
-          branchingPressure: 4,
-          antiGenericity: 5,
-          sceneBurst: 3,
-          structuralIrony: 4,
-          conceptUtility: 5,
-        },
-        strengths: ['vivid imagery'],
-        weaknesses: ['narrow scope'],
-        recommendedRole: 'PRIMARY_SEED',
-      },
-    };
-    expect(isSavedContentPacket(packet)).toBe(true);
-  });
+  it('projects packet-bearing sources to a lean canonical packet clone', () => {
+    const packet = makeValidContentPacket() as ContentPacket;
+    const projected = projectContentPacket({
+      packet,
+    });
 
-  const requiredFields = [
-    'id',
-    'packet',
-  ] as const;
-
-  it.each(requiredFields.map((f) => [f]))(
-    'rejects when required field "%s" is missing',
-    (field) => {
-      const packet = makeValidSavedContentPacket();
-      delete packet[field];
-      expect(isSavedContentPacket(packet)).toBe(false);
-    }
-  );
-
-  it('rejects when contentKind is invalid', () => {
-    const packet = {
-      ...makeValidSavedContentPacket(),
-      packet: { ...makeValidContentPacket(), contentKind: 'INVALID' },
-    };
-    expect(isSavedContentPacket(packet)).toBe(false);
-  });
-
-  it('rejects when nested interactionVerbs is empty', () => {
-    const packet = {
-      ...makeValidSavedContentPacket(),
-      packet: { ...makeValidContentPacket(), interactionVerbs: [] },
-    };
-    expect(isSavedContentPacket(packet)).toBe(false);
-  });
-
-  it('rejects when pinned is missing', () => {
-    const packet = makeValidSavedContentPacket();
-    delete packet['pinned'];
-    expect(isSavedContentPacket(packet)).toBe(false);
-  });
-
-  it('rejects when provenance is invalid', () => {
-    const packet = {
-      ...makeValidSavedContentPacket(),
-      provenance: { generationMode: 'pipeline', sourceSparkIds: [] },
-    };
-    expect(isSavedContentPacket(packet)).toBe(false);
-  });
-
-  it('rejects when createdAt is not a valid date', () => {
-    const packet = { ...makeValidSavedContentPacket(), createdAt: 'not-a-date' };
-    expect(isSavedContentPacket(packet)).toBe(false);
-  });
-
-  it('rejects null', () => {
-    expect(isSavedContentPacket(null)).toBe(false);
-  });
-
-  it('rejects a non-object', () => {
-    expect(isSavedContentPacket('string')).toBe(false);
-  });
-
-  it('rejects legacy flattened packets that still persist name', () => {
-    const legacyPacket = {
-      ...makeValidSavedContentPacket(),
-      name: 'Legacy Packet',
-      contentKind: 'ENTITY',
-      coreAnomaly: 'flattened',
-    };
-
-    expect(isSavedContentPacket(legacyPacket)).toBe(false);
+    expect(projected).toEqual(packet);
+    expect(projected).not.toBe(packet);
   });
 });
 

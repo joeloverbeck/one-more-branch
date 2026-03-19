@@ -402,6 +402,7 @@ export type {
   TasteProfile,
   ContentSpark,
   ContentPacket,
+  ContentPacketProjectionSource,
   ContentPacketProvenance,
   ContentPacketerPacket,
   ContentEvaluationScores,
@@ -419,17 +420,29 @@ export {
   CONTENT_KIND_VALUES,
   CONTENT_PACKET_ROLE_VALUES,
   RISK_APPETITE_VALUES,
+  cloneContentPacket,
   isContentKind,
   isContentPacket,
   isContentPacketProvenance,
   isContentPacketRole,
+  projectContentPacket,
   isRiskAppetite,
 } from './content-packet';
 
-export type { SavedContentPacket, SavedTasteProfile } from './saved-content-packet';
+export type {
+  ContentPacketContext,
+  ContentPacketOrigin,
+  ContentPacketSourceArtifact,
+  SavedContentPacket,
+  SavedTasteProfile,
+} from './saved-content-packet';
 export {
   getSavedContentPacketRecommendedRole,
   isContentEvaluation,
+  isContentPacketContext,
+  isContentPacketOrigin,
+  isContentPacketSourceArtifact,
+  projectSavedContentPacket,
   isSavedContentPacket,
   isSavedTasteProfile,
 } from './saved-content-packet';

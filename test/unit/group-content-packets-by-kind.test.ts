@@ -7,6 +7,7 @@ function makePacket(overrides: Partial<SavedContentPacket> = {}): SavedContentPa
     createdAt: '2025-01-01T00:00:00.000Z',
     updatedAt: '2025-01-01T00:00:00.000Z',
     pinned: false,
+    assetVersion: 2,
     packet: {
       contentId: 'pkt-01',
       contentKind: 'ENTITY',
@@ -19,6 +20,22 @@ function makePacket(overrides: Partial<SavedContentPacket> = {}): SavedContentPa
       wildnessInvariant: 'invariant',
       dullCollapse: 'collapse',
       interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
+    },
+    context: {
+      premiseSummary: 'premise',
+      situationFrame: 'frame',
+      worldState: 'world',
+    },
+    origin: {
+      generationMode: 'quick',
+      sourceArtifacts: [
+        {
+          artifactType: 'EXEMPLAR',
+          sourceId: 'exemplar-01',
+          contentKind: 'ENTITY',
+          summary: 'summary',
+        },
+      ],
     },
     ...overrides,
   };

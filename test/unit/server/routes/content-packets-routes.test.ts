@@ -132,7 +132,24 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
     createdAt: '2026-03-19T10:00:00.000Z',
     updatedAt: '2026-03-19T10:00:00.000Z',
     pinned: false,
+    assetVersion: 2,
     packet: makeContentPacket(),
+    context: {
+      premiseSummary: 'A premise summary',
+      situationFrame: 'A situation frame',
+      worldState: 'A world state',
+    },
+    origin: {
+      generationMode: 'quick',
+      sourceArtifacts: [
+        {
+          artifactType: 'EXEMPLAR',
+          sourceId: 'exemplar-01',
+          contentKind: 'ENTITY',
+          summary: 'An exemplar summary',
+        },
+      ],
+    },
     ...overrides,
   };
 }
