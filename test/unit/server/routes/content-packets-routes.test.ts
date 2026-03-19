@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import type { Request, Response } from 'express';
+import type { ContentPacket, ContentEvaluation } from '@/models/content-packet';
+import type { SavedContentPacket } from '@/models/saved-content-packet';
 
 jest.mock('@/persistence/content-packet-repository', () => ({
   listContentPackets: jest.fn().mockResolvedValue([]),
@@ -87,20 +89,62 @@ function mockReq(overrides: Partial<Request> = {}): Request {
   } as unknown as Request;
 }
 
+function makeContentPacket(overrides: Partial<ContentPacket> = {}): ContentPacket {
+  return {
+    contentId: 'pkt-01',
+    contentKind: 'ENTITY',
+    coreAnomaly: 'Test anomaly',
+    humanAnchor: 'Human anchor',
+    socialEngine: 'Social engine',
+    choicePressure: 'Choice pressure',
+    signatureImage: 'Signature image',
+    escalationPath: 'Escalation path',
+    wildnessInvariant: 'Wildness invariant',
+    dullCollapse: 'Dull collapse',
+    interactionVerbs: ['observe', 'trade', 'rupture', 'escalate'],
+    ...overrides,
+  };
+}
+
+function makeEvaluation(overrides: Partial<ContentEvaluation> = {}): ContentEvaluation {
+  return {
+    contentId: 'pkt-01',
+    scores: {
+      imageCharge: 8,
+      humanAche: 7,
+      socialLoadBearing: 9,
+      branchingPressure: 6,
+      antiGenericity: 8,
+      sceneBurst: 7,
+      structuralIrony: 8,
+      conceptUtility: 9,
+    },
+    strengths: ['Strong image'],
+    weaknesses: ['Minor weakness'],
+    recommendedRole: 'PRIMARY_SEED',
+    ...overrides,
+  };
+}
+
+function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedContentPacket {
+  return {
+    id: 'p1',
+    createdAt: '2026-03-19T10:00:00.000Z',
+    updatedAt: '2026-03-19T10:00:00.000Z',
+    pinned: false,
+    packet: makeContentPacket(),
+    ...overrides,
+  };
+}
+
 describe('content-packets routes', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   describe('GET /', () => {
-    it('renders content-packets page with packet list from repository', async () => {
-      const packets = [
-        {
-          id: 'p1',
-          pinned: false,
-          packet: { contentId: 'pkt-01', contentKind: 'ENTITY', coreAnomaly: 'Test Packet' },
-        },
-      ];
+    it('renders content-packets page with grouped card view models from repository', async () => {
+      const packets = [makeSavedPacket({ evaluation: makeEvaluation() })];
       (listContentPackets as jest.Mock).mockResolvedValue(packets);
 
       const handler = getRouteHandler('get', '/');
@@ -111,22 +155,55 @@ describe('content-packets routes', () => {
       await flushPromises();
 
       expect(listContentPackets).toHaveBeenCalled();
-      expect(res.render).toHaveBeenCalledWith('pages/content-packets', {
-        title: 'Content Packets - One More Branch',
-        packets,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        contentKindGroups: expect.any(Array),
+      expect(res.render).toHaveBeenCalled();
+
+      const renderCall = ((res.render as jest.Mock).mock.calls as unknown[])[0] as [
+        string,
+        {
+          title: string;
+          hasSavedPackets: boolean;
+          contentKindGroups: Array<{
+            kind: string;
+            displayLabel: string;
+            cards: Array<{
+              id: string;
+              pinned: boolean;
+              details: Array<{ key: string; value: string | readonly string[] }>;
+              metaDetails: Array<{ key: string; value: string | readonly string[] }>;
+            }>;
+          }>;
+        },
+      ];
+
+      expect(renderCall[0]).toBe('pages/content-packets');
+      expect(renderCall[1].title).toBe('Content Packets - One More Branch');
+      expect(renderCall[1].hasSavedPackets).toBe(true);
+      expect(renderCall[1].contentKindGroups).toHaveLength(1);
+      expect(renderCall[1].contentKindGroups[0]).toMatchObject({
+        kind: 'ENTITY',
+        displayLabel: 'ENTITY',
       });
+      expect(renderCall[1].contentKindGroups[0]?.cards[0]).toMatchObject({
+        id: 'p1',
+        pinned: false,
+      });
+      expect(renderCall[1].contentKindGroups[0]?.cards[0]?.details).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: 'contentId', value: 'pkt-01' }),
+          expect.objectContaining({ key: 'coreAnomaly', value: 'Test anomaly' }),
+        ])
+      );
+      expect(renderCall[1].contentKindGroups[0]?.cards[0]?.metaDetails).toEqual([
+        expect.objectContaining({ key: 'recommendedRole', value: 'PRIMARY_SEED' }),
+      ]);
     });
   });
 
   describe('GET /api/:packetId', () => {
     it('returns packet when found', async () => {
-      const packet = {
-        id: 'p1',
-        pinned: false,
-        packet: { contentId: 'pkt-01', contentKind: 'ENTITY', coreAnomaly: 'Found' },
-      };
+      const packet = makeSavedPacket({
+        packet: makeContentPacket({ coreAnomaly: 'Found' }),
+      });
       (loadContentPacket as jest.Mock).mockResolvedValue(packet);
 
       const handler = getRouteHandler('get', '/api/:packetId');
@@ -161,7 +238,7 @@ describe('content-packets routes', () => {
   describe('POST /api/generate', () => {
     it('calls generateContentQuick by default', async () => {
       const quickResult = {
-        packets: [{ coreAnomaly: 'test' }],
+        packets: [makeContentPacket()],
         rawResponse: '{}',
       };
       (contentService.generateContentQuick as jest.Mock).mockResolvedValue(quickResult);
@@ -180,18 +257,36 @@ describe('content-packets routes', () => {
 
       expect(contentService.generateContentQuick).toHaveBeenCalled();
       expect(contentService.generateContentPipeline).not.toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith({
-        success: true,
-        packets: quickResult.packets,
-      });
+      expect(res.json).toHaveBeenCalled();
+
+      const jsonCall = ((res.json as jest.Mock).mock.calls as unknown[])[0] as [
+        {
+          success: boolean;
+          packets: ContentPacket[];
+          packetCards: Array<{
+            id: string;
+            details: Array<{ key: string; value: string | readonly string[] }>;
+          }>;
+        },
+      ];
+
+      expect(jsonCall[0].success).toBe(true);
+      expect(jsonCall[0].packets).toEqual(quickResult.packets);
+      expect(jsonCall[0].packetCards[0]).toMatchObject({ id: 'pkt-01' });
+      expect(jsonCall[0].packetCards[0]?.details).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: 'contentKind', value: 'ENTITY' }),
+          expect.objectContaining({ key: 'contentId', value: 'pkt-01' }),
+        ])
+      );
     });
 
     it('calls generateContentPipeline when pipeline=true', async () => {
       const pipelineResult = {
         tasteProfile: { collisionPatterns: [] },
         sparks: [],
-        packets: [{ coreAnomaly: 'pipeline-test' }],
-        evaluations: [],
+        packets: [makeContentPacket({ contentId: 'pkt-02', coreAnomaly: 'pipeline-test' })],
+        evaluations: [makeEvaluation({ contentId: 'pkt-02', recommendedRole: 'SECONDARY_MUTAGEN' })],
       };
       (contentService.generateContentPipeline as jest.Mock).mockResolvedValue(pipelineResult);
 
@@ -213,6 +308,14 @@ describe('content-packets routes', () => {
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         packets: pipelineResult.packets,
+        packetCards: [
+          expect.objectContaining({
+            id: 'pkt-02',
+            metaDetails: [
+              expect.objectContaining({ key: 'recommendedRole', value: 'SECONDARY_MUTAGEN' }),
+            ],
+          }),
+        ],
         evaluations: pipelineResult.evaluations,
         tasteProfile: pipelineResult.tasteProfile,
         sparks: pipelineResult.sparks,

@@ -77,7 +77,7 @@
 
       <section id="saved-packets-section">
         <h2>Saved Packets</h2>
-        <% if (packets.length === 0) { %>
+        <% if (!hasSavedPackets) { %>
           <p class="empty-state">No saved content packets yet. Generate some above.</p>
         <% } else { %>
           <div id="saved-packets-grid">
@@ -85,41 +85,46 @@
               <details class="genre-group" data-genre="<%= group.kind %>">
                 <summary class="genre-group__header">
                   <span class="genre-group__label"><%= group.displayLabel %></span>
-                  <span class="genre-group__count">(<%= group.packets.length %>)</span>
+                  <span class="genre-group__count">(<%= group.cards.length %>)</span>
                 </summary>
                 <div class="genre-group__body packets-grid">
-                  <% group.packets.forEach(packet => { %>
-                    <article class="story-card" data-packet-id="<%= packet.id %>">
+                  <% group.cards.forEach(card => { %>
+                    <article class="story-card" data-packet-id="<%= card.id %>">
                       <div class="story-card-content">
-                        <h3 class="story-title">
-                          <%= packet.packet.coreAnomaly %>
-                          <% if (packet.pinned) { %>
+                        <div class="story-card-actions">
+                          <% if (card.pinned) { %>
                             <span class="pin-badge" title="Pinned">&#128204;</span>
                           <% } %>
-                        </h3>
+                        </div>
                         <dl class="story-details">
-                          <div class="story-detail-row">
-                            <dt>Kind</dt>
-                            <dd><%= packet.packet.contentKind %></dd>
-                          </div>
-                          <div class="story-detail-row">
-                            <dt>Core Anomaly</dt>
-                            <dd><%= packet.packet.coreAnomaly %></dd>
-                          </div>
-                          <div class="story-detail-row">
-                            <dt>Wildness Invariant</dt>
-                            <dd><%= packet.packet.wildnessInvariant %></dd>
-                          </div>
-                          <div class="story-detail-row">
-                            <dt>Role</dt>
-                            <dd><%= packet.evaluation ? packet.evaluation.recommendedRole : 'UNSCORED' %></dd>
-                          </div>
+                          <% card.details.forEach(detail => { %>
+                            <div class="story-detail-row" data-detail-key="<%= detail.key %>">
+                              <dt><%= detail.label %></dt>
+                              <dd>
+                                <% if (Array.isArray(detail.value)) { %>
+                                  <ul class="story-detail-list">
+                                    <% detail.value.forEach(item => { %>
+                                      <li><%= item %></li>
+                                    <% }); %>
+                                  </ul>
+                                <% } else { %>
+                                  <%= detail.value %>
+                                <% } %>
+                              </dd>
+                            </div>
+                          <% }); %>
+                          <% card.metaDetails.forEach(detail => { %>
+                            <div class="story-detail-row story-detail-row--meta" data-detail-key="<%= detail.key %>">
+                              <dt><%= detail.label %></dt>
+                              <dd><%= detail.value %></dd>
+                            </div>
+                          <% }); %>
                         </dl>
                         <div class="story-card-actions">
-                          <button class="btn btn-sm pin-packet-btn" data-id="<%= packet.id %>">
-                            <%= packet.pinned ? 'Unpin' : 'Pin' %>
+                          <button class="btn btn-sm pin-packet-btn" data-id="<%= card.id %>">
+                            <%= card.pinned ? 'Unpin' : 'Pin' %>
                           </button>
-                          <button class="btn btn-sm btn-danger delete-packet-btn" data-id="<%= packet.id %>">
+                          <button class="btn btn-sm btn-danger delete-packet-btn" data-id="<%= card.id %>">
                             Delete
                           </button>
                         </div>

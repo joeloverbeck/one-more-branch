@@ -1,6 +1,6 @@
 # CONTPACK-02: Content Packet Card View Model and Exhaustive Rendering
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Medium
 **Engine Changes**: Yes — server-side content packet presenter/view models, `/content-packets` route payload, EJS rendering, client generated-results rendering
@@ -12,14 +12,17 @@ The `/content-packets` page currently renders saved cards by hard-coding four fi
 
 ## Assumption Reassessment (2026-03-19)
 
-1. `src/server/views/pages/content-packets.ejs:94` still renders `packet.name` as a visible heading even though the canonical pipeline packet has no title and saved files show `Untitled Packet`.
-2. `src/server/views/pages/content-packets.ejs:100` renders only `Kind`, `Core Anomaly`, `Wildness Invariant`, and `Role`, omitting other packet properties already present in persisted JSON such as `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `dullCollapse`, and `interactionVerbs`.
-3. `public/js/src/11-content-packets.js` separately renders generated packets with its own field list and title fallback. Corrected scope: both saved and generated packet cards must consume one shared presentation model so field coverage and ordering are defined in one place.
+1. `src/server/views/pages/content-packets.ejs:95` does not render `packet.name`; it currently renders `packet.packet.coreAnomaly` as both the visible heading and again as a detail row. The architectural issue is duplicated packet-field ownership plus a fabricated card-title slot, not a lingering `name` field.
+2. `src/server/views/pages/content-packets.ejs:103` still renders only `Kind`, `Core Anomaly`, `Wildness Invariant`, and `Role`, omitting other canonical packet properties already present in persisted JSON such as `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `dullCollapse`, and `interactionVerbs`.
+3. `public/js/src/11-content-packets.js:172` separately renders generated packets with its own title fallback (`coreAnomaly || contentId || "Packet N"`) and its own field subset (`Kind`, `Core Anomaly`, `Wildness Invariant`, `Signature Image`).
+4. `src/server/routes/content-packets.ts` currently passes raw saved packets to EJS and returns raw generated packets from `POST /content-packets/api/generate`; no normalized card view-model payload exists yet.
+5. Current route tests do not meaningfully protect the rendering contract. `test/unit/server/routes/content-packets-routes.test.ts` uses partial packet objects that do not satisfy the canonical `ContentPacket` shape, and there are currently no dedicated content-packets view tests or client rendering tests. Corrected scope: strengthen tests around the canonical packet contract while introducing the shared presentation model.
 
 ## Architecture Check
 
 1. The clean solution is a presenter layer that converts a canonical packet artifact into a `ContentPacketCardViewModel` with ordered `details[]` rows. Templates and browser JS should render the view model, not inspect packet domain fields directly.
 2. This is cleaner than patching EJS and client JS independently because it centralizes field ownership, makes exhaustive rendering testable, and supports future packet fields by updating one registry. No duplicate field-order logic across server template and browser script.
+3. This change is architecturally better than the current setup. The current split between raw domain objects, EJS-specific assumptions, and client-only fallback rendering is brittle and guarantees drift. A presenter-backed view model is the more robust long-term contract because it isolates rendering concerns from domain storage and removes duplicated field-order knowledge.
 
 ## What to Change
 
@@ -63,7 +66,11 @@ Browser code should only:
 
 `src/server/views/pages/content-packets.ejs` should render grouped card view models, not `SavedContentPacket` internals. This prevents template drift when the underlying packet artifact evolves.
 
-### 6. Add exhaustive-coverage tests
+### 6. Tighten tests to canonical fixtures
+
+Where route tests exercise saved or generated packet rendering data, they must use fully valid canonical `ContentPacket` fixtures rather than partial objects. The goal is to stop tests from passing with impossible packet shapes.
+
+### 7. Add exhaustive-coverage tests
 
 Add tests that fail if a canonical packet field is missing from the presenter registry or if the grouped saved-card presenter accidentally includes `contentKind`.
 
@@ -75,9 +82,11 @@ Add tests that fail if a canonical packet field is missing from the presenter re
 - `public/js/src/11-content-packets.js` (modify)
 - `public/js/app.js` (regenerate)
 - `src/server/...` new presenter utility file for content packet card view models (new)
+- `test/unit/group-content-packets-by-kind.test.ts` (modify only if grouping input/output changes)
 - `test/unit/server/routes/content-packets-routes.test.ts` (modify)
-- `test/unit/server/views/...` add or modify page/presenter tests (modify/new)
-- `test/unit/client/...` add or modify generated-results rendering tests (modify/new)
+- `test/unit/server/views/content-packets*.test.ts` (new)
+- `test/unit/client/content-packets-page/*.test.ts` or equivalent (new)
+- `test/unit/server/...presenter*.test.ts` (new)
 
 ## Out of Scope
 
@@ -92,7 +101,8 @@ Add tests that fail if a canonical packet field is missing from the presenter re
 1. The saved `/content-packets` page renders all canonical packet payload fields except `contentKind` inside grouped cards.
 2. Generated packet cards render from the shared presenter/view-model payload and do not invent or display a title.
 3. Adding a new canonical packet field requires changing the presenter registry and causes a failing test until that registry is updated.
-4. Existing suite: `npm run test:unit -- --coverage=false`
+4. Route-level tests that cover rendering payloads use canonical packet fixtures, not partial packet stubs.
+5. Existing suite: `npm run test:unit -- --coverage=false`
 
 ### Invariants
 
@@ -108,6 +118,7 @@ Add tests that fail if a canonical packet field is missing from the presenter re
 2. `test/unit/server/views/content-packets*.test.ts` — assert saved cards render no title and include all canonical packet fields except `contentKind`.
 3. `test/unit/client/...content-packets*.test.ts` — assert generated-results rendering consumes `packetCards` and preserves save behavior.
 4. `test/unit/server/...presenter*.test.ts` — assert the field registry is exhaustive and ordered.
+5. Update existing route fixtures to use valid canonical packets so these tests fail on impossible packet shapes.
 
 ### Commands
 
@@ -116,3 +127,10 @@ Add tests that fail if a canonical packet field is missing from the presenter re
 3. `npm run typecheck`
 4. `npm run lint`
 5. `npm run test:unit -- --coverage=false`
+
+## Outcome
+
+- Completion date: 2026-03-19
+- What changed: introduced a server-side content-packet card presenter with one authoritative canonical field registry; updated `/content-packets` route payloads so saved cards and generated cards both consume presenter-built card view models; removed synthetic visible titles from saved/generated cards; rendered all canonical packet fields (grouped saved cards omit `contentKind`); added dedicated presenter, route, template, and client tests; tightened route tests to use canonical packet fixtures instead of partial impossible packet stubs.
+- Deviations from original plan: the ticket’s initial reassessment incorrectly referenced `packet.name`; implementation corrected the real issue, which was `coreAnomaly` being reused as a visible title and body detail. Recommended role was preserved as presenter-driven meta detail rather than mixed into the canonical packet field registry.
+- Verification results: `npm run concat:js`, `npm run typecheck`, `npm run lint`, `npm run test:unit -- --coverage=false`, and `npm run test:client` all passed on 2026-03-19.

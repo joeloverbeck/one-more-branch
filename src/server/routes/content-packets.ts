@@ -14,6 +14,10 @@ import { listTasteProfiles, saveTasteProfile } from '../../persistence/taste-pro
 import type { SavedContentPacket, SavedTasteProfile } from '../../models/saved-content-packet.js';
 import { createSavedContentPacketArtifact } from '../services/content-packet-artifact.js';
 import { contentService } from '../services/index.js';
+import {
+  buildContentPacketCardViewModel,
+  buildSavedContentPacketCardWithRecommendedRole,
+} from '../presenters/content-packet-card.js';
 import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
 import { groupContentPacketsByKind } from '../utils/group-content-packets-by-kind.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
@@ -25,10 +29,14 @@ contentPacketRoutes.get(
   '/',
   wrapAsyncRoute(async (_req: Request, res: Response) => {
     const packets = await listContentPackets();
-    const contentKindGroups = groupContentPacketsByKind(packets);
+    const contentKindGroups = groupContentPacketsByKind(packets).map((group) => ({
+      kind: group.kind,
+      displayLabel: group.displayLabel,
+      cards: group.packets.map(buildSavedContentPacketCardWithRecommendedRole),
+    }));
     return res.render('pages/content-packets', {
       title: 'Content Packets - One More Branch',
-      packets,
+      hasSavedPackets: packets.length > 0,
       contentKindGroups,
     });
   })
@@ -109,9 +117,19 @@ contentPacketRoutes.post(
 
         progress.complete();
 
+        const evaluationByContentId = new Map(
+          result.evaluations.map((evaluation) => [evaluation.contentId, evaluation])
+        );
+
         return res.json({
           success: true,
           packets: result.packets,
+          packetCards: result.packets.map((packet) =>
+            buildContentPacketCardViewModel(packet, {
+              includeContentKind: true,
+              evaluation: evaluationByContentId.get(packet.contentId),
+            })
+          ),
           evaluations: result.evaluations,
           tasteProfile: result.tasteProfile,
           sparks: result.sparks,
@@ -133,6 +151,11 @@ contentPacketRoutes.post(
       return res.json({
         success: true,
         packets: result.packets,
+        packetCards: result.packets.map((packet) =>
+          buildContentPacketCardViewModel(packet, {
+            includeContentKind: true,
+          })
+        ),
       });
     } catch (error) {
       if (error instanceof LLMError) {

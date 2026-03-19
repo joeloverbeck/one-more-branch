@@ -9232,7 +9232,7 @@ function initContentPacketsPage() {
           return;
         }
 
-        renderGeneratedPackets(data.packets || []);
+        renderGeneratedPackets(data.packetCards || [], data.packets || []);
       })
       .catch(function (err) {
         if (loadingProgress) loadingProgress.stop();
@@ -9241,29 +9241,22 @@ function initContentPacketsPage() {
       });
   }
 
-  function renderGeneratedPackets(packets) {
+  function renderGeneratedPackets(packetCards, packets) {
     if (!generatedList || !resultsEl) return;
-    if (packets.length === 0) {
+    if (packetCards.length === 0) {
       generatedList.innerHTML = '<p>No packets generated.</p>';
       resultsEl.style.display = 'block';
       return;
     }
 
-    var html = packets.map(function (pkt, idx) {
-      var title = pkt.coreAnomaly || pkt.contentId || 'Packet ' + (idx + 1);
-      var kind = pkt.contentKind || 'UNKNOWN';
+    var html = packetCards.map(function (card, idx) {
+      var packet = packets[idx];
       return (
         '<article class="story-card">' +
           '<div class="story-card-content">' +
-            '<h3 class="story-title">' + escapeHtml(title) + '</h3>' +
-            '<dl class="story-details">' +
-              '<div class="story-detail-row"><dt>Kind</dt><dd>' + escapeHtml(kind) + '</dd></div>' +
-              '<div class="story-detail-row"><dt>Core Anomaly</dt><dd>' + escapeHtml(pkt.coreAnomaly || '') + '</dd></div>' +
-              '<div class="story-detail-row"><dt>Wildness Invariant</dt><dd>' + escapeHtml(pkt.wildnessInvariant || '') + '</dd></div>' +
-              '<div class="story-detail-row"><dt>Signature Image</dt><dd>' + escapeHtml(pkt.signatureImage || '') + '</dd></div>' +
-            '</dl>' +
+            '<dl class="story-details">' + renderDetailRows(card.details, card.metaDetails) + '</dl>' +
             '<button class="btn btn-sm btn-primary save-generated-btn" ' +
-              'data-packet=\'' + escapeAttr(JSON.stringify(pkt)) + '\'>' +
+              'data-packet=\'' + escapeAttr(JSON.stringify(packet)) + '\'>' +
               'Save' +
             '</button>' +
           '</div>' +
@@ -9283,6 +9276,46 @@ function initContentPacketsPage() {
 
   function escapeAttr(str) {
     return str.replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+  }
+
+  function renderDetailRows(details, metaDetails) {
+    var rows = [];
+
+    function renderValue(value) {
+      if (Array.isArray(value)) {
+        return (
+          '<ul class="story-detail-list">' +
+            value.map(function (item) {
+              return '<li>' + escapeHtml(item) + '</li>';
+            }).join('') +
+          '</ul>'
+        );
+      }
+
+      return escapeHtml(value || '');
+    }
+
+    details.forEach(function (detail) {
+      rows.push(
+        '<div class="story-detail-row" data-detail-key="' + escapeAttr(detail.key) + '">' +
+          '<dt>' + escapeHtml(detail.label) + '</dt>' +
+          '<dd>' + renderValue(detail.value) + '</dd>' +
+        '</div>'
+      );
+    });
+
+    (metaDetails || []).forEach(function (detail) {
+      rows.push(
+        '<div class="story-detail-row story-detail-row--meta" data-detail-key="' +
+          escapeAttr(detail.key) +
+          '">' +
+          '<dt>' + escapeHtml(detail.label) + '</dt>' +
+          '<dd>' + renderValue(detail.value) + '</dd>' +
+        '</div>'
+      );
+    });
+
+    return rows.join('');
   }
 
   function handleSaveGenerated(btn) {
