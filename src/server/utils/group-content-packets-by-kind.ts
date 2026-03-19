@@ -12,7 +12,7 @@ export function groupContentPacketsByKind(
   const map = new Map<string, SavedContentPacket[]>();
 
   for (const packet of packets) {
-    const kind = packet.contentKind || 'UNKNOWN';
+    const kind = packet.packet.contentKind || 'UNKNOWN';
     const existing = map.get(kind);
     if (existing) {
       existing.push(packet);

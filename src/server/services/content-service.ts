@@ -8,7 +8,6 @@ import type { GenerationStageCallback } from '../../engine/types.js';
 import type {
   ContentEvaluation,
   ContentOneShotContext,
-  ContentOneShotPacket,
   ContentPacket,
   ContentSpark,
   SparkstormerContext,
@@ -73,7 +72,7 @@ export interface EvaluatePacketsInput {
 // --- Result types ---
 
 export interface ContentQuickResult {
-  readonly packets: readonly ContentOneShotPacket[];
+  readonly packets: readonly ContentPacket[];
   readonly rawResponse: string;
 }
 

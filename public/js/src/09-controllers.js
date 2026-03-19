@@ -26,9 +26,28 @@ function buildPlayStructureFieldHtml(label, text) {
   );
 }
 
-function buildPlayStructureCardHtml(eyebrow, title, fields, extraClass) {
+function buildPlayStructureSummaryPillHtml(label, text, extraClass) {
+  if (!text) {
+    return '';
+  }
+
   return (
-    '<section class="play-structure-card ' +
+    '<span class="play-structure-summary__pill ' +
+    extraClass +
+    '">' +
+    '<span class="play-structure-summary__label">' +
+    escapeHtml(label) +
+    '</span>' +
+    '<span class="play-structure-summary__text">' +
+    escapeHtml(text) +
+    '</span>' +
+    '</span>'
+  );
+}
+
+function buildPlayStructureStaticCardHtml(eyebrow, title, extraClass) {
+  return (
+    '<section class="play-structure-card play-structure-card--static ' +
     extraClass +
     '">' +
     '<div class="play-structure-card__eyebrow">' +
@@ -37,12 +56,38 @@ function buildPlayStructureCardHtml(eyebrow, title, fields, extraClass) {
     '<div class="play-structure-card__title">' +
     escapeHtml(title) +
     '</div>' +
-    fields +
     '</section>'
   );
 }
 
-function buildPlayStructureDetailsHtml(playStructureInfo) {
+function buildPlayStructureAccordionCardHtml(eyebrow, title, fields, extraClass) {
+  if (!fields) {
+    return buildPlayStructureStaticCardHtml(eyebrow, title, extraClass);
+  }
+
+  return (
+    '<details class="play-structure-card play-structure-card--accordion ' +
+    extraClass +
+    '">' +
+    '<summary class="play-structure-card__summary">' +
+    '<div class="play-structure-card__summary-main">' +
+    '<div class="play-structure-card__eyebrow">' +
+    escapeHtml(eyebrow) +
+    '</div>' +
+    '<div class="play-structure-card__title">' +
+    escapeHtml(title) +
+    '</div>' +
+    '</div>' +
+    '<span class="play-structure-card__toggle-hint">Details</span>' +
+    '</summary>' +
+    '<div class="play-structure-card__body">' +
+    fields +
+    '</div>' +
+    '</details>'
+  );
+}
+
+function buildPlayStructureDetailsHtml(playStructureInfo, options) {
   if (!playStructureInfo || !playStructureInfo.pageStructure || !playStructureInfo.nextStructureTarget) {
     return '';
   }
@@ -50,6 +95,7 @@ function buildPlayStructureDetailsHtml(playStructureInfo) {
   var pageStructure = playStructureInfo.pageStructure;
   var nextStructureTarget = playStructureInfo.nextStructureTarget;
   var actArc = nextStructureTarget || pageStructure;
+  var isExpanded = Boolean(options && options.expanded);
 
   var nextFields =
     buildPlayStructureFieldHtml('Milestone Objective', nextStructureTarget.milestoneObjective) +
@@ -64,27 +110,69 @@ function buildPlayStructureDetailsHtml(playStructureInfo) {
     buildPlayStructureFieldHtml('Act Question', actArc.actQuestion) +
     buildPlayStructureFieldHtml('Act-End Reversal', actArc.actEndReversal);
 
+  var summaryPills =
+    buildPlayStructureSummaryPillHtml(
+      'This Page',
+      pageStructure.milestoneName || pageStructure.displayString,
+      'play-structure-summary__pill--page'
+    ) +
+    buildPlayStructureSummaryPillHtml(
+      'Next Objective',
+      nextStructureTarget.milestoneName || nextStructureTarget.displayString,
+      'play-structure-summary__pill--target'
+    ) +
+    buildPlayStructureSummaryPillHtml(
+      'Act Arc',
+      'Act ' + actArc.actNumber + ': ' + (actArc.actName || ''),
+      'play-structure-summary__pill--act'
+    );
+
   var cards =
-    buildPlayStructureCardHtml(
+    buildPlayStructureStaticCardHtml(
       'This Page',
       pageStructure.displayString,
-      '',
       'play-structure-card--page'
     ) +
-    buildPlayStructureCardHtml(
+    buildPlayStructureAccordionCardHtml(
       'Next Objective',
       nextStructureTarget.displayString,
       nextFields,
       'play-structure-card--target'
     ) +
-    buildPlayStructureCardHtml(
+    buildPlayStructureAccordionCardHtml(
       'Act Arc',
-      'Act ' + actArc.actNumber + ': ' + actArc.actName,
+      'Act ' + actArc.actNumber + ': ' + (actArc.actName || ''),
       actFields,
       'play-structure-card--act'
     );
 
-  return '<div class="play-structure-details" id="play-structure-details" hidden>' + cards + '</div>';
+  return (
+    '<div class="play-structure-panel" id="play-structure-panel" data-act-number="' +
+    escapeHtml(String(pageStructure.actNumber || 0)) +
+    '">' +
+    '<details class="play-structure-shell" id="play-structure-shell"' +
+    (isExpanded ? ' open' : '') +
+    '>' +
+    '<summary class="act-indicator" id="act-indicator" aria-controls="play-structure-details" aria-expanded="' +
+    (isExpanded ? 'true' : 'false') +
+    '">' +
+    '<span class="act-indicator__lead">' +
+    '<span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>' +
+    '<span class="act-indicator__label">Story Compass</span>' +
+    '</span>' +
+    '<span class="act-indicator__current">' +
+    escapeHtml(pageStructure.displayString) +
+    '</span>' +
+    '<span class="play-structure-summary">' +
+    summaryPills +
+    '</span>' +
+    '</summary>' +
+    '<div class="play-structure-details play-structure-details--stacked" id="play-structure-details">' +
+    cards +
+    '</div>' +
+    '</details>' +
+    '</div>'
+  );
 }
 
 function initPlayPage() {
@@ -132,11 +220,11 @@ function initPlayPage() {
   }
 
   var previousActNumber = null;
-  var initialActIndicator = document.getElementById('act-indicator');
-  if (initialActIndicator) {
-    var initialWrapper = document.getElementById('act-indicator-wrapper');
-    if (initialWrapper) {
-      previousActNumber = Number(initialWrapper.dataset.actNumber || '0') || null;
+  var initialStructurePanel = document.getElementById('play-structure-panel');
+  if (initialStructurePanel) {
+    previousActNumber = Number(initialStructurePanel.dataset.actNumber || '0') || null;
+    if (previousActNumber === 0) {
+      previousActNumber = null;
     }
   }
   initActIndicator();
@@ -417,40 +505,19 @@ function initPlayPage() {
     }
 
     // Update act indicator based on response
-    var existingWrapper = document.getElementById('act-indicator-wrapper');
     var pageStructure = data.playStructureInfo ? data.playStructureInfo.pageStructure : null;
     if (pageStructure) {
       var newActNumber = pageStructure.actNumber;
       var actChanged = previousActNumber !== null && newActNumber !== previousActNumber;
-      var detailsHtml = buildPlayStructureDetailsHtml(data.playStructureInfo);
+      var existingPanel = document.getElementById('play-structure-panel');
+      var existingShell = document.getElementById('play-structure-shell');
+      var shouldExpandStructure = Boolean(existingShell && existingShell.open) || actChanged;
+      var detailsHtml = buildPlayStructureDetailsHtml(data.playStructureInfo, {
+        expanded: shouldExpandStructure,
+      });
 
-      var wrapperHtml =
-        '<span class="act-indicator act-indicator--clickable" id="act-indicator"' +
-        ' role="button" tabindex="0" aria-expanded="false"' +
-        ' aria-controls="play-structure-details">' +
-        '<span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>' +
-        escapeHtml(pageStructure.displayString) +
-        '</span>';
-
-      if (existingWrapper) {
-        existingWrapper.innerHTML = wrapperHtml;
-        existingWrapper.dataset.actNumber = String(newActNumber);
-      } else {
-        var storyTitleSection = document.querySelector('.story-title-section');
-        if (storyTitleSection) {
-          var newWrapper = document.createElement('div');
-          newWrapper.className = 'act-indicator-wrapper';
-          newWrapper.id = 'act-indicator-wrapper';
-          newWrapper.dataset.actNumber = String(newActNumber);
-          newWrapper.innerHTML = wrapperHtml;
-          storyTitleSection.appendChild(newWrapper);
-        }
-      }
-
-      // Place details panel after .story-header (outside the flex row)
-      var existingDetails = document.getElementById('play-structure-details');
-      if (existingDetails) {
-        existingDetails.remove();
+      if (existingPanel) {
+        existingPanel.remove();
       }
       if (detailsHtml) {
         var storyHeader = document.getElementById('story-header');
@@ -460,15 +527,11 @@ function initPlayPage() {
       }
 
       initActIndicator();
-      if (actChanged) {
-        expandActStructureDetails();
-      }
       previousActNumber = newActNumber;
-    } else if (existingWrapper) {
-      existingWrapper.remove();
-      var orphanedDetails = document.getElementById('play-structure-details');
-      if (orphanedDetails) {
-        orphanedDetails.remove();
+    } else {
+      var orphanedPanel = document.getElementById('play-structure-panel');
+      if (orphanedPanel) {
+        orphanedPanel.remove();
       }
       previousActNumber = null;
     }

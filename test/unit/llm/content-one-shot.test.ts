@@ -5,16 +5,17 @@ import type { ContentOneShotContext } from '../../../src/models/content-packet';
 
 function makeValidPacket(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    title: 'The Grief Dentist',
+    contentId: 'pkt-01',
     contentKind: 'JOB',
     coreAnomaly: 'A dentist who extracts memories from molars',
     humanAnchor: 'A widow who wants to forget her husband',
     socialEngine: 'A black market for extracted memories',
     choicePressure: 'Keep the memory or sell it to survive',
     signatureImage: 'A jar of glowing teeth on a nightstand',
-    escalationHint: 'The memories start leaking into other patients',
+    escalationPath: 'The memories start leaking into other patients',
     wildnessInvariant: 'Memories are physically stored in teeth',
     dullCollapse: 'Generic amnesia thriller',
+    interactionVerbs: ['extract', 'sell', 'forget', 'relive'],
     ...overrides,
   };
 }
@@ -75,16 +76,17 @@ describe('parseContentOneShotResponse', () => {
       packets: [makeValidPacket()],
     });
     expect(result).toHaveLength(1);
-    expect(result[0].title).toBe('The Grief Dentist');
+    expect(result[0].contentId).toBe('pkt-01');
     expect(result[0].contentKind).toBe('JOB');
     expect(result[0].coreAnomaly).toBe('A dentist who extracts memories from molars');
     expect(result[0].humanAnchor).toBe('A widow who wants to forget her husband');
     expect(result[0].socialEngine).toBe('A black market for extracted memories');
     expect(result[0].choicePressure).toBe('Keep the memory or sell it to survive');
     expect(result[0].signatureImage).toBe('A jar of glowing teeth on a nightstand');
-    expect(result[0].escalationHint).toBe('The memories start leaking into other patients');
+    expect(result[0].escalationPath).toBe('The memories start leaking into other patients');
     expect(result[0].wildnessInvariant).toBe('Memories are physically stored in teeth');
     expect(result[0].dullCollapse).toBe('Generic amnesia thriller');
+    expect(result[0].interactionVerbs).toEqual(['extract', 'sell', 'forget', 'relive']);
   });
 
   it('rejects packets with invalid contentKind values', () => {
@@ -100,10 +102,10 @@ describe('parseContentOneShotResponse', () => {
   });
 
   it('rejects packets with missing required fields', () => {
-    const { title: _, ...missingTitle } = makeValidPacket();
+    const { contentId: _, ...missingContentId } = makeValidPacket();
     void _;
-    expect(() => parseContentOneShotResponse({ packets: [missingTitle] })).toThrow(
-      /missing or empty required field: title/
+    expect(() => parseContentOneShotResponse({ packets: [missingContentId] })).toThrow(
+      /missing or empty required field: contentId/
     );
   });
 
@@ -122,6 +124,14 @@ describe('parseContentOneShotResponse', () => {
   it('rejects responses missing packets array', () => {
     expect(() => parseContentOneShotResponse({ notPackets: [] })).toThrow(/missing packets array/);
   });
+
+  it('rejects packets with invalid interactionVerbs arrays', () => {
+    expect(() =>
+      parseContentOneShotResponse({
+        packets: [makeValidPacket({ interactionVerbs: ['only', 'three', 'verbs'] })],
+      })
+    ).toThrow(/missing or invalid required field: interactionVerbs/);
+  });
 });
 
 describe('buildContentOneShotSchema', () => {
@@ -139,19 +149,20 @@ describe('buildContentOneShotSchema', () => {
 
     const items = packets['items'] as Record<string, unknown>;
     const itemRequired = items['required'] as string[];
-    expect(itemRequired).toContain('title');
+    expect(itemRequired).toContain('contentId');
     expect(itemRequired).toContain('contentKind');
     expect(itemRequired).toContain('coreAnomaly');
     expect(itemRequired).toContain('humanAnchor');
     expect(itemRequired).toContain('socialEngine');
     expect(itemRequired).toContain('choicePressure');
     expect(itemRequired).toContain('signatureImage');
-    expect(itemRequired).toContain('escalationHint');
+    expect(itemRequired).toContain('escalationPath');
     expect(itemRequired).toContain('wildnessInvariant');
     expect(itemRequired).toContain('dullCollapse');
+    expect(itemRequired).toContain('interactionVerbs');
 
     const itemProps = items['properties'] as Record<string, Record<string, unknown>>;
-    expect(itemProps['title']['type']).toBe('string');
+    expect(itemProps['contentId']['type']).toBe('string');
     expect(itemProps['contentKind']['type']).toBe('string');
     expect(itemProps['contentKind']['enum']).toBeDefined();
   });

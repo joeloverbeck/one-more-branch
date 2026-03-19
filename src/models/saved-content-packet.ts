@@ -1,31 +1,27 @@
 import type {
   ContentEvaluation,
   ContentEvaluationScores,
-  ContentKind,
+  ContentPacket,
+  ContentPacketProvenance,
   ContentPacketRole,
   RiskAppetite,
 } from './content-packet.js';
-import { isContentKind, isContentPacketRole, isRiskAppetite } from './content-packet.js';
+import {
+  isContentPacket,
+  isContentPacketProvenance,
+  isContentPacketRole,
+  isRiskAppetite,
+} from './content-packet.js';
 
 // --- Saved types ---
 
 export interface SavedContentPacket {
   readonly id: string;
-  readonly name: string;
   readonly createdAt: string;
   readonly updatedAt: string;
-  readonly contentKind: ContentKind;
-  readonly coreAnomaly: string;
-  readonly humanAnchor: string;
-  readonly socialEngine: string;
-  readonly choicePressure: string;
-  readonly signatureImage: string;
-  readonly escalationPath: string;
-  readonly wildnessInvariant: string;
-  readonly dullCollapse: string;
-  readonly interactionVerbs: readonly string[];
   readonly pinned: boolean;
-  readonly recommendedRole: ContentPacketRole;
+  readonly packet: ContentPacket;
+  readonly provenance?: ContentPacketProvenance;
   readonly evaluation?: ContentEvaluation;
 }
 
@@ -88,7 +84,7 @@ function isContentEvaluationScores(value: unknown): value is ContentEvaluationSc
   );
 }
 
-function isContentEvaluation(value: unknown): value is ContentEvaluation {
+export function isContentEvaluation(value: unknown): value is ContentEvaluation {
   if (!isObjectRecord(value)) {
     return false;
   }
@@ -109,25 +105,35 @@ export function isSavedContentPacket(value: unknown): value is SavedContentPacke
     return false;
   }
 
+  const allowedKeys = new Set([
+    'id',
+    'createdAt',
+    'updatedAt',
+    'pinned',
+    'packet',
+    'provenance',
+    'evaluation',
+  ]);
+
+  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+    return false;
+  }
+
   return (
     isNonEmptyString(value['id']) &&
-    isNonEmptyString(value['name']) &&
     isIsoDateString(value['createdAt']) &&
     isIsoDateString(value['updatedAt']) &&
-    isContentKind(value['contentKind']) &&
-    isNonEmptyString(value['coreAnomaly']) &&
-    isNonEmptyString(value['humanAnchor']) &&
-    isNonEmptyString(value['socialEngine']) &&
-    isNonEmptyString(value['choicePressure']) &&
-    isNonEmptyString(value['signatureImage']) &&
-    isNonEmptyString(value['escalationPath']) &&
-    isNonEmptyString(value['wildnessInvariant']) &&
-    isNonEmptyString(value['dullCollapse']) &&
-    isNonEmptyStringArray(value['interactionVerbs']) &&
     typeof value['pinned'] === 'boolean' &&
-    isContentPacketRole(value['recommendedRole']) &&
+    isContentPacket(value['packet']) &&
+    (value['provenance'] === undefined || isContentPacketProvenance(value['provenance'])) &&
     (value['evaluation'] === undefined || isContentEvaluation(value['evaluation']))
   );
+}
+
+export function getSavedContentPacketRecommendedRole(
+  packet: SavedContentPacket
+): ContentPacketRole | 'UNSCORED' {
+  return packet.evaluation?.recommendedRole ?? 'UNSCORED';
 }
 
 export function isSavedTasteProfile(value: unknown): value is SavedTasteProfile {

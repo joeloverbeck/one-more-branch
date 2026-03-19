@@ -7,6 +7,21 @@ import type {
   TasteProfile,
 } from '../../../src/models/content-packet';
 
+type TestContentPacketerPacket = Record<string, unknown> & {
+  contentId: string;
+  sourceSparkIds: string[];
+  contentKind: string;
+  coreAnomaly: string;
+  humanAnchor: string;
+  socialEngine: string;
+  choicePressure: string;
+  signatureImage: string;
+  escalationPath: string;
+  wildnessInvariant: string;
+  dullCollapse: string;
+  interactionVerbs: string[];
+};
+
 function makeTasteProfile(): TasteProfile {
   return {
     collisionPatterns: ['body horror meets bureaucracy'],
@@ -40,7 +55,7 @@ function makeContext(overrides: Partial<ContentPacketerContext> = {}): ContentPa
   };
 }
 
-function makeValidPacket(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function makeValidPacket(overrides: Partial<TestContentPacketerPacket> = {}): TestContentPacketerPacket {
   return {
     contentId: 'pkt-01',
     sourceSparkIds: ['spark-01'],
@@ -115,15 +130,15 @@ describe('parseContentPacketerResponse', () => {
     expect(result[0].contentId).toBe('pkt-01');
     expect(result[0].sourceSparkIds).toEqual(['spark-01']);
     expect(result[0].contentKind).toBe('ENTITY');
-    expect(result[0].coreAnomaly).toBe(packet['coreAnomaly']);
-    expect(result[0].humanAnchor).toBe(packet['humanAnchor']);
-    expect(result[0].socialEngine).toBe(packet['socialEngine']);
-    expect(result[0].choicePressure).toBe(packet['choicePressure']);
-    expect(result[0].signatureImage).toBe(packet['signatureImage']);
-    expect(result[0].escalationPath).toBe(packet['escalationPath']);
-    expect(result[0].wildnessInvariant).toBe(packet['wildnessInvariant']);
-    expect(result[0].dullCollapse).toBe(packet['dullCollapse']);
-    expect(result[0].interactionVerbs).toEqual(packet['interactionVerbs']);
+    expect(result[0].coreAnomaly).toBe(packet.coreAnomaly);
+    expect(result[0].humanAnchor).toBe(packet.humanAnchor);
+    expect(result[0].socialEngine).toBe(packet.socialEngine);
+    expect(result[0].choicePressure).toBe(packet.choicePressure);
+    expect(result[0].signatureImage).toBe(packet.signatureImage);
+    expect(result[0].escalationPath).toBe(packet.escalationPath);
+    expect(result[0].wildnessInvariant).toBe(packet.wildnessInvariant);
+    expect(result[0].dullCollapse).toBe(packet.dullCollapse);
+    expect(result[0].interactionVerbs).toEqual(packet.interactionVerbs);
   });
 
   it('validates interactionVerbs has 4-6 items', () => {

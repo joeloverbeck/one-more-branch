@@ -16,21 +16,25 @@ function createSavedContentPacket(id: string, updatedAt?: string): SavedContentP
   const now = new Date().toISOString();
   return {
     id,
-    name: `${TEST_PREFIX} packet`,
     createdAt: now,
     updatedAt: updatedAt ?? now,
-    contentKind: 'ENTITY',
-    coreAnomaly: 'A sentient building that rearranges its rooms based on occupant emotions',
-    humanAnchor: 'The janitor who has worked there for 40 years and remembers every layout',
-    socialEngine: 'Tenants form alliances based on whose emotions dominate the architecture',
-    choicePressure: 'Stay and adapt or leave and lose the community',
-    signatureImage: 'Hallways that breathe like living tissue',
-    escalationPath: 'The building starts reflecting collective trauma',
-    wildnessInvariant: 'Architecture is emotional expression made physical',
-    dullCollapse: 'Just a weird building with moving walls',
-    interactionVerbs: ['inhabit', 'reshape', 'negotiate'],
     pinned: false,
-    recommendedRole: 'PRIMARY_SEED',
+    packet: {
+      contentId: 'pkt-01',
+      contentKind: 'ENTITY',
+      coreAnomaly: 'A sentient building that rearranges its rooms based on occupant emotions',
+      humanAnchor: 'The janitor who has worked there for 40 years and remembers every layout',
+      socialEngine: 'Tenants form alliances based on whose emotions dominate the architecture',
+      choicePressure: 'Stay and adapt or leave and lose the community',
+      signatureImage: 'Hallways that breathe like living tissue',
+      escalationPath: 'The building starts reflecting collective trauma',
+      wildnessInvariant: 'Architecture is emotional expression made physical',
+      dullCollapse: 'Just a weird building with moving walls',
+      interactionVerbs: ['inhabit', 'reshape', 'negotiate', 'adapt'],
+    },
+    provenance: {
+      generationMode: 'quick',
+    },
   };
 }
 
@@ -71,14 +75,17 @@ describe('content-packet-repository', () => {
 
     const updated = await updateContentPacket(id, (existing) => ({
       ...existing,
-      name: `${TEST_PREFIX} updated`,
+      packet: {
+        ...existing.packet,
+        coreAnomaly: `${TEST_PREFIX} updated`,
+      },
       updatedAt: '2026-03-07T12:00:00.000Z',
     }));
 
-    expect(updated.name).toBe(`${TEST_PREFIX} updated`);
+    expect(updated.packet.coreAnomaly).toBe(`${TEST_PREFIX} updated`);
 
     const loaded = await loadContentPacket(id);
-    expect(loaded?.name).toBe(`${TEST_PREFIX} updated`);
+    expect(loaded?.packet.coreAnomaly).toBe(`${TEST_PREFIX} updated`);
   });
 
   it('deletes an existing content packet', async () => {
@@ -115,10 +122,12 @@ describe('content-packet-repository', () => {
 
     await writeJsonFile(getContentPacketFilePath(id), {
       id,
-      name: `${TEST_PREFIX} invalid`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      contentKind: 'ENTITY',
+      pinned: false,
+      packet: {
+        contentId: 'pkt-01',
+      },
     });
 
     await expect(loadContentPacket(id)).rejects.toThrow(

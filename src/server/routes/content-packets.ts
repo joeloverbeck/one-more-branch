@@ -2,8 +2,6 @@ import { randomUUID } from 'node:crypto';
 import { Request, Response, Router } from 'express';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
-import type { ContentPacket, ContentOneShotPacket } from '../../models/content-packet.js';
-import type { SavedContentPacket } from '../../models/saved-content-packet.js';
 import {
   contentPacketExists,
   deleteContentPacket,
@@ -13,7 +11,8 @@ import {
   updateContentPacket,
 } from '../../persistence/content-packet-repository.js';
 import { listTasteProfiles, saveTasteProfile } from '../../persistence/taste-profile-repository.js';
-import type { SavedTasteProfile } from '../../models/saved-content-packet.js';
+import type { SavedContentPacket, SavedTasteProfile } from '../../models/saved-content-packet.js';
+import { createSavedContentPacketArtifact } from '../services/content-packet-artifact.js';
 import { contentService } from '../services/index.js';
 import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
 import { groupContentPacketsByKind } from '../utils/group-content-packets-by-kind.js';
@@ -162,8 +161,7 @@ contentPacketRoutes.post(
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { packetId } = req.params;
     const body = req.body as {
-      packet?: ContentPacket | ContentOneShotPacket;
-      name?: string;
+      packet?: unknown;
       evaluation?: unknown;
     };
 
@@ -171,36 +169,18 @@ contentPacketRoutes.post(
       return res.status(400).json({ success: false, error: 'Packet data is required' });
     }
 
-    const now = new Date().toISOString();
-    const packet = body.packet;
-
-    const saved: SavedContentPacket = {
-      id: packetId as string,
-      name:
-        body.name?.trim() ??
-        ('title' in packet ? (packet as { title: string }).title : 'Untitled Packet'),
-      createdAt: now,
-      updatedAt: now,
-      contentKind: packet.contentKind,
-      coreAnomaly: packet.coreAnomaly,
-      humanAnchor: packet.humanAnchor,
-      socialEngine: packet.socialEngine,
-      choicePressure: packet.choicePressure,
-      signatureImage: packet.signatureImage,
-      escalationPath:
-        'escalationPath' in packet
-          ? (packet as { escalationPath: string }).escalationPath
-          : (packet as { escalationHint: string }).escalationHint,
-      wildnessInvariant: packet.wildnessInvariant,
-      dullCollapse: packet.dullCollapse,
-      interactionVerbs:
-        'interactionVerbs' in packet
-          ? [...(packet as unknown as { interactionVerbs: readonly string[] }).interactionVerbs]
-          : [],
-      pinned: false,
-      recommendedRole: 'PRIMARY_SEED' as const,
-      evaluation: body.evaluation as SavedContentPacket['evaluation'],
-    };
+    let saved: SavedContentPacket;
+    try {
+      saved = createSavedContentPacketArtifact({
+        id: packetId as string,
+        now: new Date().toISOString(),
+        packet: body.packet,
+        evaluation: body.evaluation,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid packet data';
+      return res.status(400).json({ success: false, error: message });
+    }
 
     await saveContentPacket(saved);
     return res.json({ success: true, packet: saved });

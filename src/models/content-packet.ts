@@ -68,7 +68,6 @@ export interface ContentSpark {
 
 export interface ContentPacket {
   readonly contentId: string;
-  readonly sourceSparkIds: readonly string[];
   readonly contentKind: ContentKind;
   readonly coreAnomaly: string;
   readonly humanAnchor: string;
@@ -79,6 +78,15 @@ export interface ContentPacket {
   readonly wildnessInvariant: string;
   readonly dullCollapse: string;
   readonly interactionVerbs: readonly string[];
+}
+
+export interface ContentPacketProvenance {
+  readonly generationMode: 'quick' | 'pipeline';
+  readonly sourceSparkIds?: readonly string[];
+}
+
+export interface ContentPacketerPacket extends ContentPacket {
+  readonly sourceSparkIds: readonly string[];
 }
 
 export interface ContentEvaluationScores {
@@ -136,21 +144,8 @@ export interface ContentOneShotContext {
   readonly kernelBlock?: string;
 }
 
-export interface ContentOneShotPacket {
-  readonly title: string;
-  readonly contentKind: ContentKind;
-  readonly coreAnomaly: string;
-  readonly humanAnchor: string;
-  readonly socialEngine: string;
-  readonly choicePressure: string;
-  readonly signatureImage: string;
-  readonly escalationHint: string;
-  readonly wildnessInvariant: string;
-  readonly dullCollapse: string;
-}
-
 export interface ContentOneShotResult {
-  readonly packets: readonly ContentOneShotPacket[];
+  readonly packets: readonly ContentPacket[];
   readonly rawResponse: string;
 }
 
@@ -163,7 +158,7 @@ export interface ContentPacketerContext {
 }
 
 export interface ContentPacketerResult {
-  readonly packets: readonly ContentPacket[];
+  readonly packets: readonly ContentPacketerPacket[];
   readonly rawResponse: string;
 }
 
@@ -177,4 +172,47 @@ export interface ContentEvaluatorContext {
 export interface ContentEvaluatorResult {
   readonly evaluations: readonly ContentEvaluation[];
   readonly rawResponse: string;
+}
+
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isNonEmptyStringArray(value: unknown): value is readonly string[] {
+  return Array.isArray(value) && value.length > 0 && value.every((item) => isNonEmptyString(item));
+}
+
+export function isContentPacket(value: unknown): value is ContentPacket {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  return (
+    isNonEmptyString(value['contentId']) &&
+    isContentKind(value['contentKind']) &&
+    isNonEmptyString(value['coreAnomaly']) &&
+    isNonEmptyString(value['humanAnchor']) &&
+    isNonEmptyString(value['socialEngine']) &&
+    isNonEmptyString(value['choicePressure']) &&
+    isNonEmptyString(value['signatureImage']) &&
+    isNonEmptyString(value['escalationPath']) &&
+    isNonEmptyString(value['wildnessInvariant']) &&
+    isNonEmptyString(value['dullCollapse']) &&
+    isNonEmptyStringArray(value['interactionVerbs'])
+  );
+}
+
+export function isContentPacketProvenance(value: unknown): value is ContentPacketProvenance {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  return (
+    (value['generationMode'] === 'quick' || value['generationMode'] === 'pipeline') &&
+    (value['sourceSparkIds'] === undefined || isNonEmptyStringArray(value['sourceSparkIds']))
+  );
 }

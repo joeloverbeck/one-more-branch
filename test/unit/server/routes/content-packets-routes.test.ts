@@ -94,7 +94,13 @@ describe('content-packets routes', () => {
 
   describe('GET /', () => {
     it('renders content-packets page with packet list from repository', async () => {
-      const packets = [{ id: 'p1', name: 'Test Packet' }];
+      const packets = [
+        {
+          id: 'p1',
+          pinned: false,
+          packet: { contentId: 'pkt-01', contentKind: 'ENTITY', coreAnomaly: 'Test Packet' },
+        },
+      ];
       (listContentPackets as jest.Mock).mockResolvedValue(packets);
 
       const handler = getRouteHandler('get', '/');
@@ -116,7 +122,11 @@ describe('content-packets routes', () => {
 
   describe('GET /api/:packetId', () => {
     it('returns packet when found', async () => {
-      const packet = { id: 'p1', name: 'Found' };
+      const packet = {
+        id: 'p1',
+        pinned: false,
+        packet: { contentId: 'pkt-01', contentKind: 'ENTITY', coreAnomaly: 'Found' },
+      };
       (loadContentPacket as jest.Mock).mockResolvedValue(packet);
 
       const handler = getRouteHandler('get', '/api/:packetId');
@@ -271,6 +281,7 @@ describe('content-packets routes', () => {
         params: { packetId: 'new-p1' },
         body: {
           packet: {
+            contentId: 'pkt-01',
             contentKind: 'ENTITY',
             coreAnomaly: 'test anomaly',
             humanAnchor: 'anchor',
@@ -280,9 +291,8 @@ describe('content-packets routes', () => {
             escalationPath: 'path',
             wildnessInvariant: 'invariant',
             dullCollapse: 'collapse',
-            interactionVerbs: ['verb1', 'verb2'],
+            interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
           },
-          name: 'My Packet',
         },
       });
       const res = mockRes();
@@ -293,12 +303,52 @@ describe('content-packets routes', () => {
       expect(saveContentPacket).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'new-p1',
-          name: 'My Packet',
-          contentKind: 'ENTITY',
           pinned: false,
+          provenance: { generationMode: 'quick' },
+        })
+      );
+      const saveCalls = (saveContentPacket as jest.Mock).mock.calls as Array<
+        [
+          {
+            packet: { contentId: string; contentKind: string; coreAnomaly: string };
+          },
+        ]
+      >;
+      const savedArtifact = saveCalls[0]?.[0] as {
+        packet: { contentId: string; contentKind: string; coreAnomaly: string };
+      };
+      expect(savedArtifact.packet).toEqual(
+        expect.objectContaining({
+          contentId: 'pkt-01',
+          contentKind: 'ENTITY',
+          coreAnomaly: 'test anomaly',
         })
       );
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it('rejects packets that do not match the canonical packet contract', async () => {
+      const handler = getRouteHandler('post', '/api/:packetId/save');
+      const req = mockReq({
+        params: { packetId: 'new-p1' },
+        body: {
+          packet: {
+            contentKind: 'ENTITY',
+            coreAnomaly: 'test anomaly',
+          },
+        },
+      });
+      const res = mockRes();
+
+      void handler(req, res);
+      await flushPromises();
+
+      expect(saveContentPacket).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Packet data must match the canonical content packet contract',
+      });
     });
   });
 

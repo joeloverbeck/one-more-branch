@@ -1,5 +1,6 @@
 import {
   isContentKind,
+  isContentPacket,
   isContentPacketRole,
   isRiskAppetite,
   CONTENT_KIND_VALUES,
@@ -53,9 +54,31 @@ describe('isRiskAppetite', () => {
 function makeValidSavedContentPacket(): Record<string, unknown> {
   return {
     id: 'cp-1',
-    name: 'Test Packet',
     createdAt: '2025-01-01T00:00:00Z',
     updatedAt: '2025-01-01T00:00:00Z',
+    pinned: false,
+    packet: {
+      contentId: 'pkt-01',
+      contentKind: 'ENTITY',
+      coreAnomaly: 'A sentient fog that digests memory',
+      humanAnchor: 'A grieving archivist',
+      socialEngine: 'A government bureau that licenses fog zones',
+      choicePressure: 'Surrender memories or let others suffer',
+      signatureImage: 'A child breathing silver mist from a jar',
+      escalationPath: 'The fog learns to imitate the dead',
+      wildnessInvariant: 'The fog must remain sentient and hungry',
+      dullCollapse: 'Generic monster story',
+      interactionVerbs: ['inhale', 'archive', 'negotiate', 'flee'],
+    },
+    provenance: {
+      generationMode: 'quick',
+    },
+  };
+}
+
+function makeValidContentPacket(): Record<string, unknown> {
+  return {
+    contentId: 'pkt-01',
     contentKind: 'ENTITY',
     coreAnomaly: 'A sentient fog that digests memory',
     humanAnchor: 'A grieving archivist',
@@ -66,10 +89,25 @@ function makeValidSavedContentPacket(): Record<string, unknown> {
     wildnessInvariant: 'The fog must remain sentient and hungry',
     dullCollapse: 'Generic monster story',
     interactionVerbs: ['inhale', 'archive', 'negotiate', 'flee'],
-    pinned: false,
-    recommendedRole: 'PRIMARY_SEED',
   };
 }
+
+describe('isContentPacket', () => {
+  it('validates a complete canonical content packet', () => {
+    expect(isContentPacket(makeValidContentPacket())).toBe(true);
+  });
+
+  it('rejects when contentId is missing', () => {
+    const packet = makeValidContentPacket();
+    delete packet['contentId'];
+    expect(isContentPacket(packet)).toBe(false);
+  });
+
+  it('rejects when interactionVerbs is empty', () => {
+    const packet = { ...makeValidContentPacket(), interactionVerbs: [] };
+    expect(isContentPacket(packet)).toBe(false);
+  });
+});
 
 describe('isSavedContentPacket', () => {
   it('validates a complete valid object', () => {
@@ -80,7 +118,7 @@ describe('isSavedContentPacket', () => {
     const packet = {
       ...makeValidSavedContentPacket(),
       evaluation: {
-        contentId: 'cp-1',
+        contentId: 'pkt-01',
         scores: {
           imageCharge: 4,
           humanAche: 3,
@@ -99,21 +137,13 @@ describe('isSavedContentPacket', () => {
     expect(isSavedContentPacket(packet)).toBe(true);
   });
 
-  const requiredStringFields = [
+  const requiredFields = [
     'id',
-    'name',
-    'coreAnomaly',
-    'humanAnchor',
-    'socialEngine',
-    'choicePressure',
-    'signatureImage',
-    'escalationPath',
-    'wildnessInvariant',
-    'dullCollapse',
+    'packet',
   ] as const;
 
-  it.each(requiredStringFields.map((f) => [f]))(
-    'rejects when required string field "%s" is missing',
+  it.each(requiredFields.map((f) => [f]))(
+    'rejects when required field "%s" is missing',
     (field) => {
       const packet = makeValidSavedContentPacket();
       delete packet[field];
@@ -122,12 +152,18 @@ describe('isSavedContentPacket', () => {
   );
 
   it('rejects when contentKind is invalid', () => {
-    const packet = { ...makeValidSavedContentPacket(), contentKind: 'INVALID' };
+    const packet = {
+      ...makeValidSavedContentPacket(),
+      packet: { ...makeValidContentPacket(), contentKind: 'INVALID' },
+    };
     expect(isSavedContentPacket(packet)).toBe(false);
   });
 
-  it('rejects when interactionVerbs is empty', () => {
-    const packet = { ...makeValidSavedContentPacket(), interactionVerbs: [] };
+  it('rejects when nested interactionVerbs is empty', () => {
+    const packet = {
+      ...makeValidSavedContentPacket(),
+      packet: { ...makeValidContentPacket(), interactionVerbs: [] },
+    };
     expect(isSavedContentPacket(packet)).toBe(false);
   });
 
@@ -137,8 +173,11 @@ describe('isSavedContentPacket', () => {
     expect(isSavedContentPacket(packet)).toBe(false);
   });
 
-  it('rejects when recommendedRole is invalid', () => {
-    const packet = { ...makeValidSavedContentPacket(), recommendedRole: 'INVALID' };
+  it('rejects when provenance is invalid', () => {
+    const packet = {
+      ...makeValidSavedContentPacket(),
+      provenance: { generationMode: 'pipeline', sourceSparkIds: [] },
+    };
     expect(isSavedContentPacket(packet)).toBe(false);
   });
 
@@ -153,6 +192,17 @@ describe('isSavedContentPacket', () => {
 
   it('rejects a non-object', () => {
     expect(isSavedContentPacket('string')).toBe(false);
+  });
+
+  it('rejects legacy flattened packets that still persist name', () => {
+    const legacyPacket = {
+      ...makeValidSavedContentPacket(),
+      name: 'Legacy Packet',
+      contentKind: 'ENTITY',
+      coreAnomaly: 'flattened',
+    };
+
+    expect(isSavedContentPacket(legacyPacket)).toBe(false);
   });
 });
 

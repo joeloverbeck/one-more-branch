@@ -88,5 +88,5 @@ Content packets are the primary semantic units consumed by concept stages:
 - `wildnessInvariant` is the most critical field — it carries the core strangeness that must survive all downstream stages
 - `dullCollapse` describes the failure mode — what the packet becomes if its uniqueness is stripped away
 - `interactionVerbs` (4-6) provide concrete player action vocabulary
-- `sourceSparkIds` traces lineage back to sparkstormer output
+- `sourceSparkIds` traces lineage back to sparkstormer output and should be treated as pipeline provenance rather than a persisted display alias
 - Packets may fuse multiple sparks (multiple sourceSparkIds)

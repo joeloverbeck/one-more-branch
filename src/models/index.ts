@@ -402,10 +402,11 @@ export type {
   TasteProfile,
   ContentSpark,
   ContentPacket,
+  ContentPacketProvenance,
+  ContentPacketerPacket,
   ContentEvaluationScores,
   ContentEvaluation,
   ContentOneShotContext,
-  ContentOneShotPacket,
   ContentOneShotResult,
   SparkstormerContext,
   SparkstormerResult,
@@ -419,12 +420,19 @@ export {
   CONTENT_PACKET_ROLE_VALUES,
   RISK_APPETITE_VALUES,
   isContentKind,
+  isContentPacket,
+  isContentPacketProvenance,
   isContentPacketRole,
   isRiskAppetite,
 } from './content-packet';
 
 export type { SavedContentPacket, SavedTasteProfile } from './saved-content-packet';
-export { isSavedContentPacket, isSavedTasteProfile } from './saved-content-packet';
+export {
+  getSavedContentPacketRecommendedRole,
+  isContentEvaluation,
+  isSavedContentPacket,
+  isSavedTasteProfile,
+} from './saved-content-packet';
 
 export type { SavedSpine } from './saved-spine';
 export { isSavedSpine } from './saved-spine';

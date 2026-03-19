@@ -169,7 +169,7 @@ function initContentPacketsPage() {
     }
 
     var html = packets.map(function (pkt, idx) {
-      var title = pkt.title || pkt.coreAnomaly || 'Packet ' + (idx + 1);
+      var title = pkt.coreAnomaly || pkt.contentId || 'Packet ' + (idx + 1);
       var kind = pkt.contentKind || 'UNKNOWN';
       return (
         '<article class="story-card">' +

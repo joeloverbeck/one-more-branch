@@ -67,6 +67,9 @@ export function buildContentOneShotPrompt(context: ContentOneShotContext): ChatM
   userSections.push(
     `OUTPUT REQUIREMENTS:
 - Return exactly 18 packets.
+- Each packet must include: contentId, contentKind, coreAnomaly, humanAnchor, socialEngine, choicePressure, signatureImage, escalationPath, wildnessInvariant, dullCollapse, interactionVerbs.
+- contentId format: "pkt-NN" (for example "pkt-01").
+- interactionVerbs: exactly 4-6 concrete verbs.
 - Every packet must be strong enough to inspire a story concept by itself.
 - No packet may feel like generic fantasy, generic sci-fi, or generic horror with a cosmetic gimmick.`
   );

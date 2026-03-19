@@ -35,8 +35,11 @@ EXEMPLAR IDEAS:
 {{optional STORY KERNEL block}}
 
 OUTPUT REQUIREMENTS:
-- Return JSON: { "packets": ContentPacketOneShot[] }
+- Return JSON: { "packets": ContentPacket[] }
 - Exactly 18 packets
+- Each packet must include `contentId`, `contentKind`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, and `interactionVerbs`
+- `contentId` format: `pkt-NN`
+- `interactionVerbs`: exactly 4-6 concrete verbs
 - Use 6+ distinct content kinds
 - Mix intimate, civic, and civilizational scales
 - Mix mechanisms (transformation, bureaucracy, romance, medicine, labor, ecology, ritual, etc.)
@@ -49,16 +52,17 @@ OUTPUT REQUIREMENTS:
 {
   "packets": [
     {
-      "title": "string",
+      "contentId": "pkt-01",
       "contentKind": "CONTENT_KIND_ENUM",
       "coreAnomaly": "What's wrong here?",
       "humanAnchor": "emotional/relational truth",
       "socialEngine": "social mechanism driving conflict",
       "choicePressure": "what forces meaningful choices",
       "signatureImage": "single vivid concrete image",
-      "escalationHint": "how it intensifies",
+      "escalationPath": "how it intensifies",
       "wildnessInvariant": "what stays strange no matter what",
-      "dullCollapse": "failure mode — what would make it generic"
+      "dullCollapse": "failure mode — what would make it generic",
+      "interactionVerbs": ["verb1", "verb2", "verb3", "verb4"]
     }
   ]
 }
@@ -83,14 +87,13 @@ OUTPUT REQUIREMENTS:
 | Spark count | 30-40 | N/A (skipped) |
 | Packet count | 12-16 | 18 |
 | Evaluation | Separate scoring + role labels | None (all packets returned) |
-| Field differences | `escalationPath`, `interactionVerbs`, `sourceSparkIds` | `title`, `escalationHint` (simpler fields) |
+| Packet contract | Same canonical `ContentPacket` fields used downstream | Same canonical `ContentPacket` fields used downstream |
 
 ## Notes
 
 - Speed-optimized path: single LLM call vs. 4 sequential calls
 - No explicit taste profiling — taste is inferred from exemplar ideas
 - No evaluation stage — all 18 packets are returned without scoring or role assignment
-- Uses `escalationHint` instead of the full pipeline's `escalationPath`
-- Includes `title` field (not present in full pipeline packets)
-- Does not include `interactionVerbs` or `sourceSparkIds`
+- Emits the same canonical packet contract used by concept stages and persistence
+- One-shot packets do not carry spark lineage; pipeline-only lineage stays outside the canonical saved packet body
 - Prompt logging uses `promptType: 'contentOneShot'`

@@ -92,7 +92,7 @@
                     <article class="story-card" data-packet-id="<%= packet.id %>">
                       <div class="story-card-content">
                         <h3 class="story-title">
-                          <%= packet.name %>
+                          <%= packet.packet.coreAnomaly %>
                           <% if (packet.pinned) { %>
                             <span class="pin-badge" title="Pinned">&#128204;</span>
                           <% } %>
@@ -100,19 +100,19 @@
                         <dl class="story-details">
                           <div class="story-detail-row">
                             <dt>Kind</dt>
-                            <dd><%= packet.contentKind %></dd>
+                            <dd><%= packet.packet.contentKind %></dd>
                           </div>
                           <div class="story-detail-row">
                             <dt>Core Anomaly</dt>
-                            <dd><%= packet.coreAnomaly %></dd>
+                            <dd><%= packet.packet.coreAnomaly %></dd>
                           </div>
                           <div class="story-detail-row">
                             <dt>Wildness Invariant</dt>
-                            <dd><%= packet.wildnessInvariant %></dd>
+                            <dd><%= packet.packet.wildnessInvariant %></dd>
                           </div>
                           <div class="story-detail-row">
                             <dt>Role</dt>
-                            <dd><%= packet.recommendedRole %></dd>
+                            <dd><%= packet.evaluation ? packet.evaluation.recommendedRole : 'UNSCORED' %></dd>
                           </div>
                         </dl>
                         <div class="story-card-actions">

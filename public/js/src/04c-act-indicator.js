@@ -1,43 +1,38 @@
   // ── Act Indicator Toggle ──────────────────────────────────────────
 
-  function toggleActStructureDetails() {
+  function syncActStructureIndicator() {
+    var shell = document.getElementById('play-structure-shell');
     var indicator = document.getElementById('act-indicator');
-    var details = document.getElementById('play-structure-details');
-    if (!indicator || !details) return;
+    if (!shell || !indicator) return;
 
-    var isExpanded = indicator.getAttribute('aria-expanded') === 'true';
-    indicator.setAttribute('aria-expanded', String(!isExpanded));
-    indicator.classList.toggle('act-indicator--expanded', !isExpanded);
-    details.hidden = isExpanded;
+    var isExpanded = shell.hasAttribute('open');
+    indicator.setAttribute('aria-expanded', String(isExpanded));
+    indicator.classList.toggle('act-indicator--expanded', isExpanded);
+  }
+
+  function toggleActStructureDetails(forceExpanded) {
+    var shell = document.getElementById('play-structure-shell');
+    if (!shell) return;
+
+    var shouldExpand =
+      typeof forceExpanded === 'boolean' ? forceExpanded : !shell.hasAttribute('open');
+    shell.open = shouldExpand;
+    syncActStructureIndicator();
   }
 
   function initActIndicator() {
+    var shell = document.getElementById('play-structure-shell');
     var indicator = document.getElementById('act-indicator');
-    if (!indicator) return;
+    if (!shell || !indicator) return;
 
-    indicator.addEventListener('click', toggleActStructureDetails);
-    indicator.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleActStructureDetails();
-      }
-    });
+    shell.addEventListener('toggle', syncActStructureIndicator);
+    syncActStructureIndicator();
   }
 
   function expandActStructureDetails() {
-    var indicator = document.getElementById('act-indicator');
-    var details = document.getElementById('play-structure-details');
-    if (!indicator || !details) return;
-    indicator.setAttribute('aria-expanded', 'true');
-    indicator.classList.add('act-indicator--expanded');
-    details.hidden = false;
+    toggleActStructureDetails(true);
   }
 
   function collapseActStructureDetails() {
-    var indicator = document.getElementById('act-indicator');
-    var details = document.getElementById('play-structure-details');
-    if (!indicator || !details) return;
-    indicator.setAttribute('aria-expanded', 'false');
-    indicator.classList.remove('act-indicator--expanded');
-    details.hidden = true;
+    toggleActStructureDetails(false);
   }

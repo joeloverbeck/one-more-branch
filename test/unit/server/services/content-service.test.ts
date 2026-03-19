@@ -4,7 +4,6 @@ import type {
   ContentSpark,
   ContentPacket,
   ContentEvaluation,
-  ContentOneShotPacket,
   ContentOneShotContext,
   TasteDistillerContext,
   SparkstormerContext,
@@ -73,18 +72,19 @@ function createEvaluation(id = 'content_1'): ContentEvaluation {
   };
 }
 
-function createOneShotPacket(): ContentOneShotPacket {
+function createOneShotPacket(): ContentPacket {
   return {
-    title: 'Test Packet',
+    contentId: 'pkt-01',
     contentKind: 'ENTITY',
     coreAnomaly: 'anomaly',
     humanAnchor: 'anchor',
     socialEngine: 'engine',
     choicePressure: 'pressure',
     signatureImage: 'image',
-    escalationHint: 'hint',
+    escalationPath: 'hint',
     wildnessInvariant: 'invariant',
     dullCollapse: 'collapse',
+    interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
   };
 }
 
