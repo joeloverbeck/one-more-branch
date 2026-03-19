@@ -1,9 +1,9 @@
 import {
-  isContentKind,
   type ConceptSeedPacketerPacket,
   type ContentPacketerContext,
   type ContentPacketerResult,
-} from '../models/content-packet.js';
+} from '../models/content-generation-contracts.js';
+import { isContentKind } from '../models/content-taxonomy.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import { runLlmStage } from './llm-stage-runner.js';

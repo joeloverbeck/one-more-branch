@@ -6,7 +6,7 @@ import type {
   ConceptSeedPacketerPacket,
   ContentSpark,
   TasteProfile,
-} from '../../../src/models/content-packet';
+} from '../../../src/models/content-generation-contracts';
 
 type TestConceptSeedPacketerPacket = Record<string, unknown> & {
   contentId: string;

@@ -27,7 +27,7 @@ import { CONCEPT_SPECIFICITY_SCHEMA } from '../../../src/llm/schemas/concept-spe
 import { CONCEPT_SCENARIO_SCHEMA } from '../../../src/llm/schemas/concept-scenario-schema';
 import type { ConceptVerifierContext } from '../../../src/models';
 import type { StoryKernel } from '../../../src/models/story-kernel';
-import type { ConceptSeedPacket } from '../../../src/models/content-packet';
+import type { ConceptSeedPacket } from '../../../src/models/concept-seed-packet';
 import {
   createEvaluatedConceptFixture,
   createConceptVerificationFixture,

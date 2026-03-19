@@ -5,7 +5,7 @@ import {
   type ConceptStressTesterContext,
   type ConceptVerification,
 } from '../../models/concept-generator.js';
-import type { ConceptSeedPacket } from '../../models/content-packet.js';
+import type { ConceptSeedPacket } from '../../models/concept-seed-packet.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 

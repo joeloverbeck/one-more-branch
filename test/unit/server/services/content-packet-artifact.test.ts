@@ -1,5 +1,8 @@
 import { createSavedContentPacketArtifact } from '@/server/services/content-packet-artifact';
-import type { ContentEvaluation, GeneratedContentPacket } from '@/models/content-packet';
+import type {
+  ContentEvaluation,
+  GeneratedContentPacket,
+} from '@/models/content-generation-contracts';
 
 function makeCandidate(overrides: Partial<GeneratedContentPacket> = {}): GeneratedContentPacket {
   return {

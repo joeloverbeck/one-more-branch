@@ -1,4 +1,4 @@
-import type { ConceptSeedPacket } from '../../models/content-packet.js';
+import type { ConceptSeedPacket } from '../../models/concept-seed-packet.js';
 import type {
   ConceptEvolverSeederContext,
   EvaluatedConcept,

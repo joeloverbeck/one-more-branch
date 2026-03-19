@@ -1,9 +1,7 @@
 import {
   type SavedContentPacket,
-  isContentPacketContext,
-  isContentPacketOrigin,
-  isContentPacketSourceArtifact,
   isSavedContentPacket,
+  isSavedTasteProfile,
   projectSavedConceptSeedPacket,
 } from '../../../src/models/saved-content-packet';
 
@@ -48,55 +46,6 @@ function makeValidSavedContentPacket(): SavedContentPacket {
     },
   };
 }
-
-describe('isContentPacketContext', () => {
-  it('accepts complete context blocks', () => {
-    expect(isContentPacketContext(makeValidSavedContentPacket().context)).toBe(true);
-  });
-
-  it('rejects context blocks missing required fields', () => {
-    expect(
-      isContentPacketContext({
-        premiseSummary: 'present',
-        situationFrame: 'present',
-      })
-    ).toBe(false);
-  });
-});
-
-describe('isContentPacketSourceArtifact', () => {
-  it('accepts complete source artifacts', () => {
-    expect(isContentPacketSourceArtifact(makeValidSavedContentPacket().origin.sourceArtifacts[0])).toBe(
-      true
-    );
-  });
-
-  it('rejects artifacts with invalid content kind', () => {
-    expect(
-      isContentPacketSourceArtifact({
-        artifactType: 'SPARK',
-        sourceId: 'spark-01',
-        contentKind: 'INVALID',
-        summary: 'bad kind',
-      })
-    ).toBe(false);
-  });
-});
-
-describe('isContentPacketOrigin', () => {
-  it('accepts origins with one or more source artifacts', () => {
-    expect(isContentPacketOrigin(makeValidSavedContentPacket().origin)).toBe(true);
-  });
-
-  it('rejects origins with no source artifacts', () => {
-    expect(
-      isContentPacketOrigin({
-        generationMode: 'quick',
-        sourceArtifacts: [],
-      })
-    ).toBe(false);
-  });
-});
 
 describe('isSavedContentPacket', () => {
   it('validates a complete v2 saved content packet', () => {
@@ -189,5 +138,72 @@ describe('projectSavedConceptSeedPacket', () => {
     expect(projected).toEqual(savedPacket.packet);
     expect(projected).not.toBe(savedPacket.packet);
     expect(projected.interactionVerbs).not.toBe(savedPacket.packet.interactionVerbs);
+  });
+});
+
+function makeValidSavedTasteProfile(): Record<string, unknown> {
+  return {
+    id: 'tp-1',
+    name: 'Test Profile',
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-01T00:00:00Z',
+    collisionPatterns: ['body horror meets bureaucracy'],
+    favoredMechanisms: ['transformation'],
+    humanAnchors: ['grief', 'shame'],
+    socialEngines: ['licensing bureau'],
+    toneBlend: ['dark comedy'],
+    sceneAppetites: ['visceral transformation'],
+    antiPatterns: ['chosen one narrative'],
+    surfaceDoNotRepeat: ['fog', 'mist'],
+    riskAppetite: 'HIGH',
+  };
+}
+
+describe('isSavedTasteProfile', () => {
+  it('validates a complete valid object', () => {
+    expect(isSavedTasteProfile(makeValidSavedTasteProfile())).toBe(true);
+  });
+
+  const requiredArrayFields = [
+    'collisionPatterns',
+    'favoredMechanisms',
+    'humanAnchors',
+    'socialEngines',
+    'toneBlend',
+    'sceneAppetites',
+    'antiPatterns',
+  ] as const;
+
+  it.each(requiredArrayFields.map((field) => [field]))(
+    'rejects when required array field "%s" is empty',
+    (field) => {
+      const profile = makeValidSavedTasteProfile();
+      profile[field] = [];
+      expect(isSavedTasteProfile(profile)).toBe(false);
+    }
+  );
+
+  it('accepts when surfaceDoNotRepeat is empty', () => {
+    const profile = { ...makeValidSavedTasteProfile(), surfaceDoNotRepeat: [] };
+    expect(isSavedTasteProfile(profile)).toBe(true);
+  });
+
+  it('rejects when riskAppetite is invalid', () => {
+    const profile = { ...makeValidSavedTasteProfile(), riskAppetite: 'EXTREME' };
+    expect(isSavedTasteProfile(profile)).toBe(false);
+  });
+
+  it('rejects when id is missing', () => {
+    const profile = makeValidSavedTasteProfile();
+    delete profile['id'];
+    expect(isSavedTasteProfile(profile)).toBe(false);
+  });
+
+  it('rejects null', () => {
+    expect(isSavedTasteProfile(null)).toBe(false);
+  });
+
+  it('rejects a non-object', () => {
+    expect(isSavedTasteProfile(42)).toBe(false);
   });
 });

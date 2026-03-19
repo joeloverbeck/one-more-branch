@@ -399,10 +399,29 @@ export type {
   ContentKind,
   ContentPacketRole,
   RiskAppetite,
-  TasteProfile,
-  ContentSpark,
+} from './content-taxonomy';
+export {
+  CONTENT_KIND_VALUES,
+  CONTENT_PACKET_ROLE_VALUES,
+  RISK_APPETITE_VALUES,
+  isContentKind,
+  isContentPacketRole,
+  isRiskAppetite,
+} from './content-taxonomy';
+
+export type {
   ConceptSeedPacket,
   ConceptSeedPacketProjectionSource,
+} from './concept-seed-packet';
+export {
+  cloneConceptSeedPacket,
+  isConceptSeedPacket,
+  projectConceptSeedPacket,
+} from './concept-seed-packet';
+
+export type {
+  TasteProfile,
+  ContentSpark,
   ContentPacketContext,
   ContentPacketOrigin,
   ContentPacketSourceArtifact,
@@ -420,19 +439,19 @@ export type {
   ContentPacketerResult,
   ContentEvaluatorContext,
   ContentEvaluatorResult,
-} from './content-packet';
+  TasteDistillerContext,
+  TasteDistillerResult,
+} from './content-generation-contracts';
 export {
-  CONTENT_KIND_VALUES,
-  CONTENT_PACKET_ROLE_VALUES,
-  RISK_APPETITE_VALUES,
-  cloneConceptSeedPacket,
+  cloneContentPacketContext,
+  cloneContentPacketOrigin,
   formatContentExemplarId,
-  isContentKind,
-  isConceptSeedPacket,
-  isContentPacketRole,
-  projectConceptSeedPacket,
-  isRiskAppetite,
-} from './content-packet';
+  isContentEvaluation,
+  isContentPacketContext,
+  isContentPacketOrigin,
+  isContentPacketSourceArtifact,
+  isGeneratedContentPacket,
+} from './content-generation-contracts';
 
 export type {
   SavedContentPacket,
@@ -440,10 +459,6 @@ export type {
 } from './saved-content-packet';
 export {
   getSavedContentPacketRecommendedRole,
-  isContentEvaluation,
-  isContentPacketContext,
-  isContentPacketOrigin,
-  isContentPacketSourceArtifact,
   projectSavedConceptSeedPacket,
   isSavedContentPacket,
   isSavedTasteProfile,

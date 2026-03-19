@@ -5,11 +5,11 @@ import { evaluateContentPackets } from '../../llm/content-evaluator-generation.j
 import { generateContentOneShot } from '../../llm/content-one-shot-generation.js';
 import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
-import { formatContentExemplarId, projectConceptSeedPacket } from '../../models/content-packet.js';
+import { projectConceptSeedPacket } from '../../models/concept-seed-packet.js';
+import { formatContentExemplarId } from '../../models/content-generation-contracts.js';
 import type {
   ConceptSeedOneShotLineagedPacket,
   ConceptSeedOneShotPacket,
-  ConceptSeedPacket,
   ConceptSeedPacketerPacket,
   ContentEvaluation,
   GeneratedContentPacket,
@@ -23,7 +23,8 @@ import type {
   TasteProfile,
   ContentPacketerContext,
   ContentEvaluatorContext,
-} from '../../models/content-packet.js';
+} from '../../models/content-generation-contracts.js';
+import type { ConceptSeedPacket } from '../../models/concept-seed-packet.js';
 
 // --- Input types ---
 

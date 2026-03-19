@@ -1,4 +1,5 @@
-import type { ConceptSeedPacket, GeneratedContentPacket } from '@/models/content-packet';
+import type { GeneratedContentPacket } from '@/models/content-generation-contracts';
+import type { ConceptSeedPacket } from '@/models/concept-seed-packet';
 import type { SavedContentPacket } from '@/models/saved-content-packet';
 import {
   buildGeneratedContentPacketCardViewModel,

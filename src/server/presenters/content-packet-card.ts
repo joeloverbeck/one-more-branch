@@ -1,11 +1,11 @@
 import type {
-  ConceptSeedPacket,
   ContentEvaluation,
   ContentPacketContext,
   ContentPacketOrigin,
   ContentPacketSourceArtifact,
   GeneratedContentPacket,
-} from '../../models/content-packet.js';
+} from '../../models/content-generation-contracts.js';
+import type { ConceptSeedPacket } from '../../models/concept-seed-packet.js';
 import {
   getSavedContentPacketRecommendedRole,
   type SavedContentPacket,

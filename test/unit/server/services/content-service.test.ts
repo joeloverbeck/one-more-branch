@@ -11,7 +11,7 @@ import type {
   SparkstormerContext,
   ContentPacketerContext,
   ContentEvaluatorContext,
-} from '@/models/content-packet';
+} from '@/models/content-generation-contracts';
 import type { GenerationStageEvent } from '@/engine/types';
 
 function createTasteProfile(): TasteProfile {

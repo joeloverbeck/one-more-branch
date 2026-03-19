@@ -1,4 +1,4 @@
-import type { ConceptSeedPacket } from '../../../../src/models/content-packet';
+import type { ConceptSeedPacket } from '../../../../src/models/concept-seed-packet';
 import { CONTENT_POLICY } from '../../../../src/llm/content-policy';
 import { buildConceptEngineerPrompt } from '../../../../src/llm/prompts/concept-engineer-prompt';
 import type { ConceptEngineerContext } from '../../../../src/models';

@@ -1,4 +1,4 @@
-import { CONTENT_KIND_VALUES } from '../../models/content-packet.js';
+import { CONTENT_KIND_VALUES } from '../../models/content-taxonomy.js';
 import type { JsonSchema } from '../llm-client-types.js';
 
 export function buildContentSparkstormerSchema(): JsonSchema {

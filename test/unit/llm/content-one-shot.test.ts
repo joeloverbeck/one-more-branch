@@ -1,7 +1,7 @@
 import { buildContentOneShotPrompt } from '../../../src/llm/prompts/content-one-shot-prompt';
 import { parseContentOneShotResponse } from '../../../src/llm/content-one-shot-generation';
 import { buildContentOneShotSchema } from '../../../src/llm/schemas/content-one-shot-schema';
-import type { ContentOneShotContext } from '../../../src/models/content-packet';
+import type { ContentOneShotContext } from '../../../src/models/content-generation-contracts';
 
 function makeValidPacket(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {

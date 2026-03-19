@@ -1,7 +1,7 @@
 import { buildConceptSpecificityPrompt } from '../../../../src/llm/prompts/concept-specificity-prompt';
 import { buildConceptScenarioPrompt } from '../../../../src/llm/prompts/concept-scenario-prompt';
 import type { ConceptVerifierContext } from '../../../../src/models';
-import type { ConceptSeedPacket } from '../../../../src/models/content-packet';
+import type { ConceptSeedPacket } from '../../../../src/models/concept-seed-packet';
 import type { StoryKernel } from '../../../../src/models/story-kernel';
 import type { ConceptSpecificityAnalysis } from '../../../../src/llm/concept-specificity-types';
 import { createEvaluatedConceptFixture } from '../../../fixtures/concept-generator';

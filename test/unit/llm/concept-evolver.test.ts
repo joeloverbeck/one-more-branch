@@ -14,7 +14,7 @@ import { evolveConceptIdeas } from '../../../src/llm/concept-evolver';
 import { generateEvolvedConceptSeeds } from '../../../src/llm/concept-evolver-seeder';
 import { generateConceptCharacterWorlds } from '../../../src/llm/concept-architect';
 import { generateConceptEngines } from '../../../src/llm/concept-engineer';
-import type { ConceptSeedPacket } from '../../../src/models/content-packet';
+import type { ConceptSeedPacket } from '../../../src/models/concept-seed-packet';
 import type { ConceptEvolverContext } from '../../../src/models';
 import {
   createConceptSeedFixture,

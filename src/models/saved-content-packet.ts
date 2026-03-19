@@ -1,25 +1,17 @@
 import type {
-  ConceptSeedPacket,
   ContentEvaluation,
-  ContentEvaluationScores,
   ContentPacketContext,
   ContentPacketOrigin,
-  ContentPacketRole,
-  RiskAppetite,
-} from './content-packet.js';
+} from './content-generation-contracts.js';
 import {
-  isConceptSeedPacket,
+  isContentEvaluation,
   isContentPacketContext,
   isContentPacketOrigin,
-  isContentPacketRole,
-  isRiskAppetite,
-  projectConceptSeedPacket,
-} from './content-packet.js';
-export {
-  isContentPacketContext,
-  isContentPacketOrigin,
-  isContentPacketSourceArtifact,
-} from './content-packet.js';
+} from './content-generation-contracts.js';
+import type { ConceptSeedPacket as SavedConceptSeedPacket } from './concept-seed-packet.js';
+import { isConceptSeedPacket, projectConceptSeedPacket } from './concept-seed-packet.js';
+import type { ContentPacketRole, RiskAppetite } from './content-taxonomy.js';
+import { isRiskAppetite } from './content-taxonomy.js';
 
 // --- Saved types ---
 
@@ -29,7 +21,7 @@ export interface SavedContentPacket {
   readonly updatedAt: string;
   readonly pinned: boolean;
   readonly assetVersion: 2;
-  readonly packet: ConceptSeedPacket;
+  readonly packet: SavedConceptSeedPacket;
   readonly context: ContentPacketContext;
   readonly origin: ContentPacketOrigin;
   readonly evaluation?: ContentEvaluation;
@@ -71,41 +63,6 @@ function isNonEmptyStringArray(value: unknown): value is readonly string[] {
 
 function isIsoDateString(value: unknown): value is string {
   return typeof value === 'string' && !Number.isNaN(Date.parse(value));
-}
-
-function isFiniteScore(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value);
-}
-
-function isContentEvaluationScores(value: unknown): value is ContentEvaluationScores {
-  if (!isObjectRecord(value)) {
-    return false;
-  }
-
-  return (
-    isFiniteScore(value['imageCharge']) &&
-    isFiniteScore(value['humanAche']) &&
-    isFiniteScore(value['socialLoadBearing']) &&
-    isFiniteScore(value['branchingPressure']) &&
-    isFiniteScore(value['antiGenericity']) &&
-    isFiniteScore(value['sceneBurst']) &&
-    isFiniteScore(value['structuralIrony']) &&
-    isFiniteScore(value['conceptUtility'])
-  );
-}
-
-export function isContentEvaluation(value: unknown): value is ContentEvaluation {
-  if (!isObjectRecord(value)) {
-    return false;
-  }
-
-  return (
-    isNonEmptyString(value['contentId']) &&
-    isContentEvaluationScores(value['scores']) &&
-    isStringArray(value['strengths']) &&
-    isStringArray(value['weaknesses']) &&
-    isContentPacketRole(value['recommendedRole'])
-  );
 }
 
 // --- Public type guards ---
@@ -150,7 +107,7 @@ export function getSavedContentPacketRecommendedRole(
   return packet.evaluation?.recommendedRole ?? 'UNSCORED';
 }
 
-export function projectSavedConceptSeedPacket(packet: SavedContentPacket): ConceptSeedPacket {
+export function projectSavedConceptSeedPacket(packet: SavedContentPacket): SavedConceptSeedPacket {
   return projectConceptSeedPacket(packet);
 }
 

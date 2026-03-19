@@ -25,7 +25,7 @@ import {
 import { buildConceptStressTesterPrompt } from '../../../src/llm/prompts/concept-stress-tester-prompt';
 import { CONCEPT_STRESS_TEST_SCHEMA } from '../../../src/llm/schemas/concept-stress-tester-schema';
 import type { ConceptSpec, ConceptStressTesterContext } from '../../../src/models';
-import type { ConceptSeedPacket } from '../../../src/models/content-packet';
+import type { ConceptSeedPacket } from '../../../src/models/concept-seed-packet';
 import { createConceptSpecFixture } from '../../fixtures/concept-generator';
 
 function createConceptSeedPacket(id: string): ConceptSeedPacket {

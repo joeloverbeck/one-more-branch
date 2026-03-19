@@ -1,4 +1,4 @@
-import type { ConceptSeedPacket } from './content-packet.js';
+import type { ConceptSeedPacket } from './concept-seed-packet.js';
 import type { ConflictAxis, ConflictType } from './conflict-taxonomy.js';
 import { CONFLICT_AXES, isConflictAxis, isConflictType } from './conflict-taxonomy.js';
 import type { StoryKernel } from './story-kernel.js';

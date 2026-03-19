@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import type { NextFunction, Request, Response } from 'express';
-import type { ConceptSeedPacket, ContentEvaluation, GeneratedContentPacket } from '@/models/content-packet';
+import type { ConceptSeedPacket } from '@/models/concept-seed-packet';
+import type {
+  ContentEvaluation,
+  GeneratedContentPacket,
+} from '@/models/content-generation-contracts';
 import type { SavedContentPacket } from '@/models/saved-content-packet';
 
 jest.mock('@/persistence/content-packet-repository', () => ({

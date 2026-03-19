@@ -2,12 +2,10 @@ import {
   cloneContentPacketContext,
   cloneContentPacketOrigin,
   isGeneratedContentPacket,
-  projectConceptSeedPacket,
-} from '../../models/content-packet.js';
-import {
   isContentEvaluation,
-  type SavedContentPacket,
-} from '../../models/saved-content-packet.js';
+} from '../../models/content-generation-contracts.js';
+import { projectConceptSeedPacket } from '../../models/concept-seed-packet.js';
+import type { SavedContentPacket } from '../../models/saved-content-packet.js';
 
 export interface CreateSavedContentPacketArtifactInput {
   readonly id: string;

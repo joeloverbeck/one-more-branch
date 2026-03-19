@@ -1,7 +1,7 @@
 import { buildContentTasteDistillerPrompt } from '../../../src/llm/prompts/content-taste-distiller-prompt';
 import { parseTasteDistillerResponse } from '../../../src/llm/content-taste-distiller-generation';
 import { buildContentTasteDistillerSchema } from '../../../src/llm/schemas/content-taste-distiller-schema';
-import type { TasteDistillerContext } from '../../../src/models/content-packet';
+import type { TasteDistillerContext } from '../../../src/models/content-generation-contracts';
 
 function makeValidTasteProfile(): Record<string, unknown> {
   return {

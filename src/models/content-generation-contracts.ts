@@ -1,50 +1,14 @@
-// --- Enums and constants ---
-
-export const CONTENT_KIND_VALUES = [
-  'ENTITY',
-  'INSTITUTION',
-  'RELATIONSHIP',
-  'TRANSFORMATION',
-  'WORLD_INTRUSION',
-  'RITUAL',
-  'POLICY',
-  'JOB',
-  'SUBCULTURE',
-  'ECONOMY',
-] as const;
-
-export type ContentKind = (typeof CONTENT_KIND_VALUES)[number];
-
-export const CONTENT_PACKET_ROLE_VALUES = [
-  'PRIMARY_SEED',
-  'SECONDARY_MUTAGEN',
-  'IMAGE_ONLY',
-  'REJECT',
-] as const;
-
-export type ContentPacketRole = (typeof CONTENT_PACKET_ROLE_VALUES)[number];
-
-export const RISK_APPETITE_VALUES = ['LOW', 'MEDIUM', 'HIGH', 'MAXIMAL'] as const;
-
-export type RiskAppetite = (typeof RISK_APPETITE_VALUES)[number];
-
-// --- Type guards for enums ---
-
-export function isContentKind(value: unknown): value is ContentKind {
-  return typeof value === 'string' && CONTENT_KIND_VALUES.includes(value as ContentKind);
-}
-
-export function isContentPacketRole(value: unknown): value is ContentPacketRole {
-  return (
-    typeof value === 'string' && CONTENT_PACKET_ROLE_VALUES.includes(value as ContentPacketRole)
-  );
-}
-
-export function isRiskAppetite(value: unknown): value is RiskAppetite {
-  return typeof value === 'string' && RISK_APPETITE_VALUES.includes(value as RiskAppetite);
-}
-
-// --- Domain types ---
+import type { ConceptSeedPacket } from './concept-seed-packet.js';
+import { isConceptSeedPacket } from './concept-seed-packet.js';
+import type {
+  ContentKind,
+  ContentPacketRole,
+  RiskAppetite,
+} from './content-taxonomy.js';
+import {
+  isContentKind,
+  isContentPacketRole,
+} from './content-taxonomy.js';
 
 export interface TasteProfile {
   readonly collisionPatterns: readonly string[];
@@ -87,47 +51,20 @@ export interface ContentPacketOrigin {
   readonly sourceArtifacts: readonly ContentPacketSourceArtifact[];
 }
 
-export function formatContentExemplarId(index: number): string {
-  return `exemplar-${String(index + 1).padStart(2, '0')}`;
-}
-
-// Lean downstream projection used by concept-stage prompts and saved-asset consumers.
-export interface ConceptSeedPacket {
-  readonly contentId: string;
-  readonly contentKind: ContentKind;
-  readonly coreAnomaly: string;
-  readonly humanAnchor: string;
-  readonly socialEngine: string;
-  readonly choicePressure: string;
-  readonly signatureImage: string;
-  readonly escalationPath: string;
-  readonly wildnessInvariant: string;
-  readonly dullCollapse: string;
-  readonly interactionVerbs: readonly string[];
-}
-
-// Flat LLM output shape for quick generation before service-layer asset-candidate assembly.
 export interface ConceptSeedOneShotPacket extends ConceptSeedPacket, ContentPacketContext {}
 
-// Quick-generation packet with explicit exemplar lineage before service-layer asset-candidate assembly.
 export interface ConceptSeedOneShotLineagedPacket extends ConceptSeedOneShotPacket {
   readonly sourceExemplarIds: readonly string[];
 }
 
-// Flat LLM output shape for pipeline generation before service-layer asset-candidate assembly.
 export interface ConceptSeedPacketerPacket extends ConceptSeedOneShotPacket {
   readonly sourceSparkIds: readonly string[];
 }
 
-// Canonical save-ready generation object returned by the service/route layer.
 export interface GeneratedContentPacket {
   readonly packet: ConceptSeedPacket;
   readonly context: ContentPacketContext;
   readonly origin: ContentPacketOrigin;
-}
-
-export interface ConceptSeedPacketProjectionSource {
-  readonly packet: ConceptSeedPacket;
 }
 
 export interface ContentEvaluationScores {
@@ -149,8 +86,6 @@ export interface ContentEvaluation {
   readonly recommendedRole: ContentPacketRole;
 }
 
-// --- Taste distiller types ---
-
 export interface TasteDistillerContext {
   readonly exemplarIdeas: readonly string[];
   readonly moodOrGenre?: string;
@@ -162,8 +97,6 @@ export interface TasteDistillerResult {
   readonly rawResponse: string;
 }
 
-// --- Sparkstormer types ---
-
 export interface SparkstormerContext {
   readonly tasteProfile: TasteProfile;
   readonly kernelBlock?: string;
@@ -174,8 +107,6 @@ export interface SparkstormerResult {
   readonly sparks: readonly ContentSpark[];
   readonly rawResponse: string;
 }
-
-// --- One-shot content generation types ---
 
 export interface ContentOneShotContext {
   readonly exemplarIdeas: readonly string[];
@@ -190,8 +121,6 @@ export interface ContentOneShotResult {
   readonly rawResponse: string;
 }
 
-// --- Content packeter types ---
-
 export interface ContentPacketerContext {
   readonly tasteProfile: TasteProfile;
   readonly sparks: readonly ContentSpark[];
@@ -202,8 +131,6 @@ export interface ContentPacketerResult {
   readonly packets: readonly ConceptSeedPacketerPacket[];
   readonly rawResponse: string;
 }
-
-// --- Content evaluator types ---
 
 export interface ContentEvaluatorContext {
   readonly packets: readonly ConceptSeedPacket[];
@@ -223,34 +150,33 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-function isNonEmptyStringArray(value: unknown): value is readonly string[] {
-  return Array.isArray(value) && value.length > 0 && value.every((item) => isNonEmptyString(item));
-}
-
 function isStringArray(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
-export function cloneConceptSeedPacket(packet: ConceptSeedPacket): ConceptSeedPacket {
-  return {
-    contentId: packet.contentId,
-    contentKind: packet.contentKind,
-    coreAnomaly: packet.coreAnomaly,
-    humanAnchor: packet.humanAnchor,
-    socialEngine: packet.socialEngine,
-    choicePressure: packet.choicePressure,
-    signatureImage: packet.signatureImage,
-    escalationPath: packet.escalationPath,
-    wildnessInvariant: packet.wildnessInvariant,
-    dullCollapse: packet.dullCollapse,
-    interactionVerbs: [...packet.interactionVerbs],
-  };
+function isFiniteScore(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
 }
 
-export function projectConceptSeedPacket(
-  value: ConceptSeedPacket | ConceptSeedPacketProjectionSource
-): ConceptSeedPacket {
-  return cloneConceptSeedPacket('packet' in value ? value.packet : value);
+function isContentEvaluationScores(value: unknown): value is ContentEvaluationScores {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  return (
+    isFiniteScore(value['imageCharge']) &&
+    isFiniteScore(value['humanAche']) &&
+    isFiniteScore(value['socialLoadBearing']) &&
+    isFiniteScore(value['branchingPressure']) &&
+    isFiniteScore(value['antiGenericity']) &&
+    isFiniteScore(value['sceneBurst']) &&
+    isFiniteScore(value['structuralIrony']) &&
+    isFiniteScore(value['conceptUtility'])
+  );
+}
+
+export function formatContentExemplarId(index: number): string {
+  return `exemplar-${String(index + 1).padStart(2, '0')}`;
 }
 
 export function cloneContentPacketContext(context: ContentPacketContext): ContentPacketContext {
@@ -280,26 +206,6 @@ export function cloneContentPacketOrigin(origin: ContentPacketOrigin): ContentPa
     generationMode: origin.generationMode,
     sourceArtifacts: origin.sourceArtifacts.map(cloneContentPacketSourceArtifact),
   };
-}
-
-export function isConceptSeedPacket(value: unknown): value is ConceptSeedPacket {
-  if (!isObjectRecord(value)) {
-    return false;
-  }
-
-  return (
-    isNonEmptyString(value['contentId']) &&
-    isContentKind(value['contentKind']) &&
-    isNonEmptyString(value['coreAnomaly']) &&
-    isNonEmptyString(value['humanAnchor']) &&
-    isNonEmptyString(value['socialEngine']) &&
-    isNonEmptyString(value['choicePressure']) &&
-    isNonEmptyString(value['signatureImage']) &&
-    isNonEmptyString(value['escalationPath']) &&
-    isNonEmptyString(value['wildnessInvariant']) &&
-    isNonEmptyString(value['dullCollapse']) &&
-    isNonEmptyStringArray(value['interactionVerbs'])
-  );
 }
 
 export function isContentPacketContext(value: unknown): value is ContentPacketContext {
@@ -388,5 +294,19 @@ export function isGeneratedContentPacket(value: unknown): value is GeneratedCont
     isConceptSeedPacket(value['packet']) &&
     isContentPacketContext(value['context']) &&
     isContentPacketOrigin(value['origin'])
+  );
+}
+
+export function isContentEvaluation(value: unknown): value is ContentEvaluation {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  return (
+    isNonEmptyString(value['contentId']) &&
+    isContentEvaluationScores(value['scores']) &&
+    isStringArray(value['strengths']) &&
+    isStringArray(value['weaknesses']) &&
+    isContentPacketRole(value['recommendedRole'])
   );
 }
