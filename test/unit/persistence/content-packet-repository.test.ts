@@ -77,6 +77,32 @@ function createSavedContentPacket(id: string, updatedAt?: string): SavedContentP
   };
 }
 
+function createLegacyPacketOnlyPayload(id: string): Record<string, unknown> {
+  const now = new Date().toISOString();
+  return {
+    id,
+    createdAt: now,
+    updatedAt: now,
+    pinned: false,
+    packet: {
+      contentId: 'pkt-01',
+      contentKind: 'ENTITY',
+      coreAnomaly: 'Legacy payload',
+      humanAnchor: 'Legacy anchor',
+      socialEngine: 'Legacy engine',
+      choicePressure: 'Legacy pressure',
+      signatureImage: 'Legacy image',
+      escalationPath: 'Legacy escalation',
+      wildnessInvariant: 'Legacy invariant',
+      dullCollapse: 'Legacy collapse',
+      interactionVerbs: ['observe', 'adapt'],
+    },
+    provenance: {
+      generationMode: 'quick',
+    },
+  };
+}
+
 describe('content-packet-repository', () => {
   const createdIds = new Set<string>();
 
@@ -165,18 +191,25 @@ describe('content-packet-repository', () => {
     createdIds.add(id);
 
     mkdirSync(getContentPacketsDir(), { recursive: true });
-    await writeJsonFile(getContentPacketFilePath(id), {
-      id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      pinned: false,
-      packet: {
-        contentId: 'pkt-01',
-      },
-    });
+    await writeJsonFile(getContentPacketFilePath(id), createLegacyPacketOnlyPayload(id));
 
     await expect(loadContentPacket(id)).rejects.toThrow(
       `Invalid SavedContentPacket payload at ${getContentPacketFilePath(id)}`
+    );
+  });
+
+  it('throws when listing persisted packets if a legacy packet-only file is present', async () => {
+    const validId = `${TEST_PREFIX}-${randomUUID()}`;
+    const legacyId = `${TEST_PREFIX}-${randomUUID()}`;
+    createdIds.add(validId);
+    createdIds.add(legacyId);
+
+    await saveContentPacket(createSavedContentPacket(validId));
+    mkdirSync(getContentPacketsDir(), { recursive: true });
+    await writeJsonFile(getContentPacketFilePath(legacyId), createLegacyPacketOnlyPayload(legacyId));
+
+    await expect(listContentPackets()).rejects.toThrow(
+      `Invalid SavedContentPacket payload at ${getContentPacketFilePath(legacyId)}`
     );
   });
 });

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import type { ContentPacket, ContentEvaluation, GeneratedContentPacket } from '@/models/content-packet';
 import type { SavedContentPacket } from '@/models/saved-content-packet';
 
@@ -55,7 +55,7 @@ type RouteLayer = {
 function getRouteHandler(
   method: 'get' | 'post' | 'patch' | 'delete',
   path: string
-): (req: Request, res: Response) => Promise<void> | void {
+): (req: Request, res: Response, next: NextFunction) => Promise<void> | void {
   const layer = (contentPacketRoutes.stack as unknown as RouteLayer[]).find(
     (item) => item.route?.path === path && item.route?.methods?.[method]
   );
@@ -248,6 +248,24 @@ describe('content-packets routes', () => {
       expect(renderCall[1].contentKindGroups[0]?.cards[0]?.metaDetails).toEqual([
         expect.objectContaining({ key: 'recommendedRole', value: 'PRIMARY_SEED' }),
       ]);
+    });
+  });
+
+  describe('GET /api/list', () => {
+    it('forwards repository validation failures to next', async () => {
+      const error = new Error('Invalid SavedContentPacket payload at /tmp/legacy.json');
+      (listContentPackets as jest.Mock).mockRejectedValue(error);
+
+      const handler = getRouteHandler('get', '/api/list');
+      const req = mockReq();
+      const res = mockRes();
+      const next = jest.fn();
+
+      void handler(req, res, next);
+      await flushPromises();
+
+      expect(res.json).not.toHaveBeenCalled();
+      expect(next).toHaveBeenCalledWith(error);
     });
   });
 
