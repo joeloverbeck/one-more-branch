@@ -5,11 +5,18 @@ import { evaluateContentPackets } from '../../llm/content-evaluator-generation.j
 import { generateContentOneShot } from '../../llm/content-one-shot-generation.js';
 import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
+import { projectContentPacket } from '../../models/content-packet.js';
 import type {
   ContentEvaluation,
+  GeneratedContentPacket,
   ContentOneShotContext,
   ContentPacket,
+  ContentPacketerPacket,
+  ContentPacketContext,
+  ContentPacketOrigin,
+  ContentPacketSourceArtifact,
   ContentSpark,
+  ContentOneShotPacket,
   SparkstormerContext,
   TasteDistillerContext,
   TasteProfile,
@@ -72,14 +79,14 @@ export interface EvaluatePacketsInput {
 // --- Result types ---
 
 export interface ContentQuickResult {
-  readonly packets: readonly ContentPacket[];
+  readonly packets: readonly GeneratedContentPacket[];
   readonly rawResponse: string;
 }
 
 export interface ContentPipelineResult {
   readonly tasteProfile: TasteProfile;
   readonly sparks: readonly ContentSpark[];
-  readonly packets: readonly ContentPacket[];
+  readonly packets: readonly GeneratedContentPacket[];
   readonly evaluations: readonly ContentEvaluation[];
 }
 
@@ -92,7 +99,7 @@ export interface GenerateSparksResult {
 }
 
 export interface PackageContentResult {
-  readonly packets: readonly ContentPacket[];
+  readonly packets: readonly GeneratedContentPacket[];
 }
 
 export interface EvaluatePacketsResult {
@@ -152,6 +159,57 @@ function requireExemplarIdeas(ideas: readonly string[]): readonly string[] {
   return filtered;
 }
 
+function buildPacketContext(packet: ContentOneShotPacket | ContentPacketerPacket): ContentPacketContext {
+  return {
+    premiseSummary: packet.premiseSummary,
+    situationFrame: packet.situationFrame,
+    worldState: packet.worldState,
+    viewpointPressure: packet.viewpointPressure,
+  };
+}
+
+function buildQuickSourceArtifacts(
+  exemplarIdeas: readonly string[]
+): readonly ContentPacketSourceArtifact[] {
+  return exemplarIdeas.map((idea, index) => ({
+    artifactType: 'EXEMPLAR',
+    sourceId: `exemplar-${String(index + 1).padStart(2, '0')}`,
+    summary: idea,
+  }));
+}
+
+function buildPipelineSourceArtifacts(
+  packet: ContentPacketerPacket,
+  sparksById: ReadonlyMap<string, ContentSpark>
+): readonly ContentPacketSourceArtifact[] {
+  return packet.sourceSparkIds.map((sparkId) => {
+    const spark = sparksById.get(sparkId);
+    if (!spark) {
+      throw new Error(`Missing source spark for packet ${packet.contentId}: ${sparkId}`);
+    }
+
+    return {
+      artifactType: 'SPARK',
+      sourceId: spark.sparkId,
+      contentKind: spark.contentKind,
+      summary: spark.spark,
+      imageSeed: spark.imageSeed,
+      collisionTags: [...spark.collisionTags],
+    };
+  });
+}
+
+function buildGeneratedPacket(
+  packet: ContentOneShotPacket | ContentPacketerPacket,
+  origin: ContentPacketOrigin
+): GeneratedContentPacket {
+  return {
+    packet: projectContentPacket(packet),
+    context: buildPacketContext(packet),
+    origin,
+  };
+}
+
 // --- Factory ---
 
 export function createContentService(deps: ContentServiceDeps = defaultDeps): ContentService {
@@ -173,7 +231,15 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         deps.generateContentOneShot(context, apiKey)
       );
 
-      return { packets: result.packets, rawResponse: result.rawResponse };
+      return {
+        packets: result.packets.map((packet) =>
+          buildGeneratedPacket(packet, {
+            generationMode: 'quick',
+            sourceArtifacts: buildQuickSourceArtifacts(exemplarIdeas),
+          })
+        ),
+        rawResponse: result.rawResponse,
+      };
     },
 
     async generateContentPipeline(input: ContentPipelineInput): Promise<ContentPipelineResult> {
@@ -202,6 +268,7 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       const sparkResult = await runGenerationStage(onGenerationStage, 'GENERATING_SPARKS', () =>
         deps.generateSparks(sparkContext, apiKey)
       );
+      const sparksById = new Map(sparkResult.sparks.map((spark) => [spark.sparkId, spark]));
 
       // Stage 3: Content Packeter
       const packeterContext: ContentPacketerContext = {
@@ -229,7 +296,12 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       return {
         tasteProfile: tasteResult.tasteProfile,
         sparks: sparkResult.sparks,
-        packets: packeterResult.packets,
+        packets: packeterResult.packets.map((packet) =>
+          buildGeneratedPacket(packet, {
+            generationMode: 'pipeline',
+            sourceArtifacts: buildPipelineSourceArtifacts(packet, sparksById),
+          })
+        ),
         evaluations: evaluatorResult.evaluations,
       };
     },
@@ -283,7 +355,16 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         deps.generateContentPackets(context, apiKey)
       );
 
-      return { packets: result.packets };
+      const sparksById = new Map(input.sparks.map((spark) => [spark.sparkId, spark]));
+
+      return {
+        packets: result.packets.map((packet) =>
+          buildGeneratedPacket(packet, {
+            generationMode: 'pipeline',
+            sourceArtifacts: buildPipelineSourceArtifacts(packet, sparksById),
+          })
+        ),
+      };
     },
 
     async evaluatePackets(input: EvaluatePacketsInput): Promise<EvaluatePacketsResult> {

@@ -7,7 +7,7 @@
 
 ## Pipeline Position
 
-Alternative fast path that bypasses the full 4-stage pipeline. Generates 18 content packets directly from exemplar ideas in a single LLM call, inferring taste implicitly.
+Alternative fast path that bypasses the full 4-stage pipeline. Generates 18 context-rich content packets directly from exemplar ideas in a single LLM call, inferring taste implicitly.
 
 **Pipeline**: User exemplars → **Content One-Shot** → Content packets (ready for concept seeding)
 
@@ -35,9 +35,10 @@ EXEMPLAR IDEAS:
 {{optional STORY KERNEL block}}
 
 OUTPUT REQUIREMENTS:
-- Return JSON: { "packets": ContentPacket[] }
+- Return JSON: { "packets": ContentOneShotPacket[] }
 - Exactly 18 packets
-- Each packet must include `contentId`, `contentKind`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, and `interactionVerbs`
+- Each packet must include `contentId`, `contentKind`, `premiseSummary`, `situationFrame`, `worldState`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, and `interactionVerbs`
+- `viewpointPressure` is optional
 - `contentId` format: `pkt-NN`
 - `interactionVerbs`: exactly 4-6 concrete verbs
 - Use 6+ distinct content kinds
@@ -54,6 +55,10 @@ OUTPUT REQUIREMENTS:
     {
       "contentId": "pkt-01",
       "contentKind": "CONTENT_KIND_ENUM",
+      "premiseSummary": "Plain-language causal setup",
+      "situationFrame": "Immediate arrangement or trap",
+      "worldState": "Relevant baseline reality",
+      "viewpointPressure": "Optional protagonist/player pressure",
       "coreAnomaly": "What's wrong here?",
       "humanAnchor": "emotional/relational truth",
       "socialEngine": "social mechanism driving conflict",
@@ -87,13 +92,13 @@ OUTPUT REQUIREMENTS:
 | Spark count | 30-40 | N/A (skipped) |
 | Packet count | 12-16 | 18 |
 | Evaluation | Separate scoring + role labels | None (all packets returned) |
-| Packet contract | Same canonical `ContentPacket` fields used downstream | Same canonical `ContentPacket` fields used downstream |
+| Packet contract | Generated packet includes setup context and is later projected to lean `ContentPacket` fields | Generated packet includes setup context and is later projected to lean `ContentPacket` fields |
 
 ## Notes
 
 - Speed-optimized path: single LLM call vs. 4 sequential calls
 - No explicit taste profiling — taste is inferred from exemplar ideas
 - No evaluation stage — all 18 packets are returned without scoring or role assignment
-- Emits the same canonical packet contract used by concept stages and persistence
-- One-shot packets do not carry spark lineage; pipeline-only lineage stays outside the canonical saved packet body
+- The LLM emits flat context-rich packets; the service layer turns them into generated asset candidates with nested `context` and exemplar-derived `origin.sourceArtifacts`
+- One-shot packets do not carry spark lineage; quick-mode origin is derived explicitly from exemplar inputs at generation time
 - Prompt logging uses `promptType: 'contentOneShot'`

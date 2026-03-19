@@ -11,6 +11,10 @@ type TestContentPacketerPacket = Record<string, unknown> & {
   contentId: string;
   sourceSparkIds: string[];
   contentKind: string;
+  premiseSummary: string;
+  situationFrame: string;
+  worldState: string;
+  viewpointPressure?: string;
   coreAnomaly: string;
   humanAnchor: string;
   socialEngine: string;
@@ -60,6 +64,9 @@ function makeValidPacket(overrides: Partial<TestContentPacketerPacket> = {}): Te
     contentId: 'pkt-01',
     sourceSparkIds: ['spark-01'],
     contentKind: 'ENTITY',
+    premiseSummary: 'A mortician monetizes the last dreams stored inside the dead.',
+    situationFrame: 'Bereaved families arrive at her parlor trying to buy one final conversation.',
+    worldState: 'The city treats dream extraction from corpses as private commerce rather than sacrilege.',
     coreAnomaly: 'She cannot forget what the dead dreamed.',
     humanAnchor: 'The weight of inherited grief.',
     socialEngine: 'A black market trades in extracted final dreams.',
@@ -100,6 +107,15 @@ describe('buildContentPacketerPrompt', () => {
     expect(userMessage!.content).toContain(JSON.stringify(sparks, null, 2));
   });
 
+  it('documents required context fields in the prompt contract', () => {
+    const messages = buildContentPacketerPrompt(makeContext());
+    const userMessage = messages.find((m) => m.role === 'user');
+
+    expect(userMessage!.content).toContain('premiseSummary');
+    expect(userMessage!.content).toContain('situationFrame');
+    expect(userMessage!.content).toContain('worldState');
+  });
+
   it('injects optional kernel block when provided', () => {
     const context = makeContext({ kernelBlock: 'A story about grief becoming currency' });
     const messages = buildContentPacketerPrompt(context);
@@ -130,6 +146,9 @@ describe('parseContentPacketerResponse', () => {
     expect(result[0].contentId).toBe('pkt-01');
     expect(result[0].sourceSparkIds).toEqual(['spark-01']);
     expect(result[0].contentKind).toBe('ENTITY');
+    expect(result[0].premiseSummary).toBe(packet.premiseSummary);
+    expect(result[0].situationFrame).toBe(packet.situationFrame);
+    expect(result[0].worldState).toBe(packet.worldState);
     expect(result[0].coreAnomaly).toBe(packet.coreAnomaly);
     expect(result[0].humanAnchor).toBe(packet.humanAnchor);
     expect(result[0].socialEngine).toBe(packet.socialEngine);
@@ -189,6 +208,9 @@ describe('parseContentPacketerResponse', () => {
   it('rejects packets with missing required fields', () => {
     const requiredStringFields = [
       'contentId',
+      'premiseSummary',
+      'situationFrame',
+      'worldState',
       'coreAnomaly',
       'humanAnchor',
       'socialEngine',
@@ -221,6 +243,16 @@ describe('parseContentPacketerResponse', () => {
     expect(() => parseContentPacketerResponse({ packets: [packet] })).toThrow(
       /sourceSparkIds must be a non-empty array/
     );
+  });
+
+  it('keeps optional viewpointPressure when present', () => {
+    const packet = makeValidPacket({
+      viewpointPressure: 'She must either profit from grief or deny families their last chance at closure.',
+    });
+
+    const result = parseContentPacketerResponse({ packets: [packet] });
+
+    expect(result[0].viewpointPressure).toBe(packet.viewpointPressure);
   });
 
   it('rejects empty packets array', () => {
@@ -275,6 +307,9 @@ describe('buildContentPacketerSchema', () => {
     expect(required).toContain('contentId');
     expect(required).toContain('sourceSparkIds');
     expect(required).toContain('contentKind');
+    expect(required).toContain('premiseSummary');
+    expect(required).toContain('situationFrame');
+    expect(required).toContain('worldState');
     expect(required).toContain('coreAnomaly');
     expect(required).toContain('humanAnchor');
     expect(required).toContain('socialEngine');

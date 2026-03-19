@@ -2,15 +2,18 @@ import type {
   ContentEvaluation,
   ContentEvaluationScores,
   ContentPacket,
+  ContentPacketContext,
+  ContentPacketOrigin,
   ContentPacketRole,
+  ContentPacketSourceArtifact,
   RiskAppetite,
 } from './content-packet.js';
 import {
   isContentKind,
   isContentPacket,
   isContentPacketRole,
-  projectContentPacket,
   isRiskAppetite,
+  projectContentPacket,
 } from './content-packet.js';
 
 // --- Saved types ---
@@ -25,27 +28,6 @@ export interface SavedContentPacket {
   readonly context: ContentPacketContext;
   readonly origin: ContentPacketOrigin;
   readonly evaluation?: ContentEvaluation;
-}
-
-export interface ContentPacketContext {
-  readonly premiseSummary: string;
-  readonly situationFrame: string;
-  readonly worldState: string;
-  readonly viewpointPressure?: string;
-}
-
-export interface ContentPacketSourceArtifact {
-  readonly artifactType: 'EXEMPLAR' | 'SPARK';
-  readonly sourceId: string;
-  readonly contentKind?: ContentPacket['contentKind'];
-  readonly summary: string;
-  readonly imageSeed?: string;
-  readonly collisionTags?: readonly string[];
-}
-
-export interface ContentPacketOrigin {
-  readonly generationMode: 'quick' | 'pipeline';
-  readonly sourceArtifacts: readonly ContentPacketSourceArtifact[];
 }
 
 export interface SavedTasteProfile {

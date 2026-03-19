@@ -66,6 +66,27 @@ export interface ContentSpark {
   readonly collisionTags: readonly string[];
 }
 
+export interface ContentPacketContext {
+  readonly premiseSummary: string;
+  readonly situationFrame: string;
+  readonly worldState: string;
+  readonly viewpointPressure?: string;
+}
+
+export interface ContentPacketSourceArtifact {
+  readonly artifactType: 'EXEMPLAR' | 'SPARK';
+  readonly sourceId: string;
+  readonly contentKind?: ContentKind;
+  readonly summary: string;
+  readonly imageSeed?: string;
+  readonly collisionTags?: readonly string[];
+}
+
+export interface ContentPacketOrigin {
+  readonly generationMode: 'quick' | 'pipeline';
+  readonly sourceArtifacts: readonly ContentPacketSourceArtifact[];
+}
+
 // Lean downstream projection used by concept-stage prompts and saved-asset consumers.
 export interface ContentPacket {
   readonly contentId: string;
@@ -81,14 +102,19 @@ export interface ContentPacket {
   readonly interactionVerbs: readonly string[];
 }
 
-export interface ContentPacketProvenance {
-  readonly generationMode: 'quick' | 'pipeline';
-  readonly sourceSparkIds?: readonly string[];
+// Flat LLM output shape for quick generation before service-layer asset-candidate assembly.
+export interface ContentOneShotPacket extends ContentPacket, ContentPacketContext {}
+
+// Flat LLM output shape for pipeline generation before service-layer asset-candidate assembly.
+export interface ContentPacketerPacket extends ContentOneShotPacket {
+  readonly sourceSparkIds: readonly string[];
 }
 
-// Richer generation-time packet shape with transient lineage fields.
-export interface ContentPacketerPacket extends ContentPacket {
-  readonly sourceSparkIds: readonly string[];
+// Canonical save-ready generation object returned by the service/route layer.
+export interface GeneratedContentPacket {
+  readonly packet: ContentPacket;
+  readonly context: ContentPacketContext;
+  readonly origin: ContentPacketOrigin;
 }
 
 export interface ContentPacketProjectionSource {
@@ -151,7 +177,7 @@ export interface ContentOneShotContext {
 }
 
 export interface ContentOneShotResult {
-  readonly packets: readonly ContentPacket[];
+  readonly packets: readonly ContentOneShotPacket[];
   readonly rawResponse: string;
 }
 
@@ -231,16 +257,5 @@ export function isContentPacket(value: unknown): value is ContentPacket {
     isNonEmptyString(value['wildnessInvariant']) &&
     isNonEmptyString(value['dullCollapse']) &&
     isNonEmptyStringArray(value['interactionVerbs'])
-  );
-}
-
-export function isContentPacketProvenance(value: unknown): value is ContentPacketProvenance {
-  if (!isObjectRecord(value)) {
-    return false;
-  }
-
-  return (
-    (value['generationMode'] === 'quick' || value['generationMode'] === 'pipeline') &&
-    (value['sourceSparkIds'] === undefined || isNonEmptyStringArray(value['sourceSparkIds']))
   );
 }

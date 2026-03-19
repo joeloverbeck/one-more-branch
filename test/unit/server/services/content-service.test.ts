@@ -2,12 +2,14 @@ import { createContentService } from '@/server/services/content-service';
 import type {
   TasteProfile,
   ContentSpark,
-  ContentPacket,
   ContentEvaluation,
+  GeneratedContentPacket,
   ContentOneShotContext,
+  ContentOneShotPacket,
   TasteDistillerContext,
   SparkstormerContext,
   ContentPacketerContext,
+  ContentPacketerPacket,
   ContentEvaluatorContext,
 } from '@/models/content-packet';
 import type { GenerationStageEvent } from '@/engine/types';
@@ -36,9 +38,12 @@ function createSpark(id = 'spark_1'): ContentSpark {
   };
 }
 
-function createPacket(id = 'content_1'): ContentPacket {
+function createPacketerPacket(id = 'content_1'): ContentPacketerPacket {
   return {
     contentId: id,
+    premiseSummary: 'A test premise',
+    situationFrame: 'A pressured test situation',
+    worldState: 'A baseline world state',
     sourceSparkIds: ['spark_1'],
     contentKind: 'ENTITY',
     coreAnomaly: 'anomaly',
@@ -72,9 +77,12 @@ function createEvaluation(id = 'content_1'): ContentEvaluation {
   };
 }
 
-function createOneShotPacket(): ContentPacket {
+function createOneShotPacket(): ContentOneShotPacket {
   return {
     contentId: 'pkt-01',
+    premiseSummary: 'A one-shot premise',
+    situationFrame: 'A one-shot situation',
+    worldState: 'A one-shot world state',
     contentKind: 'ENTITY',
     coreAnomaly: 'anomaly',
     humanAnchor: 'anchor',
@@ -85,6 +93,75 @@ function createOneShotPacket(): ContentPacket {
     wildnessInvariant: 'invariant',
     dullCollapse: 'collapse',
     interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
+  };
+}
+
+function createQuickGeneratedPacket(): GeneratedContentPacket {
+  return {
+    packet: {
+      contentId: 'pkt-01',
+      contentKind: 'ENTITY',
+      coreAnomaly: 'anomaly',
+      humanAnchor: 'anchor',
+      socialEngine: 'engine',
+      choicePressure: 'pressure',
+      signatureImage: 'image',
+      escalationPath: 'hint',
+      wildnessInvariant: 'invariant',
+      dullCollapse: 'collapse',
+      interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
+    },
+    context: {
+      premiseSummary: 'A one-shot premise',
+      situationFrame: 'A one-shot situation',
+      worldState: 'A one-shot world state',
+    },
+    origin: {
+      generationMode: 'quick',
+      sourceArtifacts: [
+        {
+          artifactType: 'EXEMPLAR',
+          sourceId: 'exemplar-01',
+          summary: EXEMPLAR_IDEAS[0]!,
+        },
+      ],
+    },
+  };
+}
+
+function createPipelineGeneratedPacket(): GeneratedContentPacket {
+  return {
+    packet: {
+      contentId: 'content_1',
+      contentKind: 'ENTITY',
+      coreAnomaly: 'anomaly',
+      humanAnchor: 'anchor',
+      socialEngine: 'engine',
+      choicePressure: 'pressure',
+      signatureImage: 'image',
+      escalationPath: 'path',
+      wildnessInvariant: 'invariant',
+      dullCollapse: 'collapse',
+      interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
+    },
+    context: {
+      premiseSummary: 'A test premise',
+      situationFrame: 'A pressured test situation',
+      worldState: 'A baseline world state',
+    },
+    origin: {
+      generationMode: 'pipeline',
+      sourceArtifacts: [
+        {
+          artifactType: 'SPARK',
+          sourceId: 'spark_1',
+          contentKind: 'ENTITY',
+          summary: 'A test spark',
+          imageSeed: 'A vivid image',
+          collisionTags: ['tag-a'],
+        },
+      ],
+    },
   };
 }
 
@@ -103,7 +180,7 @@ function expectCompletedStage(
 function createMockDeps() {
   const tasteProfile = createTasteProfile();
   const sparks = [createSpark()];
-  const packets = [createPacket()];
+  const packets = [createPacketerPacket()];
   const evaluations = [createEvaluation()];
   const oneShotPackets = [createOneShotPacket()];
 
@@ -158,7 +235,7 @@ describe('ContentService', () => {
         }),
         VALID_API_KEY
       );
-      expect(result.packets).toEqual(deps.fixtures.oneShotPackets);
+      expect(result.packets).toEqual([createQuickGeneratedPacket()]);
     });
 
     it('requires apiKey (throws on missing)', async () => {
@@ -171,6 +248,18 @@ describe('ContentService', () => {
           apiKey: '',
         })
       ).rejects.toThrow('OpenRouter API key is required');
+    });
+
+    it('returns generated asset candidates with nested context and exemplar origin artifacts', async () => {
+      const deps = createMockDeps();
+      const service = createContentService(deps);
+
+      const result = await service.generateContentQuick({
+        exemplarIdeas: EXEMPLAR_IDEAS,
+        apiKey: VALID_API_KEY,
+      });
+
+      expect(result.packets).toEqual([createQuickGeneratedPacket()]);
     });
 
     it('fires onGenerationStage callbacks for GENERATING_CONTENT stage', async () => {
@@ -307,8 +396,20 @@ describe('ContentService', () => {
 
       expect(result.tasteProfile).toEqual(deps.fixtures.tasteProfile);
       expect(result.sparks).toEqual(deps.fixtures.sparks);
-      expect(result.packets).toEqual(deps.fixtures.packets);
+      expect(result.packets).toEqual([createPipelineGeneratedPacket()]);
       expect(result.evaluations).toEqual(deps.fixtures.evaluations);
+    });
+
+    it('materializes pipeline spark lineage into nested origin artifacts', async () => {
+      const deps = createMockDeps();
+      const service = createContentService(deps);
+
+      const result = await service.generateContentPipeline({
+        exemplarIdeas: EXEMPLAR_IDEAS,
+        apiKey: VALID_API_KEY,
+      });
+
+      expect(result.packets).toEqual([createPipelineGeneratedPacket()]);
     });
   });
 
@@ -419,7 +520,7 @@ describe('ContentService', () => {
       const stages: GenerationStageEvent[] = [];
 
       await service.evaluatePackets({
-        packets: [createPacket()],
+        packets: [createPipelineGeneratedPacket().packet],
         apiKey: VALID_API_KEY,
         onGenerationStage: (event: GenerationStageEvent) => stages.push(event),
       });

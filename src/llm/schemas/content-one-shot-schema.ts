@@ -7,6 +7,9 @@ const CONTENT_ONE_SHOT_PACKET_SCHEMA = {
   required: [
     'contentId',
     'contentKind',
+    'premiseSummary',
+    'situationFrame',
+    'worldState',
     'coreAnomaly',
     'humanAnchor',
     'socialEngine',
@@ -20,6 +23,10 @@ const CONTENT_ONE_SHOT_PACKET_SCHEMA = {
   properties: {
     contentId: { type: 'string' },
     contentKind: { type: 'string', enum: [...CONTENT_KIND_VALUES] },
+    premiseSummary: { type: 'string' },
+    situationFrame: { type: 'string' },
+    worldState: { type: 'string' },
+    viewpointPressure: { type: 'string' },
     coreAnomaly: { type: 'string' },
     humanAnchor: { type: 'string' },
     socialEngine: { type: 'string' },

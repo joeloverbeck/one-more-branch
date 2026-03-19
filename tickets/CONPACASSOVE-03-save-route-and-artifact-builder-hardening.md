@@ -4,7 +4,7 @@
 **Priority**: HIGH
 **Effort**: Medium
 **Engine Changes**: Yes — browser save payload, save route validation, saved asset builder
-**Deps**: `specs/content-packet-asset-overhaul.md`, `tickets/CONPACASSOVE-01-saved-asset-model-and-projection-boundary.md`, `tickets/CONPACASSOVE-02-generation-contracts-for-context-and-lineage.md`
+**Deps**: `specs/content-packet-asset-overhaul.md`, `archive/tickets/CONPACASSOVE-01-saved-asset-model-and-projection-boundary.completed.md`, `archive/tickets/CONPACASSOVE-02-generation-contracts-for-context-and-lineage.completed.md`
 
 ## Problem
 
@@ -14,14 +14,16 @@ The current save flow silently narrows generated packets into a thin saved shape
 
 1. `public/js/src/11-content-packets.js` currently saves the generated packet payload that the page already has, but that payload and the server route are still packet-centric rather than asset-candidate-centric.
 2. `src/server/routes/content-packets.ts` currently accepts any object under `body.packet` and delegates validation to `createSavedContentPacketArtifact`.
-3. `src/server/services/content-packet-artifact.ts` currently clones canonical packet fields and synthesizes quick or pipeline provenance from `sourceSparkIds`, which is exactly the save-time shape loss the spec forbids.
-4. Ticket `CONPACASSOVE-01` may tighten the saved asset model before this ticket lands. That is acceptable, but this ticket remains responsible for making the browser payload and save route actually satisfy the new model instead of weakening it.
+3. `src/server/services/content-packet-artifact.ts` currently hard-fails rather than assembling a v2 asset, which is correct after `CONPACASSOVE-01` and `CONPACASSOVE-02`; this ticket now needs to consume the richer generated payload rather than reconstructing anything from packet-only inputs.
+4. `CONPACASSOVE-02` currently materializes quick-mode exemplar lineage at the service boundary by attaching all exemplar ideas to each generated packet. That is acceptable as an interim complete contract, but this ticket must persist that contract exactly as received and must not invent per-packet exemplar subsets heuristically.
+5. Any future refinement toward explicit per-packet exemplar selectivity belongs in a generation-contract ticket, not in this save-path ticket.
 
 ## Architecture Check
 
 1. Explicit asset assembly in one builder keeps validation, projection, context mapping, and origin mapping in one place instead of scattering save semantics across the browser, route, and repository.
 2. No fallback reconstruction of missing context or origin data is allowed. The route must reject incomplete payloads rather than guessing.
 3. This ticket must consume the richer generation outputs introduced by `CONPACASSOVE-02`; it should not invent placeholder context or lineage just to satisfy the `SavedContentPacket` type introduced in `CONPACASSOVE-01`.
+4. Save-time code must not guess which exemplars "really" belong to a quick packet. It either persists the explicit generated lineage it received or rejects the payload.
 
 ## What to Change
 
@@ -53,6 +55,8 @@ Rewrite `createSavedContentPacketArtifact()` as an explicit builder that:
 5. attaches `evaluation`
 6. stamps `assetVersion: 2`
 
+For quick packets, the builder should treat `origin.sourceArtifacts` as already-owned generation output. If later tickets introduce explicit per-packet exemplar selection, this builder should consume that richer contract without adding heuristics here.
+
 ## Files to Touch
 
 - `public/js/src/11-content-packets.js` (modify)
@@ -82,6 +86,7 @@ Rewrite `createSavedContentPacketArtifact()` as an explicit builder that:
 
 1. The server never persists a saved content packet that is missing required context or required origin artifacts.
 2. Save-time logic never infers persisted lineage from IDs alone when richer source text was available upstream.
+3. Save-time logic never performs heuristic exemplar subset selection for quick packets; that ownership stays in generation.
 
 ## Test Plan
 

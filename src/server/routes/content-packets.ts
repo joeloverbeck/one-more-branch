@@ -124,10 +124,10 @@ contentPacketRoutes.post(
         return res.json({
           success: true,
           packets: result.packets,
-          packetCards: result.packets.map((packet) =>
-            buildContentPacketCardViewModel(packet, {
+          packetCards: result.packets.map((generatedPacket) =>
+            buildContentPacketCardViewModel(generatedPacket.packet, {
               includeContentKind: true,
-              evaluation: evaluationByContentId.get(packet.contentId),
+              evaluation: evaluationByContentId.get(generatedPacket.packet.contentId),
             })
           ),
           evaluations: result.evaluations,
@@ -151,8 +151,8 @@ contentPacketRoutes.post(
       return res.json({
         success: true,
         packets: result.packets,
-        packetCards: result.packets.map((packet) =>
-          buildContentPacketCardViewModel(packet, {
+        packetCards: result.packets.map((generatedPacket) =>
+          buildContentPacketCardViewModel(generatedPacket.packet, {
             includeContentKind: true,
           })
         ),

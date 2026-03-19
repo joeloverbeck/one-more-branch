@@ -52,6 +52,9 @@ function validatePacket(value: unknown, index: number): ContentPacketerPacket {
   }
 
   const coreAnomaly = validateStringField(data, 'coreAnomaly', index);
+  const premiseSummary = validateStringField(data, 'premiseSummary', index);
+  const situationFrame = validateStringField(data, 'situationFrame', index);
+  const worldState = validateStringField(data, 'worldState', index);
   const humanAnchor = validateStringField(data, 'humanAnchor', index);
   const socialEngine = validateStringField(data, 'socialEngine', index);
   const choicePressure = validateStringField(data, 'choicePressure', index);
@@ -77,6 +80,13 @@ function validatePacket(value: unknown, index: number): ContentPacketerPacket {
     contentId,
     sourceSparkIds: data['sourceSparkIds'] as readonly string[],
     contentKind: data['contentKind'],
+    premiseSummary,
+    situationFrame,
+    worldState,
+    viewpointPressure:
+      typeof data['viewpointPressure'] === 'string' && data['viewpointPressure'].trim().length > 0
+        ? data['viewpointPressure']
+        : undefined,
     coreAnomaly,
     humanAnchor,
     socialEngine,

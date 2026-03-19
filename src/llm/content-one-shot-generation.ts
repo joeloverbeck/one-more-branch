@@ -1,7 +1,7 @@
 import {
   isContentKind,
   type ContentOneShotContext,
-  type ContentPacket,
+  type ContentOneShotPacket,
   type ContentOneShotResult,
 } from '../models/content-packet.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
@@ -13,6 +13,9 @@ import { buildContentOneShotSchema } from './schemas/content-one-shot-schema.js'
 const REQUIRED_PACKET_FIELDS = [
   'contentId',
   'contentKind',
+  'premiseSummary',
+  'situationFrame',
+  'worldState',
   'coreAnomaly',
   'humanAnchor',
   'socialEngine',
@@ -23,7 +26,7 @@ const REQUIRED_PACKET_FIELDS = [
   'dullCollapse',
 ] as const;
 
-function parsePacket(raw: unknown, index: number): ContentPacket {
+function parsePacket(raw: unknown, index: number): ContentOneShotPacket {
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
     throw new LLMError(`Packet at index ${index} must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
@@ -64,6 +67,13 @@ function parsePacket(raw: unknown, index: number): ContentPacket {
   return {
     contentId: data['contentId'] as string,
     contentKind: data['contentKind'],
+    premiseSummary: data['premiseSummary'] as string,
+    situationFrame: data['situationFrame'] as string,
+    worldState: data['worldState'] as string,
+    viewpointPressure:
+      typeof data['viewpointPressure'] === 'string' && data['viewpointPressure'].trim().length > 0
+        ? data['viewpointPressure']
+        : undefined,
     coreAnomaly: data['coreAnomaly'] as string,
     humanAnchor: data['humanAnchor'] as string,
     socialEngine: data['socialEngine'] as string,
@@ -76,7 +86,7 @@ function parsePacket(raw: unknown, index: number): ContentPacket {
   };
 }
 
-export function parseContentOneShotResponse(parsed: unknown): readonly ContentPacket[] {
+export function parseContentOneShotResponse(parsed: unknown): readonly ContentOneShotPacket[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Content one-shot response must be an object',

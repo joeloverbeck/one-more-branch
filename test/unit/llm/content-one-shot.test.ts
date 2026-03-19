@@ -7,6 +7,9 @@ function makeValidPacket(overrides: Record<string, unknown> = {}): Record<string
   return {
     contentId: 'pkt-01',
     contentKind: 'JOB',
+    premiseSummary: 'A grief-stricken widow visits a dentist who can extract memories from teeth.',
+    situationFrame: 'Patients must decide which memories to sacrifice while sitting in the chair.',
+    worldState: 'Memory extraction dentistry has become an underground survival economy.',
     coreAnomaly: 'A dentist who extracts memories from molars',
     humanAnchor: 'A widow who wants to forget her husband',
     socialEngine: 'A black market for extracted memories',
@@ -60,6 +63,15 @@ describe('buildContentOneShotPrompt', () => {
     expect(userMessage!.content).toContain('KERNEL:\ndramaticThesis: Power corrupts');
   });
 
+  it('documents required context fields in the prompt contract', () => {
+    const messages = buildContentOneShotPrompt(makeContext());
+    const userMessage = messages.find((m) => m.role === 'user');
+
+    expect(userMessage!.content).toContain('premiseSummary');
+    expect(userMessage!.content).toContain('situationFrame');
+    expect(userMessage!.content).toContain('worldState');
+  });
+
   it('omits optional sections when not provided', () => {
     const context = makeContext();
     const messages = buildContentOneShotPrompt(context);
@@ -78,6 +90,15 @@ describe('parseContentOneShotResponse', () => {
     expect(result).toHaveLength(1);
     expect(result[0].contentId).toBe('pkt-01');
     expect(result[0].contentKind).toBe('JOB');
+    expect(result[0].premiseSummary).toBe(
+      'A grief-stricken widow visits a dentist who can extract memories from teeth.'
+    );
+    expect(result[0].situationFrame).toBe(
+      'Patients must decide which memories to sacrifice while sitting in the chair.'
+    );
+    expect(result[0].worldState).toBe(
+      'Memory extraction dentistry has become an underground survival economy.'
+    );
     expect(result[0].coreAnomaly).toBe('A dentist who extracts memories from molars');
     expect(result[0].humanAnchor).toBe('A widow who wants to forget her husband');
     expect(result[0].socialEngine).toBe('A black market for extracted memories');
@@ -132,6 +153,21 @@ describe('parseContentOneShotResponse', () => {
       })
     ).toThrow(/missing or invalid required field: interactionVerbs/);
   });
+
+  it('keeps optional viewpointPressure when present', () => {
+    const result = parseContentOneShotResponse({
+      packets: [
+        makeValidPacket({
+          viewpointPressure:
+            'She must choose whether survival is worth letting strangers buy her marriage.',
+        }),
+      ],
+    });
+
+    expect(result[0].viewpointPressure).toBe(
+      'She must choose whether survival is worth letting strangers buy her marriage.'
+    );
+  });
 });
 
 describe('buildContentOneShotSchema', () => {
@@ -151,6 +187,9 @@ describe('buildContentOneShotSchema', () => {
     const itemRequired = items['required'] as string[];
     expect(itemRequired).toContain('contentId');
     expect(itemRequired).toContain('contentKind');
+    expect(itemRequired).toContain('premiseSummary');
+    expect(itemRequired).toContain('situationFrame');
+    expect(itemRequired).toContain('worldState');
     expect(itemRequired).toContain('coreAnomaly');
     expect(itemRequired).toContain('humanAnchor');
     expect(itemRequired).toContain('socialEngine');

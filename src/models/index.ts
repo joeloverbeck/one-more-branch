@@ -403,8 +403,12 @@ export type {
   ContentSpark,
   ContentPacket,
   ContentPacketProjectionSource,
-  ContentPacketProvenance,
+  ContentPacketContext,
+  ContentPacketOrigin,
+  ContentPacketSourceArtifact,
+  ContentOneShotPacket,
   ContentPacketerPacket,
+  GeneratedContentPacket,
   ContentEvaluationScores,
   ContentEvaluation,
   ContentOneShotContext,
@@ -423,16 +427,12 @@ export {
   cloneContentPacket,
   isContentKind,
   isContentPacket,
-  isContentPacketProvenance,
   isContentPacketRole,
   projectContentPacket,
   isRiskAppetite,
 } from './content-packet';
 
 export type {
-  ContentPacketContext,
-  ContentPacketOrigin,
-  ContentPacketSourceArtifact,
   SavedContentPacket,
   SavedTasteProfile,
 } from './saved-content-packet';
