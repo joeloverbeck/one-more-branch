@@ -1,5 +1,5 @@
 import type { ConceptVerifierContext } from '../../models/concept-generator.js';
-import type { ContentPacket } from '../../models/content-packet.js';
+import type { ConceptSeedPacket } from '../../models/concept-seed-packet.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 
@@ -21,7 +21,7 @@ const KERNEL_FIDELITY_DIRECTIVE = `KERNEL FIDELITY DIRECTIVE:
 - kernelFidelityCheck.passes = true means the concept has genuinely grounded the kernel.
 - kernelFidelityCheck.kernelDrift describes what kernel elements are absent, weakly mapped, or superficially parroted.`;
 
-function buildContentPacketInvariantDirective(packets: readonly ContentPacket[]): string {
+function buildConceptSeedPacketInvariantDirective(packets: readonly ConceptSeedPacket[]): string {
   const packetSummaries = packets
     .map(
       (p) =>
@@ -29,14 +29,14 @@ function buildContentPacketInvariantDirective(packets: readonly ContentPacket[])
     )
     .join('\n');
 
-  return `CONTENT PACKET INVARIANT-REMOVAL TEST (additional load-bearing check):
+  return `CONCEPT SEED PACKET INVARIANT-REMOVAL TEST (additional load-bearing check):
 - This test is ADDITIVE to the existing load-bearing check above. Both checks must run.
-- For each concept that was seeded from a content packet, perform a second negative test: remove the wildnessInvariant or primary content packet entirely. Does the story collapse into generic genre?
-- If removing the content packet's wildnessInvariant leaves a concept that could be any stock genre story, the invariant is genuinely load-bearing.
+- For each concept that was seeded from a concept seed packet, perform a second negative test: remove the wildnessInvariant or primary concept seed packet entirely. Does the story collapse into generic genre?
+- If removing the concept seed packet's wildnessInvariant leaves a concept that could be any stock genre story, the invariant is genuinely load-bearing.
 - Compare the result against the packet's dullCollapse field — if the concept matches or resembles the dullCollapse description, the invariant was doing real work.
 - Record this result in the SAME loadBearingCheck field. The reasoning and genericCollapse should reflect BOTH the existing test (genreSubversion + coreFlaw + coreConflictLoop removal) AND this invariant-removal test.
 
-CONTENT PACKETS IN CONTEXT:
+CONCEPT SEED PACKETS IN CONTEXT:
 ${packetSummaries}`;
 }
 
@@ -74,8 +74,8 @@ export function buildConceptSpecificityPrompt(context: ConceptVerifierContext): 
     KERNEL_FIDELITY_DIRECTIVE,
   ];
 
-  if (context.contentPackets && context.contentPackets.length > 0) {
-    systemSections.push(buildContentPacketInvariantDirective(context.contentPackets));
+  if (context.conceptSeedPackets && context.conceptSeedPackets.length > 0) {
+    systemSections.push(buildConceptSeedPacketInvariantDirective(context.conceptSeedPackets));
   }
 
   const kernelSection = `STORY KERNEL (shared by all concepts):

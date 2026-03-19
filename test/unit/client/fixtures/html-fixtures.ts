@@ -237,21 +237,38 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
   const pageStructure = playStructureInfo?.pageStructure ?? null;
   const nextStructureTarget = playStructureInfo?.nextStructureTarget ?? null;
   const actArc = nextStructureTarget ?? pageStructure;
+  const summaryPillsHtml =
+    pageStructure && nextStructureTarget && actArc
+      ? `<span class="play-structure-summary">
+          <span class="play-structure-summary__pill play-structure-summary__pill--page">
+            <span class="play-structure-summary__label">This Page</span>
+            <span class="play-structure-summary__text">${pageStructure.milestoneName ?? pageStructure.displayString}</span>
+          </span>
+          <span class="play-structure-summary__pill play-structure-summary__pill--target">
+            <span class="play-structure-summary__label">Next Objective</span>
+            <span class="play-structure-summary__text">${nextStructureTarget.milestoneName ?? nextStructureTarget.displayString}</span>
+          </span>
+          <span class="play-structure-summary__pill play-structure-summary__pill--act">
+            <span class="play-structure-summary__label">Act Arc</span>
+            <span class="play-structure-summary__text">Act ${actArc.actNumber ?? 0}: ${actArc.actName ?? ''}</span>
+          </span>
+        </span>`
+      : '';
   const pageStructureHtml =
     pageStructure
-      ? `<section class="play-structure-card play-structure-card--page"><div class="play-structure-card__eyebrow">This Page</div><div class="play-structure-card__title">${pageStructure.displayString}</div></section>`
+      ? `<section class="play-structure-card play-structure-card--static play-structure-card--page"><div class="play-structure-card__eyebrow">This Page</div><div class="play-structure-card__title">${pageStructure.displayString}</div></section>`
       : '';
   const nextStructureTargetHtml =
     nextStructureTarget
-      ? `<section class="play-structure-card play-structure-card--target"><div class="play-structure-card__eyebrow">Next Objective</div><div class="play-structure-card__title">${nextStructureTarget.displayString}</div>${nextStructureTarget.milestoneObjective ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Milestone Objective</span><span class="play-structure-details__text">${nextStructureTarget.milestoneObjective}</span></div>` : ''}${nextStructureTarget.milestoneExitCriteria ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Milestone Exit Criteria</span><span class="play-structure-details__text">${nextStructureTarget.milestoneExitCriteria}</span></div>` : ''}</section>`
+      ? `<details class="play-structure-card play-structure-card--accordion play-structure-card--target"><summary class="play-structure-card__summary"><div class="play-structure-card__summary-main"><div class="play-structure-card__eyebrow">Next Objective</div><div class="play-structure-card__title">${nextStructureTarget.displayString}</div></div><span class="play-structure-card__toggle-hint">Details</span></summary><div class="play-structure-card__body">${nextStructureTarget.milestoneObjective ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Milestone Objective</span><span class="play-structure-details__text">${nextStructureTarget.milestoneObjective}</span></div>` : ''}${nextStructureTarget.milestoneExitCriteria ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Milestone Exit Criteria</span><span class="play-structure-details__text">${nextStructureTarget.milestoneExitCriteria}</span></div>` : ''}</div></details>`
       : '';
   const actArcHtml =
     actArc
-      ? `<section class="play-structure-card play-structure-card--act"><div class="play-structure-card__eyebrow">Act Arc</div><div class="play-structure-card__title">Act ${actArc.actNumber ?? 0}: ${actArc.actName ?? ''}</div>${actArc.actObjective ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Act Objective</span><span class="play-structure-details__text">${actArc.actObjective}</span></div>` : ''}${actArc.actStakes ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Stakes</span><span class="play-structure-details__text">${actArc.actStakes}</span></div>` : ''}${actArc.actQuestion ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Act Question</span><span class="play-structure-details__text">${actArc.actQuestion}</span></div>` : ''}${actArc.actEndReversal ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Act-End Reversal</span><span class="play-structure-details__text">${actArc.actEndReversal}</span></div>` : ''}</section>`
+      ? `<details class="play-structure-card play-structure-card--accordion play-structure-card--act"><summary class="play-structure-card__summary"><div class="play-structure-card__summary-main"><div class="play-structure-card__eyebrow">Act Arc</div><div class="play-structure-card__title">Act ${actArc.actNumber ?? 0}: ${actArc.actName ?? ''}</div></div><span class="play-structure-card__toggle-hint">Details</span></summary><div class="play-structure-card__body">${actArc.actObjective ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Act Objective</span><span class="play-structure-details__text">${actArc.actObjective}</span></div>` : ''}${actArc.actStakes ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Stakes</span><span class="play-structure-details__text">${actArc.actStakes}</span></div>` : ''}${actArc.actQuestion ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Act Question</span><span class="play-structure-details__text">${actArc.actQuestion}</span></div>` : ''}${actArc.actEndReversal ? `<div class="play-structure-details__item"><span class="play-structure-details__label">Act-End Reversal</span><span class="play-structure-details__text">${actArc.actEndReversal}</span></div>` : ''}</div></details>`
       : '';
   const playStructureDetailsHtml =
     pageStructureHtml && nextStructureTargetHtml && actArcHtml
-      ? `<div class="play-structure-details" id="play-structure-details" hidden>${pageStructureHtml}${nextStructureTargetHtml}${actArcHtml}</div>`
+      ? `<div class="play-structure-panel" id="play-structure-panel" data-act-number="${pageStructure?.actNumber ?? 0}"><details class="play-structure-shell" id="play-structure-shell"><summary class="act-indicator" id="act-indicator" aria-controls="play-structure-details" aria-expanded="false"><span class="act-indicator__lead"><span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span><span class="act-indicator__label">Story Compass</span></span><span class="act-indicator__current">${pageStructure.displayString}</span>${summaryPillsHtml}</summary><div class="play-structure-details play-structure-details--stacked" id="play-structure-details">${pageStructureHtml}${nextStructureTargetHtml}${actArcHtml}</div></details></div>`
       : '';
 
   const sidebarHtml = `<div class="sidebar-widgets" id="sidebar-widgets">${threadsHtml}${threatsHtml}${constraintsHtml}${trackedPromisesHtml}</div>`;
@@ -388,7 +405,6 @@ export function buildPlayPageHtml(options: PlayPageOptions = {}): string {
             <div class="story-header" id="story-header">
               <div class="story-title-section">
                 <h2>Test Story</h2>
-                ${pageStructure ? `<div class="act-indicator-wrapper" id="act-indicator-wrapper" data-act-number="${pageStructure.actNumber ?? 0}"><span class="act-indicator act-indicator--clickable" id="act-indicator" role="button" tabindex="0" aria-expanded="false" aria-controls="play-structure-details"><span class="act-indicator__arrow" aria-hidden="true">&#x25B8;</span>${pageStructure.displayString}</span></div>` : ''}
               </div>
               <div class="story-header-actions" id="story-header-actions">
                 <span class="page-indicator">Page ${pageId}</span>

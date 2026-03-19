@@ -1,6 +1,6 @@
 # Scene Ideator Diversity Overhaul
 
-**Status**: PENDING IMPLEMENTATION
+**Status**: COMPLETED
 **Date**: 2026-03-18
 **Scope**: `scene-ideator` prompt, schema, parser, validation, prompt docs, and scene-direction option contract
 **Backward Compatibility**: Partial. Downstream planner contract can remain stable, but ideator response count and internal option metadata will change.
@@ -560,3 +560,12 @@ The clean solution is:
 - one explicit lane taxonomy,
 - one stronger output contract,
 - one validator that enforces slate diversity as a real system invariant.
+
+---
+
+## Outcome
+
+- **Completion date**: 2026-03-19
+- **What changed**: Scene ideation now uses a lane-based slate with a configurable target count defaulting to 5. The implementation added `SceneIdeaLane`, a centralized ideation contract, slate planning, schema/prompt/parser validation for `diversityLane`, prompt-doc alignment coverage, and client/test updates for the larger option set.
+- **Deviations from plan**: The implementation kept the planner-facing scene-direction shape stable while treating `diversityLane` as ideator metadata that normalization can ignore downstream when needed.
+- **Verification results**: Archived as implemented based on matching source, prompt docs, and unit/client test coverage in the repo. No fresh test run was performed as part of this archiving pass.

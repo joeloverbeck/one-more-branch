@@ -1,4 +1,4 @@
-import type { ContentPacket } from '../../models/content-packet.js';
+import type { ConceptSeedPacket } from '../../models/concept-seed-packet.js';
 import type { ConceptArchitectContext, ConceptSeedFields } from '../../models/concept-generator.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -36,7 +36,7 @@ CHARACTER GROUNDING (Weiland):
 - The Lie/Truth/Ghost fields will be generated in the engineer stage; architect should design the character so these fields emerge naturally.`;
 }
 
-function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
+function buildConceptSeedPacketsBlock(packets: readonly ConceptSeedPacket[]): string {
   const packetEntries = packets
     .map(
       (p) =>
@@ -47,8 +47,8 @@ function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
     )
     .join('\n');
 
-  return `CONTENT PACKETS — GROUNDING INSTRUCTIONS:
-The following content packets anchor these concepts. When designing character and world:
+  return `CONCEPT SEED PACKETS — GROUNDING INSTRUCTIONS:
+The following concept seed packets anchor these concepts. When designing character and world:
 - settingAxioms MUST operationalize the packet's impossible rule (coreAnomaly).
 - At least one keyInstitution MUST emerge from the packet's socialEngine.
 - coreConflictLoop MUST put pressure on the packet's choicePressure.
@@ -92,8 +92,8 @@ export function buildConceptArchitectPrompt(context: ConceptArchitectContext): C
     userSections.push(kernelBlock);
   }
 
-  if (context.contentPackets && context.contentPackets.length > 0) {
-    userSections.push(buildContentPacketsBlock(context.contentPackets));
+  if (context.conceptSeedPackets && context.conceptSeedPackets.length > 0) {
+    userSections.push(buildConceptSeedPacketsBlock(context.conceptSeedPackets));
   }
 
   const protagonistDetails = normalize(context.protagonistDetails);

@@ -1,4 +1,4 @@
-import type { ContentPacket } from '../../models/content-packet.js';
+import type { ConceptSeedPacket } from '../../models/concept-seed-packet.js';
 import type {
   ConceptEvolverSeederContext,
   EvaluatedConcept,
@@ -13,7 +13,7 @@ function normalize(value: string | undefined): string | undefined {
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
 }
 
-function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
+function buildConceptSeedPacketsBlock(packets: readonly ConceptSeedPacket[]): string {
   const packetEntries = packets
     .map(
       (p) =>
@@ -24,17 +24,17 @@ function buildContentPacketsBlock(packets: readonly ContentPacket[]): string {
     )
     .join('\n');
 
-  return `CONTENT PACKETS:
-The following content packets provide concrete imaginative payloads. Each evolved seed MUST engage with at least one packet's wildnessInvariant. Seeds may fuse packet material with parent strengths. Do not sand off the packet's weirdness into generic genre language.
+  return `CONCEPT SEED PACKETS:
+The following concept seed packets provide concrete imaginative payloads. Each evolved seed MUST engage with at least one packet's wildnessInvariant. Seeds may fuse packet material with parent strengths. Do not sand off the packet's weirdness into generic genre language.
 
 ${packetEntries}`;
 }
 
-function buildWildnessInvariantsBlock(packets: readonly ContentPacket[]): string {
+function buildWildnessInvariantsBlock(packets: readonly ConceptSeedPacket[]): string {
   const invariants = packets.map((p) => `- [${p.contentId}]: ${p.wildnessInvariant}`).join('\n');
 
   return `WILDNESS INVARIANTS:
-The following invariants from content packets MUST be preserved or intensified in evolved seeds. Do not normalize, dilute, or replace them with generic genre equivalents.
+The following invariants from concept seed packets MUST be preserved or intensified in evolved seeds. Do not normalize, dilute, or replace them with generic genre equivalents.
 
 ${invariants}`;
 }
@@ -143,9 +143,9 @@ ${buildParentPayload(context.parentConcepts)}`,
     );
   }
 
-  if (context.contentPackets && context.contentPackets.length > 0) {
-    userSections.push(buildContentPacketsBlock(context.contentPackets));
-    userSections.push(buildWildnessInvariantsBlock(context.contentPackets));
+  if (context.conceptSeedPackets && context.conceptSeedPackets.length > 0) {
+    userSections.push(buildConceptSeedPacketsBlock(context.conceptSeedPackets));
+    userSections.push(buildWildnessInvariantsBlock(context.conceptSeedPackets));
   }
 
   userSections.push(

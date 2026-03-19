@@ -385,6 +385,49 @@ describe('play page choice click handler', () => {
     expect(details?.textContent).toContain('The council fractures in front of the court.');
   });
 
+  it('preserves the story compass open state across page updates', async () => {
+    setupAndInit({
+      actDisplayInfo: {
+        displayString: 'Act 1: The Beginning - Milestone 1.1: Opening Gambit',
+        actNumber: 1,
+        actName: 'The Beginning',
+        milestoneId: '1.1',
+        milestoneName: 'Opening Gambit',
+      },
+      choices: [
+        {
+          text: 'Go left',
+          choiceType: 'INTERVENE',
+          primaryDelta: 'LOCATION_ACCESS_CHANGE',
+          nextPageId: 2,
+        },
+        {
+          text: 'Go right',
+          choiceType: 'COMMIT',
+          primaryDelta: 'GOAL_PRIORITY_CHANGE',
+          nextPageId: 3,
+        },
+      ],
+    });
+
+    const initialShell = document.getElementById('play-structure-shell') as HTMLDetailsElement | null;
+    expect(initialShell).not.toBeNull();
+    if (initialShell) {
+      initialShell.open = true;
+      initialShell.dispatchEvent(new Event('toggle'));
+    }
+
+    fetchMock
+      .mockResolvedValueOnce(mockJsonResponse({ status: 'completed' }))
+      .mockResolvedValueOnce(mockJsonResponse(makeSuccessfulChoiceResponse()));
+
+    clickChoice(0);
+    await jest.runAllTimersAsync();
+
+    const nextShell = document.getElementById('play-structure-shell') as HTMLDetailsElement | null;
+    expect(nextShell?.open).toBe(true);
+  });
+
   it('hides loading overlay after fetch completes', async () => {
     setupAndInit({
       choices: [

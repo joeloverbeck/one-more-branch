@@ -14,7 +14,7 @@ import { evolveConceptIdeas } from '../../../src/llm/concept-evolver';
 import { generateEvolvedConceptSeeds } from '../../../src/llm/concept-evolver-seeder';
 import { generateConceptCharacterWorlds } from '../../../src/llm/concept-architect';
 import { generateConceptEngines } from '../../../src/llm/concept-engineer';
-import type { ContentPacket } from '../../../src/models/content-packet';
+import type { ConceptSeedPacket } from '../../../src/models/concept-seed-packet';
 import type { ConceptEvolverContext } from '../../../src/models';
 import {
   createConceptSeedFixture,
@@ -23,10 +23,9 @@ import {
   createEvaluatedConceptFixture,
 } from '../../fixtures/concept-generator';
 
-function createContentPacketFixture(id = 'content_1'): ContentPacket {
+function createConceptSeedPacketFixture(id = 'content_1'): ConceptSeedPacket {
   return {
     contentId: id,
-    sourceSparkIds: ['spark_1'],
     contentKind: 'ENTITY',
     coreAnomaly: 'A sentient fog that digests memory',
     humanAnchor: 'A grief counselor who lost her own memories',
@@ -217,14 +216,14 @@ describe('concept-evolver', () => {
       await expect(evolveConceptIdeas(createContext(), 'test-api-key')).rejects.toBe(error);
     });
 
-    it('passes contentPackets to architect and engineer contexts', async () => {
+    it('passes conceptSeedPackets to architect and engineer contexts', async () => {
       const packets = [
-        createContentPacketFixture('content_1'),
-        createContentPacketFixture('content_2'),
+        createConceptSeedPacketFixture('content_1'),
+        createConceptSeedPacketFixture('content_2'),
       ];
       const context: ConceptEvolverContext = {
         ...createContext(),
-        contentPackets: packets,
+        conceptSeedPackets: packets,
       };
       const seeds = createSeeds(6);
       const characterWorlds = createCharacterWorlds(6);
@@ -237,18 +236,18 @@ describe('concept-evolver', () => {
       await evolveConceptIdeas(context, 'test-api-key');
 
       expect(mockGenerateCharacterWorlds).toHaveBeenCalledWith(
-        expect.objectContaining({ contentPackets: packets }),
+        expect.objectContaining({ conceptSeedPackets: packets }),
         'test-api-key',
         undefined
       );
       expect(mockGenerateEngines).toHaveBeenCalledWith(
-        expect.objectContaining({ contentPackets: packets }),
+        expect.objectContaining({ conceptSeedPackets: packets }),
         'test-api-key',
         undefined
       );
     });
 
-    it('existing evolver calls without contentPackets still work unchanged', async () => {
+    it('existing evolver calls without conceptSeedPackets still work unchanged', async () => {
       const context = createContext();
       const seeds = createSeeds(6);
       const characterWorlds = createCharacterWorlds(6);
@@ -262,7 +261,7 @@ describe('concept-evolver', () => {
 
       expect(result.concepts).toHaveLength(6);
       expect(mockGenerateCharacterWorlds).toHaveBeenCalledWith(
-        expect.objectContaining({ contentPackets: undefined }),
+        expect.objectContaining({ conceptSeedPackets: undefined }),
         'test-api-key',
         undefined
       );

@@ -1,4 +1,4 @@
-import type { SparkstormerContext } from '../../models/content-packet.js';
+import type { SparkstormerContext } from '../../models/content-generation-contracts.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
 

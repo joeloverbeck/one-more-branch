@@ -18,29 +18,29 @@ const contentPacketRepository = createJsonEntityRepository<SavedContentPacket>({
   isEntity: isSavedContentPacket,
 });
 
-export async function saveContentPacket(packet: SavedContentPacket): Promise<void> {
+export async function saveSavedContentPacket(packet: SavedContentPacket): Promise<void> {
   return contentPacketRepository.save(packet);
 }
 
-export async function loadContentPacket(id: string): Promise<SavedContentPacket | null> {
+export async function loadSavedContentPacket(id: string): Promise<SavedContentPacket | null> {
   return contentPacketRepository.load(id);
 }
 
-export async function updateContentPacket(
+export async function updateSavedContentPacket(
   id: string,
   updater: (existing: SavedContentPacket) => SavedContentPacket
 ): Promise<SavedContentPacket> {
   return contentPacketRepository.update(id, updater);
 }
 
-export async function deleteContentPacket(id: string): Promise<void> {
+export async function deleteSavedContentPacket(id: string): Promise<void> {
   return contentPacketRepository.remove(id);
 }
 
-export async function listContentPackets(): Promise<SavedContentPacket[]> {
+export async function listSavedContentPackets(): Promise<SavedContentPacket[]> {
   return contentPacketRepository.list();
 }
 
-export async function contentPacketExists(id: string): Promise<boolean> {
+export async function savedContentPacketExists(id: string): Promise<boolean> {
   return contentPacketRepository.exists(id);
 }

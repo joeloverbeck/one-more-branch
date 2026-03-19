@@ -1,31 +1,29 @@
 import type {
   ContentEvaluation,
-  ContentEvaluationScores,
-  ContentKind,
-  ContentPacketRole,
-  RiskAppetite,
-} from './content-packet.js';
-import { isContentKind, isContentPacketRole, isRiskAppetite } from './content-packet.js';
+  ContentPacketContext,
+  ContentPacketOrigin,
+} from './content-generation-contracts.js';
+import {
+  isContentEvaluation,
+  isContentPacketContext,
+  isContentPacketOrigin,
+} from './content-generation-contracts.js';
+import type { ConceptSeedPacket as SavedConceptSeedPacket } from './concept-seed-packet.js';
+import { isConceptSeedPacket, projectConceptSeedPacket } from './concept-seed-packet.js';
+import type { ContentPacketRole, RiskAppetite } from './content-taxonomy.js';
+import { isRiskAppetite } from './content-taxonomy.js';
 
 // --- Saved types ---
 
 export interface SavedContentPacket {
   readonly id: string;
-  readonly name: string;
   readonly createdAt: string;
   readonly updatedAt: string;
-  readonly contentKind: ContentKind;
-  readonly coreAnomaly: string;
-  readonly humanAnchor: string;
-  readonly socialEngine: string;
-  readonly choicePressure: string;
-  readonly signatureImage: string;
-  readonly escalationPath: string;
-  readonly wildnessInvariant: string;
-  readonly dullCollapse: string;
-  readonly interactionVerbs: readonly string[];
   readonly pinned: boolean;
-  readonly recommendedRole: ContentPacketRole;
+  readonly assetVersion: 2;
+  readonly packet: SavedConceptSeedPacket;
+  readonly context: ContentPacketContext;
+  readonly origin: ContentPacketOrigin;
   readonly evaluation?: ContentEvaluation;
 }
 
@@ -67,41 +65,6 @@ function isIsoDateString(value: unknown): value is string {
   return typeof value === 'string' && !Number.isNaN(Date.parse(value));
 }
 
-function isFiniteScore(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value);
-}
-
-function isContentEvaluationScores(value: unknown): value is ContentEvaluationScores {
-  if (!isObjectRecord(value)) {
-    return false;
-  }
-
-  return (
-    isFiniteScore(value['imageCharge']) &&
-    isFiniteScore(value['humanAche']) &&
-    isFiniteScore(value['socialLoadBearing']) &&
-    isFiniteScore(value['branchingPressure']) &&
-    isFiniteScore(value['antiGenericity']) &&
-    isFiniteScore(value['sceneBurst']) &&
-    isFiniteScore(value['structuralIrony']) &&
-    isFiniteScore(value['conceptUtility'])
-  );
-}
-
-function isContentEvaluation(value: unknown): value is ContentEvaluation {
-  if (!isObjectRecord(value)) {
-    return false;
-  }
-
-  return (
-    isNonEmptyString(value['contentId']) &&
-    isContentEvaluationScores(value['scores']) &&
-    isStringArray(value['strengths']) &&
-    isStringArray(value['weaknesses']) &&
-    isContentPacketRole(value['recommendedRole'])
-  );
-}
-
 // --- Public type guards ---
 
 export function isSavedContentPacket(value: unknown): value is SavedContentPacket {
@@ -109,25 +72,43 @@ export function isSavedContentPacket(value: unknown): value is SavedContentPacke
     return false;
   }
 
+  const allowedKeys = new Set([
+    'id',
+    'createdAt',
+    'updatedAt',
+    'pinned',
+    'assetVersion',
+    'packet',
+    'context',
+    'origin',
+    'evaluation',
+  ]);
+
+  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+    return false;
+  }
+
   return (
     isNonEmptyString(value['id']) &&
-    isNonEmptyString(value['name']) &&
     isIsoDateString(value['createdAt']) &&
     isIsoDateString(value['updatedAt']) &&
-    isContentKind(value['contentKind']) &&
-    isNonEmptyString(value['coreAnomaly']) &&
-    isNonEmptyString(value['humanAnchor']) &&
-    isNonEmptyString(value['socialEngine']) &&
-    isNonEmptyString(value['choicePressure']) &&
-    isNonEmptyString(value['signatureImage']) &&
-    isNonEmptyString(value['escalationPath']) &&
-    isNonEmptyString(value['wildnessInvariant']) &&
-    isNonEmptyString(value['dullCollapse']) &&
-    isNonEmptyStringArray(value['interactionVerbs']) &&
     typeof value['pinned'] === 'boolean' &&
-    isContentPacketRole(value['recommendedRole']) &&
+    value['assetVersion'] === 2 &&
+    isConceptSeedPacket(value['packet']) &&
+    isContentPacketContext(value['context']) &&
+    isContentPacketOrigin(value['origin']) &&
     (value['evaluation'] === undefined || isContentEvaluation(value['evaluation']))
   );
+}
+
+export function getSavedContentPacketRecommendedRole(
+  packet: SavedContentPacket
+): ContentPacketRole | 'UNSCORED' {
+  return packet.evaluation?.recommendedRole ?? 'UNSCORED';
+}
+
+export function projectSavedConceptSeedPacket(packet: SavedContentPacket): SavedConceptSeedPacket {
+  return projectConceptSeedPacket(packet);
 }
 
 export function isSavedTasteProfile(value: unknown): value is SavedTasteProfile {

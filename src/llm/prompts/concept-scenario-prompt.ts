@@ -1,5 +1,5 @@
 import type { ConceptVerifierContext } from '../../models/concept-generator.js';
-import type { ContentPacket } from '../../models/content-packet.js';
+import type { ConceptSeedPacket } from '../../models/concept-seed-packet.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ConceptSpecificityAnalysis } from '../concept-specificity-types.js';
@@ -14,7 +14,7 @@ const SCENARIO_DIRECTIVES = `SCENARIO DIRECTIVES:
 - The conceptIntegrityScore measures how many of the 6 setpieces are truly concept-unique (100 = all 6 are impossible in any other story).
 - Anchor each setpiece to the signature scenario already identified in the specificity analysis. The setpieces should feel like they belong in the same story as that signature moment.`;
 
-function buildContentPacketSetpieceDirective(packets: readonly ContentPacket[]): string {
+function buildConceptSeedPacketSetpieceDirective(packets: readonly ConceptSeedPacket[]): string {
   const packetSummaries = packets
     .map(
       (p) =>
@@ -22,12 +22,12 @@ function buildContentPacketSetpieceDirective(packets: readonly ContentPacket[]):
     )
     .join('\n');
 
-  return `CONTENT PACKET SETPIECE EXPLOITATION REQUIREMENTS:
-- When content packets are present, at least 2 of the escalating setpieces must directly exploit the content packet's signatureImage or escalationPath. These setpieces must be impossible without the packet's concrete imagery or escalation logic.
-- At least 1 setpiece must show the packet's socialEngine in action — the institution, market, ritual, or social structure that grows around the anomaly must be visibly operating in the scene.
+  return `CONCEPT SEED PACKET SETPIECE EXPLOITATION REQUIREMENTS:
+- When concept seed packets are present, at least 2 of the escalating setpieces must directly exploit the packet's signatureImage or escalationPath. These setpieces must be impossible without the packet's concrete imagery or escalation logic.
+- At least 1 setpiece must show the packet's socialEngine in action; the institution, market, ritual, or social structure that grows around the anomaly must be visibly operating in the scene.
 - Setpieces that merely reference the packet cosmetically without exploiting its mechanics do not count.
 
-CONTENT PACKETS IN CONTEXT:
+CONCEPT SEED PACKETS IN CONTEXT:
 ${packetSummaries}`;
 }
 
@@ -68,8 +68,8 @@ export function buildConceptScenarioPrompt(
 ): ChatMessage[] {
   const systemSections: string[] = [ROLE_INTRO, CONTENT_POLICY, SCENARIO_DIRECTIVES];
 
-  if (context.contentPackets && context.contentPackets.length > 0) {
-    systemSections.push(buildContentPacketSetpieceDirective(context.contentPackets));
+  if (context.conceptSeedPackets && context.conceptSeedPackets.length > 0) {
+    systemSections.push(buildConceptSeedPacketSetpieceDirective(context.conceptSeedPackets));
   }
 
   const kernelSection = `STORY KERNEL (shared by all concepts):

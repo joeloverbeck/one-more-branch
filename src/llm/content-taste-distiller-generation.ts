@@ -1,9 +1,9 @@
 import {
-  isRiskAppetite,
   type TasteDistillerContext,
   type TasteDistillerResult,
   type TasteProfile,
-} from '../models/content-packet.js';
+} from '../models/content-generation-contracts.js';
+import { isRiskAppetite } from '../models/content-taxonomy.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import { runLlmStage } from './llm-stage-runner.js';

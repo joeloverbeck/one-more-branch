@@ -7,7 +7,7 @@
 
 ## Pipeline Position
 
-Stage 3 in the content generation pipeline. Selects and expands the 12-16 strongest sparks into load-bearing content packets — fully structured content seeds with rich metadata.
+Stage 3 in the content generation pipeline. Selects and expands the 12-16 strongest sparks into load-bearing content packets with explicit setup context plus the lean downstream packet fields.
 
 **Pipeline**: Taste Distiller → Sparkstormer → **Content Packeter** → Content Evaluator
 
@@ -24,7 +24,7 @@ Every packet must feel specific, human, and charged.
 ## User Message Template
 
 ```text
-Select and expand the 12-16 strongest sparks into content packets.
+Select and expand the 12-16 strongest sparks into content packets with explicit setup context.
 
 TASTE PROFILE:
 {{tasteProfile JSON}}
@@ -35,9 +35,11 @@ SPARKS:
 {{optional STORY KERNEL block}}
 
 OUTPUT REQUIREMENTS:
-- Return JSON: { "packets": ContentPacket[] }
+- Return JSON: { "packets": ConceptSeedPacketerPacket[] }
 - 12-16 packets total
 - Every packet must have ALL required fields
+- Each packet must include `premiseSummary`, `situationFrame`, and `worldState`
+- `viewpointPressure` is optional
 - Honour taste profile's collision patterns, tone blend, scene appetites
 - Respect antiPatterns and surfaceDoNotRepeat
 ```
@@ -51,6 +53,10 @@ OUTPUT REQUIREMENTS:
       "contentId": "pkt-01",
       "sourceSparkIds": ["spark-01"],
       "contentKind": "CONTENT_KIND_ENUM",
+      "premiseSummary": "Plain-language causal setup",
+      "situationFrame": "Immediate arrangement or trap",
+      "worldState": "Relevant baseline reality",
+      "viewpointPressure": "Optional protagonist/player pressure",
       "coreAnomaly": "What's wrong here? — central question",
       "humanAnchor": "emotional/relational truth",
       "socialEngine": "social mechanism driving conflict",
@@ -88,5 +94,6 @@ Content packets are the primary semantic units consumed by concept stages:
 - `wildnessInvariant` is the most critical field — it carries the core strangeness that must survive all downstream stages
 - `dullCollapse` describes the failure mode — what the packet becomes if its uniqueness is stripped away
 - `interactionVerbs` (4-6) provide concrete player action vocabulary
-- `sourceSparkIds` traces lineage back to sparkstormer output
+- `premiseSummary`, `situationFrame`, and `worldState` are generation-time context inputs for the saved asset candidate; they are not part of the lean downstream `ConceptSeedPacket` projection used by concept stages
+- `sourceSparkIds` traces lineage back to sparkstormer output and should be treated as transient generation lineage rather than a persisted display alias
 - Packets may fuse multiple sparks (multiple sourceSparkIds)

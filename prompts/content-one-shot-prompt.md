@@ -7,7 +7,7 @@
 
 ## Pipeline Position
 
-Alternative fast path that bypasses the full 4-stage pipeline. Generates 18 content packets directly from exemplar ideas in a single LLM call, inferring taste implicitly.
+Alternative fast path that bypasses the full 4-stage pipeline. Generates 18 context-rich content packets directly from exemplar ideas in a single LLM call, inferring taste implicitly.
 
 **Pipeline**: User exemplars → **Content One-Shot** → Content packets (ready for concept seeding)
 
@@ -35,8 +35,14 @@ EXEMPLAR IDEAS:
 {{optional STORY KERNEL block}}
 
 OUTPUT REQUIREMENTS:
-- Return JSON: { "packets": ContentPacketOneShot[] }
+- Return JSON: { "packets": ConceptSeedOneShotLineagedPacket[] }
 - Exactly 18 packets
+- Enumerate exemplar ideas with stable IDs like `exemplar-01`
+- Each packet must include `contentId`, `contentKind`, `sourceExemplarIds`, `premiseSummary`, `situationFrame`, `worldState`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, and `interactionVerbs`
+- `viewpointPressure` is optional
+- `sourceExemplarIds` must cite one or more exemplar IDs that materially informed that packet
+- `contentId` format: `pkt-NN`
+- `interactionVerbs`: exactly 4-6 concrete verbs
 - Use 6+ distinct content kinds
 - Mix intimate, civic, and civilizational scales
 - Mix mechanisms (transformation, bureaucracy, romance, medicine, labor, ecology, ritual, etc.)
@@ -49,16 +55,22 @@ OUTPUT REQUIREMENTS:
 {
   "packets": [
     {
-      "title": "string",
+      "contentId": "pkt-01",
       "contentKind": "CONTENT_KIND_ENUM",
+      "sourceExemplarIds": ["exemplar-01"],
+      "premiseSummary": "Plain-language causal setup",
+      "situationFrame": "Immediate arrangement or trap",
+      "worldState": "Relevant baseline reality",
+      "viewpointPressure": "Optional protagonist/player pressure",
       "coreAnomaly": "What's wrong here?",
       "humanAnchor": "emotional/relational truth",
       "socialEngine": "social mechanism driving conflict",
       "choicePressure": "what forces meaningful choices",
       "signatureImage": "single vivid concrete image",
-      "escalationHint": "how it intensifies",
+      "escalationPath": "how it intensifies",
       "wildnessInvariant": "what stays strange no matter what",
-      "dullCollapse": "failure mode — what would make it generic"
+      "dullCollapse": "failure mode — what would make it generic",
+      "interactionVerbs": ["verb1", "verb2", "verb3", "verb4"]
     }
   ]
 }
@@ -83,14 +95,13 @@ OUTPUT REQUIREMENTS:
 | Spark count | 30-40 | N/A (skipped) |
 | Packet count | 12-16 | 18 |
 | Evaluation | Separate scoring + role labels | None (all packets returned) |
-| Field differences | `escalationPath`, `interactionVerbs`, `sourceSparkIds` | `title`, `escalationHint` (simpler fields) |
+| Packet contract | Generated packet includes setup context and is later projected to lean `ConceptSeedPacket` fields | Generated packet includes setup context and is later projected to lean `ConceptSeedPacket` fields |
 
 ## Notes
 
 - Speed-optimized path: single LLM call vs. 4 sequential calls
 - No explicit taste profiling — taste is inferred from exemplar ideas
 - No evaluation stage — all 18 packets are returned without scoring or role assignment
-- Uses `escalationHint` instead of the full pipeline's `escalationPath`
-- Includes `title` field (not present in full pipeline packets)
-- Does not include `interactionVerbs` or `sourceSparkIds`
+- The LLM emits flat context-rich packets; the service layer turns them into generated asset candidates with nested `context` and exemplar-derived `origin.sourceArtifacts`
+- One-shot packets carry explicit exemplar lineage via `sourceExemplarIds`; the service layer maps those IDs into canonical `origin.sourceArtifacts`
 - Prompt logging uses `promptType: 'contentOneShot'`

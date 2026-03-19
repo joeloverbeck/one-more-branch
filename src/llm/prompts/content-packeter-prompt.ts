@@ -1,10 +1,10 @@
-import type { ContentPacketerContext } from '../../models/content-packet.js';
+import type { ContentPacketerContext } from '../../models/content-generation-contracts.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
 
 const ROLE_INTRO = `You are a content-packeting engine for branching interactive fiction. Given a taste profile and a set of raw sparks, you expand the best sparks into 12-16 load-bearing content packets.
 
-Each packet is a fully fleshed-out content seed with structure: coreAnomaly, humanAnchor, socialEngine, choicePressure, signatureImage, escalationPath, wildnessInvariant, dullCollapse, and interactionVerbs. These packets will later be evaluated, ranked, and woven into story concepts.`;
+Each packet is a fully fleshed-out content seed with explicit setup context and structure: premiseSummary, situationFrame, worldState, coreAnomaly, humanAnchor, socialEngine, choicePressure, signatureImage, escalationPath, wildnessInvariant, dullCollapse, and interactionVerbs. These packets will later be evaluated, ranked, and woven into story concepts.`;
 
 const RULES = `RULES:
 - Select the 12-16 strongest sparks and expand each into a full content packet.
@@ -12,7 +12,12 @@ const RULES = `RULES:
 - contentId: unique identifier in the format "pkt-NN" (e.g., "pkt-01", "pkt-02").
 - sourceSparkIds: array of 1+ sparkIds that contributed to this packet.
 - contentKind: one of ENTITY, INSTITUTION, RELATIONSHIP, TRANSFORMATION, WORLD_INTRUSION, RITUAL, POLICY, JOB, SUBCULTURE, ECONOMY.
+- premiseSummary: plain-language causal setup that explains what is concretely happening here.
+- situationFrame: the immediate arrangement or trap the packet assumes at the moment play begins.
+- worldState: the relevant baseline reality or surrounding conditions that make the anomaly legible.
+- viewpointPressure: optional clarification of why the protagonist or player is trapped inside this setup.
 - coreAnomaly: the central "what's wrong here?" that makes this content charged and specific.
+- Do not bury setup inside coreAnomaly alone. premiseSummary/situationFrame/worldState explain the setup; coreAnomaly explains what is structurally wrong or charged inside it.
 - humanAnchor: the emotional or relational truth that grounds the anomaly in lived experience.
 - socialEngine: the social mechanism or pressure that drives conflict and branching.
 - choicePressure: what forces the player to choose, and why every option costs something.
@@ -50,7 +55,8 @@ export function buildContentPacketerPrompt(context: ContentPacketerContext): Cha
   userSections.push(
     `OUTPUT REQUIREMENTS:
 - Return JSON matching exactly: { "packets": [ ... ] }
-- Each packet object must have: contentId, sourceSparkIds, contentKind, coreAnomaly, humanAnchor, socialEngine, choicePressure, signatureImage, escalationPath, wildnessInvariant, dullCollapse, interactionVerbs.
+- Each packet object must have: contentId, sourceSparkIds, contentKind, premiseSummary, situationFrame, worldState, coreAnomaly, humanAnchor, socialEngine, choicePressure, signatureImage, escalationPath, wildnessInvariant, dullCollapse, interactionVerbs.
+- viewpointPressure is optional.
 - interactionVerbs: exactly 4-6 action verbs per packet.
 - 12-16 packets total.`
   );

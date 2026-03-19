@@ -1,13 +1,19 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
+import type { ConceptSeedPacket } from '@/models/concept-seed-packet';
+import type {
+  ContentEvaluation,
+  GeneratedContentPacket,
+} from '@/models/content-generation-contracts';
+import type { SavedContentPacket } from '@/models/saved-content-packet';
 
-jest.mock('@/persistence/content-packet-repository', () => ({
-  listContentPackets: jest.fn().mockResolvedValue([]),
-  loadContentPacket: jest.fn(),
-  saveContentPacket: jest.fn().mockResolvedValue(undefined),
-  updateContentPacket: jest.fn(),
-  deleteContentPacket: jest.fn().mockResolvedValue(undefined),
-  contentPacketExists: jest.fn(),
+jest.mock('@/persistence/saved-content-packet-repository', () => ({
+  listSavedContentPackets: jest.fn().mockResolvedValue([]),
+  loadSavedContentPacket: jest.fn(),
+  saveSavedContentPacket: jest.fn().mockResolvedValue(undefined),
+  updateSavedContentPacket: jest.fn(),
+  deleteSavedContentPacket: jest.fn().mockResolvedValue(undefined),
+  savedContentPacketExists: jest.fn(),
 }));
 
 jest.mock('@/persistence/taste-profile-repository', () => ({
@@ -31,13 +37,13 @@ jest.mock('@/logging', () => ({
 }));
 
 import {
-  listContentPackets,
-  loadContentPacket,
-  saveContentPacket,
-  updateContentPacket,
-  deleteContentPacket,
-  contentPacketExists,
-} from '@/persistence/content-packet-repository';
+  deleteSavedContentPacket,
+  listSavedContentPackets,
+  loadSavedContentPacket,
+  saveSavedContentPacket,
+  savedContentPacketExists,
+  updateSavedContentPacket,
+} from '@/persistence/saved-content-packet-repository';
 import { listTasteProfiles, saveTasteProfile } from '@/persistence/taste-profile-repository';
 import { contentService } from '@/server/services/content-service';
 import { contentPacketRoutes } from '@/server/routes/content-packets';
@@ -53,7 +59,7 @@ type RouteLayer = {
 function getRouteHandler(
   method: 'get' | 'post' | 'patch' | 'delete',
   path: string
-): (req: Request, res: Response) => Promise<void> | void {
+): (req: Request, res: Response, next: NextFunction) => Promise<void> | void {
   const layer = (contentPacketRoutes.stack as unknown as RouteLayer[]).find(
     (item) => item.route?.path === path && item.route?.methods?.[method]
   );
@@ -87,15 +93,102 @@ function mockReq(overrides: Partial<Request> = {}): Request {
   } as unknown as Request;
 }
 
+function makeConceptSeedPacket(overrides: Partial<ConceptSeedPacket> = {}): ConceptSeedPacket {
+  return {
+    contentId: 'pkt-01',
+    contentKind: 'ENTITY',
+    coreAnomaly: 'Test anomaly',
+    humanAnchor: 'Human anchor',
+    socialEngine: 'Social engine',
+    choicePressure: 'Choice pressure',
+    signatureImage: 'Signature image',
+    escalationPath: 'Escalation path',
+    wildnessInvariant: 'Wildness invariant',
+    dullCollapse: 'Dull collapse',
+    interactionVerbs: ['observe', 'trade', 'rupture', 'escalate'],
+    ...overrides,
+  };
+}
+
+function makeGeneratedPacket(overrides: Partial<GeneratedContentPacket> = {}): GeneratedContentPacket {
+  return {
+    packet: makeConceptSeedPacket(),
+    context: {
+      premiseSummary: 'A premise summary',
+      situationFrame: 'A situation frame',
+      worldState: 'A world state',
+    },
+    origin: {
+      generationMode: 'quick',
+      sourceArtifacts: [
+        {
+          artifactType: 'EXEMPLAR',
+          sourceId: 'exemplar-01',
+          summary: 'An exemplar summary',
+        },
+      ],
+    },
+    ...overrides,
+  };
+}
+
+function makeEvaluation(overrides: Partial<ContentEvaluation> = {}): ContentEvaluation {
+  return {
+    contentId: 'pkt-01',
+    scores: {
+      imageCharge: 8,
+      humanAche: 7,
+      socialLoadBearing: 9,
+      branchingPressure: 6,
+      antiGenericity: 8,
+      sceneBurst: 7,
+      structuralIrony: 8,
+      conceptUtility: 9,
+    },
+    strengths: ['Strong image'],
+    weaknesses: ['Minor weakness'],
+    recommendedRole: 'PRIMARY_SEED',
+    ...overrides,
+  };
+}
+
+function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedContentPacket {
+  return {
+    id: 'p1',
+    createdAt: '2026-03-19T10:00:00.000Z',
+    updatedAt: '2026-03-19T10:00:00.000Z',
+    pinned: false,
+    assetVersion: 2,
+    packet: makeConceptSeedPacket(),
+    context: {
+      premiseSummary: 'A premise summary',
+      situationFrame: 'A situation frame',
+      worldState: 'A world state',
+    },
+    origin: {
+      generationMode: 'quick',
+      sourceArtifacts: [
+        {
+          artifactType: 'EXEMPLAR',
+          sourceId: 'exemplar-01',
+          contentKind: 'ENTITY',
+          summary: 'An exemplar summary',
+        },
+      ],
+    },
+    ...overrides,
+  };
+}
+
 describe('content-packets routes', () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   describe('GET /', () => {
-    it('renders content-packets page with packet list from repository', async () => {
-      const packets = [{ id: 'p1', name: 'Test Packet' }];
-      (listContentPackets as jest.Mock).mockResolvedValue(packets);
+    it('renders content-packets page with grouped card view models from repository', async () => {
+      const packets = [makeSavedPacket({ evaluation: makeEvaluation() })];
+      (listSavedContentPackets as jest.Mock).mockResolvedValue(packets);
 
       const handler = getRouteHandler('get', '/');
       const req = mockReq();
@@ -104,20 +197,88 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(listContentPackets).toHaveBeenCalled();
-      expect(res.render).toHaveBeenCalledWith('pages/content-packets', {
-        title: 'Content Packets - One More Branch',
-        packets,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        contentKindGroups: expect.any(Array),
+      expect(listSavedContentPackets).toHaveBeenCalled();
+      expect(res.render).toHaveBeenCalled();
+
+      const renderCall = ((res.render as jest.Mock).mock.calls as unknown[])[0] as [
+        string,
+        {
+          title: string;
+          hasSavedPackets: boolean;
+          contentKindGroups: Array<{
+            kind: string;
+            displayLabel: string;
+            cards: Array<{
+              id: string;
+              pinned: boolean;
+              contextDetails: Array<{ key: string; value: string | readonly string[] }>;
+              packetDetails: Array<{ key: string; value: string | readonly string[] }>;
+              originDetails: Array<{ key: string; value: string | readonly string[] }>;
+              metaDetails: Array<{ key: string; value: string | readonly string[] }>;
+            }>;
+          }>;
+        },
+      ];
+
+      expect(renderCall[0]).toBe('pages/content-packets');
+      expect(renderCall[1].title).toBe('Content Packets - One More Branch');
+      expect(renderCall[1].hasSavedPackets).toBe(true);
+      expect(renderCall[1].contentKindGroups).toHaveLength(1);
+      expect(renderCall[1].contentKindGroups[0]).toMatchObject({
+        kind: 'ENTITY',
+        displayLabel: 'ENTITY',
       });
+      expect(renderCall[1].contentKindGroups[0]?.cards[0]).toMatchObject({
+        id: 'p1',
+        pinned: false,
+      });
+      expect(renderCall[1].contentKindGroups[0]?.cards[0]?.contextDetails).toEqual([
+        expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
+        expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
+        expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+      ]);
+      expect(renderCall[1].contentKindGroups[0]?.cards[0]?.packetDetails).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: 'contentId', value: 'pkt-01' }),
+          expect.objectContaining({ key: 'coreAnomaly', value: 'Test anomaly' }),
+        ])
+      );
+      expect(renderCall[1].contentKindGroups[0]?.cards[0]?.originDetails).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: 'generationMode', value: 'quick' }),
+          expect.objectContaining({ key: 'sourceArtifact-1' }),
+        ])
+      );
+      expect(renderCall[1].contentKindGroups[0]?.cards[0]?.metaDetails).toEqual([
+        expect.objectContaining({ key: 'recommendedRole', value: 'PRIMARY_SEED' }),
+      ]);
+    });
+  });
+
+  describe('GET /api/list', () => {
+    it('forwards repository validation failures to next', async () => {
+      const error = new Error('Invalid SavedContentPacket payload at /tmp/legacy.json');
+      (listSavedContentPackets as jest.Mock).mockRejectedValue(error);
+
+      const handler = getRouteHandler('get', '/api/list');
+      const req = mockReq();
+      const res = mockRes();
+      const next = jest.fn();
+
+      void handler(req, res, next);
+      await flushPromises();
+
+      expect(res.json).not.toHaveBeenCalled();
+      expect(next).toHaveBeenCalledWith(error);
     });
   });
 
   describe('GET /api/:packetId', () => {
     it('returns packet when found', async () => {
-      const packet = { id: 'p1', name: 'Found' };
-      (loadContentPacket as jest.Mock).mockResolvedValue(packet);
+      const packet = makeSavedPacket({
+        packet: makeConceptSeedPacket({ coreAnomaly: 'Found' }),
+      });
+      (loadSavedContentPacket as jest.Mock).mockResolvedValue(packet);
 
       const handler = getRouteHandler('get', '/api/:packetId');
       const req = mockReq({ params: { packetId: 'p1' } });
@@ -126,12 +287,12 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(loadContentPacket).toHaveBeenCalledWith('p1');
+      expect(loadSavedContentPacket).toHaveBeenCalledWith('p1');
       expect(res.json).toHaveBeenCalledWith({ success: true, packet });
     });
 
     it('returns 404 for nonexistent ID', async () => {
-      (loadContentPacket as jest.Mock).mockResolvedValue(null);
+      (loadSavedContentPacket as jest.Mock).mockResolvedValue(null);
 
       const handler = getRouteHandler('get', '/api/:packetId');
       const req = mockReq({ params: { packetId: 'nope' } });
@@ -151,7 +312,7 @@ describe('content-packets routes', () => {
   describe('POST /api/generate', () => {
     it('calls generateContentQuick by default', async () => {
       const quickResult = {
-        packets: [{ coreAnomaly: 'test' }],
+        packets: [makeGeneratedPacket()],
         rawResponse: '{}',
       };
       (contentService.generateContentQuick as jest.Mock).mockResolvedValue(quickResult);
@@ -170,18 +331,85 @@ describe('content-packets routes', () => {
 
       expect(contentService.generateContentQuick).toHaveBeenCalled();
       expect(contentService.generateContentPipeline).not.toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith({
-        success: true,
-        packets: quickResult.packets,
-      });
+      expect(res.json).toHaveBeenCalled();
+
+      const jsonCall = ((res.json as jest.Mock).mock.calls as unknown[])[0] as [
+        {
+          success: boolean;
+          packets: GeneratedContentPacket[];
+          packetCards: Array<{
+            id: string;
+            contextDetails: Array<{ key: string; value: string | readonly string[] }>;
+            packetDetails: Array<{ key: string; value: string | readonly string[] }>;
+            originDetails: Array<{ key: string; value: string | readonly string[] }>;
+          }>;
+        },
+      ];
+
+      expect(jsonCall[0].success).toBe(true);
+      expect(jsonCall[0].packets).toEqual(quickResult.packets);
+      expect(jsonCall[0].packetCards[0]).toMatchObject({ id: 'pkt-01' });
+      expect(jsonCall[0].packets[0]?.packet).toEqual(expect.objectContaining({ contentId: 'pkt-01' }));
+      expect(jsonCall[0].packets[0]?.context).toEqual(
+        expect.objectContaining({ premiseSummary: 'A premise summary' })
+      );
+      expect(jsonCall[0].packets[0]?.origin).toEqual(
+        expect.objectContaining({
+          generationMode: 'quick',
+          sourceArtifacts: [
+            expect.objectContaining({
+              artifactType: 'EXEMPLAR',
+              sourceId: 'exemplar-01',
+              summary: 'An exemplar summary',
+            }),
+          ],
+        })
+      );
+      expect(jsonCall[0].packetCards[0]?.contextDetails).toEqual([
+        expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
+        expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
+        expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+      ]);
+      expect(jsonCall[0].packetCards[0]?.packetDetails).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: 'contentKind', value: 'ENTITY' }),
+          expect.objectContaining({ key: 'contentId', value: 'pkt-01' }),
+        ])
+      );
+      expect(jsonCall[0].packetCards[0]?.originDetails).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: 'generationMode', value: 'quick' }),
+          expect.objectContaining({
+            key: 'sourceArtifact-1',
+            value: ['Type: EXEMPLAR', 'Source ID: exemplar-01', 'Summary: An exemplar summary'],
+          }),
+        ])
+      );
     });
 
     it('calls generateContentPipeline when pipeline=true', async () => {
       const pipelineResult = {
         tasteProfile: { collisionPatterns: [] },
         sparks: [],
-        packets: [{ coreAnomaly: 'pipeline-test' }],
-        evaluations: [],
+        packets: [
+          makeGeneratedPacket({
+            packet: makeConceptSeedPacket({ contentId: 'pkt-02', coreAnomaly: 'pipeline-test' }),
+            origin: {
+              generationMode: 'pipeline',
+              sourceArtifacts: [
+                {
+                  artifactType: 'SPARK',
+                  sourceId: 'spark-01',
+                  contentKind: 'ENTITY',
+                  summary: 'Pipeline spark summary',
+                  imageSeed: 'Pipeline spark image',
+                  collisionTags: ['collision-a'],
+                },
+              ],
+            },
+          }),
+        ],
+        evaluations: [makeEvaluation({ contentId: 'pkt-02', recommendedRole: 'SECONDARY_MUTAGEN' })],
       };
       (contentService.generateContentPipeline as jest.Mock).mockResolvedValue(pipelineResult);
 
@@ -203,6 +431,33 @@ describe('content-packets routes', () => {
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         packets: pipelineResult.packets,
+        packetCards: [
+          expect.objectContaining({
+            id: 'pkt-02',
+            contextDetails: [
+              expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
+              expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
+              expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+            ],
+            originDetails: [
+              expect.objectContaining({ key: 'generationMode', value: 'pipeline' }),
+              expect.objectContaining({
+                key: 'sourceArtifact-1',
+                value: [
+                  'Type: SPARK',
+                  'Source ID: spark-01',
+                  'Kind: ENTITY',
+                  'Summary: Pipeline spark summary',
+                  'Image Seed: Pipeline spark image',
+                  'Collision Tags: collision-a',
+                ],
+              }),
+            ],
+            metaDetails: [
+              expect.objectContaining({ key: 'recommendedRole', value: 'SECONDARY_MUTAGEN' }),
+            ],
+          }),
+        ],
         evaluations: pipelineResult.evaluations,
         tasteProfile: pipelineResult.tasteProfile,
         sparks: pipelineResult.sparks,
@@ -265,24 +520,12 @@ describe('content-packets routes', () => {
   });
 
   describe('POST /api/:packetId/save', () => {
-    it('persists packet to repository', async () => {
+    it('rejects packet-only legacy payloads', async () => {
       const handler = getRouteHandler('post', '/api/:packetId/save');
       const req = mockReq({
         params: { packetId: 'new-p1' },
         body: {
-          packet: {
-            contentKind: 'ENTITY',
-            coreAnomaly: 'test anomaly',
-            humanAnchor: 'anchor',
-            socialEngine: 'engine',
-            choicePressure: 'pressure',
-            signatureImage: 'image',
-            escalationPath: 'path',
-            wildnessInvariant: 'invariant',
-            dullCollapse: 'collapse',
-            interactionVerbs: ['verb1', 'verb2'],
-          },
-          name: 'My Packet',
+          candidate: makeConceptSeedPacket(),
         },
       });
       const res = mockRes();
@@ -290,23 +533,79 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(saveContentPacket).toHaveBeenCalledWith(
+      expect(saveSavedContentPacket).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Save candidate must include packet, context, and origin artifacts',
+      });
+    });
+
+    it('rejects requests without a generated save candidate', async () => {
+      const handler = getRouteHandler('post', '/api/:packetId/save');
+      const req = mockReq({
+        params: { packetId: 'new-p1' },
+        body: {},
+      });
+      const res = mockRes();
+
+      void handler(req, res);
+      await flushPromises();
+
+      expect(saveSavedContentPacket).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        error: 'Generated save candidate is required',
+      });
+    });
+
+    it('persists a full v2 saved asset when given a valid candidate and evaluation', async () => {
+      const handler = getRouteHandler('post', '/api/:packetId/save');
+      const candidate = makeGeneratedPacket({
+        packet: makeConceptSeedPacket({ contentId: 'pkt-77' }),
+      });
+      const evaluation = makeEvaluation({ contentId: 'pkt-77' });
+      const req = mockReq({
+        params: { packetId: 'new-p1' },
+        body: {
+          candidate,
+          evaluation,
+        },
+      });
+      const res = mockRes();
+
+      void handler(req, res);
+      await flushPromises();
+
+      expect(saveSavedContentPacket).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'new-p1',
-          name: 'My Packet',
-          contentKind: 'ENTITY',
+          assetVersion: 2,
           pinned: false,
+          packet: candidate.packet,
+          context: candidate.context,
+          origin: candidate.origin,
+          evaluation,
         })
       );
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+      const jsonCall = ((res.json as jest.Mock).mock.calls as unknown[])[0] as [
+        { success: boolean; packet: SavedContentPacket },
+      ];
+      expect(jsonCall[0].success).toBe(true);
+      expect(jsonCall[0].packet).toMatchObject({
+        id: 'new-p1',
+        assetVersion: 2,
+        packet: candidate.packet,
+      });
     });
   });
 
   describe('PATCH /api/:packetId/pin', () => {
     it('toggles pinned state', async () => {
-      (contentPacketExists as jest.Mock).mockResolvedValue(true);
+      (savedContentPacketExists as jest.Mock).mockResolvedValue(true);
       const updated = { id: 'p1', pinned: true };
-      (updateContentPacket as jest.Mock).mockResolvedValue(updated);
+      (updateSavedContentPacket as jest.Mock).mockResolvedValue(updated);
 
       const handler = getRouteHandler('patch', '/api/:packetId/pin');
       const req = mockReq({ params: { packetId: 'p1' } });
@@ -315,13 +614,13 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(contentPacketExists).toHaveBeenCalledWith('p1');
-      expect(updateContentPacket).toHaveBeenCalledWith('p1', expect.any(Function));
+      expect(savedContentPacketExists).toHaveBeenCalledWith('p1');
+      expect(updateSavedContentPacket).toHaveBeenCalledWith('p1', expect.any(Function));
       expect(res.json).toHaveBeenCalledWith({ success: true, packet: updated });
     });
 
     it('returns 404 for nonexistent packet', async () => {
-      (contentPacketExists as jest.Mock).mockResolvedValue(false);
+      (savedContentPacketExists as jest.Mock).mockResolvedValue(false);
 
       const handler = getRouteHandler('patch', '/api/:packetId/pin');
       const req = mockReq({ params: { packetId: 'nope' } });
@@ -336,7 +635,7 @@ describe('content-packets routes', () => {
 
   describe('DELETE /api/:packetId', () => {
     it('removes packet from repository', async () => {
-      (contentPacketExists as jest.Mock).mockResolvedValue(true);
+      (savedContentPacketExists as jest.Mock).mockResolvedValue(true);
 
       const handler = getRouteHandler('delete', '/api/:packetId');
       const req = mockReq({ params: { packetId: 'p1' } });
@@ -345,12 +644,12 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(deleteContentPacket).toHaveBeenCalledWith('p1');
+      expect(deleteSavedContentPacket).toHaveBeenCalledWith('p1');
       expect(res.json).toHaveBeenCalledWith({ success: true });
     });
 
     it('returns 404 for nonexistent packet', async () => {
-      (contentPacketExists as jest.Mock).mockResolvedValue(false);
+      (savedContentPacketExists as jest.Mock).mockResolvedValue(false);
 
       const handler = getRouteHandler('delete', '/api/:packetId');
       const req = mockReq({ params: { packetId: 'nope' } });

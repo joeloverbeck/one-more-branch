@@ -20,7 +20,7 @@ export async function evolveConceptIdeas(
       genreVibes: context.genreVibes,
       moodKeywords: context.moodKeywords,
       contentPreferences: context.contentPreferences,
-      contentPackets: context.contentPackets,
+      conceptSeedPackets: context.conceptSeedPackets,
     },
     apiKey,
     options
@@ -35,7 +35,7 @@ export async function evolveConceptIdeas(
       genreVibes: context.genreVibes,
       moodKeywords: context.moodKeywords,
       contentPreferences: context.contentPreferences,
-      contentPackets: context.contentPackets,
+      conceptSeedPackets: context.conceptSeedPackets,
     },
     apiKey,
     options

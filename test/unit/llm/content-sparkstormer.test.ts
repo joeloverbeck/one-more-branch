@@ -1,7 +1,10 @@
 import { buildSparkstormerPrompt } from '../../../src/llm/prompts/content-sparkstormer-prompt';
 import { parseSparkstormerResponse } from '../../../src/llm/content-sparkstormer-generation';
 import { buildContentSparkstormerSchema } from '../../../src/llm/schemas/content-sparkstormer-schema';
-import type { SparkstormerContext, TasteProfile } from '../../../src/models/content-packet';
+import type {
+  SparkstormerContext,
+  TasteProfile,
+} from '../../../src/models/content-generation-contracts';
 
 function makeTasteProfile(): TasteProfile {
   return {

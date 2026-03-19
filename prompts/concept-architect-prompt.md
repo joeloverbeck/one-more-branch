@@ -85,16 +85,17 @@ OUTPUT REQUIREMENTS:
 | genreVibes | User input | No |
 | moodKeywords | User input | No |
 | contentPreferences | User input | No |
-| contentPackets | ContentPacket[] | No |
+| conceptSeedPackets | Lean `ConceptSeedPacket[]` projection (not the full saved asset) | No |
 
 ## Content Packet Integration (WILCONPIP)
 
-When `contentPackets` are provided, the prompt injects a `CONTENT PACKETS` block containing each packet's `coreAnomaly`, `wildnessInvariant`, `socialEngine`, and `signatureImage`. The architect must:
+When `conceptSeedPackets` are provided, the prompt injects a `CONCEPT SEED PACKETS` block containing each packet's `coreAnomaly`, `wildnessInvariant`, `socialEngine`, and `signatureImage`. The architect must:
 
 - Operationalize each packet's `coreAnomaly` as an impossible rule in `settingAxioms`
 - Derive at least one `keyInstitution` from the packet's `socialEngine`
 - Preserve the `wildnessInvariant` — do not normalize it into generic genre language
 - Ensure `coreConflictLoop` puts pressure on the packet's implied `choicePressure`
+- Saved-asset-only context fields and lineage metadata are intentionally excluded from this stage
 
 ## Notes
 

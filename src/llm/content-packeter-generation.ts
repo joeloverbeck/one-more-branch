@@ -1,9 +1,9 @@
 import {
-  isContentKind,
-  type ContentPacket,
+  type ConceptSeedPacketerPacket,
   type ContentPacketerContext,
   type ContentPacketerResult,
-} from '../models/content-packet.js';
+} from '../models/content-generation-contracts.js';
+import { isContentKind } from '../models/content-taxonomy.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import { LLMError } from './llm-client-types.js';
 import { runLlmStage } from './llm-stage-runner.js';
@@ -22,7 +22,7 @@ function validateStringField(data: Record<string, unknown>, field: string, index
   return value;
 }
 
-function validatePacket(value: unknown, index: number): ContentPacket {
+function validatePacket(value: unknown, index: number): ConceptSeedPacketerPacket {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new LLMError(`packets[${index}] must be an object`, 'STRUCTURE_PARSE_ERROR', true);
   }
@@ -52,6 +52,9 @@ function validatePacket(value: unknown, index: number): ContentPacket {
   }
 
   const coreAnomaly = validateStringField(data, 'coreAnomaly', index);
+  const premiseSummary = validateStringField(data, 'premiseSummary', index);
+  const situationFrame = validateStringField(data, 'situationFrame', index);
+  const worldState = validateStringField(data, 'worldState', index);
   const humanAnchor = validateStringField(data, 'humanAnchor', index);
   const socialEngine = validateStringField(data, 'socialEngine', index);
   const choicePressure = validateStringField(data, 'choicePressure', index);
@@ -77,6 +80,13 @@ function validatePacket(value: unknown, index: number): ContentPacket {
     contentId,
     sourceSparkIds: data['sourceSparkIds'] as readonly string[],
     contentKind: data['contentKind'],
+    premiseSummary,
+    situationFrame,
+    worldState,
+    viewpointPressure:
+      typeof data['viewpointPressure'] === 'string' && data['viewpointPressure'].trim().length > 0
+        ? data['viewpointPressure']
+        : undefined,
     coreAnomaly,
     humanAnchor,
     socialEngine,
@@ -89,7 +99,7 @@ function validatePacket(value: unknown, index: number): ContentPacket {
   };
 }
 
-export function parseContentPacketerResponse(parsed: unknown): readonly ContentPacket[] {
+export function parseContentPacketerResponse(parsed: unknown): readonly ConceptSeedPacketerPacket[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Content packeter response must be an object',

@@ -1,6 +1,6 @@
 # Worldbuilding Generation, Canonicalization, and Prompt-Preparation Pipeline
 
-**Status**: IMPLEMENTED (Phase 1 — core pipeline, storage, routes, character/story integration)
+**Status**: COMPLETED
 **Supersedes**: the earlier 2-stage worldbuilding proposal
 
 ## Implementation Notes (2026-03-13)
@@ -1269,3 +1269,12 @@ This revised spec intentionally changes five things:
 3. **Adds story vectors, anchor locations, everyday practices, and naming lexicon** so the world is lived, playable, and memorable.
 4. **Propagates structured world context into the character pipeline**, not just the spine path.
 5. **Replaces lore-first formatting with consumer-specific world sections** so each prompt gets the right slice of the world.
+
+---
+
+## Outcome
+
+- **Completion date**: 2026-03-19
+- **What changed**: The worldbuilding pipeline was implemented as a saved asset flow with canonicalization, persistence, routes, prompt-formatting helpers, and story/character integration via `worldbuildingId`. The codebase includes structured world models, canonicalization/service layers, consumer-specific world prompt sections, and world-aware story creation/loading.
+- **Deviations from plan**: The implementation notes above capture the main scope adjustments: standalone worldbuilding inputs instead of concept-coupled requirements, deferred runtime reveal-state mechanics, and retention of `rawWorldbuilding` for backward compatibility.
+- **Verification results**: Archived as implemented based on the existing implementation notes plus matching services, models, prompts, and tests in the repo. No fresh build or test run was performed as part of this archiving pass.

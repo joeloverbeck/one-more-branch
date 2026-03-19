@@ -2,21 +2,24 @@ import { randomUUID } from 'node:crypto';
 import { Request, Response, Router } from 'express';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
-import type { ContentPacket, ContentOneShotPacket } from '../../models/content-packet.js';
-import type { SavedContentPacket } from '../../models/saved-content-packet.js';
 import {
-  contentPacketExists,
-  deleteContentPacket,
-  listContentPackets,
-  loadContentPacket,
-  saveContentPacket,
-  updateContentPacket,
-} from '../../persistence/content-packet-repository.js';
+  deleteSavedContentPacket,
+  listSavedContentPackets,
+  loadSavedContentPacket,
+  saveSavedContentPacket,
+  savedContentPacketExists,
+  updateSavedContentPacket,
+} from '../../persistence/saved-content-packet-repository.js';
 import { listTasteProfiles, saveTasteProfile } from '../../persistence/taste-profile-repository.js';
-import type { SavedTasteProfile } from '../../models/saved-content-packet.js';
+import type { SavedContentPacket, SavedTasteProfile } from '../../models/saved-content-packet.js';
+import { createSavedContentPacketArtifact } from '../services/saved-content-packet-artifact.js';
 import { contentService } from '../services/index.js';
+import {
+  buildGeneratedContentPacketCardViewModel,
+  buildSavedContentPacketCardWithRecommendedRole,
+} from '../presenters/content-packet-card.js';
 import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
-import { groupContentPacketsByKind } from '../utils/group-content-packets-by-kind.js';
+import { groupSavedContentPacketsByKind } from '../utils/group-saved-content-packets-by-kind.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
 
 export const contentPacketRoutes = Router();
@@ -25,11 +28,15 @@ export const contentPacketRoutes = Router();
 contentPacketRoutes.get(
   '/',
   wrapAsyncRoute(async (_req: Request, res: Response) => {
-    const packets = await listContentPackets();
-    const contentKindGroups = groupContentPacketsByKind(packets);
+    const packets = await listSavedContentPackets();
+    const contentKindGroups = groupSavedContentPacketsByKind(packets).map((group) => ({
+      kind: group.kind,
+      displayLabel: group.displayLabel,
+      cards: group.packets.map(buildSavedContentPacketCardWithRecommendedRole),
+    }));
     return res.render('pages/content-packets', {
       title: 'Content Packets - One More Branch',
-      packets,
+      hasSavedPackets: packets.length > 0,
       contentKindGroups,
     });
   })
@@ -39,7 +46,7 @@ contentPacketRoutes.get(
 contentPacketRoutes.get(
   '/api/list',
   wrapAsyncRoute(async (_req: Request, res: Response) => {
-    const packets = await listContentPackets();
+    const packets = await listSavedContentPackets();
     return res.json({ success: true, packets });
   })
 );
@@ -49,7 +56,7 @@ contentPacketRoutes.get(
   '/api/:packetId',
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { packetId } = req.params;
-    const packet = await loadContentPacket(packetId as string);
+    const packet = await loadSavedContentPacket(packetId as string);
     if (!packet) {
       return res.status(404).json({ success: false, error: 'Content packet not found' });
     }
@@ -110,9 +117,19 @@ contentPacketRoutes.post(
 
         progress.complete();
 
+        const evaluationByContentId = new Map(
+          result.evaluations.map((evaluation) => [evaluation.contentId, evaluation])
+        );
+
         return res.json({
           success: true,
           packets: result.packets,
+          packetCards: result.packets.map((generatedPacket) =>
+            buildGeneratedContentPacketCardViewModel(generatedPacket, {
+              includeContentKind: true,
+              evaluation: evaluationByContentId.get(generatedPacket.packet.contentId),
+            })
+          ),
           evaluations: result.evaluations,
           tasteProfile: result.tasteProfile,
           sparks: result.sparks,
@@ -134,6 +151,11 @@ contentPacketRoutes.post(
       return res.json({
         success: true,
         packets: result.packets,
+        packetCards: result.packets.map((generatedPacket) =>
+          buildGeneratedContentPacketCardViewModel(generatedPacket, {
+            includeContentKind: true,
+          })
+        ),
       });
     } catch (error) {
       if (error instanceof LLMError) {
@@ -162,47 +184,28 @@ contentPacketRoutes.post(
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { packetId } = req.params;
     const body = req.body as {
-      packet?: ContentPacket | ContentOneShotPacket;
-      name?: string;
+      candidate?: unknown;
       evaluation?: unknown;
     };
 
-    if (!body.packet || typeof body.packet !== 'object') {
-      return res.status(400).json({ success: false, error: 'Packet data is required' });
+    if (!body.candidate || typeof body.candidate !== 'object') {
+      return res.status(400).json({ success: false, error: 'Generated save candidate is required' });
     }
 
-    const now = new Date().toISOString();
-    const packet = body.packet;
+    let saved: SavedContentPacket;
+    try {
+      saved = createSavedContentPacketArtifact({
+        id: packetId as string,
+        now: new Date().toISOString(),
+        candidate: body.candidate,
+        evaluation: body.evaluation,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Invalid packet data';
+      return res.status(400).json({ success: false, error: message });
+    }
 
-    const saved: SavedContentPacket = {
-      id: packetId as string,
-      name:
-        body.name?.trim() ??
-        ('title' in packet ? (packet as { title: string }).title : 'Untitled Packet'),
-      createdAt: now,
-      updatedAt: now,
-      contentKind: packet.contentKind,
-      coreAnomaly: packet.coreAnomaly,
-      humanAnchor: packet.humanAnchor,
-      socialEngine: packet.socialEngine,
-      choicePressure: packet.choicePressure,
-      signatureImage: packet.signatureImage,
-      escalationPath:
-        'escalationPath' in packet
-          ? (packet as { escalationPath: string }).escalationPath
-          : (packet as { escalationHint: string }).escalationHint,
-      wildnessInvariant: packet.wildnessInvariant,
-      dullCollapse: packet.dullCollapse,
-      interactionVerbs:
-        'interactionVerbs' in packet
-          ? [...(packet as unknown as { interactionVerbs: readonly string[] }).interactionVerbs]
-          : [],
-      pinned: false,
-      recommendedRole: 'PRIMARY_SEED' as const,
-      evaluation: body.evaluation as SavedContentPacket['evaluation'],
-    };
-
-    await saveContentPacket(saved);
+    await saveSavedContentPacket(saved);
     return res.json({ success: true, packet: saved });
   })
 );
@@ -213,11 +216,11 @@ contentPacketRoutes.patch(
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { packetId } = req.params;
 
-    if (!(await contentPacketExists(packetId as string))) {
+    if (!(await savedContentPacketExists(packetId as string))) {
       return res.status(404).json({ success: false, error: 'Content packet not found' });
     }
 
-    const updated = await updateContentPacket(packetId as string, (existing) => ({
+    const updated = await updateSavedContentPacket(packetId as string, (existing) => ({
       ...existing,
       pinned: !existing.pinned,
       updatedAt: new Date().toISOString(),
@@ -233,11 +236,11 @@ contentPacketRoutes.delete(
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { packetId } = req.params;
 
-    if (!(await contentPacketExists(packetId as string))) {
+    if (!(await savedContentPacketExists(packetId as string))) {
       return res.status(404).json({ success: false, error: 'Content packet not found' });
     }
 
-    await deleteContentPacket(packetId as string);
+    await deleteSavedContentPacket(packetId as string);
     return res.json({ success: true });
   })
 );

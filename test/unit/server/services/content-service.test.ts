@@ -1,16 +1,17 @@
 import { createContentService } from '@/server/services/content-service';
 import type {
+  ConceptSeedOneShotLineagedPacket,
+  ConceptSeedPacketerPacket,
   TasteProfile,
   ContentSpark,
-  ContentPacket,
   ContentEvaluation,
-  ContentOneShotPacket,
+  GeneratedContentPacket,
   ContentOneShotContext,
   TasteDistillerContext,
   SparkstormerContext,
   ContentPacketerContext,
   ContentEvaluatorContext,
-} from '@/models/content-packet';
+} from '@/models/content-generation-contracts';
 import type { GenerationStageEvent } from '@/engine/types';
 
 function createTasteProfile(): TasteProfile {
@@ -37,9 +38,12 @@ function createSpark(id = 'spark_1'): ContentSpark {
   };
 }
 
-function createPacket(id = 'content_1'): ContentPacket {
+function createPacketerPacket(id = 'content_1'): ConceptSeedPacketerPacket {
   return {
     contentId: id,
+    premiseSummary: 'A test premise',
+    situationFrame: 'A pressured test situation',
+    worldState: 'A baseline world state',
     sourceSparkIds: ['spark_1'],
     contentKind: 'ENTITY',
     coreAnomaly: 'anomaly',
@@ -73,23 +77,103 @@ function createEvaluation(id = 'content_1'): ContentEvaluation {
   };
 }
 
-function createOneShotPacket(): ContentOneShotPacket {
+function createOneShotPacket(
+  overrides: Partial<ConceptSeedOneShotLineagedPacket> = {}
+): ConceptSeedOneShotLineagedPacket {
   return {
-    title: 'Test Packet',
+    contentId: 'pkt-01',
+    sourceExemplarIds: ['exemplar-01'],
+    premiseSummary: 'A one-shot premise',
+    situationFrame: 'A one-shot situation',
+    worldState: 'A one-shot world state',
     contentKind: 'ENTITY',
     coreAnomaly: 'anomaly',
     humanAnchor: 'anchor',
     socialEngine: 'engine',
     choicePressure: 'pressure',
     signatureImage: 'image',
-    escalationHint: 'hint',
+    escalationPath: 'hint',
     wildnessInvariant: 'invariant',
     dullCollapse: 'collapse',
+    interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
+    ...overrides,
+  };
+}
+
+function createQuickGeneratedPacket(): GeneratedContentPacket {
+  return {
+    packet: {
+      contentId: 'pkt-01',
+      contentKind: 'ENTITY',
+      coreAnomaly: 'anomaly',
+      humanAnchor: 'anchor',
+      socialEngine: 'engine',
+      choicePressure: 'pressure',
+      signatureImage: 'image',
+      escalationPath: 'hint',
+      wildnessInvariant: 'invariant',
+      dullCollapse: 'collapse',
+      interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
+    },
+    context: {
+      premiseSummary: 'A one-shot premise',
+      situationFrame: 'A one-shot situation',
+      worldState: 'A one-shot world state',
+    },
+    origin: {
+      generationMode: 'quick',
+      sourceArtifacts: [
+        {
+          artifactType: 'EXEMPLAR',
+          sourceId: 'exemplar-01',
+          summary: EXEMPLAR_IDEAS[0]!,
+        },
+      ],
+    },
+  };
+}
+
+function createPipelineGeneratedPacket(): GeneratedContentPacket {
+  return {
+    packet: {
+      contentId: 'content_1',
+      contentKind: 'ENTITY',
+      coreAnomaly: 'anomaly',
+      humanAnchor: 'anchor',
+      socialEngine: 'engine',
+      choicePressure: 'pressure',
+      signatureImage: 'image',
+      escalationPath: 'path',
+      wildnessInvariant: 'invariant',
+      dullCollapse: 'collapse',
+      interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
+    },
+    context: {
+      premiseSummary: 'A test premise',
+      situationFrame: 'A pressured test situation',
+      worldState: 'A baseline world state',
+    },
+    origin: {
+      generationMode: 'pipeline',
+      sourceArtifacts: [
+        {
+          artifactType: 'SPARK',
+          sourceId: 'spark_1',
+          contentKind: 'ENTITY',
+          summary: 'A test spark',
+          imageSeed: 'A vivid image',
+          collisionTags: ['tag-a'],
+        },
+      ],
+    },
   };
 }
 
 const VALID_API_KEY = 'sk-test-key-1234567890';
-const EXEMPLAR_IDEAS = ['A city where gravity reverses at midnight'];
+const EXEMPLAR_IDEAS = [
+  'A city where gravity reverses at midnight',
+  'A monastery that rents out borrowed sins',
+];
 
 function expectCompletedStage(
   event: GenerationStageEvent,
@@ -103,7 +187,7 @@ function expectCompletedStage(
 function createMockDeps() {
   const tasteProfile = createTasteProfile();
   const sparks = [createSpark()];
-  const packets = [createPacket()];
+  const packets = [createPacketerPacket()];
   const evaluations = [createEvaluation()];
   const oneShotPackets = [createOneShotPacket()];
 
@@ -158,7 +242,7 @@ describe('ContentService', () => {
         }),
         VALID_API_KEY
       );
-      expect(result.packets).toEqual(deps.fixtures.oneShotPackets);
+      expect(result.packets).toEqual([createQuickGeneratedPacket()]);
     });
 
     it('requires apiKey (throws on missing)', async () => {
@@ -171,6 +255,34 @@ describe('ContentService', () => {
           apiKey: '',
         })
       ).rejects.toThrow('OpenRouter API key is required');
+    });
+
+    it('returns generated asset candidates with nested context and exemplar origin artifacts', async () => {
+      const deps = createMockDeps();
+      const service = createContentService(deps);
+
+      const result = await service.generateContentQuick({
+        exemplarIdeas: EXEMPLAR_IDEAS,
+        apiKey: VALID_API_KEY,
+      });
+
+      expect(result.packets).toEqual([createQuickGeneratedPacket()]);
+    });
+
+    it('fails when quick lineage references an unknown exemplar ID', async () => {
+      const deps = createMockDeps();
+      deps.generateContentOneShot.mockResolvedValue({
+        packets: [createOneShotPacket({ sourceExemplarIds: ['exemplar-99'] })],
+        rawResponse: '{}',
+      });
+      const service = createContentService(deps);
+
+      await expect(
+        service.generateContentQuick({
+          exemplarIdeas: EXEMPLAR_IDEAS,
+          apiKey: VALID_API_KEY,
+        })
+      ).rejects.toThrow('Missing source exemplar for packet pkt-01: exemplar-99');
     });
 
     it('fires onGenerationStage callbacks for GENERATING_CONTENT stage', async () => {
@@ -307,8 +419,20 @@ describe('ContentService', () => {
 
       expect(result.tasteProfile).toEqual(deps.fixtures.tasteProfile);
       expect(result.sparks).toEqual(deps.fixtures.sparks);
-      expect(result.packets).toEqual(deps.fixtures.packets);
+      expect(result.packets).toEqual([createPipelineGeneratedPacket()]);
       expect(result.evaluations).toEqual(deps.fixtures.evaluations);
+    });
+
+    it('materializes pipeline spark lineage into nested origin artifacts', async () => {
+      const deps = createMockDeps();
+      const service = createContentService(deps);
+
+      const result = await service.generateContentPipeline({
+        exemplarIdeas: EXEMPLAR_IDEAS,
+        apiKey: VALID_API_KEY,
+      });
+
+      expect(result.packets).toEqual([createPipelineGeneratedPacket()]);
     });
   });
 
@@ -419,7 +543,7 @@ describe('ContentService', () => {
       const stages: GenerationStageEvent[] = [];
 
       await service.evaluatePackets({
-        packets: [createPacket()],
+        packets: [createPipelineGeneratedPacket().packet],
         apiKey: VALID_API_KEY,
         onGenerationStage: (event: GenerationStageEvent) => stages.push(event),
       });

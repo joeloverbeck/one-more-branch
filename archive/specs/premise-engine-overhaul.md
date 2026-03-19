@@ -1,6 +1,6 @@
 # Premise Engine Overhaul — Narrative Theory Integration
 
-**Status**: PENDING IMPLEMENTATION
+**Status**: COMPLETED
 **Date**: 2026-03-04
 **Scope**: Kernel → Concept → Spine pipeline stages
 **Backward Compatibility**: None required
@@ -328,3 +328,12 @@ These new fields must flow through to downstream stages that receive kernel/conc
 3. **Integration tests**: `npm run test:integration` passes
 4. **Manual smoke test**: Create a new story end-to-end; verify kernel output includes `valueSpectrum` and `moralArgument`; verify concept output includes Lie/Truth/Ghost; verify spine includes collision point and deepest fear
 5. **Quality gate**: New kernels must score >= 3 on `ironicPotential` and `viscerality` to pass; new concepts must score >= 3 on `ironicPremise` and `sceneGenerativePower` to pass
+
+---
+
+## Outcome
+
+- **Completion date**: 2026-03-19
+- **What changed**: The overhaul landed across the kernel, concept, and spine pipeline. The repo now includes `valueSpectrum` and `moralArgument` in kernel generation/evaluation flows, Lie/Truth/Ghost and want/need-collision fields in concept outputs, and the planned spine fear/collision fields plus downstream prompt-context propagation.
+- **Deviations from plan**: The implementation shipped through the current prompt/module layout, which now includes shared prompt sections and the split spine foundation/arc/synthesis flow rather than only the older single-file prompt structure named in this spec.
+- **Verification results**: Archived as implemented based on matching model, schema, prompt, and test references in the codebase. No fresh build or test run was performed as part of this archiving pass.

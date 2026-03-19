@@ -5,18 +5,26 @@ import { evaluateContentPackets } from '../../llm/content-evaluator-generation.j
 import { generateContentOneShot } from '../../llm/content-one-shot-generation.js';
 import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
+import { projectConceptSeedPacket } from '../../models/concept-seed-packet.js';
+import { formatContentExemplarId } from '../../models/content-generation-contracts.js';
 import type {
+  ConceptSeedOneShotLineagedPacket,
+  ConceptSeedOneShotPacket,
+  ConceptSeedPacketerPacket,
   ContentEvaluation,
+  GeneratedContentPacket,
   ContentOneShotContext,
-  ContentOneShotPacket,
-  ContentPacket,
+  ContentPacketContext,
+  ContentPacketOrigin,
+  ContentPacketSourceArtifact,
   ContentSpark,
   SparkstormerContext,
   TasteDistillerContext,
   TasteProfile,
   ContentPacketerContext,
   ContentEvaluatorContext,
-} from '../../models/content-packet.js';
+} from '../../models/content-generation-contracts.js';
+import type { ConceptSeedPacket } from '../../models/concept-seed-packet.js';
 
 // --- Input types ---
 
@@ -64,7 +72,7 @@ export interface PackageContentInput {
 }
 
 export interface EvaluatePacketsInput {
-  readonly packets: readonly ContentPacket[];
+  readonly packets: readonly ConceptSeedPacket[];
   readonly tasteProfile?: TasteProfile;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
@@ -73,14 +81,14 @@ export interface EvaluatePacketsInput {
 // --- Result types ---
 
 export interface ContentQuickResult {
-  readonly packets: readonly ContentOneShotPacket[];
+  readonly packets: readonly GeneratedContentPacket[];
   readonly rawResponse: string;
 }
 
 export interface ContentPipelineResult {
   readonly tasteProfile: TasteProfile;
   readonly sparks: readonly ContentSpark[];
-  readonly packets: readonly ContentPacket[];
+  readonly packets: readonly GeneratedContentPacket[];
   readonly evaluations: readonly ContentEvaluation[];
 }
 
@@ -93,7 +101,7 @@ export interface GenerateSparksResult {
 }
 
 export interface PackageContentResult {
-  readonly packets: readonly ContentPacket[];
+  readonly packets: readonly GeneratedContentPacket[];
 }
 
 export interface EvaluatePacketsResult {
@@ -153,6 +161,67 @@ function requireExemplarIdeas(ideas: readonly string[]): readonly string[] {
   return filtered;
 }
 
+function buildPacketContext(
+  packet: ConceptSeedOneShotPacket | ConceptSeedPacketerPacket
+): ContentPacketContext {
+  return {
+    premiseSummary: packet.premiseSummary,
+    situationFrame: packet.situationFrame,
+    worldState: packet.worldState,
+    viewpointPressure: packet.viewpointPressure,
+  };
+}
+
+function buildQuickSourceArtifacts(
+  packet: ConceptSeedOneShotLineagedPacket,
+  exemplarsById: ReadonlyMap<string, string>
+): readonly ContentPacketSourceArtifact[] {
+  return packet.sourceExemplarIds.map((sourceId) => {
+    const summary = exemplarsById.get(sourceId);
+    if (!summary) {
+      throw new Error(`Missing source exemplar for packet ${packet.contentId}: ${sourceId}`);
+    }
+
+    return {
+      artifactType: 'EXEMPLAR',
+      sourceId,
+      summary,
+    };
+  });
+}
+
+function buildPipelineSourceArtifacts(
+  packet: ConceptSeedPacketerPacket,
+  sparksById: ReadonlyMap<string, ContentSpark>
+): readonly ContentPacketSourceArtifact[] {
+  return packet.sourceSparkIds.map((sparkId) => {
+    const spark = sparksById.get(sparkId);
+    if (!spark) {
+      throw new Error(`Missing source spark for packet ${packet.contentId}: ${sparkId}`);
+    }
+
+    return {
+      artifactType: 'SPARK',
+      sourceId: spark.sparkId,
+      contentKind: spark.contentKind,
+      summary: spark.spark,
+      imageSeed: spark.imageSeed,
+      collisionTags: [...spark.collisionTags],
+    };
+  });
+}
+
+function buildGeneratedPacket(
+  packet: ConceptSeedOneShotPacket | ConceptSeedPacketerPacket,
+  origin: ContentPacketOrigin
+): GeneratedContentPacket {
+  return {
+    packet: projectConceptSeedPacket(packet),
+    context: buildPacketContext(packet),
+    origin,
+  };
+}
+
 // --- Factory ---
 
 export function createContentService(deps: ContentServiceDeps = defaultDeps): ContentService {
@@ -161,6 +230,9 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       const apiKey = requireApiKey(input.apiKey);
       const exemplarIdeas = requireExemplarIdeas(input.exemplarIdeas);
       const onGenerationStage = input.onGenerationStage;
+      const exemplarsById = new Map(
+        exemplarIdeas.map((idea, index) => [formatContentExemplarId(index), idea] as const)
+      );
 
       const context: ContentOneShotContext = {
         exemplarIdeas,
@@ -174,7 +246,15 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         deps.generateContentOneShot(context, apiKey)
       );
 
-      return { packets: result.packets, rawResponse: result.rawResponse };
+      return {
+        packets: result.packets.map((packet) =>
+          buildGeneratedPacket(packet, {
+            generationMode: 'quick',
+            sourceArtifacts: buildQuickSourceArtifacts(packet, exemplarsById),
+          })
+        ),
+        rawResponse: result.rawResponse,
+      };
     },
 
     async generateContentPipeline(input: ContentPipelineInput): Promise<ContentPipelineResult> {
@@ -203,6 +283,7 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       const sparkResult = await runGenerationStage(onGenerationStage, 'GENERATING_SPARKS', () =>
         deps.generateSparks(sparkContext, apiKey)
       );
+      const sparksById = new Map(sparkResult.sparks.map((spark) => [spark.sparkId, spark]));
 
       // Stage 3: Content Packeter
       const packeterContext: ContentPacketerContext = {
@@ -230,7 +311,12 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       return {
         tasteProfile: tasteResult.tasteProfile,
         sparks: sparkResult.sparks,
-        packets: packeterResult.packets,
+        packets: packeterResult.packets.map((packet) =>
+          buildGeneratedPacket(packet, {
+            generationMode: 'pipeline',
+            sourceArtifacts: buildPipelineSourceArtifacts(packet, sparksById),
+          })
+        ),
         evaluations: evaluatorResult.evaluations,
       };
     },
@@ -284,7 +370,16 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         deps.generateContentPackets(context, apiKey)
       );
 
-      return { packets: result.packets };
+      const sparksById = new Map(input.sparks.map((spark) => [spark.sparkId, spark]));
+
+      return {
+        packets: result.packets.map((packet) =>
+          buildGeneratedPacket(packet, {
+            generationMode: 'pipeline',
+            sourceArtifacts: buildPipelineSourceArtifacts(packet, sparksById),
+          })
+        ),
+      };
     },
 
     async evaluatePackets(input: EvaluatePacketsInput): Promise<EvaluatePacketsResult> {

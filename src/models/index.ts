@@ -399,21 +399,7 @@ export type {
   ContentKind,
   ContentPacketRole,
   RiskAppetite,
-  TasteProfile,
-  ContentSpark,
-  ContentPacket,
-  ContentEvaluationScores,
-  ContentEvaluation,
-  ContentOneShotContext,
-  ContentOneShotPacket,
-  ContentOneShotResult,
-  SparkstormerContext,
-  SparkstormerResult,
-  ContentPacketerContext,
-  ContentPacketerResult,
-  ContentEvaluatorContext,
-  ContentEvaluatorResult,
-} from './content-packet';
+} from './content-taxonomy';
 export {
   CONTENT_KIND_VALUES,
   CONTENT_PACKET_ROLE_VALUES,
@@ -421,10 +407,62 @@ export {
   isContentKind,
   isContentPacketRole,
   isRiskAppetite,
-} from './content-packet';
+} from './content-taxonomy';
 
-export type { SavedContentPacket, SavedTasteProfile } from './saved-content-packet';
-export { isSavedContentPacket, isSavedTasteProfile } from './saved-content-packet';
+export type {
+  ConceptSeedPacket,
+  ConceptSeedPacketProjectionSource,
+} from './concept-seed-packet';
+export {
+  cloneConceptSeedPacket,
+  isConceptSeedPacket,
+  projectConceptSeedPacket,
+} from './concept-seed-packet';
+
+export type {
+  TasteProfile,
+  ContentSpark,
+  ContentPacketContext,
+  ContentPacketOrigin,
+  ContentPacketSourceArtifact,
+  ConceptSeedOneShotPacket,
+  ConceptSeedOneShotLineagedPacket,
+  ConceptSeedPacketerPacket,
+  GeneratedContentPacket,
+  ContentEvaluationScores,
+  ContentEvaluation,
+  ContentOneShotContext,
+  ContentOneShotResult,
+  SparkstormerContext,
+  SparkstormerResult,
+  ContentPacketerContext,
+  ContentPacketerResult,
+  ContentEvaluatorContext,
+  ContentEvaluatorResult,
+  TasteDistillerContext,
+  TasteDistillerResult,
+} from './content-generation-contracts';
+export {
+  cloneContentPacketContext,
+  cloneContentPacketOrigin,
+  formatContentExemplarId,
+  isContentEvaluation,
+  isContentPacketContext,
+  isContentPacketOrigin,
+  isContentPacketSourceArtifact,
+  isGeneratedContentPacket,
+} from './content-generation-contracts';
+
+export type {
+  SavedContentPacket,
+  SavedTasteProfile,
+} from './saved-content-packet';
+export {
+  getSavedContentPacketRecommendedRole,
+  projectSavedConceptSeedPacket,
+  isSavedContentPacket,
+  isSavedTasteProfile,
+} from './saved-content-packet';
 
 export type { SavedSpine } from './saved-spine';
 export { isSavedSpine } from './saved-spine';
