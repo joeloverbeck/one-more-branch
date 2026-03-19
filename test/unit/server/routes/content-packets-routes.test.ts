@@ -450,12 +450,12 @@ describe('content-packets routes', () => {
   });
 
   describe('POST /api/:packetId/save', () => {
-    it('rejects save attempts until explicit asset assembly is implemented', async () => {
+    it('rejects packet-only legacy payloads', async () => {
       const handler = getRouteHandler('post', '/api/:packetId/save');
       const req = mockReq({
         params: { packetId: 'new-p1' },
         body: {
-          packet: makeGeneratedPacket(),
+          candidate: makeContentPacket(),
         },
       });
       const res = mockRes();
@@ -467,20 +467,15 @@ describe('content-packets routes', () => {
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
-        error: 'Packet data must match the canonical content packet contract',
+        error: 'Save candidate must include packet, context, and origin artifacts',
       });
     });
 
-    it('rejects packets that do not match the canonical packet contract', async () => {
+    it('rejects requests without a generated save candidate', async () => {
       const handler = getRouteHandler('post', '/api/:packetId/save');
       const req = mockReq({
         params: { packetId: 'new-p1' },
-        body: {
-          packet: {
-            contentKind: 'ENTITY',
-            coreAnomaly: 'test anomaly',
-          },
-        },
+        body: {},
       });
       const res = mockRes();
 
@@ -491,7 +486,47 @@ describe('content-packets routes', () => {
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
-        error: 'Packet data must match the canonical content packet contract',
+        error: 'Generated save candidate is required',
+      });
+    });
+
+    it('persists a full v2 saved asset when given a valid candidate and evaluation', async () => {
+      const handler = getRouteHandler('post', '/api/:packetId/save');
+      const candidate = makeGeneratedPacket({
+        packet: makeContentPacket({ contentId: 'pkt-77' }),
+      });
+      const evaluation = makeEvaluation({ contentId: 'pkt-77' });
+      const req = mockReq({
+        params: { packetId: 'new-p1' },
+        body: {
+          candidate,
+          evaluation,
+        },
+      });
+      const res = mockRes();
+
+      void handler(req, res);
+      await flushPromises();
+
+      expect(saveContentPacket).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'new-p1',
+          assetVersion: 2,
+          pinned: false,
+          packet: candidate.packet,
+          context: candidate.context,
+          origin: candidate.origin,
+          evaluation,
+        })
+      );
+      const jsonCall = ((res.json as jest.Mock).mock.calls as unknown[])[0] as [
+        { success: boolean; packet: SavedContentPacket },
+      ];
+      expect(jsonCall[0].success).toBe(true);
+      expect(jsonCall[0].packet).toMatchObject({
+        id: 'new-p1',
+        assetVersion: 2,
+        packet: candidate.packet,
       });
     });
   });

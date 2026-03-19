@@ -184,12 +184,12 @@ contentPacketRoutes.post(
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { packetId } = req.params;
     const body = req.body as {
-      packet?: unknown;
+      candidate?: unknown;
       evaluation?: unknown;
     };
 
-    if (!body.packet || typeof body.packet !== 'object') {
-      return res.status(400).json({ success: false, error: 'Packet data is required' });
+    if (!body.candidate || typeof body.candidate !== 'object') {
+      return res.status(400).json({ success: false, error: 'Generated save candidate is required' });
     }
 
     let saved: SavedContentPacket;
@@ -197,7 +197,7 @@ contentPacketRoutes.post(
       saved = createSavedContentPacketArtifact({
         id: packetId as string,
         now: new Date().toISOString(),
-        packet: body.packet,
+        candidate: body.candidate,
         evaluation: body.evaluation,
       });
     } catch (error) {

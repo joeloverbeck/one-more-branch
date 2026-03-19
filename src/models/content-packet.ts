@@ -227,6 +227,10 @@ function isNonEmptyStringArray(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.length > 0 && value.every((item) => isNonEmptyString(item));
 }
 
+function isStringArray(value: unknown): value is readonly string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+
 export function cloneContentPacket(packet: ContentPacket): ContentPacket {
   return {
     contentId: packet.contentId,
@@ -249,6 +253,35 @@ export function projectContentPacket(
   return cloneContentPacket('packet' in value ? value.packet : value);
 }
 
+export function cloneContentPacketContext(context: ContentPacketContext): ContentPacketContext {
+  return {
+    premiseSummary: context.premiseSummary,
+    situationFrame: context.situationFrame,
+    worldState: context.worldState,
+    viewpointPressure: context.viewpointPressure,
+  };
+}
+
+export function cloneContentPacketSourceArtifact(
+  artifact: ContentPacketSourceArtifact
+): ContentPacketSourceArtifact {
+  return {
+    artifactType: artifact.artifactType,
+    sourceId: artifact.sourceId,
+    contentKind: artifact.contentKind,
+    summary: artifact.summary,
+    imageSeed: artifact.imageSeed,
+    collisionTags: artifact.collisionTags ? [...artifact.collisionTags] : undefined,
+  };
+}
+
+export function cloneContentPacketOrigin(origin: ContentPacketOrigin): ContentPacketOrigin {
+  return {
+    generationMode: origin.generationMode,
+    sourceArtifacts: origin.sourceArtifacts.map(cloneContentPacketSourceArtifact),
+  };
+}
+
 export function isContentPacket(value: unknown): value is ContentPacket {
   if (!isObjectRecord(value)) {
     return false;
@@ -266,5 +299,94 @@ export function isContentPacket(value: unknown): value is ContentPacket {
     isNonEmptyString(value['wildnessInvariant']) &&
     isNonEmptyString(value['dullCollapse']) &&
     isNonEmptyStringArray(value['interactionVerbs'])
+  );
+}
+
+export function isContentPacketContext(value: unknown): value is ContentPacketContext {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  const allowedKeys = new Set([
+    'premiseSummary',
+    'situationFrame',
+    'worldState',
+    'viewpointPressure',
+  ]);
+
+  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+    return false;
+  }
+
+  return (
+    isNonEmptyString(value['premiseSummary']) &&
+    isNonEmptyString(value['situationFrame']) &&
+    isNonEmptyString(value['worldState']) &&
+    (value['viewpointPressure'] === undefined || isNonEmptyString(value['viewpointPressure']))
+  );
+}
+
+export function isContentPacketSourceArtifact(value: unknown): value is ContentPacketSourceArtifact {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  const allowedKeys = new Set([
+    'artifactType',
+    'sourceId',
+    'contentKind',
+    'summary',
+    'imageSeed',
+    'collisionTags',
+  ]);
+
+  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+    return false;
+  }
+
+  return (
+    (value['artifactType'] === 'EXEMPLAR' || value['artifactType'] === 'SPARK') &&
+    isNonEmptyString(value['sourceId']) &&
+    (value['contentKind'] === undefined || isContentKind(value['contentKind'])) &&
+    isNonEmptyString(value['summary']) &&
+    (value['imageSeed'] === undefined || isNonEmptyString(value['imageSeed'])) &&
+    (value['collisionTags'] === undefined || isStringArray(value['collisionTags']))
+  );
+}
+
+export function isContentPacketOrigin(value: unknown): value is ContentPacketOrigin {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  const allowedKeys = new Set(['generationMode', 'sourceArtifacts']);
+
+  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+    return false;
+  }
+
+  return (
+    (value['generationMode'] === 'quick' || value['generationMode'] === 'pipeline') &&
+    Array.isArray(value['sourceArtifacts']) &&
+    value['sourceArtifacts'].length > 0 &&
+    value['sourceArtifacts'].every((artifact) => isContentPacketSourceArtifact(artifact))
+  );
+}
+
+export function isGeneratedContentPacket(value: unknown): value is GeneratedContentPacket {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  const allowedKeys = new Set(['packet', 'context', 'origin']);
+
+  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+    return false;
+  }
+
+  return (
+    isContentPacket(value['packet']) &&
+    isContentPacketContext(value['context']) &&
+    isContentPacketOrigin(value['origin'])
   );
 }

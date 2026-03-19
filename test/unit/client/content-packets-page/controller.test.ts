@@ -69,19 +69,55 @@ describe('content-packets page controller', () => {
     sessionStorage.clear();
   });
 
-  it('renders generated packetCards without a title and preserves raw packet save behavior', async () => {
+  it('renders generated packet cards without a title and saves the full candidate with evaluation', async () => {
     const generatedPacket = {
+      packet: {
+        contentId: 'pkt-01',
+        contentKind: 'ENTITY',
+        coreAnomaly: 'Test anomaly',
+        humanAnchor: 'Human anchor',
+        socialEngine: 'Social engine',
+        choicePressure: 'Choice pressure',
+        signatureImage: 'Signature image',
+        escalationPath: 'Escalation path',
+        wildnessInvariant: 'Wildness invariant',
+        dullCollapse: 'Dull collapse',
+        interactionVerbs: ['observe', 'trade', 'rupture', 'escalate'],
+      },
+      context: {
+        premiseSummary: 'A premise summary',
+        situationFrame: 'A situation frame',
+        worldState: 'A world state',
+      },
+      origin: {
+        generationMode: 'pipeline',
+        sourceArtifacts: [
+          {
+            artifactType: 'SPARK',
+            sourceId: 'spark-01',
+            contentKind: 'ENTITY',
+            summary: 'A spark summary',
+            imageSeed: 'A spark image',
+            collisionTags: ['tag-a'],
+          },
+        ],
+      },
+    };
+    const evaluation = {
       contentId: 'pkt-01',
-      contentKind: 'ENTITY',
-      coreAnomaly: 'Test anomaly',
-      humanAnchor: 'Human anchor',
-      socialEngine: 'Social engine',
-      choicePressure: 'Choice pressure',
-      signatureImage: 'Signature image',
-      escalationPath: 'Escalation path',
-      wildnessInvariant: 'Wildness invariant',
-      dullCollapse: 'Dull collapse',
-      interactionVerbs: ['observe', 'trade', 'rupture', 'escalate'],
+      scores: {
+        imageCharge: 8,
+        humanAche: 7,
+        socialLoadBearing: 9,
+        branchingPressure: 6,
+        antiGenericity: 8,
+        sceneBurst: 7,
+        structuralIrony: 8,
+        conceptUtility: 9,
+      },
+      strengths: ['Strong image'],
+      weaknesses: ['Minor weakness'],
+      recommendedRole: 'PRIMARY_SEED',
     };
 
     fetchMock.mockImplementation((input: RequestInfo | URL) => {
@@ -117,9 +153,10 @@ describe('content-packets page controller', () => {
                     value: ['observe', 'trade', 'rupture', 'escalate'],
                   },
                 ],
-                metaDetails: [],
+                metaDetails: [{ key: 'recommendedRole', label: 'Role', value: 'PRIMARY_SEED' }],
               },
             ],
+            evaluations: [evaluation],
           })
         );
       }
@@ -156,7 +193,7 @@ describe('content-packets page controller', () => {
       expect.stringMatching(/\/content-packets\/api\/.+\/save$/),
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ packet: generatedPacket, apiKey: 'sk-or-valid-test-key-12345' }),
+        body: JSON.stringify({ candidate: generatedPacket, evaluation }),
       })
     );
     expect(saveButton.textContent).toBe('Saved');

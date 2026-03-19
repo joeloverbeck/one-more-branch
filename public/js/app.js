@@ -9232,7 +9232,7 @@ function initContentPacketsPage() {
           return;
         }
 
-        renderGeneratedPackets(data.packetCards || [], data.packets || []);
+        renderGeneratedPackets(data.packetCards || [], data.packets || [], data.evaluations || []);
       })
       .catch(function (err) {
         if (loadingProgress) loadingProgress.stop();
@@ -9241,7 +9241,7 @@ function initContentPacketsPage() {
       });
   }
 
-  function renderGeneratedPackets(packetCards, packets) {
+  function renderGeneratedPackets(packetCards, packets, evaluations) {
     if (!generatedList || !resultsEl) return;
     if (packetCards.length === 0) {
       generatedList.innerHTML = '<p>No packets generated.</p>';
@@ -9249,14 +9249,25 @@ function initContentPacketsPage() {
       return;
     }
 
+    var evaluationsByContentId = {};
+    (evaluations || []).forEach(function (evaluation) {
+      if (evaluation && evaluation.contentId) {
+        evaluationsByContentId[evaluation.contentId] = evaluation;
+      }
+    });
+
     var html = packetCards.map(function (card, idx) {
       var packet = packets[idx];
+      var evaluation = packet && packet.packet
+        ? evaluationsByContentId[packet.packet.contentId]
+        : evaluationsByContentId[packet.contentId];
       return (
         '<article class="story-card">' +
           '<div class="story-card-content">' +
             '<dl class="story-details">' + renderDetailRows(card.details, card.metaDetails) + '</dl>' +
             '<button class="btn btn-sm btn-primary save-generated-btn" ' +
-              'data-packet=\'' + escapeAttr(JSON.stringify(packet)) + '\'>' +
+              'data-candidate=\'' + escapeAttr(JSON.stringify(packet)) + '\' ' +
+              'data-evaluation=\'' + escapeAttr(JSON.stringify(evaluation || null)) + '\'>' +
               'Save' +
             '</button>' +
           '</div>' +
@@ -9319,21 +9330,25 @@ function initContentPacketsPage() {
   }
 
   function handleSaveGenerated(btn) {
-    var packetData;
+    var candidateData;
+    var evaluationData;
     try {
-      packetData = JSON.parse(btn.getAttribute('data-packet'));
+      candidateData = JSON.parse(btn.getAttribute('data-candidate'));
+      evaluationData = JSON.parse(btn.getAttribute('data-evaluation'));
     } catch (_e) {
       alert('Invalid packet data');
       return;
     }
 
-    var apiKey = getApiKey();
     var packetId = 'cp-' + Date.now() + '-' + Math.random().toString(36).substring(2, 11);
 
     fetch('/content-packets/api/' + encodeURIComponent(packetId) + '/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ packet: packetData, apiKey: apiKey }),
+      body: JSON.stringify({
+        candidate: candidateData,
+        evaluation: evaluationData || undefined,
+      }),
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {

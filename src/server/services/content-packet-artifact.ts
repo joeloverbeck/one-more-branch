@@ -1,4 +1,9 @@
-import { isContentPacket } from '../../models/content-packet.js';
+import {
+  cloneContentPacketContext,
+  cloneContentPacketOrigin,
+  isGeneratedContentPacket,
+  projectContentPacket,
+} from '../../models/content-packet.js';
 import {
   isContentEvaluation,
   type SavedContentPacket,
@@ -7,20 +12,30 @@ import {
 export interface CreateSavedContentPacketArtifactInput {
   readonly id: string;
   readonly now: string;
-  readonly packet: unknown;
+  readonly candidate: unknown;
   readonly evaluation?: unknown;
 }
 
 export function createSavedContentPacketArtifact(
   input: CreateSavedContentPacketArtifactInput
 ): SavedContentPacket {
-  if (!isContentPacket(input.packet)) {
-    throw new Error('Packet data must match the canonical content packet contract');
+  if (!isGeneratedContentPacket(input.candidate)) {
+    throw new Error('Save candidate must include packet, context, and origin artifacts');
   }
 
   if (input.evaluation !== undefined && !isContentEvaluation(input.evaluation)) {
     throw new Error('Packet evaluation must match the content evaluation contract');
   }
 
-  throw new Error('Saved content packet v2 asset assembly requires explicit context and origin inputs');
+  return {
+    id: input.id,
+    createdAt: input.now,
+    updatedAt: input.now,
+    pinned: false,
+    assetVersion: 2,
+    packet: projectContentPacket(input.candidate),
+    context: cloneContentPacketContext(input.candidate.context),
+    origin: cloneContentPacketOrigin(input.candidate.origin),
+    evaluation: input.evaluation,
+  };
 }
