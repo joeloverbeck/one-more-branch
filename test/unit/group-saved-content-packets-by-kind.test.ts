@@ -1,4 +1,4 @@
-import { groupContentPacketsByKind } from '../../src/server/utils/group-content-packets-by-kind';
+import { groupSavedContentPacketsByKind } from '../../src/server/utils/group-saved-content-packets-by-kind';
 import type { SavedContentPacket } from '../../src/models/saved-content-packet';
 
 function makePacket(overrides: Partial<SavedContentPacket> = {}): SavedContentPacket {
@@ -41,9 +41,9 @@ function makePacket(overrides: Partial<SavedContentPacket> = {}): SavedContentPa
   };
 }
 
-describe('groupContentPacketsByKind', () => {
+describe('groupSavedContentPacketsByKind', () => {
   it('returns empty array for empty input', () => {
-    expect(groupContentPacketsByKind([])).toEqual([]);
+    expect(groupSavedContentPacketsByKind([])).toEqual([]);
   });
 
   it('groups packets by contentKind', () => {
@@ -53,7 +53,7 @@ describe('groupContentPacketsByKind', () => {
       makePacket({ id: '3', packet: { ...makePacket().packet, contentKind: 'ENTITY' } }),
     ];
 
-    const groups = groupContentPacketsByKind(packets);
+    const groups = groupSavedContentPacketsByKind(packets);
 
     expect(groups).toHaveLength(2);
     const entityGroup = groups.find((g) => g.kind === 'ENTITY');
@@ -69,7 +69,7 @@ describe('groupContentPacketsByKind', () => {
       makePacket({ id: '3', packet: { ...makePacket().packet, contentKind: 'INSTITUTION' } }),
     ];
 
-    const groups = groupContentPacketsByKind(packets);
+    const groups = groupSavedContentPacketsByKind(packets);
 
     const labels = groups.map((g) => g.displayLabel);
     const sorted = [...labels].sort((a, b) => a.localeCompare(b));
@@ -84,7 +84,7 @@ describe('groupContentPacketsByKind', () => {
       }),
     ];
 
-    const groups = groupContentPacketsByKind(packets);
+    const groups = groupSavedContentPacketsByKind(packets);
 
     expect(groups[0].displayLabel).toBe('SOCIAL DYNAMIC');
   });
@@ -97,7 +97,7 @@ describe('groupContentPacketsByKind', () => {
       packet: { ...packet.packet, contentKind: undefined },
     } as unknown as SavedContentPacket;
 
-    const groups = groupContentPacketsByKind([noKind]);
+    const groups = groupSavedContentPacketsByKind([noKind]);
 
     expect(groups).toHaveLength(1);
     expect(groups[0].kind).toBe('UNKNOWN');

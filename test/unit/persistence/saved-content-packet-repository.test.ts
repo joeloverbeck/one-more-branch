@@ -10,16 +10,19 @@ import {
   writeJsonFile,
 } from '@/persistence/file-utils';
 import {
-  contentPacketExists,
-  deleteContentPacket,
-  listContentPackets,
-  loadContentPacket,
-  saveContentPacket,
-  updateContentPacket,
-} from '@/persistence/content-packet-repository';
+  deleteSavedContentPacket,
+  listSavedContentPackets,
+  loadSavedContentPacket,
+  saveSavedContentPacket,
+  savedContentPacketExists,
+  updateSavedContentPacket,
+} from '@/persistence/saved-content-packet-repository';
 
 const TEST_PREFIX = 'TEST: WILCONPIP-02-CP';
-const TEST_CONTENT_PACKETS_DIR = path.join(tmpdir(), 'one-more-branch-content-packet-repository-tests');
+const TEST_CONTENT_PACKETS_DIR = path.join(
+  tmpdir(),
+  'one-more-branch-saved-content-packet-repository-tests'
+);
 
 jest.mock('@/persistence/file-utils', () => {
   const actual = jest.requireActual<typeof import('@/persistence/file-utils')>(
@@ -103,7 +106,7 @@ function createLegacyPacketOnlyPayload(id: string): Record<string, unknown> {
   };
 }
 
-describe('content-packet-repository', () => {
+describe('saved-content-packet-repository', () => {
   const createdIds = new Set<string>();
 
   beforeEach(async () => {
@@ -112,7 +115,7 @@ describe('content-packet-repository', () => {
 
   afterEach(async () => {
     for (const id of createdIds) {
-      await deleteContentPacket(id);
+      await deleteSavedContentPacket(id);
     }
     createdIds.clear();
     await rm(getContentPacketsDir(), { recursive: true, force: true });
@@ -123,27 +126,27 @@ describe('content-packet-repository', () => {
     createdIds.add(id);
     const packet = createSavedContentPacket(id);
 
-    await saveContentPacket(packet);
+    await saveSavedContentPacket(packet);
 
-    const loaded = await loadContentPacket(id);
+    const loaded = await loadSavedContentPacket(id);
     expect(loaded).toEqual(packet);
-    await expect(contentPacketExists(id)).resolves.toBe(true);
+    await expect(savedContentPacketExists(id)).resolves.toBe(true);
   });
 
   it('returns null for nonexistent ID', async () => {
     const id = `${TEST_PREFIX}-${randomUUID()}`;
 
-    await expect(loadContentPacket(id)).resolves.toBeNull();
-    await expect(contentPacketExists(id)).resolves.toBe(false);
+    await expect(loadSavedContentPacket(id)).resolves.toBeNull();
+    await expect(savedContentPacketExists(id)).resolves.toBe(false);
   });
 
   it('updates an existing content packet', async () => {
     const id = `${TEST_PREFIX}-${randomUUID()}`;
     createdIds.add(id);
 
-    await saveContentPacket(createSavedContentPacket(id));
+    await saveSavedContentPacket(createSavedContentPacket(id));
 
-    const updated = await updateContentPacket(id, (existing) => ({
+    const updated = await updateSavedContentPacket(id, (existing) => ({
       ...existing,
       packet: {
         ...existing.packet,
@@ -154,7 +157,7 @@ describe('content-packet-repository', () => {
 
     expect(updated.packet.coreAnomaly).toBe(`${TEST_PREFIX} updated`);
 
-    const loaded = await loadContentPacket(id);
+    const loaded = await loadSavedContentPacket(id);
     expect(loaded?.packet.coreAnomaly).toBe(`${TEST_PREFIX} updated`);
   });
 
@@ -162,13 +165,13 @@ describe('content-packet-repository', () => {
     const id = `${TEST_PREFIX}-${randomUUID()}`;
     createdIds.add(id);
 
-    await saveContentPacket(createSavedContentPacket(id));
+    await saveSavedContentPacket(createSavedContentPacket(id));
 
-    await deleteContentPacket(id);
-    await deleteContentPacket(id);
+    await deleteSavedContentPacket(id);
+    await deleteSavedContentPacket(id);
     createdIds.delete(id);
 
-    await expect(contentPacketExists(id)).resolves.toBe(false);
+    await expect(savedContentPacketExists(id)).resolves.toBe(false);
   });
 
   it('lists content packets sorted by updatedAt descending', async () => {
@@ -177,10 +180,10 @@ describe('content-packet-repository', () => {
     createdIds.add(newerId);
     createdIds.add(olderId);
 
-    await saveContentPacket(createSavedContentPacket(olderId, '2026-03-06T00:00:00.000Z'));
-    await saveContentPacket(createSavedContentPacket(newerId, '2026-03-07T00:00:00.000Z'));
+    await saveSavedContentPacket(createSavedContentPacket(olderId, '2026-03-06T00:00:00.000Z'));
+    await saveSavedContentPacket(createSavedContentPacket(newerId, '2026-03-07T00:00:00.000Z'));
 
-    const packets = await listContentPackets();
+    const packets = await listSavedContentPackets();
     const orderedIds = packets.filter((p) => p.id === newerId || p.id === olderId).map((p) => p.id);
 
     expect(orderedIds).toEqual([newerId, olderId]);
@@ -193,7 +196,7 @@ describe('content-packet-repository', () => {
     mkdirSync(getContentPacketsDir(), { recursive: true });
     await writeJsonFile(getContentPacketFilePath(id), createLegacyPacketOnlyPayload(id));
 
-    await expect(loadContentPacket(id)).rejects.toThrow(
+    await expect(loadSavedContentPacket(id)).rejects.toThrow(
       `Invalid SavedContentPacket payload at ${getContentPacketFilePath(id)}`
     );
   });
@@ -204,11 +207,11 @@ describe('content-packet-repository', () => {
     createdIds.add(validId);
     createdIds.add(legacyId);
 
-    await saveContentPacket(createSavedContentPacket(validId));
+    await saveSavedContentPacket(createSavedContentPacket(validId));
     mkdirSync(getContentPacketsDir(), { recursive: true });
     await writeJsonFile(getContentPacketFilePath(legacyId), createLegacyPacketOnlyPayload(legacyId));
 
-    await expect(listContentPackets()).rejects.toThrow(
+    await expect(listSavedContentPackets()).rejects.toThrow(
       `Invalid SavedContentPacket payload at ${getContentPacketFilePath(legacyId)}`
     );
   });

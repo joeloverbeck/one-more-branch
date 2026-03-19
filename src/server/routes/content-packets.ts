@@ -3,23 +3,23 @@ import { Request, Response, Router } from 'express';
 import { LLMError } from '../../llm/llm-client-types';
 import { logger } from '../../logging/index.js';
 import {
-  contentPacketExists,
-  deleteContentPacket,
-  listContentPackets,
-  loadContentPacket,
-  saveContentPacket,
-  updateContentPacket,
-} from '../../persistence/content-packet-repository.js';
+  deleteSavedContentPacket,
+  listSavedContentPackets,
+  loadSavedContentPacket,
+  saveSavedContentPacket,
+  savedContentPacketExists,
+  updateSavedContentPacket,
+} from '../../persistence/saved-content-packet-repository.js';
 import { listTasteProfiles, saveTasteProfile } from '../../persistence/taste-profile-repository.js';
 import type { SavedContentPacket, SavedTasteProfile } from '../../models/saved-content-packet.js';
-import { createSavedContentPacketArtifact } from '../services/content-packet-artifact.js';
+import { createSavedContentPacketArtifact } from '../services/saved-content-packet-artifact.js';
 import { contentService } from '../services/index.js';
 import {
   buildGeneratedContentPacketCardViewModel,
   buildSavedContentPacketCardWithRecommendedRole,
 } from '../presenters/content-packet-card.js';
 import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
-import { groupContentPacketsByKind } from '../utils/group-content-packets-by-kind.js';
+import { groupSavedContentPacketsByKind } from '../utils/group-saved-content-packets-by-kind.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
 
 export const contentPacketRoutes = Router();
@@ -28,8 +28,8 @@ export const contentPacketRoutes = Router();
 contentPacketRoutes.get(
   '/',
   wrapAsyncRoute(async (_req: Request, res: Response) => {
-    const packets = await listContentPackets();
-    const contentKindGroups = groupContentPacketsByKind(packets).map((group) => ({
+    const packets = await listSavedContentPackets();
+    const contentKindGroups = groupSavedContentPacketsByKind(packets).map((group) => ({
       kind: group.kind,
       displayLabel: group.displayLabel,
       cards: group.packets.map(buildSavedContentPacketCardWithRecommendedRole),
@@ -46,7 +46,7 @@ contentPacketRoutes.get(
 contentPacketRoutes.get(
   '/api/list',
   wrapAsyncRoute(async (_req: Request, res: Response) => {
-    const packets = await listContentPackets();
+    const packets = await listSavedContentPackets();
     return res.json({ success: true, packets });
   })
 );
@@ -56,7 +56,7 @@ contentPacketRoutes.get(
   '/api/:packetId',
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { packetId } = req.params;
-    const packet = await loadContentPacket(packetId as string);
+    const packet = await loadSavedContentPacket(packetId as string);
     if (!packet) {
       return res.status(404).json({ success: false, error: 'Content packet not found' });
     }
@@ -205,7 +205,7 @@ contentPacketRoutes.post(
       return res.status(400).json({ success: false, error: message });
     }
 
-    await saveContentPacket(saved);
+    await saveSavedContentPacket(saved);
     return res.json({ success: true, packet: saved });
   })
 );
@@ -216,11 +216,11 @@ contentPacketRoutes.patch(
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { packetId } = req.params;
 
-    if (!(await contentPacketExists(packetId as string))) {
+    if (!(await savedContentPacketExists(packetId as string))) {
       return res.status(404).json({ success: false, error: 'Content packet not found' });
     }
 
-    const updated = await updateContentPacket(packetId as string, (existing) => ({
+    const updated = await updateSavedContentPacket(packetId as string, (existing) => ({
       ...existing,
       pinned: !existing.pinned,
       updatedAt: new Date().toISOString(),
@@ -236,11 +236,11 @@ contentPacketRoutes.delete(
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { packetId } = req.params;
 
-    if (!(await contentPacketExists(packetId as string))) {
+    if (!(await savedContentPacketExists(packetId as string))) {
       return res.status(404).json({ success: false, error: 'Content packet not found' });
     }
 
-    await deleteContentPacket(packetId as string);
+    await deleteSavedContentPacket(packetId as string);
     return res.json({ success: true });
   })
 );

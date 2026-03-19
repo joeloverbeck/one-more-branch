@@ -1,4 +1,4 @@
-import { createSavedContentPacketArtifact } from '@/server/services/content-packet-artifact';
+import { createSavedContentPacketArtifact } from '@/server/services/saved-content-packet-artifact';
 import type {
   ContentEvaluation,
   GeneratedContentPacket,

@@ -7,13 +7,13 @@ import type {
 } from '@/models/content-generation-contracts';
 import type { SavedContentPacket } from '@/models/saved-content-packet';
 
-jest.mock('@/persistence/content-packet-repository', () => ({
-  listContentPackets: jest.fn().mockResolvedValue([]),
-  loadContentPacket: jest.fn(),
-  saveContentPacket: jest.fn().mockResolvedValue(undefined),
-  updateContentPacket: jest.fn(),
-  deleteContentPacket: jest.fn().mockResolvedValue(undefined),
-  contentPacketExists: jest.fn(),
+jest.mock('@/persistence/saved-content-packet-repository', () => ({
+  listSavedContentPackets: jest.fn().mockResolvedValue([]),
+  loadSavedContentPacket: jest.fn(),
+  saveSavedContentPacket: jest.fn().mockResolvedValue(undefined),
+  updateSavedContentPacket: jest.fn(),
+  deleteSavedContentPacket: jest.fn().mockResolvedValue(undefined),
+  savedContentPacketExists: jest.fn(),
 }));
 
 jest.mock('@/persistence/taste-profile-repository', () => ({
@@ -37,13 +37,13 @@ jest.mock('@/logging', () => ({
 }));
 
 import {
-  listContentPackets,
-  loadContentPacket,
-  saveContentPacket,
-  updateContentPacket,
-  deleteContentPacket,
-  contentPacketExists,
-} from '@/persistence/content-packet-repository';
+  deleteSavedContentPacket,
+  listSavedContentPackets,
+  loadSavedContentPacket,
+  saveSavedContentPacket,
+  savedContentPacketExists,
+  updateSavedContentPacket,
+} from '@/persistence/saved-content-packet-repository';
 import { listTasteProfiles, saveTasteProfile } from '@/persistence/taste-profile-repository';
 import { contentService } from '@/server/services/content-service';
 import { contentPacketRoutes } from '@/server/routes/content-packets';
@@ -188,7 +188,7 @@ describe('content-packets routes', () => {
   describe('GET /', () => {
     it('renders content-packets page with grouped card view models from repository', async () => {
       const packets = [makeSavedPacket({ evaluation: makeEvaluation() })];
-      (listContentPackets as jest.Mock).mockResolvedValue(packets);
+      (listSavedContentPackets as jest.Mock).mockResolvedValue(packets);
 
       const handler = getRouteHandler('get', '/');
       const req = mockReq();
@@ -197,7 +197,7 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(listContentPackets).toHaveBeenCalled();
+      expect(listSavedContentPackets).toHaveBeenCalled();
       expect(res.render).toHaveBeenCalled();
 
       const renderCall = ((res.render as jest.Mock).mock.calls as unknown[])[0] as [
@@ -258,7 +258,7 @@ describe('content-packets routes', () => {
   describe('GET /api/list', () => {
     it('forwards repository validation failures to next', async () => {
       const error = new Error('Invalid SavedContentPacket payload at /tmp/legacy.json');
-      (listContentPackets as jest.Mock).mockRejectedValue(error);
+      (listSavedContentPackets as jest.Mock).mockRejectedValue(error);
 
       const handler = getRouteHandler('get', '/api/list');
       const req = mockReq();
@@ -278,7 +278,7 @@ describe('content-packets routes', () => {
       const packet = makeSavedPacket({
         packet: makeConceptSeedPacket({ coreAnomaly: 'Found' }),
       });
-      (loadContentPacket as jest.Mock).mockResolvedValue(packet);
+      (loadSavedContentPacket as jest.Mock).mockResolvedValue(packet);
 
       const handler = getRouteHandler('get', '/api/:packetId');
       const req = mockReq({ params: { packetId: 'p1' } });
@@ -287,12 +287,12 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(loadContentPacket).toHaveBeenCalledWith('p1');
+      expect(loadSavedContentPacket).toHaveBeenCalledWith('p1');
       expect(res.json).toHaveBeenCalledWith({ success: true, packet });
     });
 
     it('returns 404 for nonexistent ID', async () => {
-      (loadContentPacket as jest.Mock).mockResolvedValue(null);
+      (loadSavedContentPacket as jest.Mock).mockResolvedValue(null);
 
       const handler = getRouteHandler('get', '/api/:packetId');
       const req = mockReq({ params: { packetId: 'nope' } });
@@ -533,7 +533,7 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(saveContentPacket).not.toHaveBeenCalled();
+      expect(saveSavedContentPacket).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
@@ -552,7 +552,7 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(saveContentPacket).not.toHaveBeenCalled();
+      expect(saveSavedContentPacket).not.toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
@@ -578,7 +578,7 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(saveContentPacket).toHaveBeenCalledWith(
+      expect(saveSavedContentPacket).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'new-p1',
           assetVersion: 2,
@@ -603,9 +603,9 @@ describe('content-packets routes', () => {
 
   describe('PATCH /api/:packetId/pin', () => {
     it('toggles pinned state', async () => {
-      (contentPacketExists as jest.Mock).mockResolvedValue(true);
+      (savedContentPacketExists as jest.Mock).mockResolvedValue(true);
       const updated = { id: 'p1', pinned: true };
-      (updateContentPacket as jest.Mock).mockResolvedValue(updated);
+      (updateSavedContentPacket as jest.Mock).mockResolvedValue(updated);
 
       const handler = getRouteHandler('patch', '/api/:packetId/pin');
       const req = mockReq({ params: { packetId: 'p1' } });
@@ -614,13 +614,13 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(contentPacketExists).toHaveBeenCalledWith('p1');
-      expect(updateContentPacket).toHaveBeenCalledWith('p1', expect.any(Function));
+      expect(savedContentPacketExists).toHaveBeenCalledWith('p1');
+      expect(updateSavedContentPacket).toHaveBeenCalledWith('p1', expect.any(Function));
       expect(res.json).toHaveBeenCalledWith({ success: true, packet: updated });
     });
 
     it('returns 404 for nonexistent packet', async () => {
-      (contentPacketExists as jest.Mock).mockResolvedValue(false);
+      (savedContentPacketExists as jest.Mock).mockResolvedValue(false);
 
       const handler = getRouteHandler('patch', '/api/:packetId/pin');
       const req = mockReq({ params: { packetId: 'nope' } });
@@ -635,7 +635,7 @@ describe('content-packets routes', () => {
 
   describe('DELETE /api/:packetId', () => {
     it('removes packet from repository', async () => {
-      (contentPacketExists as jest.Mock).mockResolvedValue(true);
+      (savedContentPacketExists as jest.Mock).mockResolvedValue(true);
 
       const handler = getRouteHandler('delete', '/api/:packetId');
       const req = mockReq({ params: { packetId: 'p1' } });
@@ -644,12 +644,12 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(deleteContentPacket).toHaveBeenCalledWith('p1');
+      expect(deleteSavedContentPacket).toHaveBeenCalledWith('p1');
       expect(res.json).toHaveBeenCalledWith({ success: true });
     });
 
     it('returns 404 for nonexistent packet', async () => {
-      (contentPacketExists as jest.Mock).mockResolvedValue(false);
+      (savedContentPacketExists as jest.Mock).mockResolvedValue(false);
 
       const handler = getRouteHandler('delete', '/api/:packetId');
       const req = mockReq({ params: { packetId: 'nope' } });

@@ -1,6 +1,6 @@
 # CONPACASSOVE-10: Rename saved-content asset internal modules by persisted-asset ownership
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: MEDIUM
 **Effort**: Medium
 **Engine Changes**: None
@@ -24,8 +24,12 @@ This is now architecturally misleading. In active code, `packet` is the nested p
 3. The current persistence module labels are stale relative to actual architecture:
    - repository functions store/load `SavedContentPacket`
    - artifact creation turns `GeneratedContentPacket` into `SavedContentPacket`
-   - presenter helpers build cards from saved/generated asset-backed sources, not from bare projection objects alone
-4. Corrected scope: this ticket should rename internal modules and exported function names to match persisted-asset ownership while leaving public route paths/user-facing copy unchanged unless a separate product-language decision is made.
+   - saved-packet grouping utilities group persisted assets, not bare projections
+4. The presenter module assumption in the original ticket is inaccurate. `src/server/presenters/content-packet-card.ts` currently renders both:
+   - generated asset-backed packet candidates via `buildGeneratedContentPacketCardViewModel`
+   - persisted assets via `buildSavedContentPacketCardViewModel` and `buildSavedContentPacketCardWithRecommendedRole`
+   Renaming that file to a saved-only module would make the file name less accurate unless the generated-card code were split out in a separate ticket.
+5. Corrected scope: this ticket should rename only the internal modules and exports that are genuinely saved-asset specific, while leaving mixed-ownership presenter surfaces, public route paths, and user-facing copy unchanged.
 
 ## Architecture Check
 
@@ -33,25 +37,28 @@ This is now architecturally misleading. In active code, `packet` is the nested p
 2. This is more robust than a half-step alias because internal code should have one precise name per architectural concept. Do not keep both old and new function/module names.
 3. Keeping the route path stable while cleaning internal module names is acceptable here because URL/product naming and internal architecture naming are different layers with different constraints.
 4. No backwards-compatibility shims, duplicate module paths, or dual exports should be introduced.
+5. Do not force a saved-only name onto a mixed presenter module. If we want stricter ownership there later, the cleaner direction is a follow-up split into generated-card and saved-card presenter modules, not a misleading rename.
 
 ## What to Change
 
 ### 1. Rename persistence and server module files to saved-asset names
 
-Rename internal modules to make persisted-asset ownership explicit. The final names can be refined slightly if a cleaner equivalent emerges, but they must be saved-asset specific. Preferred direction:
+Rename internal modules to make persisted-asset ownership explicit. The final names can be refined slightly if a cleaner equivalent emerges, but they must be saved-asset specific where the module is actually saved-only. Preferred direction:
 
 - `src/persistence/content-packet-repository.ts` -> `src/persistence/saved-content-packet-repository.ts`
 - `src/server/services/content-packet-artifact.ts` -> `src/server/services/saved-content-packet-artifact.ts`
-- `src/server/presenters/content-packet-card.ts` -> `src/server/presenters/saved-content-packet-card.ts`
 - `src/server/utils/group-content-packets-by-kind.ts` -> `src/server/utils/group-saved-content-packets-by-kind.ts`
+
+Do not rename `src/server/presenters/content-packet-card.ts` in this ticket. It is currently a mixed generated/saved presenter module and the existing file name is more accurate than a saved-only name.
 
 ### 2. Rename exported functions/types to match saved-asset ownership
 
 Examples of intended direction:
 
 - `createSavedContentPacketArtifact` can remain if the containing file becomes saved-asset specific
-- repository function names that already operate on `SavedContentPacket` may remain if they are called from the renamed saved-asset repository module
-- presenter helpers that specifically build saved-asset cards should use saved-asset-oriented export names if current names are ambiguous
+- repository function names should be reassessed, because `saveContentPacket` / `loadContentPacket` / `listContentPackets` are ambiguous in internal code now that `packet` is the nested projection inside `SavedContentPacket`
+- grouping helpers should use saved-asset-oriented export names because they only accept `SavedContentPacket[]`
+- presenter helpers already have sufficiently precise export names and are out of scope unless a real ambiguity is found during implementation
 
 Use judgment here:
 
@@ -73,13 +80,11 @@ If those become part of a broader product-language cleanup later, handle them in
 
 - `src/persistence/saved-content-packet-repository.ts` (new via rename)
 - `src/server/services/saved-content-packet-artifact.ts` (new via rename)
-- `src/server/presenters/saved-content-packet-card.ts` (new via rename)
 - `src/server/utils/group-saved-content-packets-by-kind.ts` (new via rename)
 - `src/server/routes/content-packets.ts` (modify imports only, unless a precisely scoped export rename is required)
-- `src/server/services/index.ts` (modify if exports change)
-- `test/unit/persistence/content-packet-repository.test.ts` (modify imports if path changes)
-- `test/unit/server/services/content-packet-artifact.test.ts` (modify imports if path changes)
-- `test/unit/server/presenters/content-packet-card.test.ts` (modify imports if path changes)
+- `test/unit/group-saved-content-packets-by-kind.test.ts` (rename/update if grouping import/export changes)
+- `test/unit/persistence/saved-content-packet-repository.test.ts` (modify imports if path changes)
+- `test/unit/server/services/saved-content-packet-artifact.test.ts` (modify imports if path changes)
 - `test/unit/server/routes/content-packets-routes.test.ts` (modify imports/mocks if path changes)
 
 ## Out of Scope
@@ -88,34 +93,53 @@ If those become part of a broader product-language cleanup later, handle them in
 - Renaming storage directory config keys/values such as `contentPacketsDir`
 - Changing saved asset or projection payload shapes
 - Reworking model-module boundaries beyond what CONPACASSOVE-09 covers
+- Splitting `content-packet-card.ts` into separate generated/saved presenter modules
 
 ## Acceptance Criteria
 
 ### Tests That Must Pass
 
 1. Internal persistence/server modules that manage `SavedContentPacket` no longer live behind `content-packet-*` file names.
+   - Exception: mixed-ownership presenter modules may retain `content-packet-*` naming when they intentionally serve both generated and saved packet card rendering.
 2. Import sites compile against the renamed saved-asset module paths without alias exports or forwarding files.
 3. Public route behavior and saved-asset behavior remain unchanged.
 4. Existing suites:
-   - `npm run test:unit -- --runTestsByPath test/unit/persistence/content-packet-repository.test.ts test/unit/server/services/content-packet-artifact.test.ts test/unit/server/presenters/content-packet-card.test.ts test/unit/server/routes/content-packets-routes.test.ts`
+   - `npm run test:unit -- --runTestsByPath test/unit/persistence/saved-content-packet-repository.test.ts test/unit/server/services/saved-content-packet-artifact.test.ts test/unit/group-saved-content-packets-by-kind.test.ts test/unit/server/routes/content-packets-routes.test.ts`
 
 ### Invariants
 
 1. Internal module/file names clearly distinguish persisted saved assets from lean concept-stage projection objects.
 2. No dual module paths or transitional compatibility imports are introduced.
 3. Product-surface route naming stays isolated from internal architecture naming decisions.
+4. Mixed generated/saved presenter modules must not be given misleading saved-only names.
 
 ## Test Plan
 
 ### New/Modified Tests
 
-1. `test/unit/persistence/content-packet-repository.test.ts` — update repository imports and keep saved-asset persistence behavior locked.
-2. `test/unit/server/services/content-packet-artifact.test.ts` — update service imports and verify save-candidate to saved-asset conversion still behaves identically.
-3. `test/unit/server/presenters/content-packet-card.test.ts` — update presenter imports and ensure generated/saved card rendering remains unchanged.
-4. `test/unit/server/routes/content-packets-routes.test.ts` — update mocked import paths so route behavior stays stable after the internal module rename.
+1. `test/unit/persistence/saved-content-packet-repository.test.ts` — update repository imports/exports and keep saved-asset persistence behavior locked.
+2. `test/unit/server/services/saved-content-packet-artifact.test.ts` — update service imports and verify save-candidate to saved-asset conversion still behaves identically.
+3. `test/unit/group-saved-content-packets-by-kind.test.ts` — update grouping imports/exports and keep saved-asset kind grouping behavior locked.
+4. `test/unit/server/routes/content-packets-routes.test.ts` — update mocked import paths and route assertions so route behavior stays stable after the internal rename.
 
 ### Commands
 
-1. `npm run test:unit -- --runTestsByPath test/unit/persistence/content-packet-repository.test.ts test/unit/server/services/content-packet-artifact.test.ts test/unit/server/presenters/content-packet-card.test.ts test/unit/server/routes/content-packets-routes.test.ts`
+1. `npm run test:unit -- --runTestsByPath test/unit/persistence/saved-content-packet-repository.test.ts test/unit/server/services/saved-content-packet-artifact.test.ts test/unit/group-saved-content-packets-by-kind.test.ts test/unit/server/routes/content-packets-routes.test.ts`
 2. `npm run typecheck`
 3. `npm run lint`
+
+## Outcome
+
+- Completion date: 2026-03-19
+- What changed:
+  - Renamed the saved-only repository module to `saved-content-packet-repository` and made its exported functions explicitly saved-asset specific.
+  - Renamed the saved-only artifact module to `saved-content-packet-artifact`.
+  - Renamed the saved-only grouping utility to `group-saved-content-packets-by-kind` and tightened its exported surface to `groupSavedContentPacketsByKind` / `SavedContentPacketKindGroup`.
+  - Updated route imports and unit tests to use the saved-asset-specific module paths and export names.
+  - Renamed the affected saved-only unit test files to match the new module names.
+- Deviations from the original plan:
+  - Did not rename `src/server/presenters/content-packet-card.ts`. Reassessment showed it is a mixed generated/saved presenter module, so a saved-only file name would have been less accurate than the current architecture. The cleaner long-term move there would be a follow-up split, not a misleading rename.
+- Verification:
+  - `npm run test:unit -- --runTestsByPath test/unit/persistence/saved-content-packet-repository.test.ts test/unit/server/services/saved-content-packet-artifact.test.ts test/unit/group-saved-content-packets-by-kind.test.ts test/unit/server/routes/content-packets-routes.test.ts`
+  - `npm run typecheck`
+  - `npm run lint`

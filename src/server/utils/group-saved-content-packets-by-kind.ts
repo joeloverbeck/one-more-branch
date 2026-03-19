@@ -1,14 +1,14 @@
 import type { SavedContentPacket } from '../../models/saved-content-packet.js';
 
-export interface ContentKindGroup {
+export interface SavedContentPacketKindGroup {
   readonly kind: string;
   readonly displayLabel: string;
   readonly packets: readonly SavedContentPacket[];
 }
 
-export function groupContentPacketsByKind(
+export function groupSavedContentPacketsByKind(
   packets: readonly SavedContentPacket[]
-): ContentKindGroup[] {
+): SavedContentPacketKindGroup[] {
   const map = new Map<string, SavedContentPacket[]>();
 
   for (const packet of packets) {
