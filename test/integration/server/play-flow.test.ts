@@ -7,6 +7,8 @@ import {
   generateStateAccountant,
   generateStoryStructure,
 } from '@/llm';
+import { LLMError } from '@/llm/llm-client-types';
+import { logger } from '@/logging/index';
 import { runAnalystEvaluation } from '@/engine/analyst-evaluation';
 import { reconcileState } from '@/engine/state-reconciler';
 import type { StoryId } from '@/models';
@@ -489,6 +491,59 @@ describe('Play Flow Integration (Mocked LLM)', () => {
 
     expect(mockedGenerateOpeningPage).not.toHaveBeenCalled();
     expect(mockedGenerateWriterPage).not.toHaveBeenCalled();
+  });
+
+  it('logs create-story LLM parse failures with stage and raw content', async () => {
+    mockedGenerateStoryStructure.mockRejectedValueOnce(
+      new LLMError(
+        'anchorMoments.climax.actIndex must reference a valid act index between 0 and 2',
+        'STRUCTURE_PARSE_ERROR',
+        false,
+        {
+          stage: 'macroArchitecture',
+          model: 'openrouter/test-model',
+          rawContent: '{"anchorMoments":{"climax":{"actIndex":3}}}',
+        }
+      )
+    );
+
+    const { res, status, json } = createMockResponse();
+
+    void createStoryHandler(
+      {
+        body: {
+          spineId: 'spine-1',
+          title: `${TEST_PREFIX} parse failure`,
+          apiKey: 'mock-api-key-12345',
+        },
+      } as Request,
+      res
+    );
+    await waitForMock(json);
+
+    expect(status).toHaveBeenCalledWith(500);
+    expect(json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        code: 'STRUCTURE_PARSE_ERROR',
+        debug: expect.objectContaining({
+          stage: 'macroArchitecture',
+          model: 'openrouter/test-model',
+          rawContent: '{"anchorMoments":{"climax":{"actIndex":3}}}',
+        }),
+      })
+    );
+    expect(logger.error).toHaveBeenCalledWith('LLM error creating story from spine:', {
+      message: 'anchorMoments.climax.actIndex must reference a valid act index between 0 and 2',
+      code: 'STRUCTURE_PARSE_ERROR',
+      retryable: false,
+      httpStatus: undefined,
+      model: 'openrouter/test-model',
+      stage: 'macroArchitecture',
+      parsedError: undefined,
+      rawErrorBody: undefined,
+      rawContent: '{"anchorMoments":{"climax":{"actIndex":3}}}',
+    });
   });
 
   it('generates a continuation page through POST /play/:storyId/choice', async () => {

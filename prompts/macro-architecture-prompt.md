@@ -19,4 +19,6 @@ This prompt designs the locked macro frame for story structure:
 
 It does not generate milestones. Milestone realization happens in the dedicated Call 2 prompt.
 
+Anchor moment references are zero-based. `anchorMoments.*.actIndex` must point directly at the `acts` array, where the first act is `0`.
+
 The system prompt is built by `buildStructureSystemPrompt()`, which injects `{{CONTENT_POLICY}}` (NC-21 content guidelines) automatically.

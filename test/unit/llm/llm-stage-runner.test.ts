@@ -160,7 +160,11 @@ describe('llm-stage-runner', () => {
       message: 'parse failed',
       code: 'STRUCTURE_PARSE_ERROR',
       retryable: false,
-      context: { rawContent },
+      context: {
+        rawContent,
+        model: expect.any(String),
+        stage: 'conceptEvaluator',
+      },
     });
   });
 
