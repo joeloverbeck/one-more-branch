@@ -5,7 +5,7 @@ import type {
   ContentEvaluation,
   GeneratedContentPacket,
   ContentOneShotContext,
-  ContentOneShotPacket,
+  ContentOneShotLineagedPacket,
   TasteDistillerContext,
   SparkstormerContext,
   ContentPacketerContext,
@@ -77,9 +77,12 @@ function createEvaluation(id = 'content_1'): ContentEvaluation {
   };
 }
 
-function createOneShotPacket(): ContentOneShotPacket {
+function createOneShotPacket(
+  overrides: Partial<ContentOneShotLineagedPacket> = {}
+): ContentOneShotLineagedPacket {
   return {
     contentId: 'pkt-01',
+    sourceExemplarIds: ['exemplar-01'],
     premiseSummary: 'A one-shot premise',
     situationFrame: 'A one-shot situation',
     worldState: 'A one-shot world state',
@@ -93,6 +96,7 @@ function createOneShotPacket(): ContentOneShotPacket {
     wildnessInvariant: 'invariant',
     dullCollapse: 'collapse',
     interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
+    ...overrides,
   };
 }
 
@@ -166,7 +170,10 @@ function createPipelineGeneratedPacket(): GeneratedContentPacket {
 }
 
 const VALID_API_KEY = 'sk-test-key-1234567890';
-const EXEMPLAR_IDEAS = ['A city where gravity reverses at midnight'];
+const EXEMPLAR_IDEAS = [
+  'A city where gravity reverses at midnight',
+  'A monastery that rents out borrowed sins',
+];
 
 function expectCompletedStage(
   event: GenerationStageEvent,
@@ -260,6 +267,22 @@ describe('ContentService', () => {
       });
 
       expect(result.packets).toEqual([createQuickGeneratedPacket()]);
+    });
+
+    it('fails when quick lineage references an unknown exemplar ID', async () => {
+      const deps = createMockDeps();
+      deps.generateContentOneShot.mockResolvedValue({
+        packets: [createOneShotPacket({ sourceExemplarIds: ['exemplar-99'] })],
+        rawResponse: '{}',
+      });
+      const service = createContentService(deps);
+
+      await expect(
+        service.generateContentQuick({
+          exemplarIdeas: EXEMPLAR_IDEAS,
+          apiKey: VALID_API_KEY,
+        })
+      ).rejects.toThrow('Missing source exemplar for packet pkt-01: exemplar-99');
     });
 
     it('fires onGenerationStage callbacks for GENERATING_CONTENT stage', async () => {

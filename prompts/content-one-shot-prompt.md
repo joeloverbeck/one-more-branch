@@ -35,10 +35,12 @@ EXEMPLAR IDEAS:
 {{optional STORY KERNEL block}}
 
 OUTPUT REQUIREMENTS:
-- Return JSON: { "packets": ContentOneShotPacket[] }
+- Return JSON: { "packets": ContentOneShotLineagedPacket[] }
 - Exactly 18 packets
-- Each packet must include `contentId`, `contentKind`, `premiseSummary`, `situationFrame`, `worldState`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, and `interactionVerbs`
+- Enumerate exemplar ideas with stable IDs like `exemplar-01`
+- Each packet must include `contentId`, `contentKind`, `sourceExemplarIds`, `premiseSummary`, `situationFrame`, `worldState`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, and `interactionVerbs`
 - `viewpointPressure` is optional
+- `sourceExemplarIds` must cite one or more exemplar IDs that materially informed that packet
 - `contentId` format: `pkt-NN`
 - `interactionVerbs`: exactly 4-6 concrete verbs
 - Use 6+ distinct content kinds
@@ -55,6 +57,7 @@ OUTPUT REQUIREMENTS:
     {
       "contentId": "pkt-01",
       "contentKind": "CONTENT_KIND_ENUM",
+      "sourceExemplarIds": ["exemplar-01"],
       "premiseSummary": "Plain-language causal setup",
       "situationFrame": "Immediate arrangement or trap",
       "worldState": "Relevant baseline reality",
@@ -100,5 +103,5 @@ OUTPUT REQUIREMENTS:
 - No explicit taste profiling — taste is inferred from exemplar ideas
 - No evaluation stage — all 18 packets are returned without scoring or role assignment
 - The LLM emits flat context-rich packets; the service layer turns them into generated asset candidates with nested `context` and exemplar-derived `origin.sourceArtifacts`
-- One-shot packets do not carry spark lineage; quick-mode origin is derived explicitly from exemplar inputs at generation time
+- One-shot packets carry explicit exemplar lineage via `sourceExemplarIds`; the service layer maps those IDs into canonical `origin.sourceArtifacts`
 - Prompt logging uses `promptType: 'contentOneShot'`

@@ -5,7 +5,7 @@ import { evaluateContentPackets } from '../../llm/content-evaluator-generation.j
 import { generateContentOneShot } from '../../llm/content-one-shot-generation.js';
 import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
-import { projectContentPacket } from '../../models/content-packet.js';
+import { formatContentExemplarId, projectContentPacket } from '../../models/content-packet.js';
 import type {
   ContentEvaluation,
   GeneratedContentPacket,
@@ -16,6 +16,7 @@ import type {
   ContentPacketOrigin,
   ContentPacketSourceArtifact,
   ContentSpark,
+  ContentOneShotLineagedPacket,
   ContentOneShotPacket,
   SparkstormerContext,
   TasteDistillerContext,
@@ -169,13 +170,21 @@ function buildPacketContext(packet: ContentOneShotPacket | ContentPacketerPacket
 }
 
 function buildQuickSourceArtifacts(
-  exemplarIdeas: readonly string[]
+  packet: ContentOneShotLineagedPacket,
+  exemplarsById: ReadonlyMap<string, string>
 ): readonly ContentPacketSourceArtifact[] {
-  return exemplarIdeas.map((idea, index) => ({
-    artifactType: 'EXEMPLAR',
-    sourceId: `exemplar-${String(index + 1).padStart(2, '0')}`,
-    summary: idea,
-  }));
+  return packet.sourceExemplarIds.map((sourceId) => {
+    const summary = exemplarsById.get(sourceId);
+    if (!summary) {
+      throw new Error(`Missing source exemplar for packet ${packet.contentId}: ${sourceId}`);
+    }
+
+    return {
+      artifactType: 'EXEMPLAR',
+      sourceId,
+      summary,
+    };
+  });
 }
 
 function buildPipelineSourceArtifacts(
@@ -218,6 +227,9 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       const apiKey = requireApiKey(input.apiKey);
       const exemplarIdeas = requireExemplarIdeas(input.exemplarIdeas);
       const onGenerationStage = input.onGenerationStage;
+      const exemplarsById = new Map(
+        exemplarIdeas.map((idea, index) => [formatContentExemplarId(index), idea] as const)
+      );
 
       const context: ContentOneShotContext = {
         exemplarIdeas,
@@ -235,7 +247,7 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
         packets: result.packets.map((packet) =>
           buildGeneratedPacket(packet, {
             generationMode: 'quick',
-            sourceArtifacts: buildQuickSourceArtifacts(exemplarIdeas),
+            sourceArtifacts: buildQuickSourceArtifacts(packet, exemplarsById),
           })
         ),
         rawResponse: result.rawResponse,

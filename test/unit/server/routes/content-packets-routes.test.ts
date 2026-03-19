@@ -317,7 +317,16 @@ describe('content-packets routes', () => {
         expect.objectContaining({ premiseSummary: 'A premise summary' })
       );
       expect(jsonCall[0].packets[0]?.origin).toEqual(
-        expect.objectContaining({ generationMode: 'quick' })
+        expect.objectContaining({
+          generationMode: 'quick',
+          sourceArtifacts: [
+            expect.objectContaining({
+              artifactType: 'EXEMPLAR',
+              sourceId: 'exemplar-01',
+              summary: 'An exemplar summary',
+            }),
+          ],
+        })
       );
       expect(jsonCall[0].packetCards[0]?.details).toEqual(
         expect.arrayContaining([

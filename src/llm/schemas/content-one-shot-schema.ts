@@ -7,6 +7,7 @@ const CONTENT_ONE_SHOT_PACKET_SCHEMA = {
   required: [
     'contentId',
     'contentKind',
+    'sourceExemplarIds',
     'premiseSummary',
     'situationFrame',
     'worldState',
@@ -23,6 +24,7 @@ const CONTENT_ONE_SHOT_PACKET_SCHEMA = {
   properties: {
     contentId: { type: 'string' },
     contentKind: { type: 'string', enum: [...CONTENT_KIND_VALUES] },
+    sourceExemplarIds: { type: 'array', items: { type: 'string' } },
     premiseSummary: { type: 'string' },
     situationFrame: { type: 'string' },
     worldState: { type: 'string' },

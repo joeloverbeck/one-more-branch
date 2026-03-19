@@ -1,4 +1,4 @@
-import type { ContentOneShotContext } from '../../models/content-packet.js';
+import { formatContentExemplarId, type ContentOneShotContext } from '../../models/content-packet.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { ChatMessage } from '../llm-client-types.js';
 
@@ -43,7 +43,9 @@ export function buildContentOneShotPrompt(context: ContentOneShotContext): ChatM
 
   const userSections: string[] = [
     'Infer my imaginative taste from the exemplar ideas below, but do not copy their surface elements. Generate content packets that belong to the same creative appetite while still feeling original.',
-    `EXEMPLAR IDEAS:\n${context.exemplarIdeas.map((idea, i) => `${i + 1}. ${idea}`).join('\n')}`,
+    `EXEMPLAR IDEAS:\n${context.exemplarIdeas
+      .map((idea, index) => `${formatContentExemplarId(index)}: ${idea}`)
+      .join('\n')}`,
   ];
 
   const optionalParts: string[] = [];
@@ -67,8 +69,9 @@ export function buildContentOneShotPrompt(context: ContentOneShotContext): ChatM
   userSections.push(
     `OUTPUT REQUIREMENTS:
 - Return exactly 18 packets.
-- Each packet must include: contentId, contentKind, premiseSummary, situationFrame, worldState, coreAnomaly, humanAnchor, socialEngine, choicePressure, signatureImage, escalationPath, wildnessInvariant, dullCollapse, interactionVerbs.
+- Each packet must include: contentId, contentKind, sourceExemplarIds, premiseSummary, situationFrame, worldState, coreAnomaly, humanAnchor, socialEngine, choicePressure, signatureImage, escalationPath, wildnessInvariant, dullCollapse, interactionVerbs.
 - viewpointPressure is optional.
+- sourceExemplarIds must be an array of 1+ exemplar IDs from the EXEMPLAR IDEAS list above. Cite only the exemplars that materially informed that packet.
 - premiseSummary explains the causal setup, situationFrame explains the immediate arrangement/trap, and worldState explains the relevant baseline reality. Do not bury all setup inside coreAnomaly.
 - contentId format: "pkt-NN" (for example "pkt-01").
 - interactionVerbs: exactly 4-6 concrete verbs.

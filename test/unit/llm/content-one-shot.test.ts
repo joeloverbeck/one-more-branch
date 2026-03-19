@@ -7,6 +7,7 @@ function makeValidPacket(overrides: Record<string, unknown> = {}): Record<string
   return {
     contentId: 'pkt-01',
     contentKind: 'JOB',
+    sourceExemplarIds: ['exemplar-01'],
     premiseSummary: 'A grief-stricken widow visits a dentist who can extract memories from teeth.',
     situationFrame: 'Patients must decide which memories to sacrifice while sitting in the chair.',
     worldState: 'Memory extraction dentistry has become an underground survival economy.',
@@ -46,8 +47,8 @@ describe('buildContentOneShotPrompt', () => {
     const messages = buildContentOneShotPrompt(context);
     const userMessage = messages.find((m) => m.role === 'user');
     expect(userMessage).toBeDefined();
-    expect(userMessage!.content).toContain('1. Idea Alpha');
-    expect(userMessage!.content).toContain('2. Idea Beta');
+    expect(userMessage!.content).toContain('exemplar-01: Idea Alpha');
+    expect(userMessage!.content).toContain('exemplar-02: Idea Beta');
   });
 
   it('injects optional genre vibes, mood keywords, and kernel block when provided', () => {
@@ -67,6 +68,7 @@ describe('buildContentOneShotPrompt', () => {
     const messages = buildContentOneShotPrompt(makeContext());
     const userMessage = messages.find((m) => m.role === 'user');
 
+    expect(userMessage!.content).toContain('sourceExemplarIds');
     expect(userMessage!.content).toContain('premiseSummary');
     expect(userMessage!.content).toContain('situationFrame');
     expect(userMessage!.content).toContain('worldState');
@@ -90,6 +92,7 @@ describe('parseContentOneShotResponse', () => {
     expect(result).toHaveLength(1);
     expect(result[0].contentId).toBe('pkt-01');
     expect(result[0].contentKind).toBe('JOB');
+    expect(result[0].sourceExemplarIds).toEqual(['exemplar-01']);
     expect(result[0].premiseSummary).toBe(
       'A grief-stricken widow visits a dentist who can extract memories from teeth.'
     );
@@ -136,6 +139,23 @@ describe('parseContentOneShotResponse', () => {
         packets: [makeValidPacket({ coreAnomaly: '  ' })],
       })
     ).toThrow(/missing or empty required field: coreAnomaly/);
+  });
+
+  it('rejects packets with missing sourceExemplarIds', () => {
+    const { sourceExemplarIds: _, ...missingLineage } = makeValidPacket();
+    void _;
+
+    expect(() => parseContentOneShotResponse({ packets: [missingLineage] })).toThrow(
+      /missing or invalid required field: sourceExemplarIds/
+    );
+  });
+
+  it('rejects packets with empty sourceExemplarIds', () => {
+    expect(() =>
+      parseContentOneShotResponse({
+        packets: [makeValidPacket({ sourceExemplarIds: [] })],
+      })
+    ).toThrow(/missing or invalid required field: sourceExemplarIds/);
   });
 
   it('rejects non-object responses', () => {
@@ -187,6 +207,7 @@ describe('buildContentOneShotSchema', () => {
     const itemRequired = items['required'] as string[];
     expect(itemRequired).toContain('contentId');
     expect(itemRequired).toContain('contentKind');
+    expect(itemRequired).toContain('sourceExemplarIds');
     expect(itemRequired).toContain('premiseSummary');
     expect(itemRequired).toContain('situationFrame');
     expect(itemRequired).toContain('worldState');
@@ -204,5 +225,6 @@ describe('buildContentOneShotSchema', () => {
     expect(itemProps['contentId']['type']).toBe('string');
     expect(itemProps['contentKind']['type']).toBe('string');
     expect(itemProps['contentKind']['enum']).toBeDefined();
+    expect(itemProps['sourceExemplarIds']['type']).toBe('array');
   });
 });

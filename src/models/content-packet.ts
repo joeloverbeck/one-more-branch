@@ -87,6 +87,10 @@ export interface ContentPacketOrigin {
   readonly sourceArtifacts: readonly ContentPacketSourceArtifact[];
 }
 
+export function formatContentExemplarId(index: number): string {
+  return `exemplar-${String(index + 1).padStart(2, '0')}`;
+}
+
 // Lean downstream projection used by concept-stage prompts and saved-asset consumers.
 export interface ContentPacket {
   readonly contentId: string;
@@ -104,6 +108,11 @@ export interface ContentPacket {
 
 // Flat LLM output shape for quick generation before service-layer asset-candidate assembly.
 export interface ContentOneShotPacket extends ContentPacket, ContentPacketContext {}
+
+// Quick-generation packet with explicit exemplar lineage before service-layer asset-candidate assembly.
+export interface ContentOneShotLineagedPacket extends ContentOneShotPacket {
+  readonly sourceExemplarIds: readonly string[];
+}
 
 // Flat LLM output shape for pipeline generation before service-layer asset-candidate assembly.
 export interface ContentPacketerPacket extends ContentOneShotPacket {
@@ -177,7 +186,7 @@ export interface ContentOneShotContext {
 }
 
 export interface ContentOneShotResult {
-  readonly packets: readonly ContentOneShotPacket[];
+  readonly packets: readonly ContentOneShotLineagedPacket[];
   readonly rawResponse: string;
 }
 
