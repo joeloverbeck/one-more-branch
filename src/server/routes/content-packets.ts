@@ -15,7 +15,7 @@ import type { SavedContentPacket, SavedTasteProfile } from '../../models/saved-c
 import { createSavedContentPacketArtifact } from '../services/content-packet-artifact.js';
 import { contentService } from '../services/index.js';
 import {
-  buildContentPacketCardViewModel,
+  buildGeneratedContentPacketCardViewModel,
   buildSavedContentPacketCardWithRecommendedRole,
 } from '../presenters/content-packet-card.js';
 import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
@@ -125,7 +125,7 @@ contentPacketRoutes.post(
           success: true,
           packets: result.packets,
           packetCards: result.packets.map((generatedPacket) =>
-            buildContentPacketCardViewModel(generatedPacket.packet, {
+            buildGeneratedContentPacketCardViewModel(generatedPacket, {
               includeContentKind: true,
               evaluation: evaluationByContentId.get(generatedPacket.packet.contentId),
             })
@@ -152,7 +152,7 @@ contentPacketRoutes.post(
         success: true,
         packets: result.packets,
         packetCards: result.packets.map((generatedPacket) =>
-          buildContentPacketCardViewModel(generatedPacket.packet, {
+          buildGeneratedContentPacketCardViewModel(generatedPacket, {
             includeContentKind: true,
           })
         ),

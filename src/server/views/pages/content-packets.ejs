@@ -91,35 +91,40 @@
                   <% group.cards.forEach(card => { %>
                     <article class="story-card" data-packet-id="<%= card.id %>">
                       <div class="story-card-content">
+                        <% const sections = [
+                          { key: 'context', title: 'Context', details: card.contextDetails },
+                          { key: 'packet', title: 'Packet', details: card.packetDetails },
+                          { key: 'origin', title: 'Origin', details: card.originDetails },
+                          { key: 'meta', title: 'Meta', details: card.metaDetails }
+                        ].filter(section => section.details.length > 0); %>
                         <div class="story-card-actions">
                           <% if (card.pinned) { %>
                             <span class="pin-badge" title="Pinned">&#128204;</span>
                           <% } %>
                         </div>
-                        <dl class="story-details">
-                          <% card.details.forEach(detail => { %>
-                            <div class="story-detail-row" data-detail-key="<%= detail.key %>">
-                              <dt><%= detail.label %></dt>
-                              <dd>
-                                <% if (Array.isArray(detail.value)) { %>
-                                  <ul class="story-detail-list">
-                                    <% detail.value.forEach(item => { %>
-                                      <li><%= item %></li>
-                                    <% }); %>
-                                  </ul>
-                                <% } else { %>
-                                  <%= detail.value %>
-                                <% } %>
-                              </dd>
-                            </div>
-                          <% }); %>
-                          <% card.metaDetails.forEach(detail => { %>
-                            <div class="story-detail-row story-detail-row--meta" data-detail-key="<%= detail.key %>">
-                              <dt><%= detail.label %></dt>
-                              <dd><%= detail.value %></dd>
-                            </div>
-                          <% }); %>
-                        </dl>
+                        <% sections.forEach(section => { %>
+                          <section class="story-card-section story-card-section--<%= section.key %>" data-section-key="<%= section.key %>">
+                            <h3 class="story-card-section__title"><%= section.title %></h3>
+                            <dl class="story-details">
+                              <% section.details.forEach(detail => { %>
+                                <div class="story-detail-row<%= section.key === 'meta' ? ' story-detail-row--meta' : '' %>" data-detail-key="<%= detail.key %>">
+                                  <dt><%= detail.label %></dt>
+                                  <dd>
+                                    <% if (Array.isArray(detail.value)) { %>
+                                      <ul class="story-detail-list">
+                                        <% detail.value.forEach(item => { %>
+                                          <li><%= item %></li>
+                                        <% }); %>
+                                      </ul>
+                                    <% } else { %>
+                                      <%= detail.value %>
+                                    <% } %>
+                                  </dd>
+                                </div>
+                              <% }); %>
+                            </dl>
+                          </section>
+                        <% }); %>
                         <div class="story-card-actions">
                           <button class="btn btn-sm pin-packet-btn" data-id="<%= card.id %>">
                             <%= card.pinned ? 'Unpin' : 'Pin' %>

@@ -1,7 +1,7 @@
-import type { ContentPacket } from '@/models/content-packet';
+import type { ContentPacket, GeneratedContentPacket } from '@/models/content-packet';
 import type { SavedContentPacket } from '@/models/saved-content-packet';
 import {
-  buildContentPacketCardViewModel,
+  buildGeneratedContentPacketCardViewModel,
   buildSavedContentPacketCardWithRecommendedRole,
   CONTENT_PACKET_CARD_FIELD_REGISTRY,
 } from '@/server/presenters/content-packet-card';
@@ -67,6 +67,33 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
   };
 }
 
+function makeGeneratedPacket(
+  overrides: Partial<GeneratedContentPacket> = {}
+): GeneratedContentPacket {
+  return {
+    packet: makeContentPacket(),
+    context: {
+      premiseSummary: 'A charged premise summary',
+      situationFrame: 'A volatile situation frame',
+      worldState: 'A legible world state',
+    },
+    origin: {
+      generationMode: 'pipeline',
+      sourceArtifacts: [
+        {
+          artifactType: 'SPARK',
+          sourceId: 'spark-01',
+          contentKind: 'ENTITY',
+          summary: 'A spark that drove the packet',
+          imageSeed: 'Floodlit salvage rig',
+          collisionTags: ['salt', 'debt'],
+        },
+      ],
+    },
+    ...overrides,
+  };
+}
+
 describe('content packet card presenter', () => {
   it('keeps the registry exhaustive and in canonical order', () => {
     const expectedFieldOrder = Object.keys(makeContentPacket());
@@ -77,26 +104,63 @@ describe('content packet card presenter', () => {
     );
   });
 
-  it('omits contentKind from grouped saved packet cards', () => {
+  it('omits contentKind from grouped saved packet cards and exposes sectioned details', () => {
     const card = buildSavedContentPacketCardWithRecommendedRole(makeSavedPacket());
 
-    expect(card.details.map((detail) => detail.key)).not.toContain('contentKind');
+    expect(card.contextDetails.map((detail) => detail.key)).toEqual([
+      'premiseSummary',
+      'situationFrame',
+      'worldState',
+    ]);
+    expect(card.packetDetails.map((detail) => detail.key)).not.toContain('contentKind');
+    expect(card.originDetails).toEqual([
+      expect.objectContaining({ key: 'generationMode', value: 'quick' }),
+      expect.objectContaining({
+        key: 'sourceArtifact-1',
+        label: 'Source Artifact 1',
+        value: [
+          'Type: EXEMPLAR',
+          'Source ID: exemplar-01',
+          'Kind: ENTITY',
+          'Summary: An exemplar that drove the packet',
+        ],
+      }),
+    ]);
     expect(card.metaDetails).toEqual([
       expect.objectContaining({ key: 'recommendedRole', value: 'PRIMARY_SEED' }),
     ]);
   });
 
-  it('includes contentKind for ungrouped generated cards and preserves array values', () => {
-    const card = buildContentPacketCardViewModel(makeContentPacket(), {
+  it('includes contentKind for generated cards and preserves section ordering', () => {
+    const card = buildGeneratedContentPacketCardViewModel(makeGeneratedPacket(), {
       includeContentKind: true,
     });
 
-    expect(card.details.map((detail) => detail.key)).toContain('contentKind');
-    expect(card.details).toContainEqual(
+    expect(card.contextDetails.map((detail) => detail.label)).toEqual([
+      'Premise Summary',
+      'Situation Frame',
+      'World State',
+    ]);
+    expect(card.packetDetails.map((detail) => detail.key)).toContain('contentKind');
+    expect(card.packetDetails).toContainEqual(
       expect.objectContaining({
         key: 'interactionVerbs',
         value: ['observe', 'trade', 'rupture', 'escalate'],
       })
     );
+    expect(card.originDetails).toEqual([
+      expect.objectContaining({ key: 'generationMode', value: 'pipeline' }),
+      expect.objectContaining({
+        key: 'sourceArtifact-1',
+        value: [
+          'Type: SPARK',
+          'Source ID: spark-01',
+          'Kind: ENTITY',
+          'Summary: A spark that drove the packet',
+          'Image Seed: Floodlit salvage rig',
+          'Collision Tags: salt, debt',
+        ],
+      }),
+    ]);
   });
 });

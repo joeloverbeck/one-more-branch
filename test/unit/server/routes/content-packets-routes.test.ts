@@ -207,7 +207,9 @@ describe('content-packets routes', () => {
             cards: Array<{
               id: string;
               pinned: boolean;
-              details: Array<{ key: string; value: string | readonly string[] }>;
+              contextDetails: Array<{ key: string; value: string | readonly string[] }>;
+              packetDetails: Array<{ key: string; value: string | readonly string[] }>;
+              originDetails: Array<{ key: string; value: string | readonly string[] }>;
               metaDetails: Array<{ key: string; value: string | readonly string[] }>;
             }>;
           }>;
@@ -226,10 +228,21 @@ describe('content-packets routes', () => {
         id: 'p1',
         pinned: false,
       });
-      expect(renderCall[1].contentKindGroups[0]?.cards[0]?.details).toEqual(
+      expect(renderCall[1].contentKindGroups[0]?.cards[0]?.contextDetails).toEqual([
+        expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
+        expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
+        expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+      ]);
+      expect(renderCall[1].contentKindGroups[0]?.cards[0]?.packetDetails).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ key: 'contentId', value: 'pkt-01' }),
           expect.objectContaining({ key: 'coreAnomaly', value: 'Test anomaly' }),
+        ])
+      );
+      expect(renderCall[1].contentKindGroups[0]?.cards[0]?.originDetails).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: 'generationMode', value: 'quick' }),
+          expect.objectContaining({ key: 'sourceArtifact-1' }),
         ])
       );
       expect(renderCall[1].contentKindGroups[0]?.cards[0]?.metaDetails).toEqual([
@@ -304,7 +317,9 @@ describe('content-packets routes', () => {
           packets: GeneratedContentPacket[];
           packetCards: Array<{
             id: string;
-            details: Array<{ key: string; value: string | readonly string[] }>;
+            contextDetails: Array<{ key: string; value: string | readonly string[] }>;
+            packetDetails: Array<{ key: string; value: string | readonly string[] }>;
+            originDetails: Array<{ key: string; value: string | readonly string[] }>;
           }>;
         },
       ];
@@ -328,10 +343,24 @@ describe('content-packets routes', () => {
           ],
         })
       );
-      expect(jsonCall[0].packetCards[0]?.details).toEqual(
+      expect(jsonCall[0].packetCards[0]?.contextDetails).toEqual([
+        expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
+        expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
+        expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+      ]);
+      expect(jsonCall[0].packetCards[0]?.packetDetails).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ key: 'contentKind', value: 'ENTITY' }),
           expect.objectContaining({ key: 'contentId', value: 'pkt-01' }),
+        ])
+      );
+      expect(jsonCall[0].packetCards[0]?.originDetails).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: 'generationMode', value: 'quick' }),
+          expect.objectContaining({
+            key: 'sourceArtifact-1',
+            value: ['Type: EXEMPLAR', 'Source ID: exemplar-01', 'Summary: An exemplar summary'],
+          }),
         ])
       );
     });
@@ -383,6 +412,25 @@ describe('content-packets routes', () => {
         packetCards: [
           expect.objectContaining({
             id: 'pkt-02',
+            contextDetails: [
+              expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
+              expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
+              expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+            ],
+            originDetails: [
+              expect.objectContaining({ key: 'generationMode', value: 'pipeline' }),
+              expect.objectContaining({
+                key: 'sourceArtifact-1',
+                value: [
+                  'Type: SPARK',
+                  'Source ID: spark-01',
+                  'Kind: ENTITY',
+                  'Summary: Pipeline spark summary',
+                  'Image Seed: Pipeline spark image',
+                  'Collision Tags: collision-a',
+                ],
+              }),
+            ],
             metaDetails: [
               expect.objectContaining({ key: 'recommendedRole', value: 'SECONDARY_MUTAGEN' }),
             ],

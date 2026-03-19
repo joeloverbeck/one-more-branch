@@ -183,7 +183,7 @@ function initContentPacketsPage() {
       return (
         '<article class="story-card">' +
           '<div class="story-card-content">' +
-            '<dl class="story-details">' + renderDetailRows(card.details, card.metaDetails) + '</dl>' +
+            renderCardSections(card) +
             '<button class="btn btn-sm btn-primary save-generated-btn" ' +
               'data-candidate=\'' + escapeAttr(JSON.stringify(packet)) + '\' ' +
               'data-evaluation=\'' + escapeAttr(JSON.stringify(evaluation || null)) + '\'>' +
@@ -208,7 +208,7 @@ function initContentPacketsPage() {
     return str.replace(/&/g, '&amp;').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
   }
 
-  function renderDetailRows(details, metaDetails) {
+  function renderDetailRows(details) {
     var rows = [];
 
     function renderValue(value) {
@@ -225,18 +225,11 @@ function initContentPacketsPage() {
       return escapeHtml(value || '');
     }
 
-    details.forEach(function (detail) {
+    (details || []).forEach(function (detail) {
       rows.push(
-        '<div class="story-detail-row" data-detail-key="' + escapeAttr(detail.key) + '">' +
-          '<dt>' + escapeHtml(detail.label) + '</dt>' +
-          '<dd>' + renderValue(detail.value) + '</dd>' +
-        '</div>'
-      );
-    });
-
-    (metaDetails || []).forEach(function (detail) {
-      rows.push(
-        '<div class="story-detail-row story-detail-row--meta" data-detail-key="' +
+        '<div class="story-detail-row' +
+          (detail.rowClassSuffix || '') +
+          '" data-detail-key="' +
           escapeAttr(detail.key) +
           '">' +
           '<dt>' + escapeHtml(detail.label) + '</dt>' +
@@ -246,6 +239,45 @@ function initContentPacketsPage() {
     });
 
     return rows.join('');
+  }
+
+  function renderCardSections(card) {
+    var sections = [
+      { key: 'context', title: 'Context', details: card.contextDetails || [] },
+      { key: 'packet', title: 'Packet', details: card.packetDetails || [] },
+      { key: 'origin', title: 'Origin', details: card.originDetails || [] },
+      { key: 'meta', title: 'Meta', details: card.metaDetails || [] },
+    ].filter(function (section) {
+      return section.details.length > 0;
+    });
+
+    return sections
+      .map(function (section) {
+        var rowClassSuffix = section.key === 'meta' ? ' story-detail-row--meta' : '';
+
+        return (
+          '<section class="story-card-section story-card-section--' +
+          escapeAttr(section.key) +
+          '" data-section-key="' +
+          escapeAttr(section.key) +
+          '">' +
+          '<h3 class="story-card-section__title">' +
+          escapeHtml(section.title) +
+          '</h3>' +
+          '<dl class="story-details">' +
+          renderDetailRows(section.details.map(function (detail) {
+            return {
+              key: detail.key,
+              label: detail.label,
+              value: detail.value,
+              rowClassSuffix: rowClassSuffix,
+            };
+          })) +
+          '</dl>' +
+          '</section>'
+        );
+      })
+      .join('');
   }
 
   function handleSaveGenerated(btn) {

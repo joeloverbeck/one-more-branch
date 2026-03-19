@@ -69,7 +69,7 @@ describe('content-packets page controller', () => {
     sessionStorage.clear();
   });
 
-  it('renders generated packet cards without a title and saves the full candidate with evaluation', async () => {
+  it('renders generated packet cards with sectioned context/origin details and saves the full candidate with evaluation', async () => {
     const generatedPacket = {
       packet: {
         contentId: 'pkt-01',
@@ -132,7 +132,24 @@ describe('content-packets page controller', () => {
               {
                 id: 'pkt-01',
                 pinned: false,
-                details: [
+                contextDetails: [
+                  {
+                    key: 'premiseSummary',
+                    label: 'Premise Summary',
+                    value: 'A premise summary',
+                  },
+                  {
+                    key: 'situationFrame',
+                    label: 'Situation Frame',
+                    value: 'A situation frame',
+                  },
+                  {
+                    key: 'worldState',
+                    label: 'World State',
+                    value: 'A world state',
+                  },
+                ],
+                packetDetails: [
                   { key: 'contentKind', label: 'Kind', value: 'ENTITY' },
                   { key: 'contentId', label: 'Content ID', value: 'pkt-01' },
                   { key: 'coreAnomaly', label: 'Core Anomaly', value: 'Test anomaly' },
@@ -151,6 +168,25 @@ describe('content-packets page controller', () => {
                     key: 'interactionVerbs',
                     label: 'Interaction Verbs',
                     value: ['observe', 'trade', 'rupture', 'escalate'],
+                  },
+                ],
+                originDetails: [
+                  {
+                    key: 'generationMode',
+                    label: 'Generation Mode',
+                    value: 'pipeline',
+                  },
+                  {
+                    key: 'sourceArtifact-1',
+                    label: 'Source Artifact 1',
+                    value: [
+                      'Type: SPARK',
+                      'Source ID: spark-01',
+                      'Kind: ENTITY',
+                      'Summary: A spark summary',
+                      'Image Seed: A spark image',
+                      'Collision Tags: tag-a',
+                    ],
                   },
                 ],
                 metaDetails: [{ key: 'recommendedRole', label: 'Role', value: 'PRIMARY_SEED' }],
@@ -179,11 +215,24 @@ describe('content-packets page controller', () => {
 
     const generatedList = document.getElementById('generated-packets-list');
     expect(generatedList?.querySelector('.story-title')).toBeNull();
+    expect(generatedList?.textContent).toContain('Context');
+    expect(generatedList?.textContent).toContain('Packet');
+    expect(generatedList?.textContent).toContain('Origin');
+    expect(generatedList?.textContent).toContain('Meta');
+    expect(generatedList?.textContent).toContain('Premise Summary');
+    expect(generatedList?.textContent).toContain('A premise summary');
     expect(generatedList?.textContent).toContain('Kind');
     expect(generatedList?.textContent).toContain('Content ID');
     expect(generatedList?.textContent).toContain('Interaction Verbs');
+    expect(generatedList?.textContent).toContain('Generation Mode');
+    expect(generatedList?.textContent).toContain('Source Artifact 1');
+    expect(generatedList?.innerHTML).toContain('data-section-key="context"');
+    expect(generatedList?.innerHTML).toContain('data-section-key="packet"');
+    expect(generatedList?.innerHTML).toContain('data-section-key="origin"');
+    expect(generatedList?.innerHTML).toContain('data-section-key="meta"');
     expect(generatedList?.innerHTML).toContain('data-detail-key="contentKind"');
     expect(generatedList?.innerHTML).toContain('<li>observe</li>');
+    expect(generatedList?.innerHTML).toContain('<li>Type: SPARK</li>');
 
     const saveButton = generatedList?.querySelector('.save-generated-btn') as HTMLButtonElement;
     saveButton.click();
