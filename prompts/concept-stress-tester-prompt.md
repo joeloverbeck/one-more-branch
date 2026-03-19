@@ -128,7 +128,7 @@ OUTPUT REQUIREMENTS:
 | `scores` | Dimension scores for that concept |
 | `weaknesses` | Evaluator-provided weak points/tradeoffs |
 | `verification` | (Optional) Verifier output: signature scenario, setpiece bank, load-bearing check. When present, injects a VERIFICATION INTELLIGENCE section into the user prompt to make hardening premise-protective. |
-| `contentPackets` | ContentPacket[] with `contentId`, `wildnessInvariant`, `dullCollapse` |
+| `contentPackets` | Lean `ContentPacket[]` projection with `contentId`, `wildnessInvariant`, `dullCollapse` |
 
 ## Content Packet Integration (WILCONPIP)
 

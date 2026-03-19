@@ -70,7 +70,7 @@ OUTPUT REQUIREMENTS:
 | moodKeywords | User input | No |
 | contentPreferences | User input | No |
 | kernel | Selected StoryKernel | No |
-| contentPackets | ContentPacket[] | No |
+| contentPackets | Lean `ContentPacket[]` projection (not the full saved asset) | No |
 
 ## Content Packet Integration (WILCONPIP)
 
@@ -81,6 +81,7 @@ When `contentPackets` are provided, the prompt injects a `CONTENT PACKETS` block
 - CRITICAL: Preserve each packet's `wildnessInvariant` — do not normalize into generic genre language
 - Carry forward `signatureImageHook` derived from the packet's `signatureImage`
 - Diversity means different genres and play textures, NOT distributing user vibes across concepts — every concept must centrally embody ALL user-specified vibes
+- These packets are the lean downstream projection only; saved-asset context like `premiseSummary`, `situationFrame`, `worldState`, `origin`, and `evaluation` is not injected here
 
 ## Notes
 

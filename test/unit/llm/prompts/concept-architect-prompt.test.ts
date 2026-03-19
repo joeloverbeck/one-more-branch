@@ -169,5 +169,29 @@ describe('concept-architect-prompt', () => {
       expect(userMessage).toContain('keyInstitution');
       expect(userMessage).toContain('socialEngine');
     });
+
+    it('grounds from lean packet fields without leaking saved-asset-only context', () => {
+      const packet = {
+        ...createContentPacketFixture(),
+        premiseSummary: 'LEAK premise summary',
+        situationFrame: 'LEAK situation frame',
+        worldState: 'LEAK world state',
+        origin: { generationMode: 'pipeline' },
+        evaluation: { recommendedRole: 'PRIMARY_SEED' },
+      } as unknown as ContentPacket;
+      const context: ConceptArchitectContext = {
+        ...createContext(),
+        contentPackets: [packet],
+      };
+      const messages = buildConceptArchitectPrompt(context);
+      const userMessage = messages[1]?.content ?? '';
+
+      expect(userMessage).toContain(packet.coreAnomaly);
+      expect(userMessage).not.toContain('LEAK premise summary');
+      expect(userMessage).not.toContain('LEAK situation frame');
+      expect(userMessage).not.toContain('LEAK world state');
+      expect(userMessage).not.toContain('"generationMode"');
+      expect(userMessage).not.toContain('PRIMARY_SEED');
+    });
   });
 });

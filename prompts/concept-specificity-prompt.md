@@ -153,7 +153,7 @@ OUTPUT REQUIREMENTS:
 |---|---|
 | `evaluatedConcepts` | Array of evaluated concepts from the evaluator stage |
 | `kernel` | StoryKernel with `dramaticThesis`, `valueAtStake`, `opposingForce`, `directionOfChange`, `thematicQuestion` — always required |
-| `contentPackets` | ContentPacket[] with `contentId`, `wildnessInvariant`, `dullCollapse` |
+| `contentPackets` | Lean `ContentPacket[]` projection with `contentId`, `wildnessInvariant`, `dullCollapse` |
 
 ## Downstream Integration
 

@@ -139,7 +139,7 @@ OUTPUT REQUIREMENTS:
 | `evaluatedConcepts` | Array of evaluated concepts from the evaluator stage |
 | `kernel` | StoryKernel with `dramaticThesis`, `valueAtStake`, `opposingForce`, `directionOfChange`, `thematicQuestion` |
 | `specificityAnalyses` | Array of `ConceptSpecificityAnalysis` from stage 1, providing `signatureScenario` for each concept |
-| `contentPackets` | ContentPacket[] with `signatureImage`, `escalationPath`, `socialEngine` |
+| `contentPackets` | Lean `ContentPacket[]` projection with `signatureImage`, `escalationPath`, `socialEngine` |
 
 ## Downstream Integration
 

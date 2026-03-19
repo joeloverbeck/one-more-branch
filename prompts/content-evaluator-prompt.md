@@ -88,13 +88,15 @@ OUTPUT REQUIREMENTS:
 
 | Field | Source | Required |
 |-------|--------|----------|
-| packets | Content Packeter output | Yes |
+| packets | Lean `ContentPacket[]` projection from Content Packeter output | Yes |
 | tasteProfile | Taste Distiller output | No |
 
 ## Notes
 
 - Scoring is calibrated: 0 = missing/generic, 3 = average (most packets), 5 = exceptional
 - Role assignment is explicit — not just rating but labeling intended usage
-- The evaluator does NOT modify packets — it only scores and labels them
+- The evaluator does NOT modify packets — it only scores and labels the lean downstream packet projection
+- The evaluator does not consume saved-asset-only context like `premiseSummary`, `situationFrame`, `worldState`, `origin`, or existing saved evaluations
+- Service-layer persistence may later attach the resulting `ContentEvaluation` onto the richer saved asset as sibling metadata; that attachment is outside this prompt's contract
 - Evaluated packets with role PRIMARY_SEED or SECONDARY_MUTAGEN are passed to concept seeding stages
 - Prompt logging uses `promptType: 'contentEvaluator'`

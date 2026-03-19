@@ -63,7 +63,7 @@ Same as concept-seeder-prompt (7-field seed shape).
 | genreVibes | User input | No |
 | moodKeywords | User input | No |
 | contentPreferences | User input | No |
-| contentPackets | ContentPacket[] | No |
+| contentPackets | Lean `ContentPacket[]` projection (not the full saved asset) | No |
 | excludedGenres | string[] | No |
 
 ## Content Packet Integration (WILCONPIP)
@@ -74,6 +74,7 @@ When `contentPackets` are provided, the prompt injects a `CONTENT PACKETS` block
 - Seeds may fuse packet material with parent strengths
 - CRITICAL: Do not normalize the packet's weirdness into generic genre language
 - The `WILDNESS INVARIANTS` block emphasizes that invariants must be preserved or intensified, never diluted
+- Saved-asset-only setup context and lineage metadata are intentionally excluded from evolution
 
 ## Notes
 

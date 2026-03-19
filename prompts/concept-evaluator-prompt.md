@@ -241,11 +241,11 @@ Runtime behavior:
 | `contentPreferences` | Optional content boundaries/preferences |
 | `concepts` | ConceptSpec array from ideator output (scoring pass) |
 | `scoredConcepts` | All ScoredConcept objects from scoring pass (deep-eval pass) |
-| `contentPackets` | Optional ContentPacket[] used by upstream stages (evaluator scores their integration) |
+| `contentPackets` | Optional lean `ContentPacket[]` projection used by upstream stages (evaluator scores their integration, not the full saved asset) |
 
 ## Content Packet Integration (WILCONPIP)
 
-The `contentCharge` scoring dimension was added in WILCONPIP-12 to evaluate how deeply content packet DNA is embedded in each concept. The evaluator does not receive raw content packets — it evaluates concepts that were already packet-grounded by earlier stages (seeder, architect, engineer). The `contentCharge` dimension measures whether that grounding survived the pipeline or was diluted into generic genre.
+The `contentCharge` scoring dimension was added in WILCONPIP-12 to evaluate how deeply content packet DNA is embedded in each concept. The evaluator does not receive full saved assets — it evaluates concepts that were already grounded by earlier stages using the lean downstream content-packet projection. The `contentCharge` dimension measures whether that grounding survived the pipeline or was diluted into generic genre.
 
 ## Notes
 

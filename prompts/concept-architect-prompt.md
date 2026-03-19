@@ -85,7 +85,7 @@ OUTPUT REQUIREMENTS:
 | genreVibes | User input | No |
 | moodKeywords | User input | No |
 | contentPreferences | User input | No |
-| contentPackets | ContentPacket[] | No |
+| contentPackets | Lean `ContentPacket[]` projection (not the full saved asset) | No |
 
 ## Content Packet Integration (WILCONPIP)
 
@@ -95,6 +95,7 @@ When `contentPackets` are provided, the prompt injects a `CONTENT PACKETS` block
 - Derive at least one `keyInstitution` from the packet's `socialEngine`
 - Preserve the `wildnessInvariant` — do not normalize it into generic genre language
 - Ensure `coreConflictLoop` puts pressure on the packet's implied `choicePressure`
+- Saved-asset-only context fields and lineage metadata are intentionally excluded from this stage
 
 ## Notes
 

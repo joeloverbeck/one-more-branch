@@ -87,7 +87,7 @@ OUTPUT REQUIREMENTS:
 | genreVibes | User input | No |
 | moodKeywords | User input | No |
 | contentPreferences | User input | No |
-| contentPackets | ContentPacket[] (with escalationPath) | No |
+| contentPackets | Lean `ContentPacket[]` projection (with `escalationPath`, not the full saved asset) | No |
 
 ## Content Packet Integration (WILCONPIP)
 
@@ -96,6 +96,7 @@ When `contentPackets` are provided, the prompt injects a `CONTENT PACKETS` block
 - Derive `pressureSource`, `incitingDisruption`, or `ironicTwist` from the packet's `socialEngine` or `escalationPath`
 - Preserve the packet's `signatureImage` or `wildnessInvariant` in the `elevatorParagraph`
 - Ensure `protagonistLie`/`protagonistTruth` collide with the packet's core contradiction
+- Saved-asset context and provenance fields remain upstream concerns and are not injected here
 
 ## Notes
 

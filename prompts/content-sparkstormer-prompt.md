@@ -69,6 +69,6 @@ OUTPUT REQUIREMENTS:
 - Generates 30-40 sparks (compressed 1-2 sentence fragments, not full concepts)
 - `contentKind` enum: ENTITY, INSTITUTION, RELATIONSHIP, TRANSFORMATION, WORLD_INTRUSION, RITUAL, POLICY, JOB, SUBCULTURE, ECONOMY
 - `collisionTags` enable cross-pollination when sparks are later fused into packets
-- Spark outputs already preserve the exact fields later needed for saved-asset `origin.sourceArtifacts`: `sparkId`, `contentKind`, `spark`, `imageSeed`, and `collisionTags`
+- Spark outputs already preserve the exact fields later copied into saved-asset `origin.sourceArtifacts`: `sparkId` becomes `sourceId`, `spark` becomes artifact `summary`, and `contentKind`, `imageSeed`, and `collisionTags` persist alongside them
 - Spark count is intentionally high to provide diverse raw material for the packeter
 - `riskAppetite` from taste profile controls explicitness: LOW = suggestive tension, MAXIMAL = explicit extremity
