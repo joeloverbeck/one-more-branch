@@ -5,16 +5,17 @@
  * - ScenePurpose: What dramatic function the scene serves (McKee/Truby)
  * - ValuePolarityShift: How values change within the scene (McKee)
  * - PacingMode: The rhythmic energy of the scene (Swain/Weiland)
- * - SceneIdeaLane: Which dramatic engine the ideation slate assigns to an option
+ * - SceneIdeaLane: The primary source of dramatic energy driving the scene
+ *   (McKee/Aristotle/Truby/Coyne/Laws/Vogler/Weiland)
  */
 
 export const SCENE_IDEA_LANES = [
-  'ESCALATION',
-  'REVELATION',
-  'RELATIONAL_REALIGNMENT',
-  'TEMPTATION_OR_OPPORTUNITY',
-  'CONSEQUENCE_OR_PAYOFF',
-  'IDENTITY_OR_TRANSFORMATION',
+  'EXTERNAL_FORCE',
+  'EPISTEMIC_SHIFT',
+  'INTERPERSONAL_TENSION',
+  'MORAL_CRUCIBLE',
+  'CAUSAL_HARVEST',
+  'INNER_THRESHOLD',
 ] as const;
 
 export type SceneIdeaLane = (typeof SCENE_IDEA_LANES)[number];

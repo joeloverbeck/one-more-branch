@@ -125,30 +125,30 @@ describe('buildSceneIdeatorPrompt', () => {
       const customSlate: SceneIdeationSlate = {
         targetOptionCount: 4,
         slots: [
-          { index: 0, lane: 'REVELATION', rationale: 'Lead with discovery.' },
+          { index: 0, lane: 'EPISTEMIC_SHIFT', rationale: 'Lead with discovery.' },
           {
             index: 1,
-            lane: 'CONSEQUENCE_OR_PAYOFF',
+            lane: 'CAUSAL_HARVEST',
             rationale: 'Cash out overdue pressure.',
             requiredSignals: ['overdueThreads', 'agedPromises'],
           },
           {
             index: 2,
-            lane: 'RELATIONAL_REALIGNMENT',
+            lane: 'INTERPERSONAL_TENSION',
             rationale: 'Force a trust shift.',
             discouragedSignals: ['duplicatePressure'],
           },
-          { index: 3, lane: 'ESCALATION', rationale: 'Keep one pressure-forward lane.' },
+          { index: 3, lane: 'EXTERNAL_FORCE', rationale: 'Keep one pressure-forward lane.' },
         ],
       };
 
       const messages = buildSceneIdeatorPrompt(continuationContext, customSlate);
       expect(messages[1].content).toContain('IDEATION SLATE:');
       expect(messages[1].content).toContain('Generate exactly 4 options.');
-      expect(messages[1].content).toContain('Option 1 lane: REVELATION');
-      expect(messages[1].content).toContain('Option 2 lane: CONSEQUENCE_OR_PAYOFF');
-      expect(messages[1].content).toContain('Option 3 lane: RELATIONAL_REALIGNMENT');
-      expect(messages[1].content).toContain('Option 4 lane: ESCALATION');
+      expect(messages[1].content).toContain('Option 1 lane: EPISTEMIC_SHIFT');
+      expect(messages[1].content).toContain('Option 2 lane: CAUSAL_HARVEST');
+      expect(messages[1].content).toContain('Option 3 lane: INTERPERSONAL_TENSION');
+      expect(messages[1].content).toContain('Option 4 lane: EXTERNAL_FORCE');
       expect(messages[1].content).toContain(
         '- Required context to honor: overdueThreads, agedPromises'
       );
@@ -159,10 +159,10 @@ describe('buildSceneIdeatorPrompt', () => {
       const customSlate: SceneIdeationSlate = {
         targetOptionCount: 4,
         slots: [
-          { index: 0, lane: 'IDENTITY_OR_TRANSFORMATION', rationale: 'Identity test first.' },
-          { index: 1, lane: 'TEMPTATION_OR_OPPORTUNITY', rationale: 'Temptation second.' },
-          { index: 2, lane: 'REVELATION', rationale: 'Reframe third.' },
-          { index: 3, lane: 'ESCALATION', rationale: 'Pressure last.' },
+          { index: 0, lane: 'INNER_THRESHOLD', rationale: 'Identity test first.' },
+          { index: 1, lane: 'MORAL_CRUCIBLE', rationale: 'Values collision second.' },
+          { index: 2, lane: 'EPISTEMIC_SHIFT', rationale: 'Reframe third.' },
+          { index: 3, lane: 'EXTERNAL_FORCE', rationale: 'Pressure last.' },
         ],
       };
 
@@ -171,9 +171,9 @@ describe('buildSceneIdeatorPrompt', () => {
       expect(messages[1].content).toContain(
         'array of exactly 4 scene direction objects, each with diversityLane'
       );
-      expect(messages[1].content).toContain('Option 1 lane: IDENTITY_OR_TRANSFORMATION');
+      expect(messages[1].content).toContain('Option 1 lane: INNER_THRESHOLD');
       expect(messages[1].content).not.toContain(`Generate exactly ${DEFAULT_SCENE_IDEA_COUNT} options.`);
-      expect(messages[1].content).not.toContain('Option 1 lane: ESCALATION');
+      expect(messages[1].content).not.toContain('Option 1 lane: EXTERNAL_FORCE');
     });
 
     it('user message contains "PREVIOUS SCENE SUMMARY"', () => {

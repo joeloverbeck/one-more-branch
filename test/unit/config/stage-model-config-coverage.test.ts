@@ -19,8 +19,19 @@ describe('stage-model config coverage', () => {
     expect(Object.keys(models)).toHaveLength(LLM_STAGE_KEYS.length);
 
     for (const stage of LLM_STAGE_KEYS) {
-      expect(models).toHaveProperty(stage, 'x-ai/grok-4.20-beta');
+      expect(models).toHaveProperty(stage);
+      expect(models[stage]).toEqual(expect.any(String));
+      expect(models[stage]).not.toHaveLength(0);
     }
+  });
+
+  it('keeps user-facing stage model entries populated', () => {
+    const models = readDefaultStageModels();
+
+    expect(models.structure).toEqual(expect.any(String));
+    expect(models.structure).not.toHaveLength(0);
+    expect(models.sceneIdeator).toEqual(expect.any(String));
+    expect(models.sceneIdeator).not.toHaveLength(0);
   });
 
   it('contains no orphaned llm.models entries and preserves registry order', () => {

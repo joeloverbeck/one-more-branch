@@ -112,7 +112,7 @@ describe('play page choice click handler', () => {
     success: true,
     options: [
       {
-        diversityLane: 'ESCALATION',
+        diversityLane: 'EXTERNAL_FORCE',
         scenePurpose: 'RISING_COMPLICATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'ACCELERATING',
@@ -120,7 +120,7 @@ describe('play page choice click handler', () => {
         dramaticJustification: 'Builds tension',
       },
       {
-        diversityLane: 'REVELATION',
+        diversityLane: 'EPISTEMIC_SHIFT',
         scenePurpose: 'REVELATION',
         valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
         pacingMode: 'DECELERATING',
@@ -128,7 +128,7 @@ describe('play page choice click handler', () => {
         dramaticJustification: 'Provides relief',
       },
       {
-        diversityLane: 'RELATIONAL_REALIGNMENT',
+        diversityLane: 'INTERPERSONAL_TENSION',
         scenePurpose: 'NEGOTIATION',
         valuePolarityShift: 'IRONIC_SHIFT',
         pacingMode: 'OSCILLATING',
@@ -136,7 +136,7 @@ describe('play page choice click handler', () => {
         dramaticJustification: 'Reframes the social power dynamic',
       },
       {
-        diversityLane: 'TEMPTATION_OR_OPPORTUNITY',
+        diversityLane: 'MORAL_CRUCIBLE',
         scenePurpose: 'PREPARATION',
         valuePolarityShift: 'NEGATIVE_TO_DOUBLE_POSITIVE',
         pacingMode: 'BUILDING_SLOW',
@@ -144,7 +144,7 @@ describe('play page choice click handler', () => {
         dramaticJustification: 'Offers a lucrative shortcut with implied cost',
       },
       {
-        diversityLane: 'CONSEQUENCE_OR_PAYOFF',
+        diversityLane: 'CAUSAL_HARVEST',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_DOUBLE_NEGATIVE',
         pacingMode: 'SUSTAINED_HIGH',

@@ -32,7 +32,7 @@ describe('briefing begin adventure', () => {
 
   const mockSceneOptions = [
     {
-      diversityLane: 'ESCALATION',
+      diversityLane: 'EXTERNAL_FORCE',
       scenePurpose: 'EXPOSITION',
       valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
       pacingMode: 'BUILDING_SLOW',
@@ -40,7 +40,7 @@ describe('briefing begin adventure', () => {
       dramaticJustification: 'Establishes the mysterious setting.',
     },
     {
-      diversityLane: 'REVELATION',
+      diversityLane: 'EPISTEMIC_SHIFT',
       scenePurpose: 'INCITING_INCIDENT',
       valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
       pacingMode: 'ACCELERATING',
@@ -48,7 +48,7 @@ describe('briefing begin adventure', () => {
       dramaticJustification: 'Disrupts the status quo.',
     },
     {
-      diversityLane: 'RELATIONAL_REALIGNMENT',
+      diversityLane: 'INTERPERSONAL_TENSION',
       scenePurpose: 'NEGOTIATION',
       valuePolarityShift: 'IRONIC_SHIFT',
       pacingMode: 'DECELERATING',
@@ -56,7 +56,7 @@ describe('briefing begin adventure', () => {
       dramaticJustification: 'Shifts trust and leverage before the journey starts.',
     },
     {
-      diversityLane: 'TEMPTATION_OR_OPPORTUNITY',
+      diversityLane: 'MORAL_CRUCIBLE',
       scenePurpose: 'PREPARATION',
       valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
       pacingMode: 'BUILDING_SLOW',
@@ -64,7 +64,7 @@ describe('briefing begin adventure', () => {
       dramaticJustification: 'Opens a tempting shortcut with implied cost.',
     },
     {
-      diversityLane: 'CONSEQUENCE_OR_PAYOFF',
+      diversityLane: 'CAUSAL_HARVEST',
       scenePurpose: 'REVELATION',
       valuePolarityShift: 'POSITIVE_TO_DOUBLE_NEGATIVE',
       pacingMode: 'SUSTAINED_HIGH',

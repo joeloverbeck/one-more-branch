@@ -25,12 +25,12 @@ describe('Scene direction taxonomy', () => {
 
     it('includes all expected scene idea lane values', () => {
       expect(SCENE_IDEA_LANES).toEqual([
-        'ESCALATION',
-        'REVELATION',
-        'RELATIONAL_REALIGNMENT',
-        'TEMPTATION_OR_OPPORTUNITY',
-        'CONSEQUENCE_OR_PAYOFF',
-        'IDENTITY_OR_TRANSFORMATION',
+        'EXTERNAL_FORCE',
+        'EPISTEMIC_SHIFT',
+        'INTERPERSONAL_TENSION',
+        'MORAL_CRUCIBLE',
+        'CAUSAL_HARVEST',
+        'INNER_THRESHOLD',
       ]);
     });
   });
@@ -153,8 +153,8 @@ describe('Scene direction taxonomy', () => {
 
     it('returns false for non-lane values', () => {
       expect(isSceneIdeaLane('')).toBe(false);
-      expect(isSceneIdeaLane('ESCALATION_')).toBe(false);
-      expect(isSceneIdeaLane('escalation')).toBe(false);
+      expect(isSceneIdeaLane('EXTERNAL_FORCE_')).toBe(false);
+      expect(isSceneIdeaLane('external_force')).toBe(false);
       expect(isSceneIdeaLane(null)).toBe(false);
       expect(isSceneIdeaLane(undefined)).toBe(false);
     });
