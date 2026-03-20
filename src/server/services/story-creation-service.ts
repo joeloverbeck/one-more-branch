@@ -100,7 +100,9 @@ export function logLLMError(error: LLMError, context: string): void {
     retryable: error.retryable,
     httpStatus: error.context?.['httpStatus'],
     model: error.context?.['model'],
+    stage: error.context?.['stage'],
     parsedError: error.context?.['parsedError'],
     rawErrorBody: error.context?.['rawErrorBody'],
+    rawContent: error.context?.['rawContent'],
   });
 }

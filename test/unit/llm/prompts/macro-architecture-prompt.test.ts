@@ -183,4 +183,14 @@ describe('buildMacroArchitecturePrompt', () => {
     expect(userMessage).toContain('The tribunal itself becomes the battleground.');
     expect(userMessage).toContain('Every premise promise must be allocated to at least one act');
   });
+
+  it('documents zero-based anchor act indices explicitly', () => {
+    const messages = buildMacroArchitecturePrompt(baseContext);
+    const userMessage = getUserMessage(messages);
+
+    expect(userMessage).toContain(
+      'All anchorMoments actIndex values must be zero-based and refer to the acts array directly (first act = 0).'
+    );
+    expect(userMessage).toContain('actIndex: integer (zero-based index into acts)');
+  });
 });

@@ -330,8 +330,10 @@ describe('story-creation-service', () => {
       const error = new LLMError('API failed', 'HTTP_500', true, {
         httpStatus: 500,
         model: 'anthropic/claude-sonnet-4.5',
+        stage: 'DESIGNING_ARCHITECTURE',
         parsedError: { message: 'Internal error' },
         rawErrorBody: '{"error":"Internal error"}',
+        rawContent: '{"acts":[]}',
       });
 
       logLLMError(error, 'creating story');
@@ -342,8 +344,10 @@ describe('story-creation-service', () => {
         retryable: true,
         httpStatus: 500,
         model: 'anthropic/claude-sonnet-4.5',
+        stage: 'DESIGNING_ARCHITECTURE',
         parsedError: { message: 'Internal error' },
         rawErrorBody: '{"error":"Internal error"}',
+        rawContent: '{"acts":[]}',
       });
     });
 
@@ -358,8 +362,10 @@ describe('story-creation-service', () => {
         retryable: false,
         httpStatus: undefined,
         model: undefined,
+        stage: undefined,
         parsedError: undefined,
         rawErrorBody: undefined,
+        rawContent: undefined,
       });
     });
   });

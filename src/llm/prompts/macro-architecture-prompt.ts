@@ -76,9 +76,10 @@ REQUIREMENTS (follow ALL):
 3. Write overallTheme, premise, openingImage, and closingImage as concrete, story-specific macro anchors.
 4. Set pacingBudget.targetPagesMin and pacingBudget.targetPagesMax for a 15-50 page interactive story.
 5. Define anchorMoments for incitingIncident, midpoint, climax, and signatureScenarioPlacement.
-6. Midpoint is chosen here, not retrofitted later. midpoint must specify actIndex, milestoneSlot, and midpointType.
-7. If conceptVerification is provided, signatureScenarioPlacement must be explicit, not null.
-8. Each act must include:
+6. All anchorMoments actIndex values must be zero-based and refer to the acts array directly (first act = 0).
+7. Midpoint is chosen here, not retrofitted later. midpoint must specify actIndex, milestoneSlot, and midpointType.
+8. If conceptVerification is provided, signatureScenarioPlacement must be explicit, not null.
+9. Each act must include:
    - name
    - objective
    - stakes
@@ -87,14 +88,14 @@ REQUIREMENTS (follow ALL):
    - exitReversal
    - promiseTargets
    - obligationTargets
-9. Each actQuestion must be distinct and dramatically consequential.
-10. Each non-final act must end in a larger turn than the previous act and therefore needs a non-empty exitReversal. The final act must end the story rather than setting up another reversal, so its exitReversal should be an empty string.
-11. Every premise promise must be mapped to at least one act via promiseTargets.
-12. Every genre obligation must be mapped to at least one act via obligationTargets.
-13. Use worldbuilding, character pressure, and the thematic kernel to make the act frames specific rather than generic.
-14. ${buildDirectionalGuidanceSection(context.storyKernel)}
-15. ${buildMacroNpcAgendaInstructions(context.decomposedCharacters)}
-16. Generate a setpieceBank of exactly 6 concept-unique situations in rising intensity from opening to climax:
+10. Each actQuestion must be distinct and dramatically consequential.
+11. Each non-final act must end in a larger turn than the previous act and therefore needs a non-empty exitReversal. The final act must end the story rather than setting up another reversal, so its exitReversal should be an empty string.
+12. Every premise promise must be mapped to at least one act via promiseTargets.
+13. Every genre obligation must be mapped to at least one act via obligationTargets.
+14. Use worldbuilding, character pressure, and the thematic kernel to make the act frames specific rather than generic.
+15. ${buildDirectionalGuidanceSection(context.storyKernel)}
+16. ${buildMacroNpcAgendaInstructions(context.decomposedCharacters)}
+17. Generate a setpieceBank of exactly 6 concept-unique situations in rising intensity from opening to climax:
    - Each must exploit concept-specific elements (setting axioms, conflict engine, constraints, character capabilities)
    - Each must form a causal chain — each setpiece's outcome causes the next setup (Pixar's "because of that" chain)
    - Use the concept's signatureScenario, premisePromises, and incitingDisruption as constraints
@@ -110,16 +111,16 @@ OUTPUT SHAPE:
   - targetPagesMax: number
 - anchorMoments:
   - incitingIncident:
-    - actIndex: integer
+    - actIndex: integer (zero-based index into acts)
     - description: string
   - midpoint:
-    - actIndex: integer
+    - actIndex: integer (zero-based index into acts)
     - milestoneSlot: integer
     - midpointType: FALSE_VICTORY | FALSE_DEFEAT
   - climax:
-    - actIndex: integer
+    - actIndex: integer (zero-based index into acts)
     - description: string
-  - signatureScenarioPlacement: { actIndex: integer, description: string } | null
+  - signatureScenarioPlacement: { actIndex: integer (zero-based index into acts), description: string } | null
 - setpieceBank: array of exactly 6 concept-specific escalating situations
 - initialNpcAgendas: array
   - each agenda has:

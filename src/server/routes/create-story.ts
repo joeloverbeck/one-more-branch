@@ -6,6 +6,7 @@ import { logger } from '../../logging/index.js';
 import { loadConcept } from '../../persistence/concept-repository.js';
 import { loadKernel } from '../../persistence/kernel-repository.js';
 import { listSpines, loadSpine } from '../../persistence/spine-repository.js';
+import { logLLMError } from '../services/story-creation-service.js';
 import { generationProgressService } from '../services/index.js';
 import { buildLlmRouteErrorResult, parseProgressId, wrapAsyncRoute } from '../utils/index.js';
 
@@ -108,6 +109,7 @@ createStoryRoutes.post(
       return res.json({ success: true, storyId: result.story.id });
     } catch (error) {
       if (error instanceof LLMError) {
+        logLLMError(error, 'creating story from spine');
         const { publicMessage, response } = buildLlmRouteErrorResult(error);
         if (progressId) generationProgressService.fail(progressId, publicMessage);
         return res.status(500).json(response);

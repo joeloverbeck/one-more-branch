@@ -14,8 +14,10 @@ kernels/**
 old-kernels/**
 concepts/**
 old-concepts/**
+worldbuilding/**
 character-webs/**
 characters/**
+spines/**
 stories/**
 !stories/.gitkeep
 old-stories/

@@ -92,6 +92,8 @@ async function fetchAndParseLlmStage<TParsed>(
     if (error instanceof LLMError) {
       throw new LLMError(error.message, error.code, error.retryable, {
         rawContent: responseText,
+        model,
+        stage: params.stageModel,
       });
     }
     throw error;

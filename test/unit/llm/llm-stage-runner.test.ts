@@ -160,7 +160,12 @@ describe('llm-stage-runner', () => {
       message: 'parse failed',
       code: 'STRUCTURE_PARSE_ERROR',
       retryable: false,
-      context: { rawContent },
+      context: {
+        rawContent,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        model: expect.any(String),
+        stage: 'conceptEvaluator',
+      },
     });
   });
 
