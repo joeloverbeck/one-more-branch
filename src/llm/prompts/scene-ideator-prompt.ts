@@ -31,7 +31,7 @@ You do NOT write the scene. You propose dramatically distinct directions the sce
 - Scene Purpose: What dramatic function the scene serves (e.g., CONFRONTATION, REVELATION, PREPARATION)
 - Value Polarity Shift: How values change within the scene (McKee's polarity model)
 - Pacing Mode: The rhythmic energy of the scene (Swain/Weiland pacing theory)
-- Diversity Lane: The dramatic engine assigned to this option's slate slot`;
+- Dramatic Energy Source: What primary force drives this scene — the axis along which this option's dramatic energy flows (McKee/Aristotle/Truby)`;
 }
 
 const DIVERSITY_CONSTRAINT = `DIVERSITY CONSTRAINT:
@@ -50,16 +50,18 @@ const FIELD_INSTRUCTIONS = `FIELD INSTRUCTIONS:
 - dramaticJustification: 1-2 sentences explaining WHY this direction serves the story right now. Reference structure position, character arc needs, thematic tension, or why the assigned lane is valuable now.`;
 
 const LANE_INSTRUCTIONS: Readonly<Record<string, string>> = {
-  ESCALATION: 'Increase active pressure, danger, urgency, exposure, or cost.',
-  REVELATION: 'Introduce new information or a reframe that changes what the player understands.',
-  RELATIONAL_REALIGNMENT:
-    'Shift alliance, trust, leverage, intimacy, dependence, or rivalry.',
-  TEMPTATION_OR_OPPORTUNITY:
-    'Offer an attractive path, opening, or advantage that carries cost or compromise.',
-  CONSEQUENCE_OR_PAYOFF:
-    'Cash out prior actions, promises, debts, or accumulated pressure.',
-  IDENTITY_OR_TRANSFORMATION:
-    'Test role, self-concept, taboo, ritual, corruption, or becoming.',
+  EXTERNAL_FORCE:
+    'The world acts on the protagonist — threat, obstacle, deadline, hostile action, or environmental pressure. The primary dramatic energy comes from outside forces bearing down. (McKee: progressive complication via action; Aristotle: desis)',
+  EPISTEMIC_SHIFT:
+    'New information enters the story that reframes understanding — a hidden truth surfaces, a deception is unveiled, or a pattern is recognized. The dramatic energy comes from what is known changing. (Aristotle: anagnorisis; McKee: revelation turning point)',
+  INTERPERSONAL_TENSION:
+    'Alliance, trust, loyalty, intimacy, or rivalry between characters shifts. The dramatic energy comes from the space between people. (Truby: relationship lines; Dramatica: relationship throughline)',
+  MORAL_CRUCIBLE:
+    'The protagonist faces a choice between competing values where there is no clean answer — the cost of choosing reveals character. The dramatic energy comes from values in collision. (McKee/Coyne: crisis as best bad choice or irreconcilable goods)',
+  CAUSAL_HARVEST:
+    'Prior choices, promises, or accumulated pressure bear fruit or exact costs. Seeds planted earlier bloom or rot. The dramatic energy comes from the past catching up to the present. (Laws: gratification/bringdown; Chekhov: setup/payoff)',
+  INNER_THRESHOLD:
+    'The protagonist\'s self-concept, beliefs, or identity face a test that may change who they are. The dramatic energy comes from within — corruption, growth, ritual, or becoming. (Vogler: crossing the threshold; Weiland: character arc)',
 };
 
 function buildStructurePositionSection(context: SceneIdeatorContinuationContext): string {

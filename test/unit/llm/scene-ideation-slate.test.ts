@@ -135,10 +135,10 @@ describe('buildSceneIdeationSlate', () => {
     );
 
     const baselineIndex = baselineSlate.slots.findIndex(
-      (slot) => slot.lane === 'CONSEQUENCE_OR_PAYOFF'
+      (slot) => slot.lane === 'CAUSAL_HARVEST'
     );
     const pressuredIndex = pressuredSlate.slots.findIndex(
-      (slot) => slot.lane === 'CONSEQUENCE_OR_PAYOFF'
+      (slot) => slot.lane === 'CAUSAL_HARVEST'
     );
 
     expect(pressuredIndex).toBeLessThan(baselineIndex);
@@ -165,10 +165,10 @@ describe('buildSceneIdeationSlate', () => {
     );
 
     const baselineIndex = baselineSlate.slots.findIndex(
-      (slot) => slot.lane === 'CONSEQUENCE_OR_PAYOFF'
+      (slot) => slot.lane === 'CAUSAL_HARVEST'
     );
     const pressuredIndex = pressuredSlate.slots.findIndex(
-      (slot) => slot.lane === 'CONSEQUENCE_OR_PAYOFF'
+      (slot) => slot.lane === 'CAUSAL_HARVEST'
     );
 
     expect(pressuredIndex).toBeLessThan(baselineIndex);
@@ -186,10 +186,10 @@ describe('buildSceneIdeationSlate', () => {
     );
 
     const baselineIndex = baselineSlate.slots.findIndex(
-      (slot) => slot.lane === 'RELATIONAL_REALIGNMENT'
+      (slot) => slot.lane === 'INTERPERSONAL_TENSION'
     );
     const pressuredIndex = pressuredSlate.slots.findIndex(
-      (slot) => slot.lane === 'RELATIONAL_REALIGNMENT'
+      (slot) => slot.lane === 'INTERPERSONAL_TENSION'
     );
 
     expect(pressuredIndex).toBeLessThan(baselineIndex);
@@ -220,11 +220,11 @@ describe('buildSceneIdeationSlate', () => {
     const identityLanes = identitySlate.slots.map((slot) => slot.lane);
     const removedBaselineLanes = baselineLanes.filter((lane) => !identityLanes.includes(lane));
 
-    expect(identityLanes).toContain('IDENTITY_OR_TRANSFORMATION');
+    expect(identityLanes).toContain('INNER_THRESHOLD');
     expect(identityLanes).toHaveLength(DEFAULT_SCENE_IDEA_COUNT);
     expect(new Set(identityLanes).size).toBe(DEFAULT_SCENE_IDEA_COUNT);
     expect(removedBaselineLanes).toHaveLength(1);
-    expect(identitySlate.slots.find((slot) => slot.lane === 'IDENTITY_OR_TRANSFORMATION')?.requiredSignals).toEqual(
+    expect(identitySlate.slots.find((slot) => slot.lane === 'INNER_THRESHOLD')?.requiredSignals).toEqual(
       expect.arrayContaining(['structureIdentityTurn', 'identityGuidance'])
     );
   });
@@ -232,6 +232,6 @@ describe('buildSceneIdeationSlate', () => {
   it('does not introduce identity/transformation when continuation context is not identity-heavy', () => {
     const slate = buildSceneIdeationSlate(createContinuationContext());
 
-    expect(slate.slots.map((slot) => slot.lane)).not.toContain('IDENTITY_OR_TRANSFORMATION');
+    expect(slate.slots.map((slot) => slot.lane)).not.toContain('INNER_THRESHOLD');
   });
 });

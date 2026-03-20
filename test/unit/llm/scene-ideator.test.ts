@@ -36,7 +36,7 @@ import type { SceneIdeatorOpeningContext } from '../../../src/llm/scene-ideator-
 
 function validOptionRaw(overrides?: Record<string, unknown>): Record<string, unknown> {
   return {
-    diversityLane: 'ESCALATION',
+    diversityLane: 'EXTERNAL_FORCE',
     scenePurpose: 'CONFRONTATION',
     valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
     pacingMode: 'ACCELERATING',
@@ -49,7 +49,7 @@ function validOptionRaw(overrides?: Record<string, unknown>): Record<string, unk
 function defaultDistinctOptions(): Record<string, unknown>[] {
   return [
     validOptionRaw({
-      diversityLane: 'ESCALATION',
+      diversityLane: 'EXTERNAL_FORCE',
       scenePurpose: 'CONFRONTATION',
       valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
       pacingMode: 'ACCELERATING',
@@ -57,7 +57,7 @@ function defaultDistinctOptions(): Record<string, unknown>[] {
       dramaticJustification: 'Justification A.',
     }),
     validOptionRaw({
-      diversityLane: 'REVELATION',
+      diversityLane: 'EPISTEMIC_SHIFT',
       scenePurpose: 'REVELATION',
       valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
       pacingMode: 'DECELERATING',
@@ -65,7 +65,7 @@ function defaultDistinctOptions(): Record<string, unknown>[] {
       dramaticJustification: 'Justification B.',
     }),
     validOptionRaw({
-      diversityLane: 'RELATIONAL_REALIGNMENT',
+      diversityLane: 'INTERPERSONAL_TENSION',
       scenePurpose: 'ESCAPE',
       valuePolarityShift: 'IRONIC_SHIFT',
       pacingMode: 'SUSTAINED_HIGH',
@@ -73,7 +73,7 @@ function defaultDistinctOptions(): Record<string, unknown>[] {
       dramaticJustification: 'Justification C.',
     }),
     validOptionRaw({
-      diversityLane: 'TEMPTATION_OR_OPPORTUNITY',
+      diversityLane: 'MORAL_CRUCIBLE',
       scenePurpose: 'NEGOTIATION',
       valuePolarityShift: 'POSITIVE_TO_DOUBLE_NEGATIVE',
       pacingMode: 'OSCILLATING',
@@ -81,7 +81,7 @@ function defaultDistinctOptions(): Record<string, unknown>[] {
       dramaticJustification: 'Justification D.',
     }),
     validOptionRaw({
-      diversityLane: 'CONSEQUENCE_OR_PAYOFF',
+      diversityLane: 'CAUSAL_HARVEST',
       scenePurpose: 'AFTERMATH',
       valuePolarityShift: 'NEGATIVE_TO_DOUBLE_POSITIVE',
       pacingMode: 'BUILDING_SLOW',
@@ -121,7 +121,7 @@ describe('parseSceneDirectionOption', () => {
   it('returns a valid SceneDirectionOption from well-formed input', () => {
     const result = parseSceneDirectionOption(validOptionRaw(), 0);
 
-    expect(result.diversityLane).toBe('ESCALATION');
+    expect(result.diversityLane).toBe('EXTERNAL_FORCE');
     expect(result.scenePurpose).toBe('CONFRONTATION');
     expect(result.valuePolarityShift).toBe('POSITIVE_TO_NEGATIVE');
     expect(result.pacingMode).toBe('ACCELERATING');
@@ -288,7 +288,7 @@ describe('validateDiversity', () => {
   it('does not throw when all lanes and diversity combinations are unique', () => {
     const options: SceneDirectionOption[] = [
       {
-        diversityLane: 'ESCALATION',
+        diversityLane: 'EXTERNAL_FORCE',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'ACCELERATING',
@@ -296,7 +296,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
-        diversityLane: 'REVELATION',
+        diversityLane: 'EPISTEMIC_SHIFT',
         scenePurpose: 'REVELATION',
         valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
         pacingMode: 'DECELERATING',
@@ -304,7 +304,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'B',
       },
       {
-        diversityLane: 'RELATIONAL_REALIGNMENT',
+        diversityLane: 'INTERPERSONAL_TENSION',
         scenePurpose: 'ESCAPE',
         valuePolarityShift: 'IRONIC_SHIFT',
         pacingMode: 'SUSTAINED_HIGH',
@@ -319,7 +319,7 @@ describe('validateDiversity', () => {
   it('allows same scenePurpose with different valuePolarityShift', () => {
     const options: SceneDirectionOption[] = [
       {
-        diversityLane: 'ESCALATION',
+        diversityLane: 'EXTERNAL_FORCE',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'ACCELERATING',
@@ -327,7 +327,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
-        diversityLane: 'REVELATION',
+        diversityLane: 'EPISTEMIC_SHIFT',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
         pacingMode: 'DECELERATING',
@@ -342,7 +342,7 @@ describe('validateDiversity', () => {
   it('allows same valuePolarityShift with different scenePurpose', () => {
     const options: SceneDirectionOption[] = [
       {
-        diversityLane: 'ESCALATION',
+        diversityLane: 'EXTERNAL_FORCE',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'ACCELERATING',
@@ -350,7 +350,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
-        diversityLane: 'REVELATION',
+        diversityLane: 'EPISTEMIC_SHIFT',
         scenePurpose: 'REVELATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'DECELERATING',
@@ -365,7 +365,7 @@ describe('validateDiversity', () => {
   it('throws LLMError when two options share the same combination', () => {
     const options: SceneDirectionOption[] = [
       {
-        diversityLane: 'ESCALATION',
+        diversityLane: 'EXTERNAL_FORCE',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'ACCELERATING',
@@ -373,7 +373,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
-        diversityLane: 'REVELATION',
+        diversityLane: 'EPISTEMIC_SHIFT',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'DECELERATING',
@@ -389,7 +389,7 @@ describe('validateDiversity', () => {
   it('includes the duplicate key in the error message', () => {
     const options: SceneDirectionOption[] = [
       {
-        diversityLane: 'ESCALATION',
+        diversityLane: 'EXTERNAL_FORCE',
         scenePurpose: 'ESCAPE',
         valuePolarityShift: 'IRONIC_SHIFT',
         pacingMode: 'ACCELERATING',
@@ -397,7 +397,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
-        diversityLane: 'REVELATION',
+        diversityLane: 'EPISTEMIC_SHIFT',
         scenePurpose: 'ESCAPE',
         valuePolarityShift: 'IRONIC_SHIFT',
         pacingMode: 'DECELERATING',
@@ -419,7 +419,7 @@ describe('validateDiversity', () => {
   it('rejects duplicate diversity lanes', () => {
     const options: SceneDirectionOption[] = [
       {
-        diversityLane: 'ESCALATION',
+        diversityLane: 'EXTERNAL_FORCE',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'ACCELERATING',
@@ -427,7 +427,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
-        diversityLane: 'ESCALATION',
+        diversityLane: 'EXTERNAL_FORCE',
         scenePurpose: 'REVELATION',
         valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
         pacingMode: 'DECELERATING',
@@ -436,13 +436,13 @@ describe('validateDiversity', () => {
       },
     ];
 
-    expect(() => validateDiversity(options)).toThrow(/duplicate diversityLane: ESCALATION/);
+    expect(() => validateDiversity(options)).toThrow(/duplicate diversityLane: EXTERNAL_FORCE/);
   });
 
   it('rejects duplicate (diversityLane, scenePurpose) pairs', () => {
     const options: SceneDirectionOption[] = [
       {
-        diversityLane: 'ESCALATION',
+        diversityLane: 'EXTERNAL_FORCE',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         pacingMode: 'ACCELERATING',
@@ -450,7 +450,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'A',
       },
       {
-        diversityLane: 'REVELATION',
+        diversityLane: 'EPISTEMIC_SHIFT',
         scenePurpose: 'NEGOTIATION',
         valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
         pacingMode: 'DECELERATING',
@@ -458,7 +458,7 @@ describe('validateDiversity', () => {
         dramaticJustification: 'B',
       },
       {
-        diversityLane: 'ESCALATION',
+        diversityLane: 'EXTERNAL_FORCE',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'IRONIC_SHIFT',
         pacingMode: 'SUSTAINED_HIGH',
@@ -468,7 +468,7 @@ describe('validateDiversity', () => {
     ];
 
     expect(() => validateDiversity(options)).toThrow(
-      /duplicate \(diversityLane, scenePurpose\) combination: ESCALATION:CONFRONTATION/
+      /duplicate \(diversityLane, scenePurpose\) combination: EXTERNAL_FORCE:CONFRONTATION/
     );
   });
 });
@@ -479,7 +479,7 @@ describe('parseSceneIdeatorResponse', () => {
     const result = parseSceneIdeatorResponse({ options }, DEFAULT_SCENE_IDEA_COUNT);
 
     expect(result).toHaveLength(DEFAULT_SCENE_IDEA_COUNT);
-    expect(result[0]!.diversityLane).toBe('ESCALATION');
+    expect(result[0]!.diversityLane).toBe('EXTERNAL_FORCE');
     expect(result[0]!.scenePurpose).toBe('CONFRONTATION');
     expect(result[1]!.scenePurpose).toBe('REVELATION');
     expect(result[2]!.scenePurpose).toBe('ESCAPE');
@@ -533,7 +533,7 @@ describe('parseSceneIdeatorResponse', () => {
     const options = [
       ...defaultDistinctOptions(),
       validOptionRaw({
-        diversityLane: 'IDENTITY_OR_TRANSFORMATION',
+        diversityLane: 'INNER_THRESHOLD',
         scenePurpose: 'BETRAYAL',
         valuePolarityShift: 'POSITIVE_TO_DOUBLE_NEGATIVE',
       }),
@@ -556,29 +556,29 @@ describe('parseSceneIdeatorResponse', () => {
   it('throws on diversity violation within options', () => {
     const options = [
       validOptionRaw({
-        diversityLane: 'ESCALATION',
+        diversityLane: 'EXTERNAL_FORCE',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
       }),
       validOptionRaw({
-        diversityLane: 'REVELATION',
+        diversityLane: 'EPISTEMIC_SHIFT',
         scenePurpose: 'CONFRONTATION',
         valuePolarityShift: 'POSITIVE_TO_NEGATIVE',
         sceneDirection: 'Different direction.',
         dramaticJustification: 'Different justification.',
       }),
       validOptionRaw({
-        diversityLane: 'RELATIONAL_REALIGNMENT',
+        diversityLane: 'INTERPERSONAL_TENSION',
         scenePurpose: 'ESCAPE',
         valuePolarityShift: 'IRONIC_SHIFT',
       }),
       validOptionRaw({
-        diversityLane: 'TEMPTATION_OR_OPPORTUNITY',
+        diversityLane: 'MORAL_CRUCIBLE',
         scenePurpose: 'NEGOTIATION',
         valuePolarityShift: 'NEGATIVE_TO_POSITIVE',
       }),
       validOptionRaw({
-        diversityLane: 'CONSEQUENCE_OR_PAYOFF',
+        diversityLane: 'CAUSAL_HARVEST',
         scenePurpose: 'AFTERMATH',
         valuePolarityShift: 'NEGATIVE_TO_DOUBLE_POSITIVE',
       }),

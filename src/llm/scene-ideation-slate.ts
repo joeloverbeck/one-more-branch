@@ -25,13 +25,15 @@ export interface SceneIdeationSlate {
 }
 
 const OPENING_RATIONALES: Readonly<Record<(typeof DEFAULT_OPENING_SCENE_IDEA_LANES)[number], string>> = {
-  ESCALATION: 'Front-load pressure so the opening slate includes a world-facing source of urgency.',
-  REVELATION: 'Keep one opening path centered on discovery or reframing rather than pressure alone.',
-  RELATIONAL_REALIGNMENT:
+  EXTERNAL_FORCE:
+    'Front-load pressure so the opening slate includes a world-facing source of urgency.',
+  EPISTEMIC_SHIFT:
+    'Keep one opening path centered on discovery or reframing rather than pressure alone.',
+  INTERPERSONAL_TENSION:
     'Reserve one opening path for the protagonist’s social position, alliance, or leverage.',
-  TEMPTATION_OR_OPPORTUNITY:
-    'Leave room for an attractive opening move that advances desire at a cost.',
-  CONSEQUENCE_OR_PAYOFF:
+  MORAL_CRUCIBLE:
+    'Leave room for an opening move that forces a choice between competing values at a cost.',
+  CAUSAL_HARVEST:
     'Include a lane that cashes out premise-implied fallout instead of only introducing more setup.',
 };
 
@@ -64,7 +66,7 @@ function planContinuationLanes(signals: ContinuationSignals): readonly SceneIdea
       IDENTITY_REPLACEMENT_LANE_ORDER.find((lane) => lanes.includes(lane)) ??
       lanes[lanes.length - 1]!;
     const replacementIndex = lanes.indexOf(replacementLane);
-    lanes.splice(replacementIndex, 1, 'IDENTITY_OR_TRANSFORMATION');
+    lanes.splice(replacementIndex, 1, 'INNER_THRESHOLD');
   }
 
   return lanes.sort((left, right) => scoreLane(right, signals) - scoreLane(left, signals));
@@ -76,29 +78,29 @@ function shouldUseIdentityLane(signals: ContinuationSignals): boolean {
 
 function scoreLane(lane: SceneIdeaLane, signals: ContinuationSignals): number {
   const baseScores: Readonly<Record<SceneIdeaLane, number>> = {
-    REVELATION: 50,
-    RELATIONAL_REALIGNMENT: 40,
-    CONSEQUENCE_OR_PAYOFF: 30,
-    TEMPTATION_OR_OPPORTUNITY: 20,
-    ESCALATION: 10,
-    IDENTITY_OR_TRANSFORMATION: 15,
+    EPISTEMIC_SHIFT: 50,
+    INTERPERSONAL_TENSION: 40,
+    CAUSAL_HARVEST: 30,
+    MORAL_CRUCIBLE: 20,
+    EXTERNAL_FORCE: 10,
+    INNER_THRESHOLD: 15,
   };
 
   let score = baseScores[lane];
 
-  if (lane === 'CONSEQUENCE_OR_PAYOFF' && (signals.hasOverdueThreads || signals.hasAgedPromises)) {
+  if (lane === 'CAUSAL_HARVEST' && (signals.hasOverdueThreads || signals.hasAgedPromises)) {
     score += 35;
   }
 
-  if (lane === 'RELATIONAL_REALIGNMENT' && signals.hasSpeechPressure) {
+  if (lane === 'INTERPERSONAL_TENSION' && signals.hasSpeechPressure) {
     score += 25;
   }
 
-  if (lane === 'IDENTITY_OR_TRANSFORMATION' && shouldUseIdentityLane(signals)) {
+  if (lane === 'INNER_THRESHOLD' && shouldUseIdentityLane(signals)) {
     score += 30;
   }
 
-  if (lane === 'ESCALATION' && signals.hasActiveThreats) {
+  if (lane === 'EXTERNAL_FORCE' && signals.hasActiveThreats) {
     score += 20;
   }
 
@@ -111,7 +113,7 @@ function buildContinuationSlot(
   signals: ContinuationSignals
 ): SceneIdeationSlot {
   switch (lane) {
-    case 'CONSEQUENCE_OR_PAYOFF':
+    case 'CAUSAL_HARVEST':
       return {
         index,
         lane,
@@ -121,7 +123,7 @@ function buildContinuationSlot(
             : 'Keep one continuation lane available for fallout, payoff, or cashing out prior setup.',
         requiredSignals: consequenceRequiredSignals(signals),
       };
-    case 'RELATIONAL_REALIGNMENT':
+    case 'INTERPERSONAL_TENSION':
       return {
         index,
         lane,
@@ -130,7 +132,7 @@ function buildContinuationSlot(
           : 'Keep one continuation lane focused on alliance, trust, leverage, or intimacy shifts.',
         requiredSignals: signals.hasSpeechPressure ? ['protagonistSuggestedSpeech'] : undefined,
       };
-    case 'IDENTITY_OR_TRANSFORMATION':
+    case 'INNER_THRESHOLD':
       return {
         index,
         lane,
@@ -138,24 +140,24 @@ function buildContinuationSlot(
           'Replace one default lane with an identity turn because the current continuation context points toward reflection, becoming, or self-definition pressure.',
         requiredSignals: identityRequiredSignals(signals),
       };
-    case 'ESCALATION':
+    case 'EXTERNAL_FORCE':
       return {
         index,
         lane,
         rationale: signals.hasActiveThreats
           ? 'Keep a pressure lane in the slate because the current state already carries active threat energy.'
-          : 'Preserve an escalation lane so one option intensifies pressure instead of only reframing it.',
+          : 'Preserve an external-force lane so one option intensifies pressure instead of only reframing it.',
       };
-    case 'TEMPTATION_OR_OPPORTUNITY':
+    case 'MORAL_CRUCIBLE':
       return {
         index,
         lane,
         rationale:
-          'Keep one lane for advancement-through-cost so the slate still offers an attractive but compromising path.',
+          'Keep one lane for values-in-collision so the slate still offers a choice between competing goods or evils.',
         discouragedSignals:
           signals.hasOverdueThreads || signals.hasAgedPromises ? ['duplicatePressure'] : undefined,
       };
-    case 'REVELATION':
+    case 'EPISTEMIC_SHIFT':
       return {
         index,
         lane,

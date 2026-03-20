@@ -34,7 +34,7 @@ You do NOT write the scene. You propose dramatically distinct directions the sce
 - Scene Purpose: What dramatic function the scene serves (e.g., CONFRONTATION, REVELATION, PREPARATION)
 - Value Polarity Shift: How values change within the scene (McKee's polarity model)
 - Pacing Mode: The rhythmic energy of the scene (Swain/Weiland pacing theory)
-- Diversity Lane: The dramatic engine assigned to this option's slate slot
+- Dramatic Energy Source: What primary force drives this scene — the axis along which this option's dramatic energy flows (McKee/Aristotle/Truby)
 
 {{#if tone}}
 TONE DIRECTIVE:
@@ -67,7 +67,7 @@ No two options may share the same (diversityLane, scenePurpose) combination.
 Do not produce mirrored opposites or tonal variants of the same core event. Different lanes must open different kinds of next scenes, not merely different moods.
 
 FIELD INSTRUCTIONS:
-- diversityLane: ESCALATION, REVELATION, RELATIONAL_REALIGNMENT, TEMPTATION_OR_OPPORTUNITY, CONSEQUENCE_OR_PAYOFF, IDENTITY_OR_TRANSFORMATION
+- diversityLane: EXTERNAL_FORCE, EPISTEMIC_SHIFT, INTERPERSONAL_TENSION, MORAL_CRUCIBLE, CAUSAL_HARVEST, INNER_THRESHOLD
 - scenePurpose: EXPOSITION, INCITING_INCIDENT, RISING_COMPLICATION, REVERSAL, REVELATION, CONFRONTATION, NEGOTIATION, INVESTIGATION, PREPARATION, ESCAPE, PURSUIT, SACRIFICE, BETRAYAL, REUNION, TRANSFORMATION, CLIMACTIC_CHOICE, AFTERMATH
 - valuePolarityShift: POSITIVE_TO_NEGATIVE, NEGATIVE_TO_POSITIVE, POSITIVE_TO_DOUBLE_NEGATIVE, NEGATIVE_TO_DOUBLE_POSITIVE, IRONIC_SHIFT
 - pacingMode: ACCELERATING, DECELERATING, SUSTAINED_HIGH, OSCILLATING, BUILDING_SLOW
@@ -230,7 +230,7 @@ OUTPUT SHAPE:
 {
   "options": [
     {
-      "diversityLane": "{{ESCALATION|REVELATION|RELATIONAL_REALIGNMENT|TEMPTATION_OR_OPPORTUNITY|CONSEQUENCE_OR_PAYOFF|IDENTITY_OR_TRANSFORMATION}}",
+      "diversityLane": "{{EXTERNAL_FORCE|EPISTEMIC_SHIFT|INTERPERSONAL_TENSION|MORAL_CRUCIBLE|CAUSAL_HARVEST|INNER_THRESHOLD}}",
       "scenePurpose": "{{EXPOSITION|INCITING_INCIDENT|RISING_COMPLICATION|REVERSAL|REVELATION|CONFRONTATION|NEGOTIATION|INVESTIGATION|PREPARATION|ESCAPE|PURSUIT|SACRIFICE|BETRAYAL|REUNION|TRANSFORMATION|CLIMACTIC_CHOICE|AFTERMATH}}",
       "valuePolarityShift": "{{POSITIVE_TO_NEGATIVE|NEGATIVE_TO_POSITIVE|POSITIVE_TO_DOUBLE_NEGATIVE|NEGATIVE_TO_DOUBLE_POSITIVE|IRONIC_SHIFT}}",
       "pacingMode": "{{ACCELERATING|DECELERATING|SUSTAINED_HIGH|OSCILLATING|BUILDING_SLOW}}",
