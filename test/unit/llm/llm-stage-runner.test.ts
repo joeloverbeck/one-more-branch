@@ -162,6 +162,7 @@ describe('llm-stage-runner', () => {
       retryable: false,
       context: {
         rawContent,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         model: expect.any(String),
         stage: 'conceptEvaluator',
       },

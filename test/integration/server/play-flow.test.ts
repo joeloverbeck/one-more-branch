@@ -526,6 +526,7 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       expect.objectContaining({
         success: false,
         code: 'STRUCTURE_PARSE_ERROR',
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         debug: expect.objectContaining({
           stage: 'macroArchitecture',
           model: 'openrouter/test-model',
@@ -533,7 +534,9 @@ describe('Play Flow Integration (Mocked LLM)', () => {
         }),
       })
     );
-    expect(logger.error).toHaveBeenCalledWith('LLM error creating story from spine:', {
+    expect((logger.error as jest.Mock).mock.calls).toContainEqual([
+      'LLM error creating story from spine:',
+      {
       message: 'anchorMoments.climax.actIndex must reference a valid act index between 0 and 2',
       code: 'STRUCTURE_PARSE_ERROR',
       retryable: false,
@@ -543,7 +546,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
       parsedError: undefined,
       rawErrorBody: undefined,
       rawContent: '{"anchorMoments":{"climax":{"actIndex":3}}}',
-    });
+      },
+    ]);
   });
 
   it('generates a continuation page through POST /play/:storyId/choice', async () => {
