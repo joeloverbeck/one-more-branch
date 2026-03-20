@@ -96,6 +96,32 @@ function initSpinesPage() {
     return card;
   }
 
+  async function loadSavedSpines() {
+    var response = await fetch('/spines/api/list', {
+      method: 'GET',
+      cache: 'no-store',
+    });
+
+    var data = await response.json();
+    if (!response.ok || !data.success || !Array.isArray(data.spines)) {
+      throw new Error(data.error || 'Failed to load spines');
+    }
+
+    savedContainer.innerHTML = '';
+
+    if (data.spines.length === 0) {
+      var msg = document.createElement('p');
+      msg.className = 'spine-section-subtitle';
+      msg.textContent = 'No saved spines yet. Generate some above!';
+      savedContainer.appendChild(msg);
+      return;
+    }
+
+    data.spines.forEach(function (spine) {
+      savedContainer.appendChild(renderSavedSpineCard(spine));
+    });
+  }
+
   function renderSavedSpineCard(spine) {
     var card = document.createElement('div');
     card.className = 'spine-option-card';
@@ -211,10 +237,7 @@ function initSpinesPage() {
       saveBtn.classList.remove('btn-primary');
       saveBtn.classList.add('btn-success');
 
-      // Add to saved section
-      var emptyMsg = savedContainer.querySelector('.spine-section-subtitle');
-      if (emptyMsg) emptyMsg.remove();
-      savedContainer.appendChild(renderSavedSpineCard(data.spine));
+      await loadSavedSpines();
     } catch (error) {
       saveBtn.textContent = 'Error';
       saveBtn.disabled = false;
@@ -264,5 +287,9 @@ function initSpinesPage() {
 
   form.addEventListener('submit', function (event) {
     event.preventDefault();
+  });
+
+  void loadSavedSpines().catch(function (error) {
+    console.error('Failed to load saved spines:', error);
   });
 }
