@@ -150,9 +150,7 @@ describe('analyst insights modal', () => {
     expect(modalBody.textContent).toContain('The team escapes the breach alive.');
     expect(modalBody.textContent).toContain('Act Trajectory');
     expect(modalBody.textContent).toContain('Act-End Reversal:');
-    expect(modalBody.textContent).toContain(
-      'Survival reveals the station is already compromised.'
-    );
+    expect(modalBody.textContent).toContain('Survival reveals the station is already compromised.');
   });
 
   it('displays scene summary when provided', async () => {

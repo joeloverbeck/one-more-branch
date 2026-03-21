@@ -44,6 +44,9 @@ Plan the next page before prose generation.
 - Consider NPC agendas and relationships when planning scenes. NPCs with active goals may initiate encounters, block the protagonist, or create complications based on their off-screen behavior. NPC-protagonist relationship dynamics (valence, tension, leverage) should inform how NPCs approach the protagonist.
 - When planning dialogue-heavy scenes, note which characters will speak and consider their distinct voices. The writer will receive full speech fingerprints for scene characters — your writerBrief.mustIncludeBeats can reference specific voice moments.
 - When planning scenes, ensure the sceneIntent serves the protagonist's Need vs Want conflict from the spine.
+- Every plan must produce at least one material change that is player-legible: danger, knowledge, leverage, relationship, location, available options, or cost. Atmospheric intensification alone is not advancement.
+- Plan scenes to end in a choiceable state: the final situation should make clear what is now urgent, tempting, dangerous, and possible for the protagonist.
+- Scene endings must arise from a genuinely altered situation, not from ominous phrasing or atmospheric tension alone. Ensure the plan changes the board before the scene closes.
 
 TONE RULE: Write your sceneIntent, writerBrief.openingLineDirective, mustIncludeBeats, and dramaticQuestion in a voice that reflects the TONE/GENRE. If the tone is comedic, your plan should read as witty and playful. If noir, terse and cynical. The writer will absorb your voice.
 ```

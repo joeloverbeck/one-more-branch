@@ -169,6 +169,12 @@ PROTAGONIST: ${protagonistDecomposed.name}
 PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
 ${formatSpeechFingerprintForWriter(protagonistDecomposed.speechFingerprint)}
 
+VOICE APPLICATION:
+- The protagonist speech fingerprint governs narration as well as dialogue.
+- Use the protagonist's conceptual vocabulary, favorite abstractions, and recurring metaphors selectively.
+- Reuse recurring inner-language only when it sharpens conflict or shows change; do not use it as filler.
+- If a phrase, abstraction, or comparison would not plausibly occur in this protagonist's mind, do not use it.
+
 `
     : '';
 
@@ -201,23 +207,28 @@ The planner has determined this is the story's conclusion. Write this scene as a
 
 `
     : ''
-}REQUIREMENTS (follow all):
-1. Choose the scene opening based on what matters next
-   - Option A (immediate continuation): Start exactly where the previous scene ended with an action, dialogue, or reaction in the next 1-2 milestones
-   - Option B (time cut): If nothing meaningful happens for a while (travel, waiting, resting, routine), SKIP time and open at the next scene where the choice's consequences matter
-   - In both options: do NOT recap or summarize what happened, and do NOT repeat or rephrase the last sentence of the previous scene
-   - For Option B, signal the skip with a brief time cue ("Minutes later...", "That night...", "Two days later..."), then jump straight into action or dialogue
+}=== SCENE PROGRESSION DISCIPLINE ===
+- Inherited mood or physical state from the previous scene may be refreshed briefly, but do not spend multiple paragraphs re-describing it.
+- Make the planned material changes clear and player-legible in the prose — the reader should be able to identify what has concretely changed by scene's end.
+- Each major escalation must be tied to a concrete observable change in the environment, the body, or the available decisions — not atmospheric intensification alone.
+- If you repeat a motif or image from the prior scene, the repeat must deepen, invert, or complicate it.
+- Use prior full-scene text to preserve continuity of events, tone, and character voice, but do not mechanically imitate repeated phrasings, syntactic tics, or signature images unless their recurrence is intentional and meaningfully transformed. Continue the voice at its best, not its surface habits.
+
+REQUIREMENTS (follow all):
+1. Follow the planner's opening line directive. Do NOT recap or summarize what happened, and do NOT repeat or rephrase the last sentence of the previous scene. If a time cut is indicated, signal it with a brief time cue ("Minutes later...", "That night..."), then jump straight into action or dialogue.
 2. Show the direct, immediate consequences of the player's choice - the story must react
-3. Advance the narrative naturally - time passes, situations evolve, new elements emerge
+2a. Re-establish inherited mood, sensation, or fear only briefly; do not spend multiple paragraphs paraphrasing what the previous scene already made clear.
+3. Advance the narrative materially — make the planned changes clear and player-legible so the reader can identify what has concretely changed by scene's end.
 4. Maintain consistency with all established facts and the current state
 5. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
 6. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
+6a. Ensure the prose clearly conveys what is now urgent, tempting, dangerous, and possible, so the scene reads as a choiceable situation.
 7. Each scene should advance or complicate the protagonist's relationship to their Need and Want. Show how consequences of their choices move them toward or away from their true Need, even as they pursue their Want.
 
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. React to the player's choice immediately and visibly
 2. Maintain consistency with established state, canon, and continuity
-3. Prose quality: character-filtered, emotionally resonant, forward-moving
+3. Prose quality: character-filtered, emotionally resonant, forward-moving, and legible
 4. sceneSummary and protagonistAffect accuracy`;
 
   const toneParams = {

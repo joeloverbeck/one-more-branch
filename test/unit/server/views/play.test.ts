@@ -43,7 +43,9 @@ describe('play page template', () => {
         /<div class="story-title-section">[\s\S]*<h2><%=\s*story\.title\s*%><\/h2>/
       );
       expect(template).toContain('id="play-structure-panel"');
-      expect(template).toContain('class="play-structure-summary__pill play-structure-summary__pill--target"');
+      expect(template).toContain(
+        'class="play-structure-summary__pill play-structure-summary__pill--target"'
+      );
     });
 
     it('includes separated structure cards in the expandable panel', () => {

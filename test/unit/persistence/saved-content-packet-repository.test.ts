@@ -209,7 +209,10 @@ describe('saved-content-packet-repository', () => {
 
     await saveSavedContentPacket(createSavedContentPacket(validId));
     mkdirSync(getContentPacketsDir(), { recursive: true });
-    await writeJsonFile(getContentPacketFilePath(legacyId), createLegacyPacketOnlyPayload(legacyId));
+    await writeJsonFile(
+      getContentPacketFilePath(legacyId),
+      createLegacyPacketOnlyPayload(legacyId)
+    );
 
     await expect(listSavedContentPackets()).rejects.toThrow(
       `Invalid SavedContentPacket payload at ${getContentPacketFilePath(legacyId)}`

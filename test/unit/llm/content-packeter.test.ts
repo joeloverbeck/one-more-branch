@@ -69,7 +69,8 @@ function makeValidPacket(
     contentKind: 'ENTITY',
     premiseSummary: 'A mortician monetizes the last dreams stored inside the dead.',
     situationFrame: 'Bereaved families arrive at her parlor trying to buy one final conversation.',
-    worldState: 'The city treats dream extraction from corpses as private commerce rather than sacrilege.',
+    worldState:
+      'The city treats dream extraction from corpses as private commerce rather than sacrilege.',
     coreAnomaly: 'She cannot forget what the dead dreamed.',
     humanAnchor: 'The weight of inherited grief.',
     socialEngine: 'A black market trades in extracted final dreams.',
@@ -259,7 +260,8 @@ describe('parseContentPacketerResponse', () => {
 
   it('keeps optional viewpointPressure when present', () => {
     const packet = makeValidPacket({
-      viewpointPressure: 'She must either profit from grief or deny families their last chance at closure.',
+      viewpointPressure:
+        'She must either profit from grief or deny families their last chance at closure.',
     });
 
     const result = parseContentPacketerResponse({ packets: [packet] });

@@ -1,14 +1,7 @@
 import type { ConceptSeedPacket } from './concept-seed-packet.js';
 import { isConceptSeedPacket } from './concept-seed-packet.js';
-import type {
-  ContentKind,
-  ContentPacketRole,
-  RiskAppetite,
-} from './content-taxonomy.js';
-import {
-  isContentKind,
-  isContentPacketRole,
-} from './content-taxonomy.js';
+import type { ContentKind, ContentPacketRole, RiskAppetite } from './content-taxonomy.js';
+import { isContentKind, isContentPacketRole } from './content-taxonomy.js';
 
 export interface TasteProfile {
   readonly collisionPatterns: readonly string[];
@@ -232,7 +225,9 @@ export function isContentPacketContext(value: unknown): value is ContentPacketCo
   );
 }
 
-export function isContentPacketSourceArtifact(value: unknown): value is ContentPacketSourceArtifact {
+export function isContentPacketSourceArtifact(
+  value: unknown
+): value is ContentPacketSourceArtifact {
   if (!isObjectRecord(value)) {
     return false;
   }

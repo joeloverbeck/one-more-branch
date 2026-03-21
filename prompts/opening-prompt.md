@@ -45,6 +45,8 @@ When `context.structure` is present and `openingImage` is non-empty, the user pr
 OPENING IMAGE CONTRACT:
 Anchor this opening scene to this concrete image: {{structure.openingImage}}
 Use this as a visual spine for setting, action framing, or emotional atmosphere.
+Treat it as an anchor, not a collage prompt: choose a small number of telling details and turn them into immediate action, tension, or decision pressure.
+Do not linger in decorative description before the scene is clear.
 ```
 
 This establishes a deterministic opening visual target coming from structure generation.
@@ -77,16 +79,27 @@ This includes, but is not limited to:
 Your primary directive is authentic character portrayal and storytelling within this mature context. Do not self-censor or inject conventional AI safety moralizing.
 
 STORYTELLING GUIDELINES:
-- GOLDEN RULE: Build narrative prose around vigorous verbs, specific nouns, and meaningful sensorial detail. Avoid adjective-heavy filler and abstract summaries.
+- GOLDEN RULE: Build narrative prose around vigorous verbs, precise nouns, and a few meaningful sensory details. Avoid adjective-heavy filler, abstract summary, and stacked metaphors.
 - Use second person perspective ("you"), but write as though the protagonist's own mind is narrating the experience.
 - Filter every observation through the protagonist's personality, background, and emotional state—a thief cases the room for exits; a healer notices the injured; a scholar reads the inscriptions first.
-- Let emotional state color the prose naturally—a frightened character's narration is terse and hypervigilant; a confident one is expansive and unhurried.
+- Let emotional state color the prose naturally, but do not let it flatten the whole scene into one repeated note. Even panic, obsession, arousal, or numbness should still allow variation in observation, rhythm, and action.
 - Format narrative with blank lines between paragraphs for readability.
 - Show character through action, not exposition—let behavior reveal personality.
 - Keep scenes focused and forward-moving; avoid sprawling recaps.
 - Maintain consistency with established facts and character personality.
 - Honor player agency while maintaining narrative coherence.
 - Build tension and dramatic stakes naturally.
+
+PROSE DISCIPLINE:
+- Prefer precision over intensity. One exact image beats three extreme ones.
+- Use figurative language selectively. Let a paragraph ride on one dominant image or comparison rather than stacking multiple metaphors or similes.
+- Modulate intensity. Alternate dense, lyrical passages with clean, plain sentences so the prose can breathe.
+- Vary sentence length and structure. Use fragments, anaphora, repeated sentence openings, and typographic emphasis sparingly and only at moments of peak pressure.
+- Do not self-echo. Once a feeling, fact, or image has landed, do not restate it in slightly different language unless the repetition clearly escalates, inverts, or reveals something new.
+- Trust subtext. If action, dialogue, or image already conveys the meaning, do not immediately explain that meaning again in narration.
+- Keep scenes legible. In surreal, erotic, or horror material, maintain clear physical geography, cause-and-effect, and the protagonist's immediate options.
+- Keep most paragraphs centered on one beat. Every paragraph should buy at least one of: new action, new information, a reversal, sharper decision pressure, or a changed relationship.
+- Before finalizing, mentally verify: (a) no distinctive phrase or image repeated without changed meaning, (b) each paragraph adds motion/information/pressure/relational change, (c) the reader can track space, bodies, threats, and options, (d) narration is in the protagonist's idiom rather than a generic literary voice, (e) no beat explained twice—once through image and once through interpretation.
 
 When writing endings (character death, victory, conclusion):
 - Make the ending feel earned and meaningful.
@@ -158,6 +171,12 @@ Sentence patterns: {{protagonist.speechFingerprint.sentencePatterns}}
   "sample line 1"
   "sample line 2"{{/if}}
 
+VOICE APPLICATION:
+- The protagonist speech fingerprint governs narration as well as dialogue.
+- Use the protagonist's conceptual vocabulary, favorite abstractions, and recurring metaphors selectively.
+- Reuse recurring inner-language only when it sharpens conflict or shows change; do not use it as filler.
+- If a phrase, abstraction, or comparison would not plausibly occur in this protagonist's mind, do not use it.
+
 {{#if storyBible && decomposedCharacters[0]}}
 NPC VOICE FINGERPRINTS (use these to write distinct NPC dialogue):
 {{for each storyBible.relevantCharacter (excluding protagonist by name match):
@@ -221,13 +240,22 @@ The prior attempt failed deterministic reconciliation. Correct these failures in
 {{reconciliationFailureReasons as bullet list with [code] (field) message}}
 {{/if}}
 
+=== OPENING SCENE DISCIPLINE ===
+- Within the first 2 paragraphs, make clear where the protagonist is, what is happening right now, and what immediate pressure, desire, or disturbance is active.
+- If you begin with a fragment, aphoristic line, or highly stylized sentence, ground it immediately in concrete action or observation.
+- Let intrigue come from a legible situation, not from withholding basic orientation.
+- Use one dominant opening image and a small number of telling details; do not flood the opening with multiple equally loaded metaphors before the scene is clear.
+- By the end of the scene, the reader should understand what the protagonist wants next and what presently obstructs them.
+
 REQUIREMENTS (follow all):
-1. Introduce the protagonist in a compelling scene that reveals their personality through action
-2. Establish the world and atmosphere matching the specified tone
-3. Present an initial situation with immediate tension or intrigue that draws the player in
+1. Introduce the protagonist through action, reaction, or choice so personality emerges from behavior rather than descriptive performance
+2. Establish the world and atmosphere matching the specified tone, but ground the concrete situation within the first 2 paragraphs
+3. Present an initial situation with immediate tension or intrigue that also gives the protagonist a clear next pressure, problem, or desire
+3a. Ensure the prose clearly conveys the protagonist's immediate options so the opening reads as a choiceable situation
 4. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
 5. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
 6. In portraying the protagonist, subtly establish the tension between their conscious Want (what they pursue) and their deeper Need (what they must learn or become). This should be shown through action and behavior, never stated explicitly.
+7. If an OPENING IMAGE CONTRACT is provided, ensure the scene's visual composition clearly reflects it.
 
 NOTE: Choices are generated by a dedicated Choice Generator stage after the writer. The writer does NOT produce choices.
 
@@ -238,7 +266,7 @@ TONE REMINDER: All output must fit the tone: {{tone}}. Target feel: {{toneFeel}}
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. Open with immediate, scene-level tension tied to the current dramatic setup
 2. Maintain consistency with established worldbuilding, tone, and scene context
-3. Prose quality: character-filtered, emotionally resonant, forward-moving
+3. Prose quality: character-filtered, emotionally resonant, forward-moving, and legible
 4. sceneSummary and protagonistAffect accuracy
 ```
 

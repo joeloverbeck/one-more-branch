@@ -262,7 +262,8 @@ describe('buildLorekeeperPrompt', () => {
                   description: 'Secure the evidence cache',
                   objective: 'Protect the evidence',
                   causalLink: 'The purge starts by burning archive nodes.',
-                  exitCondition: 'The evidence is hidden somewhere the purge cannot immediately reach.',
+                  exitCondition:
+                    'The evidence is hidden somewhere the purge cannot immediately reach.',
                   role: 'setup',
                   escalationType: null,
                   secondaryEscalationType: null,

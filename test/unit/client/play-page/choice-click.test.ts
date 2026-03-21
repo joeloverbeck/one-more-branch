@@ -410,7 +410,9 @@ describe('play page choice click handler', () => {
       ],
     });
 
-    const initialShell = document.getElementById('play-structure-shell') as HTMLDetailsElement | null;
+    const initialShell = document.getElementById(
+      'play-structure-shell'
+    ) as HTMLDetailsElement | null;
     expect(initialShell).not.toBeNull();
     if (initialShell) {
       initialShell.open = true;
@@ -813,7 +815,8 @@ describe('play page choice click handler', () => {
     // The choice POST should have been made (proceedWithChoice ran to completion)
     expect(choicePostCalled).toBe(true);
     const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
-      (call) => call[1]?.method === 'POST' && typeof call[0] === 'string' && call[0].includes('/choice')
+      (call) =>
+        call[1]?.method === 'POST' && typeof call[0] === 'string' && call[0].includes('/choice')
     );
     const body = JSON.parse(postCall![1]!.body as string) as Record<string, unknown>;
     expect(body.selectedSceneDirection).toEqual({

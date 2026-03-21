@@ -51,6 +51,8 @@ ${context.reconciliationFailureReasons
       ? `OPENING IMAGE CONTRACT:
 Anchor this opening scene to this concrete image: ${context.structure.openingImage}
 Use this as a visual spine for setting, action framing, or emotional atmosphere.
+Treat it as an anchor, not a collage prompt: choose a small number of telling details and turn them into immediate action, tension, or decision pressure.
+Do not linger in decorative description before the scene is clear.
 
 `
       : '';
@@ -61,6 +63,12 @@ Use this as a visual spine for setting, action framing, or emotional atmosphere.
 PROTAGONIST: ${protagonistSpeech.name}
 PROTAGONIST SPEECH FINGERPRINT (use this to write their voice):
 ${formatSpeechFingerprintForWriter(protagonistSpeech.speechFingerprint)}
+
+VOICE APPLICATION:
+- The protagonist speech fingerprint governs narration as well as dialogue.
+- Use the protagonist's conceptual vocabulary, favorite abstractions, and recurring metaphors selectively.
+- Reuse recurring inner-language only when it sharpens conflict or shows change; do not use it as filler.
+- If a phrase, abstraction, or comparison would not plausibly occur in this protagonist's mind, do not use it.
 
 `
     : '';
@@ -82,10 +90,18 @@ ${dataRules}
 ${protagonistSpeechSection}${sceneCharacterVoicesSection}
 TONE/GENRE: ${context.tone}
 
-${buildSpineSection(context.spine)}${storyBibleSection}${openingImageSection}${plannerSection}${reconciliationRetrySection}REQUIREMENTS (follow all):
-1. Introduce the protagonist in a compelling scene that reveals their personality through action
-2. Establish the world and atmosphere matching the specified tone
-3. Present an initial situation with immediate tension or intrigue that draws the player in
+${buildSpineSection(context.spine)}${storyBibleSection}${openingImageSection}${plannerSection}${reconciliationRetrySection}=== OPENING SCENE DISCIPLINE ===
+- Within the first 2 paragraphs, make clear where the protagonist is, what is happening right now, and what immediate pressure, desire, or disturbance is active.
+- If you begin with a fragment, aphoristic line, or highly stylized sentence, ground it immediately in concrete action or observation.
+- Let intrigue come from a legible situation, not from withholding basic orientation.
+- Use one dominant opening image and a small number of telling details; do not flood the opening with multiple equally loaded metaphors before the scene is clear.
+- By the end of the scene, the reader should understand what the protagonist wants next and what presently obstructs them.
+
+REQUIREMENTS (follow all):
+1. Introduce the protagonist through action, reaction, or choice so personality emerges from behavior rather than descriptive performance
+2. Establish the world and atmosphere matching the specified tone, but ground the concrete situation within the first 2 paragraphs
+3. Present an initial situation with immediate tension or intrigue that also gives the protagonist a clear next pressure, problem, or desire
+3a. Ensure the prose clearly conveys the protagonist's immediate options so the opening reads as a choiceable situation
 4. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
 5. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
 6. In portraying the protagonist, subtly establish the tension between their conscious Want (what they pursue) and their deeper Need (what they must learn or become). This should be shown through action and behavior, never stated explicitly.
@@ -96,7 +112,7 @@ REMINDER: protagonistAffect should reflect how the scene leaves the protagonist 
 WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 1. Open with immediate, scene-level tension tied to the current dramatic setup
 2. Maintain consistency with established worldbuilding, tone, and scene context
-3. Prose quality: character-filtered, emotionally resonant, forward-moving
+3. Prose quality: character-filtered, emotionally resonant, forward-moving, and legible
 4. sceneSummary and protagonistAffect accuracy`;
 
   const toneParams = {

@@ -96,7 +96,9 @@ describe('buildSceneIdeatorPrompt', () => {
       const messages = buildSceneIdeatorPrompt(openingContext);
       expect(messages[0].content).toContain(`generate exactly ${DEFAULT_SCENE_IDEA_COUNT}`);
       expect(messages[1].content).toContain('IDEATION SLATE:');
-      expect(messages[1].content).toContain(`Generate exactly ${DEFAULT_SCENE_IDEA_COUNT} options.`);
+      expect(messages[1].content).toContain(
+        `Generate exactly ${DEFAULT_SCENE_IDEA_COUNT} options.`
+      );
     });
 
     it('user message contains "OPENING scene"', () => {
@@ -172,7 +174,9 @@ describe('buildSceneIdeatorPrompt', () => {
         'array of exactly 4 scene direction objects, each with diversityLane'
       );
       expect(messages[1].content).toContain('Option 1 lane: INNER_THRESHOLD');
-      expect(messages[1].content).not.toContain(`Generate exactly ${DEFAULT_SCENE_IDEA_COUNT} options.`);
+      expect(messages[1].content).not.toContain(
+        `Generate exactly ${DEFAULT_SCENE_IDEA_COUNT} options.`
+      );
       expect(messages[1].content).not.toContain('Option 1 lane: EXTERNAL_FORCE');
     });
 

@@ -3945,13 +3945,6 @@ main {
   gap: 1rem;
 }
 
-@media (min-width: 960px) {
-  .scene-direction-options {
-    align-items: start;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 .scene-direction-card {
   border: 1px solid var(--border-color);
   border-radius: var(--radius);
@@ -4040,6 +4033,34 @@ main {
 .scene-direction-editable:focus {
   outline: none;
   border-color: var(--color-primary);
+}
+
+.scene-direction-justification-wrapper {
+  margin-top: 0.4rem;
+}
+
+.scene-direction-why-toggle {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 0.2rem 0;
+  text-decoration: underline;
+  transition: color var(--transition);
+}
+
+.scene-direction-why-toggle:hover {
+  color: var(--color-primary-hover);
+}
+
+.scene-direction-justification-collapsible {
+  display: none;
+  margin-top: 0.3rem;
+}
+
+.scene-direction-justification-collapsible.expanded {
+  display: block;
 }
 
 .scene-ideation-actions {

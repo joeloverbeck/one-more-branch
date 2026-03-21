@@ -515,19 +515,13 @@ describe('buildContinuationPrompt', () => {
     expect(user).toContain('6.');
   });
 
-  it('should include opening mode decision guidance in continuation requirements', () => {
+  it('should include planner-deferred opening guidance in continuation requirements', () => {
     const messages = buildContinuationPrompt(baseContext);
 
     const user = getUserMessage(messages);
-    expect(user).toContain('Choose the scene opening based on what matters next');
-    expect(user).toContain('Option A (immediate continuation)');
-    expect(user).toContain('Option B (time cut)');
-    expect(user).toContain('do NOT recap or summarize what happened');
-    expect(user).toContain('Start exactly where the previous scene ended');
-    expect(user).toContain(
-      "SKIP time and open at the next scene where the choice's consequences matter"
-    );
-    expect(user).toContain('For Option B, signal the skip with a brief time cue');
+    expect(user).toContain("Follow the planner's opening line directive");
+    expect(user).toContain('Do NOT recap or summarize what happened');
+    expect(user).toContain('If a time cut is indicated, signal it with a brief time cue');
   });
 
   it('should not truncate text under maxLength', () => {

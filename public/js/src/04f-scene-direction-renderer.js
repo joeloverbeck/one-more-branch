@@ -109,6 +109,30 @@
         escapeHtml(option.sceneDirection) +
         '</textarea>';
 
+      var justificationWrapper = document.createElement('div');
+      justificationWrapper.className = 'scene-direction-justification-wrapper';
+
+      var whyToggle = document.createElement('button');
+      whyToggle.type = 'button';
+      whyToggle.className = 'scene-direction-why-toggle';
+      whyToggle.textContent = 'Why?';
+      whyToggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var collapsible = justificationWrapper.querySelector(
+          '.scene-direction-justification-collapsible'
+        );
+        if (collapsible.classList.contains('expanded')) {
+          collapsible.classList.remove('expanded');
+          whyToggle.textContent = 'Why?';
+        } else {
+          collapsible.classList.add('expanded');
+          whyToggle.textContent = 'Hide';
+        }
+      });
+
+      var justificationCollapsible = document.createElement('div');
+      justificationCollapsible.className = 'scene-direction-justification-collapsible';
+
       var justificationSection = document.createElement('div');
       justificationSection.className = 'scene-direction-field';
       justificationSection.innerHTML =
@@ -121,9 +145,13 @@
         escapeHtml(option.dramaticJustification) +
         '</textarea>';
 
+      justificationCollapsible.appendChild(justificationSection);
+      justificationWrapper.appendChild(whyToggle);
+      justificationWrapper.appendChild(justificationCollapsible);
+
       card.appendChild(badges);
       card.appendChild(directionSection);
-      card.appendChild(justificationSection);
+      card.appendChild(justificationWrapper);
 
       card.addEventListener('click', function () {
         var allCards = container.querySelectorAll('.scene-direction-card');
@@ -137,6 +165,15 @@
             .forEach(function (el) {
               el.style.display = '';
             });
+          // Collapse justification on deselected cards
+          var collapsible = c.querySelector('.scene-direction-justification-collapsible');
+          if (collapsible) {
+            collapsible.classList.remove('expanded');
+          }
+          var toggle = c.querySelector('.scene-direction-why-toggle');
+          if (toggle) {
+            toggle.textContent = 'Why?';
+          }
         });
 
         card.classList.add('scene-direction-card-selected');
@@ -149,6 +186,15 @@
           .forEach(function (el) {
             el.style.display = 'none';
           });
+        // Auto-expand justification on selected card
+        var selectedCollapsible = card.querySelector('.scene-direction-justification-collapsible');
+        if (selectedCollapsible) {
+          selectedCollapsible.classList.add('expanded');
+        }
+        var selectedToggle = card.querySelector('.scene-direction-why-toggle');
+        if (selectedToggle) {
+          selectedToggle.textContent = 'Hide';
+        }
 
         selectedSceneDirection = option;
         if (typeof onSelect === 'function') {

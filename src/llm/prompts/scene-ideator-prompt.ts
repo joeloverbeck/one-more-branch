@@ -61,7 +61,7 @@ const LANE_INSTRUCTIONS: Readonly<Record<string, string>> = {
   CAUSAL_HARVEST:
     'Prior choices, promises, or accumulated pressure bear fruit or exact costs. Seeds planted earlier bloom or rot. The dramatic energy comes from the past catching up to the present. (Laws: gratification/bringdown; Chekhov: setup/payoff)',
   INNER_THRESHOLD:
-    'The protagonist\'s self-concept, beliefs, or identity face a test that may change who they are. The dramatic energy comes from within — corruption, growth, ritual, or becoming. (Vogler: crossing the threshold; Weiland: character arc)',
+    "The protagonist's self-concept, beliefs, or identity face a test that may change who they are. The dramatic energy comes from within — corruption, growth, ritual, or becoming. (Vogler: crossing the threshold; Weiland: character arc)",
 };
 
 function buildStructurePositionSection(context: SceneIdeatorContinuationContext): string {

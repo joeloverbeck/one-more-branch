@@ -502,7 +502,9 @@ describe('parseSceneIdeatorResponse', () => {
 
   it('throws when parsed is an array', () => {
     expect(() => parseSceneIdeatorResponse([], DEFAULT_SCENE_IDEA_COUNT)).toThrow(LLMError);
-    expect(() => parseSceneIdeatorResponse([], DEFAULT_SCENE_IDEA_COUNT)).toThrow(/must be an object/);
+    expect(() => parseSceneIdeatorResponse([], DEFAULT_SCENE_IDEA_COUNT)).toThrow(
+      /must be an object/
+    );
   });
 
   it('throws when options field is missing', () => {
@@ -513,9 +515,9 @@ describe('parseSceneIdeatorResponse', () => {
   });
 
   it('throws when options is not an array', () => {
-    expect(() => parseSceneIdeatorResponse({ options: 'not array' }, DEFAULT_SCENE_IDEA_COUNT)).toThrow(
-      /missing options array/
-    );
+    expect(() =>
+      parseSceneIdeatorResponse({ options: 'not array' }, DEFAULT_SCENE_IDEA_COUNT)
+    ).toThrow(/missing options array/);
   });
 
   it('throws when options has fewer than the requested count', () => {

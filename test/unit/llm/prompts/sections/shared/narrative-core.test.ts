@@ -21,7 +21,7 @@ describe('shared narrative-core sections', () => {
     it('includes golden rule as first directive', () => {
       expect(STORYTELLING_GUIDELINES).toContain('GOLDEN RULE');
       expect(STORYTELLING_GUIDELINES).toContain('vigorous verbs');
-      expect(STORYTELLING_GUIDELINES).toContain('specific nouns');
+      expect(STORYTELLING_GUIDELINES).toContain('precise nouns');
     });
 
     it('requires second person perspective', () => {

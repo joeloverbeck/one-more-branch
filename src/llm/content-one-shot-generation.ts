@@ -70,7 +70,9 @@ function parsePacket(raw: unknown, index: number): ConceptSeedOneShotLineagedPac
     !Array.isArray(data['interactionVerbs']) ||
     data['interactionVerbs'].length < 4 ||
     data['interactionVerbs'].length > 6 ||
-    !data['interactionVerbs'].every((verb: unknown) => typeof verb === 'string' && verb.trim().length > 0)
+    !data['interactionVerbs'].every(
+      (verb: unknown) => typeof verb === 'string' && verb.trim().length > 0
+    )
   ) {
     throw new LLMError(
       `Packet at index ${index} missing or invalid required field: interactionVerbs`,
@@ -102,7 +104,9 @@ function parsePacket(raw: unknown, index: number): ConceptSeedOneShotLineagedPac
   };
 }
 
-export function parseContentOneShotResponse(parsed: unknown): readonly ConceptSeedOneShotLineagedPacket[] {
+export function parseContentOneShotResponse(
+  parsed: unknown
+): readonly ConceptSeedOneShotLineagedPacket[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Content one-shot response must be an object',

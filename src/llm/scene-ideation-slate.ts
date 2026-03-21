@@ -24,7 +24,9 @@ export interface SceneIdeationSlate {
   readonly slots: readonly SceneIdeationSlot[];
 }
 
-const OPENING_RATIONALES: Readonly<Record<(typeof DEFAULT_OPENING_SCENE_IDEA_LANES)[number], string>> = {
+const OPENING_RATIONALES: Readonly<
+  Record<(typeof DEFAULT_OPENING_SCENE_IDEA_LANES)[number], string>
+> = {
   EXTERNAL_FORCE:
     'Front-load pressure so the opening slate includes a world-facing source of urgency.',
   EPISTEMIC_SHIFT:

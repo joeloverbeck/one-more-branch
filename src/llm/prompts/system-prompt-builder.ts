@@ -10,6 +10,7 @@ import { CONTENT_POLICY } from '../content-policy.js';
 // Shared sections
 import {
   STORYTELLING_GUIDELINES,
+  PROSE_DISCIPLINE,
   ENDING_GUIDELINES,
   CONTINUITY_CONTEXT_USAGE,
   INVENTORY_MANAGEMENT,
@@ -40,7 +41,7 @@ export { STRICT_CHOICE_GUIDELINES };
  * Creative sections that belong in the system message.
  * These define persona, prose style, and creative guidelines.
  */
-const CREATIVE_SECTIONS = [STORYTELLING_GUIDELINES, ENDING_GUIDELINES] as const;
+const CREATIVE_SECTIONS = [STORYTELLING_GUIDELINES, PROSE_DISCIPLINE, ENDING_GUIDELINES] as const;
 
 /**
  * Shared data-schema sections used by both prompt types.

@@ -99,7 +99,9 @@ describe('content packet card presenter', () => {
   it('keeps the registry exhaustive and in canonical order', () => {
     const expectedFieldOrder = Object.keys(makeConceptSeedPacket());
 
-    expect(CONTENT_PACKET_CARD_FIELD_REGISTRY.map((field) => field.key)).toEqual(expectedFieldOrder);
+    expect(CONTENT_PACKET_CARD_FIELD_REGISTRY.map((field) => field.key)).toEqual(
+      expectedFieldOrder
+    );
     expect(new Set(CONTENT_PACKET_CARD_FIELD_REGISTRY.map((field) => field.key)).size).toBe(
       expectedFieldOrder.length
     );

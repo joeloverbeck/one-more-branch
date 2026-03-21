@@ -102,13 +102,8 @@ function buildPacketDetails(
   }));
 }
 
-function formatSourceArtifactValue(
-  sourceArtifact: ContentPacketSourceArtifact
-): readonly string[] {
-  const values = [
-    `Type: ${sourceArtifact.artifactType}`,
-    `Source ID: ${sourceArtifact.sourceId}`,
-  ];
+function formatSourceArtifactValue(sourceArtifact: ContentPacketSourceArtifact): readonly string[] {
+  const values = [`Type: ${sourceArtifact.artifactType}`, `Source ID: ${sourceArtifact.sourceId}`];
 
   if (sourceArtifact.contentKind) {
     values.push(`Kind: ${sourceArtifact.contentKind}`);
@@ -142,9 +137,7 @@ function buildOriginDetails(origin: ContentPacketOrigin): readonly ContentPacket
   ];
 }
 
-function buildMetaDetails(
-  evaluation?: ContentEvaluation
-): readonly ContentPacketCardDetail[] {
+function buildMetaDetails(evaluation?: ContentEvaluation): readonly ContentPacketCardDetail[] {
   if (!evaluation) {
     return [];
   }

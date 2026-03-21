@@ -577,7 +577,9 @@ describe('playRoutes', () => {
       await flushPromises();
 
       expect(status).not.toHaveBeenCalled();
-      const renderPayload = (render.mock.calls[0] as [string, Record<string, unknown>] | undefined)?.[1];
+      const renderPayload = (
+        render.mock.calls[0] as [string, Record<string, unknown>] | undefined
+      )?.[1];
       expect(renderPayload).toBeDefined();
       const playStructureInfo = renderPayload?.['playStructureInfo'] as
         | {

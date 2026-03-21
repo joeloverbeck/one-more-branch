@@ -94,9 +94,7 @@ spineRoutes.post(
 
     const worldbuildingId = body.worldbuildingId?.trim();
     if (!worldbuildingId) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'Worldbuilding selection is required' });
+      return res.status(400).json({ success: false, error: 'Worldbuilding selection is required' });
     }
 
     const progressId = parseProgressId(body.progressId);
@@ -120,10 +118,7 @@ spineRoutes.post(
         });
       }
 
-      const allCharacterIds = [
-        protagonistCharacterId,
-        ...(body.npcCharacterIds ?? []),
-      ];
+      const allCharacterIds = [protagonistCharacterId, ...(body.npcCharacterIds ?? [])];
       const decomposedCharacters = (
         await Promise.all(allCharacterIds.map((id) => loadCharacter(id)))
       ).filter((c): c is NonNullable<typeof c> => c !== null);
@@ -142,8 +137,7 @@ spineRoutes.post(
           worldbuilding: wb?.rawWorldMarkdown ?? wb?.rawSourceText ?? undefined,
           decomposedWorld,
           tone: body.tone?.trim() ?? 'fantasy adventure',
-          decomposedCharacters:
-            decomposedCharacters.length > 0 ? decomposedCharacters : undefined,
+          decomposedCharacters: decomposedCharacters.length > 0 ? decomposedCharacters : undefined,
           startingSituation: body.startingSituation?.trim(),
           conceptSpec: concept.evaluatedConcept.concept,
           storyKernel: kernel.evaluatedKernel.kernel,
@@ -154,11 +148,7 @@ spineRoutes.post(
         progressId
           ? {
               onStageStarted: (stage: string): void =>
-                generationProgressService.markStageStarted(
-                  progressId,
-                  stage as GenerationStage,
-                  1
-                ),
+                generationProgressService.markStageStarted(progressId, stage as GenerationStage, 1),
               onStageCompleted: (stage: string): void =>
                 generationProgressService.markStageCompleted(
                   progressId,

@@ -709,7 +709,9 @@ describe('concept-verifier', () => {
         messages: Array<{ content: string }>;
       };
       const secondSystemMessage = secondCallBody.messages[0].content;
-      expect(secondSystemMessage).toContain('CONCEPT SEED PACKET SETPIECE EXPLOITATION REQUIREMENTS');
+      expect(secondSystemMessage).toContain(
+        'CONCEPT SEED PACKET SETPIECE EXPLOITATION REQUIREMENTS'
+      );
       expect(secondSystemMessage).toContain('Signature image 1');
     });
 
