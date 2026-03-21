@@ -199,9 +199,7 @@ function isConceptVerification(value: unknown): value is ConceptVerification {
   );
 }
 
-function isStressTestResult(
-  value: unknown
-): value is {
+function isStressTestResult(value: unknown): value is {
   readonly driftRisks: readonly DriftRisk[];
   readonly playerBreaks: readonly PlayerBreak[];
 } {

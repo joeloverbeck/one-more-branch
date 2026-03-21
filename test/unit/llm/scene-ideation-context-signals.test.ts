@@ -1,6 +1,12 @@
 import { buildSceneIdeationContextSignals } from '../../../src/llm/scene-ideation-context-signals';
 import type { SceneIdeatorContinuationContext } from '../../../src/llm/scene-ideator-types';
-import { PromiseScope, PromiseType, ThreadType, ThreatType, Urgency } from '../../../src/models/state';
+import {
+  PromiseScope,
+  PromiseType,
+  ThreadType,
+  ThreatType,
+  Urgency,
+} from '../../../src/models/state';
 import type { StoryStructure } from '../../../src/models/story-arc';
 
 function createContinuationContext(

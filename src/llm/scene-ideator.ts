@@ -236,14 +236,7 @@ export async function generateSceneDirections(
   const result = await withRetry(() =>
     withModelFallback(
       (m) =>
-        fetchSceneDirections(
-          apiKey,
-          m,
-          messages,
-          slate.targetOptionCount,
-          temperature,
-          maxTokens
-        ),
+        fetchSceneDirections(apiKey, m, messages, slate.targetOptionCount, temperature, maxTokens),
       primaryModel,
       'sceneIdeator'
     )

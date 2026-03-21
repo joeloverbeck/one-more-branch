@@ -7,6 +7,9 @@ export const PAGE_PLANNER_PROMPT_RULES: ReadonlyArray<string> = [
   'When planning dialogue-heavy scenes, note which characters will speak and consider their distinct voices. The writer will receive full speech fingerprints for scene characters — your writerBrief.mustIncludeBeats can reference specific voice moments.',
   "When planning scenes, ensure the sceneIntent serves the protagonist's Need vs Want conflict from the spine.",
   "Set isEnding to true ONLY when this scene should be the story's conclusion — the final resolution milestone completing the story arc, a character death that ends the journey, or a natural story conclusion. Default to false.",
+  'Every plan must produce at least one material change that is player-legible: danger, knowledge, leverage, relationship, location, available options, or cost. Atmospheric intensification alone is not advancement.',
+  'Plan scenes to end in a choiceable state: the final situation should make clear what is now urgent, tempting, dangerous, and possible for the protagonist.',
+  'Scene endings must arise from a genuinely altered situation, not from ominous phrasing or atmospheric tension alone. Ensure the plan changes the board before the scene closes.',
 ];
 
 export const PAGE_PLANNER_TONE_RULE =

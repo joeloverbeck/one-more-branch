@@ -1,4 +1,10 @@
-import type { Page, Story, StoryAct, StoryStructure, StructureVersionId } from '../../models/index.js';
+import type {
+  Page,
+  Story,
+  StoryAct,
+  StoryStructure,
+  StructureVersionId,
+} from '../../models/index.js';
 import type { KnowledgeAsymmetry } from '../../models/state/knowledge-state.js';
 import type { TrackedPromise } from '../../models/state/index.js';
 import type { AccumulatedNpcAgendas } from '../../models/state/npc-agenda.js';

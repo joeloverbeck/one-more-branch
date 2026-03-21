@@ -168,7 +168,10 @@ export function buildSharedStructureContext(
     exitReversal.trim().length > 0 ? `\nExpected Exit Reversal: ${exitReversal}` : '';
   const promiseTargetsLine =
     promiseTargets.length > 0 ? `\nPromise Targets: ${promiseTargets.join(', ')}` : '';
-  const structurePrioritySection = buildStructurePriorityGuidanceSection(currentAct, activeMilestone);
+  const structurePrioritySection = buildStructurePriorityGuidanceSection(
+    currentAct,
+    activeMilestone
+  );
 
   return `=== STORY STRUCTURE ===
 Overall Theme: ${structure.overallTheme}
@@ -636,7 +639,9 @@ function buildStructurePriorityGuidanceSection(
 
   if (actQuestion.length > 0) {
     lines.push(`Act Question: ${actQuestion}`);
-    lines.push('- Use the act question as the act-level compass for scene direction and drift checks.');
+    lines.push(
+      '- Use the act question as the act-level compass for scene direction and drift checks.'
+    );
   }
 
   if (exitReversal.length > 0) {

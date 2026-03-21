@@ -189,7 +189,9 @@ contentPacketRoutes.post(
     };
 
     if (!body.candidate || typeof body.candidate !== 'object') {
-      return res.status(400).json({ success: false, error: 'Generated save candidate is required' });
+      return res
+        .status(400)
+        .json({ success: false, error: 'Generated save candidate is required' });
     }
 
     let saved: SavedContentPacket;

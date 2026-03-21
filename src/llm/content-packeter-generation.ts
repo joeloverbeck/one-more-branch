@@ -99,7 +99,9 @@ function validatePacket(value: unknown, index: number): ConceptSeedPacketerPacke
   };
 }
 
-export function parseContentPacketerResponse(parsed: unknown): readonly ConceptSeedPacketerPacket[] {
+export function parseContentPacketerResponse(
+  parsed: unknown
+): readonly ConceptSeedPacketerPacket[] {
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
     throw new LLMError(
       'Content packeter response must be an object',

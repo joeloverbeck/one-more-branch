@@ -134,12 +134,8 @@ describe('buildSceneIdeationSlate', () => {
       })
     );
 
-    const baselineIndex = baselineSlate.slots.findIndex(
-      (slot) => slot.lane === 'CAUSAL_HARVEST'
-    );
-    const pressuredIndex = pressuredSlate.slots.findIndex(
-      (slot) => slot.lane === 'CAUSAL_HARVEST'
-    );
+    const baselineIndex = baselineSlate.slots.findIndex((slot) => slot.lane === 'CAUSAL_HARVEST');
+    const pressuredIndex = pressuredSlate.slots.findIndex((slot) => slot.lane === 'CAUSAL_HARVEST');
 
     expect(pressuredIndex).toBeLessThan(baselineIndex);
     expect(pressuredSlate.slots[pressuredIndex]?.requiredSignals).toContain('overdueThreads');
@@ -164,12 +160,8 @@ describe('buildSceneIdeationSlate', () => {
       })
     );
 
-    const baselineIndex = baselineSlate.slots.findIndex(
-      (slot) => slot.lane === 'CAUSAL_HARVEST'
-    );
-    const pressuredIndex = pressuredSlate.slots.findIndex(
-      (slot) => slot.lane === 'CAUSAL_HARVEST'
-    );
+    const baselineIndex = baselineSlate.slots.findIndex((slot) => slot.lane === 'CAUSAL_HARVEST');
+    const pressuredIndex = pressuredSlate.slots.findIndex((slot) => slot.lane === 'CAUSAL_HARVEST');
 
     expect(pressuredIndex).toBeLessThan(baselineIndex);
     expect(pressuredSlate.slots[pressuredIndex]?.requiredSignals).toContain('agedPromises');
@@ -224,9 +216,9 @@ describe('buildSceneIdeationSlate', () => {
     expect(identityLanes).toHaveLength(DEFAULT_SCENE_IDEA_COUNT);
     expect(new Set(identityLanes).size).toBe(DEFAULT_SCENE_IDEA_COUNT);
     expect(removedBaselineLanes).toHaveLength(1);
-    expect(identitySlate.slots.find((slot) => slot.lane === 'INNER_THRESHOLD')?.requiredSignals).toEqual(
-      expect.arrayContaining(['structureIdentityTurn', 'identityGuidance'])
-    );
+    expect(
+      identitySlate.slots.find((slot) => slot.lane === 'INNER_THRESHOLD')?.requiredSignals
+    ).toEqual(expect.arrayContaining(['structureIdentityTurn', 'identityGuidance']));
   });
 
   it('does not introduce identity/transformation when continuation context is not identity-heavy', () => {

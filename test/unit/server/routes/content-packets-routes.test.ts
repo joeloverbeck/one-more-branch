@@ -110,7 +110,9 @@ function makeConceptSeedPacket(overrides: Partial<ConceptSeedPacket> = {}): Conc
   };
 }
 
-function makeGeneratedPacket(overrides: Partial<GeneratedContentPacket> = {}): GeneratedContentPacket {
+function makeGeneratedPacket(
+  overrides: Partial<GeneratedContentPacket> = {}
+): GeneratedContentPacket {
   return {
     packet: makeConceptSeedPacket(),
     context: {
@@ -349,7 +351,9 @@ describe('content-packets routes', () => {
       expect(jsonCall[0].success).toBe(true);
       expect(jsonCall[0].packets).toEqual(quickResult.packets);
       expect(jsonCall[0].packetCards[0]).toMatchObject({ id: 'pkt-01' });
-      expect(jsonCall[0].packets[0]?.packet).toEqual(expect.objectContaining({ contentId: 'pkt-01' }));
+      expect(jsonCall[0].packets[0]?.packet).toEqual(
+        expect.objectContaining({ contentId: 'pkt-01' })
+      );
       expect(jsonCall[0].packets[0]?.context).toEqual(
         expect.objectContaining({ premiseSummary: 'A premise summary' })
       );
@@ -409,7 +413,9 @@ describe('content-packets routes', () => {
             },
           }),
         ],
-        evaluations: [makeEvaluation({ contentId: 'pkt-02', recommendedRole: 'SECONDARY_MUTAGEN' })],
+        evaluations: [
+          makeEvaluation({ contentId: 'pkt-02', recommendedRole: 'SECONDARY_MUTAGEN' }),
+        ],
       };
       (contentService.generateContentPipeline as jest.Mock).mockResolvedValue(pipelineResult);
 

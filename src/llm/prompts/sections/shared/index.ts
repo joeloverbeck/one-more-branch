@@ -3,7 +3,7 @@
  * These sections are used by both opening and continuation prompts.
  */
 
-export { STORYTELLING_GUIDELINES, ENDING_GUIDELINES } from './narrative-core.js';
+export { STORYTELLING_GUIDELINES, PROSE_DISCIPLINE, ENDING_GUIDELINES } from './narrative-core.js';
 
 export {
   CONTINUITY_CONTEXT_USAGE,

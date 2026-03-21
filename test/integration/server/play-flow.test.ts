@@ -537,15 +537,15 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     expect((logger.error as jest.Mock).mock.calls).toContainEqual([
       'LLM error creating story from spine:',
       {
-      message: 'anchorMoments.climax.actIndex must reference a valid act index between 0 and 2',
-      code: 'STRUCTURE_PARSE_ERROR',
-      retryable: false,
-      httpStatus: undefined,
-      model: 'openrouter/test-model',
-      stage: 'macroArchitecture',
-      parsedError: undefined,
-      rawErrorBody: undefined,
-      rawContent: '{"anchorMoments":{"climax":{"actIndex":3}}}',
+        message: 'anchorMoments.climax.actIndex must reference a valid act index between 0 and 2',
+        code: 'STRUCTURE_PARSE_ERROR',
+        retryable: false,
+        httpStatus: undefined,
+        model: 'openrouter/test-model',
+        stage: 'macroArchitecture',
+        parsedError: undefined,
+        rawErrorBody: undefined,
+        rawContent: '{"anchorMoments":{"climax":{"actIndex":3}}}',
       },
     ]);
   });
@@ -584,7 +584,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     );
     await waitForMock(createRes.json);
 
-    const storyId = (getMockCallArg(createRes.json, 0, 0) as { storyId: string }).storyId as StoryId;
+    const storyId = (getMockCallArg(createRes.json, 0, 0) as { storyId: string })
+      .storyId as StoryId;
     createdStoryIds.add(storyId);
 
     const beginRes = createMockResponse();
@@ -706,7 +707,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     );
     await waitForMock(createRes.json);
 
-    const storyId = (getMockCallArg(createRes.json, 0, 0) as { storyId: string }).storyId as StoryId;
+    const storyId = (getMockCallArg(createRes.json, 0, 0) as { storyId: string })
+      .storyId as StoryId;
     createdStoryIds.add(storyId);
 
     const beginRes = createMockResponse();
@@ -877,7 +879,8 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     );
     await waitForMock(createRes.json);
 
-    const storyId = (getMockCallArg(createRes.json, 0, 0) as { storyId: string }).storyId as StoryId;
+    const storyId = (getMockCallArg(createRes.json, 0, 0) as { storyId: string })
+      .storyId as StoryId;
     createdStoryIds.add(storyId);
 
     const beginRes = createMockResponse();

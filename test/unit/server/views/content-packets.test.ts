@@ -3,7 +3,10 @@ import path from 'path';
 import { render as renderEjs } from 'ejs';
 
 describe('content-packets page template', () => {
-  const templatePath = path.join(__dirname, '../../../../src/server/views/pages/content-packets.ejs');
+  const templatePath = path.join(
+    __dirname,
+    '../../../../src/server/views/pages/content-packets.ejs'
+  );
 
   it('renders grouped saved packet cards as context, packet, origin, and meta sections', () => {
     const template = fs.readFileSync(templatePath, 'utf8');
@@ -18,7 +21,11 @@ describe('content-packets page template', () => {
           cards: Array<{
             id: string;
             pinned: boolean;
-            contextDetails: Array<{ key: string; label: string; value: string | readonly string[] }>;
+            contextDetails: Array<{
+              key: string;
+              label: string;
+              value: string | readonly string[];
+            }>;
             packetDetails: Array<{ key: string; label: string; value: string | readonly string[] }>;
             originDetails: Array<{ key: string; label: string; value: string | readonly string[] }>;
             metaDetails: Array<{ key: string; label: string; value: string | readonly string[] }>;
