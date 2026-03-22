@@ -224,12 +224,10 @@ Scene Intent: {{pagePlan.sceneIntent}}
 Continuity Anchors:
 {{pagePlan.continuityAnchors as bullet list}}
 
-Writer Brief:
-- Opening line directive: {{pagePlan.writerBrief.openingLineDirective}}
-- Must include beats:
-{{pagePlan.writerBrief.mustIncludeBeats as indented bullets}}
-- Forbidden recaps:
-{{pagePlan.writerBrief.forbiddenRecaps as indented bullets}}
+Scene Mandates:
+{{pagePlan.sceneMandates as indented bullets}}
+Forbidden Recaps:
+{{pagePlan.forbiddenRecaps as indented bullets}}
 
 Use this plan as guidance while still returning the required writer schema output.
 {{/if}}
@@ -240,6 +238,48 @@ The prior attempt failed deterministic reconciliation. Correct these failures in
 {{reconciliationFailureReasons as bullet list with [code] (field) message}}
 {{/if}}
 
+{{#if sceneBlueprint}}
+=== SCENE BLUEPRINT ===
+Emotional Arc: {{sceneBlueprint.emotionalArc}}
+Follow this paragraph-level structure. Each unit becomes ~N paragraphs.
+
+UNIT 1 [{{sceneFunction}} / {{mruType}}] ({{paragraphWeight}} paragraph(s))
+Action: {{action}}
+Register: {{emotionalRegister}}
+Sensory: {{sensoryAnchor}}
+Characters speaking: {{speakingCharacters joined by ', '}} (if any)
+
+...additional units...
+
+Mandate Traceability:
+- "{{mandate}}" -> Unit {{unitIndex + 1}}
+{{/if}}
+
+{{!-- The REQUIREMENTS and DISCIPLINE sections are mode-dependent.
+      When sceneBlueprint is present: simplified REQUIREMENTS that defer to the blueprint.
+      When sceneBlueprint is absent: full OPENING SCENE DISCIPLINE + detailed REQUIREMENTS. --}}
+
+{{#if sceneBlueprint}}
+REQUIREMENTS (follow all):
+1. Follow the Scene Blueprint unit-by-unit. Each unit maps to its specified paragraph count.
+   Trust the blueprint's emotional arc -- do not flatten or skip the designed tension curve.
+   You may adjust paragraph boundaries by +/-1 paragraph where prose flow demands it,
+   or merge two tightly coupled adjacent units, but never skip or reorder units.
+2. Maintain consistency with established worldbuilding, tone, and scene context
+3. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
+4. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
+5. Subtly establish the tension between conscious Want and deeper Need through behavior, never stated explicitly.
+6. If an OPENING IMAGE CONTRACT is provided, honour it (the blueprint has placed it in a unit).
+
+REMINDER: protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.
+
+WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
+1. Open with immediate, scene-level tension tied to the current dramatic setup
+2. Follow the blueprint's structural intent and emotional arc
+3. Maintain consistency with established worldbuilding, tone, and scene context
+4. Prose quality: character-filtered, emotionally resonant, forward-moving, and legible
+5. sceneSummary and protagonistAffect accuracy
+{{else}}
 === OPENING SCENE DISCIPLINE ===
 - Within the first 2 paragraphs, make clear where the protagonist is, what is happening right now, and what immediate pressure, desire, or disturbance is active.
 - If you begin with a fragment, aphoristic line, or highly stylized sentence, ground it immediately in concrete action or observation.
@@ -268,6 +308,7 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 2. Maintain consistency with established worldbuilding, tone, and scene context
 3. Prose quality: character-filtered, emotionally resonant, forward-moving, and legible
 4. sceneSummary and protagonistAffect accuracy
+{{/if}}
 ```
 
 ## JSON Response Shape

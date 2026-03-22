@@ -34,6 +34,7 @@ import {
 import { KERNEL_EVOLUTION_SCHEMA } from '../../../../src/llm/schemas/kernel-evolver-schema';
 import { KERNEL_IDEATION_SCHEMA } from '../../../../src/llm/schemas/kernel-ideator-schema';
 import { LOREKEEPER_SCHEMA } from '../../../../src/llm/schemas/lorekeeper-schema';
+import { SCENE_BLUEPRINT_SCHEMA } from '../../../../src/llm/schemas/scene-blueprint-schema';
 import { NPC_INTELLIGENCE_SCHEMA } from '../../../../src/llm/schemas/npc-intelligence-schema';
 import { PAGE_PLANNER_GENERATION_SCHEMA } from '../../../../src/llm/schemas/page-planner-schema';
 import { PROMISE_TRACKER_SCHEMA } from '../../../../src/llm/schemas/promise-tracker-schema';
@@ -260,6 +261,7 @@ describe('Anthropic schema compatibility', () => {
     { name: 'PAGE_PLANNER_GENERATION_SCHEMA', schema: PAGE_PLANNER_GENERATION_SCHEMA },
     { name: 'STATE_ACCOUNTANT_SCHEMA', schema: STATE_ACCOUNTANT_SCHEMA },
     { name: 'LOREKEEPER_SCHEMA', schema: LOREKEEPER_SCHEMA },
+    { name: 'SCENE_BLUEPRINT_SCHEMA', schema: SCENE_BLUEPRINT_SCHEMA },
     { name: 'AGENDA_RESOLVER_SCHEMA', schema: AGENDA_RESOLVER_SCHEMA },
     { name: 'CHOICE_GENERATOR_SCHEMA', schema: CHOICE_GENERATOR_SCHEMA },
     { name: 'SPINE_FOUNDATION_SCHEMA', schema: SPINE_FOUNDATION_SCHEMA },

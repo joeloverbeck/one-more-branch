@@ -53,11 +53,8 @@ export interface CanonIntents {
 export interface ReducedPagePlanResult {
   sceneIntent: string;
   continuityAnchors: string[];
-  writerBrief: {
-    openingLineDirective: string;
-    mustIncludeBeats: string[];
-    forbiddenRecaps: string[];
-  };
+  sceneMandates: string[];
+  forbiddenRecaps: string[];
   dramaticQuestion: string;
   isEnding: boolean;
 }
@@ -79,11 +76,8 @@ export interface PagePlan {
     characterState: CharacterStateIntentMutations;
     canon: CanonIntents;
   };
-  writerBrief: {
-    openingLineDirective: string;
-    mustIncludeBeats: string[];
-    forbiddenRecaps: string[];
-  };
+  sceneMandates: string[];
+  forbiddenRecaps: string[];
   dramaticQuestion: string;
   isEnding: boolean;
 }

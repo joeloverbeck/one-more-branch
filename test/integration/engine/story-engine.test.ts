@@ -506,11 +506,9 @@ describe('story-engine integration', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Drive the scene with direct consequences.',
       continuityAnchors: [],
-      writerBrief: {
-        openingLineDirective: 'Begin in motion.',
-        mustIncludeBeats: [],
-        forbiddenRecaps: [],
-      },
+      sceneMandates: [],
+      forbiddenRecaps: [],
+      isEnding: false,
       dramaticQuestion: 'Will you confront the danger or seek another path?',
       rawResponse: 'page-plan',
     });

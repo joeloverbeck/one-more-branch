@@ -34,9 +34,8 @@ export function detectMentionedCharacters(context: LorekeeperContext): string[] 
     plan.sceneIntent,
     plan.dramaticQuestion,
     ...plan.continuityAnchors,
-    plan.writerBrief.openingLineDirective,
-    ...plan.writerBrief.mustIncludeBeats,
-    ...plan.writerBrief.forbiddenRecaps,
+    ...plan.sceneMandates,
+    ...plan.forbiddenRecaps,
   ];
   const combinedText = plannerTextParts.join(' ').toLowerCase();
 

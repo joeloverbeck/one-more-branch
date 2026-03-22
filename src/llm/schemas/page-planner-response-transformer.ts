@@ -90,11 +90,8 @@ export function validatePagePlannerResponse(
     return {
       sceneIntent: trimRequiredField(validated, 'sceneIntent'),
       continuityAnchors: normalizeStringArray(validated.continuityAnchors),
-      writerBrief: {
-        openingLineDirective: trimRequiredField(validated.writerBrief, 'openingLineDirective'),
-        mustIncludeBeats: normalizeStringArray(validated.writerBrief.mustIncludeBeats),
-        forbiddenRecaps: normalizeStringArray(validated.writerBrief.forbiddenRecaps),
-      },
+      sceneMandates: normalizeStringArray(validated.sceneMandates),
+      forbiddenRecaps: normalizeStringArray(validated.forbiddenRecaps),
       dramaticQuestion: trimRequiredField(validated, 'dramaticQuestion'),
       isEnding: validated.isEnding,
       rawResponse,

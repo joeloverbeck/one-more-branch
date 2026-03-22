@@ -590,11 +590,8 @@ describe('Structure Rewriting Journey E2E', () => {
       return Promise.resolve({
         sceneIntent: 'Advance the rewritten branch with concrete outcomes.',
         continuityAnchors: [],
-        writerBrief: {
-          openingLineDirective: 'Start with decisive action.',
-          mustIncludeBeats: [],
-          forbiddenRecaps: [],
-        },
+        sceneMandates: [],
+        forbiddenRecaps: [],
         dramaticQuestion: 'Will you confront the danger or seek another path?',
         isEnding: isEndingPage,
         rawResponse: 'page-plan',

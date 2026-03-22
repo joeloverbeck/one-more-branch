@@ -1,5 +1,11 @@
-import { generateLorekeeperBible, generateOpeningPage, generatePageWriterOutput } from '../llm';
+import {
+  generateLorekeeperBible,
+  generateOpeningPage,
+  generatePageWriterOutput,
+  generateSceneBlueprint,
+} from '../llm';
 import type { ContinuationContext, LorekeeperContext, OpeningContext } from '../llm/context-types';
+import type { SceneBlueprintContext, SceneBlueprintResult } from '../llm/scene-blueprint-types';
 import type {
   ReconciliationFailureReason,
   WriterValidationContext,
@@ -157,12 +163,76 @@ export function createWriterWithLorekeeper(context: WriterWithLorekeeperContext)
     }
     emitGenerationStage(context.onGenerationStage, 'CURATING_CONTEXT', 'completed', 1);
 
+    // --- Scene Blueprint (non-fatal) ---
+    let sceneBlueprint: SceneBlueprintResult | null = null;
+    emitGenerationStage(context.onGenerationStage, 'BLUEPRINTING_SCENE', 'started', 1);
+    try {
+      const blueprintContext: SceneBlueprintContext = {
+        pagePlan,
+        storyBible,
+        tone:
+          context.mode === 'opening'
+            ? context.openingContext.tone
+            : context.continuationContext.tone,
+        toneFeel:
+          context.mode === 'opening'
+            ? context.openingContext.toneFeel
+            : context.continuationContext.toneFeel,
+        toneAvoid:
+          context.mode === 'opening'
+            ? context.openingContext.toneAvoid
+            : context.continuationContext.toneAvoid,
+        spine:
+          context.mode === 'opening'
+            ? context.openingContext.spine
+            : context.continuationContext.spine,
+        genreFrame:
+          context.mode === 'opening'
+            ? context.openingContext.genreFrame
+            : context.continuationContext.genreFrame,
+        isEnding: pagePlan.isEnding,
+        previousNarrative:
+          context.mode === 'opening' ? '' : context.continuationContext.previousNarrative,
+        selectedChoice:
+          context.mode === 'opening' ? undefined : context.continuationContext.selectedChoice,
+        isOpening: context.mode === 'opening',
+        openingImage:
+          context.mode === 'opening' && context.openingContext.structure
+            ? context.openingContext.structure.openingImage
+            : undefined,
+      };
+      sceneBlueprint = await generateSceneBlueprint(blueprintContext, {
+        apiKey: context.apiKey,
+        observability: {
+          storyId: context.storyId,
+          pageId: logPageId,
+          requestId: context.requestId,
+        },
+      });
+      logger.info('Scene blueprint generated', {
+        storyId: context.storyId,
+        pageId: logPageId,
+        mode: context.mode,
+        unitCount: sceneBlueprint.units.length,
+        emotionalArc: sceneBlueprint.emotionalArc,
+      });
+    } catch (error) {
+      logger.warn('Scene blueprint failed, proceeding without blueprint', {
+        storyId: context.storyId,
+        pageId: logPageId,
+        mode: context.mode,
+        error,
+      });
+    }
+    emitGenerationStage(context.onGenerationStage, 'BLUEPRINTING_SCENE', 'completed', 1);
+
     if (context.mode === 'opening') {
       return generateOpeningPage(
         {
           ...context.openingContext,
           pagePlan,
           storyBible: storyBible ?? undefined,
+          sceneBlueprint: sceneBlueprint ?? undefined,
           reconciliationFailureReasons: failureReasons,
         },
         {
@@ -179,6 +249,7 @@ export function createWriterWithLorekeeper(context: WriterWithLorekeeperContext)
       {
         ...context.continuationContext,
         storyBible: storyBible ?? undefined,
+        sceneBlueprint: sceneBlueprint ?? undefined,
         reconciliationFailureReasons: failureReasons,
       },
       pagePlan,

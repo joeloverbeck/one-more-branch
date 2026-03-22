@@ -31,11 +31,8 @@ const plannerMessages: ChatMessage[] = [
 const validPlannerPayload = {
   sceneIntent: 'Force the protagonist to choose between stealth and speed.',
   continuityAnchors: ['The bell tower remains occupied by sentries.'],
-  writerBrief: {
-    openingLineDirective: 'Open at the moment the patrol appears.',
-    mustIncludeBeats: ['Patrol sighting', 'Immediate tactical decision'],
-    forbiddenRecaps: ['Do not recap the entire infiltration route.'],
-  },
+  sceneMandates: ['Patrol sighting', 'Immediate tactical decision'],
+  forbiddenRecaps: ['Do not recap the entire infiltration route.'],
   dramaticQuestion: 'Will you slip past the patrol or confront them before lockout?',
   isEnding: false,
 };

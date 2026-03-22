@@ -199,11 +199,8 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
             characterState: { add: [], removeIds: [] },
             canon: { worldAdd: [], characterAdd: [] },
           },
-          writerBrief: {
-            openingLineDirective: 'Start with boots splashing through alley runoff',
-            mustIncludeBeats: ['A searchlight sweeps the alley mouth'],
-            forbiddenRecaps: ['No replay of the prior rooftop chase'],
-          },
+          sceneMandates: ['A searchlight sweeps the alley mouth'],
+          forbiddenRecaps: ['No replay of the prior rooftop chase'],
           dramaticQuestion: 'Will you evade the checkpoint or confront the patrol?',
           isEnding: false,
         },
@@ -215,9 +212,8 @@ describe('buildContinuationPrompt pacing nudge injection', () => {
     expect(userMessage?.content).toContain(
       'Scene Intent: Escalate checkpoint pressure after the alley escape'
     );
-    expect(userMessage?.content).toContain(
-      'Opening line directive: Start with boots splashing through alley runoff'
-    );
+    expect(userMessage?.content).toContain('Scene Mandates:');
+    expect(userMessage?.content).toContain('A searchlight sweeps the alley mouth');
     expect(userMessage?.content).toContain('A searchlight sweeps the alley mouth');
     expect(userMessage?.content).toContain('No replay of the prior rooftop chase');
   });

@@ -151,11 +151,8 @@ describe('llm barrel exports', () => {
         characterState: { add: [], removeIds: [] },
         canon: { worldAdd: [], characterAdd: [] },
       },
-      writerBrief: {
-        openingLineDirective: 'Open with immediate instability.',
-        mustIncludeBeats: ['Wood snaps underfoot'],
-        forbiddenRecaps: [],
-      },
+      sceneMandates: ['Wood snaps underfoot'],
+      forbiddenRecaps: [],
       dramaticQuestion: 'Will you cross the bridge before it collapses?',
       isEnding: false,
     };

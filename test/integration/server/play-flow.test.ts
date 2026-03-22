@@ -396,11 +396,9 @@ describe('Play Flow Integration (Mocked LLM)', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Advance scene via immediate consequence.',
       continuityAnchors: [],
-      writerBrief: {
-        openingLineDirective: 'Begin with action.',
-        mustIncludeBeats: [],
-        forbiddenRecaps: [],
-      },
+      sceneMandates: [],
+      forbiddenRecaps: [],
+      isEnding: false,
       dramaticQuestion: 'Will you confront the danger or seek another path?',
       rawResponse: 'page-plan',
     });

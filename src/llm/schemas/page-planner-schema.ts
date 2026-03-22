@@ -1,8 +1,5 @@
 import type { JsonSchema } from '../llm-client-types.js';
-import {
-  PAGE_PLANNER_REQUIRED_FIELDS,
-  PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS,
-} from '../page-planner-contract.js';
+import { PAGE_PLANNER_REQUIRED_FIELDS } from '../page-planner-contract.js';
 
 export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
   type: 'json_schema',
@@ -17,15 +14,13 @@ export const PAGE_PLANNER_GENERATION_SCHEMA: JsonSchema = {
           type: 'array',
           items: { type: 'string' },
         },
-        writerBrief: {
-          type: 'object',
-          properties: {
-            openingLineDirective: { type: 'string' },
-            mustIncludeBeats: { type: 'array', items: { type: 'string' } },
-            forbiddenRecaps: { type: 'array', items: { type: 'string' } },
-          },
-          required: [...PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS],
-          additionalProperties: false,
+        sceneMandates: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+        forbiddenRecaps: {
+          type: 'array',
+          items: { type: 'string' },
         },
         dramaticQuestion: {
           type: 'string',

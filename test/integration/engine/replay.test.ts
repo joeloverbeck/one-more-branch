@@ -294,11 +294,9 @@ describe('story replay integration', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Progress the current scene with immediate consequences.',
       continuityAnchors: [],
-      writerBrief: {
-        openingLineDirective: 'Start with immediate action.',
-        mustIncludeBeats: [],
-        forbiddenRecaps: [],
-      },
+      sceneMandates: [],
+      forbiddenRecaps: [],
+      isEnding: false,
       dramaticQuestion: 'Will you confront the danger or seek another path?',
       rawResponse: 'page-plan',
     });

@@ -207,11 +207,8 @@ describe('llm client integration (mocked fetch)', () => {
           characterState: { add: [], removeIds: [] },
           canon: { worldAdd: [], characterAdd: [] },
         },
-        writerBrief: {
-          openingLineDirective: 'Open with immediate mechanical motion.',
-          mustIncludeBeats: ['The shutters begin to close'],
-          forbiddenRecaps: ['Do not restate the entire previous scene'],
-        },
+        sceneMandates: ['The shutters begin to close'],
+        forbiddenRecaps: ['Do not restate the entire previous scene'],
         dramaticQuestion: 'Can you escape the observatory before the dome seals?',
       },
       { apiKey: 'test-key' }

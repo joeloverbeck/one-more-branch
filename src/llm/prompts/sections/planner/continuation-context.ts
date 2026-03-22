@@ -351,7 +351,7 @@ function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefin
       "- Create dramatic irony opportunities: plan situations where the protagonist's inner thoughts contrast with what other characters perceive."
     );
     lines.push(
-      '- Surface via internal monologue: include a must-include milestone in writerBrief for the protagonist reflecting along these lines.'
+      '- Surface via internal monologue: include a sceneMandates entry for the protagonist reflecting along these lines.'
     );
     lines.push('');
   }
@@ -363,7 +363,7 @@ function buildProtagonistGuidanceSection(guidance: ProtagonistGuidance | undefin
     lines.push('Incorporate this speech into your plan:');
     lines.push('- Shape the sceneIntent so the scene creates a natural moment for this speech.');
     lines.push(
-      '- Include a must-include milestone in writerBrief that reflects the protagonist voicing this intent.'
+      '- Include a sceneMandates entry that reflects the protagonist voicing this intent.'
     );
     lines.push('- Consider how NPCs and the situation would react to this kind of statement.');
     lines.push("- Let the speech intent influence the scene's dramatic direction.");

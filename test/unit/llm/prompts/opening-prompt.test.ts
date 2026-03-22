@@ -53,11 +53,8 @@ describe('buildOpeningPrompt with active state', () => {
           characterState: { add: [], removeIds: [] },
           canon: { worldAdd: [], characterAdd: [] },
         },
-        writerBrief: {
-          openingLineDirective: 'Start with a shouted demand at the warehouse door',
-          mustIncludeBeats: ['Collector identifies the protagonist by name'],
-          forbiddenRecaps: ['No mention of previous chapters'],
-        },
+        sceneMandates: ['Collector identifies the protagonist by name'],
+        forbiddenRecaps: ['No mention of previous chapters'],
         dramaticQuestion: 'Will you pay the debt or confront the collector?',
         isEnding: false,
       },
@@ -68,9 +65,7 @@ describe('buildOpeningPrompt with active state', () => {
 
     expect(userMessage).toContain('=== PLANNER GUIDANCE ===');
     expect(userMessage).toContain('Scene Intent: Introduce the debt collector conflict');
-    expect(userMessage).toContain(
-      'Opening line directive: Start with a shouted demand at the warehouse door'
-    );
+    expect(userMessage).toContain('Scene Mandates:');
     expect(userMessage).toContain('Collector identifies the protagonist by name');
     expect(userMessage).toContain('No mention of previous chapters');
   });

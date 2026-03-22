@@ -69,11 +69,9 @@ describe('Active state pipeline integration', () => {
         characterAdd: [{ characterName: 'Innkeeper Bram', facts: ['Elderly man with a limp'] }],
       },
     },
-    writerBrief: {
-      openingLineDirective: 'Start with immediate danger in the burning tavern.',
-      mustIncludeBeats: ['Fire spreads rapidly', 'Innkeeper calls for help'],
-      forbiddenRecaps: ['Do not recap previous pages'],
-    },
+    sceneMandates: ['Fire spreads rapidly', 'Innkeeper calls for help'],
+    forbiddenRecaps: ['Do not recap previous pages'],
+    isEnding: false,
     dramaticQuestion: 'Can you save the innkeeper before the roof caves in?',
   };
 

@@ -28,6 +28,7 @@ import type {
 } from './generation-pipeline-types.js';
 import type { StoryBible } from './lorekeeper-types.js';
 import type { PagePlan } from './planner-types.js';
+import type { SceneBlueprintResult } from './scene-blueprint-types.js';
 
 export interface OpeningContext {
   tone: string;
@@ -43,6 +44,7 @@ export interface OpeningContext {
   decomposedWorld: DecomposedWorld;
   pagePlan?: PagePlan;
   storyBible?: StoryBible;
+  sceneBlueprint?: SceneBlueprintResult;
   reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
   selectedSceneDirection?: SelectedSceneDirection;
 }
@@ -98,6 +100,7 @@ export interface ContinuationContext {
 
   pagePlan?: PagePlan;
   storyBible?: StoryBible;
+  sceneBlueprint?: SceneBlueprintResult;
   reconciliationFailureReasons?: readonly ReconciliationFailureReason[];
   selectedSceneDirection?: SelectedSceneDirection;
 }

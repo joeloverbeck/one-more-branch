@@ -5,11 +5,8 @@ function createValidPlannerPayload(): Record<string, unknown> {
   return {
     sceneIntent: 'Escalate the watchtower breach into a forced commitment.',
     continuityAnchors: ['The alarm bells are still ringing'],
-    writerBrief: {
-      openingLineDirective: 'Open on immediate incoming fire.',
-      mustIncludeBeats: ['Incoming volley at the parapet', 'Split-second route decision'],
-      forbiddenRecaps: ['Do not restate the full ambush setup'],
-    },
+    sceneMandates: ['Incoming volley at the parapet', 'Split-second route decision'],
+    forbiddenRecaps: ['Do not restate the full ambush setup'],
     dramaticQuestion: 'Will you hold the parapet or fall back to the stairwell?',
     isEnding: false,
   };

@@ -14,11 +14,8 @@ function buildMinimalPagePlan(overrides?: Partial<PagePlan>): PagePlan {
     continuityAnchors: ['The merchant holds the key'],
     dramaticQuestion: 'Will the protagonist get the key peacefully?',
     isEnding: false,
-    writerBrief: {
-      openingLineDirective: 'Start with the merchant counting coins',
-      mustIncludeBeats: ['Negotiate for the key'],
-      forbiddenRecaps: ['Do not repeat the bridge scene'],
-    },
+    sceneMandates: ['Negotiate for the key'],
+    forbiddenRecaps: ['Do not repeat the bridge scene'],
     stateIntents: {
       currentLocation: 'Market square',
       threats: { add: [], removeIds: [] },
@@ -570,15 +567,12 @@ describe('detectMentionedCharacters', () => {
     expect(result).toEqual(['Alicia Western']);
   });
 
-  it('detects characters mentioned in writerBrief fields', () => {
+  it('detects characters mentioned in sceneMandates fields', () => {
     const context = buildMinimalContext({
       decomposedCharacters: [buildMinimalDecomposedCharacter('Elena Vasquez')],
       pagePlan: buildMinimalPagePlan({
-        writerBrief: {
-          openingLineDirective: 'Elena steps through the door',
-          mustIncludeBeats: [],
-          forbiddenRecaps: [],
-        },
+        sceneMandates: ['Elena steps through the door'],
+        forbiddenRecaps: [],
       }),
     });
 

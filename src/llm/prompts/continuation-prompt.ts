@@ -8,6 +8,7 @@ import {
   formatStoryBibleSection,
   buildSceneCharacterVoicesSection,
   buildSpineSection,
+  formatBlueprintSection,
 } from './sections/shared/index.js';
 import {
   buildProtagonistAffectSection,
@@ -59,12 +60,10 @@ Scene Intent: ${context.pagePlan.sceneIntent}
 Continuity Anchors:
 ${context.pagePlan.continuityAnchors.map((anchor) => `- ${anchor}`).join('\n') || '- (none)'}
 
-Writer Brief:
-- Opening line directive: ${context.pagePlan.writerBrief.openingLineDirective}
-- Must include milestones:
-${context.pagePlan.writerBrief.mustIncludeBeats.map((milestone) => `  - ${milestone}`).join('\n') || '  - (none)'}
-- Forbidden recaps:
-${context.pagePlan.writerBrief.forbiddenRecaps.map((item) => `  - ${item}`).join('\n') || '  - (none)'}
+Scene Mandates:
+${context.pagePlan.sceneMandates.map((mandate) => `  - ${mandate}`).join('\n') || '  - (none)'}
+Forbidden Recaps:
+${context.pagePlan.forbiddenRecaps.map((item) => `  - ${item}`).join('\n') || '  - (none)'}
 
 Use this guidance to shape this scene while still following all writer schema requirements.
 
@@ -187,27 +186,28 @@ VOICE APPLICATION:
         )
       : '';
 
-  const userPrompt = `Continue the interactive story based on the player's choice.
+  const blueprintSection = context.sceneBlueprint
+    ? formatBlueprintSection(context.sceneBlueprint)
+    : '';
 
-=== DATA & STATE RULES ===
-${dataRules}
+  const sceneStructureSection = context.sceneBlueprint
+    ? `REQUIREMENTS (follow all):
+1. Follow the Scene Blueprint unit-by-unit. Each unit maps to its specified paragraph count.
+   Trust the blueprint's emotional arc — do not flatten or skip the designed tension curve.
+   You may adjust paragraph boundaries by ±1 paragraph where prose flow demands it,
+   or merge two tightly coupled adjacent units, but never skip or reorder units.
+2. Maintain consistency with all established facts and the current state
+3. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
+4. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
+5. Each scene should advance or complicate the protagonist's relationship to their Need and Want.
 
-${protagonistSpeechSection}${sceneCharacterVoicesSection}TONE/GENRE: ${context.tone}
-
-${buildSpineSection(context.spine)}${plannerSection}${reconciliationRetrySection}${storyBibleSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
-${
-  context.pagePlan?.isEnding
-    ? `
-=== ENDING DIRECTIVE ===
-The planner has determined this is the story's conclusion. Write this scene as a satisfying ending:
-- Make the ending feel earned and meaningful
-- Provide narrative closure for the protagonist's journey
-- Do NOT leave major narrative threads unresolved
-- protagonistAffect should capture the protagonist's final emotional state
-
-`
-    : ''
-}=== SCENE PROGRESSION DISCIPLINE ===
+WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
+1. React to the player's choice immediately and visibly (unit 1)
+2. Follow the blueprint's structural intent and emotional arc
+3. Maintain consistency with established state, canon, and continuity
+4. Prose quality: character-filtered, emotionally resonant, forward-moving, and legible
+5. sceneSummary and protagonistAffect accuracy`
+    : `=== SCENE PROGRESSION DISCIPLINE ===
 - Inherited mood or physical state from the previous scene may be refreshed briefly, but do not spend multiple paragraphs re-describing it.
 - Make the planned material changes clear and player-legible in the prose — the reader should be able to identify what has concretely changed by scene's end.
 - Each major escalation must be tied to a concrete observable change in the environment, the body, or the available decisions — not atmospheric intensification alone.
@@ -230,6 +230,28 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 2. Maintain consistency with established state, canon, and continuity
 3. Prose quality: character-filtered, emotionally resonant, forward-moving, and legible
 4. sceneSummary and protagonistAffect accuracy`;
+
+  const userPrompt = `Continue the interactive story based on the player's choice.
+
+=== DATA & STATE RULES ===
+${dataRules}
+
+${protagonistSpeechSection}${sceneCharacterVoicesSection}TONE/GENRE: ${context.tone}
+
+${buildSpineSection(context.spine)}${plannerSection}${reconciliationRetrySection}${storyBibleSection}${blueprintSection}${canonSection}${characterCanonSection}${characterStateSection}${locationSection}${threatsSection}${constraintsSection}${threadsSection}${inventorySection}${healthSection}${protagonistAffectSection}${sceneContextSection}PLAYER'S CHOICE: "${context.selectedChoice}"
+${
+  context.pagePlan?.isEnding
+    ? `
+=== ENDING DIRECTIVE ===
+The planner has determined this is the story's conclusion. Write this scene as a satisfying ending:
+- Make the ending feel earned and meaningful
+- Provide narrative closure for the protagonist's journey
+- Do NOT leave major narrative threads unresolved
+- protagonistAffect should capture the protagonist's final emotional state
+
+`
+    : ''
+}${sceneStructureSection}`;
 
   const toneParams = {
     tone: context.tone,

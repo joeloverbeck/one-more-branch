@@ -7,6 +7,7 @@ import {
   formatStoryBibleSection,
   buildSceneCharacterVoicesSection,
   buildSpineSection,
+  formatBlueprintSection,
 } from './sections/shared/index.js';
 
 export function buildOpeningPrompt(
@@ -21,12 +22,10 @@ Scene Intent: ${context.pagePlan.sceneIntent}
 Continuity Anchors:
 ${context.pagePlan.continuityAnchors.map((anchor) => `- ${anchor}`).join('\n') || '- (none)'}
 
-Writer Brief:
-- Opening line directive: ${context.pagePlan.writerBrief.openingLineDirective}
-- Must include milestones:
-${context.pagePlan.writerBrief.mustIncludeBeats.map((milestone) => `  - ${milestone}`).join('\n') || '  - (none)'}
-- Forbidden recaps:
-${context.pagePlan.writerBrief.forbiddenRecaps.map((item) => `  - ${item}`).join('\n') || '  - (none)'}
+Scene Mandates:
+${context.pagePlan.sceneMandates.map((mandate) => `  - ${mandate}`).join('\n') || '  - (none)'}
+Forbidden Recaps:
+${context.pagePlan.forbiddenRecaps.map((item) => `  - ${item}`).join('\n') || '  - (none)'}
 
 Use this plan as guidance while still returning the required writer schema output.
 
@@ -82,15 +81,31 @@ VOICE APPLICATION:
         )
       : '';
 
-  const userPrompt = `Create the opening scene for a new interactive story.
+  const blueprintSection = context.sceneBlueprint
+    ? formatBlueprintSection(context.sceneBlueprint)
+    : '';
 
-=== DATA & STATE RULES ===
-${dataRules}
+  const sceneStructureSection = context.sceneBlueprint
+    ? `REQUIREMENTS (follow all):
+1. Follow the Scene Blueprint unit-by-unit. Each unit maps to its specified paragraph count.
+   Trust the blueprint's emotional arc — do not flatten or skip the designed tension curve.
+   You may adjust paragraph boundaries by ±1 paragraph where prose flow demands it,
+   or merge two tightly coupled adjacent units, but never skip or reorder units.
+2. Maintain consistency with established worldbuilding, tone, and scene context
+3. Capture the protagonist's emotional state at the END of this scene in protagonistAffect (what they feel, why, and what they want)
+4. Write a sceneSummary: 2-3 sentences summarizing the key events, character introductions, and situation established in this opening scene (for future context)
+5. Subtly establish the tension between conscious Want and deeper Need through behavior, never stated explicitly.
+6. If an OPENING IMAGE CONTRACT is provided, honour it (the blueprint has placed it in a unit).
 
-${protagonistSpeechSection}${sceneCharacterVoicesSection}
-TONE/GENRE: ${context.tone}
+REMINDER: protagonistAffect should reflect how the scene leaves the protagonist feeling - this is a snapshot, not accumulated state.
 
-${buildSpineSection(context.spine)}${storyBibleSection}${openingImageSection}${plannerSection}${reconciliationRetrySection}=== OPENING SCENE DISCIPLINE ===
+WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
+1. Open with immediate, scene-level tension tied to the current dramatic setup
+2. Follow the blueprint's structural intent and emotional arc
+3. Maintain consistency with established worldbuilding, tone, and scene context
+4. Prose quality: character-filtered, emotionally resonant, forward-moving, and legible
+5. sceneSummary and protagonistAffect accuracy`
+    : `=== OPENING SCENE DISCIPLINE ===
 - Within the first 2 paragraphs, make clear where the protagonist is, what is happening right now, and what immediate pressure, desire, or disturbance is active.
 - If you begin with a fragment, aphoristic line, or highly stylized sentence, ground it immediately in concrete action or observation.
 - Let intrigue come from a legible situation, not from withholding basic orientation.
@@ -114,6 +129,16 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 2. Maintain consistency with established worldbuilding, tone, and scene context
 3. Prose quality: character-filtered, emotionally resonant, forward-moving, and legible
 4. sceneSummary and protagonistAffect accuracy`;
+
+  const userPrompt = `Create the opening scene for a new interactive story.
+
+=== DATA & STATE RULES ===
+${dataRules}
+
+${protagonistSpeechSection}${sceneCharacterVoicesSection}
+TONE/GENRE: ${context.tone}
+
+${buildSpineSection(context.spine)}${storyBibleSection}${openingImageSection}${plannerSection}${reconciliationRetrySection}${blueprintSection}${sceneStructureSection}`;
 
   const toneParams = {
     tone: context.tone,

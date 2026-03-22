@@ -481,11 +481,9 @@ describe('story engine e2e full playthrough', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Advance the story with immediate consequences.',
       continuityAnchors: [],
-      writerBrief: {
-        openingLineDirective: 'Start in motion.',
-        mustIncludeBeats: [],
-        forbiddenRecaps: [],
-      },
+      sceneMandates: [],
+      forbiddenRecaps: [],
+      isEnding: false,
       dramaticQuestion: 'Will you confront the danger or seek another path?',
       rawResponse: 'page-plan',
     });
