@@ -5,25 +5,17 @@ export const PagePlannerResultSchema = z
   .object({
     sceneIntent: z.string(),
     continuityAnchors: z.array(z.string()),
-    writerBrief: z.object({
-      openingLineDirective: z.string(),
-      mustIncludeBeats: z.array(z.string()),
-      forbiddenRecaps: z.array(z.string()),
-    }),
+    sceneMandates: z.array(z.string()),
+    forbiddenRecaps: z.array(z.string()),
     dramaticQuestion: z.string(),
     isEnding: z.boolean(),
   })
   .superRefine((data, ctx) => {
     addRequiredTrimmedTextIssue(data.sceneIntent, ['sceneIntent'], ctx);
-    addRequiredTrimmedTextIssue(
-      data.writerBrief.openingLineDirective,
-      ['writerBrief', 'openingLineDirective'],
-      ctx
-    );
 
     addDuplicateIssues(data.continuityAnchors, ['continuityAnchors'], ctx);
-    addDuplicateIssues(data.writerBrief.mustIncludeBeats, ['writerBrief', 'mustIncludeBeats'], ctx);
-    addDuplicateIssues(data.writerBrief.forbiddenRecaps, ['writerBrief', 'forbiddenRecaps'], ctx);
+    addDuplicateIssues(data.sceneMandates, ['sceneMandates'], ctx);
+    addDuplicateIssues(data.forbiddenRecaps, ['forbiddenRecaps'], ctx);
 
     addRequiredTrimmedTextIssue(data.dramaticQuestion, ['dramaticQuestion'], ctx);
   });

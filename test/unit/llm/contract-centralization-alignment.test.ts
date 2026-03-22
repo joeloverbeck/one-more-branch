@@ -6,7 +6,6 @@ import {
 import {
   PAGE_PLANNER_PROMPT_RULES,
   PAGE_PLANNER_REQUIRED_FIELDS,
-  PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS,
 } from '../../../src/llm/page-planner-contract';
 import { buildLorekeeperPrompt } from '../../../src/llm/prompts/lorekeeper-prompt';
 import { buildPagePlannerPrompt } from '../../../src/llm/prompts/page-planner-prompt';
@@ -29,10 +28,11 @@ describe('contract centralization alignment', () => {
   it('keeps planner contract aligned with planner schema and prompt', () => {
     const schema = PAGE_PLANNER_GENERATION_SCHEMA.json_schema.schema as Record<string, unknown>;
     const props = schema['properties'] as Record<string, unknown>;
-    const writerBrief = props['writerBrief'] as Record<string, unknown>;
 
     expect(schema['required']).toEqual([...PAGE_PLANNER_REQUIRED_FIELDS]);
-    expect(writerBrief['required']).toEqual([...PAGE_PLANNER_WRITER_BRIEF_REQUIRED_FIELDS]);
+    expect(props).toHaveProperty('sceneMandates');
+    expect(props).toHaveProperty('forbiddenRecaps');
+    expect(props).not.toHaveProperty('writerBrief');
     expect(props).not.toHaveProperty('choiceIntents');
 
     const messages = buildPagePlannerPrompt({
@@ -88,11 +88,8 @@ describe('contract centralization alignment', () => {
         continuityAnchors: [],
         dramaticQuestion: 'Will the clerk reveal the shipment route?',
         isEnding: false,
-        writerBrief: {
-          openingLineDirective: 'Start with flickering lights.',
-          mustIncludeBeats: [],
-          forbiddenRecaps: [],
-        },
+        sceneMandates: [],
+        forbiddenRecaps: [],
         stateIntents: {
           currentLocation: '',
           threats: { add: [], removeIds: [] },

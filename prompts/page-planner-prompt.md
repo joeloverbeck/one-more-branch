@@ -42,13 +42,12 @@ Plan the next page before prose generation.
 - Set isEnding to true ONLY when this scene should be the story's conclusion — the final resolution beat completing the story arc, a character death that ends the journey, or a natural story conclusion. Default to false.
 - Keep output deterministic and concise.
 - Consider NPC agendas and relationships when planning scenes. NPCs with active goals may initiate encounters, block the protagonist, or create complications based on their off-screen behavior. NPC-protagonist relationship dynamics (valence, tension, leverage) should inform how NPCs approach the protagonist.
-- When planning dialogue-heavy scenes, note which characters will speak and consider their distinct voices. The writer will receive full speech fingerprints for scene characters — your writerBrief.mustIncludeBeats can reference specific voice moments.
 - When planning scenes, ensure the sceneIntent serves the protagonist's Need vs Want conflict from the spine.
 - Every plan must produce at least one material change that is player-legible: danger, knowledge, leverage, relationship, location, available options, or cost. Atmospheric intensification alone is not advancement.
 - Plan scenes to end in a choiceable state: the final situation should make clear what is now urgent, tempting, dangerous, and possible for the protagonist.
 - Scene endings must arise from a genuinely altered situation, not from ominous phrasing or atmospheric tension alone. Ensure the plan changes the board before the scene closes.
 
-TONE RULE: Write your sceneIntent, writerBrief.openingLineDirective, mustIncludeBeats, and dramaticQuestion in a voice that reflects the TONE/GENRE. If the tone is comedic, your plan should read as witty and playful. If noir, terse and cynical. The writer will absorb your voice.
+TONE RULE: Write your sceneIntent, sceneMandates, and dramaticQuestion in a voice that reflects the TONE/GENRE. If the tone is comedic, your plan should read as witty and playful. If noir, terse and cynical. The writer will absorb your voice.
 ```
 
 ### 2) User Message
@@ -91,11 +90,8 @@ Return JSON only.
 {
   "sceneIntent": "{{one-line scene direction}}",
   "continuityAnchors": ["{{fact to preserve in next page}}"],
-  "writerBrief": {
-    "openingLineDirective": "{{how writer should open next scene}}",
-    "mustIncludeBeats": ["{{must include beat}}"],
-    "forbiddenRecaps": ["{{things writer must not recap}}"]
-  },
+  "sceneMandates": ["{{concrete beat the scene must deliver}}"],
+  "forbiddenRecaps": ["{{things writer must not recap}}"],
   "dramaticQuestion": "{{single sentence framing the core tension the choices answer}}",
   "isEnding": false
 }
@@ -173,7 +169,7 @@ The player wants the protagonist to say something like:
 
 Incorporate this into your plan:
 - Shape the sceneIntent so the scene creates a natural moment for this speech
-- Include a must-include beat in writerBrief that reflects the protagonist voicing this intent
+- Include a sceneMandates entry that reflects the protagonist voicing this intent
 - Consider how NPCs and the situation would react to this kind of statement
 - Let the speech intent influence the scene's dramatic direction
 
@@ -181,7 +177,7 @@ This is meaningful player input - plan around it, do not treat it as optional.
 {{/if}}
 ```
 
-This section is placed immediately before `PLAYER'S CHOICE:` in the planner context. The writer does **not** receive the suggested speech directly - instead, the planner shapes `sceneIntent` and `writerBrief.mustIncludeBeats` to incorporate the speech intent, and the writer follows those instructions.
+This section is placed immediately before `PLAYER'S CHOICE:` in the planner context. The writer does **not** receive the suggested speech directly - instead, the planner shapes `sceneIntent` and `sceneMandates` to incorporate the speech intent, and the writer follows those instructions.
 
 ## Pacing Briefing
 
@@ -369,6 +365,7 @@ Source: `buildPendingConsequencesSection()` in `src/llm/prompts/sections/planner
 
 - When `genreFrame` is present on `PagePlanContext`, a **GENRE CONVENTIONS** block is injected into the user prompt between the spine section and the planner context section. The conventions come from `buildGenreConventionsSection(context.genreFrame)` in `src/llm/prompts/sections/shared/genre-conventions-section.ts`.
 - Planner output no longer includes `stateIntents`; state mutation planning is handled by the state accountant stage.
+- Planner output uses top-level `sceneMandates` (concrete beats the scene must deliver) and `forbiddenRecaps` (things the writer must not recap) instead of the former nested `writerBrief` object. The `writerBrief.openingLineDirective` and `writerBrief.mustIncludeBeats` fields have been replaced by `sceneMandates`.
 - Planner continuation context still includes active state, canon (with epistemic type tags when available, rendered via `formatCanonForPrompt()` as `• [TYPE] text`), thread aging, pacing briefing (natural-language directive from analyst, not raw enums), thematic trajectory warnings, NPC agendas, NPC relationships, and payoff feedback to inform scene and choice planning.
 - The planner and accountant share the same context builders (`buildPlannerOpeningContextSection`, `buildPlannerContinuationContextSection`) but with different options. The planner uses default options (protagonist directive and guidance included). The accountant passes `{ includeProtagonistDirective: false }` to exclude protagonist-specific sections. The `PlannerContextOptions` interface in `continuation-context.ts` controls this behavior.
 - Planner system-rule bullets and required output fields are centralized in `src/llm/page-planner-contract.ts` and consumed by both prompt + schema layers.

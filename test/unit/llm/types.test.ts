@@ -234,11 +234,8 @@ describe('LLM types', () => {
             ],
           },
         },
-        writerBrief: {
-          openingLineDirective: 'Open with an immediate physical threat.',
-          mustIncludeBeats: ['Bridge sway intensifies', 'Choice pressure escalates'],
-          forbiddenRecaps: ['Do not restate full prior scene chronology'],
-        },
+        sceneMandates: ['Bridge sway intensifies', 'Choice pressure escalates'],
+        forbiddenRecaps: ['Do not restate full prior scene chronology'],
         dramaticQuestion: 'Will you cross the bridge before it collapses or find another way?',
         isEnding: false,
       };
@@ -298,11 +295,8 @@ describe('LLM types', () => {
           characterState: { add: [], removeIds: [] },
           canon: { worldAdd: [], characterAdd: [] },
         },
-        writerBrief: {
-          openingLineDirective: 'Start mid-action.',
-          mustIncludeBeats: [],
-          forbiddenRecaps: [],
-        },
+        sceneMandates: [],
+        forbiddenRecaps: [],
         dramaticQuestion: 'Will you escalate the danger or retreat?',
         isEnding: false,
         rawResponse: '{"sceneIntent":"Escalate danger and force a commitment."}',

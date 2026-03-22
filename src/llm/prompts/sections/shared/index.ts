@@ -29,3 +29,5 @@ export { buildInventorySection, buildHealthSection } from './resource-state-sect
 export { buildGenreConventionsSection } from './genre-conventions-section.js';
 
 export { STRICT_CHOICE_GUIDELINES } from './choice-guidelines.js';
+
+export { formatBlueprintSection } from './blueprint-section.js';

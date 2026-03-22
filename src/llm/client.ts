@@ -2,6 +2,7 @@ import { getStageModel } from '../config/stage-model.js';
 import { logger, logPrompt, logResponse } from '../logging/index.js';
 import { generateAccountantWithFallback } from './accountant-generation.js';
 import { generateLorekeeperWithFallback } from './lorekeeper-generation.js';
+import { generateSceneBlueprintWithFallback } from './scene-blueprint-generation.js';
 import { generateStructureEvaluatorWithFallback } from './structure-evaluator-generation.js';
 import { generatePromiseTrackerWithFallback } from './promise-tracker-generation.js';
 import { generateProseQualityWithFallback } from './prose-quality-generation.js';
@@ -15,6 +16,7 @@ import { buildPromiseTrackerPrompt } from './prompts/promise-tracker-prompt.js';
 import { buildProseQualityPrompt } from './prompts/prose-quality-prompt.js';
 import { buildNpcIntelligencePrompt } from './prompts/npc-intelligence-prompt.js';
 import { buildLorekeeperPrompt } from './prompts/lorekeeper-prompt.js';
+import { buildSceneBlueprintPrompt } from './prompts/scene-blueprint-prompt.js';
 import {
   buildContinuationPrompt,
   buildOpeningPrompt,
@@ -38,6 +40,7 @@ import type {
 } from './context-types.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import type { LorekeeperResult } from './lorekeeper-types.js';
+import type { SceneBlueprintContext, SceneBlueprintResult } from './scene-blueprint-types.js';
 import type {
   PagePlan,
   ReducedPagePlanGenerationResult,
@@ -247,6 +250,28 @@ export async function generateLorekeeperBible(
     )
   );
   logResponse(logger, 'lorekeeper', result.rawResponse);
+  return result;
+}
+
+export async function generateSceneBlueprint(
+  context: SceneBlueprintContext,
+  options: GenerationOptions
+): Promise<SceneBlueprintResult> {
+  const messages = buildSceneBlueprintPrompt(context);
+
+  logPrompt(logger, 'sceneBlueprint', messages);
+
+  const blueprintOptions = { ...options, temperature: 0.4 };
+  const primaryModel = blueprintOptions.model ?? getStageModel('sceneBlueprint');
+  const result = await withRetry(() =>
+    withModelFallback(
+      (m) =>
+        generateSceneBlueprintWithFallback(messages, { ...blueprintOptions, model: m }),
+      primaryModel,
+      'sceneBlueprint'
+    )
+  );
+  logResponse(logger, 'sceneBlueprint', result.rawResponse);
   return result;
 }
 

@@ -404,12 +404,10 @@ function buildPagePlanResult(
       characterState: { add: [], removeIds: [] },
       canon: { worldAdd: [], characterAdd: [] },
     },
-    writerBrief: {
-      openingLineDirective: 'Begin mid-action with immediate stakes.',
-      mustIncludeBeats: ['Consequence of player choice'],
-      forbiddenRecaps: ['Do not summarize prior page'],
-    },
+    sceneMandates: ['Consequence of player choice'],
+    forbiddenRecaps: ['Do not summarize prior page'],
     dramaticQuestion: 'Will you confront the danger or seek another path?',
+    isEnding: false,
     rawResponse: '{"ok":true}',
     ...overrides,
   };
@@ -422,8 +420,10 @@ function buildReducedPagePlanResult(
   return {
     sceneIntent: base.sceneIntent,
     continuityAnchors: base.continuityAnchors,
-    writerBrief: base.writerBrief,
+    sceneMandates: base.sceneMandates,
+    forbiddenRecaps: base.forbiddenRecaps,
     dramaticQuestion: base.dramaticQuestion,
+    isEnding: base.isEnding,
     rawResponse: base.rawResponse,
     ...overrides,
   };
@@ -765,7 +765,8 @@ describe('page-service integration', () => {
         buildReducedPagePlanResult({
           sceneIntent: pagePlan.sceneIntent,
           continuityAnchors: pagePlan.continuityAnchors,
-          writerBrief: pagePlan.writerBrief,
+          sceneMandates: pagePlan.sceneMandates,
+          forbiddenRecaps: pagePlan.forbiddenRecaps,
           dramaticQuestion: pagePlan.dramaticQuestion,
 
           rawResponse: pagePlan.rawResponse,
@@ -794,7 +795,8 @@ describe('page-service integration', () => {
             sceneIntent: pagePlan.sceneIntent,
             continuityAnchors: pagePlan.continuityAnchors,
             stateIntents: pagePlan.stateIntents,
-            writerBrief: pagePlan.writerBrief,
+            sceneMandates: pagePlan.sceneMandates,
+            forbiddenRecaps: pagePlan.forbiddenRecaps,
             dramaticQuestion: pagePlan.dramaticQuestion,
           }),
         }),
@@ -805,7 +807,8 @@ describe('page-service integration', () => {
           sceneIntent: pagePlan.sceneIntent,
           continuityAnchors: pagePlan.continuityAnchors,
           stateIntents: pagePlan.stateIntents,
-          writerBrief: pagePlan.writerBrief,
+          sceneMandates: pagePlan.sceneMandates,
+          forbiddenRecaps: pagePlan.forbiddenRecaps,
           dramaticQuestion: pagePlan.dramaticQuestion,
         }),
         expect.objectContaining({
@@ -1176,7 +1179,8 @@ describe('page-service integration', () => {
         buildReducedPagePlanResult({
           sceneIntent: pagePlan.sceneIntent,
           continuityAnchors: pagePlan.continuityAnchors,
-          writerBrief: pagePlan.writerBrief,
+          sceneMandates: pagePlan.sceneMandates,
+          forbiddenRecaps: pagePlan.forbiddenRecaps,
           dramaticQuestion: pagePlan.dramaticQuestion,
 
           rawResponse: pagePlan.rawResponse,
@@ -1206,7 +1210,8 @@ describe('page-service integration', () => {
           sceneIntent: pagePlan.sceneIntent,
           continuityAnchors: pagePlan.continuityAnchors,
           stateIntents: pagePlan.stateIntents,
-          writerBrief: pagePlan.writerBrief,
+          sceneMandates: pagePlan.sceneMandates,
+          forbiddenRecaps: pagePlan.forbiddenRecaps,
           dramaticQuestion: pagePlan.dramaticQuestion,
         }),
         expect.any(Object)
@@ -1216,7 +1221,8 @@ describe('page-service integration', () => {
           sceneIntent: pagePlan.sceneIntent,
           continuityAnchors: pagePlan.continuityAnchors,
           stateIntents: pagePlan.stateIntents,
-          writerBrief: pagePlan.writerBrief,
+          sceneMandates: pagePlan.sceneMandates,
+          forbiddenRecaps: pagePlan.forbiddenRecaps,
           dramaticQuestion: pagePlan.dramaticQuestion,
         }),
         expect.objectContaining({

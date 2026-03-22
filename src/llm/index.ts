@@ -41,6 +41,14 @@ export type {
 export type { PageWriterResult, FinalPageGenerationResult } from './writer-types.js';
 export type { ChoiceGeneratorResult } from './choice-generator-types.js';
 export type { ChoiceGeneratorContext } from './prompts/choice-generator-prompt.js';
+export type {
+  SceneBlueprintResult,
+  SceneBlueprintContext,
+  NarrativeUnit,
+  MandateMapping,
+  SceneFunction,
+  MruType,
+} from './scene-blueprint-types.js';
 
 export { CONTENT_POLICY } from './content-policy.js';
 
@@ -71,6 +79,7 @@ export {
   generateProseQualityEvaluation,
   generateNpcIntelligenceEvaluation,
   generateLorekeeperBible,
+  generateSceneBlueprint,
   generatePagePlan,
   generateStateAccountant,
   generateChoices,

@@ -280,12 +280,10 @@ Scene Intent: {{pagePlan.sceneIntent}}
 Continuity Anchors:
 {{pagePlan.continuityAnchors as bullet list}}
 
-Writer Brief:
-- Opening line directive: {{pagePlan.writerBrief.openingLineDirective}}
-- Must include beats:
-{{pagePlan.writerBrief.mustIncludeBeats as indented bullets}}
-- Forbidden recaps:
-{{pagePlan.writerBrief.forbiddenRecaps as indented bullets}}
+Scene Mandates:
+{{pagePlan.sceneMandates as indented bullets}}
+Forbidden Recaps:
+{{pagePlan.forbiddenRecaps as indented bullets}}
 
 Use this guidance to shape this scene while still following all writer schema requirements.
 {{/if}}
@@ -393,6 +391,45 @@ PREVIOUS SCENE (full text for style continuity):
 
 PLAYER'S CHOICE: "{{selectedChoice}}"
 
+{{#if sceneBlueprint}}
+=== SCENE BLUEPRINT ===
+Emotional Arc: {{sceneBlueprint.emotionalArc}}
+Follow this paragraph-level structure. Each unit becomes ~N paragraphs.
+
+UNIT 1 [{{sceneFunction}} / {{mruType}}] ({{paragraphWeight}} paragraph(s))
+Action: {{action}}
+Register: {{emotionalRegister}}
+Sensory: {{sensoryAnchor}}
+Characters speaking: {{speakingCharacters joined by ', '}} (if any)
+
+...additional units...
+
+Mandate Traceability:
+- "{{mandate}}" -> Unit {{unitIndex + 1}}
+{{/if}}
+
+{{!-- The REQUIREMENTS and DISCIPLINE sections are mode-dependent.
+      When sceneBlueprint is present: simplified REQUIREMENTS that defer to the blueprint.
+      When sceneBlueprint is absent: full SCENE PROGRESSION DISCIPLINE + detailed REQUIREMENTS. --}}
+
+{{#if sceneBlueprint}}
+REQUIREMENTS (follow all):
+1. Follow the Scene Blueprint unit-by-unit. Each unit maps to its specified paragraph count.
+   Trust the blueprint's emotional arc -- do not flatten or skip the designed tension curve.
+   You may adjust paragraph boundaries by +/-1 paragraph where prose flow demands it,
+   or merge two tightly coupled adjacent units, but never skip or reorder units.
+2. Maintain consistency with all established facts and the current state
+3. Update protagonistAffect to reflect how the protagonist feels at the END of this scene (this is a fresh snapshot, not inherited from previous scenes)
+4. Write a sceneSummary: 2-3 sentences summarizing the key events and consequences of this scene (for future context)
+5. Each scene should advance or complicate the protagonist's relationship to their Need and Want.
+
+WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
+1. React to the player's choice immediately and visibly (unit 1)
+2. Follow the blueprint's structural intent and emotional arc
+3. Maintain consistency with established state, canon, and continuity
+4. Prose quality: character-filtered, emotionally resonant, forward-moving, and legible
+5. sceneSummary and protagonistAffect accuracy
+{{else}}
 === SCENE PROGRESSION DISCIPLINE ===
 - Inherited mood or physical state from the previous scene may be refreshed briefly, but do not spend multiple paragraphs re-describing it.
 - Make the planned material changes clear and player-legible in the prose — the reader should be able to identify what has concretely changed by scene's end.
@@ -429,6 +466,7 @@ WHEN IN CONFLICT, PRIORITIZE (highest to lowest):
 2. Maintain consistency with established state, canon, and continuity
 3. Prose quality: character-filtered, emotionally resonant, forward-moving, and legible
 4. sceneSummary and protagonistAffect accuracy
+{{/if}}
 ```
 
 ## JSON Response Shape

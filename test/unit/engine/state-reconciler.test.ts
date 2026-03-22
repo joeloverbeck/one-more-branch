@@ -20,12 +20,10 @@ function buildPlan(overrides?: Partial<PagePlan>): PagePlan {
       characterState: { add: [], removeIds: [] },
       canon: { worldAdd: [], characterAdd: [] },
     },
-    writerBrief: {
-      openingLineDirective: 'Open with motion under pressure.',
-      mustIncludeBeats: ['Immediate consequence'],
-      forbiddenRecaps: ['Do not restate the prior page ending'],
-    },
+    sceneMandates: ['Immediate consequence'],
+    forbiddenRecaps: ['Do not restate the prior page ending'],
     dramaticQuestion: 'Will you confront the danger or seek another path?',
+    isEnding: false,
     ...overrides,
   };
 }

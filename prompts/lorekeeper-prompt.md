@@ -278,7 +278,7 @@ The Lorekeeper receives the **full** story context (same data as the writer woul
 
 ## Engine-Side Character Detection
 
-Before building the prompt, `detectMentionedCharacters(context)` scans all planner guidance fields (`sceneIntent`, `dramaticQuestion`, `continuityAnchors`, `writerBrief.openingLineDirective`, `writerBrief.mustIncludeBeats`, `writerBrief.forbiddenRecaps`) for canonical character name tokens from `decomposedCharacters`. Parenthetical suffixes are stripped (e.g., `"Bobby Western (1972)"` -> `"Bobby Western"`), tokens shorter than 3 characters are filtered, and matching is case-insensitive via `String.includes()`. Matched character names are injected as a `CHARACTERS REFERENCED IN THIS PLAN` directive between the planner guidance and full story context sections. This ensures the Lorekeeper cannot omit characters that the planner explicitly referenced.
+Before building the prompt, `detectMentionedCharacters(context)` scans all planner guidance fields (`sceneIntent`, `dramaticQuestion`, `continuityAnchors`, `sceneMandates`, `forbiddenRecaps`) for canonical character name tokens from `decomposedCharacters`. Parenthetical suffixes are stripped (e.g., `"Bobby Western (1972)"` -> `"Bobby Western"`), tokens shorter than 3 characters are filtered, and matching is case-insensitive via `String.includes()`. Matched character names are injected as a `CHARACTERS REFERENCED IN THIS PLAN` directive between the planner guidance and full story context sections. This ensures the Lorekeeper cannot omit characters that the planner explicitly referenced.
 
 ## Two-Source Synthesis
 

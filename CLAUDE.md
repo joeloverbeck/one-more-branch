@@ -130,6 +130,7 @@ src/
 │   ├── choice-generator-generation.ts # Choice generation from written scene
 │   ├── analyst-generation.ts     # Post-write scene analysis
 │   ├── lorekeeper-generation.ts  # Story bible curation
+│   ├── scene-blueprint-generation.ts # Scene-level paragraph structure (Swain Scene-Sequel/MRU)
 │   ├── agenda-resolver-generation.ts # NPC agenda + relationship resolution
 │   ├── spine-generator.ts        # Spine option generation
 │   └── result-merger.ts          # Merges writer + reconciler + analyst results
@@ -184,19 +185,20 @@ archive/specs/      # Archived completed specifications
 1. **Story Creation**: User provides title + character concept + worldbuilding + tone + NPCs + starting situation + spine (with toneFeel/toneAvoid) + API key
 2. **Character Contextualization + World Decomposition**: Pre-decomposed standalone characters are contextualized with story-specific fields (thematicStance, protagonistRelationship). Worldbuilding is decomposed into structured world facts. Both run in parallel
 3. **Structure Generation**: LLM generates a StoryStructure using spine + decomposed data (acts, beats, pacing budget, theme, NPC agendas). Shared structure-generation context lives in `src/llm/prompts/sections/structure-generation/shared-context.ts`; prompt-local files compose that seam instead of importing reusable helpers from each other.
-4. **Page Planning** (Planner prompt): LLM creates a reduced PagePlan with scene intent, continuity anchors, writer brief, dramatic question, and isEnding. The planner is the SOLE authority on whether a page is an ending (`isEnding: true` => no choices generated). Continuation planner also receives thread ages, overdue-thread pressure directives, accumulated tracked promises (`accumulatedPromises`, oldest-first opportunities), and payoff quality feedback
+4. **Page Planning** (Planner prompt): LLM creates a reduced PagePlan with scene intent, continuity anchors, scene mandates (unordered "what must happen"), forbidden recaps, dramatic question, and isEnding. The planner is the SOLE authority on whether a page is an ending (`isEnding: true` => no choices generated). Continuation planner also receives thread ages, overdue-thread pressure directives, accumulated tracked promises (`accumulatedPromises`, oldest-first opportunities), and payoff quality feedback
 5. **State Accounting** (Accountant prompt): LLM generates state intents (what state changes to target) separately from the planner. The accountant receives the reduced plan and produces structured state mutation intents
 6. **Context Curation** (Lorekeeper prompt): LLM curates a scene-focused Story Bible from full story context, filtering worldbuilding, characters, canon, and history to only what's relevant for the upcoming scene
-7. **Page Writing** (Writer prompt): LLM generates narrative + scene summary + protagonist affect + raw state mutations (no choices, no isEnding). When the planner sets `isEnding: true`, the writer receives an ENDING DIRECTIVE to craft narrative closure
-8. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
-9. **Choice Generation** (Choice Generator prompt): LLM generates 2-4 typed choices (ChoiceType/PrimaryDelta) from the written scene, guided by planner's dramaticQuestion. Skipped when the planner sets `isEnding === true`.
-10. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, spine deviation, pacing, structural position, NPC coherence, relationship shifts, promise lifecycle (detect via `promisesDetected`, resolve by ID via `promisesResolved`, quality via `promisePayoffAssessments`), and thread payoff quality (`threadPayoffAssessments`)
-11. **Spine Rewrite** (conditional): If spine-level deviation detected, LLM rewrites the story spine
-12. **Structure Rewrite** (conditional): If beat-level deviation detected (or forced by spine rewrite), LLM rewrites remaining story structure
-13. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + choice generator output + structure progression + computed thread ages + accumulated tracked promises + NPC agenda/relationship updates
-14. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
-15. **State Accumulation**: Each page's state = parent's accumulated state + own changes
-16. **Canon Management**: Global and character-specific canon facts persist across all branches
+7. **Scene Blueprinting** (Scene Blueprint prompt): LLM designs the paragraph-level structure of the scene using Swain's Scene-Sequel model and Motivation-Reaction Units (MRUs). Produces 4-8 narrative units, each with action, emotional register, scene function (GOAL/CONFLICT/DISASTER/REACTION/DILEMMA/DECISION/SETUP/TURN), MRU type, sensory anchor, and paragraph weight. Non-fatal: if blueprint fails, writer falls back to unstructured mode. Blueprint is ephemeral (logged to JSONL, not persisted in page JSON).
+8. **Page Writing** (Writer prompt): LLM generates narrative + scene summary + protagonist affect (no choices, no isEnding). When a scene blueprint is available, the writer follows it unit-by-unit. When the planner sets `isEnding: true`, the writer receives an ENDING DIRECTIVE to craft narrative closure
+9. **State Reconciliation**: Engine validates writer's state mutations against active state, assigns keyed IDs, resolves conflicts
+10. **Choice Generation** (Choice Generator prompt): LLM generates 2-4 typed choices (ChoiceType/PrimaryDelta) from the written scene, guided by planner's dramaticQuestion. Skipped when the planner sets `isEnding === true`.
+11. **Scene Analysis** (Analyst prompt): LLM evaluates beat conclusion, deviation, spine deviation, pacing, structural position, NPC coherence, relationship shifts, promise lifecycle (detect via `promisesDetected`, resolve by ID via `promisesResolved`, quality via `promisePayoffAssessments`), and thread payoff quality (`threadPayoffAssessments`)
+12. **Spine Rewrite** (conditional): If spine-level deviation detected, LLM rewrites the story spine
+13. **Structure Rewrite** (conditional): If beat-level deviation detected (or forced by spine rewrite), LLM rewrites remaining story structure
+14. **Page Assembly**: Engine builds immutable Page from writer output + reconciled state + choice generator output + structure progression + computed thread ages + accumulated tracked promises + NPC agenda/relationship updates
+15. **Choice Selection**: Either load existing page (if explored) or run pipeline for new page
+16. **State Accumulation**: Each page's state = parent's accumulated state + own changes
+17. **Canon Management**: Global and character-specific canon facts persist across all branches
 
 ## Generation Pipeline Stages
 
@@ -209,9 +211,10 @@ Story preparation stages (run once on story creation):
 - `STRUCTURING_STORY` - Story structure generation LLM call (uses spine + decomposed data)
 
 Per-page generation stages:
-- `PLANNING_PAGE` - Page planner LLM call (reduced plan without state intents)
+- `PLANNING_PAGE` - Page planner LLM call (reduced plan with scene mandates, no state intents)
 - `ACCOUNTING_STATE` - State accountant LLM call (state intents from reduced plan)
 - `CURATING_CONTEXT` - Lorekeeper story bible generation
+- `BLUEPRINTING_SCENE` - Scene blueprint LLM call (paragraph-level scene structure using Swain Scene-Sequel/MRU theory; non-fatal fallback)
 - `WRITING_OPENING_PAGE` - Opening page writer LLM call
 - `WRITING_CONTINUING_PAGE` - Continuation page writer LLM call
 - `GENERATING_CHOICES` - Choice generator LLM call (generates typed choices from written scene; skipped for endings)
@@ -392,15 +395,16 @@ Completed specs are archived in `archive/specs/`.
   2. **Character contextualization** (`character-contextualizer.ts`): Adds story-specific context (thematicStance, protagonistRelationship) to pre-decomposed standalone characters
   3. **Worldbuilding decomposition** (`worldbuilding-decomposer.ts`): Decomposes raw worldbuilding into structured world facts
   4. **Structure prompt** (`structure-generator.ts`): Generates story arc using spine + decomposed data. Shared context rendering for structure and macro-architecture prompts lives under `src/llm/prompts/sections/structure-generation/`
-- **Per-page generation** (up to 8 stages: 6 LLM calls + 2 engine-side):
-  1. **Planner prompt** (`planner-generation.ts`): Creates reduced page plan with scene intent, dramatic question, isEnding (no state intents). Sole authority on endings
+- **Per-page generation** (up to 9 stages: 7 LLM calls + 2 engine-side):
+  1. **Planner prompt** (`planner-generation.ts`): Creates reduced page plan with scene intent, scene mandates, forbidden recaps, dramatic question, isEnding (no state intents, no writer brief). Sole authority on endings
   2. **State accountant prompt** (`accountant-generation.ts`): Generates state intents from reduced plan
   3. **Lorekeeper prompt** (`lorekeeper-generation.ts`): Curates a scene-focused Story Bible from full context
-  4. **Writer prompt** (`writer-generation.ts`): Generates narrative, scene summary, protagonist affect, state mutations (no choices, no isEnding). Receives ENDING DIRECTIVE when planner sets isEnding
-  5. **Reconciler** (engine-side, not LLM): Validates/fixes writer state output
-  6. **Choice Generator prompt** (`choice-generator-generation.ts`): Generates 2-4 typed choices from the written scene, using planner's dramaticQuestion as thematic anchor. Skipped when planner sets `isEnding === true`.
-  7. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, spine deviation, pacing, NPC coherence, relationship shifts
-  8. **Agenda resolver prompt** (`agenda-resolver-generation.ts`): Updates NPC agendas and relationships based on scene events
+  4. **Scene Blueprint prompt** (`scene-blueprint-generation.ts`): Designs paragraph-level scene structure using Swain's Scene-Sequel model and MRUs. Produces 4-8 narrative units with scene functions, emotional registers, sensory anchors. Non-fatal: writer falls back to unstructured mode on failure
+  5. **Writer prompt** (`writer-generation.ts`): Generates narrative, scene summary, protagonist affect (no choices, no isEnding). When blueprint is available, follows unit-by-unit structure. Receives ENDING DIRECTIVE when planner sets isEnding
+  6. **Reconciler** (engine-side, not LLM): Validates/fixes writer state output
+  7. **Choice Generator prompt** (`choice-generator-generation.ts`): Generates 2-4 typed choices from the written scene, using planner's dramaticQuestion as thematic anchor. Skipped when planner sets `isEnding === true`.
+  8. **Analyst prompt** (`analyst-generation.ts`): Evaluates beat conclusion, deviation, spine deviation, pacing, NPC coherence, relationship shifts
+  9. **Agenda resolver prompt** (`agenda-resolver-generation.ts`): Updates NPC agendas and relationships based on scene events
 - **Conditional**: **Spine rewrite prompt** (`llm/spine-rewriter.ts`): Rewrites spine on spine-level deviation
 - **Conditional**: **Structure rewrite prompt** (`structure-generator.ts`): Rewrites structure on beat-level deviation (or forced by spine rewrite)
 - All prompts use JSON Schema structured output via OpenRouter's `response_format`

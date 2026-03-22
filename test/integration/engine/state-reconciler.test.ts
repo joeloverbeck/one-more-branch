@@ -19,11 +19,10 @@ function buildBasePlan(): PagePlan {
       characterState: { add: [], removeIds: [] },
       canon: { worldAdd: [], characterAdd: [] },
     },
-    writerBrief: {
-      openingLineDirective: 'Open with action.',
-      mustIncludeBeats: ['Consequence'],
-      forbiddenRecaps: ['No recap'],
-    },
+    sceneMandates: ['Consequence'],
+    forbiddenRecaps: ['No recap'],
+    dramaticQuestion: 'Will you confront the danger or seek another path?',
+    isEnding: false,
   };
 }
 

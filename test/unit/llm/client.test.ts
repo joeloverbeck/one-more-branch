@@ -144,11 +144,8 @@ const validPlannerPayload = {
       characterAdd: [],
     },
   },
-  writerBrief: {
-    openingLineDirective: 'Start on immediate tactical pressure.',
-    mustIncludeBeats: ['Sentries moving in', 'A risky route choice'],
-    forbiddenRecaps: ['Do not restate the full descent sequence.'],
-  },
+  sceneMandates: ['Sentries moving in', 'A risky route choice'],
+  forbiddenRecaps: ['Do not restate the full descent sequence.'],
   dramaticQuestion: 'Will you push deeper or seal the vault behind you?',
   isEnding: false,
 };
@@ -156,7 +153,8 @@ const validPlannerPayload = {
 const validReducedPlannerPayload = {
   sceneIntent: validPlannerPayload.sceneIntent,
   continuityAnchors: validPlannerPayload.continuityAnchors,
-  writerBrief: validPlannerPayload.writerBrief,
+  sceneMandates: validPlannerPayload.sceneMandates,
+  forbiddenRecaps: validPlannerPayload.forbiddenRecaps,
   dramaticQuestion: validPlannerPayload.dramaticQuestion,
   isEnding: false,
 };
@@ -820,7 +818,7 @@ describe('llm client', () => {
     expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'writer', expect.any(Array));
     expect(userPrompt).not.toBe('');
     expect(userPrompt).toContain(`Scene Intent: ${validPlannerPayload.sceneIntent}`);
-    expect(userPrompt).toContain(validPlannerPayload.writerBrief.openingLineDirective);
+    expect(userPrompt).toContain('Scene Mandates:');
   });
 
   it('should log planner prompts before API call', async () => {

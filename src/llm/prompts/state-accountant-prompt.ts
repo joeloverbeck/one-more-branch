@@ -23,14 +23,14 @@ function formatReducedPlanForAccountant(plan: ReducedPagePlanResult): string {
       ? plan.continuityAnchors.map((a) => `- ${a}`).join('\n')
       : '- (none)';
 
-  const milestones =
-    plan.writerBrief.mustIncludeBeats.length > 0
-      ? plan.writerBrief.mustIncludeBeats.map((b) => `  - ${b}`).join('\n')
+  const mandates =
+    plan.sceneMandates.length > 0
+      ? plan.sceneMandates.map((m) => `  - ${m}`).join('\n')
       : '  - (none)';
 
   const recaps =
-    plan.writerBrief.forbiddenRecaps.length > 0
-      ? plan.writerBrief.forbiddenRecaps.map((r) => `  - ${r}`).join('\n')
+    plan.forbiddenRecaps.length > 0
+      ? plan.forbiddenRecaps.map((r) => `  - ${r}`).join('\n')
       : '  - (none)';
 
   return `Scene Intent: ${plan.sceneIntent}
@@ -38,11 +38,9 @@ function formatReducedPlanForAccountant(plan: ReducedPagePlanResult): string {
 Continuity Anchors:
 ${anchors}
 
-Writer Brief:
-- Opening line directive: ${plan.writerBrief.openingLineDirective}
-- Must include milestones:
-${milestones}
-- Forbidden recaps:
+Scene Mandates:
+${mandates}
+Forbidden Recaps:
 ${recaps}
 
 Dramatic Question: ${plan.dramaticQuestion}`;

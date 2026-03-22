@@ -9,6 +9,7 @@ import type { GenerationStageCallback } from '@/engine/types';
 
 jest.mock('@/llm', () => ({
   generateLorekeeperBible: jest.fn(),
+  generateSceneBlueprint: jest.fn(),
   generatePageWriterOutput: jest.fn(),
 }));
 
@@ -55,23 +56,21 @@ const mockContinuationContext: ContinuationContext = {
 
 const mockPagePlan: PagePlanGenerationResult = {
   sceneIntent: 'Enter throne room',
-  writerBrief: 'Write the throne room scene',
   continuityAnchors: [],
   stateIntents: {
-    threatsToAdd: [],
-    threatsToRemove: [],
-    constraintsToAdd: [],
-    constraintsToRemove: [],
-    threadsToAdd: [],
-    threadsToResolve: [],
-    inventoryToAdd: [],
-    inventoryToRemove: [],
-    healthToAdd: [],
-    healthToRemove: [],
-    characterStateChanges: [],
-    locationChange: null,
+    currentLocation: 'throne room',
+    threats: { add: [], removeIds: [] },
+    constraints: { add: [], removeIds: [] },
+    threads: { add: [], resolveIds: [] },
+    inventory: { add: [], removeIds: [] },
+    health: { add: [], removeIds: [] },
+    characterState: { add: [], removeIds: [] },
+    canon: { worldAdd: [], characterAdd: [] },
   },
+  sceneMandates: ['Write the throne room scene'],
+  forbiddenRecaps: [],
   dramaticQuestion: 'Will the knight survive?',
+  isEnding: false,
   rawResponse: '{}',
 };
 
@@ -201,7 +200,7 @@ describe('createContinuationWriterWithLorekeeper', () => {
     expect(getLastStoryBible()).toBeNull();
   });
 
-  it('emits only CURATING_CONTEXT stages and leaves writer-stage ownership to the caller', async () => {
+  it('emits CURATING_CONTEXT and BLUEPRINTING_SCENE stages and leaves writer-stage ownership to the caller', async () => {
     mockedGenerateLorekeeperBible.mockResolvedValue(mockLorekeeperResult);
     mockedGeneratePageWriterOutput.mockResolvedValue(mockWriterResult);
     const stageCallback: GenerationStageCallback = jest.fn();
@@ -211,7 +210,7 @@ describe('createContinuationWriterWithLorekeeper', () => {
     );
     await generateWriter(mockPagePlan);
 
-    expect(stageCallback).toHaveBeenCalledTimes(2);
+    expect(stageCallback).toHaveBeenCalledTimes(4);
     expect(stageCallback).toHaveBeenNthCalledWith(1, {
       stage: 'CURATING_CONTEXT',
       status: 'started',
@@ -219,6 +218,16 @@ describe('createContinuationWriterWithLorekeeper', () => {
     });
     expect(stageCallback).toHaveBeenNthCalledWith(2, {
       stage: 'CURATING_CONTEXT',
+      status: 'completed',
+      attempt: 1,
+    });
+    expect(stageCallback).toHaveBeenNthCalledWith(3, {
+      stage: 'BLUEPRINTING_SCENE',
+      status: 'started',
+      attempt: 1,
+    });
+    expect(stageCallback).toHaveBeenNthCalledWith(4, {
+      stage: 'BLUEPRINTING_SCENE',
       status: 'completed',
       attempt: 1,
     });

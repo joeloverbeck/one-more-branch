@@ -295,12 +295,10 @@ function buildPagePlanResult(
       characterState: { add: [], removeIds: [] },
       canon: { worldAdd: [], characterAdd: [] },
     },
-    writerBrief: {
-      openingLineDirective: 'Start with movement under pressure.',
-      mustIncludeBeats: ['Immediate consequence of the selected choice'],
-      forbiddenRecaps: ['Do not restate the previous page ending'],
-    },
+    sceneMandates: ['Immediate consequence of the selected choice'],
+    forbiddenRecaps: ['Do not restate the previous page ending'],
     dramaticQuestion: 'Will you confront the danger or seek another path?',
+    isEnding: false,
     rawResponse: '{"ok":true}',
     ...overrides,
   };
@@ -313,8 +311,10 @@ function buildReducedPagePlanResult(
   return {
     sceneIntent: base.sceneIntent,
     continuityAnchors: base.continuityAnchors,
-    writerBrief: base.writerBrief,
+    sceneMandates: base.sceneMandates,
+    forbiddenRecaps: base.forbiddenRecaps,
     dramaticQuestion: base.dramaticQuestion,
+    isEnding: base.isEnding,
     rawResponse: base.rawResponse,
     ...overrides,
   };
@@ -402,7 +402,8 @@ describe('page-service', () => {
         buildReducedPagePlanResult({
           sceneIntent: pagePlan.sceneIntent,
           continuityAnchors: pagePlan.continuityAnchors,
-          writerBrief: pagePlan.writerBrief,
+          sceneMandates: pagePlan.sceneMandates,
+          forbiddenRecaps: pagePlan.forbiddenRecaps,
           dramaticQuestion: pagePlan.dramaticQuestion,
 
           rawResponse: pagePlan.rawResponse,
@@ -568,6 +569,8 @@ describe('page-service', () => {
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
+        [{ stage: 'BLUEPRINTING_SCENE', status: 'started', attempt: 1 }],
+        [{ stage: 'BLUEPRINTING_SCENE', status: 'completed', attempt: 1 }],
         [
           {
             stage: 'WRITING_OPENING_PAGE',
@@ -597,6 +600,8 @@ describe('page-service', () => {
         [{ stage: 'WRITING_OPENING_PAGE', status: 'started', attempt: 2 }],
         [{ stage: 'CURATING_CONTEXT', status: 'started', attempt: 1 }],
         [{ stage: 'CURATING_CONTEXT', status: 'completed', attempt: 1 }],
+        [{ stage: 'BLUEPRINTING_SCENE', status: 'started', attempt: 1 }],
+        [{ stage: 'BLUEPRINTING_SCENE', status: 'completed', attempt: 1 }],
         [
           {
             stage: 'WRITING_OPENING_PAGE',
@@ -797,7 +802,8 @@ describe('page-service', () => {
         buildReducedPagePlanResult({
           sceneIntent: pagePlan.sceneIntent,
           continuityAnchors: pagePlan.continuityAnchors,
-          writerBrief: pagePlan.writerBrief,
+          sceneMandates: pagePlan.sceneMandates,
+          forbiddenRecaps: pagePlan.forbiddenRecaps,
           dramaticQuestion: pagePlan.dramaticQuestion,
 
           rawResponse: pagePlan.rawResponse,
@@ -869,7 +875,8 @@ describe('page-service', () => {
             sceneIntent: pagePlan.sceneIntent,
             continuityAnchors: pagePlan.continuityAnchors,
             stateIntents: pagePlan.stateIntents,
-            writerBrief: pagePlan.writerBrief,
+            sceneMandates: pagePlan.sceneMandates,
+            forbiddenRecaps: pagePlan.forbiddenRecaps,
             dramaticQuestion: pagePlan.dramaticQuestion,
           }),
         }),
@@ -880,7 +887,8 @@ describe('page-service', () => {
           sceneIntent: pagePlan.sceneIntent,
           continuityAnchors: pagePlan.continuityAnchors,
           stateIntents: pagePlan.stateIntents,
-          writerBrief: pagePlan.writerBrief,
+          sceneMandates: pagePlan.sceneMandates,
+          forbiddenRecaps: pagePlan.forbiddenRecaps,
           dramaticQuestion: pagePlan.dramaticQuestion,
         }),
         expect.objectContaining({
@@ -1243,7 +1251,8 @@ describe('page-service', () => {
         buildReducedPagePlanResult({
           sceneIntent: pagePlan.sceneIntent,
           continuityAnchors: pagePlan.continuityAnchors,
-          writerBrief: pagePlan.writerBrief,
+          sceneMandates: pagePlan.sceneMandates,
+          forbiddenRecaps: pagePlan.forbiddenRecaps,
           dramaticQuestion: pagePlan.dramaticQuestion,
 
           rawResponse: pagePlan.rawResponse,
@@ -1321,7 +1330,8 @@ describe('page-service', () => {
           sceneIntent: pagePlan.sceneIntent,
           continuityAnchors: pagePlan.continuityAnchors,
           stateIntents: pagePlan.stateIntents,
-          writerBrief: pagePlan.writerBrief,
+          sceneMandates: pagePlan.sceneMandates,
+          forbiddenRecaps: pagePlan.forbiddenRecaps,
           dramaticQuestion: pagePlan.dramaticQuestion,
         }),
         expect.any(Object)
@@ -1331,7 +1341,8 @@ describe('page-service', () => {
           sceneIntent: pagePlan.sceneIntent,
           continuityAnchors: pagePlan.continuityAnchors,
           stateIntents: pagePlan.stateIntents,
-          writerBrief: pagePlan.writerBrief,
+          sceneMandates: pagePlan.sceneMandates,
+          forbiddenRecaps: pagePlan.forbiddenRecaps,
           dramaticQuestion: pagePlan.dramaticQuestion,
         }),
         expect.objectContaining({

@@ -27,11 +27,8 @@ describe('buildStateAccountantPrompt', () => {
   const reducedPlan: ReducedPagePlanResult = {
     sceneIntent: 'Escalate toward immediate confrontation.',
     continuityAnchors: ['The patrol is already alerted.'],
-    writerBrief: {
-      openingLineDirective: 'Open on immediate pressure.',
-      mustIncludeBeats: ['Incoming pressure'],
-      forbiddenRecaps: ['Avoid long recap'],
-    },
+    sceneMandates: ['Incoming pressure'],
+    forbiddenRecaps: ['Avoid long recap'],
     dramaticQuestion: 'Will you stand your ground or retreat?',
     isEnding: false,
   };

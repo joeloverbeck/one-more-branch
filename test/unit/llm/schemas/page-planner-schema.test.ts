@@ -17,7 +17,8 @@ describe('PAGE_PLANNER_GENERATION_SCHEMA', () => {
     expect(schema.required).toEqual([
       'sceneIntent',
       'continuityAnchors',
-      'writerBrief',
+      'sceneMandates',
+      'forbiddenRecaps',
       'dramaticQuestion',
       'isEnding',
     ]);

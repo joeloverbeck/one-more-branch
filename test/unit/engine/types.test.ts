@@ -46,6 +46,7 @@ describe('Engine types', () => {
         'PLANNING_PAGE',
         'ACCOUNTING_STATE',
         'CURATING_CONTEXT',
+        'BLUEPRINTING_SCENE',
         'WRITING_OPENING_PAGE',
         'WRITING_CONTINUING_PAGE',
         'GENERATING_CHOICES',

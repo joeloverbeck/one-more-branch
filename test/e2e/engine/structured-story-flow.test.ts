@@ -494,11 +494,9 @@ describe('Structured Story E2E', () => {
     mockedGeneratePagePlan.mockResolvedValue({
       sceneIntent: 'Drive the current branch with immediate outcomes.',
       continuityAnchors: [],
-      writerBrief: {
-        openingLineDirective: 'Begin with direct consequence.',
-        mustIncludeBeats: [],
-        forbiddenRecaps: [],
-      },
+      sceneMandates: [],
+      forbiddenRecaps: [],
+      isEnding: false,
       dramaticQuestion: 'Will you confront the danger or seek another path?',
       rawResponse: 'page-plan',
     });

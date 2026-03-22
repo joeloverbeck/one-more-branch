@@ -23,6 +23,7 @@ export const LLM_STAGE_KEYS = [
   'planner',
   'accountant',
   'lorekeeper',
+  'sceneBlueprint',
   'writer',
   'choiceGenerator',
   'structureEvaluator',
