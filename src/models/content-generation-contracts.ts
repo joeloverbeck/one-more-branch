@@ -13,6 +13,9 @@ export interface TasteProfile {
   readonly antiPatterns: readonly string[];
   readonly surfaceDoNotRepeat: readonly string[];
   readonly riskAppetite: RiskAppetite;
+  readonly engagementModes: readonly string[];
+  readonly valueTensions: readonly string[];
+  readonly deepPatterns: readonly string[];
 }
 
 export interface ContentSpark {

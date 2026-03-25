@@ -83,6 +83,9 @@ describe('buildContentEvaluatorPrompt', () => {
       antiPatterns: ['chosen one'],
       surfaceDoNotRepeat: ['sentient shadows'],
       riskAppetite: 'HIGH' as const,
+      engagementModes: ['puzzle-solving', 'moral dilemma'],
+      valueTensions: ['duty vs desire', 'truth vs stability'],
+      deepPatterns: ['erosion of certainty', 'institutional betrayal'],
     };
     const messages = buildContentEvaluatorPrompt(makeContext({ tasteProfile }));
     const userMessage = messages.find((m) => m.role === 'user');

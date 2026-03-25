@@ -41,6 +41,9 @@ export interface SavedTasteProfile {
   readonly antiPatterns: readonly string[];
   readonly surfaceDoNotRepeat: readonly string[];
   readonly riskAppetite: RiskAppetite;
+  readonly engagementModes: readonly string[];
+  readonly valueTensions: readonly string[];
+  readonly deepPatterns: readonly string[];
 }
 
 // --- Helpers ---
@@ -129,6 +132,9 @@ export function isSavedTasteProfile(value: unknown): value is SavedTasteProfile 
     isNonEmptyStringArray(value['sceneAppetites']) &&
     isNonEmptyStringArray(value['antiPatterns']) &&
     isStringArray(value['surfaceDoNotRepeat']) &&
-    isRiskAppetite(value['riskAppetite'])
+    isRiskAppetite(value['riskAppetite']) &&
+    isStringArray(value['engagementModes']) &&
+    isStringArray(value['valueTensions']) &&
+    isStringArray(value['deepPatterns'])
   );
 }

@@ -25,6 +25,9 @@ function createTasteProfile(): TasteProfile {
     antiPatterns: ['anti-a'],
     surfaceDoNotRepeat: ['surface-a'],
     riskAppetite: 'HIGH',
+    engagementModes: ['mode-a', 'mode-b'],
+    valueTensions: ['tension-a', 'tension-b'],
+    deepPatterns: ['pattern-a', 'pattern-b'],
   };
 }
 

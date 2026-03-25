@@ -156,6 +156,9 @@ function makeValidSavedTasteProfile(): Record<string, unknown> {
     antiPatterns: ['chosen one narrative'],
     surfaceDoNotRepeat: ['fog', 'mist'],
     riskAppetite: 'HIGH',
+    engagementModes: ['puzzle-solving', 'moral dilemma'],
+    valueTensions: ['duty vs desire', 'truth vs stability'],
+    deepPatterns: ['erosion of certainty', 'institutional betrayal'],
   };
 }
 
@@ -186,6 +189,25 @@ describe('isSavedTasteProfile', () => {
   it('accepts when surfaceDoNotRepeat is empty', () => {
     const profile = { ...makeValidSavedTasteProfile(), surfaceDoNotRepeat: [] };
     expect(isSavedTasteProfile(profile)).toBe(true);
+  });
+
+  it('accepts when new array fields are empty', () => {
+    const profile = {
+      ...makeValidSavedTasteProfile(),
+      engagementModes: [],
+      valueTensions: [],
+      deepPatterns: [],
+    };
+    expect(isSavedTasteProfile(profile)).toBe(true);
+  });
+
+  it('accepts when new array fields have values', () => {
+    const profile = makeValidSavedTasteProfile();
+    expect(isSavedTasteProfile(profile)).toBe(true);
+    expect(profile['engagementModes']).toEqual([
+      'puzzle-solving',
+      'moral dilemma',
+    ]);
   });
 
   it('rejects when riskAppetite is invalid', () => {

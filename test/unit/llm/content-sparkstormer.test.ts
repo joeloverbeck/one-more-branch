@@ -17,6 +17,9 @@ function makeTasteProfile(): TasteProfile {
     antiPatterns: ['chosen one narratives'],
     surfaceDoNotRepeat: ['sentient shadows'],
     riskAppetite: 'HIGH',
+    engagementModes: ['puzzle-solving', 'moral dilemma'],
+    valueTensions: ['duty vs desire', 'truth vs stability'],
+    deepPatterns: ['erosion of certainty', 'institutional betrayal'],
   };
 }
 

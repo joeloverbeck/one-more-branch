@@ -1,6 +1,6 @@
 # CONPACPIPIMP-001: Add engagement modes, value tensions, and deep patterns to TasteProfile
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Small
 **Engine Changes**: None
@@ -100,3 +100,16 @@ Add all 3 to the `required` array.
 
 1. `npm run test:unit -- --testPathPattern="content-generation-contracts|saved-content-packet|content-taste-distiller"`
 2. `npm run typecheck && npm run lint && npm test`
+
+## Outcome
+
+- **Completed**: 2026-03-25
+- **Changes**:
+  - Added `engagementModes`, `valueTensions`, `deepPatterns` (readonly string[]) to `TasteProfile` and `SavedTasteProfile`
+  - Extended `isSavedTasteProfile` guard with `isStringArray` checks for new fields
+  - Added `parseTasteProfileEntity` upcaster to `taste-profile-repository.ts` (defaults missing fields to `[]`)
+  - Added 3 properties with minItems/maxItems to taste distiller JSON schema (9 → 12 required)
+  - Updated `parseTasteDistillerResponse` to validate and return new fields
+  - Updated mock fixtures in 8 test files; added upcasting and guard acceptance tests
+- **Deviations**: Also updated `src/llm/content-taste-distiller-generation.ts` (unlisted in ticket but required for response parser)
+- **Verification**: typecheck clean, lint 0 errors, 321 suites / 3715 tests passed

@@ -8,6 +8,25 @@ import { createJsonEntityRepository } from './json-entity-repository.js';
 
 const TASTE_PROFILE_LOCK_PREFIX = 'taste-profile:';
 
+const TASTE_PROFILE_ARRAY_DEFAULTS: ReadonlyArray<
+  keyof Pick<SavedTasteProfile, 'engagementModes' | 'valueTensions' | 'deepPatterns'>
+> = ['engagementModes', 'valueTensions', 'deepPatterns'];
+
+function parseTasteProfileEntity(value: unknown, sourcePath: string): SavedTasteProfile {
+  const record = value as Record<string, unknown>;
+  for (const field of TASTE_PROFILE_ARRAY_DEFAULTS) {
+    if (!Array.isArray(record[field])) {
+      record[field] = [];
+    }
+  }
+
+  if (isSavedTasteProfile(record)) {
+    return record;
+  }
+
+  throw new Error(`Invalid SavedTasteProfile payload at ${sourcePath}`);
+}
+
 const tasteProfileRepository = createJsonEntityRepository<SavedTasteProfile>({
   lockPrefix: TASTE_PROFILE_LOCK_PREFIX,
   entityLabel: 'SavedTasteProfile',
@@ -16,6 +35,7 @@ const tasteProfileRepository = createJsonEntityRepository<SavedTasteProfile>({
   getDir: getTasteProfilesDir,
   getFilePath: getTasteProfileFilePath,
   isEntity: isSavedTasteProfile,
+  parseEntity: parseTasteProfileEntity,
 });
 
 export async function saveTasteProfile(profile: SavedTasteProfile): Promise<void> {

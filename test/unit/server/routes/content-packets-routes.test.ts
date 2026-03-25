@@ -698,6 +698,9 @@ describe('content-packets routes', () => {
           antiPatterns: ['anti1'],
           surfaceDoNotRepeat: ['surface1'],
           riskAppetite: 'HIGH',
+          engagementModes: ['mode1'],
+          valueTensions: ['tension1'],
+          deepPatterns: ['pattern1'],
         },
       };
       (contentService.distillTaste as jest.Mock).mockResolvedValue(tasteResult);

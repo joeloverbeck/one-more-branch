@@ -14,6 +14,9 @@ function makeValidTasteProfile(): Record<string, unknown> {
     antiPatterns: ['chosen one narratives', 'generic dystopia'],
     surfaceDoNotRepeat: ['sentient shadows', 'grief parasites'],
     riskAppetite: 'HIGH',
+    engagementModes: ['puzzle-solving', 'moral dilemma', 'exploration'],
+    valueTensions: ['duty vs desire', 'truth vs stability', 'freedom vs safety'],
+    deepPatterns: ['erosion of certainty', 'institutional betrayal', 'identity fracture'],
   };
 }
 
@@ -79,7 +82,7 @@ describe('buildContentTasteDistillerPrompt', () => {
 });
 
 describe('parseTasteDistillerResponse', () => {
-  it('validates tasteProfile has all 9 required fields', () => {
+  it('validates tasteProfile has all 12 required fields', () => {
     const profile = makeValidTasteProfile();
     const result = parseTasteDistillerResponse({ tasteProfile: profile });
     expect(result.collisionPatterns).toEqual(profile['collisionPatterns']);
@@ -91,6 +94,9 @@ describe('parseTasteDistillerResponse', () => {
     expect(result.antiPatterns).toEqual(profile['antiPatterns']);
     expect(result.surfaceDoNotRepeat).toEqual(profile['surfaceDoNotRepeat']);
     expect(result.riskAppetite).toBe('HIGH');
+    expect(result.engagementModes).toEqual(profile['engagementModes']);
+    expect(result.valueTensions).toEqual(profile['valueTensions']);
+    expect(result.deepPatterns).toEqual(profile['deepPatterns']);
   });
 
   it('validates riskAppetite is one of LOW/MEDIUM/HIGH/MAXIMAL', () => {
@@ -148,7 +154,7 @@ describe('parseTasteDistillerResponse', () => {
 });
 
 describe('buildContentTasteDistillerSchema', () => {
-  it('matches spec output shape with all 9 required fields', () => {
+  it('matches spec output shape with all 12 required fields', () => {
     const schema = buildContentTasteDistillerSchema();
     expect(schema.type).toBe('json_schema');
     expect(schema.json_schema.name).toBe('content_taste_distiller');
@@ -161,7 +167,7 @@ describe('buildContentTasteDistillerSchema', () => {
     expect(tasteProfile['type']).toBe('object');
 
     const required = tasteProfile['required'] as string[];
-    expect(required).toHaveLength(9);
+    expect(required).toHaveLength(12);
     expect(required).toContain('collisionPatterns');
     expect(required).toContain('favoredMechanisms');
     expect(required).toContain('humanAnchors');
@@ -171,6 +177,9 @@ describe('buildContentTasteDistillerSchema', () => {
     expect(required).toContain('antiPatterns');
     expect(required).toContain('surfaceDoNotRepeat');
     expect(required).toContain('riskAppetite');
+    expect(required).toContain('engagementModes');
+    expect(required).toContain('valueTensions');
+    expect(required).toContain('deepPatterns');
 
     const profileProps = tasteProfile['properties'] as Record<string, Record<string, unknown>>;
     expect(profileProps['riskAppetite']['type']).toBe('string');
@@ -185,6 +194,9 @@ describe('buildContentTasteDistillerSchema', () => {
       'sceneAppetites',
       'antiPatterns',
       'surfaceDoNotRepeat',
+      'engagementModes',
+      'valueTensions',
+      'deepPatterns',
     ]) {
       expect(profileProps[arrayField]['type']).toBe('array');
       expect((profileProps[arrayField]['items'] as Record<string, unknown>)['type']).toBe('string');
