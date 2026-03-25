@@ -1,6 +1,6 @@
 # CHABRA-003: Character brainstormer prompt builder
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Medium
 **Engine Changes**: None
@@ -104,3 +104,13 @@ Document the prompt's purpose, input context, system message structure, user mes
 2. `npm run typecheck`
 3. `npm run lint`
 4. `npm test` — full suite
+
+## Outcome
+
+- **Completed**: 2026-03-25
+- **Changes**:
+  - Created `src/llm/prompts/character-brainstormer-prompt.ts` with `buildCharacterBrainstormerMessages()` — system message (role intro, content policy, diagnostic uniqueness mandate, 10 narrative theory techniques, quality gates) + user message (concept, kernel, conditional world/existing chars/notes, output requirements)
+  - Created `test/unit/llm/prompts/character-brainstormer-prompt.test.ts` (15 tests)
+  - Created `prompts/character-brainstormer-prompt.md` prompt documentation
+- **Deviations**: Ticket referenced `getContentPolicy()` but actual codebase uses `CONTENT_POLICY` constant import from `../content-policy.js`. Used correct pattern.
+- **Verification**: typecheck pass, lint 0 errors, 319 suites / 3713 tests all pass
