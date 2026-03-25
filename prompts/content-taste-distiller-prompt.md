@@ -41,8 +41,11 @@ OUTPUT REQUIREMENTS:
 - toneBlend: tonal mixing (ironic + earnest, etc.)
 - sceneAppetites: scene types the user craves
 - antiPatterns: what bores/betrays the taste
-- surfaceDoNotRepeat: concrete nouns/creatures/jobs to avoid recycling
+- surfaceDoNotRepeat: concrete nouns/creatures/jobs to avoid recycling (soft penalty, not absolute ban)
 - riskAppetite: LOW | MEDIUM | HIGH | MAXIMAL
+- engagementModes: 3-5 items (what kinds of agency does the user crave — concrete activities, not labels)
+- valueTensions: 3-6 items (recurring ethical/thematic tensions as 'X vs Y' pairs)
+- deepPatterns: 3-6 items (relational formulas beneath the surface — structural movements: 'X becomes/reveals/forces Y')
 ```
 
 ## JSON Response Shape
@@ -58,7 +61,10 @@ OUTPUT REQUIREMENTS:
     "sceneAppetites": ["string"],
     "antiPatterns": ["string"],
     "surfaceDoNotRepeat": ["string"],
-    "riskAppetite": "LOW | MEDIUM | HIGH | MAXIMAL"
+    "riskAppetite": "LOW | MEDIUM | HIGH | MAXIMAL",
+    "engagementModes": ["string"],
+    "valueTensions": ["string"],
+    "deepPatterns": ["string"]
   }
 }
 ```

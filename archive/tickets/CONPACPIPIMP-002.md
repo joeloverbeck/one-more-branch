@@ -1,6 +1,6 @@
 # CONPACPIPIMP-002: Update Taste Distiller prompt for new fields and surfaceDoNotRepeat softening
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Small
 **Engine Changes**: None
@@ -72,3 +72,20 @@ Update `prompts/content-taste-distiller-prompt.md` to reflect the new JSON respo
 
 1. `npm run test:unit -- --testPathPattern="content-taste-distiller"`
 2. `npm run typecheck && npm run lint && npm test`
+
+## Outcome
+
+**Completed**: 2026-03-25
+
+### What Changed
+- `src/llm/prompts/content-taste-distiller-prompt.ts`: Added soft penalty guidance for `surfaceDoNotRepeat` in RULES; added `engagementModes`, `valueTensions`, `deepPatterns` field descriptions in OUTPUT REQUIREMENTS
+- `prompts/content-taste-distiller-prompt.md`: Added 3 new fields to output requirements and JSON response shape; noted soft penalty on surfaceDoNotRepeat
+- `test/unit/llm/content-taste-distiller.test.ts`: Added 2 new test assertions (new field names in prompt, soft penalty text in system prompt)
+
+### Deviations
+None — implemented exactly as specified.
+
+### Verification
+- Typecheck: clean
+- Lint: clean (only pre-existing warnings)
+- All 321 test suites pass (3717 tests)

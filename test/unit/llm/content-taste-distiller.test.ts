@@ -69,6 +69,21 @@ describe('buildContentTasteDistillerPrompt', () => {
     expect(userMessage!.content).not.toContain('Content preferences:');
   });
 
+  it('includes new field descriptions for engagementModes, valueTensions, deepPatterns', () => {
+    const messages = buildContentTasteDistillerPrompt(makeContext());
+    const userMessage = messages.find((m) => m.role === 'user');
+    expect(userMessage!.content).toContain('engagementModes');
+    expect(userMessage!.content).toContain('valueTensions');
+    expect(userMessage!.content).toContain('deepPatterns');
+  });
+
+  it('includes soft penalty guidance for surfaceDoNotRepeat', () => {
+    const messages = buildContentTasteDistillerPrompt(makeContext());
+    const systemMessage = messages.find((m) => m.role === 'system');
+    expect(systemMessage!.content).toContain('soft penalty');
+    expect(systemMessage!.content).toContain('not a sacred blacklist');
+  });
+
   it('omits optional sections when provided as empty/whitespace strings', () => {
     const context = makeContext({
       moodOrGenre: '   ',
