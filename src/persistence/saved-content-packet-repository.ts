@@ -34,6 +34,23 @@ function parseSavedContentPacket(value: unknown, sourcePath: string): SavedConte
     candidate['context'] = context;
   }
 
+  const evaluationValue = candidate['evaluation'];
+  if (
+    typeof evaluationValue === 'object' &&
+    evaluationValue !== null &&
+    !Array.isArray(evaluationValue)
+  ) {
+    const evaluation = { ...(evaluationValue as Record<string, unknown>) };
+    const scoresValue = evaluation['scores'];
+
+    if (typeof scoresValue === 'object' && scoresValue !== null && !Array.isArray(scoresValue)) {
+      const scores = scoresValue as Record<string, unknown>;
+      if ('antiGenericity' in scores || 'conceptUtility' in scores) {
+        candidate['evaluation'] = undefined;
+      }
+    }
+  }
+
   if (!isSavedContentPacket(candidate)) {
     throw new Error(`Invalid SavedContentPacket payload at ${sourcePath}`);
   }

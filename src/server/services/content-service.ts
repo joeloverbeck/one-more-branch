@@ -73,7 +73,7 @@ export interface PackageContentInput {
 
 export interface EvaluatePacketsInput {
   readonly packets: readonly ConceptSeedPacket[];
-  readonly tasteProfile?: TasteProfile;
+  readonly tasteProfile: TasteProfile;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
 }

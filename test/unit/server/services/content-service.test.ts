@@ -73,14 +73,17 @@ function createEvaluation(id = 'content_1'): ContentEvaluation {
       humanAche: 3,
       socialLoadBearing: 4,
       branchingPressure: 3,
-      antiGenericity: 5,
+      surfaceFreshness: 5,
+      deepOriginality: 4,
       sceneBurst: 4,
       structuralIrony: 3,
-      conceptUtility: 4,
+      tasteAlignment: 5,
+      causalSpecificity: 4,
     },
     strengths: ['strong imagery'],
     weaknesses: ['needs more ache'],
     recommendedRole: 'PRIMARY_SEED',
+    redundancyCluster: null,
   };
 }
 
@@ -93,6 +96,7 @@ function createOneShotPacket(
     premiseSummary: 'A one-shot premise',
     situationFrame: 'A one-shot situation',
     worldState: 'A one-shot world state',
+    playerPosition: 'You are the compromised insider who still has a narrow chance to intervene.',
     contentKind: 'ENTITY',
     coreAnomaly: 'anomaly',
     humanAnchor: 'anchor',
@@ -126,6 +130,7 @@ function createQuickGeneratedPacket(): GeneratedContentPacket {
       premiseSummary: 'A one-shot premise',
       situationFrame: 'A one-shot situation',
       worldState: 'A one-shot world state',
+      playerPosition: 'You are the compromised insider who still has a narrow chance to intervene.',
     },
     origin: {
       generationMode: 'quick',

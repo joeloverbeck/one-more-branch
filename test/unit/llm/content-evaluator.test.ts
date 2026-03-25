@@ -25,6 +25,20 @@ function makePacket(overrides: Partial<ConceptSeedPacket> = {}): ConceptSeedPack
 function makeContext(overrides: Partial<ContentEvaluatorContext> = {}): ContentEvaluatorContext {
   return {
     packets: [makePacket()],
+    tasteProfile: {
+      collisionPatterns: ['body horror meets bureaucracy'],
+      favoredMechanisms: ['transformation'],
+      humanAnchors: ['grieving parent'],
+      socialEngines: ['black market'],
+      toneBlend: ['dread'],
+      sceneAppetites: ['confrontation'],
+      antiPatterns: ['chosen one'],
+      surfaceDoNotRepeat: ['sentient shadows'],
+      riskAppetite: 'HIGH',
+      engagementModes: ['puzzle-solving', 'moral dilemma'],
+      valueTensions: ['duty vs desire', 'truth vs stability'],
+      deepPatterns: ['erosion of certainty', 'institutional betrayal'],
+    },
     ...overrides,
   };
 }
@@ -35,10 +49,12 @@ function makeValidScores(overrides: Record<string, unknown> = {}): Record<string
     humanAche: 5,
     socialLoadBearing: 3,
     branchingPressure: 4,
-    antiGenericity: 4,
+    surfaceFreshness: 4,
+    deepOriginality: 3,
     sceneBurst: 3,
     structuralIrony: 2,
-    conceptUtility: 4,
+    tasteAlignment: 5,
+    causalSpecificity: 4,
     ...overrides,
   };
 }
@@ -50,6 +66,7 @@ function makeValidEvaluation(overrides: Record<string, unknown> = {}): Record<st
     strengths: ['Vivid signature image', 'Strong human anchor'],
     weaknesses: ['Escalation path is vague'],
     recommendedRole: 'PRIMARY_SEED',
+    redundancyCluster: null,
     ...overrides,
   };
 }
@@ -72,36 +89,18 @@ describe('buildContentEvaluatorPrompt', () => {
     expect(userMessage!.content).toContain(JSON.stringify(packets, null, 2));
   });
 
-  it('injects optional taste profile when provided', () => {
-    const tasteProfile = {
-      collisionPatterns: ['body horror meets bureaucracy'],
-      favoredMechanisms: ['transformation'],
-      humanAnchors: ['grieving parent'],
-      socialEngines: ['black market'],
-      toneBlend: ['dread'],
-      sceneAppetites: ['confrontation'],
-      antiPatterns: ['chosen one'],
-      surfaceDoNotRepeat: ['sentient shadows'],
-      riskAppetite: 'HIGH' as const,
-      engagementModes: ['puzzle-solving', 'moral dilemma'],
-      valueTensions: ['duty vs desire', 'truth vs stability'],
-      deepPatterns: ['erosion of certainty', 'institutional betrayal'],
-    };
+  it('injects required taste profile with taste-alignment guidance', () => {
+    const tasteProfile = makeContext().tasteProfile;
     const messages = buildContentEvaluatorPrompt(makeContext({ tasteProfile }));
     const userMessage = messages.find((m) => m.role === 'user');
     expect(userMessage!.content).toContain('TASTE PROFILE');
     expect(userMessage!.content).toContain(JSON.stringify(tasteProfile, null, 2));
-  });
-
-  it('omits taste profile when not provided', () => {
-    const messages = buildContentEvaluatorPrompt(makeContext());
-    const userMessage = messages.find((m) => m.role === 'user');
-    expect(userMessage!.content).not.toContain('TASTE PROFILE');
+    expect(userMessage!.content).toContain('tasteAlignment');
   });
 });
 
 describe('parseContentEvaluatorResponse', () => {
-  it('validates each evaluation has contentId, scores, strengths, weaknesses, recommendedRole', () => {
+  it('validates each evaluation has contentId, scores, strengths, weaknesses, recommendedRole, and redundancyCluster', () => {
     const evaluation = makeValidEvaluation();
     const result = parseContentEvaluatorResponse({ evaluations: [evaluation] });
     expect(result).toHaveLength(1);
@@ -110,13 +109,16 @@ describe('parseContentEvaluatorResponse', () => {
     expect(result[0].scores.humanAche).toBe(5);
     expect(result[0].scores.socialLoadBearing).toBe(3);
     expect(result[0].scores.branchingPressure).toBe(4);
-    expect(result[0].scores.antiGenericity).toBe(4);
+    expect(result[0].scores.surfaceFreshness).toBe(4);
+    expect(result[0].scores.deepOriginality).toBe(3);
     expect(result[0].scores.sceneBurst).toBe(3);
     expect(result[0].scores.structuralIrony).toBe(2);
-    expect(result[0].scores.conceptUtility).toBe(4);
+    expect(result[0].scores.tasteAlignment).toBe(5);
+    expect(result[0].scores.causalSpecificity).toBe(4);
     expect(result[0].strengths).toEqual(['Vivid signature image', 'Strong human anchor']);
     expect(result[0].weaknesses).toEqual(['Escalation path is vague']);
     expect(result[0].recommendedRole).toBe('PRIMARY_SEED');
+    expect(result[0].redundancyCluster).toBeNull();
   });
 
   it('validates recommendedRole is one of PRIMARY_SEED/SECONDARY_MUTAGEN/IMAGE_ONLY/REJECT', () => {
@@ -131,16 +133,18 @@ describe('parseContentEvaluatorResponse', () => {
     );
   });
 
-  it('validates all 8 score dimensions are present and numeric (0-5 range)', () => {
+  it('validates all 10 score dimensions are present and integer (0-5 range)', () => {
     const dimensions = [
       'imageCharge',
       'humanAche',
       'socialLoadBearing',
       'branchingPressure',
-      'antiGenericity',
+      'surfaceFreshness',
+      'deepOriginality',
       'sceneBurst',
       'structuralIrony',
-      'conceptUtility',
+      'tasteAlignment',
+      'causalSpecificity',
     ];
 
     for (const dim of dimensions) {
@@ -148,27 +152,61 @@ describe('parseContentEvaluatorResponse', () => {
       delete missingScores[dim];
       const evaluation = makeValidEvaluation({ scores: missingScores });
       expect(() => parseContentEvaluatorResponse({ evaluations: [evaluation] })).toThrow(
-        new RegExp(`scores\\.${dim} must be a number between 0 and 5`)
+        new RegExp(`scores\\.${dim} must be an integer between 0 and 5`)
       );
     }
 
     const negativeScores = makeValidScores({ imageCharge: -1 });
     const evalNeg = makeValidEvaluation({ scores: negativeScores });
     expect(() => parseContentEvaluatorResponse({ evaluations: [evalNeg] })).toThrow(
-      /scores\.imageCharge must be a number between 0 and 5/
+      /scores\.imageCharge must be an integer between 0 and 5/
     );
 
     const overScores = makeValidScores({ humanAche: 6 });
     const evalOver = makeValidEvaluation({ scores: overScores });
     expect(() => parseContentEvaluatorResponse({ evaluations: [evalOver] })).toThrow(
-      /scores\.humanAche must be a number between 0 and 5/
+      /scores\.humanAche must be an integer between 0 and 5/
     );
 
     const stringScores = makeValidScores({ sceneBurst: 'three' });
     const evalStr = makeValidEvaluation({ scores: stringScores });
     expect(() => parseContentEvaluatorResponse({ evaluations: [evalStr] })).toThrow(
-      /scores\.sceneBurst must be a number between 0 and 5/
+      /scores\.sceneBurst must be an integer between 0 and 5/
     );
+
+    const decimalScores = makeValidScores({ tasteAlignment: 4.5 });
+    const evalDecimal = makeValidEvaluation({ scores: decimalScores });
+    expect(() => parseContentEvaluatorResponse({ evaluations: [evalDecimal] })).toThrow(
+      /scores\.tasteAlignment must be an integer between 0 and 5/
+    );
+  });
+
+  it('accepts redundancyCluster as a contentId string or null', () => {
+    expect(() =>
+      parseContentEvaluatorResponse({
+        evaluations: [makeValidEvaluation({ redundancyCluster: 'pkt-02' })],
+      })
+    ).not.toThrow();
+
+    expect(() =>
+      parseContentEvaluatorResponse({
+        evaluations: [makeValidEvaluation({ redundancyCluster: null })],
+      })
+    ).not.toThrow();
+  });
+
+  it('rejects invalid redundancyCluster values', () => {
+    expect(() =>
+      parseContentEvaluatorResponse({
+        evaluations: [makeValidEvaluation({ redundancyCluster: '' })],
+      })
+    ).toThrow(/redundancyCluster must be a non-empty string or null/);
+
+    expect(() =>
+      parseContentEvaluatorResponse({
+        evaluations: [makeValidEvaluation({ redundancyCluster: 42 })],
+      })
+    ).toThrow(/redundancyCluster must be a non-empty string or null/);
   });
 
   it('rejects evaluations with missing fields', () => {
@@ -201,6 +239,12 @@ describe('parseContentEvaluatorResponse', () => {
     expect(() => parseContentEvaluatorResponse({ evaluations: [noRole] })).toThrow(
       /recommendedRole must be one of/
     );
+
+    const noRedundancyCluster = makeValidEvaluation();
+    delete noRedundancyCluster['redundancyCluster'];
+    expect(() =>
+      parseContentEvaluatorResponse({ evaluations: [noRedundancyCluster] })
+    ).toThrow(/redundancyCluster must be a non-empty string or null/);
   });
 
   it('rejects empty evaluations array', () => {
@@ -266,6 +310,7 @@ describe('buildContentEvaluatorSchema', () => {
     expect(required).toContain('strengths');
     expect(required).toContain('weaknesses');
     expect(required).toContain('recommendedRole');
+    expect(required).toContain('redundancyCluster');
 
     const evalProps = items['properties'] as Record<string, Record<string, unknown>>;
     expect(evalProps['recommendedRole']['enum']).toEqual([
@@ -281,9 +326,14 @@ describe('buildContentEvaluatorSchema', () => {
     expect(scoresRequired).toContain('humanAche');
     expect(scoresRequired).toContain('socialLoadBearing');
     expect(scoresRequired).toContain('branchingPressure');
-    expect(scoresRequired).toContain('antiGenericity');
+    expect(scoresRequired).toContain('surfaceFreshness');
+    expect(scoresRequired).toContain('deepOriginality');
     expect(scoresRequired).toContain('sceneBurst');
     expect(scoresRequired).toContain('structuralIrony');
-    expect(scoresRequired).toContain('conceptUtility');
+    expect(scoresRequired).toContain('tasteAlignment');
+    expect(scoresRequired).toContain('causalSpecificity');
+
+    const redundancyClusterSchema = evalProps['redundancyCluster'] as Record<string, unknown>;
+    expect(redundancyClusterSchema['anyOf']).toEqual([{ type: 'string' }, { type: 'null' }]);
   });
 });

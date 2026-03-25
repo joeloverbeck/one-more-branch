@@ -72,10 +72,12 @@ export interface ContentEvaluationScores {
   readonly humanAche: number;
   readonly socialLoadBearing: number;
   readonly branchingPressure: number;
-  readonly antiGenericity: number;
+  readonly surfaceFreshness: number;
+  readonly deepOriginality: number;
   readonly sceneBurst: number;
   readonly structuralIrony: number;
-  readonly conceptUtility: number;
+  readonly tasteAlignment: number;
+  readonly causalSpecificity: number;
 }
 
 export interface ContentEvaluation {
@@ -84,6 +86,7 @@ export interface ContentEvaluation {
   readonly strengths: readonly string[];
   readonly weaknesses: readonly string[];
   readonly recommendedRole: ContentPacketRole;
+  readonly redundancyCluster: string | null;
 }
 
 export interface TasteDistillerContext {
@@ -134,7 +137,7 @@ export interface ContentPacketerResult {
 
 export interface ContentEvaluatorContext {
   readonly packets: readonly ConceptSeedPacket[];
-  readonly tasteProfile?: TasteProfile;
+  readonly tasteProfile: TasteProfile;
 }
 
 export interface ContentEvaluatorResult {
@@ -154,8 +157,8 @@ function isStringArray(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
-function isFiniteScore(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value);
+function isValidScore(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 5;
 }
 
 function isContentEvaluationScores(value: unknown): value is ContentEvaluationScores {
@@ -164,14 +167,16 @@ function isContentEvaluationScores(value: unknown): value is ContentEvaluationSc
   }
 
   return (
-    isFiniteScore(value['imageCharge']) &&
-    isFiniteScore(value['humanAche']) &&
-    isFiniteScore(value['socialLoadBearing']) &&
-    isFiniteScore(value['branchingPressure']) &&
-    isFiniteScore(value['antiGenericity']) &&
-    isFiniteScore(value['sceneBurst']) &&
-    isFiniteScore(value['structuralIrony']) &&
-    isFiniteScore(value['conceptUtility'])
+    isValidScore(value['imageCharge']) &&
+    isValidScore(value['humanAche']) &&
+    isValidScore(value['socialLoadBearing']) &&
+    isValidScore(value['branchingPressure']) &&
+    isValidScore(value['surfaceFreshness']) &&
+    isValidScore(value['deepOriginality']) &&
+    isValidScore(value['sceneBurst']) &&
+    isValidScore(value['structuralIrony']) &&
+    isValidScore(value['tasteAlignment']) &&
+    isValidScore(value['causalSpecificity'])
   );
 }
 
@@ -309,6 +314,7 @@ export function isContentEvaluation(value: unknown): value is ContentEvaluation 
     isContentEvaluationScores(value['scores']) &&
     isStringArray(value['strengths']) &&
     isStringArray(value['weaknesses']) &&
-    isContentPacketRole(value['recommendedRole'])
+    isContentPacketRole(value['recommendedRole']) &&
+    (value['redundancyCluster'] === null || isNonEmptyString(value['redundancyCluster']))
   );
 }

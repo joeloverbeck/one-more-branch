@@ -82,6 +82,40 @@ function createSavedContentPacket(id: string, updatedAt?: string): SavedContentP
   };
 }
 
+function createLegacyEvaluation(): {
+  contentId: string;
+  scores: {
+    imageCharge: number;
+    humanAche: number;
+    socialLoadBearing: number;
+    branchingPressure: number;
+    antiGenericity: number;
+    sceneBurst: number;
+    structuralIrony: number;
+    conceptUtility: number;
+  };
+  strengths: readonly string[];
+  weaknesses: readonly string[];
+  recommendedRole: 'PRIMARY_SEED';
+} {
+  return {
+    contentId: 'pkt-01',
+    scores: {
+      imageCharge: 5,
+      humanAche: 4,
+      socialLoadBearing: 5,
+      branchingPressure: 4,
+      antiGenericity: 5,
+      sceneBurst: 4,
+      structuralIrony: 5,
+      conceptUtility: 4,
+    },
+    strengths: ['legacy strength'],
+    weaknesses: ['legacy weakness'],
+    recommendedRole: 'PRIMARY_SEED',
+  };
+}
+
 function createLegacyPacketOnlyPayload(id: string): Record<string, unknown> {
   const now = new Date().toISOString();
   return {
@@ -253,6 +287,24 @@ describe('saved-content-packet-repository', () => {
         worldState: packet.context.worldState,
         playerPosition: 'Unspecified protagonist position',
       },
+    });
+  });
+
+  it('clears legacy evaluations that still use removed score keys', async () => {
+    const id = `${TEST_PREFIX}-${randomUUID()}`;
+    createdIds.add(id);
+    const packet = createSavedContentPacket(id);
+    const legacyPayload = {
+      ...packet,
+      evaluation: createLegacyEvaluation(),
+    };
+
+    mkdirSync(getContentPacketsDir(), { recursive: true });
+    await writeJsonFile(getContentPacketFilePath(id), legacyPayload);
+
+    await expect(loadSavedContentPacket(id)).resolves.toMatchObject({
+      id,
+      evaluation: undefined,
     });
   });
 

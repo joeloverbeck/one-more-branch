@@ -115,14 +115,17 @@ describe('content generation contracts', () => {
           humanAche: 3,
           socialLoadBearing: 5,
           branchingPressure: 4,
-          antiGenericity: 5,
+          surfaceFreshness: 5,
+          deepOriginality: 4,
           sceneBurst: 3,
           structuralIrony: 4,
-          conceptUtility: 5,
+          tasteAlignment: 5,
+          causalSpecificity: 4,
         },
         strengths: ['vivid imagery'],
         weaknesses: ['narrow scope'],
         recommendedRole: 'PRIMARY_SEED',
+        redundancyCluster: null,
       })
     ).toBe(true);
   });

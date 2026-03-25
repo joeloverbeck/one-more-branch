@@ -16,10 +16,12 @@ const SCORE_KEYS: readonly (keyof ContentEvaluationScores)[] = [
   'humanAche',
   'socialLoadBearing',
   'branchingPressure',
-  'antiGenericity',
+  'surfaceFreshness',
+  'deepOriginality',
   'sceneBurst',
   'structuralIrony',
-  'conceptUtility',
+  'tasteAlignment',
+  'causalSpecificity',
 ] as const;
 
 function validateScores(data: Record<string, unknown>, index: number): ContentEvaluationScores {
@@ -37,9 +39,9 @@ function validateScores(data: Record<string, unknown>, index: number): ContentEv
 
   for (const key of SCORE_KEYS) {
     const value = scores[key];
-    if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 5) {
+    if (typeof value !== 'number' || !Number.isInteger(value) || value < 0 || value > 5) {
       throw new LLMError(
-        `evaluations[${index}].scores.${key} must be a number between 0 and 5`,
+        `evaluations[${index}].scores.${key} must be an integer between 0 and 5`,
         'STRUCTURE_PARSE_ERROR',
         true
       );
@@ -98,12 +100,22 @@ function validateEvaluation(value: unknown, index: number): ContentEvaluation {
     );
   }
 
+  const redundancyCluster = data['redundancyCluster'];
+  if (redundancyCluster !== null && (typeof redundancyCluster !== 'string' || redundancyCluster.trim().length === 0)) {
+    throw new LLMError(
+      `evaluations[${index}].redundancyCluster must be a non-empty string or null`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
   return {
     contentId,
     scores,
     strengths,
     weaknesses,
     recommendedRole: data['recommendedRole'],
+    redundancyCluster,
   };
 }
 

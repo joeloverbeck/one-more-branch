@@ -107,18 +107,21 @@ describe('content-packets page controller', () => {
     const evaluation = {
       contentId: 'pkt-01',
       scores: {
-        imageCharge: 8,
-        humanAche: 7,
-        socialLoadBearing: 9,
-        branchingPressure: 6,
-        antiGenericity: 8,
-        sceneBurst: 7,
-        structuralIrony: 8,
-        conceptUtility: 9,
+        imageCharge: 5,
+        humanAche: 4,
+        socialLoadBearing: 5,
+        branchingPressure: 4,
+        surfaceFreshness: 5,
+        deepOriginality: 4,
+        sceneBurst: 4,
+        structuralIrony: 5,
+        tasteAlignment: 5,
+        causalSpecificity: 4,
       },
       strengths: ['Strong image'],
       weaknesses: ['Minor weakness'],
       recommendedRole: 'PRIMARY_SEED',
+      redundancyCluster: null,
     };
 
     fetchMock.mockImplementation((input: RequestInfo | URL) => {

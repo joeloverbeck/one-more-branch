@@ -6,16 +6,18 @@ const SCORE_DIMENSIONS = [
   'humanAche',
   'socialLoadBearing',
   'branchingPressure',
-  'antiGenericity',
+  'surfaceFreshness',
+  'deepOriginality',
   'sceneBurst',
   'structuralIrony',
-  'conceptUtility',
+  'tasteAlignment',
+  'causalSpecificity',
 ] as const;
 
 function buildScoresSchema(): Record<string, unknown> {
   const properties: Record<string, unknown> = {};
   for (const dim of SCORE_DIMENSIONS) {
-    properties[dim] = { type: 'number' };
+    properties[dim] = { type: 'integer', minimum: 0, maximum: 5 };
   }
   return {
     type: 'object',
@@ -41,7 +43,14 @@ export function buildContentEvaluatorSchema(): JsonSchema {
             items: {
               type: 'object',
               additionalProperties: false,
-              required: ['contentId', 'scores', 'strengths', 'weaknesses', 'recommendedRole'],
+              required: [
+                'contentId',
+                'scores',
+                'strengths',
+                'weaknesses',
+                'recommendedRole',
+                'redundancyCluster',
+              ],
               properties: {
                 contentId: { type: 'string' },
                 scores: buildScoresSchema(),
@@ -50,6 +59,9 @@ export function buildContentEvaluatorSchema(): JsonSchema {
                 recommendedRole: {
                   type: 'string',
                   enum: [...CONTENT_PACKET_ROLE_VALUES],
+                },
+                redundancyCluster: {
+                  anyOf: [{ type: 'string' }, { type: 'null' }],
                 },
               },
             },

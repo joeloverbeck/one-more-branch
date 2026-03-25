@@ -139,19 +139,52 @@ function makeEvaluation(overrides: Partial<ContentEvaluation> = {}): ContentEval
   return {
     contentId: 'pkt-01',
     scores: {
-      imageCharge: 8,
-      humanAche: 7,
-      socialLoadBearing: 9,
-      branchingPressure: 6,
-      antiGenericity: 8,
-      sceneBurst: 7,
-      structuralIrony: 8,
-      conceptUtility: 9,
+      imageCharge: 5,
+      humanAche: 4,
+      socialLoadBearing: 5,
+      branchingPressure: 4,
+      surfaceFreshness: 5,
+      deepOriginality: 4,
+      sceneBurst: 4,
+      structuralIrony: 5,
+      tasteAlignment: 5,
+      causalSpecificity: 4,
     },
     strengths: ['Strong image'],
     weaknesses: ['Minor weakness'],
     recommendedRole: 'PRIMARY_SEED',
+    redundancyCluster: null,
     ...overrides,
+  };
+}
+
+function makeTasteProfile(): {
+  collisionPatterns: readonly string[];
+  favoredMechanisms: readonly string[];
+  humanAnchors: readonly string[];
+  socialEngines: readonly string[];
+  toneBlend: readonly string[];
+  sceneAppetites: readonly string[];
+  antiPatterns: readonly string[];
+  surfaceDoNotRepeat: readonly string[];
+  riskAppetite: 'HIGH';
+  engagementModes: readonly string[];
+  valueTensions: readonly string[];
+  deepPatterns: readonly string[];
+} {
+  return {
+    collisionPatterns: ['pattern-1'],
+    favoredMechanisms: ['mechanism-1'],
+    humanAnchors: ['anchor-1'],
+    socialEngines: ['engine-1'],
+    toneBlend: ['tone-1'],
+    sceneAppetites: ['scene-1'],
+    antiPatterns: ['anti-1'],
+    surfaceDoNotRepeat: ['surface-1'],
+    riskAppetite: 'HIGH' as const,
+    engagementModes: ['mode-1'],
+    valueTensions: ['tension-1'],
+    deepPatterns: ['deep-pattern-1'],
   };
 }
 
@@ -403,7 +436,7 @@ describe('content-packets routes', () => {
 
     it('calls generateContentPipeline when pipeline=true', async () => {
       const pipelineResult = {
-        tasteProfile: { collisionPatterns: [] },
+        tasteProfile: makeTasteProfile(),
         sparks: [],
         packets: [
           makeGeneratedPacket({
