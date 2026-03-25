@@ -1,6 +1,6 @@
 # CHABRA-006: Character brainstormer EJS page template
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: MEDIUM
 **Effort**: Medium
 **Engine Changes**: None
@@ -98,3 +98,11 @@ Each card displays:
 
 1. `npm run build` — confirm template is compiled/copied
 2. `npm test` — no regressions
+
+## Outcome
+
+- **Completed**: 2026-03-25
+- **Changes**:
+  - Created `src/server/views/pages/character-brainstormer.ejs` with header/footer partials, API key input, server-rendered concept/worldbuilding selectors, notes textarea, generate button (disabled), loading overlay, results section with copy-all button, diversity note details, and character cards container
+- **Deviations**: None. Template follows existing patterns exactly.
+- **Verification**: build succeeds (template in dist/), lint 0 errors, 321 suites / 3729 tests all pass
