@@ -7,10 +7,10 @@ const ROLE_INTRO = `You are a content-packeting engine for branching interactive
 Each packet is a fully fleshed-out content seed with explicit setup context and structure: premiseSummary, situationFrame, worldState, coreAnomaly, humanAnchor, socialEngine, choicePressure, signatureImage, escalationPath, wildnessInvariant, dullCollapse, and interactionVerbs. These packets will later be evaluated, ranked, and woven into story concepts.`;
 
 const RULES = `RULES:
-- Select the 12-16 strongest sparks and expand each into a full content packet.
+- Select the 12-16 strongest sparks and expand each into exactly one full content packet. Each packet is built from ONE primary spark.
 - Every packet must have ALL required fields -- no partial packets.
 - contentId: unique identifier in the format "pkt-NN" (e.g., "pkt-01", "pkt-02").
-- sourceSparkIds: array of 1+ sparkIds that contributed to this packet.
+- sourceSparkIds: array containing exactly 1 sparkId -- the single spark this packet expands. Do NOT merge or combine similar sparks into one packet; each spark stands alone.
 - contentKind: one of ENTITY, INSTITUTION, RELATIONSHIP, TRANSFORMATION, WORLD_INTRUSION, RITUAL, POLICY, JOB, SUBCULTURE, ECONOMY.
 - premiseSummary: plain-language causal setup that explains what is concretely happening here.
 - situationFrame: the immediate arrangement or trap the packet assumes at the moment play begins.

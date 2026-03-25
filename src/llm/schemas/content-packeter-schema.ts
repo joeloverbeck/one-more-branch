@@ -36,7 +36,7 @@ export function buildContentPacketerSchema(): JsonSchema {
               ],
               properties: {
                 contentId: { type: 'string' },
-                sourceSparkIds: { type: 'array', items: { type: 'string' } },
+                sourceSparkIds: { type: 'array', items: { type: 'string' }, minItems: 1 },
                 contentKind: { type: 'string', enum: [...CONTENT_KIND_VALUES] },
                 premiseSummary: { type: 'string' },
                 situationFrame: { type: 'string' },

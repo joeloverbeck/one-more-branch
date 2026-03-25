@@ -87,7 +87,17 @@ export function parseSparkstormerResponse(parsed: unknown): readonly ContentSpar
     throw new LLMError('sparks must be a non-empty array', 'STRUCTURE_PARSE_ERROR', true);
   }
 
-  return sparks.map((spark, index) => validateSpark(spark, index));
+  const validated = sparks.map((spark, index) => validateSpark(spark, index));
+
+  const seenIds = new Set<string>();
+  for (const spark of validated) {
+    if (seenIds.has(spark.sparkId)) {
+      throw new LLMError(`Duplicate sparkId: ${spark.sparkId}`, 'STRUCTURE_PARSE_ERROR', true);
+    }
+    seenIds.add(spark.sparkId);
+  }
+
+  return validated;
 }
 
 export async function generateSparks(

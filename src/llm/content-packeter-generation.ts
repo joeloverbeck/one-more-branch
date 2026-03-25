@@ -33,11 +33,11 @@ function validatePacket(value: unknown, index: number): ConceptSeedPacketerPacke
 
   if (
     !Array.isArray(data['sourceSparkIds']) ||
-    data['sourceSparkIds'].length === 0 ||
+    data['sourceSparkIds'].length !== 1 ||
     !data['sourceSparkIds'].every((id: unknown) => typeof id === 'string' && id.trim().length > 0)
   ) {
     throw new LLMError(
-      `packets[${index}].sourceSparkIds must be a non-empty array of non-empty strings`,
+      `packets[${index}].sourceSparkIds must be an array of exactly 1 non-empty string`,
       'STRUCTURE_PARSE_ERROR',
       true
     );
@@ -117,7 +117,23 @@ export function parseContentPacketerResponse(
     throw new LLMError('packets must be a non-empty array', 'STRUCTURE_PARSE_ERROR', true);
   }
 
-  return packets.map((packet, index) => validatePacket(packet, index));
+  const validated = packets.map((packet, index) => validatePacket(packet, index));
+
+  const seenSparkIds = new Set<string>();
+  for (const packet of validated) {
+    for (const sparkId of packet.sourceSparkIds) {
+      if (seenSparkIds.has(sparkId)) {
+        throw new LLMError(
+          `Spark ${sparkId} is referenced by multiple packets`,
+          'STRUCTURE_PARSE_ERROR',
+          true
+        );
+      }
+      seenSparkIds.add(sparkId);
+    }
+  }
+
+  return validated;
 }
 
 export async function generateContentPackets(
