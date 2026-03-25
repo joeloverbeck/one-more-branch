@@ -1505,6 +1505,23 @@ const STAGE_PHRASE_POOLS = {
     'Scoring each packet across eight quality dimensions...',
     'Finalizing content evaluations and role assignments...',
   ],
+  GENERATING_CONTENT: [
+    'Inferring your imaginative taste from the exemplars...',
+    'Generating concrete impossibilities that drive stories...',
+    'Colliding the uncanny with the ordinary in one pass...',
+    'Producing wild content packets with human ache at the center...',
+    'Forging signature images that sell premises by themselves...',
+    'Ensuring every packet contains a branching dilemma...',
+    'Building escalation paths from the mundane to the monstrous...',
+    'Defining wildness invariants that later stages cannot sand off...',
+    'Testing what each packet collapses into without its weirdness...',
+    'Mixing transformation, ritual, policy, romance, and ecology...',
+    'Refusing to output generic scaffolding or safe abstractions...',
+    'Generating story matter that demands to be operationalized...',
+    'Producing packets that could each anchor a different concept...',
+    'Ensuring dangerous sincerity over cosmetic genre dressing...',
+    'Crystallizing wild content from raw creative appetite...',
+  ],
   GENERATING_CHARACTER_WEB: [
     'Mapping the invisible threads between cast members...',
     'Discovering who needs whom and why they\'ll regret it...',
@@ -1699,6 +1716,7 @@ const STAGE_DISPLAY_NAMES = {
   GENERATING_SPARKS: 'SPARKING',
   PACKAGING_CONTENT: 'PACKAGING',
   EVALUATING_CONTENT: 'EVALUATING',
+  GENERATING_CONTENT: 'IMAGINING',
   GENERATING_CHARACTER_WEB: 'WEAVING CHARACTER WEB',
   GENERATING_CHAR_KERNEL: 'BUILDING CHARACTER KERNEL',
   GENERATING_CHAR_TRIDIMENSIONAL: 'CREATING TRIDIMENSIONAL PROFILE',
@@ -8003,9 +8021,24 @@ function initSpinesPage() {
   var startingSituationInput = document.getElementById('spineStartingSituation');
   var npcSelect = document.getElementById('spineNpcIds');
 
-  if (!form || !generateBtn) return;
+  if (
+    !form ||
+    !generateBtn ||
+    !progressSection ||
+    !progressContent ||
+    !generatedSection ||
+    !generatedContainer ||
+    !savedContainer
+  ) {
+    return;
+  }
 
-  var loadingProgress = createLoadingProgressController(progressContent);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: progressSection,
+    progressElement: progressContent,
+    buttonElement: generateBtn,
+    onHide: updateGenerateButton,
+  });
 
   // Restore API key
   var storedApiKey = getApiKey();
@@ -8128,58 +8161,51 @@ function initSpinesPage() {
   var generatedOptions = [];
 
   async function fetchSpineOptions() {
-    generateBtn.disabled = true;
-    progressSection.style.display = 'flex';
     generatedSection.style.display = 'none';
     generatedContainer.innerHTML = '';
 
     currentFormContext = collectFormContext();
 
-    var progressId = createProgressId();
-    loadingProgress.start(progressId);
-
     try {
-      var apiKey = apiKeyInput.value.trim();
-      setApiKey(apiKey);
+      await loadingSession.withProgress(async function(progressId) {
+        var apiKey = apiKeyInput.value.trim();
+        setApiKey(apiKey);
 
-      var response = await fetch('/spines/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conceptId: currentFormContext.conceptId,
-          protagonistCharacterId: currentFormContext.protagonistCharacterId,
-          npcCharacterIds: currentFormContext.npcCharacterIds,
-          worldbuildingId: currentFormContext.worldbuildingId,
-          tone: currentFormContext.tone,
-          startingSituation: currentFormContext.startingSituation,
-          apiKey: apiKey,
-          progressId: progressId,
-        }),
+        var response = await fetch('/spines/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conceptId: currentFormContext.conceptId,
+            protagonistCharacterId: currentFormContext.protagonistCharacterId,
+            npcCharacterIds: currentFormContext.npcCharacterIds,
+            worldbuildingId: currentFormContext.worldbuildingId,
+            tone: currentFormContext.tone,
+            startingSituation: currentFormContext.startingSituation,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to generate spines');
+        }
+
+        generatedOptions = data.options;
+
+        data.options.forEach(function (option, i) {
+          generatedContainer.appendChild(renderSpineCard(option, i, false));
+        });
+
+        generatedSection.style.display = '';
       });
-
-      var data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to generate spines');
-      }
-
-      generatedOptions = data.options;
-
-      data.options.forEach(function (option, i) {
-        generatedContainer.appendChild(renderSpineCard(option, i, false));
-      });
-
-      generatedSection.style.display = '';
     } catch (error) {
       var errorEl = document.createElement('p');
       errorEl.className = 'form-error';
       errorEl.textContent = error instanceof Error ? error.message : 'Generation failed';
       generatedContainer.appendChild(errorEl);
       generatedSection.style.display = '';
-    } finally {
-      loadingProgress.stop();
-      progressSection.style.display = 'none';
-      updateGenerateButton();
     }
   }
 
@@ -8294,9 +8320,14 @@ function initCreateStoryPage() {
   var progressContent = document.getElementById('create-story-progress-content');
   var errorDiv = document.getElementById('create-story-error');
 
-  if (!form || !createBtn || !errorDiv) return;
+  if (!form || !createBtn || !errorDiv || !progressSection || !progressContent) return;
 
-  var loadingProgress = createLoadingProgressController(progressContent);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: progressSection,
+    progressElement: progressContent,
+    buttonElement: createBtn,
+    onHide: updateCreateButton,
+  });
   var inlineError = createInlineErrorController(errorDiv);
 
   // Restore API key
@@ -8354,42 +8385,35 @@ function initCreateStoryPage() {
 
   async function createStory() {
     inlineError.clear();
-    createBtn.disabled = true;
-    if (progressSection) progressSection.style.display = 'flex';
-
-    var progressId = createProgressId();
-    loadingProgress.start(progressId);
 
     try {
-      var apiKey = apiKeyInput.value.trim();
-      setApiKey(apiKey);
+      await loadingSession.withProgress(async function(progressId) {
+        var apiKey = apiKeyInput.value.trim();
+        setApiKey(apiKey);
 
-      var response = await fetch('/create-story/api/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          spineId: spineSelect.value,
-          title: titleInput.value.trim(),
-          apiKey: apiKey,
-          progressId: progressId,
-        }),
+        var response = await fetch('/create-story/api/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            spineId: spineSelect.value,
+            title: titleInput.value.trim(),
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to create story');
+        }
+
+        window.location.assign('/play/' + data.storyId + '/briefing');
       });
-
-      var data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to create story');
-      }
-
-      window.location.assign('/play/' + data.storyId + '/briefing');
     } catch (error) {
       inlineError.show(
         error instanceof Error ? error.message : 'Something went wrong. Please try again.'
       );
-      updateCreateButton();
-    } finally {
-      loadingProgress.stop();
-      if (progressSection) progressSection.style.display = 'none';
     }
   }
 

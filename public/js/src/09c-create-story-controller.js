@@ -15,9 +15,14 @@ function initCreateStoryPage() {
   var progressContent = document.getElementById('create-story-progress-content');
   var errorDiv = document.getElementById('create-story-error');
 
-  if (!form || !createBtn || !errorDiv) return;
+  if (!form || !createBtn || !errorDiv || !progressSection || !progressContent) return;
 
-  var loadingProgress = createLoadingProgressController(progressContent);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: progressSection,
+    progressElement: progressContent,
+    buttonElement: createBtn,
+    onHide: updateCreateButton,
+  });
   var inlineError = createInlineErrorController(errorDiv);
 
   // Restore API key
@@ -75,42 +80,35 @@ function initCreateStoryPage() {
 
   async function createStory() {
     inlineError.clear();
-    createBtn.disabled = true;
-    if (progressSection) progressSection.style.display = 'flex';
-
-    var progressId = createProgressId();
-    loadingProgress.start(progressId);
 
     try {
-      var apiKey = apiKeyInput.value.trim();
-      setApiKey(apiKey);
+      await loadingSession.withProgress(async function(progressId) {
+        var apiKey = apiKeyInput.value.trim();
+        setApiKey(apiKey);
 
-      var response = await fetch('/create-story/api/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          spineId: spineSelect.value,
-          title: titleInput.value.trim(),
-          apiKey: apiKey,
-          progressId: progressId,
-        }),
+        var response = await fetch('/create-story/api/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            spineId: spineSelect.value,
+            title: titleInput.value.trim(),
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to create story');
+        }
+
+        window.location.assign('/play/' + data.storyId + '/briefing');
       });
-
-      var data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to create story');
-      }
-
-      window.location.assign('/play/' + data.storyId + '/briefing');
     } catch (error) {
       inlineError.show(
         error instanceof Error ? error.message : 'Something went wrong. Please try again.'
       );
-      updateCreateButton();
-    } finally {
-      loadingProgress.stop();
-      if (progressSection) progressSection.style.display = 'none';
     }
   }
 
