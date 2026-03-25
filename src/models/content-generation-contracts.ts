@@ -34,7 +34,7 @@ export interface ContentPacketContext {
   readonly premiseSummary: string;
   readonly situationFrame: string;
   readonly worldState: string;
-  readonly viewpointPressure?: string;
+  readonly playerPosition: string;
 }
 
 export interface ContentPacketSourceArtifact {
@@ -184,7 +184,7 @@ export function cloneContentPacketContext(context: ContentPacketContext): Conten
     premiseSummary: context.premiseSummary,
     situationFrame: context.situationFrame,
     worldState: context.worldState,
-    viewpointPressure: context.viewpointPressure,
+    playerPosition: context.playerPosition,
   };
 }
 
@@ -217,7 +217,7 @@ export function isContentPacketContext(value: unknown): value is ContentPacketCo
     'premiseSummary',
     'situationFrame',
     'worldState',
-    'viewpointPressure',
+    'playerPosition',
   ]);
 
   if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
@@ -228,7 +228,7 @@ export function isContentPacketContext(value: unknown): value is ContentPacketCo
     isNonEmptyString(value['premiseSummary']) &&
     isNonEmptyString(value['situationFrame']) &&
     isNonEmptyString(value['worldState']) &&
-    (value['viewpointPressure'] === undefined || isNonEmptyString(value['viewpointPressure']))
+    isNonEmptyString(value['playerPosition'])
   );
 }
 

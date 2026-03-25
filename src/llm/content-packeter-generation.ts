@@ -55,6 +55,7 @@ function validatePacket(value: unknown, index: number): ConceptSeedPacketerPacke
   const premiseSummary = validateStringField(data, 'premiseSummary', index);
   const situationFrame = validateStringField(data, 'situationFrame', index);
   const worldState = validateStringField(data, 'worldState', index);
+  const playerPosition = validateStringField(data, 'playerPosition', index);
   const humanAnchor = validateStringField(data, 'humanAnchor', index);
   const socialEngine = validateStringField(data, 'socialEngine', index);
   const choicePressure = validateStringField(data, 'choicePressure', index);
@@ -83,10 +84,7 @@ function validatePacket(value: unknown, index: number): ConceptSeedPacketerPacke
     premiseSummary,
     situationFrame,
     worldState,
-    viewpointPressure:
-      typeof data['viewpointPressure'] === 'string' && data['viewpointPressure'].trim().length > 0
-        ? data['viewpointPressure']
-        : undefined,
+    playerPosition,
     coreAnomaly,
     humanAnchor,
     socialEngine,

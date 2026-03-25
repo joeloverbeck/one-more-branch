@@ -51,7 +51,7 @@ export const CONTENT_PACKET_CONTEXT_FIELD_REGISTRY = [
   { key: 'premiseSummary', label: 'Premise Summary' },
   { key: 'situationFrame', label: 'Situation Frame' },
   { key: 'worldState', label: 'World State' },
-  { key: 'viewpointPressure', label: 'Viewpoint Pressure' },
+  { key: 'playerPosition', label: 'Player Position' },
 ] as const satisfies ReadonlyArray<{
   readonly key: keyof ContentPacketContext;
   readonly label: string;

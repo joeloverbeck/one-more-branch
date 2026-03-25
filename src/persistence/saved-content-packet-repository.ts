@@ -8,6 +8,39 @@ import { createJsonEntityRepository } from './json-entity-repository.js';
 
 const CONTENT_PACKET_LOCK_PREFIX = 'content-packet:';
 
+function parseSavedContentPacket(value: unknown, sourcePath: string): SavedContentPacket {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error(`Invalid SavedContentPacket payload at ${sourcePath}`);
+  }
+
+  const candidate = value as Record<string, unknown>;
+  const contextValue = candidate['context'];
+
+  if (typeof contextValue === 'object' && contextValue !== null && !Array.isArray(contextValue)) {
+    const context = { ...(contextValue as Record<string, unknown>) };
+
+    if (
+      typeof context['viewpointPressure'] === 'string' &&
+      typeof context['playerPosition'] !== 'string'
+    ) {
+      context['playerPosition'] = context['viewpointPressure'];
+    }
+
+    if (typeof context['playerPosition'] !== 'string' || context['playerPosition'].trim().length === 0) {
+      context['playerPosition'] = 'Unspecified protagonist position';
+    }
+
+    delete context['viewpointPressure'];
+    candidate['context'] = context;
+  }
+
+  if (!isSavedContentPacket(candidate)) {
+    throw new Error(`Invalid SavedContentPacket payload at ${sourcePath}`);
+  }
+
+  return candidate;
+}
+
 const contentPacketRepository = createJsonEntityRepository<SavedContentPacket>({
   lockPrefix: CONTENT_PACKET_LOCK_PREFIX,
   entityLabel: 'SavedContentPacket',
@@ -16,6 +49,7 @@ const contentPacketRepository = createJsonEntityRepository<SavedContentPacket>({
   getDir: getContentPacketsDir,
   getFilePath: getContentPacketFilePath,
   isEntity: isSavedContentPacket,
+  parseEntity: parseSavedContentPacket,
 });
 
 export async function saveSavedContentPacket(packet: SavedContentPacket): Promise<void> {

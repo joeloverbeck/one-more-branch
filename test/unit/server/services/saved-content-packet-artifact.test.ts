@@ -23,6 +23,7 @@ function makeCandidate(overrides: Partial<GeneratedContentPacket> = {}): Generat
       premiseSummary: 'A premise summary',
       situationFrame: 'A situation frame',
       worldState: 'A world state',
+      playerPosition: 'You are the only actor who can still alter the arrangement.',
     },
     origin: {
       generationMode: 'pipeline',

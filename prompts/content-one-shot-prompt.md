@@ -38,8 +38,8 @@ OUTPUT REQUIREMENTS:
 - Return JSON: { "packets": ConceptSeedOneShotLineagedPacket[] }
 - Exactly 18 packets
 - Enumerate exemplar ideas with stable IDs like `exemplar-01`
-- Each packet must include `contentId`, `contentKind`, `sourceExemplarIds`, `premiseSummary`, `situationFrame`, `worldState`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, and `interactionVerbs`
-- `viewpointPressure` is optional
+- Each packet must include `contentId`, `contentKind`, `sourceExemplarIds`, `premiseSummary`, `situationFrame`, `worldState`, `playerPosition`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, and `interactionVerbs`
+- `playerPosition` is required
 - `sourceExemplarIds` must cite one or more exemplar IDs that materially informed that packet
 - `contentId` format: `pkt-NN`
 - `interactionVerbs`: exactly 4-6 concrete verbs
@@ -61,7 +61,7 @@ OUTPUT REQUIREMENTS:
       "premiseSummary": "Plain-language causal setup",
       "situationFrame": "Immediate arrangement or trap",
       "worldState": "Relevant baseline reality",
-      "viewpointPressure": "Optional protagonist/player pressure",
+      "playerPosition": "Who the player is, what they know, and why their position is pressured",
       "coreAnomaly": "What's wrong here?",
       "humanAnchor": "emotional/relational truth",
       "socialEngine": "social mechanism driving conflict",
@@ -104,4 +104,5 @@ OUTPUT REQUIREMENTS:
 - No evaluation stage — all 18 packets are returned without scoring or role assignment
 - The LLM emits flat context-rich packets; the service layer turns them into generated asset candidates with nested `context` and exemplar-derived `origin.sourceArtifacts`
 - One-shot packets carry explicit exemplar lineage via `sourceExemplarIds`; the service layer maps those IDs into canonical `origin.sourceArtifacts`
+- `playerPosition` is required because interactive fiction seeds need an explicit player-facing position from which meaningful choice pressure can operate
 - Prompt logging uses `promptType: 'contentOneShot'`

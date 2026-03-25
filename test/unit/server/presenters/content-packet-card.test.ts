@@ -36,6 +36,7 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
       premiseSummary: 'A charged premise summary',
       situationFrame: 'A volatile situation frame',
       worldState: 'A legible world state',
+      playerPosition: 'You are the only witness with standing to act.',
     },
     origin: {
       generationMode: 'quick',
@@ -77,6 +78,7 @@ function makeGeneratedPacket(
       premiseSummary: 'A charged premise summary',
       situationFrame: 'A volatile situation frame',
       worldState: 'A legible world state',
+      playerPosition: 'You are the designated fixer trapped inside the arrangement.',
     },
     origin: {
       generationMode: 'pipeline',
@@ -114,6 +116,7 @@ describe('content packet card presenter', () => {
       'premiseSummary',
       'situationFrame',
       'worldState',
+      'playerPosition',
     ]);
     expect(card.packetDetails.map((detail) => detail.key)).not.toContain('contentKind');
     expect(card.originDetails).toEqual([
@@ -143,6 +146,7 @@ describe('content packet card presenter', () => {
       'Premise Summary',
       'Situation Frame',
       'World State',
+      'Player Position',
     ]);
     expect(card.packetDetails.map((detail) => detail.key)).toContain('contentKind');
     expect(card.packetDetails).toContainEqual(

@@ -88,6 +88,7 @@ describe('content-packets page controller', () => {
         premiseSummary: 'A premise summary',
         situationFrame: 'A situation frame',
         worldState: 'A world state',
+        playerPosition: 'You are the only actor who can still change the arrangement.',
       },
       origin: {
         generationMode: 'pipeline',
@@ -147,6 +148,11 @@ describe('content-packets page controller', () => {
                     key: 'worldState',
                     label: 'World State',
                     value: 'A world state',
+                  },
+                  {
+                    key: 'playerPosition',
+                    label: 'Player Position',
+                    value: 'You are the only actor who can still change the arrangement.',
                   },
                 ],
                 packetDetails: [
@@ -221,6 +227,7 @@ describe('content-packets page controller', () => {
     expect(generatedList?.textContent).toContain('Meta');
     expect(generatedList?.textContent).toContain('Premise Summary');
     expect(generatedList?.textContent).toContain('A premise summary');
+    expect(generatedList?.textContent).toContain('Player Position');
     expect(generatedList?.textContent).toContain('Kind');
     expect(generatedList?.textContent).toContain('Content ID');
     expect(generatedList?.textContent).toContain('Interaction Verbs');

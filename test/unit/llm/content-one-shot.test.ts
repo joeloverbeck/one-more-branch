@@ -11,6 +11,8 @@ function makeValidPacket(overrides: Record<string, unknown> = {}): Record<string
     premiseSummary: 'A grief-stricken widow visits a dentist who can extract memories from teeth.',
     situationFrame: 'Patients must decide which memories to sacrifice while sitting in the chair.',
     worldState: 'Memory extraction dentistry has become an underground survival economy.',
+    playerPosition:
+      'You are the widow in the chair, deciding whether survival is worth selling your marriage.',
     coreAnomaly: 'A dentist who extracts memories from molars',
     humanAnchor: 'A widow who wants to forget her husband',
     socialEngine: 'A black market for extracted memories',
@@ -72,6 +74,8 @@ describe('buildContentOneShotPrompt', () => {
     expect(userMessage!.content).toContain('premiseSummary');
     expect(userMessage!.content).toContain('situationFrame');
     expect(userMessage!.content).toContain('worldState');
+    expect(userMessage!.content).toContain('playerPosition');
+    expect(userMessage!.content).not.toContain('viewpointPressure');
   });
 
   it('omits optional sections when not provided', () => {
@@ -101,6 +105,9 @@ describe('parseContentOneShotResponse', () => {
     );
     expect(result[0].worldState).toBe(
       'Memory extraction dentistry has become an underground survival economy.'
+    );
+    expect(result[0].playerPosition).toBe(
+      'You are the widow in the chair, deciding whether survival is worth selling your marriage.'
     );
     expect(result[0].coreAnomaly).toBe('A dentist who extracts memories from molars');
     expect(result[0].humanAnchor).toBe('A widow who wants to forget her husband');
@@ -174,18 +181,12 @@ describe('parseContentOneShotResponse', () => {
     ).toThrow(/missing or invalid required field: interactionVerbs/);
   });
 
-  it('keeps optional viewpointPressure when present', () => {
-    const result = parseContentOneShotResponse({
-      packets: [
-        makeValidPacket({
-          viewpointPressure:
-            'She must choose whether survival is worth letting strangers buy her marriage.',
-        }),
-      ],
-    });
+  it('rejects packets missing playerPosition', () => {
+    const packet = makeValidPacket();
+    delete packet['playerPosition'];
 
-    expect(result[0].viewpointPressure).toBe(
-      'She must choose whether survival is worth letting strangers buy her marriage.'
+    expect(() => parseContentOneShotResponse({ packets: [packet] })).toThrow(
+      /missing or empty required field: playerPosition/
     );
   });
 });
@@ -211,6 +212,7 @@ describe('buildContentOneShotSchema', () => {
     expect(itemRequired).toContain('premiseSummary');
     expect(itemRequired).toContain('situationFrame');
     expect(itemRequired).toContain('worldState');
+    expect(itemRequired).toContain('playerPosition');
     expect(itemRequired).toContain('coreAnomaly');
     expect(itemRequired).toContain('humanAnchor');
     expect(itemRequired).toContain('socialEngine');
@@ -226,5 +228,7 @@ describe('buildContentOneShotSchema', () => {
     expect(itemProps['contentKind']['type']).toBe('string');
     expect(itemProps['contentKind']['enum']).toBeDefined();
     expect(itemProps['sourceExemplarIds']['type']).toBe('array');
+    expect(itemProps['playerPosition']['type']).toBe('string');
+    expect(itemProps['viewpointPressure']).toBeUndefined();
   });
 });

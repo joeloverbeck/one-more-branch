@@ -119,6 +119,7 @@ function makeGeneratedPacket(
       premiseSummary: 'A premise summary',
       situationFrame: 'A situation frame',
       worldState: 'A world state',
+      playerPosition: 'You are the only person positioned to act before the trap closes.',
     },
     origin: {
       generationMode: 'quick',
@@ -166,6 +167,7 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
       premiseSummary: 'A premise summary',
       situationFrame: 'A situation frame',
       worldState: 'A world state',
+      playerPosition: 'You are the only person positioned to act before the trap closes.',
     },
     origin: {
       generationMode: 'quick',
@@ -238,6 +240,10 @@ describe('content-packets routes', () => {
         expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
         expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
         expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+        expect.objectContaining({
+          key: 'playerPosition',
+          value: 'You are the only person positioned to act before the trap closes.',
+        }),
       ]);
       expect(renderCall[1].contentKindGroups[0]?.cards[0]?.packetDetails).toEqual(
         expect.arrayContaining([
@@ -373,6 +379,10 @@ describe('content-packets routes', () => {
         expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
         expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
         expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+        expect.objectContaining({
+          key: 'playerPosition',
+          value: 'You are the only person positioned to act before the trap closes.',
+        }),
       ]);
       expect(jsonCall[0].packetCards[0]?.packetDetails).toEqual(
         expect.arrayContaining([
@@ -444,6 +454,10 @@ describe('content-packets routes', () => {
               expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
               expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
               expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+              expect.objectContaining({
+                key: 'playerPosition',
+                value: 'You are the only person positioned to act before the trap closes.',
+              }),
             ],
             originDetails: [
               expect.objectContaining({ key: 'generationMode', value: 'pipeline' }),

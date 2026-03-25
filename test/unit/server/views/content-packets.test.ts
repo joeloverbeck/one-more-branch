@@ -64,6 +64,11 @@ describe('content-packets page template', () => {
                     label: 'World State',
                     value: 'A legible world state',
                   },
+                  {
+                    key: 'playerPosition',
+                    label: 'Player Position',
+                    value: 'You are the only witness still inside the machine.',
+                  },
                 ],
                 packetDetails: [
                   { key: 'contentId', label: 'Content ID', value: 'pkt-01' },
@@ -116,6 +121,7 @@ describe('content-packets page template', () => {
     expect(html).toContain('Premise Summary');
     expect(html).toContain('Situation Frame');
     expect(html).toContain('World State');
+    expect(html).toContain('Player Position');
     expect(html).toContain('data-detail-key="contentId"');
     expect(html).toContain('data-detail-key="coreAnomaly"');
     expect(html).toContain('data-detail-key="humanAnchor"');

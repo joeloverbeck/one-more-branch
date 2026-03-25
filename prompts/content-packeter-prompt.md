@@ -39,7 +39,7 @@ OUTPUT REQUIREMENTS:
 - 12-16 packets total
 - Every packet must have ALL required fields
 - Each packet must include `premiseSummary`, `situationFrame`, and `worldState`
-- `viewpointPressure` is optional
+- `playerPosition` is required
 - Honour taste profile's collision patterns, tone blend, scene appetites
 - Respect antiPatterns and surfaceDoNotRepeat
 ```
@@ -56,7 +56,7 @@ OUTPUT REQUIREMENTS:
       "premiseSummary": "Plain-language causal setup",
       "situationFrame": "Immediate arrangement or trap",
       "worldState": "Relevant baseline reality",
-      "viewpointPressure": "Optional protagonist/player pressure",
+      "playerPosition": "Who the player is, what they know, and why their position is pressured",
       "coreAnomaly": "What's wrong here? — central question",
       "humanAnchor": "emotional/relational truth",
       "socialEngine": "social mechanism driving conflict",
@@ -93,7 +93,8 @@ Content packets are the primary semantic units consumed by concept stages:
 
 - `wildnessInvariant` is the most critical field — it carries the core strangeness that must survive all downstream stages
 - `dullCollapse` describes the failure mode — what the packet becomes if its uniqueness is stripped away
-- `interactionVerbs` (4-6) provide concrete player action vocabulary
+- `playerPosition` is a required part of the packet contract and should name the player's pressured position rather than merely describing abstract tension
+- `interactionVerbs` (4-6) provide concrete, story-specific player action vocabulary
 - `premiseSummary`, `situationFrame`, and `worldState` are generation-time context inputs for the saved asset candidate; they are not part of the lean downstream `ConceptSeedPacket` projection used by concept stages
 - `sourceSparkIds` traces lineage back to sparkstormer output and should be treated as transient generation lineage rather than a persisted display alias
 - Each packet expands exactly ONE spark — `sourceSparkIds` must contain exactly 1 entry (enforced at parse time, not in the JSON Schema — Anthropic rejects `maxItems`). Cross-packet uniqueness is also enforced: no two packets may reference the same sparkId

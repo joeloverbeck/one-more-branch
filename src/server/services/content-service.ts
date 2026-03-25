@@ -168,7 +168,7 @@ function buildPacketContext(
     premiseSummary: packet.premiseSummary,
     situationFrame: packet.situationFrame,
     worldState: packet.worldState,
-    viewpointPressure: packet.viewpointPressure,
+    playerPosition: packet.playerPosition,
   };
 }
 

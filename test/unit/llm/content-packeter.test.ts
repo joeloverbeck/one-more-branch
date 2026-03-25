@@ -15,7 +15,7 @@ type TestConceptSeedPacketerPacket = Record<string, unknown> & {
   premiseSummary: string;
   situationFrame: string;
   worldState: string;
-  viewpointPressure?: string;
+  playerPosition: string;
   coreAnomaly: string;
   humanAnchor: string;
   socialEngine: string;
@@ -78,6 +78,8 @@ function makeValidPacket(
     situationFrame: 'Bereaved families arrive at her parlor trying to buy one final conversation.',
     worldState:
       'The city treats dream extraction from corpses as private commerce rather than sacrilege.',
+    playerPosition:
+      'You are the mortician who knows one final dream is dangerous and cannot stay neutral.',
     coreAnomaly: 'She cannot forget what the dead dreamed.',
     humanAnchor: 'The weight of inherited grief.',
     socialEngine: 'A black market trades in extracted final dreams.',
@@ -125,6 +127,8 @@ describe('buildContentPacketerPrompt', () => {
     expect(userMessage!.content).toContain('premiseSummary');
     expect(userMessage!.content).toContain('situationFrame');
     expect(userMessage!.content).toContain('worldState');
+    expect(userMessage!.content).toContain('playerPosition');
+    expect(userMessage!.content).not.toContain('viewpointPressure');
   });
 
   it('injects optional kernel block when provided', () => {
@@ -160,6 +164,7 @@ describe('parseContentPacketerResponse', () => {
     expect(result[0].premiseSummary).toBe(packet.premiseSummary);
     expect(result[0].situationFrame).toBe(packet.situationFrame);
     expect(result[0].worldState).toBe(packet.worldState);
+    expect(result[0].playerPosition).toBe(packet.playerPosition);
     expect(result[0].coreAnomaly).toBe(packet.coreAnomaly);
     expect(result[0].humanAnchor).toBe(packet.humanAnchor);
     expect(result[0].socialEngine).toBe(packet.socialEngine);
@@ -284,15 +289,13 @@ describe('parseContentPacketerResponse', () => {
     );
   });
 
-  it('keeps optional viewpointPressure when present', () => {
-    const packet = makeValidPacket({
-      viewpointPressure:
-        'She must either profit from grief or deny families their last chance at closure.',
-    });
+  it('rejects packets missing playerPosition', () => {
+    const packet = makeValidPacket() as Record<string, unknown>;
+    delete packet['playerPosition'];
 
-    const result = parseContentPacketerResponse({ packets: [packet] });
-
-    expect(result[0].viewpointPressure).toBe(packet.viewpointPressure);
+    expect(() => parseContentPacketerResponse({ packets: [packet] })).toThrow(
+      /playerPosition must be a non-empty string/
+    );
   });
 
   it('rejects empty packets array', () => {
@@ -354,6 +357,7 @@ describe('buildContentPacketerSchema', () => {
     expect(required).toContain('premiseSummary');
     expect(required).toContain('situationFrame');
     expect(required).toContain('worldState');
+    expect(required).toContain('playerPosition');
     expect(required).toContain('coreAnomaly');
     expect(required).toContain('humanAnchor');
     expect(required).toContain('socialEngine');
@@ -379,5 +383,7 @@ describe('buildContentPacketerSchema', () => {
       'PLACE',
       'SECRET',
     ]);
+    expect(packetProps['playerPosition']).toEqual({ type: 'string' });
+    expect(packetProps['viewpointPressure']).toBeUndefined();
   });
 });
