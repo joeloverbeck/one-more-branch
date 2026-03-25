@@ -108,6 +108,18 @@ describe('buildSparkstormerPrompt', () => {
       'Each spark object must have: sparkId, contentKind, spark, imageSeed, collisionTags, playerRole, want, counterforce, deepPatternRef.'
     );
   });
+
+  it('documents portfolio-level diversity constraints to prevent mode collapse', () => {
+    const messages = buildSparkstormerPrompt(makeContext());
+    const systemMessage = messages.find((m) => m.role === 'system');
+
+    expect(systemMessage!.content).toContain('No more than 4 sparks of the same contentKind');
+    expect(systemMessage!.content).toContain('20-30% of sparks should be taste stretch');
+    expect(systemMessage!.content).toContain('Spread sparks across multiple deepPatterns');
+    expect(systemMessage!.content).toContain(
+      'Include a mix of novelty types: combinational, exploratory, and transformational.'
+    );
+  });
 });
 
 describe('parseSparkstormerResponse', () => {
