@@ -9,14 +9,20 @@ function initContentPacketsPage() {
   var resultsEl = document.getElementById('content-generation-results');
   var generatedList = document.getElementById('generated-packets-list');
   var generateBtn = document.getElementById('content-generate-btn');
-  var loadingProgress = progressEl ? createLoadingProgressController(progressEl) : null;
+  var loadingSession = progressEl
+    ? createLoadingOverlaySession({
+      overlayElement: progressEl,
+      progressElement: progressEl,
+      buttonElement: generateBtn,
+    })
+    : null;
 
   initExemplarControls();
 
   if (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      handleContentGenerate();
+      void handleContentGenerate();
     });
   }
 
@@ -93,7 +99,7 @@ function initContentPacketsPage() {
     });
   }
 
-  function handleContentGenerate() {
+  async function handleContentGenerate() {
     var apiKey = getApiKey();
     if (!apiKey || apiKey.length < 10) {
       alert('Please enter a valid OpenRouter API key.');
@@ -121,43 +127,47 @@ function initContentPacketsPage() {
       payload.contentPreferences = prefInput.value.trim();
     }
 
-    var progressId = createProgressId();
-    payload.progressId = progressId;
-
-    if (generateBtn) generateBtn.disabled = true;
     if (resultsEl) resultsEl.style.display = 'none';
-    if (progressEl) progressEl.style.display = 'flex';
-    if (loadingProgress) loadingProgress.start(progressId);
 
-    fetch('/content-packets/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (loadingProgress) loadingProgress.stop();
-        if (progressEl) progressEl.style.display = 'none';
-        if (generateBtn) generateBtn.disabled = false;
+    try {
+      var data = loadingSession
+        ? await loadingSession.withProgress(async function (progressId) {
+          payload.progressId = progressId;
 
-        if (!data.success) {
-          alert('Generation failed: ' + (data.error || 'Unknown error'));
-          return;
-        }
+          var response = await fetch('/content-packets/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
 
-        renderGeneratedPackets(
-          data.packetCards || [],
-          data.packets || [],
-          data.evaluations || [],
-          data.tasteProfile || null
-        );
-      })
-      .catch(function (err) {
-        if (loadingProgress) loadingProgress.stop();
-        if (progressEl) progressEl.style.display = 'none';
-        if (generateBtn) generateBtn.disabled = false;
-        alert('Generation failed: ' + err.message);
-      });
+          return response.json();
+        })
+        : await (async function () {
+          payload.progressId = createProgressId();
+
+          var response = await fetch('/content-packets/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          return response.json();
+        })();
+
+      if (!data.success) {
+        alert('Generation failed: ' + (data.error || 'Unknown error'));
+        return;
+      }
+
+      renderGeneratedPackets(
+        data.packetCards || [],
+        data.packets || [],
+        data.evaluations || [],
+        data.tasteProfile || null
+      );
+    } catch (err) {
+      alert('Generation failed: ' + err.message);
+    }
   }
 
   function renderGeneratedPackets(packetCards, packets, evaluations, tasteProfile) {

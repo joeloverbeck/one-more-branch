@@ -10,6 +10,8 @@
 
 Three character-related controllers still use the manual overlay protocol. After migrating them, a final grep confirms no page-level loading overlays are still toggled by raw `style.display` in generation flows, and dead helper code is removed.
 
+Note: This is the ticket that closes the remaining session-helper migration debt identified in `specs/loading-overlay-lifecycle-architecture.md`. No additional ticket is needed unless the play page or a non-spec controller is later pulled into scope.
+
 ## Assumption Reassessment (2026-03-25)
 
 ### Character webs controller (`16-character-webs-controller.js`)
@@ -96,6 +98,10 @@ Run `node scripts/concat-client-js.js`.
 3. Character webs controller's multiple generation flows all go through the session helper
 4. The play page controller (`09-controllers.js`) is unmodified
 5. `createLoadingProgressController` remains available as a low-level primitive for any future intentional direct usage
+
+### Series Note
+
+The final grep in this ticket should treat `18-worldbuilding-controller.js` separately from the migration debt because it is not part of the progress-polling/session-helper architecture targeted by this series.
 
 ## Test Plan
 

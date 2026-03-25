@@ -10,6 +10,8 @@
 
 `public/js/src/09b-spine-page-controller.js` and `public/js/src/09c-create-story-controller.js` both manually coordinate overlay visibility and progress polling. Both are already `async`/`await` with `try`/`finally`, making them clean migration candidates. Bundled as one ticket because both are small, structurally similar, and in the same Phase 1 group.
 
+Note: `LOAOVELIFARC-001` already migrated `content-packets`, so this ticket covers the remaining Phase 1-style two-node overlay controllers.
+
 ## Assumption Reassessment (2026-03-25)
 
 ### Spine page controller (`09b`)
@@ -120,6 +122,10 @@ Run `node scripts/concat-client-js.js`.
 
 1. `test/unit/client/spines-page/controller.test.ts` — update generation tests for overlay visibility assertions
 2. Client tests for create-story page (create if needed, or verify via existing test coverage)
+
+### Series Note
+
+This ticket remains part of the active overlay-lifecycle migration plan. No new ticket is needed for these controllers.
 
 ### Commands
 

@@ -10,6 +10,8 @@
 
 `public/js/src/12-kernels-controller.js` manually coordinates overlay visibility and progress polling in `handleGenerate()`. It is already `async`/`await` and uses `try`/`finally`, making it a clean migration candidate. The `syncGenerateButtonState()` call in `finally` should move to `onHide`.
 
+Note: `LOAOVELIFARC-001` already migrated `content-packets`, so this ticket is now the first remaining controller-level migration in the series.
+
 ## Assumption Reassessment (2026-03-25)
 
 1. `handleGenerate()` is already `async` with `try`/`catch`/`finally`. Confirmed at lines 208-275.

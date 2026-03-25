@@ -10,6 +10,8 @@
 
 Five more controllers duplicate the manual overlay visibility + progress polling protocol. They should adopt the session helper for consistency and to prevent the bug class identified in the spec.
 
+Note: This ticket already owns the remaining non-character controller migrations after `LOAOVELIFARC-003` and `LOAOVELIFARC-004`. No separate ticket is needed for those pages.
+
 ## Assumption Reassessment (2026-03-25)
 
 ### Briefing controller (`10-briefing-controller.js`)
@@ -113,6 +115,10 @@ Run `node scripts/concat-client-js.js`.
 2. `test/unit/client/concepts-page/form-validation.test.ts` — update if generation flow is covered
 3. `test/unit/client/briefing-page/begin-adventure.test.ts` — update for overlay visibility
 4. New tests for kernel-evolution and concept-seeds controllers if not already covered
+
+### Series Note
+
+`18-worldbuilding-controller.js` is intentionally not part of this ticket because it shows/hides a loading element but does not participate in the shared progress-polling lifecycle targeted by the loading-overlay architecture spec.
 
 ### Commands
 

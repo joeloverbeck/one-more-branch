@@ -30,6 +30,8 @@ describe('content-packets page controller', () => {
   let fetchMock: jest.Mock;
   let alertMock: jest.Mock;
 
+  type FetchCall = [RequestInfo | URL, RequestInit | undefined];
+
   interface Deferred<T> {
     promise: Promise<T>;
     resolve: (value: T | PromiseLike<T>) => void;
@@ -192,6 +194,63 @@ describe('content-packets page controller', () => {
     expect(progressEl.style.display).toBe('none');
     expect(generateBtn.disabled).toBe(false);
     expect(alertMock).toHaveBeenCalledWith('Generation failed: Network down');
+  });
+
+  it('uses the same progress id for polling and the generation request payload', async () => {
+    const generateResponse = createDeferred<Response>();
+
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const url = extractUrl(input);
+      if (url === '/content-packets/api/generate') {
+        return generateResponse.promise;
+      }
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'running', activeStage: 'GENERATING_CONTENT' }));
+      }
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false));
+    });
+
+    loadAppAndInit();
+
+    const apiKeyInput = document.getElementById('contentApiKey') as HTMLInputElement;
+    const form = document.getElementById('content-generate-form') as HTMLFormElement;
+
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+
+    form.dispatchEvent(new Event('submit'));
+    await flushPromises();
+
+    const fetchCalls = fetchMock.mock.calls as unknown as FetchCall[];
+    const progressRequest = fetchCalls.find((call) =>
+      extractUrl(call[0]).startsWith('/generation-progress/')
+    );
+    const generateRequest = fetchCalls.find(
+      (call) => extractUrl(call[0]) === '/content-packets/api/generate'
+    );
+
+    expect(progressRequest).toBeDefined();
+    expect(generateRequest).toBeDefined();
+
+    const requestInit = generateRequest?.[1];
+    const requestBody = typeof requestInit?.body === 'string' ? requestInit.body : '';
+    const payload = JSON.parse(requestBody) as { progressId: string };
+    const progressRequestUrl = progressRequest ? extractUrl(progressRequest[0]) : '';
+    const progressIdFromPoll = progressRequestUrl.replace('/generation-progress/', '');
+
+    expect(payload.progressId).toBe(progressIdFromPoll);
+
+    generateResponse.resolve(
+      mockJsonResponse({
+        success: true,
+        packets: [],
+        packetCards: [],
+        evaluations: [],
+        tasteProfile: null,
+      })
+    );
+
+    await flushPromises();
+    await flushPromises();
   });
 
   it('renders generated packet cards with sectioned context/origin details and saves the full candidate with evaluation', async () => {
