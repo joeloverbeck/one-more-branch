@@ -726,6 +726,13 @@ export function buildKernelsPageHtml(): string {
     <main class="container" id="kernels-page">
       <section class="form-section">
         <section id="kernel-generate-section">
+          <div
+            id="kernel-generation-error"
+            class="alert alert-error form-error"
+            role="alert"
+            aria-live="polite"
+            style="display: none;"
+          ></div>
           <form id="kernel-generate-form">
             <div class="form-group"><textarea id="thematicInterests"></textarea></div>
             <div class="form-group"><textarea id="emotionalCore"></textarea></div>
