@@ -1,6 +1,6 @@
 # CHABRA-004: Character brainstormer LLM generation function
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Small
 **Engine Changes**: None
@@ -96,3 +96,12 @@ Implementation:
 2. `npm run typecheck`
 3. `npm run lint`
 4. `npm test` — full suite
+
+## Outcome
+
+- **Completed**: 2026-03-25
+- **Changes**:
+  - Created `src/llm/character-brainstormer-generation.ts` with `generateCharacterBrainstorm()` using `runLlmStage` pattern
+  - Created `test/unit/llm/character-brainstormer-generation.test.ts` (6 tests)
+- **Deviations**: Used `runLlmStage()` instead of direct LLM client call (actual codebase pattern). Signature uses `options?: Partial<GenerationOptions>` instead of separate `modelOverride` + `callbacks` params. Progress tracking deferred to route handler (CHABRA-005).
+- **Verification**: typecheck pass, lint 0 errors, 320 suites / 3719 tests all pass
