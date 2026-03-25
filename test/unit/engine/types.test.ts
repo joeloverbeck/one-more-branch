@@ -87,6 +87,7 @@ describe('Engine types', () => {
         'GENERATING_CHAR_PRESENTATION',
         'GENERATING_WORLD_SEED',
         'ELABORATING_WORLD',
+        'BRAINSTORMING_CHARACTERS',
       ];
 
       expect(GENERATION_STAGES).toEqual(expectedStages);
