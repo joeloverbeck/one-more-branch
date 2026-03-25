@@ -1,6 +1,6 @@
 # Spec: Loading Overlay Lifecycle Architecture
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Date**: 2026-03-25
 **Owner**: App/Web
 
@@ -258,6 +258,21 @@ After all targeted pages are migrated:
 6. The abstraction must support both:
    - single-node overlays
    - overlay-wrapper plus progress-content layouts
+
+## Outcome
+
+- Completion date: 2026-03-25
+- What changed:
+  - implemented the shared helper in `public/js/src/03a-loading-overlay-session.js`
+  - migrated the generation-oriented controllers in the planned series, including the final character-controller tranche
+  - added and strengthened client coverage for loading-session lifecycle behavior
+- Deviations from the original plan:
+  - repo-wide elimination of every raw `style.display` loading toggle was not the right success condition; some remaining toggles are intentionally outside this architecture boundary, such as play-page flows and non-generation/modal loads
+  - `16-character-webs-controller.js` retained a separate overlay-only helper for ordinary read/refresh fetches because progress polling should remain reserved for progress-reporting generation routes
+- Verification:
+  - `npm run test:client`
+  - `npm run lint`
+  - `npm test`
 7. Existing user-visible stage text behavior remains unchanged.
 8. If `buttonElements` are provided, all specified buttons are disabled for the full duration of the loading session and re-enabled when the session ends, regardless of success or failure.
 

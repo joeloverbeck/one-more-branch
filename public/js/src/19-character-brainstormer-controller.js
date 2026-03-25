@@ -29,7 +29,11 @@ function initCharacterBrainstormerPage() {
     });
   }
 
-  var loadingProgress = createLoadingProgressController(loading);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: loading,
+    progressElement: loading,
+    buttonElement: generateBtn,
+  });
   var inlineError = createInlineErrorController(errorBlock);
   var lastResult = null;
 
@@ -253,48 +257,43 @@ function initCharacterBrainstormerPage() {
 
     inlineError.clear();
     setApiKey(apiKey);
-    generateBtn.disabled = true;
     if (resultsSection) {
       resultsSection.style.display = 'none';
     }
-    loading.style.display = 'flex';
-
-    var progressId = createProgressId();
-    loadingProgress.start(progressId);
 
     try {
-      var response = await fetch('/character-brainstormer/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conceptId: conceptId,
-          worldbuildingId: worldbuildingId,
-          userNotes: userNotes,
-          apiKey: apiKey,
-          progressId: progressId,
-        }),
+      await loadingSession.withProgress(async function (progressId) {
+        var response = await fetch('/character-brainstormer/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conceptId: conceptId,
+            worldbuildingId: worldbuildingId,
+            userNotes: userNotes,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = null;
+        try {
+          data = await response.json();
+        } catch (_e) {
+          data = null;
+        }
+
+        if (!response.ok || !data || !data.success) {
+          var errorMsg =
+            (data && data.error) || 'Generation failed (HTTP ' + response.status + ')';
+          inlineError.show(errorMsg);
+          return;
+        }
+
+        renderBrainstormResults(data.result);
       });
-
-      var data = null;
-      try {
-        data = await response.json();
-      } catch (_e) {
-        data = null;
-      }
-
-      if (!response.ok || !data || !data.success) {
-        var errorMsg =
-          (data && data.error) || 'Generation failed (HTTP ' + response.status + ')';
-        inlineError.show(errorMsg);
-        return;
-      }
-
-      renderBrainstormResults(data.result);
     } catch (err) {
       inlineError.show(err instanceof Error ? err.message : 'Network error');
     } finally {
-      loadingProgress.stop();
-      loading.style.display = 'none';
       updateGenerateButtonState();
     }
   }

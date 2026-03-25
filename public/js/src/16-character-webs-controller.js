@@ -55,7 +55,11 @@ function initCharacterWebsPage() {
     });
   }
 
-  var loadingProgress = createLoadingProgressController(loading);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: loading,
+    progressElement: loading,
+    buttonElements: [generateWebBtn, regenerateWebBtn].filter(Boolean),
+  });
   var stageDefinitions = [
     { stage: 1, label: 'Character Kernel', field: 'characterKernel' },
     { stage: 2, label: 'Tridimensional Profile', field: 'tridimensionalProfile' },
@@ -839,19 +843,22 @@ function initCharacterWebsPage() {
     return data;
   }
 
-  async function withProgress(action) {
+  async function withLoadingOverlay(action) {
     clearError();
+    if (loadingSession.isActive()) {
+      return action();
+    }
+
     loading.style.display = 'flex';
     try {
       return await action();
     } finally {
-      loadingProgress.stop();
       loading.style.display = 'none';
     }
   }
 
   async function selectWeb(webId, preferredCharacterId) {
-    return withProgress(async function () {
+    return withLoadingOverlay(async function () {
       var data = await fetchJson(
         '/character-webs/api/' + encodeURIComponent(webId),
         { method: 'GET' },
@@ -880,7 +887,7 @@ function initCharacterWebsPage() {
   }
 
   async function refreshWebs(preferredWebId, preferredCharacterId) {
-    return withProgress(async function () {
+    return withLoadingOverlay(async function () {
       var data = await fetchJson(
         '/character-webs/api/list',
         { method: 'GET' },
@@ -982,27 +989,23 @@ function initCharacterWebsPage() {
 
     try {
       var apiKey = getApiKeyFromPage();
-      var progressId = createProgressId();
-      loading.style.display = 'flex';
-      loadingProgress.start(progressId);
-      await fetchJson(
-        '/character-webs/api/' +
-          encodeURIComponent(state.selectedWeb.web.id) +
-          '/' +
-          (mode === 'regenerate' ? 'regenerate' : 'generate'),
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ apiKey: apiKey, progressId: progressId }),
-        },
-        'Failed to update character web'
-      );
-      await refreshWebs(state.selectedWeb.web.id);
+      await loadingSession.withProgress(async function (progressId) {
+        await fetchJson(
+          '/character-webs/api/' +
+            encodeURIComponent(state.selectedWeb.web.id) +
+            '/' +
+            (mode === 'regenerate' ? 'regenerate' : 'generate'),
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ apiKey: apiKey, progressId: progressId }),
+          },
+          'Failed to update character web'
+        );
+        await refreshWebs(state.selectedWeb.web.id);
+      });
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to update character web');
-    } finally {
-      loadingProgress.stop();
-      loading.style.display = 'none';
     }
   }
 
@@ -1066,28 +1069,24 @@ function initCharacterWebsPage() {
   async function runCharacterStageAction(charId, stage, mode) {
     try {
       var apiKey = getApiKeyFromPage();
-      var progressId = createProgressId();
-      loading.style.display = 'flex';
-      loadingProgress.start(progressId);
-      var data = await fetchJson(
-        '/character-webs/api/characters/' +
-          encodeURIComponent(charId) +
-          '/' +
-          (mode === 'regenerate' ? 'regenerate' : 'generate'),
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stage: stage, apiKey: apiKey, progressId: progressId }),
-        },
-        'Failed to run character stage'
-      );
-      state.selectedCharacter = data.character;
-      await refreshWebs(data.character.sourceWebId, data.character.id);
+      await loadingSession.withProgress(async function (progressId) {
+        var data = await fetchJson(
+          '/character-webs/api/characters/' +
+            encodeURIComponent(charId) +
+            '/' +
+            (mode === 'regenerate' ? 'regenerate' : 'generate'),
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stage: stage, apiKey: apiKey, progressId: progressId }),
+          },
+          'Failed to run character stage'
+        );
+        state.selectedCharacter = data.character;
+        await refreshWebs(data.character.sourceWebId, data.character.id);
+      });
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to run character stage');
-    } finally {
-      loadingProgress.stop();
-      loading.style.display = 'none';
     }
   }
 
