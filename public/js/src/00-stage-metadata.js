@@ -1650,6 +1650,22 @@ const STAGE_PHRASE_POOLS = {
     'Producing author-facing prose and engine-facing structure in parallel...',
     'Ensuring every world detail can constrain, enable, or reveal...',
   ],
+  BRAINSTORMING_CHARACTERS: [
+    'Imagining distinctive souls...',
+    'Crafting original personalities...',
+    'Brainstorming unique character concepts...',
+    'Dreaming up memorable characters...',
+    'Searching for the wound that makes each character irreplaceable...',
+    'Rotating subversion techniques across the ensemble...',
+    'Ensuring no two characters would narrate the same scene identically...',
+    'Applying the diagnostic uniqueness test to every concept...',
+    'Tracing causal chains from wound to worldview...',
+    'Building an opposition matrix of thematic answers...',
+    'Assigning each character a cognitive lens no one else shares...',
+    'Pressure-testing personas to reveal true character underneath...',
+    'Planting contradictions that make characters unpredictable...',
+    'Excavating backstory events specific enough to be unforgettable...',
+  ],
 };
 
 const STAGE_DISPLAY_NAMES = {
@@ -1701,4 +1717,5 @@ const STAGE_DISPLAY_NAMES = {
   GENERATING_CHAR_PRESENTATION: 'CRAFTING PRESENTATION',
   GENERATING_WORLD_SEED: 'SEEDING WORLD',
   ELABORATING_WORLD: 'ELABORATING WORLD',
+  BRAINSTORMING_CHARACTERS: 'BRAINSTORMING CHARACTERS',
 };

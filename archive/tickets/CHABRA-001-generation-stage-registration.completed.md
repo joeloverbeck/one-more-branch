@@ -1,6 +1,6 @@
 # CHABRA-001: Register BRAINSTORMING_CHARACTERS generation stage
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Small
 **Engine Changes**: Yes — generation stage metadata, LLM stage registry
@@ -103,3 +103,16 @@ If the registry requires an explicit model entry, add one under `llm.models`. De
 2. `npm run typecheck` — confirm type validity
 3. `npm run build` — confirm compilation
 4. `npm test` — no regressions
+
+## Outcome
+
+- **Completed**: 2026-03-25
+- **Changes**:
+  - Added `BRAINSTORMING_CHARACTERS` stage to `src/config/generation-stage-metadata.json` (14 spinner phrases)
+  - Regenerated `src/engine/generated-generation-stages.ts` and `public/js/src/00-stage-metadata.js` via sync script
+  - Added `'characterBrainstormer'` to `LLM_STAGE_KEYS` in `src/config/llm-stage-registry.ts`
+  - Added `characterBrainstormer` model mapping (`anthropic/claude-sonnet-4.5`) in `configs/default.json`
+  - Updated `test/unit/engine/types.test.ts` expected stages list
+  - Regenerated `public/js/app.js` via concat script
+- **Deviations**: Also needed `configs/default.json` model entry and test update — both required by existing test coverage that enforces registry/config parity
+- **Verification**: typecheck pass, lint 0 errors, build success, 317 suites / 3681 tests all pass

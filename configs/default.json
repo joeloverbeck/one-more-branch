@@ -25,6 +25,7 @@
       "entityDecomposer": "x-ai/grok-4.20-beta",
       "characterDecomposer": "x-ai/grok-4.20-beta",
       "characterContextualizer": "x-ai/grok-4.20-beta",
+      "characterBrainstormer": "anthropic/claude-sonnet-4.5",
       "worldbuildingDecomposer": "x-ai/grok-4.20-beta",
       "macroArchitecture": "anthropic/claude-sonnet-4.6",
       "milestoneGeneration": "anthropic/claude-sonnet-4.6",
