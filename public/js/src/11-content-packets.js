@@ -9,6 +9,7 @@ function initContentPacketsPage() {
   var resultsEl = document.getElementById('content-generation-results');
   var generatedList = document.getElementById('generated-packets-list');
   var generateBtn = document.getElementById('content-generate-btn');
+  var errorEl = document.getElementById('content-generation-error');
   var loadingSession = progressEl
     ? createLoadingOverlaySession({
       overlayElement: progressEl,
@@ -51,6 +52,25 @@ function initContentPacketsPage() {
       if (span) ideas.push(span.textContent);
     });
     return ideas;
+  }
+
+  function showError(message) {
+    if (!errorEl) {
+      alert(message);
+      return;
+    }
+
+    errorEl.textContent = message;
+    errorEl.style.display = 'block';
+  }
+
+  function hideError() {
+    if (!errorEl) {
+      return;
+    }
+
+    errorEl.textContent = '';
+    errorEl.style.display = 'none';
   }
 
   function addExemplarEntry(text) {
@@ -100,15 +120,17 @@ function initContentPacketsPage() {
   }
 
   async function handleContentGenerate() {
+    hideError();
+
     var apiKey = getApiKey();
     if (!apiKey || apiKey.length < 10) {
-      alert('Please enter a valid OpenRouter API key.');
+      showError('Please enter a valid OpenRouter API key.');
       return;
     }
 
     var ideas = collectExemplarIdeas();
     if (ideas.length === 0) {
-      alert('Please enter at least one exemplar idea.');
+      showError('Please enter at least one exemplar idea.');
       return;
     }
 
@@ -140,7 +162,18 @@ function initContentPacketsPage() {
             body: JSON.stringify(payload),
           });
 
-          return response.json();
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_) {
+            data = null;
+          }
+
+          if (!response.ok) {
+            throw new Error((data && data.error) || 'Request failed');
+          }
+
+          return data;
         })
         : await (async function () {
           payload.progressId = createProgressId();
@@ -151,14 +184,26 @@ function initContentPacketsPage() {
             body: JSON.stringify(payload),
           });
 
-          return response.json();
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_) {
+            data = null;
+          }
+
+          if (!response.ok) {
+            throw new Error((data && data.error) || 'Request failed');
+          }
+
+          return data;
         })();
 
-      if (!data.success) {
-        alert('Generation failed: ' + (data.error || 'Unknown error'));
+      if (!data || !data.success) {
+        showError('Generation failed: ' + ((data && data.error) || 'Unknown error'));
         return;
       }
 
+      hideError();
       renderGeneratedPackets(
         data.packetCards || [],
         data.packets || [],
@@ -166,7 +211,7 @@ function initContentPacketsPage() {
         data.tasteProfile || null
       );
     } catch (err) {
-      alert('Generation failed: ' + err.message);
+      showError('Generation failed: ' + err.message);
     }
   }
 

@@ -19,6 +19,7 @@ function buildContentPacketsPageHtml(): string {
       <div id="content-generation-progress" style="display: none;">
         <div class="loading-stage"></div>
       </div>
+      <div id="content-generation-error" style="display: none;"></div>
       <div id="content-generation-results" style="display: none;">
         <div id="generated-packets-list"></div>
       </div>
@@ -148,6 +149,7 @@ describe('content-packets page controller', () => {
 
     const apiKeyInput = document.getElementById('contentApiKey') as HTMLInputElement;
     const form = document.getElementById('content-generate-form') as HTMLFormElement;
+    const errorEl = document.getElementById('content-generation-error') as HTMLDivElement;
     const progressEl = document.getElementById('content-generation-progress') as HTMLDivElement;
     const generateBtn = document.getElementById('content-generate-btn') as HTMLButtonElement;
 
@@ -161,7 +163,9 @@ describe('content-packets page controller', () => {
 
     expect(progressEl.style.display).toBe('none');
     expect(generateBtn.disabled).toBe(false);
-    expect(alertMock).toHaveBeenCalledWith('Generation failed: Bad pipeline output');
+    expect(alertMock).not.toHaveBeenCalled();
+    expect(errorEl.style.display).toBe('block');
+    expect(errorEl.textContent).toBe('Generation failed: Bad pipeline output');
   });
 
   it('hides the loading overlay after a rejected fetch', async () => {
@@ -180,6 +184,7 @@ describe('content-packets page controller', () => {
 
     const apiKeyInput = document.getElementById('contentApiKey') as HTMLInputElement;
     const form = document.getElementById('content-generate-form') as HTMLFormElement;
+    const errorEl = document.getElementById('content-generation-error') as HTMLDivElement;
     const progressEl = document.getElementById('content-generation-progress') as HTMLDivElement;
     const generateBtn = document.getElementById('content-generate-btn') as HTMLButtonElement;
 
@@ -193,7 +198,72 @@ describe('content-packets page controller', () => {
 
     expect(progressEl.style.display).toBe('none');
     expect(generateBtn.disabled).toBe(false);
-    expect(alertMock).toHaveBeenCalledWith('Generation failed: Network down');
+    expect(alertMock).not.toHaveBeenCalled();
+    expect(errorEl.style.display).toBe('block');
+    expect(errorEl.textContent).toBe('Generation failed: Network down');
+  });
+
+  it('shows validation errors inline instead of alerting', async () => {
+    loadAppAndInit();
+
+    const form = document.getElementById('content-generate-form') as HTMLFormElement;
+    const errorEl = document.getElementById('content-generation-error') as HTMLDivElement;
+
+    form.dispatchEvent(new Event('submit'));
+    await flushPromises();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(alertMock).not.toHaveBeenCalled();
+    expect(errorEl.style.display).toBe('block');
+    expect(errorEl.textContent).toBe('Please enter a valid OpenRouter API key.');
+
+    const apiKeyInput = document.getElementById('contentApiKey') as HTMLInputElement;
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+    document.getElementById('exemplar-entries')!.innerHTML = '';
+
+    form.dispatchEvent(new Event('submit'));
+    await flushPromises();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(alertMock).not.toHaveBeenCalled();
+    expect(errorEl.style.display).toBe('block');
+    expect(errorEl.textContent).toBe('Please enter at least one exemplar idea.');
+  });
+
+  it('shows a generic inline error when the server returns a non-JSON failure response', async () => {
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const url = extractUrl(input);
+      if (url === '/content-packets/api/generate') {
+        return Promise.resolve({
+          ok: false,
+          json: jest.fn().mockRejectedValue(new Error('invalid json')),
+        } as unknown as Response);
+      }
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'unknown' }));
+      }
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false));
+    });
+
+    loadAppAndInit();
+
+    const apiKeyInput = document.getElementById('contentApiKey') as HTMLInputElement;
+    const form = document.getElementById('content-generate-form') as HTMLFormElement;
+    const errorEl = document.getElementById('content-generation-error') as HTMLDivElement;
+    const progressEl = document.getElementById('content-generation-progress') as HTMLDivElement;
+    const generateBtn = document.getElementById('content-generate-btn') as HTMLButtonElement;
+
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+
+    form.dispatchEvent(new Event('submit'));
+    await flushPromises();
+    await flushPromises();
+
+    expect(progressEl.style.display).toBe('none');
+    expect(generateBtn.disabled).toBe(false);
+    expect(alertMock).not.toHaveBeenCalled();
+    expect(errorEl.style.display).toBe('block');
+    expect(errorEl.textContent).toBe('Generation failed: Request failed');
   });
 
   it('uses the same progress id for polling and the generation request payload', async () => {
