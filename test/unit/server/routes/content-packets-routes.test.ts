@@ -23,7 +23,6 @@ jest.mock('@/persistence/taste-profile-repository', () => ({
 
 jest.mock('@/server/services/content-service', () => ({
   contentService: {
-    generateContentQuick: jest.fn(),
     generateContentPipeline: jest.fn(),
     distillTaste: jest.fn(),
   },
@@ -122,12 +121,15 @@ function makeGeneratedPacket(
       playerPosition: 'You are the only person positioned to act before the trap closes.',
     },
     origin: {
-      generationMode: 'quick',
+      generationMode: 'pipeline',
       sourceArtifacts: [
         {
-          artifactType: 'EXEMPLAR',
-          sourceId: 'exemplar-01',
+          artifactType: 'SPARK',
+          sourceId: 'spark-01',
+          contentKind: 'ENTITY',
           summary: 'An exemplar summary',
+          imageSeed: 'A spark image',
+          collisionTags: ['tag-a'],
         },
       ],
     },
@@ -203,13 +205,15 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
       playerPosition: 'You are the only person positioned to act before the trap closes.',
     },
     origin: {
-      generationMode: 'quick',
+      generationMode: 'pipeline',
       sourceArtifacts: [
         {
-          artifactType: 'EXEMPLAR',
-          sourceId: 'exemplar-01',
+          artifactType: 'SPARK',
+          sourceId: 'spark-01',
           contentKind: 'ENTITY',
           summary: 'An exemplar summary',
+          imageSeed: 'A spark image',
+          collisionTags: ['tag-a'],
         },
       ],
     },
@@ -286,7 +290,7 @@ describe('content-packets routes', () => {
       );
       expect(renderCall[1].contentKindGroups[0]?.cards[0]?.originDetails).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ key: 'generationMode', value: 'quick' }),
+          expect.objectContaining({ key: 'generationMode', value: 'pipeline' }),
           expect.objectContaining({ key: 'sourceArtifact-1' }),
         ])
       );
@@ -351,18 +355,21 @@ describe('content-packets routes', () => {
   });
 
   describe('POST /api/generate', () => {
-    it('calls generateContentQuick by default', async () => {
-      const quickResult = {
+    it('calls generateContentPipeline and returns the pipeline payload', async () => {
+      const pipelineResult = {
+        tasteProfile: makeTasteProfile(),
+        sparks: [],
         packets: [makeGeneratedPacket()],
-        rawResponse: '{}',
+        evaluations: [makeEvaluation()],
       };
-      (contentService.generateContentQuick as jest.Mock).mockResolvedValue(quickResult);
+      (contentService.generateContentPipeline as jest.Mock).mockResolvedValue(pipelineResult);
 
       const handler = getRouteHandler('post', '/api/generate');
       const req = mockReq({
         body: {
           exemplarIdeas: ['idea one'],
           apiKey: 'sk-or-test-key-1234567890',
+          moodOrGenre: 'ritual horror',
         },
       });
       const res = mockRes();
@@ -370,8 +377,14 @@ describe('content-packets routes', () => {
       void handler(req, res);
       await flushPromises();
 
-      expect(contentService.generateContentQuick).toHaveBeenCalled();
-      expect(contentService.generateContentPipeline).not.toHaveBeenCalled();
+      expect(contentService.generateContentPipeline).toHaveBeenCalledWith({
+        exemplarIdeas: ['idea one'],
+        moodOrGenre: 'ritual horror',
+        contentPreferences: undefined,
+        kernelBlock: undefined,
+        apiKey: 'sk-or-test-key-1234567890',
+        onGenerationStage: undefined,
+      });
       expect(res.json).toHaveBeenCalled();
 
       const jsonCall = ((res.json as jest.Mock).mock.calls as unknown[])[0] as [
@@ -388,7 +401,7 @@ describe('content-packets routes', () => {
       ];
 
       expect(jsonCall[0].success).toBe(true);
-      expect(jsonCall[0].packets).toEqual(quickResult.packets);
+      expect(jsonCall[0].packets).toEqual(pipelineResult.packets);
       expect(jsonCall[0].packetCards[0]).toMatchObject({ id: 'pkt-01' });
       expect(jsonCall[0].packets[0]?.packet).toEqual(
         expect.objectContaining({ contentId: 'pkt-01' })
@@ -398,12 +411,15 @@ describe('content-packets routes', () => {
       );
       expect(jsonCall[0].packets[0]?.origin).toEqual(
         expect.objectContaining({
-          generationMode: 'quick',
+          generationMode: 'pipeline',
           sourceArtifacts: [
             expect.objectContaining({
-              artifactType: 'EXEMPLAR',
-              sourceId: 'exemplar-01',
+              artifactType: 'SPARK',
+              sourceId: 'spark-01',
+              contentKind: 'ENTITY',
               summary: 'An exemplar summary',
+              imageSeed: 'A spark image',
+              collisionTags: ['tag-a'],
             }),
           ],
         })
@@ -425,16 +441,30 @@ describe('content-packets routes', () => {
       );
       expect(jsonCall[0].packetCards[0]?.originDetails).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ key: 'generationMode', value: 'quick' }),
+          expect.objectContaining({ key: 'generationMode', value: 'pipeline' }),
           expect.objectContaining({
             key: 'sourceArtifact-1',
-            value: ['Type: EXEMPLAR', 'Source ID: exemplar-01', 'Summary: An exemplar summary'],
+            value: [
+              'Type: SPARK',
+              'Source ID: spark-01',
+              'Kind: ENTITY',
+              'Summary: An exemplar summary',
+              'Image Seed: A spark image',
+              'Collision Tags: tag-a',
+            ],
           }),
         ])
       );
+      expect(jsonCall[0]).toEqual(
+        expect.objectContaining({
+          evaluations: pipelineResult.evaluations,
+          tasteProfile: pipelineResult.tasteProfile,
+          sparks: pipelineResult.sparks,
+        })
+      );
     });
 
-    it('calls generateContentPipeline when pipeline=true', async () => {
+    it('includes evaluator metadata in packet cards', async () => {
       const pipelineResult = {
         tasteProfile: makeTasteProfile(),
         sparks: [],
@@ -467,7 +497,6 @@ describe('content-packets routes', () => {
         body: {
           exemplarIdeas: ['idea one'],
           apiKey: 'sk-or-test-key-1234567890',
-          pipeline: true,
         },
       });
       const res = mockRes();
@@ -476,7 +505,6 @@ describe('content-packets routes', () => {
       await flushPromises();
 
       expect(contentService.generateContentPipeline).toHaveBeenCalled();
-      expect(contentService.generateContentQuick).not.toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         packets: pipelineResult.packets,

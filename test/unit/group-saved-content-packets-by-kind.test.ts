@@ -28,13 +28,15 @@ function makePacket(overrides: Partial<SavedContentPacket> = {}): SavedContentPa
       playerPosition: 'You are the compromised insider who must act.',
     },
     origin: {
-      generationMode: 'quick',
+      generationMode: 'pipeline',
       sourceArtifacts: [
         {
-          artifactType: 'EXEMPLAR',
-          sourceId: 'exemplar-01',
+          artifactType: 'SPARK',
+          sourceId: 'spark-01',
           contentKind: 'ENTITY',
           summary: 'summary',
+          imageSeed: 'image seed',
+          collisionTags: ['collision'],
         },
       ],
     },

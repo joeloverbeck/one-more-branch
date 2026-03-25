@@ -64,18 +64,15 @@ contentPacketRoutes.get(
   })
 );
 
-// --- POST /api/generate --- Generate content packets (quick or pipeline)
+// --- POST /api/generate --- Generate content packets via the pipeline
 contentPacketRoutes.post(
   '/api/generate',
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const body = req.body as {
       exemplarIdeas?: unknown;
-      genreVibes?: string;
-      moodKeywords?: string;
       contentPreferences?: string;
       kernelBlock?: string;
       moodOrGenre?: string;
-      pipeline?: boolean;
       apiKey?: string;
       progressId?: unknown;
     };
@@ -105,41 +102,9 @@ contentPacketRoutes.post(
     const progress = createRouteGenerationProgress(body.progressId, 'content-generation');
 
     try {
-      if (body.pipeline) {
-        const result = await contentService.generateContentPipeline({
-          exemplarIdeas,
-          moodOrGenre: body.moodOrGenre?.trim() ?? undefined,
-          contentPreferences: body.contentPreferences?.trim() ?? undefined,
-          kernelBlock: body.kernelBlock?.trim() ?? undefined,
-          apiKey,
-          onGenerationStage: progress.onGenerationStage,
-        });
-
-        progress.complete();
-
-        const evaluationByContentId = new Map(
-          result.evaluations.map((evaluation) => [evaluation.contentId, evaluation])
-        );
-
-        return res.json({
-          success: true,
-          packets: result.packets,
-          packetCards: result.packets.map((generatedPacket) =>
-            buildGeneratedContentPacketCardViewModel(generatedPacket, {
-              includeContentKind: true,
-              evaluation: evaluationByContentId.get(generatedPacket.packet.contentId),
-            })
-          ),
-          evaluations: result.evaluations,
-          tasteProfile: result.tasteProfile,
-          sparks: result.sparks,
-        });
-      }
-
-      const result = await contentService.generateContentQuick({
+      const result = await contentService.generateContentPipeline({
         exemplarIdeas,
-        genreVibes: body.genreVibes?.trim() ?? undefined,
-        moodKeywords: body.moodKeywords?.trim() ?? undefined,
+        moodOrGenre: body.moodOrGenre?.trim() ?? undefined,
         contentPreferences: body.contentPreferences?.trim() ?? undefined,
         kernelBlock: body.kernelBlock?.trim() ?? undefined,
         apiKey,
@@ -148,14 +113,22 @@ contentPacketRoutes.post(
 
       progress.complete();
 
+      const evaluationByContentId = new Map(
+        result.evaluations.map((evaluation) => [evaluation.contentId, evaluation])
+      );
+
       return res.json({
         success: true,
         packets: result.packets,
         packetCards: result.packets.map((generatedPacket) =>
           buildGeneratedContentPacketCardViewModel(generatedPacket, {
             includeContentKind: true,
+            evaluation: evaluationByContentId.get(generatedPacket.packet.contentId),
           })
         ),
+        evaluations: result.evaluations,
+        tasteProfile: result.tasteProfile,
+        sparks: result.sparks,
       });
     } catch (error) {
       if (error instanceof LLMError) {

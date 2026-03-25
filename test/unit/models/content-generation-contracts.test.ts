@@ -1,7 +1,6 @@
 import {
   cloneContentPacketContext,
   cloneContentPacketOrigin,
-  formatContentExemplarId,
   isContentEvaluation,
   isContentPacketContext,
   isContentPacketOrigin,
@@ -94,6 +93,13 @@ describe('content generation contracts', () => {
         sourceArtifacts: [],
       })
     ).toBe(false);
+    expect(
+      isContentPacketSourceArtifact({
+        artifactType: 'EXEMPLAR',
+        sourceId: 'exemplar-01',
+        summary: 'legacy exemplar',
+      })
+    ).toBe(false);
   });
 
   it('clones origins without reusing nested artifact arrays', () => {
@@ -128,10 +134,5 @@ describe('content generation contracts', () => {
         redundancyCluster: null,
       })
     ).toBe(true);
-  });
-
-  it('formats exemplar IDs with zero padding', () => {
-    expect(formatContentExemplarId(0)).toBe('exemplar-01');
-    expect(formatContentExemplarId(11)).toBe('exemplar-12');
   });
 });

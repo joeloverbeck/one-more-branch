@@ -106,24 +106,16 @@ function initContentPacketsPage() {
       return;
     }
 
-    var usePipeline = document.getElementById('usePipeline');
-    var pipeline = usePipeline ? usePipeline.checked : false;
-
     var moodInput = document.getElementById('contentMoodKeywords');
     var prefInput = document.getElementById('contentPreferences');
 
     var payload = {
       exemplarIdeas: ideas,
       apiKey: apiKey,
-      pipeline: pipeline,
     };
 
     if (moodInput && moodInput.value.trim()) {
-      if (pipeline) {
-        payload.moodOrGenre = moodInput.value.trim();
-      } else {
-        payload.moodKeywords = moodInput.value.trim();
-      }
+      payload.moodOrGenre = moodInput.value.trim();
     }
     if (prefInput && prefInput.value.trim()) {
       payload.contentPreferences = prefInput.value.trim();

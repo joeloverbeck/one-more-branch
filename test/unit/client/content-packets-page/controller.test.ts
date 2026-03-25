@@ -13,7 +13,6 @@ function buildContentPacketsPageHtml(): string {
         <button type="button" id="exemplar-add-btn">Add</button>
         <input type="text" id="contentMoodKeywords">
         <textarea id="contentPreferences"></textarea>
-        <input type="checkbox" id="usePipeline">
         <input type="password" id="contentApiKey">
         <button type="submit" id="content-generate-btn">Generate</button>
       </form>

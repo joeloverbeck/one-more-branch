@@ -95,20 +95,26 @@ describe('createSavedContentPacketArtifact', () => {
     expect(result.origin.sourceArtifacts).not.toBe(candidate.origin.sourceArtifacts);
   });
 
-  it('preserves quick-mode exemplar lineage without heuristics', () => {
+  it('preserves pipeline spark lineage without heuristics', () => {
     const candidate = makeCandidate({
       origin: {
-        generationMode: 'quick',
+        generationMode: 'pipeline',
         sourceArtifacts: [
           {
-            artifactType: 'EXEMPLAR',
-            sourceId: 'exemplar-01',
-            summary: 'An exemplar summary',
+            artifactType: 'SPARK',
+            sourceId: 'spark-01',
+            contentKind: 'ENTITY',
+            summary: 'A spark summary',
+            imageSeed: 'A spark image',
+            collisionTags: ['tag-a'],
           },
           {
-            artifactType: 'EXEMPLAR',
-            sourceId: 'exemplar-02',
-            summary: 'Another exemplar summary',
+            artifactType: 'SPARK',
+            sourceId: 'spark-02',
+            contentKind: 'INSTITUTION',
+            summary: 'Another spark summary',
+            imageSeed: 'Another spark image',
+            collisionTags: ['tag-b'],
           },
         ],
       },

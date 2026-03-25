@@ -1505,23 +1505,6 @@ const STAGE_PHRASE_POOLS = {
     'Scoring each packet across eight quality dimensions...',
     'Finalizing content evaluations and role assignments...',
   ],
-  GENERATING_CONTENT: [
-    'Inferring your imaginative taste from the exemplars...',
-    'Generating concrete impossibilities that drive stories...',
-    'Colliding the uncanny with the ordinary in one pass...',
-    'Producing wild content packets with human ache at the center...',
-    'Forging signature images that sell premises by themselves...',
-    'Ensuring every packet contains a branching dilemma...',
-    'Building escalation paths from the mundane to the monstrous...',
-    'Defining wildness invariants that later stages cannot sand off...',
-    'Testing what each packet collapses into without its weirdness...',
-    'Mixing transformation, ritual, policy, romance, and ecology...',
-    'Refusing to output generic scaffolding or safe abstractions...',
-    'Generating story matter that demands to be operationalized...',
-    'Producing packets that could each anchor a different concept...',
-    'Ensuring dangerous sincerity over cosmetic genre dressing...',
-    'Crystallizing wild content from raw creative appetite...',
-  ],
   GENERATING_CHARACTER_WEB: [
     'Mapping the invisible threads between cast members...',
     'Discovering who needs whom and why they\'ll regret it...',
@@ -1716,7 +1699,6 @@ const STAGE_DISPLAY_NAMES = {
   GENERATING_SPARKS: 'SPARKING',
   PACKAGING_CONTENT: 'PACKAGING',
   EVALUATING_CONTENT: 'EVALUATING',
-  GENERATING_CONTENT: 'IMAGINING',
   GENERATING_CHARACTER_WEB: 'WEAVING CHARACTER WEB',
   GENERATING_CHAR_KERNEL: 'BUILDING CHARACTER KERNEL',
   GENERATING_CHAR_TRIDIMENSIONAL: 'CREATING TRIDIMENSIONAL PROFILE',
@@ -9301,24 +9283,16 @@ function initContentPacketsPage() {
       return;
     }
 
-    var usePipeline = document.getElementById('usePipeline');
-    var pipeline = usePipeline ? usePipeline.checked : false;
-
     var moodInput = document.getElementById('contentMoodKeywords');
     var prefInput = document.getElementById('contentPreferences');
 
     var payload = {
       exemplarIdeas: ideas,
       apiKey: apiKey,
-      pipeline: pipeline,
     };
 
     if (moodInput && moodInput.value.trim()) {
-      if (pipeline) {
-        payload.moodOrGenre = moodInput.value.trim();
-      } else {
-        payload.moodKeywords = moodInput.value.trim();
-      }
+      payload.moodOrGenre = moodInput.value.trim();
     }
     if (prefInput && prefInput.value.trim()) {
       payload.contentPreferences = prefInput.value.trim();
