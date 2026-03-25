@@ -125,6 +125,50 @@
                             </dl>
                           </section>
                         <% }); %>
+                        <% if (card.evaluationDetails) { %>
+                          <details class="evaluation-details">
+                            <summary>Evaluation</summary>
+                            <div class="evaluation-details__body">
+                              <div class="evaluation-scores">
+                                <% card.evaluationDetails.scores.forEach(score => { %>
+                                  <div class="score-bar-row">
+                                    <span class="score-bar-label"><%= score.label %></span>
+                                    <div class="score-bar-track">
+                                      <div class="score-bar-fill" style="width: <%= (score.value / score.maxValue) * 100 %>%"></div>
+                                    </div>
+                                    <span class="score-bar-value"><%= score.value %></span>
+                                  </div>
+                                <% }); %>
+                              </div>
+                              <% if (card.evaluationDetails.strengths.length > 0) { %>
+                                <div class="evaluation-list">
+                                  <h4 class="evaluation-list__heading">Strengths</h4>
+                                  <ul>
+                                    <% card.evaluationDetails.strengths.forEach(s => { %>
+                                      <li><%= s %></li>
+                                    <% }); %>
+                                  </ul>
+                                </div>
+                              <% } %>
+                              <% if (card.evaluationDetails.weaknesses.length > 0) { %>
+                                <div class="evaluation-list">
+                                  <h4 class="evaluation-list__heading">Weaknesses</h4>
+                                  <ul>
+                                    <% card.evaluationDetails.weaknesses.forEach(s => { %>
+                                      <li><%= s %></li>
+                                    <% }); %>
+                                  </ul>
+                                </div>
+                              <% } %>
+                              <dl class="story-details">
+                                <div class="story-detail-row story-detail-row--meta">
+                                  <dt>Role</dt>
+                                  <dd><%= card.evaluationDetails.recommendedRole %></dd>
+                                </div>
+                              </dl>
+                            </div>
+                          </details>
+                        <% } %>
                         <div class="story-card-actions">
                           <button class="btn btn-sm pin-packet-btn" data-id="<%= card.id %>">
                             <%= card.pinned ? 'Unpin' : 'Pin' %>

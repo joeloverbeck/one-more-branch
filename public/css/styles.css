@@ -4910,3 +4910,151 @@ main {
 .npc-add-selector {
   width: 100%;
 }
+
+/* --- Evaluation details (collapsible, inside cards) --- */
+
+.evaluation-details {
+  border: 1px solid rgba(183, 189, 208, 0.15);
+  border-radius: calc(var(--radius) - 2px);
+  background: rgba(13, 27, 53, 0.35);
+  margin-top: 0.25rem;
+}
+
+.evaluation-details > summary {
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  list-style: none;
+  user-select: none;
+}
+
+.evaluation-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.evaluation-details > summary::before {
+  content: '\25B6';
+  font-size: 0.55em;
+  margin-right: 0.4rem;
+  transition: transform var(--transition);
+  display: inline-block;
+}
+
+.evaluation-details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.evaluation-details__body {
+  padding: 0.5rem 0.75rem 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+/* --- Score bar chart --- */
+
+.evaluation-scores {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.score-bar-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 32px;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.score-bar-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.score-bar-track {
+  height: 8px;
+  background: rgba(183, 189, 208, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.score-bar-value {
+  font-size: 0.75rem;
+  color: var(--color-text);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Evaluation strengths/weaknesses lists --- */
+
+.evaluation-list__heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary-hover);
+  margin: 0 0 0.25rem;
+}
+
+.evaluation-list ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  list-style: disc;
+}
+
+.evaluation-list li {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--color-text);
+  margin-bottom: 0.15rem;
+}
+
+/* --- Taste profile summary (above generated cards) --- */
+
+.taste-profile-summary {
+  border: 1px solid rgba(83, 52, 131, 0.35);
+  border-radius: var(--radius);
+  background: rgba(83, 52, 131, 0.12);
+  margin-bottom: 1rem;
+}
+
+.taste-profile-summary > summary {
+  cursor: pointer;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  color: var(--color-secondary-hover);
+  list-style: none;
+  user-select: none;
+}
+
+.taste-profile-summary > summary::-webkit-details-marker {
+  display: none;
+}
+
+.taste-profile-summary > summary::before {
+  content: '\25B6';
+  font-size: 0.65em;
+  margin-right: 0.5rem;
+  transition: transform var(--transition);
+  display: inline-block;
+}
+
+.taste-profile-summary[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.taste-profile-summary__body {
+  padding: 0 1rem 0.75rem;
+}
