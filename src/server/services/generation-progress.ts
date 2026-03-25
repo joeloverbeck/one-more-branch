@@ -19,6 +19,7 @@ export const GENERATION_FLOW_TYPES = [
   'worldbuilding-decompose',
   'spine-generation',
   'create-story',
+  'character-brainstorming',
 ] as const;
 
 export type GenerationFlowType = (typeof GENERATION_FLOW_TYPES)[number];

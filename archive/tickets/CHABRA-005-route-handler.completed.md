@@ -1,6 +1,6 @@
 # CHABRA-005: Character brainstormer route handler and registration
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Medium
 **Engine Changes**: None
@@ -104,3 +104,15 @@ Import `characterBrainstormerRoutes` and add `router.use('/character-brainstorme
 2. `npm run typecheck`
 3. `npm run lint`
 4. `npm test` — full suite
+
+## Outcome
+
+- **Completed**: 2026-03-25
+- **Changes**:
+  - Added `'character-brainstorming'` to `GENERATION_FLOW_TYPES` in `src/server/services/generation-progress.ts`
+  - Created `src/server/routes/character-brainstormer.ts` with GET `/` and POST `/api/generate` handlers
+  - Registered route in `src/server/routes/index.ts` at `/character-brainstormer`
+  - Created `test/unit/server/routes/character-brainstormer.test.ts` (10 tests)
+  - Updated `test/unit/server/services/generation-progress.test.ts` for new flow type
+- **Deviations**: Progress events fired manually around the `generateCharacterBrainstorm` call (matching simpler route patterns like concept-seeds) rather than through `GenerationOptions.observability`. Error handling uses `instanceof LLMError` check + generic fallback (matching concept-seeds pattern).
+- **Verification**: typecheck pass, lint 0 errors, 321 suites / 3729 tests all pass
