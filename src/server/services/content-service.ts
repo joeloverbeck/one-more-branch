@@ -193,8 +193,8 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       // Stage 1: Taste Distiller
       const tasteContext: TasteDistillerContext = {
         exemplarIdeas,
-        moodOrGenre: input.moodOrGenre?.trim() ?? undefined,
-        contentPreferences: input.contentPreferences?.trim() ?? undefined,
+        moodOrGenre: input.moodOrGenre,
+        contentPreferences: input.contentPreferences,
       };
 
       const tasteResult = await runGenerationStage(onGenerationStage, 'DISTILLING_TASTE', () =>
@@ -256,8 +256,8 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
 
       const context: TasteDistillerContext = {
         exemplarIdeas,
-        moodOrGenre: input.moodOrGenre?.trim() ?? undefined,
-        contentPreferences: input.contentPreferences?.trim() ?? undefined,
+        moodOrGenre: input.moodOrGenre,
+        contentPreferences: input.contentPreferences,
       };
 
       const result = await runGenerationStage(onGenerationStage, 'DISTILLING_TASTE', () =>

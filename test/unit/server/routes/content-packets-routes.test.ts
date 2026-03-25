@@ -464,6 +464,40 @@ describe('content-packets routes', () => {
       );
     });
 
+    it('normalizes trimmed route input before delegating to the service', async () => {
+      const pipelineResult = {
+        tasteProfile: makeTasteProfile(),
+        sparks: [],
+        packets: [makeGeneratedPacket()],
+        evaluations: [makeEvaluation()],
+      };
+      (contentService.generateContentPipeline as jest.Mock).mockResolvedValue(pipelineResult);
+
+      const handler = getRouteHandler('post', '/api/generate');
+      const req = mockReq({
+        body: {
+          exemplarIdeas: ['  idea one  ', ' ', 42, 'idea two'],
+          apiKey: '  sk-or-test-key-1234567890  ',
+          moodOrGenre: '  ritual horror  ',
+          contentPreferences: '  dread and bureaucracy  ',
+          kernelBlock: '  archive-cathedral  ',
+        },
+      });
+      const res = mockRes();
+
+      void handler(req, res);
+      await flushPromises();
+
+      expect(contentService.generateContentPipeline).toHaveBeenCalledWith({
+        exemplarIdeas: ['idea one', 'idea two'],
+        moodOrGenre: 'ritual horror',
+        contentPreferences: 'dread and bureaucracy',
+        kernelBlock: 'archive-cathedral',
+        apiKey: 'sk-or-test-key-1234567890',
+        onGenerationStage: undefined,
+      });
+    });
+
     it('includes evaluator metadata in packet cards', async () => {
       const pipelineResult = {
         tasteProfile: makeTasteProfile(),
@@ -802,6 +836,48 @@ describe('content-packets routes', () => {
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });
 
+    it('normalizes trimmed route input before delegating to distillTaste', async () => {
+      const tasteResult = {
+        tasteProfile: {
+          collisionPatterns: ['pattern1'],
+          favoredMechanisms: ['mech1'],
+          humanAnchors: ['anchor1'],
+          socialEngines: ['engine1'],
+          toneBlend: ['tone1'],
+          sceneAppetites: ['scene1'],
+          antiPatterns: ['anti1'],
+          surfaceDoNotRepeat: ['surface1'],
+          riskAppetite: 'HIGH',
+          engagementModes: ['mode1'],
+          valueTensions: ['tension1'],
+          deepPatterns: ['pattern1'],
+        },
+      };
+      (contentService.distillTaste as jest.Mock).mockResolvedValue(tasteResult);
+
+      const handler = getRouteHandler('post', '/taste-profiles/api/generate');
+      const req = mockReq({
+        body: {
+          exemplarIdeas: ['  idea one  ', '', 17],
+          apiKey: '  sk-or-test-key-1234567890  ',
+          moodOrGenre: '  ritual horror  ',
+          contentPreferences: '  dread and bureaucracy  ',
+        },
+      });
+      const res = mockRes();
+
+      void handler(req, res);
+      await flushPromises();
+
+      expect(contentService.distillTaste).toHaveBeenCalledWith({
+        exemplarIdeas: ['idea one'],
+        moodOrGenre: 'ritual horror',
+        contentPreferences: 'dread and bureaucracy',
+        apiKey: 'sk-or-test-key-1234567890',
+        onGenerationStage: undefined,
+      });
+    });
+
     it('requires apiKey for taste profile generation', async () => {
       const handler = getRouteHandler('post', '/taste-profiles/api/generate');
       const req = mockReq({
@@ -816,6 +892,43 @@ describe('content-packets routes', () => {
       expect(res.json).toHaveBeenCalledWith({
         success: false,
         error: 'OpenRouter API key is required',
+      });
+    });
+
+    it('requires exemplar ideas for taste profile generation', async () => {
+      const handler = getRouteHandler('post', '/taste-profiles/api/generate');
+      const req = mockReq({
+        body: { apiKey: 'sk-or-test-key-1234567890' },
+      });
+      const res = mockRes();
+
+      void handler(req, res);
+      await flushPromises();
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        error: 'At least one exemplar idea is required',
+      });
+    });
+
+    it('rejects empty taste-profile exemplar ideas after trimming', async () => {
+      const handler = getRouteHandler('post', '/taste-profiles/api/generate');
+      const req = mockReq({
+        body: {
+          exemplarIdeas: ['  ', '', 17],
+          apiKey: 'sk-or-test-key-1234567890',
+        },
+      });
+      const res = mockRes();
+
+      void handler(req, res);
+      await flushPromises();
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        error: 'At least one non-empty exemplar idea is required',
       });
     });
   });

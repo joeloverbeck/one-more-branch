@@ -1,6 +1,6 @@
 # CONPACCLEAN-003: Normalize content-packet route commands at the HTTP boundary
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: MEDIUM
 **Effort**: Medium
 **Engine Changes**: None
@@ -21,17 +21,18 @@ The cleaner architecture is for the route boundary to fully parse and normalize 
 ## Assumption Reassessment (2026-03-25)
 
 1. `src/server/routes/content-packets.ts` currently duplicates the same validation and trimming logic in both `POST /api/generate` and `POST /taste-profiles/api/generate`. Confirmed.
-2. `src/server/services/content-service.ts` still owns overlapping route-facing sanitation via `requireApiKey`, `requireExemplarIdeas`, and repeated `?.trim() ?? undefined` normalization inside `generateContentPipeline()` and `distillTaste()`. Confirmed.
-3. The lower-level stage methods (`generateSparks`, `packageContent`, `evaluatePackets`) also validate API keys, but they are not HTTP-body entry points and are still called as service APIs. They should not be folded into this ticket unless the parser extraction naturally simplifies shared helpers without expanding scope.
-4. Existing route coverage already lives in `test/unit/server/routes/content-packets-routes.test.ts`, and service coverage already lives in `test/unit/server/services/content-service.test.ts`. A dedicated parser test file should be added instead of overloading those files with parser edge cases.
-5. The original cleanup note only mentioned `content-packets.ts` and `content-service.ts`. That was incomplete: the taste-profile generation route inside the same route file duplicates the same parsing logic and must be part of scope.
+2. `src/server/services/content-service.ts` does re-trim route-owned optional strings inside `generateContentPipeline()` and `distillTaste()`. Confirmed.
+3. `src/server/services/content-service.ts` also validates `apiKey` and `exemplarIdeas` through `requireApiKey` and `requireExemplarIdeas`, but those methods are still public service APIs with direct unit coverage. Removing their invariant checks entirely would make the service less robust rather than cleaner. The discrepancy is not "service validates at all"; it is "routes and service both perform the same HTTP-body coercion and trimming".
+4. The lower-level stage methods (`generateSparks`, `packageContent`, `evaluatePackets`) also validate API keys, but they are not HTTP-body entry points and are still called as service APIs. They should remain out of scope unless a minimal shared helper cleanup naturally falls out of the parser extraction.
+5. Existing route coverage already lives in `test/unit/server/routes/content-packets-routes.test.ts`, and service coverage already lives in `test/unit/server/services/content-service.test.ts`. A dedicated parser test file should be added instead of overloading those files with parser edge cases.
+6. The original cleanup note only mentioned `content-packets.ts` and `content-service.ts`. That was incomplete: the taste-profile generation route inside the same route file duplicates the same parsing logic and must be part of scope.
 
 ## Architecture Check
 
 1. Moving normalization to a dedicated route-boundary parser is cleaner than keeping parallel validation in routes and services because it gives one owner to HTTP coercion, trimming, and 400-level request rejection.
 2. This is cleaner than "just extract shared helpers into the route file" because the result should be an explicit parsed command contract, not hidden utility calls sprinkled through handlers.
-3. The service layer remains responsible for stage orchestration, lineage assembly, and cross-stage invariants; it should not keep re-trimming request strings that the route has already normalized.
-4. No backwards-compatibility shims or alias paths should be introduced. If the service contract changes from "raw-ish route input" to "normalized command", update tests and call sites directly.
+3. The service layer should remain responsible for orchestration, lineage assembly, and service-level invariants. The cleanup target is redundant HTTP normalization, not the removal of all defensive validation from the service API.
+4. No backwards-compatibility shims or alias paths should be introduced. If route handlers now pass normalized command objects, update tests and call sites directly.
 
 ## What to Change
 
@@ -73,11 +74,11 @@ Refactor `src/server/services/content-service.ts` so `generateContentPipeline()`
 
 Concretely:
 
-- remove redundant trimming inside those two methods
-- remove overlapping route-owned validation helpers if they are no longer needed there
-- keep only service-level invariants that are still necessary once inputs are normalized
+- remove redundant optional-string trimming inside those two methods
+- keep service-level invariants for public service APIs (`apiKey`, required exemplar presence) unless the implementation change truly removes the public surface
+- do not let route parsing and service orchestration both own the same normalization behavior
 
-If some shared helper remains useful, it should reflect a domain invariant, not an HTTP parsing concern.
+If a shared helper remains useful, it should reflect a reusable invariant, not HTTP parsing.
 
 ### 4. Keep lower-level stage methods out of scope unless a minimal helper cleanup is unavoidable
 
@@ -109,12 +110,14 @@ If some shared helper remains useful, it should reflect a domain invariant, not 
 3. Both routes still return the existing 400 responses for invalid API keys, missing exemplar arrays, and all-whitespace exemplar arrays.
 4. `generateContentPipeline()` no longer re-trims route-owned optional fields internally.
 5. `distillTaste()` no longer re-trims route-owned optional fields internally.
-6. Existing suite: `npm test`
+6. Service-level invariant checks that still protect public service APIs remain intact unless the public API itself is removed.
+7. Existing suite: `npm test`
 
 ### Invariants
 
 1. HTTP request parsing and normalization for content-packets is owned by one dedicated parser layer.
 2. Route-driven content service methods receive already-normalized command objects rather than raw request payload shapes.
+3. The service API does not become more fragile as a side effect of moving parsing logic to the route boundary.
 
 ## Test Plan
 
@@ -122,11 +125,26 @@ If some shared helper remains useful, it should reflect a domain invariant, not 
 
 1. `test/unit/server/routes/content-packets-request-parser.test.ts` — new parser-focused coverage for valid normalization and invalid-body rejection without coupling every edge case to route handler tests.
 2. `test/unit/server/routes/content-packets-routes.test.ts` — verify both route handlers delegate normalized commands and preserve the current 400/500 response behavior.
-3. `test/unit/server/services/content-service.test.ts` — verify route-driven methods consume normalized inputs without duplicating route-level trimming/validation responsibilities.
+3. `test/unit/server/services/content-service.test.ts` — verify route-driven methods consume normalized inputs without duplicating route-level optional-string trimming, while preserving intended service invariants.
 
 ### Commands
 
 1. `npm run test:unit -- --runInBand test/unit/server/routes/content-packets-request-parser.test.ts test/unit/server/routes/content-packets-routes.test.ts test/unit/server/services/content-service.test.ts`
-2. `npm run typecheck`
-3. `npm run lint`
-4. `npm test`
+2. `npm run lint`
+3. `npm test`
+
+## Outcome
+
+- Completed: 2026-03-25
+- Actual changes:
+  - Added a dedicated `content-packets` request parser module so both generation routes share one HTTP-boundary normalization path.
+  - Updated `POST /api/generate` and `POST /taste-profiles/api/generate` to delegate parsed commands instead of trimming and filtering inline.
+  - Removed redundant optional-string re-trimming from `generateContentPipeline()` and `distillTaste()` while keeping service-level API key and exemplar invariants intact.
+  - Added parser-focused tests plus stronger route and service assertions around normalized command delegation and preserved 400 responses.
+- Deviations from original plan:
+  - Did not remove service-level `apiKey` and exemplar validation helpers. Reassessment showed those helpers still protect public service APIs and are cleaner kept as invariants than stripped out.
+  - The unit-test command pattern in this repo still runs the full unit suite because `test:unit` already pins `--testPathPatterns=test/unit`; verification was completed against that actual behavior.
+- Verification:
+  - `npm run test:unit -- --runInBand test/unit/server/routes/content-packets-request-parser.test.ts test/unit/server/routes/content-packets-routes.test.ts test/unit/server/services/content-service.test.ts`
+  - `npm run lint`
+  - `npm test`

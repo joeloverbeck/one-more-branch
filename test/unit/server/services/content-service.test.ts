@@ -298,6 +298,27 @@ describe('ContentService', () => {
 
       expect(result.packets).toEqual([createPipelineGeneratedPacket()]);
     });
+
+    it('passes route-normalized optional strings through without re-trimming them', async () => {
+      const deps = createMockDeps();
+      const service = createContentService(deps);
+
+      await service.generateContentPipeline({
+        exemplarIdeas: EXEMPLAR_IDEAS,
+        moodOrGenre: '  cosmic horror  ',
+        contentPreferences: '  body horror  ',
+        apiKey: VALID_API_KEY,
+      });
+
+      expect(deps.generateTasteProfile).toHaveBeenCalledWith(
+        expect.objectContaining<TasteDistillerContext>({
+          exemplarIdeas: EXEMPLAR_IDEAS,
+          moodOrGenre: '  cosmic horror  ',
+          contentPreferences: '  body horror  ',
+        }),
+        VALID_API_KEY
+      );
+    });
   });
 
   describe('distillTaste', () => {
@@ -337,6 +358,27 @@ describe('ContentService', () => {
       expect(stages).toHaveLength(2);
       expect(stages[0]).toEqual({ stage: 'DISTILLING_TASTE', status: 'started', attempt: 1 });
       expectCompletedStage(stages[1]!, 'DISTILLING_TASTE');
+    });
+
+    it('passes route-normalized optional strings through without re-trimming them', async () => {
+      const deps = createMockDeps();
+      const service = createContentService(deps);
+
+      await service.distillTaste({
+        exemplarIdeas: EXEMPLAR_IDEAS,
+        moodOrGenre: '  cosmic horror  ',
+        contentPreferences: '  body horror  ',
+        apiKey: VALID_API_KEY,
+      });
+
+      expect(deps.generateTasteProfile).toHaveBeenCalledWith(
+        expect.objectContaining<TasteDistillerContext>({
+          exemplarIdeas: EXEMPLAR_IDEAS,
+          moodOrGenre: '  cosmic horror  ',
+          contentPreferences: '  body horror  ',
+        }),
+        VALID_API_KEY
+      );
     });
   });
 

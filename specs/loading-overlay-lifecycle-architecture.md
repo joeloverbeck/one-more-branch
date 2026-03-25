@@ -109,6 +109,8 @@ The helper must accept:
 {
   overlayElement: HTMLElement,
   progressElement: HTMLElement,
+  buttonElement?: HTMLElement,
+  buttonElements?: HTMLElement[],
   onShow?: function () {},
   onHide?: function () {},
 }
@@ -120,6 +122,9 @@ Rules:
 2. `progressElement` is the node passed to `createLoadingProgressController()`.
 3. For one-node overlays, `overlayElement === progressElement`.
 4. No aliasing or alternate key names.
+5. `buttonElement` is a convenience shorthand for a single button. If provided, it is treated as `buttonElements: [buttonElement]`.
+6. `buttonElements` is an array of buttons to disable on `begin()` and re-enable on `end()`. Both fields are optional; controllers that omit them get current behavior (no button management).
+7. If both `buttonElement` and `buttonElements` are provided, `buttonElement` is ignored and `buttonElements` wins.
 
 ### 3. Behavior contract
 
@@ -128,16 +133,18 @@ Rules:
 1. stop any prior active session defensively
 2. set `overlayElement.style.display = 'flex'`
 3. start the underlying progress controller with `progressId`
-4. mark the session active
-5. invoke `onShow` after visibility is applied
+4. disable all elements in `buttonElements` by setting `.disabled = true`
+5. mark the session active
+6. invoke `onShow` after visibility is applied
 
 `end()` must:
 
 1. no-op safely if no session is active
 2. stop the underlying progress controller
 3. set `overlayElement.style.display = 'none'`
-4. mark the session inactive
-5. invoke `onHide` after visibility is removed
+4. re-enable all elements in `buttonElements` by setting `.disabled = false`
+5. mark the session inactive
+6. invoke `onHide` after visibility is removed
 
 `withProgress(run)` must:
 
@@ -183,6 +190,11 @@ Reason:
 
 - these are the cleanest examples of the current protocol
 - they cover both one-node and two-node overlay shapes
+
+Migration guidance for Phase 1:
+
+1. **Content Packets async/await conversion**: `public/js/src/11-content-packets.js` is the only controller still using `.then()`/`.catch()` chains instead of `async`/`await`. During migration, its `handleContentGenerate()` function must be converted to `async`/`await` + `try`/`finally` to align with all other controllers and work naturally with `withProgress()`. The `.then()` chain structure is incompatible with the `withProgress(async function (progressId) { ... })` contract because `withProgress` relies on `await` to know when the async work completes.
+2. **Error display standardization**: During migration, controllers should replace `alert()` calls in generation error paths with their page's `showError()` or `setError()` pattern. This is not a hard requirement for the session helper itself, but migrating controllers should adopt the structured inline error display that newer pages already use (e.g., Kernels, Evolution, Create Story). Content Packets is the primary candidate: its `handleContentGenerate()` currently uses `alert()` for all error paths.
 
 ### Phase 2: Migrate the remaining generation pages
 
@@ -247,6 +259,7 @@ After all targeted pages are migrated:
    - single-node overlays
    - overlay-wrapper plus progress-content layouts
 7. Existing user-visible stage text behavior remains unchanged.
+8. If `buttonElements` are provided, all specified buttons are disabled for the full duration of the loading session and re-enabled when the session ends, regardless of success or failure.
 
 ## Testing Requirements
 
@@ -259,6 +272,10 @@ After all targeted pages are migrated:
    - repeated `begin()` does not leak prior session state
    - `withProgress()` hides overlay in `finally` on success
    - `withProgress()` hides overlay in `finally` on thrown error
+   - `begin()` disables all `buttonElements`
+   - `end()` re-enables all `buttonElements`
+   - `withProgress()` re-enables buttons on thrown error
+   - omitting `buttonElements` does not affect overlay behavior (backward compatibility)
 
 ### Page controller test updates
 
@@ -297,6 +314,13 @@ If any migrated page breaks because it depended on the old ad hoc protocol, fix 
 3. `withProgress()` should be the default path because it structurally guarantees cleanup.
 4. Avoid rewriting entire controllers; migrate the smallest lifecycle slices necessary.
 5. If a page mixes loading overlays with unrelated modals, do not unify those concerns.
+6. Migrated controllers should adopt defensive JSON parsing for fetch responses. The recommended pattern (already used by Kernels and Evolution controllers) guards against non-JSON error responses from the server:
+   ```javascript
+   var data = null;
+   try { data = await response.json(); } catch (_) { data = null; }
+   ```
+   This prevents an unhandled parse error from masking the original HTTP failure and ensures the controller can fall through to its error handling with `data === null`.
+7. Controllers needing post-operation state sync (e.g., Kernels calling `syncGenerateButtonState()` after generation completes) should wire those functions to the `onHide` callback. This keeps cleanup logic declarative and co-located with the session setup rather than scattered in `finally` blocks. No new API surface is needed; `onHide` already fires after the overlay is hidden and buttons are re-enabled.
 
 ## Acceptance Criteria
 
@@ -305,11 +329,11 @@ If any migrated page breaks because it depended on the old ad hoc protocol, fix 
 3. The helper supports both existing overlay DOM shapes in the app.
 4. Client tests explicitly cover success and failure cleanup.
 5. All standard verification commands pass.
+6. Button disabling/re-enabling is handled by the session helper for controllers that opt in via `buttonElements`, eliminating the class of bug where buttons stay permanently disabled on fetch rejection.
 
 ## Future Extensibility
 
 Once this helper exists, the next clean step would be optional, not part of this spec:
 
-1. unify button disabling/enabling around the same session helper
-2. expose a tiny controller-state object for tests
-3. use the same abstraction for any future long-running workflow pages
+1. expose a tiny controller-state object for tests
+2. use the same abstraction for any future long-running workflow pages
