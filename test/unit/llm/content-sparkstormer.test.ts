@@ -37,6 +37,10 @@ function makeValidSpark(overrides: Record<string, unknown> = {}): Record<string,
     spark: 'A mortician who remembers the last dream of every corpse she embalms.',
     imageSeed: 'formaldehyde-stained dream journal',
     collisionTags: ['death-work', 'memory', 'intimacy'],
+    playerRole: 'the mortician who cannot stop inheriting the dead',
+    want: 'to keep one dangerous final dream from being sold',
+    counterforce: 'grieving families and brokers who treat dreams as property',
+    deepPatternRef: 'institutional betrayal',
     ...overrides,
   };
 }
@@ -90,10 +94,24 @@ describe('buildSparkstormerPrompt', () => {
     expect(userMessage!.content).not.toContain('STORY KERNEL');
     expect(userMessage!.content).not.toContain('CONTENT PREFERENCES:');
   });
+
+  it('documents the required agency fields in the prompt contract', () => {
+    const messages = buildSparkstormerPrompt(makeContext());
+    const systemMessage = messages.find((m) => m.role === 'system');
+    const userMessage = messages.find((m) => m.role === 'user');
+
+    expect(systemMessage!.content).toContain('playerRole');
+    expect(systemMessage!.content).toContain('want');
+    expect(systemMessage!.content).toContain('counterforce');
+    expect(systemMessage!.content).toContain('deepPatternRef');
+    expect(userMessage!.content).toContain(
+      'Each spark object must have: sparkId, contentKind, spark, imageSeed, collisionTags, playerRole, want, counterforce, deepPatternRef.'
+    );
+  });
 });
 
 describe('parseSparkstormerResponse', () => {
-  it('validates each spark has sparkId, contentKind, spark, imageSeed, collisionTags', () => {
+  it('validates each spark has sparkId, contentKind, spark, imageSeed, collisionTags, playerRole, want, counterforce, and deepPatternRef', () => {
     const spark = makeValidSpark();
     const result = parseSparkstormerResponse({ sparks: [spark] });
     expect(result).toHaveLength(1);
@@ -102,6 +120,10 @@ describe('parseSparkstormerResponse', () => {
     expect(result[0].spark).toBe(spark['spark']);
     expect(result[0].imageSeed).toBe(spark['imageSeed']);
     expect(result[0].collisionTags).toEqual(spark['collisionTags']);
+    expect(result[0].playerRole).toBe(spark['playerRole']);
+    expect(result[0].want).toBe(spark['want']);
+    expect(result[0].counterforce).toBe(spark['counterforce']);
+    expect(result[0].deepPatternRef).toBe(spark['deepPatternRef']);
   });
 
   it('validates contentKind against valid ContentKind values', () => {
@@ -163,6 +185,31 @@ describe('parseSparkstormerResponse', () => {
     delete spark['collisionTags'];
     expect(() => parseSparkstormerResponse({ sparks: [spark] })).toThrow(
       /collisionTags must be a non-empty array/
+    );
+  });
+
+  it.each(['playerRole', 'want', 'counterforce', 'deepPatternRef'])(
+    'rejects sparks with missing %s',
+    (field) => {
+      const spark = makeValidSpark();
+      delete spark[field];
+
+      expect(() => parseSparkstormerResponse({ sparks: [spark] })).toThrow(
+        new RegExp(`${field} must be a non-empty string`)
+      );
+    }
+  );
+
+  it.each([
+    ['playerRole', '   '],
+    ['want', ''],
+    ['counterforce', ' '],
+    ['deepPatternRef', '\n\t'],
+  ])('rejects sparks with blank %s', (field, value) => {
+    const spark = makeValidSpark({ [field]: value });
+
+    expect(() => parseSparkstormerResponse({ sparks: [spark] })).toThrow(
+      new RegExp(`${field} must be a non-empty string`)
     );
   });
 
@@ -228,6 +275,10 @@ describe('buildContentSparkstormerSchema', () => {
     expect(required).toContain('spark');
     expect(required).toContain('imageSeed');
     expect(required).toContain('collisionTags');
+    expect(required).toContain('playerRole');
+    expect(required).toContain('want');
+    expect(required).toContain('counterforce');
+    expect(required).toContain('deepPatternRef');
 
     const sparkProps = items['properties'] as Record<string, Record<string, unknown>>;
     expect(sparkProps['contentKind']['enum']).toEqual([
@@ -244,5 +295,9 @@ describe('buildContentSparkstormerSchema', () => {
       'PLACE',
       'SECRET',
     ]);
+    expect(sparkProps['playerRole']['type']).toBe('string');
+    expect(sparkProps['want']['type']).toBe('string');
+    expect(sparkProps['counterforce']['type']).toBe('string');
+    expect(sparkProps['deepPatternRef']['type']).toBe('string');
   });
 });

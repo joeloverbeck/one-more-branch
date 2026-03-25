@@ -51,6 +51,10 @@ function makeSpark(overrides: Partial<ContentSpark> = {}): ContentSpark {
     spark: 'A mortician who remembers the last dream of every corpse she embalms.',
     imageSeed: 'formaldehyde-stained dream journal',
     collisionTags: ['death-work', 'memory', 'intimacy'],
+    playerRole: 'the mortician who cannot stop inheriting the dead',
+    want: 'to keep one dangerous final dream from being sold',
+    counterforce: 'grieving families and brokers who treat dreams as property',
+    deepPatternRef: 'institutional betrayal',
     ...overrides,
   };
 }

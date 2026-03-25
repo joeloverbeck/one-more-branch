@@ -24,6 +24,10 @@ export interface ContentSpark {
   readonly spark: string;
   readonly imageSeed: string;
   readonly collisionTags: readonly string[];
+  readonly playerRole: string;
+  readonly want: string;
+  readonly counterforce: string;
+  readonly deepPatternRef: string;
 }
 
 export interface ContentPacketContext {

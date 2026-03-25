@@ -38,6 +38,10 @@ function createSpark(id = 'spark_1'): ContentSpark {
     spark: 'A test spark',
     imageSeed: 'A vivid image',
     collisionTags: ['tag-a'],
+    playerRole: 'the compromised functionary inside the machine',
+    want: 'to keep one destabilizing truth from becoming public',
+    counterforce: 'an institution that profits from silence',
+    deepPatternRef: 'institutional betrayal',
   };
 }
 

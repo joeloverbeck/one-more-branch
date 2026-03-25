@@ -12,9 +12,13 @@ const RULES = `RULES:
 - Honour the taste profile: lean into its collision patterns, favored mechanisms, tone blend, and scene appetites.
 - Respect antiPatterns and surfaceDoNotRepeat -- avoid anything that matches those lists.
 - Match the riskAppetite level: LOW = suggestive tension, MAXIMAL = explicit extremity.
-- Each spark needs a contentKind from: ENTITY, INSTITUTION, RELATIONSHIP, TRANSFORMATION, WORLD_INTRUSION, RITUAL, POLICY, JOB, SUBCULTURE, ECONOMY.
+- Each spark needs a contentKind from: ENTITY, INSTITUTION, RELATIONSHIP, TRANSFORMATION, WORLD_INTRUSION, RITUAL, POLICY, JOB, SUBCULTURE, ECONOMY, PLACE, SECRET.
 - imageSeed: a single vivid image (object, gesture, tableau) that anchors the spark visually.
 - collisionTags: 2-5 thematic tags that describe what this spark collides with (used for later cross-pollination).
+- playerRole: who the player is in this spark's world; make it specific and relational, not generic.
+- want: the urgent desire driving the playerRole inside this spark.
+- counterforce: the person, institution, system, or condition resisting that want.
+- deepPatternRef: name one deep pattern from the supplied taste profile that this spark instantiates.
 - sparkId: a unique identifier in the format "spark-NN" (e.g., "spark-01", "spark-02").
 - Do NOT write generic fantasy/sci-fi prompts. Every spark must feel specific, human, and charged.`;
 
@@ -47,7 +51,7 @@ export function buildSparkstormerPrompt(context: SparkstormerContext): ChatMessa
   userSections.push(
     `OUTPUT REQUIREMENTS:
 - Return JSON matching exactly: { "sparks": [ ... ] }
-- Each spark object must have: sparkId, contentKind, spark, imageSeed, collisionTags.
+- Each spark object must have: sparkId, contentKind, spark, imageSeed, collisionTags, playerRole, want, counterforce, deepPatternRef.
 - sparkId format: "spark-01", "spark-02", etc.
 - 30-40 sparks total.`
   );

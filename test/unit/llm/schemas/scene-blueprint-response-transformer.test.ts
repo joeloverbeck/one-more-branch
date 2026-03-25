@@ -1,6 +1,6 @@
 import { validateSceneBlueprintResponse } from '../../../../src/llm/schemas/scene-blueprint-response-transformer';
 
-function createValidUnit(overrides?: Record<string, unknown>) {
+function createValidUnit(overrides?: Record<string, unknown>): Record<string, unknown> {
   return {
     action: 'Protagonist enters the room',
     emotionalRegister: 'tense alertness',
@@ -13,7 +13,7 @@ function createValidUnit(overrides?: Record<string, unknown>) {
   };
 }
 
-function createValidBlueprintPayload(overrides?: Record<string, unknown>) {
+function createValidBlueprintPayload(overrides?: Record<string, unknown>): Record<string, unknown> {
   return {
     units: [
       createValidUnit(),
@@ -148,7 +148,7 @@ describe('validateSceneBlueprintResponse', () => {
 
   it('rejects response with missing emotionalArc', () => {
     const payload = createValidBlueprintPayload();
-    delete (payload as Record<string, unknown>).emotionalArc;
+    delete payload.emotionalArc;
 
     expect(() => validateSceneBlueprintResponse(payload, 'raw')).toThrow();
   });
