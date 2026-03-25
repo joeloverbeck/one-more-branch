@@ -247,14 +247,31 @@ describe('parseContentPacketerResponse', () => {
     const packet = makeValidPacket();
     delete packet['sourceSparkIds'];
     expect(() => parseContentPacketerResponse({ packets: [packet] })).toThrow(
-      /sourceSparkIds must be a non-empty array/
+      /sourceSparkIds must be an array of exactly 1/
     );
   });
 
   it('rejects packets with empty sourceSparkIds', () => {
     const packet = makeValidPacket({ sourceSparkIds: [] });
     expect(() => parseContentPacketerResponse({ packets: [packet] })).toThrow(
-      /sourceSparkIds must be a non-empty array/
+      /sourceSparkIds must be an array of exactly 1/
+    );
+  });
+
+  it('rejects packets with more than 1 sourceSparkId', () => {
+    const packet = makeValidPacket({ sourceSparkIds: ['spark-01', 'spark-02'] });
+    expect(() => parseContentPacketerResponse({ packets: [packet] })).toThrow(
+      /sourceSparkIds must be an array of exactly 1/
+    );
+  });
+
+  it('rejects packets that share the same sourceSparkId', () => {
+    const packets = [
+      makeValidPacket({ contentId: 'pkt-01', sourceSparkIds: ['spark-01'] }),
+      makeValidPacket({ contentId: 'pkt-02', sourceSparkIds: ['spark-01'] }),
+    ];
+    expect(() => parseContentPacketerResponse({ packets })).toThrow(
+      /Spark spark-01 is referenced by multiple packets/
     );
   });
 
@@ -287,9 +304,13 @@ describe('parseContentPacketerResponse', () => {
 
   it('parses multiple packets correctly', () => {
     const packets = [
-      makeValidPacket({ contentId: 'pkt-01' }),
-      makeValidPacket({ contentId: 'pkt-02', contentKind: 'RITUAL' }),
-      makeValidPacket({ contentId: 'pkt-03', contentKind: 'SUBCULTURE' }),
+      makeValidPacket({ contentId: 'pkt-01', sourceSparkIds: ['spark-01'] }),
+      makeValidPacket({ contentId: 'pkt-02', contentKind: 'RITUAL', sourceSparkIds: ['spark-02'] }),
+      makeValidPacket({
+        contentId: 'pkt-03',
+        contentKind: 'SUBCULTURE',
+        sourceSparkIds: ['spark-03'],
+      }),
     ];
     const result = parseContentPacketerResponse({ packets });
     expect(result).toHaveLength(3);

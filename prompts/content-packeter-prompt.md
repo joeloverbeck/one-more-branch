@@ -7,7 +7,7 @@
 
 ## Pipeline Position
 
-Stage 3 in the content generation pipeline. Selects and expands the 12-16 strongest sparks into load-bearing content packets with explicit setup context plus the lean downstream packet fields.
+Stage 3 in the content generation pipeline. Selects and expands the 12-16 strongest sparks into load-bearing content packets with explicit setup context plus the lean downstream packet fields. Each packet is built from exactly ONE primary spark (1:1 mapping).
 
 **Pipeline**: Taste Distiller → Sparkstormer → **Content Packeter** → Content Evaluator
 
@@ -96,4 +96,4 @@ Content packets are the primary semantic units consumed by concept stages:
 - `interactionVerbs` (4-6) provide concrete player action vocabulary
 - `premiseSummary`, `situationFrame`, and `worldState` are generation-time context inputs for the saved asset candidate; they are not part of the lean downstream `ConceptSeedPacket` projection used by concept stages
 - `sourceSparkIds` traces lineage back to sparkstormer output and should be treated as transient generation lineage rather than a persisted display alias
-- Packets may fuse multiple sparks (multiple sourceSparkIds)
+- Each packet expands exactly ONE spark — `sourceSparkIds` must contain exactly 1 entry (enforced at parse time, not in the JSON Schema — Anthropic rejects `maxItems`). Cross-packet uniqueness is also enforced: no two packets may reference the same sparkId

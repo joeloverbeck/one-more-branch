@@ -193,6 +193,14 @@ describe('parseSparkstormerResponse', () => {
     expect(result[2].sparkId).toBe('spark-03');
     expect(result[2].contentKind).toBe('SUBCULTURE');
   });
+
+  it('rejects sparks with duplicate sparkIds', () => {
+    const sparks = [
+      makeValidSpark({ sparkId: 'spark-01' }),
+      makeValidSpark({ sparkId: 'spark-01', contentKind: 'RITUAL' }),
+    ];
+    expect(() => parseSparkstormerResponse({ sparks })).toThrow(/Duplicate sparkId: spark-01/);
+  });
 });
 
 describe('buildContentSparkstormerSchema', () => {
