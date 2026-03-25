@@ -53,6 +53,7 @@ import { STRUCTURE_REPAIR_SCHEMA } from '../../../../src/llm/schemas/structure-r
 import { STRUCTURE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/structure-schema';
 import { WRITER_GENERATION_SCHEMA } from '../../../../src/llm/schemas/writer-schema';
 import { CHARACTER_WEB_GENERATION_SCHEMA } from '../../../../src/llm/schemas/character-web-schema';
+import { CHARACTER_BRAINSTORMER_SCHEMA } from '../../../../src/llm/schemas/character-brainstormer-schema';
 import { CHAR_KERNEL_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-kernel-schema';
 import { CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-tridimensional-schema';
 import { CHAR_AGENCY_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-agency-schema';
@@ -311,6 +312,7 @@ describe('Anthropic schema compatibility', () => {
     { name: 'CHAR_PRESENTATION_GENERATION_SCHEMA', schema: CHAR_PRESENTATION_GENERATION_SCHEMA },
     { name: 'WORLDBUILDING_SEED_SCHEMA', schema: WORLDBUILDING_SEED_SCHEMA },
     { name: 'WORLDBUILDING_ELABORATION_SCHEMA', schema: WORLDBUILDING_ELABORATION_SCHEMA },
+    { name: 'CHARACTER_BRAINSTORMER_SCHEMA', schema: CHARACTER_BRAINSTORMER_SCHEMA },
   ];
 
   it.each(llmResponseSchemas)(

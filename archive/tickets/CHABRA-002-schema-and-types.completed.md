@@ -1,6 +1,6 @@
 # CHABRA-002: Character brainstormer JSON schema and response transformer
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Small
 **Engine Changes**: None
@@ -85,3 +85,14 @@ Function that validates the raw LLM JSON and maps it to `CharacterBrainstormerRe
 2. `npm run typecheck`
 3. `npm run lint`
 4. `npm test` — full suite
+
+## Outcome
+
+- **Completed**: 2026-03-25
+- **Changes**:
+  - Created `src/llm/character-brainstormer-types.ts` with `BrainstormedCharacter`, `CharacterBrainstormerResult`, `ExistingCharacterSummary`, `CharacterBrainstormerContext` interfaces
+  - Created `src/llm/schemas/character-brainstormer-schema.ts` with OpenRouter JSON schema + `parseCharacterBrainstormerResponse` transformer
+  - Created `test/unit/llm/schemas/character-brainstormer-schema.test.ts` (16 tests)
+  - Updated `test/unit/llm/schemas/anthropic-schema-compatibility.test.ts` to register the new schema
+- **Deviations**: Transformer co-located in schema file (ticket intent) rather than generation file (some codebase patterns). Also needed to register in anthropic-schema-compatibility test which auto-discovers all schema exports.
+- **Verification**: typecheck pass, lint 0 errors, 318 suites / 3698 tests all pass
