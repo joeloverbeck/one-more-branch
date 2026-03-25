@@ -1,5 +1,6 @@
 import type {
   ContentEvaluation,
+  ContentEvaluationScores,
   ContentPacketContext,
   ContentPacketOrigin,
   ContentPacketSourceArtifact,
@@ -17,6 +18,20 @@ export interface ContentPacketCardDetail {
   readonly value: string | readonly string[];
 }
 
+export interface ContentPacketEvaluationScore {
+  readonly key: string;
+  readonly label: string;
+  readonly value: number;
+  readonly maxValue: number;
+}
+
+export interface ContentPacketEvaluationDetails {
+  readonly scores: readonly ContentPacketEvaluationScore[];
+  readonly strengths: readonly string[];
+  readonly weaknesses: readonly string[];
+  readonly recommendedRole: string;
+}
+
 export interface ContentPacketCardViewModel {
   readonly id: string;
   readonly pinned: boolean;
@@ -24,6 +39,7 @@ export interface ContentPacketCardViewModel {
   readonly packetDetails: readonly ContentPacketCardDetail[];
   readonly originDetails: readonly ContentPacketCardDetail[];
   readonly metaDetails: readonly ContentPacketCardDetail[];
+  readonly evaluationDetails?: ContentPacketEvaluationDetails;
 }
 
 type AssetBackedContentPacketCardSource = Pick<
@@ -57,6 +73,20 @@ export const CONTENT_PACKET_CARD_FIELD_REGISTRY = [
   readonly key: keyof ConceptSeedPacket;
   readonly label: string;
 }>;
+
+const EVALUATION_SCORE_FIELD_REGISTRY: ReadonlyArray<{
+  readonly key: keyof ContentEvaluationScores;
+  readonly label: string;
+}> = [
+  { key: 'imageCharge', label: 'Image Charge' },
+  { key: 'humanAche', label: 'Human Ache' },
+  { key: 'socialLoadBearing', label: 'Social Load-Bearing' },
+  { key: 'branchingPressure', label: 'Branching Pressure' },
+  { key: 'antiGenericity', label: 'Anti-Genericity' },
+  { key: 'sceneBurst', label: 'Scene Burst' },
+  { key: 'structuralIrony', label: 'Structural Irony' },
+  { key: 'conceptUtility', label: 'Concept Utility' },
+];
 
 export interface BuildGeneratedContentPacketCardViewModelOptions {
   readonly id?: string;
@@ -137,6 +167,26 @@ function buildOriginDetails(origin: ContentPacketOrigin): readonly ContentPacket
   ];
 }
 
+function buildEvaluationDetails(
+  evaluation?: ContentEvaluation
+): ContentPacketEvaluationDetails | undefined {
+  if (!evaluation) {
+    return undefined;
+  }
+
+  return {
+    scores: EVALUATION_SCORE_FIELD_REGISTRY.map((field) => ({
+      key: field.key,
+      label: field.label,
+      value: evaluation.scores[field.key],
+      maxValue: 5,
+    })),
+    strengths: [...evaluation.strengths],
+    weaknesses: [...evaluation.weaknesses],
+    recommendedRole: evaluation.recommendedRole,
+  };
+}
+
 function buildMetaDetails(evaluation?: ContentEvaluation): readonly ContentPacketCardDetail[] {
   if (!evaluation) {
     return [];
@@ -162,6 +212,7 @@ export function buildGeneratedContentPacketCardViewModel(
     packetDetails: buildPacketDetails(packetCandidate.packet, options.includeContentKind),
     originDetails: buildOriginDetails(packetCandidate.origin),
     metaDetails: buildMetaDetails(options.evaluation),
+    evaluationDetails: buildEvaluationDetails(options.evaluation),
   };
 }
 

@@ -151,7 +151,12 @@ function initContentPacketsPage() {
           return;
         }
 
-        renderGeneratedPackets(data.packetCards || [], data.packets || [], data.evaluations || []);
+        renderGeneratedPackets(
+          data.packetCards || [],
+          data.packets || [],
+          data.evaluations || [],
+          data.tasteProfile || null
+        );
       })
       .catch(function (err) {
         if (loadingProgress) loadingProgress.stop();
@@ -160,7 +165,7 @@ function initContentPacketsPage() {
       });
   }
 
-  function renderGeneratedPackets(packetCards, packets, evaluations) {
+  function renderGeneratedPackets(packetCards, packets, evaluations, tasteProfile) {
     if (!generatedList || !resultsEl) return;
     if (packetCards.length === 0) {
       generatedList.innerHTML = '<p>No packets generated.</p>';
@@ -194,7 +199,8 @@ function initContentPacketsPage() {
       );
     }).join('');
 
-    generatedList.innerHTML = html;
+    var tasteHtml = renderTasteProfile(tasteProfile);
+    generatedList.innerHTML = tasteHtml + html;
     resultsEl.style.display = 'block';
   }
 
@@ -241,6 +247,102 @@ function initContentPacketsPage() {
     return rows.join('');
   }
 
+  var TASTE_PROFILE_FIELDS = [
+    { key: 'collisionPatterns', label: 'Collision Patterns' },
+    { key: 'favoredMechanisms', label: 'Favored Mechanisms' },
+    { key: 'humanAnchors', label: 'Human Anchors' },
+    { key: 'socialEngines', label: 'Social Engines' },
+    { key: 'toneBlend', label: 'Tone Blend' },
+    { key: 'sceneAppetites', label: 'Scene Appetites' },
+    { key: 'antiPatterns', label: 'Anti-Patterns' },
+    { key: 'surfaceDoNotRepeat', label: 'Do Not Repeat' },
+    { key: 'riskAppetite', label: 'Risk Appetite' },
+  ];
+
+  function renderEvaluationSection(evalDetails) {
+    if (!evalDetails) return '';
+
+    var scoresHtml = (evalDetails.scores || []).map(function (score) {
+      var pct = (score.value / score.maxValue) * 100;
+      return (
+        '<div class="score-bar-row">' +
+          '<span class="score-bar-label">' + escapeHtml(score.label) + '</span>' +
+          '<div class="score-bar-track">' +
+            '<div class="score-bar-fill" style="width: ' + pct + '%"></div>' +
+          '</div>' +
+          '<span class="score-bar-value">' + score.value + '</span>' +
+        '</div>'
+      );
+    }).join('');
+
+    var strengthsHtml = '';
+    if (evalDetails.strengths && evalDetails.strengths.length > 0) {
+      strengthsHtml =
+        '<div class="evaluation-list">' +
+          '<h4 class="evaluation-list__heading">Strengths</h4>' +
+          '<ul>' +
+            evalDetails.strengths.map(function (s) {
+              return '<li>' + escapeHtml(s) + '</li>';
+            }).join('') +
+          '</ul>' +
+        '</div>';
+    }
+
+    var weaknessesHtml = '';
+    if (evalDetails.weaknesses && evalDetails.weaknesses.length > 0) {
+      weaknessesHtml =
+        '<div class="evaluation-list">' +
+          '<h4 class="evaluation-list__heading">Weaknesses</h4>' +
+          '<ul>' +
+            evalDetails.weaknesses.map(function (s) {
+              return '<li>' + escapeHtml(s) + '</li>';
+            }).join('') +
+          '</ul>' +
+        '</div>';
+    }
+
+    var roleHtml =
+      '<div class="story-detail-row story-detail-row--meta">' +
+        '<dt>Role</dt>' +
+        '<dd>' + escapeHtml(evalDetails.recommendedRole) + '</dd>' +
+      '</div>';
+
+    return (
+      '<details class="evaluation-details">' +
+        '<summary>Evaluation</summary>' +
+        '<div class="evaluation-details__body">' +
+          '<div class="evaluation-scores">' + scoresHtml + '</div>' +
+          strengthsHtml +
+          weaknessesHtml +
+          '<dl class="story-details">' + roleHtml + '</dl>' +
+        '</div>' +
+      '</details>'
+    );
+  }
+
+  function renderTasteProfile(tasteProfile) {
+    if (!tasteProfile) return '';
+
+    var details = TASTE_PROFILE_FIELDS.map(function (field) {
+      var value = tasteProfile[field.key];
+      if (value === undefined || value === null) return null;
+      return { key: field.key, label: field.label, value: value };
+    }).filter(function (d) { return d !== null; });
+
+    if (details.length === 0) return '';
+
+    return (
+      '<details class="taste-profile-summary">' +
+        '<summary>Taste Profile</summary>' +
+        '<div class="taste-profile-summary__body">' +
+          '<dl class="story-details">' +
+            renderDetailRows(details) +
+          '</dl>' +
+        '</div>' +
+      '</details>'
+    );
+  }
+
   function renderCardSections(card) {
     var sections = [
       { key: 'context', title: 'Context', details: card.contextDetails || [] },
@@ -251,7 +353,7 @@ function initContentPacketsPage() {
       return section.details.length > 0;
     });
 
-    return sections
+    var sectionsHtml = sections
       .map(function (section) {
         var rowClassSuffix = section.key === 'meta' ? ' story-detail-row--meta' : '';
 
@@ -278,6 +380,8 @@ function initContentPacketsPage() {
         );
       })
       .join('');
+
+    return sectionsHtml + renderEvaluationSection(card.evaluationDetails);
   }
 
   function handleSaveGenerated(btn) {
