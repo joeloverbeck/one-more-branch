@@ -1,6 +1,6 @@
 # Character Brainstormer Specification
 
-**Status**: ACTIVE
+**Status**: COMPLETED
 
 ## Overview
 
