@@ -241,6 +241,8 @@ describe('buildContentSparkstormerSchema', () => {
       'JOB',
       'SUBCULTURE',
       'ECONOMY',
+      'PLACE',
+      'SECRET',
     ]);
   });
 });

@@ -210,6 +210,8 @@ describe('parseContentPacketerResponse', () => {
       'JOB',
       'SUBCULTURE',
       'ECONOMY',
+      'PLACE',
+      'SECRET',
     ]) {
       const packet = makeValidPacket({ contentKind: validKind });
       expect(() => parseContentPacketerResponse({ packets: [packet] })).not.toThrow();
@@ -370,6 +372,8 @@ describe('buildContentPacketerSchema', () => {
       'JOB',
       'SUBCULTURE',
       'ECONOMY',
+      'PLACE',
+      'SECRET',
     ]);
   });
 });

@@ -9,6 +9,8 @@ export const CONTENT_KIND_VALUES = [
   'JOB',
   'SUBCULTURE',
   'ECONOMY',
+  'PLACE',
+  'SECRET',
 ] as const;
 
 export type ContentKind = (typeof CONTENT_KIND_VALUES)[number];

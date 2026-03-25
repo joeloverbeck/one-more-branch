@@ -1,6 +1,6 @@
 # CONPACPIPIMP-003: Add PLACE and SECRET to ContentKind enum
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Small
 **Engine Changes**: None
@@ -66,3 +66,10 @@ Add `'PLACE'` and `'SECRET'` to the `CONTENT_KIND_VALUES` array in `src/models/c
 
 1. `npm run test:unit -- --testPathPattern="content-taxonomy"`
 2. `npm run typecheck && npm run lint && npm test`
+
+## Outcome
+
+- **Completed**: 2026-03-25
+- **Changes**: Added `'PLACE'` and `'SECRET'` to `CONTENT_KIND_VALUES` in `src/models/content-taxonomy.ts` (10 → 12 values). Updated tests in `content-taxonomy.test.ts`, `content-packeter.test.ts`, and `content-sparkstormer.test.ts` to include the new values in hardcoded enum assertions.
+- **Deviations**: Ticket listed only 2 files to touch, but 2 additional test files (`content-packeter.test.ts`, `content-sparkstormer.test.ts`) had hardcoded enum arrays that needed updating. The schemas auto-derived correctly, but the test assertions for those schemas were hardcoded.
+- **Verification**: typecheck pass, lint 0 errors, 321 suites / 3722 tests pass.
