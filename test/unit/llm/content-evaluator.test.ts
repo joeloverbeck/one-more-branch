@@ -97,6 +97,39 @@ describe('buildContentEvaluatorPrompt', () => {
     expect(userMessage!.content).toContain(JSON.stringify(tasteProfile, null, 2));
     expect(userMessage!.content).toContain('tasteAlignment');
   });
+
+  it('defines the 10-dimension anchored rubric and overlap guidance in the system prompt', () => {
+    const messages = buildContentEvaluatorPrompt(makeContext());
+    const systemMessage = messages.find((m) => m.role === 'system');
+
+    expect(systemMessage).toBeDefined();
+
+    for (const dimension of [
+      'imageCharge',
+      'humanAche',
+      'socialLoadBearing',
+      'branchingPressure',
+      'surfaceFreshness',
+      'deepOriginality',
+      'sceneBurst',
+      'structuralIrony',
+      'tasteAlignment',
+      'causalSpecificity',
+    ]) {
+      expect(systemMessage!.content).toContain(dimension);
+    }
+
+    expect(systemMessage!.content).toContain('3 = recognizable emotion, but conventional');
+    expect(systemMessage!.content).toContain('3 = one clear choice point');
+    expect(systemMessage!.content).toContain('5 = feels tailor-made; instantiates deep patterns');
+    expect(systemMessage!.content).toContain('redundancyCluster');
+    expect(systemMessage!.content).toContain('similar anomaly, similar social engine, or similar emotional core');
+    expect(systemMessage!.content).toContain(
+      "deepPatterns, engagementModes, valueTensions, collisionPatterns, and sceneAppetites"
+    );
+    expect(systemMessage!.content).not.toContain('antiGenericity');
+    expect(systemMessage!.content).not.toContain('conceptUtility');
+  });
 });
 
 describe('parseContentEvaluatorResponse', () => {

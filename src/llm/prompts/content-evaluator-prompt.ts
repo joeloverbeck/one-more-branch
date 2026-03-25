@@ -7,16 +7,46 @@ const ROLE_INTRO = `You are a content evaluator for branching interactive fictio
 You are NOT building concepts. You are judging raw content packets on their imaginative charge, human depth, social load-bearing capacity, and interactive potential.`;
 
 const RULES = `SCORING DIMENSIONS (each 0-5):
-- imageCharge: Is there an unforgettable concrete visual? (0 = abstract/generic, 5 = searing, specific, instantly memorable)
-- humanAche: Is there a live emotional wound/desire/shame/love inside the weirdness? (0 = no human stake, 5 = gut-level resonance)
-- socialLoadBearing: Does the anomaly create institutions, incentives, public consequences, or power structures? (0 = isolated gimmick, 5 = reshapes society)
-- branchingPressure: Does it naturally force meaningful choices? (0 = no dilemma, 5 = every option costs something real)
-- surfaceFreshness: Is the packet's surface treatment vivid and non-stock? (0 = familiar genre coating, 5 = instantly distinctive surface)
-- deepOriginality: Is the underlying narrative pattern fresh rather than formulaic? (0 = standard structure, 5 = the pattern itself feels invented)
-- sceneBurst: Does it immediately imply multiple vivid scenes? (0 = one-note, 5 = rich with implied moments)
-- structuralIrony: Is there a contradiction baked into the content itself? (0 = straightforward, 5 = the solution is the problem)
-- tasteAlignment: Does this feel specifically matched to the supplied taste profile? (0 = generic fit, 5 = tailor-made for this profile's deep patterns, engagement modes, and value tensions)
-- causalSpecificity: Are the mechanisms specific enough to generate scenes and choices on their own? (0 = decorative abstraction, 5 = causally specific engine)
+- imageCharge:
+  0 = abstract/generic, no visual
+  3 = one clear image, competent but not arresting
+  5 = searing, specific, instantly unforgettable
+- humanAche:
+  0 = no human stake inside the weirdness
+  3 = recognizable emotion, but conventional
+  5 = gut-level resonance, makes you wince or ache
+- socialLoadBearing:
+  0 = isolated gimmick, no social machinery
+  3 = implies some social consequence
+  5 = reshapes institutions, incentives, or power structures
+- branchingPressure:
+  0 = no dilemma, player has nothing to decide
+  3 = one clear choice point
+  5 = every option costs something real, multiple pressure vectors
+- surfaceFreshness:
+  0 = stock genre imagery, seen a hundred times
+  3 = recognizable but with a distinctive twist
+  5 = never-seen-before surface, can't be mistaken for anything else
+- deepOriginality:
+  0 = standard narrative formula underneath
+  3 = familiar structure with one unusual element
+  5 = structurally unprecedented, the pattern itself is the invention
+- sceneBurst:
+  0 = one-note, abstract, implies nothing concrete
+  3 = 2-3 distinct scenes visible
+  5 = rich with implied moments, 5+ scenes practically write themselves
+- structuralIrony:
+  0 = straightforward, no contradiction
+  3 = mild irony or tension
+  5 = the solution is the problem, the cure is the disease
+- tasteAlignment:
+  0 = no connection to the taste profile
+  3 = plausible match but could fit many profiles
+  5 = feels tailor-made; instantiates deep patterns, engagement modes, and value tensions from this specific profile
+- causalSpecificity:
+  0 = too abstract or decorative to build a story from
+  3 = workable with effort, mechanisms present but vague
+  5 = mechanisms so specific they practically generate scenes and choices on their own
 
 ROLE LABELS:
 - PRIMARY_SEED: Strong enough to anchor a concept. High scores across most dimensions.
@@ -28,9 +58,10 @@ RULES:
 - Evaluate every packet. Do not skip any.
 - Be honest and critical. A 3 is average. 5 is exceptional.
 - Scores must be integers from 0 to 5.
+- When scoring tasteAlignment, cross-reference the taste profile's deepPatterns, engagementModes, valueTensions, collisionPatterns, and sceneAppetites.
 - strengths: 1-3 brief statements about what works.
 - weaknesses: 1-3 brief statements about what doesn't work or is missing.
-- redundancyCluster: if this packet materially overlaps a stronger packet in the same batch, set this to that stronger packet's contentId; otherwise set it to null.
+- redundancyCluster: if two packets cover essentially the same territory, similar anomaly, similar social engine, or similar emotional core, mark the weaker one with the stronger packet's contentId; otherwise set it to null.
 - Do not inflate scores. Most packets should NOT be PRIMARY_SEED.`;
 
 export function buildContentEvaluatorPrompt(context: ContentEvaluatorContext): ChatMessage[] {
