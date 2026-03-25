@@ -15,9 +15,10 @@ function initCreateStoryPage() {
   var progressContent = document.getElementById('create-story-progress-content');
   var errorDiv = document.getElementById('create-story-error');
 
-  if (!form || !createBtn) return;
+  if (!form || !createBtn || !errorDiv) return;
 
   var loadingProgress = createLoadingProgressController(progressContent);
+  var inlineError = createInlineErrorController(errorDiv);
 
   // Restore API key
   var storedApiKey = getApiKey();
@@ -72,21 +73,8 @@ function initCreateStoryPage() {
     });
   }
 
-  function showError(msg) {
-    if (errorDiv) {
-      errorDiv.textContent = msg;
-      errorDiv.style.display = '';
-    }
-  }
-
-  function hideError() {
-    if (errorDiv) {
-      errorDiv.style.display = 'none';
-    }
-  }
-
   async function createStory() {
-    hideError();
+    inlineError.clear();
     createBtn.disabled = true;
     if (progressSection) progressSection.style.display = 'flex';
 
@@ -116,7 +104,9 @@ function initCreateStoryPage() {
 
       window.location.assign('/play/' + data.storyId + '/briefing');
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+      inlineError.show(
+        error instanceof Error ? error.message : 'Something went wrong. Please try again.'
+      );
       updateCreateButton();
     } finally {
       loadingProgress.stop();

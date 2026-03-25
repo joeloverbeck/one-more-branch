@@ -19,7 +19,7 @@ function initCharacterBrainstormerPage() {
   var diversityNoteEl = document.getElementById('character-brainstormer-diversity-note');
   var copyAllBtn = document.getElementById('character-brainstormer-copy-all-btn');
 
-  if (!loading || !generateBtn || !conceptSelector || !worldbuildingSelector) {
+  if (!loading || !errorBlock || !generateBtn || !conceptSelector || !worldbuildingSelector) {
     return;
   }
 
@@ -30,6 +30,7 @@ function initCharacterBrainstormerPage() {
   }
 
   var loadingProgress = createLoadingProgressController(loading);
+  var inlineError = createInlineErrorController(errorBlock);
   var lastResult = null;
 
   // ── API key restore ──────────────────────────────────────────────
@@ -71,20 +72,6 @@ function initCharacterBrainstormerPage() {
   updateGenerateButtonState();
 
   // ── Error display ────────────────────────────────────────────────
-
-  function showError(message) {
-    if (errorBlock) {
-      errorBlock.textContent = message;
-      errorBlock.style.display = 'block';
-    }
-  }
-
-  function clearError() {
-    if (errorBlock) {
-      errorBlock.textContent = '';
-      errorBlock.style.display = 'none';
-    }
-  }
 
   // ── Markdown formatting ──────────────────────────────────────────
 
@@ -264,7 +251,7 @@ function initCharacterBrainstormerPage() {
         ? userNotesInput.value.trim()
         : '';
 
-    clearError();
+    inlineError.clear();
     setApiKey(apiKey);
     generateBtn.disabled = true;
     if (resultsSection) {
@@ -298,13 +285,13 @@ function initCharacterBrainstormerPage() {
       if (!response.ok || !data || !data.success) {
         var errorMsg =
           (data && data.error) || 'Generation failed (HTTP ' + response.status + ')';
-        showError(errorMsg);
+        inlineError.show(errorMsg);
         return;
       }
 
       renderBrainstormResults(data.result);
     } catch (err) {
-      showError(err instanceof Error ? err.message : 'Network error');
+      inlineError.show(err instanceof Error ? err.message : 'Network error');
     } finally {
       loadingProgress.stop();
       loading.style.display = 'none';

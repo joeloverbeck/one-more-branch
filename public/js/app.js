@@ -6984,6 +6984,23 @@ function createRecapModalController(initialData) {
     errorBlock.style.display = 'none';
   }
 
+  function createInlineErrorController(errorElement) {
+    if (!errorElement) {
+      throw new Error('createInlineErrorController requires an error element');
+    }
+
+    return {
+      show: function show(message) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+      },
+      clear: function clear() {
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
+      },
+    };
+  }
+
   function showFormError(message) {
     let errorDiv = document.querySelector('.alert-error.form-error');
     if (!errorDiv) {
@@ -8277,9 +8294,10 @@ function initCreateStoryPage() {
   var progressContent = document.getElementById('create-story-progress-content');
   var errorDiv = document.getElementById('create-story-error');
 
-  if (!form || !createBtn) return;
+  if (!form || !createBtn || !errorDiv) return;
 
   var loadingProgress = createLoadingProgressController(progressContent);
+  var inlineError = createInlineErrorController(errorDiv);
 
   // Restore API key
   var storedApiKey = getApiKey();
@@ -8334,21 +8352,8 @@ function initCreateStoryPage() {
     });
   }
 
-  function showError(msg) {
-    if (errorDiv) {
-      errorDiv.textContent = msg;
-      errorDiv.style.display = '';
-    }
-  }
-
-  function hideError() {
-    if (errorDiv) {
-      errorDiv.style.display = 'none';
-    }
-  }
-
   async function createStory() {
-    hideError();
+    inlineError.clear();
     createBtn.disabled = true;
     if (progressSection) progressSection.style.display = 'flex';
 
@@ -8378,7 +8383,9 @@ function initCreateStoryPage() {
 
       window.location.assign('/play/' + data.storyId + '/briefing');
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
+      inlineError.show(
+        error instanceof Error ? error.message : 'Something went wrong. Please try again.'
+      );
       updateCreateButton();
     } finally {
       loadingProgress.stop();
@@ -9272,6 +9279,9 @@ function initContentPacketsPage() {
   var generatedList = document.getElementById('generated-packets-list');
   var generateBtn = document.getElementById('content-generate-btn');
   var errorEl = document.getElementById('content-generation-error');
+  if (!errorEl) {
+    return;
+  }
   var loadingSession = progressEl
     ? createLoadingOverlaySession({
       overlayElement: progressEl,
@@ -9279,6 +9289,7 @@ function initContentPacketsPage() {
       buttonElement: generateBtn,
     })
     : null;
+  var inlineError = createInlineErrorController(errorEl);
 
   initExemplarControls();
 
@@ -9314,25 +9325,6 @@ function initContentPacketsPage() {
       if (span) ideas.push(span.textContent);
     });
     return ideas;
-  }
-
-  function showError(message) {
-    if (!errorEl) {
-      alert(message);
-      return;
-    }
-
-    errorEl.textContent = message;
-    errorEl.style.display = 'block';
-  }
-
-  function hideError() {
-    if (!errorEl) {
-      return;
-    }
-
-    errorEl.textContent = '';
-    errorEl.style.display = 'none';
   }
 
   function addExemplarEntry(text) {
@@ -9382,17 +9374,17 @@ function initContentPacketsPage() {
   }
 
   async function handleContentGenerate() {
-    hideError();
+    inlineError.clear();
 
     var apiKey = getApiKey();
     if (!apiKey || apiKey.length < 10) {
-      showError('Please enter a valid OpenRouter API key.');
+      inlineError.show('Please enter a valid OpenRouter API key.');
       return;
     }
 
     var ideas = collectExemplarIdeas();
     if (ideas.length === 0) {
-      showError('Please enter at least one exemplar idea.');
+      inlineError.show('Please enter at least one exemplar idea.');
       return;
     }
 
@@ -9461,11 +9453,11 @@ function initContentPacketsPage() {
         })();
 
       if (!data || !data.success) {
-        showError('Generation failed: ' + ((data && data.error) || 'Unknown error'));
+        inlineError.show('Generation failed: ' + ((data && data.error) || 'Unknown error'));
         return;
       }
 
-      hideError();
+      inlineError.clear();
       renderGeneratedPackets(
         data.packetCards || [],
         data.packets || [],
@@ -9473,7 +9465,7 @@ function initContentPacketsPage() {
         data.tasteProfile || null
       );
     } catch (err) {
-      showError('Generation failed: ' + err.message);
+      inlineError.show('Generation failed: ' + err.message);
     }
   }
 
@@ -14509,7 +14501,7 @@ function initCharacterBrainstormerPage() {
   var diversityNoteEl = document.getElementById('character-brainstormer-diversity-note');
   var copyAllBtn = document.getElementById('character-brainstormer-copy-all-btn');
 
-  if (!loading || !generateBtn || !conceptSelector || !worldbuildingSelector) {
+  if (!loading || !errorBlock || !generateBtn || !conceptSelector || !worldbuildingSelector) {
     return;
   }
 
@@ -14520,6 +14512,7 @@ function initCharacterBrainstormerPage() {
   }
 
   var loadingProgress = createLoadingProgressController(loading);
+  var inlineError = createInlineErrorController(errorBlock);
   var lastResult = null;
 
   // ── API key restore ──────────────────────────────────────────────
@@ -14561,20 +14554,6 @@ function initCharacterBrainstormerPage() {
   updateGenerateButtonState();
 
   // ── Error display ────────────────────────────────────────────────
-
-  function showError(message) {
-    if (errorBlock) {
-      errorBlock.textContent = message;
-      errorBlock.style.display = 'block';
-    }
-  }
-
-  function clearError() {
-    if (errorBlock) {
-      errorBlock.textContent = '';
-      errorBlock.style.display = 'none';
-    }
-  }
 
   // ── Markdown formatting ──────────────────────────────────────────
 
@@ -14754,7 +14733,7 @@ function initCharacterBrainstormerPage() {
         ? userNotesInput.value.trim()
         : '';
 
-    clearError();
+    inlineError.clear();
     setApiKey(apiKey);
     generateBtn.disabled = true;
     if (resultsSection) {
@@ -14788,13 +14767,13 @@ function initCharacterBrainstormerPage() {
       if (!response.ok || !data || !data.success) {
         var errorMsg =
           (data && data.error) || 'Generation failed (HTTP ' + response.status + ')';
-        showError(errorMsg);
+        inlineError.show(errorMsg);
         return;
       }
 
       renderBrainstormResults(data.result);
     } catch (err) {
-      showError(err instanceof Error ? err.message : 'Network error');
+      inlineError.show(err instanceof Error ? err.message : 'Network error');
     } finally {
       loadingProgress.stop();
       loading.style.display = 'none';

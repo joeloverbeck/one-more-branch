@@ -4,7 +4,7 @@
 **Priority**: MEDIUM
 **Effort**: Medium
 **Engine Changes**: None
-**Deps**: LOAOVELIFARC-001
+**Deps**: LOAOVELIFARC-001, `archive/tickets/ERRDISPARCH-001.md`
 
 ## Problem
 
@@ -21,24 +21,33 @@ Note: This ticket already owns the remaining non-character controller migrations
 ### Concepts controller (`11-concepts-controller.js`)
 1. Single-node overlay: `loading`. Confirmed at line 24.
 2. Multiple generation flows: concept generation (line 135), evolution (line 464), and concept edit (line 550). All three toggle `loading.style.display = 'flex'`. Confirmed.
+3. Still reports page-level errors through legacy `showFormError()`. Confirmed.
+4. `src/server/views/pages/concepts.ejs` does not currently expose a dedicated inline error node for page-level generation failures. Confirmed.
 
 ### Evolution controller (`13-evolution-controller.js`)
 1. Single-node overlay: `loading`. Confirmed at line 34.
 2. `loading.style.display = 'flex'` at line 272. Confirmed.
+3. Still reports page-level errors through legacy `showFormError()`. Confirmed.
+4. `src/server/views/pages/evolution.ejs` does not currently expose a dedicated inline error node. Confirmed.
 
 ### Kernel evolution controller (`14-kernel-evolution-controller.js`)
 1. Single-node overlay: `loading`. Confirmed at line 25.
 2. `loading.style.display = 'flex'` at line 176. Confirmed.
+3. Still reports page-level errors through legacy `showFormError()`. Confirmed.
+4. `src/server/views/pages/kernel-evolution.ejs` does not currently expose a dedicated inline error node. Confirmed.
 
 ### Concept seeds controller (`15-concept-seeds-controller.js`)
 1. Single-node overlay: `loading`. Confirmed at line 22.
 2. `loading.style.display = 'flex'` at line 216. Confirmed.
+3. Still reports page-level errors through legacy `showFormError()`. Confirmed.
+4. `src/server/views/pages/concept-seeds.ejs` does not currently expose a dedicated inline error node. Confirmed.
 
 ## Architecture Check
 
-1. All five controllers follow the same pattern as Phase 1 controllers. Direct swap to session helper.
+1. All five controllers follow the same pattern as Phase 1 controllers for loading lifecycle. Direct swap to session helper.
 2. The briefing controller's shared `loading`/`loadingProgress` with ideation controller requires care — the session helper should replace the direct references, and the ideation controller should either receive the session object or be migrated to use it. If the ideation controller's complexity is too high, it can be deferred.
 3. Concepts controller has three separate generation flows — all three should use the same session instance.
+4. For `concepts`, `evolution`, `kernel-evolution`, and `concept-seeds`, the cleaner long-term architecture is to finish the inline error migration in the same pass: add explicit page-owned error nodes and bind them through `createInlineErrorController(...)` instead of leaving those pages on `showFormError()` heuristics.
 
 ## What to Change
 
@@ -62,7 +71,23 @@ Replace direct overlay/polling code with session helper.
 
 Replace direct overlay/polling code with session helper.
 
-### 6. Regenerate `public/js/app.js`
+### 6. Finish explicit inline error ownership for legacy Phase 2 pages
+
+For the non-briefing Phase 2 pages that still use `showFormError()`:
+
+1. Add explicit page-owned inline error nodes to:
+   - `src/server/views/pages/concepts.ejs`
+   - `src/server/views/pages/evolution.ejs`
+   - `src/server/views/pages/kernel-evolution.ejs`
+   - `src/server/views/pages/concept-seeds.ejs`
+2. Bind those nodes through `createInlineErrorController(...)`
+3. Remove page-level generation/evolution reliance on `showFormError()` in:
+   - `public/js/src/11-concepts-controller.js`
+   - `public/js/src/13-evolution-controller.js`
+   - `public/js/src/14-kernel-evolution-controller.js`
+   - `public/js/src/15-concept-seeds-controller.js`
+
+### 7. Regenerate `public/js/app.js`
 
 Run `node scripts/concat-client-js.js`.
 
@@ -73,13 +98,17 @@ Run `node scripts/concat-client-js.js`.
 - `public/js/src/13-evolution-controller.js` (modify)
 - `public/js/src/14-kernel-evolution-controller.js` (modify)
 - `public/js/src/15-concept-seeds-controller.js` (modify)
+- `src/server/views/pages/concepts.ejs` (modify)
+- `src/server/views/pages/evolution.ejs` (modify)
+- `src/server/views/pages/kernel-evolution.ejs` (modify)
+- `src/server/views/pages/concept-seeds.ejs` (modify)
 - `public/js/app.js` (regenerate)
+- relevant client/server-view tests for explicit inline error nodes on migrated pages (modify/add)
 
 ## Out of Scope
 
 - Changes to `public/js/src/03-loading-progress.js` or `03a-loading-overlay-session.js`
 - Backend route or API contract changes for any of these pages
-- EJS template changes
 - Refactoring non-generation code (concept CRUD, seed CRUD, saved item rendering)
 - The play page controller (`09-controllers.js`) — it has a more complex multi-flow pattern and is not listed in the spec's migration plan
 - Phase 2 character controllers (LOAOVELIFARC-006)
@@ -98,7 +127,8 @@ Run `node scripts/concat-client-js.js`.
 **All controllers:**
 6. No direct `style.display = 'flex'/'none'` for loading overlays in generation flows
 7. No direct `loadingProgress.start()` / `.stop()` calls remain in migrated controllers
-8. Existing suite: `npm run test:client`
+8. Concepts, evolution, kernel-evolution, and concept-seeds no longer depend on `showFormError()` heuristics for page-level generation/evolution errors
+9. Existing suite: `npm run test:client`
 
 ### Invariants
 
@@ -106,15 +136,17 @@ Run `node scripts/concat-client-js.js`.
 2. All non-generation UI behavior (modals, CRUD, rendering) unchanged
 3. Briefing page's scene ideation flow still works (whether migrated or kept via compatibility bridge)
 4. Concepts controller's three generation flows all go through the session helper
+5. Migrated page-level errors are owned by explicit page nodes, not incidental DOM structure
 
 ## Test Plan
 
 ### New/Modified Tests
 
-1. `test/unit/client/evolution-page/controller.test.ts` — update for overlay visibility
-2. `test/unit/client/concepts-page/form-validation.test.ts` — update if generation flow is covered
+1. `test/unit/client/evolution-page/controller.test.ts` — update for overlay visibility and explicit inline error behavior
+2. `test/unit/client/concepts-page/form-validation.test.ts` or a dedicated concepts controller test — cover the explicit inline error node for generation failures
 3. `test/unit/client/briefing-page/begin-adventure.test.ts` — update for overlay visibility
-4. New tests for kernel-evolution and concept-seeds controllers if not already covered
+4. New tests for kernel-evolution and concept-seeds controllers if not already covered, including explicit inline error behavior
+5. Relevant server-view tests for concepts, evolution, kernel-evolution, and concept-seeds — assert dedicated inline error nodes exist with alert semantics
 
 ### Series Note
 

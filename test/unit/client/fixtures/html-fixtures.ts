@@ -834,7 +834,13 @@ export function buildCreateStoryPageHtml(): string {
         <section id="create-story-progress-section" class="loading-overlay" style="display: none;">
           <div id="create-story-progress-content" class="loading-overlay-content"></div>
         </section>
-        <div id="create-story-error" class="form-error" style="display: none;"></div>
+        <div
+          id="create-story-error"
+          class="alert alert-error form-error"
+          style="display: none;"
+          role="alert"
+          aria-live="polite"
+        ></div>
       </section>
     </main>
   `;

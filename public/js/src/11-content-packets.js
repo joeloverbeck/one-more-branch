@@ -10,6 +10,9 @@ function initContentPacketsPage() {
   var generatedList = document.getElementById('generated-packets-list');
   var generateBtn = document.getElementById('content-generate-btn');
   var errorEl = document.getElementById('content-generation-error');
+  if (!errorEl) {
+    return;
+  }
   var loadingSession = progressEl
     ? createLoadingOverlaySession({
       overlayElement: progressEl,
@@ -17,6 +20,7 @@ function initContentPacketsPage() {
       buttonElement: generateBtn,
     })
     : null;
+  var inlineError = createInlineErrorController(errorEl);
 
   initExemplarControls();
 
@@ -52,25 +56,6 @@ function initContentPacketsPage() {
       if (span) ideas.push(span.textContent);
     });
     return ideas;
-  }
-
-  function showError(message) {
-    if (!errorEl) {
-      alert(message);
-      return;
-    }
-
-    errorEl.textContent = message;
-    errorEl.style.display = 'block';
-  }
-
-  function hideError() {
-    if (!errorEl) {
-      return;
-    }
-
-    errorEl.textContent = '';
-    errorEl.style.display = 'none';
   }
 
   function addExemplarEntry(text) {
@@ -120,17 +105,17 @@ function initContentPacketsPage() {
   }
 
   async function handleContentGenerate() {
-    hideError();
+    inlineError.clear();
 
     var apiKey = getApiKey();
     if (!apiKey || apiKey.length < 10) {
-      showError('Please enter a valid OpenRouter API key.');
+      inlineError.show('Please enter a valid OpenRouter API key.');
       return;
     }
 
     var ideas = collectExemplarIdeas();
     if (ideas.length === 0) {
-      showError('Please enter at least one exemplar idea.');
+      inlineError.show('Please enter at least one exemplar idea.');
       return;
     }
 
@@ -199,11 +184,11 @@ function initContentPacketsPage() {
         })();
 
       if (!data || !data.success) {
-        showError('Generation failed: ' + ((data && data.error) || 'Unknown error'));
+        inlineError.show('Generation failed: ' + ((data && data.error) || 'Unknown error'));
         return;
       }
 
-      hideError();
+      inlineError.clear();
       renderGeneratedPackets(
         data.packetCards || [],
         data.packets || [],
@@ -211,7 +196,7 @@ function initContentPacketsPage() {
         data.tasteProfile || null
       );
     } catch (err) {
-      showError('Generation failed: ' + err.message);
+      inlineError.show('Generation failed: ' + err.message);
     }
   }
 
