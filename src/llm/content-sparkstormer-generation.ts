@@ -61,10 +61,46 @@ function validateSpark(value: unknown, index: number): ContentSpark {
     );
   }
 
+  if (typeof data['playerRole'] !== 'string' || data['playerRole'].trim().length === 0) {
+    throw new LLMError(
+      `sparks[${index}].playerRole must be a non-empty string`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
+  if (typeof data['want'] !== 'string' || data['want'].trim().length === 0) {
+    throw new LLMError(
+      `sparks[${index}].want must be a non-empty string`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
+  if (typeof data['counterforce'] !== 'string' || data['counterforce'].trim().length === 0) {
+    throw new LLMError(
+      `sparks[${index}].counterforce must be a non-empty string`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
+  if (typeof data['deepPatternRef'] !== 'string' || data['deepPatternRef'].trim().length === 0) {
+    throw new LLMError(
+      `sparks[${index}].deepPatternRef must be a non-empty string`,
+      'STRUCTURE_PARSE_ERROR',
+      true
+    );
+  }
+
   const sparkId = data['sparkId'];
   const spark = data['spark'];
   const imageSeed = data['imageSeed'];
   const collisionTags = data['collisionTags'];
+  const playerRole = data['playerRole'];
+  const want = data['want'];
+  const counterforce = data['counterforce'];
+  const deepPatternRef = data['deepPatternRef'];
 
   return {
     sparkId: sparkId,
@@ -72,6 +108,10 @@ function validateSpark(value: unknown, index: number): ContentSpark {
     spark: spark,
     imageSeed: imageSeed,
     collisionTags: collisionTags as readonly string[],
+    playerRole: playerRole,
+    want: want,
+    counterforce: counterforce,
+    deepPatternRef: deepPatternRef,
   };
 }
 

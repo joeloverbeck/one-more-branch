@@ -13,6 +13,9 @@ export interface TasteProfile {
   readonly antiPatterns: readonly string[];
   readonly surfaceDoNotRepeat: readonly string[];
   readonly riskAppetite: RiskAppetite;
+  readonly engagementModes: readonly string[];
+  readonly valueTensions: readonly string[];
+  readonly deepPatterns: readonly string[];
 }
 
 export interface ContentSpark {
@@ -21,13 +24,17 @@ export interface ContentSpark {
   readonly spark: string;
   readonly imageSeed: string;
   readonly collisionTags: readonly string[];
+  readonly playerRole: string;
+  readonly want: string;
+  readonly counterforce: string;
+  readonly deepPatternRef: string;
 }
 
 export interface ContentPacketContext {
   readonly premiseSummary: string;
   readonly situationFrame: string;
   readonly worldState: string;
-  readonly viewpointPressure?: string;
+  readonly playerPosition: string;
 }
 
 export interface ContentPacketSourceArtifact {
@@ -65,10 +72,12 @@ export interface ContentEvaluationScores {
   readonly humanAche: number;
   readonly socialLoadBearing: number;
   readonly branchingPressure: number;
-  readonly antiGenericity: number;
+  readonly surfaceFreshness: number;
+  readonly deepOriginality: number;
   readonly sceneBurst: number;
   readonly structuralIrony: number;
-  readonly conceptUtility: number;
+  readonly tasteAlignment: number;
+  readonly causalSpecificity: number;
 }
 
 export interface ContentEvaluation {
@@ -77,6 +86,7 @@ export interface ContentEvaluation {
   readonly strengths: readonly string[];
   readonly weaknesses: readonly string[];
   readonly recommendedRole: ContentPacketRole;
+  readonly redundancyCluster: string | null;
 }
 
 export interface TasteDistillerContext {
@@ -127,7 +137,7 @@ export interface ContentPacketerResult {
 
 export interface ContentEvaluatorContext {
   readonly packets: readonly ConceptSeedPacket[];
-  readonly tasteProfile?: TasteProfile;
+  readonly tasteProfile: TasteProfile;
 }
 
 export interface ContentEvaluatorResult {
@@ -147,8 +157,8 @@ function isStringArray(value: unknown): value is readonly string[] {
   return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
-function isFiniteScore(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value);
+function isValidScore(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 5;
 }
 
 function isContentEvaluationScores(value: unknown): value is ContentEvaluationScores {
@@ -157,14 +167,16 @@ function isContentEvaluationScores(value: unknown): value is ContentEvaluationSc
   }
 
   return (
-    isFiniteScore(value['imageCharge']) &&
-    isFiniteScore(value['humanAche']) &&
-    isFiniteScore(value['socialLoadBearing']) &&
-    isFiniteScore(value['branchingPressure']) &&
-    isFiniteScore(value['antiGenericity']) &&
-    isFiniteScore(value['sceneBurst']) &&
-    isFiniteScore(value['structuralIrony']) &&
-    isFiniteScore(value['conceptUtility'])
+    isValidScore(value['imageCharge']) &&
+    isValidScore(value['humanAche']) &&
+    isValidScore(value['socialLoadBearing']) &&
+    isValidScore(value['branchingPressure']) &&
+    isValidScore(value['surfaceFreshness']) &&
+    isValidScore(value['deepOriginality']) &&
+    isValidScore(value['sceneBurst']) &&
+    isValidScore(value['structuralIrony']) &&
+    isValidScore(value['tasteAlignment']) &&
+    isValidScore(value['causalSpecificity'])
   );
 }
 
@@ -177,7 +189,7 @@ export function cloneContentPacketContext(context: ContentPacketContext): Conten
     premiseSummary: context.premiseSummary,
     situationFrame: context.situationFrame,
     worldState: context.worldState,
-    viewpointPressure: context.viewpointPressure,
+    playerPosition: context.playerPosition,
   };
 }
 
@@ -210,7 +222,7 @@ export function isContentPacketContext(value: unknown): value is ContentPacketCo
     'premiseSummary',
     'situationFrame',
     'worldState',
-    'viewpointPressure',
+    'playerPosition',
   ]);
 
   if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
@@ -221,7 +233,7 @@ export function isContentPacketContext(value: unknown): value is ContentPacketCo
     isNonEmptyString(value['premiseSummary']) &&
     isNonEmptyString(value['situationFrame']) &&
     isNonEmptyString(value['worldState']) &&
-    (value['viewpointPressure'] === undefined || isNonEmptyString(value['viewpointPressure']))
+    isNonEmptyString(value['playerPosition'])
   );
 }
 
@@ -302,6 +314,7 @@ export function isContentEvaluation(value: unknown): value is ContentEvaluation 
     isContentEvaluationScores(value['scores']) &&
     isStringArray(value['strengths']) &&
     isStringArray(value['weaknesses']) &&
-    isContentPacketRole(value['recommendedRole'])
+    isContentPacketRole(value['recommendedRole']) &&
+    (value['redundancyCluster'] === null || isNonEmptyString(value['redundancyCluster']))
   );
 }

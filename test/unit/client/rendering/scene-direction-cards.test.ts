@@ -8,7 +8,7 @@ import path from 'path';
  * the relevant source files inside a shared function scope.
  */
 
-/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 
 const utilsSrc = fs.readFileSync(
   path.resolve(__dirname, '../../../../public/js/src/02-utils.js'),

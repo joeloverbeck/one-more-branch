@@ -30,6 +30,7 @@ export interface ContentPacketEvaluationDetails {
   readonly strengths: readonly string[];
   readonly weaknesses: readonly string[];
   readonly recommendedRole: string;
+  readonly redundancyCluster: string | null;
 }
 
 export interface ContentPacketCardViewModel {
@@ -51,7 +52,7 @@ export const CONTENT_PACKET_CONTEXT_FIELD_REGISTRY = [
   { key: 'premiseSummary', label: 'Premise Summary' },
   { key: 'situationFrame', label: 'Situation Frame' },
   { key: 'worldState', label: 'World State' },
-  { key: 'viewpointPressure', label: 'Viewpoint Pressure' },
+  { key: 'playerPosition', label: 'Player Position' },
 ] as const satisfies ReadonlyArray<{
   readonly key: keyof ContentPacketContext;
   readonly label: string;
@@ -82,10 +83,12 @@ const EVALUATION_SCORE_FIELD_REGISTRY: ReadonlyArray<{
   { key: 'humanAche', label: 'Human Ache' },
   { key: 'socialLoadBearing', label: 'Social Load-Bearing' },
   { key: 'branchingPressure', label: 'Branching Pressure' },
-  { key: 'antiGenericity', label: 'Anti-Genericity' },
+  { key: 'surfaceFreshness', label: 'Surface Freshness' },
+  { key: 'deepOriginality', label: 'Deep Originality' },
   { key: 'sceneBurst', label: 'Scene Burst' },
   { key: 'structuralIrony', label: 'Structural Irony' },
-  { key: 'conceptUtility', label: 'Concept Utility' },
+  { key: 'tasteAlignment', label: 'Taste Alignment' },
+  { key: 'causalSpecificity', label: 'Causal Specificity' },
 ];
 
 export interface BuildGeneratedContentPacketCardViewModelOptions {
@@ -184,6 +187,7 @@ function buildEvaluationDetails(
     strengths: [...evaluation.strengths],
     weaknesses: [...evaluation.weaknesses],
     recommendedRole: evaluation.recommendedRole,
+    redundancyCluster: evaluation.redundancyCluster,
   };
 }
 
@@ -198,6 +202,15 @@ function buildMetaDetails(evaluation?: ContentEvaluation): readonly ContentPacke
       label: 'Role',
       value: evaluation.recommendedRole,
     },
+    ...(evaluation.redundancyCluster === null
+      ? []
+      : [
+          {
+            key: 'redundancyCluster',
+            label: 'Overlaps With',
+            value: evaluation.redundancyCluster,
+          },
+        ]),
   ];
 }
 
@@ -230,16 +243,19 @@ export function buildSavedContentPacketCardViewModel(
 export function buildSavedContentPacketCardWithRecommendedRole(
   savedPacket: SavedContentPacket
 ): ContentPacketCardViewModel {
+  const baseCard = buildSavedContentPacketCardViewModel(savedPacket);
   const recommendedRole = getSavedContentPacketRecommendedRole(savedPacket);
+  const metaDetailsWithoutRole = baseCard.metaDetails.filter((detail) => detail.key !== 'recommendedRole');
 
   return {
-    ...buildSavedContentPacketCardViewModel(savedPacket),
+    ...baseCard,
     metaDetails: [
       {
         key: 'recommendedRole',
         label: 'Role',
         value: recommendedRole,
       },
+      ...metaDetailsWithoutRole,
     ],
   };
 }

@@ -73,7 +73,7 @@ export interface PackageContentInput {
 
 export interface EvaluatePacketsInput {
   readonly packets: readonly ConceptSeedPacket[];
-  readonly tasteProfile?: TasteProfile;
+  readonly tasteProfile: TasteProfile;
   readonly apiKey: string;
   readonly onGenerationStage?: GenerationStageCallback;
 }
@@ -168,7 +168,7 @@ function buildPacketContext(
     premiseSummary: packet.premiseSummary,
     situationFrame: packet.situationFrame,
     worldState: packet.worldState,
-    viewpointPressure: packet.viewpointPressure,
+    playerPosition: packet.playerPosition,
   };
 }
 

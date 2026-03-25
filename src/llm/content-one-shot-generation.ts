@@ -17,6 +17,7 @@ const REQUIRED_PACKET_FIELDS = [
   'premiseSummary',
   'situationFrame',
   'worldState',
+  'playerPosition',
   'coreAnomaly',
   'humanAnchor',
   'socialEngine',
@@ -88,10 +89,7 @@ function parsePacket(raw: unknown, index: number): ConceptSeedOneShotLineagedPac
     premiseSummary: data['premiseSummary'] as string,
     situationFrame: data['situationFrame'] as string,
     worldState: data['worldState'] as string,
-    viewpointPressure:
-      typeof data['viewpointPressure'] === 'string' && data['viewpointPressure'].trim().length > 0
-        ? data['viewpointPressure']
-        : undefined,
+    playerPosition: data['playerPosition'] as string,
     coreAnomaly: data['coreAnomaly'] as string,
     humanAnchor: data['humanAnchor'] as string,
     socialEngine: data['socialEngine'] as string,

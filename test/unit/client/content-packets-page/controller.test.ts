@@ -88,6 +88,7 @@ describe('content-packets page controller', () => {
         premiseSummary: 'A premise summary',
         situationFrame: 'A situation frame',
         worldState: 'A world state',
+        playerPosition: 'You are the only actor who can still change the arrangement.',
       },
       origin: {
         generationMode: 'pipeline',
@@ -106,18 +107,35 @@ describe('content-packets page controller', () => {
     const evaluation = {
       contentId: 'pkt-01',
       scores: {
-        imageCharge: 8,
-        humanAche: 7,
-        socialLoadBearing: 9,
-        branchingPressure: 6,
-        antiGenericity: 8,
-        sceneBurst: 7,
-        structuralIrony: 8,
-        conceptUtility: 9,
+        imageCharge: 5,
+        humanAche: 4,
+        socialLoadBearing: 5,
+        branchingPressure: 4,
+        surfaceFreshness: 5,
+        deepOriginality: 4,
+        sceneBurst: 4,
+        structuralIrony: 5,
+        tasteAlignment: 5,
+        causalSpecificity: 4,
       },
       strengths: ['Strong image'],
       weaknesses: ['Minor weakness'],
       recommendedRole: 'PRIMARY_SEED',
+      redundancyCluster: 'pkt-02',
+    };
+    const tasteProfile = {
+      collisionPatterns: ['ritual meets bureaucracy'],
+      favoredMechanisms: ['escalating obligation'],
+      humanAnchors: ['the witness who stayed'],
+      socialEngines: ['debt-backed loyalty'],
+      toneBlend: ['ominous tenderness'],
+      sceneAppetites: ['fraught negotiation'],
+      antiPatterns: ['quirky whimsy'],
+      surfaceDoNotRepeat: ['foggy alley'],
+      riskAppetite: 'HIGH',
+      engagementModes: ['protect something fragile while compromised'],
+      valueTensions: ['truth vs belonging'],
+      deepPatterns: ['private grief becomes public procedure'],
     };
 
     fetchMock.mockImplementation((input: RequestInfo | URL) => {
@@ -147,6 +165,11 @@ describe('content-packets page controller', () => {
                     key: 'worldState',
                     label: 'World State',
                     value: 'A world state',
+                  },
+                  {
+                    key: 'playerPosition',
+                    label: 'Player Position',
+                    value: 'You are the only actor who can still change the arrangement.',
                   },
                 ],
                 packetDetails: [
@@ -190,9 +213,20 @@ describe('content-packets page controller', () => {
                   },
                 ],
                 metaDetails: [{ key: 'recommendedRole', label: 'Role', value: 'PRIMARY_SEED' }],
+                evaluationDetails: {
+                  scores: [
+                    { key: 'imageCharge', label: 'Image Charge', value: 5, maxValue: 5 },
+                    { key: 'tasteAlignment', label: 'Taste Alignment', value: 5, maxValue: 5 },
+                  ],
+                  strengths: ['Strong image'],
+                  weaknesses: ['Minor weakness'],
+                  recommendedRole: 'PRIMARY_SEED',
+                  redundancyCluster: 'pkt-02',
+                },
               },
             ],
             evaluations: [evaluation],
+            tasteProfile,
           })
         );
       }
@@ -221,16 +255,31 @@ describe('content-packets page controller', () => {
     expect(generatedList?.textContent).toContain('Meta');
     expect(generatedList?.textContent).toContain('Premise Summary');
     expect(generatedList?.textContent).toContain('A premise summary');
+    expect(generatedList?.textContent).toContain('Player Position');
     expect(generatedList?.textContent).toContain('Kind');
     expect(generatedList?.textContent).toContain('Content ID');
     expect(generatedList?.textContent).toContain('Interaction Verbs');
     expect(generatedList?.textContent).toContain('Generation Mode');
     expect(generatedList?.textContent).toContain('Source Artifact 1');
+    expect(generatedList?.textContent).toContain('Taste Profile');
+    expect(generatedList?.textContent).toContain('Engagement Modes');
+    expect(generatedList?.textContent).toContain('protect something fragile while compromised');
+    expect(generatedList?.textContent).toContain('Value Tensions');
+    expect(generatedList?.textContent).toContain('truth vs belonging');
+    expect(generatedList?.textContent).toContain('Deep Patterns');
+    expect(generatedList?.textContent).toContain('private grief becomes public procedure');
+    expect(generatedList?.textContent).toContain('Evaluation');
+    expect(generatedList?.textContent).toContain('Overlaps With');
+    expect(generatedList?.textContent).toContain('pkt-02');
     expect(generatedList?.innerHTML).toContain('data-section-key="context"');
     expect(generatedList?.innerHTML).toContain('data-section-key="packet"');
     expect(generatedList?.innerHTML).toContain('data-section-key="origin"');
     expect(generatedList?.innerHTML).toContain('data-section-key="meta"');
     expect(generatedList?.innerHTML).toContain('data-detail-key="contentKind"');
+    expect(generatedList?.innerHTML).toContain('data-detail-key="engagementModes"');
+    expect(generatedList?.innerHTML).toContain('data-detail-key="valueTensions"');
+    expect(generatedList?.innerHTML).toContain('data-detail-key="deepPatterns"');
+    expect(generatedList?.innerHTML).toContain('data-detail-key="redundancyCluster"');
     expect(generatedList?.innerHTML).toContain('<li>observe</li>');
     expect(generatedList?.innerHTML).toContain('<li>Type: SPARK</li>');
 

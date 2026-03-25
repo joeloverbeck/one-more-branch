@@ -51,6 +51,16 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/concept-stress-tester-prompt.md',
   },
   {
+    promptType: 'contentPacketer',
+    sourcePath: 'src/llm/prompts/content-packeter-prompt.ts',
+    docPath: 'prompts/content-packeter-prompt.md',
+  },
+  {
+    promptType: 'contentOneShot',
+    sourcePath: 'src/llm/prompts/content-one-shot-prompt.ts',
+    docPath: 'prompts/content-one-shot-prompt.md',
+  },
+  {
     promptType: 'opening',
     sourcePath: 'src/llm/prompts/opening-prompt.ts',
     docPath: 'prompts/opening-prompt.md',
@@ -240,5 +250,20 @@ describe('prompt documentation alignment', () => {
     );
     expect(evaluatorDoc).toContain('=== ACT TRAJECTORY CHECK ===');
     expect(evaluatorDoc).toContain('Immediate milestone completion target');
+  });
+
+  it('documents content packet prompts with playerPosition and concrete interaction verbs guidance', () => {
+    const packeterDoc = readRepoFile('prompts/content-packeter-prompt.md');
+    const oneShotDoc = readRepoFile('prompts/content-one-shot-prompt.md');
+
+    expect(packeterDoc).toContain('playerPosition');
+    expect(packeterDoc).not.toContain('viewpointPressure');
+    expect(packeterDoc).toContain('story-specific');
+    expect(packeterDoc).toContain('Generic verbs like');
+
+    expect(oneShotDoc).toContain('playerPosition');
+    expect(oneShotDoc).not.toContain('viewpointPressure');
+    expect(oneShotDoc).toContain('story-specific');
+    expect(oneShotDoc).toContain('Generic verbs like');
   });
 });

@@ -25,6 +25,7 @@ function makePacket(overrides: Partial<SavedContentPacket> = {}): SavedContentPa
       premiseSummary: 'premise',
       situationFrame: 'frame',
       worldState: 'world',
+      playerPosition: 'You are the compromised insider who must act.',
     },
     origin: {
       generationMode: 'quick',

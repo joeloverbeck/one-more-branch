@@ -8,8 +8,20 @@ import {
 } from '../../../src/models/content-taxonomy';
 
 describe('isContentKind', () => {
+  it('has exactly 12 values', () => {
+    expect(CONTENT_KIND_VALUES).toHaveLength(12);
+  });
+
   it.each(CONTENT_KIND_VALUES.map((value) => [value]))('accepts valid value: %s', (value) => {
     expect(isContentKind(value)).toBe(true);
+  });
+
+  it('accepts PLACE', () => {
+    expect(isContentKind('PLACE')).toBe(true);
+  });
+
+  it('accepts SECRET', () => {
+    expect(isContentKind('SECRET')).toBe(true);
   });
 
   it.each([['INVALID'], ['entity'], [''], [null], [undefined], [42], [true]])(

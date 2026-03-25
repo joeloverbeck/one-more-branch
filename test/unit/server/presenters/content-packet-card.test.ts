@@ -36,6 +36,7 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
       premiseSummary: 'A charged premise summary',
       situationFrame: 'A volatile situation frame',
       worldState: 'A legible world state',
+      playerPosition: 'You are the only witness with standing to act.',
     },
     origin: {
       generationMode: 'quick',
@@ -51,18 +52,21 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
     evaluation: {
       contentId: 'pkt-01',
       scores: {
-        imageCharge: 8,
-        humanAche: 7,
-        socialLoadBearing: 9,
-        branchingPressure: 6,
-        antiGenericity: 8,
-        sceneBurst: 7,
-        structuralIrony: 8,
-        conceptUtility: 9,
+        imageCharge: 5,
+        humanAche: 4,
+        socialLoadBearing: 5,
+        branchingPressure: 4,
+        surfaceFreshness: 5,
+        deepOriginality: 4,
+        sceneBurst: 4,
+        structuralIrony: 5,
+        tasteAlignment: 5,
+        causalSpecificity: 4,
       },
       strengths: ['Strong image'],
       weaknesses: ['Minor weakness'],
       recommendedRole: 'PRIMARY_SEED',
+      redundancyCluster: 'pkt-02',
     },
     ...overrides,
   };
@@ -77,6 +81,7 @@ function makeGeneratedPacket(
       premiseSummary: 'A charged premise summary',
       situationFrame: 'A volatile situation frame',
       worldState: 'A legible world state',
+      playerPosition: 'You are the designated fixer trapped inside the arrangement.',
     },
     origin: {
       generationMode: 'pipeline',
@@ -114,6 +119,7 @@ describe('content packet card presenter', () => {
       'premiseSummary',
       'situationFrame',
       'worldState',
+      'playerPosition',
     ]);
     expect(card.packetDetails.map((detail) => detail.key)).not.toContain('contentKind');
     expect(card.originDetails).toEqual([
@@ -131,6 +137,19 @@ describe('content packet card presenter', () => {
     ]);
     expect(card.metaDetails).toEqual([
       expect.objectContaining({ key: 'recommendedRole', value: 'PRIMARY_SEED' }),
+      expect.objectContaining({ key: 'redundancyCluster', value: 'pkt-02' }),
+    ]);
+    expect(card.evaluationDetails?.scores.map((score) => score.key)).toEqual([
+      'imageCharge',
+      'humanAche',
+      'socialLoadBearing',
+      'branchingPressure',
+      'surfaceFreshness',
+      'deepOriginality',
+      'sceneBurst',
+      'structuralIrony',
+      'tasteAlignment',
+      'causalSpecificity',
     ]);
   });
 
@@ -143,6 +162,7 @@ describe('content packet card presenter', () => {
       'Premise Summary',
       'Situation Frame',
       'World State',
+      'Player Position',
     ]);
     expect(card.packetDetails.map((detail) => detail.key)).toContain('contentKind');
     expect(card.packetDetails).toContainEqual(

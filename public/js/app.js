@@ -9452,6 +9452,9 @@ function initContentPacketsPage() {
     { key: 'antiPatterns', label: 'Anti-Patterns' },
     { key: 'surfaceDoNotRepeat', label: 'Do Not Repeat' },
     { key: 'riskAppetite', label: 'Risk Appetite' },
+    { key: 'engagementModes', label: 'Engagement Modes' },
+    { key: 'valueTensions', label: 'Value Tensions' },
+    { key: 'deepPatterns', label: 'Deep Patterns' },
   ];
 
   function renderEvaluationSection(evalDetails) {
@@ -9496,11 +9499,23 @@ function initContentPacketsPage() {
         '</div>';
     }
 
-    var roleHtml =
-      '<div class="story-detail-row story-detail-row--meta">' +
-        '<dt>Role</dt>' +
-        '<dd>' + escapeHtml(evalDetails.recommendedRole) + '</dd>' +
-      '</div>';
+    var evaluationMetaDetails = [
+      {
+        key: 'recommendedRole',
+        label: 'Role',
+        value: evalDetails.recommendedRole,
+        rowClassSuffix: ' story-detail-row--meta',
+      },
+    ];
+
+    if (evalDetails.redundancyCluster) {
+      evaluationMetaDetails.push({
+        key: 'redundancyCluster',
+        label: 'Overlaps With',
+        value: evalDetails.redundancyCluster,
+        rowClassSuffix: ' story-detail-row--meta',
+      });
+    }
 
     return (
       '<details class="evaluation-details">' +
@@ -9509,7 +9524,7 @@ function initContentPacketsPage() {
           '<div class="evaluation-scores">' + scoresHtml + '</div>' +
           strengthsHtml +
           weaknessesHtml +
-          '<dl class="story-details">' + roleHtml + '</dl>' +
+          '<dl class="story-details">' + renderDetailRows(evaluationMetaDetails) + '</dl>' +
         '</div>' +
       '</details>'
     );

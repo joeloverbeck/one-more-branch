@@ -3,7 +3,7 @@
 - Source: `src/llm/prompts/content-one-shot-prompt.ts`
 - Orchestration: `src/llm/content-one-shot-generation.ts`
 - Output schema: `src/llm/schemas/content-one-shot-schema.ts`
-- Models: `src/models/content-packet.ts`
+- Models: `src/models/content-generation-contracts.ts`
 
 ## Pipeline Position
 
@@ -14,9 +14,9 @@ Alternative fast path that bypasses the full 4-stage pipeline. Generates 18 cont
 ## System Message Template
 
 ```text
-You are a content seed generator for interactive fiction. Generate 18 strong content packets directly from exemplar ideas, inferring the user's taste implicitly. Each packet must feel specific, human, and charged.
+You are a wild-content ideator for branching interactive fiction. Generate story matter, not finished concepts, not plots, and not lore summaries.
 
-Do not copy the exemplar ideas' surface nouns. Extract the generative DNA beneath them.
+Story matter means concrete imaginative payloads: impossible beings, invasive social systems, grotesque transformations, forbidden relationships, uncanny jobs, public policies, rituals, rivalries, ecologies, and world intrusions that can later seed concepts.
 
 {{CONTENT_POLICY}}
 ```
@@ -24,7 +24,7 @@ Do not copy the exemplar ideas' surface nouns. Extract the generative DNA beneat
 ## User Message Template
 
 ```text
-Generate 18 content packets from these exemplar ideas.
+Infer my imaginative taste from the exemplar ideas below, but do not copy their surface elements. Generate content packets that belong to the same creative appetite while still feeling original.
 
 EXEMPLAR IDEAS:
 {{exemplarIdeas array}}
@@ -35,14 +35,14 @@ EXEMPLAR IDEAS:
 {{optional STORY KERNEL block}}
 
 OUTPUT REQUIREMENTS:
-- Return JSON: { "packets": ConceptSeedOneShotLineagedPacket[] }
-- Exactly 18 packets
-- Enumerate exemplar ideas with stable IDs like `exemplar-01`
-- Each packet must include `contentId`, `contentKind`, `sourceExemplarIds`, `premiseSummary`, `situationFrame`, `worldState`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, and `interactionVerbs`
-- `viewpointPressure` is optional
+- Return exactly 18 packets
+- Each packet must include `contentId`, `contentKind`, `sourceExemplarIds`, `premiseSummary`, `situationFrame`, `worldState`, `playerPosition`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, and `interactionVerbs`
+- `playerPosition` is required and must describe who the player is, what they know or do not know, and why their position is inherently pressured
 - `sourceExemplarIds` must cite one or more exemplar IDs that materially informed that packet
+- `premiseSummary`, `situationFrame`, and `worldState` must carry setup explicitly rather than burying it all inside `coreAnomaly`
 - `contentId` format: `pkt-NN`
-- `interactionVerbs`: exactly 4-6 concrete verbs
+- `interactionVerbs`: exactly 4-6 story-specific concrete verbs
+- Generic verbs like `explore`, `fight`, or `talk` are not enough unless the packet makes them unusually concrete
 - Use 6+ distinct content kinds
 - Mix intimate, civic, and civilizational scales
 - Mix mechanisms (transformation, bureaucracy, romance, medicine, labor, ecology, ritual, etc.)
@@ -61,7 +61,7 @@ OUTPUT REQUIREMENTS:
       "premiseSummary": "Plain-language causal setup",
       "situationFrame": "Immediate arrangement or trap",
       "worldState": "Relevant baseline reality",
-      "viewpointPressure": "Optional protagonist/player pressure",
+      "playerPosition": "Who the player is, what they know, and why their position is pressured",
       "coreAnomaly": "What's wrong here?",
       "humanAnchor": "emotional/relational truth",
       "socialEngine": "social mechanism driving conflict",
@@ -104,4 +104,6 @@ OUTPUT REQUIREMENTS:
 - No evaluation stage — all 18 packets are returned without scoring or role assignment
 - The LLM emits flat context-rich packets; the service layer turns them into generated asset candidates with nested `context` and exemplar-derived `origin.sourceArtifacts`
 - One-shot packets carry explicit exemplar lineage via `sourceExemplarIds`; the service layer maps those IDs into canonical `origin.sourceArtifacts`
+- `playerPosition` is required because interactive fiction seeds need an explicit player-facing position from which meaningful choice pressure can operate
+- `interactionVerbs` must stay story-specific; generic verbs are only acceptable when the packet itself makes them unusually concrete
 - Prompt logging uses `promptType: 'contentOneShot'`

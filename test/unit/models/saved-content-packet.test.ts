@@ -29,7 +29,8 @@ function makeValidSavedContentPacket(): SavedContentPacket {
       premiseSummary: 'A living fog feeds on memory and is now regulated by the state.',
       situationFrame: 'An archivist must enter a licensed fog zone to recover a stolen memory.',
       worldState: 'The bureau treats memory erosion as routine civic infrastructure.',
-      viewpointPressure: 'The archivist cannot recover their family history any other way.',
+      playerPosition:
+        'You are the archivist entering the fog zone because your family history cannot be recovered any other way.',
     },
     origin: {
       generationMode: 'pipeline',
@@ -62,14 +63,17 @@ describe('isSavedContentPacket', () => {
           humanAche: 3,
           socialLoadBearing: 5,
           branchingPressure: 4,
-          antiGenericity: 5,
+          surfaceFreshness: 5,
+          deepOriginality: 4,
           sceneBurst: 3,
           structuralIrony: 4,
-          conceptUtility: 5,
+          tasteAlignment: 5,
+          causalSpecificity: 4,
         },
         strengths: ['vivid imagery'],
         weaknesses: ['narrow scope'],
         recommendedRole: 'PRIMARY_SEED',
+        redundancyCluster: null,
       },
     };
 
@@ -98,6 +102,20 @@ describe('isSavedContentPacket', () => {
   it('rejects when context is missing', () => {
     const packet = { ...makeValidSavedContentPacket() } as Record<string, unknown>;
     delete packet['context'];
+    expect(isSavedContentPacket(packet)).toBe(false);
+  });
+
+  it('rejects legacy context that still uses viewpointPressure', () => {
+    const packet = {
+      ...makeValidSavedContentPacket(),
+      context: {
+        premiseSummary: 'A living fog feeds on memory and is now regulated by the state.',
+        situationFrame: 'An archivist must enter a licensed fog zone to recover a stolen memory.',
+        worldState: 'The bureau treats memory erosion as routine civic infrastructure.',
+        viewpointPressure: 'legacy field',
+      },
+    };
+
     expect(isSavedContentPacket(packet)).toBe(false);
   });
 
@@ -156,6 +174,9 @@ function makeValidSavedTasteProfile(): Record<string, unknown> {
     antiPatterns: ['chosen one narrative'],
     surfaceDoNotRepeat: ['fog', 'mist'],
     riskAppetite: 'HIGH',
+    engagementModes: ['puzzle-solving', 'moral dilemma'],
+    valueTensions: ['duty vs desire', 'truth vs stability'],
+    deepPatterns: ['erosion of certainty', 'institutional betrayal'],
   };
 }
 
@@ -186,6 +207,25 @@ describe('isSavedTasteProfile', () => {
   it('accepts when surfaceDoNotRepeat is empty', () => {
     const profile = { ...makeValidSavedTasteProfile(), surfaceDoNotRepeat: [] };
     expect(isSavedTasteProfile(profile)).toBe(true);
+  });
+
+  it('accepts when new array fields are empty', () => {
+    const profile = {
+      ...makeValidSavedTasteProfile(),
+      engagementModes: [],
+      valueTensions: [],
+      deepPatterns: [],
+    };
+    expect(isSavedTasteProfile(profile)).toBe(true);
+  });
+
+  it('accepts when new array fields have values', () => {
+    const profile = makeValidSavedTasteProfile();
+    expect(isSavedTasteProfile(profile)).toBe(true);
+    expect(profile['engagementModes']).toEqual([
+      'puzzle-solving',
+      'moral dilemma',
+    ]);
   });
 
   it('rejects when riskAppetite is invalid', () => {

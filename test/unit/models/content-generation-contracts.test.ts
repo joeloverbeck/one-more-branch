@@ -12,13 +12,14 @@ function makeValidContext(): {
   premiseSummary: string;
   situationFrame: string;
   worldState: string;
-  viewpointPressure: string;
+  playerPosition: string;
 } {
   return {
     premiseSummary: 'A living fog feeds on memory and is now regulated by the state.',
     situationFrame: 'An archivist must enter a licensed fog zone to recover a stolen memory.',
     worldState: 'The bureau treats memory erosion as routine civic infrastructure.',
-    viewpointPressure: 'The archivist cannot recover their family history any other way.',
+    playerPosition:
+      'You are an archivist who must enter the licensed fog zone to recover your family history.',
   };
 }
 
@@ -57,6 +58,14 @@ describe('content generation contracts', () => {
       isContentPacketContext({
         premiseSummary: 'present',
         situationFrame: 'present',
+      })
+    ).toBe(false);
+    expect(
+      isContentPacketContext({
+        premiseSummary: 'present',
+        situationFrame: 'present',
+        worldState: 'present',
+        viewpointPressure: 'legacy',
       })
     ).toBe(false);
   });
@@ -106,14 +115,17 @@ describe('content generation contracts', () => {
           humanAche: 3,
           socialLoadBearing: 5,
           branchingPressure: 4,
-          antiGenericity: 5,
+          surfaceFreshness: 5,
+          deepOriginality: 4,
           sceneBurst: 3,
           structuralIrony: 4,
-          conceptUtility: 5,
+          tasteAlignment: 5,
+          causalSpecificity: 4,
         },
         strengths: ['vivid imagery'],
         weaknesses: ['narrow scope'],
         recommendedRole: 'PRIMARY_SEED',
+        redundancyCluster: null,
       })
     ).toBe(true);
   });

@@ -26,6 +26,9 @@ function createSavedTasteProfile(id: string, updatedAt?: string): SavedTasteProf
     antiPatterns: ['chosen one narratives', 'redemption through violence'],
     surfaceDoNotRepeat: [],
     riskAppetite: 'HIGH',
+    engagementModes: ['puzzle-solving', 'moral dilemma'],
+    valueTensions: ['duty vs desire', 'truth vs stability'],
+    deepPatterns: ['erosion of certainty', 'institutional betrayal'],
   };
 }
 
@@ -83,6 +86,35 @@ describe('taste-profile-repository', () => {
       .map((p) => p.id);
 
     expect(orderedIds).toEqual([newerId, olderId]);
+  });
+
+  it('upcasts legacy profiles missing new array fields to empty arrays', async () => {
+    const id = `${TEST_PREFIX}-${randomUUID()}`;
+    createdIds.add(id);
+    const now = new Date().toISOString();
+
+    // Write a legacy profile without the new fields
+    await writeJsonFile(getTasteProfileFilePath(id), {
+      id,
+      name: `${TEST_PREFIX} legacy`,
+      createdAt: now,
+      updatedAt: now,
+      collisionPatterns: ['pattern'],
+      favoredMechanisms: ['mech'],
+      humanAnchors: ['anchor'],
+      socialEngines: ['engine'],
+      toneBlend: ['tone'],
+      sceneAppetites: ['scene'],
+      antiPatterns: ['anti'],
+      surfaceDoNotRepeat: [],
+      riskAppetite: 'HIGH',
+    });
+
+    const loaded = await loadTasteProfile(id);
+    expect(loaded).not.toBeNull();
+    expect(loaded!.engagementModes).toEqual([]);
+    expect(loaded!.valueTensions).toEqual([]);
+    expect(loaded!.deepPatterns).toEqual([]);
   });
 
   it('throws when loading a persisted profile with invalid shape', async () => {

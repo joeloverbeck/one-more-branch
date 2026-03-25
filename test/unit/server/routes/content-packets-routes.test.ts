@@ -119,6 +119,7 @@ function makeGeneratedPacket(
       premiseSummary: 'A premise summary',
       situationFrame: 'A situation frame',
       worldState: 'A world state',
+      playerPosition: 'You are the only person positioned to act before the trap closes.',
     },
     origin: {
       generationMode: 'quick',
@@ -138,19 +139,52 @@ function makeEvaluation(overrides: Partial<ContentEvaluation> = {}): ContentEval
   return {
     contentId: 'pkt-01',
     scores: {
-      imageCharge: 8,
-      humanAche: 7,
-      socialLoadBearing: 9,
-      branchingPressure: 6,
-      antiGenericity: 8,
-      sceneBurst: 7,
-      structuralIrony: 8,
-      conceptUtility: 9,
+      imageCharge: 5,
+      humanAche: 4,
+      socialLoadBearing: 5,
+      branchingPressure: 4,
+      surfaceFreshness: 5,
+      deepOriginality: 4,
+      sceneBurst: 4,
+      structuralIrony: 5,
+      tasteAlignment: 5,
+      causalSpecificity: 4,
     },
     strengths: ['Strong image'],
     weaknesses: ['Minor weakness'],
     recommendedRole: 'PRIMARY_SEED',
+    redundancyCluster: null,
     ...overrides,
+  };
+}
+
+function makeTasteProfile(): {
+  collisionPatterns: readonly string[];
+  favoredMechanisms: readonly string[];
+  humanAnchors: readonly string[];
+  socialEngines: readonly string[];
+  toneBlend: readonly string[];
+  sceneAppetites: readonly string[];
+  antiPatterns: readonly string[];
+  surfaceDoNotRepeat: readonly string[];
+  riskAppetite: 'HIGH';
+  engagementModes: readonly string[];
+  valueTensions: readonly string[];
+  deepPatterns: readonly string[];
+} {
+  return {
+    collisionPatterns: ['pattern-1'],
+    favoredMechanisms: ['mechanism-1'],
+    humanAnchors: ['anchor-1'],
+    socialEngines: ['engine-1'],
+    toneBlend: ['tone-1'],
+    sceneAppetites: ['scene-1'],
+    antiPatterns: ['anti-1'],
+    surfaceDoNotRepeat: ['surface-1'],
+    riskAppetite: 'HIGH' as const,
+    engagementModes: ['mode-1'],
+    valueTensions: ['tension-1'],
+    deepPatterns: ['deep-pattern-1'],
   };
 }
 
@@ -166,6 +200,7 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
       premiseSummary: 'A premise summary',
       situationFrame: 'A situation frame',
       worldState: 'A world state',
+      playerPosition: 'You are the only person positioned to act before the trap closes.',
     },
     origin: {
       generationMode: 'quick',
@@ -238,6 +273,10 @@ describe('content-packets routes', () => {
         expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
         expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
         expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+        expect.objectContaining({
+          key: 'playerPosition',
+          value: 'You are the only person positioned to act before the trap closes.',
+        }),
       ]);
       expect(renderCall[1].contentKindGroups[0]?.cards[0]?.packetDetails).toEqual(
         expect.arrayContaining([
@@ -373,6 +412,10 @@ describe('content-packets routes', () => {
         expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
         expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
         expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+        expect.objectContaining({
+          key: 'playerPosition',
+          value: 'You are the only person positioned to act before the trap closes.',
+        }),
       ]);
       expect(jsonCall[0].packetCards[0]?.packetDetails).toEqual(
         expect.arrayContaining([
@@ -393,7 +436,7 @@ describe('content-packets routes', () => {
 
     it('calls generateContentPipeline when pipeline=true', async () => {
       const pipelineResult = {
-        tasteProfile: { collisionPatterns: [] },
+        tasteProfile: makeTasteProfile(),
         sparks: [],
         packets: [
           makeGeneratedPacket({
@@ -444,6 +487,10 @@ describe('content-packets routes', () => {
               expect.objectContaining({ key: 'premiseSummary', value: 'A premise summary' }),
               expect.objectContaining({ key: 'situationFrame', value: 'A situation frame' }),
               expect.objectContaining({ key: 'worldState', value: 'A world state' }),
+              expect.objectContaining({
+                key: 'playerPosition',
+                value: 'You are the only person positioned to act before the trap closes.',
+              }),
             ],
             originDetails: [
               expect.objectContaining({ key: 'generationMode', value: 'pipeline' }),
@@ -698,6 +745,9 @@ describe('content-packets routes', () => {
           antiPatterns: ['anti1'],
           surfaceDoNotRepeat: ['surface1'],
           riskAppetite: 'HIGH',
+          engagementModes: ['mode1'],
+          valueTensions: ['tension1'],
+          deepPatterns: ['pattern1'],
         },
       };
       (contentService.distillTaste as jest.Mock).mockResolvedValue(tasteResult);

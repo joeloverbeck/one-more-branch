@@ -19,6 +19,9 @@ const TASTE_PROFILE_STRING_ARRAY_FIELDS = [
   'sceneAppetites',
   'antiPatterns',
   'surfaceDoNotRepeat',
+  'engagementModes',
+  'valueTensions',
+  'deepPatterns',
 ] as const;
 
 function isNonEmptyStringArray(value: unknown): value is readonly string[] {
@@ -75,6 +78,9 @@ export function parseTasteDistillerResponse(parsed: unknown): TasteProfile {
     antiPatterns: profileData['antiPatterns'] as readonly string[],
     surfaceDoNotRepeat: profileData['surfaceDoNotRepeat'] as readonly string[],
     riskAppetite: profileData['riskAppetite'],
+    engagementModes: profileData['engagementModes'] as readonly string[],
+    valueTensions: profileData['valueTensions'] as readonly string[],
+    deepPatterns: profileData['deepPatterns'] as readonly string[],
   };
 }
 
