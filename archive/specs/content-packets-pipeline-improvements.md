@@ -1,5 +1,8 @@
 # Spec: Content Packets Pipeline Improvements
 
+**Status**: COMPLETED
+**Archived**: 2026-03-25
+
 ## Problem Statement
 
 The content packets pipeline (Taste Distiller -> Sparkstormer -> Content Packeter -> Content Evaluator) generates vivid premise seeds for branching interactive fiction. An external review identified significant gaps validated against narrative theory research:

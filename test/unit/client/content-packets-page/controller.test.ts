@@ -121,7 +121,21 @@ describe('content-packets page controller', () => {
       strengths: ['Strong image'],
       weaknesses: ['Minor weakness'],
       recommendedRole: 'PRIMARY_SEED',
-      redundancyCluster: null,
+      redundancyCluster: 'pkt-02',
+    };
+    const tasteProfile = {
+      collisionPatterns: ['ritual meets bureaucracy'],
+      favoredMechanisms: ['escalating obligation'],
+      humanAnchors: ['the witness who stayed'],
+      socialEngines: ['debt-backed loyalty'],
+      toneBlend: ['ominous tenderness'],
+      sceneAppetites: ['fraught negotiation'],
+      antiPatterns: ['quirky whimsy'],
+      surfaceDoNotRepeat: ['foggy alley'],
+      riskAppetite: 'HIGH',
+      engagementModes: ['protect something fragile while compromised'],
+      valueTensions: ['truth vs belonging'],
+      deepPatterns: ['private grief becomes public procedure'],
     };
 
     fetchMock.mockImplementation((input: RequestInfo | URL) => {
@@ -199,9 +213,20 @@ describe('content-packets page controller', () => {
                   },
                 ],
                 metaDetails: [{ key: 'recommendedRole', label: 'Role', value: 'PRIMARY_SEED' }],
+                evaluationDetails: {
+                  scores: [
+                    { key: 'imageCharge', label: 'Image Charge', value: 5, maxValue: 5 },
+                    { key: 'tasteAlignment', label: 'Taste Alignment', value: 5, maxValue: 5 },
+                  ],
+                  strengths: ['Strong image'],
+                  weaknesses: ['Minor weakness'],
+                  recommendedRole: 'PRIMARY_SEED',
+                  redundancyCluster: 'pkt-02',
+                },
               },
             ],
             evaluations: [evaluation],
+            tasteProfile,
           })
         );
       }
@@ -236,11 +261,25 @@ describe('content-packets page controller', () => {
     expect(generatedList?.textContent).toContain('Interaction Verbs');
     expect(generatedList?.textContent).toContain('Generation Mode');
     expect(generatedList?.textContent).toContain('Source Artifact 1');
+    expect(generatedList?.textContent).toContain('Taste Profile');
+    expect(generatedList?.textContent).toContain('Engagement Modes');
+    expect(generatedList?.textContent).toContain('protect something fragile while compromised');
+    expect(generatedList?.textContent).toContain('Value Tensions');
+    expect(generatedList?.textContent).toContain('truth vs belonging');
+    expect(generatedList?.textContent).toContain('Deep Patterns');
+    expect(generatedList?.textContent).toContain('private grief becomes public procedure');
+    expect(generatedList?.textContent).toContain('Evaluation');
+    expect(generatedList?.textContent).toContain('Overlaps With');
+    expect(generatedList?.textContent).toContain('pkt-02');
     expect(generatedList?.innerHTML).toContain('data-section-key="context"');
     expect(generatedList?.innerHTML).toContain('data-section-key="packet"');
     expect(generatedList?.innerHTML).toContain('data-section-key="origin"');
     expect(generatedList?.innerHTML).toContain('data-section-key="meta"');
     expect(generatedList?.innerHTML).toContain('data-detail-key="contentKind"');
+    expect(generatedList?.innerHTML).toContain('data-detail-key="engagementModes"');
+    expect(generatedList?.innerHTML).toContain('data-detail-key="valueTensions"');
+    expect(generatedList?.innerHTML).toContain('data-detail-key="deepPatterns"');
+    expect(generatedList?.innerHTML).toContain('data-detail-key="redundancyCluster"');
     expect(generatedList?.innerHTML).toContain('<li>observe</li>');
     expect(generatedList?.innerHTML).toContain('<li>Type: SPARK</li>');
 
