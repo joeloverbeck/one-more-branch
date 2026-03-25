@@ -2126,6 +2126,91 @@ var NPC_COHERENCE_META = {
   }
 
 
+  // ── Loading Overlay Session Helper ───────────────────────────────
+
+  function createLoadingOverlaySession(options) {
+    if (!options || !options.overlayElement || !options.progressElement) {
+      throw new Error('createLoadingOverlaySession requires overlayElement and progressElement');
+    }
+
+    var overlayElement = options.overlayElement;
+    var progressElement = options.progressElement;
+    var onShow = typeof options.onShow === 'function' ? options.onShow : null;
+    var onHide = typeof options.onHide === 'function' ? options.onHide : null;
+    var loadingProgress = createLoadingProgressController(progressElement);
+    var active = false;
+
+    function getButtonElements() {
+      if (Array.isArray(options.buttonElements)) {
+        return options.buttonElements.filter(Boolean);
+      }
+
+      if (options.buttonElement) {
+        return [options.buttonElement];
+      }
+
+      return [];
+    }
+
+    function setButtonsDisabled(disabled) {
+      getButtonElements().forEach(function(buttonElement) {
+        buttonElement.disabled = disabled;
+      });
+    }
+
+    function begin(progressId) {
+      if (active) {
+        end();
+      }
+
+      overlayElement.style.display = 'flex';
+      loadingProgress.start(progressId);
+      setButtonsDisabled(true);
+      active = true;
+
+      if (onShow) {
+        onShow();
+      }
+    }
+
+    function end() {
+      if (!active) {
+        return;
+      }
+
+      loadingProgress.stop();
+      overlayElement.style.display = 'none';
+      setButtonsDisabled(false);
+      active = false;
+
+      if (onHide) {
+        onHide();
+      }
+    }
+
+    async function withProgress(run) {
+      var progressId = createProgressId();
+      begin(progressId);
+
+      try {
+        return await run(progressId);
+      } finally {
+        end();
+      }
+    }
+
+    function isActive() {
+      return active;
+    }
+
+    return {
+      begin: begin,
+      end: end,
+      withProgress: withProgress,
+      isActive: isActive,
+    };
+  }
+
   // ── Thread renderers ──────────────────────────────────────────────
 
   function renderThreadBadgePill(threadType, urgency) {
@@ -6917,6 +7002,23 @@ function createRecapModalController(initialData) {
     errorBlock.style.display = 'none';
   }
 
+  function createInlineErrorController(errorElement) {
+    if (!errorElement) {
+      throw new Error('createInlineErrorController requires an error element');
+    }
+
+    return {
+      show: function show(message) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+      },
+      clear: function clear() {
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
+      },
+    };
+  }
+
   function showFormError(message) {
     let errorDiv = document.querySelector('.alert-error.form-error');
     if (!errorDiv) {
@@ -7919,9 +8021,24 @@ function initSpinesPage() {
   var startingSituationInput = document.getElementById('spineStartingSituation');
   var npcSelect = document.getElementById('spineNpcIds');
 
-  if (!form || !generateBtn) return;
+  if (
+    !form ||
+    !generateBtn ||
+    !progressSection ||
+    !progressContent ||
+    !generatedSection ||
+    !generatedContainer ||
+    !savedContainer
+  ) {
+    return;
+  }
 
-  var loadingProgress = createLoadingProgressController(progressContent);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: progressSection,
+    progressElement: progressContent,
+    buttonElement: generateBtn,
+    onHide: updateGenerateButton,
+  });
 
   // Restore API key
   var storedApiKey = getApiKey();
@@ -8044,58 +8161,51 @@ function initSpinesPage() {
   var generatedOptions = [];
 
   async function fetchSpineOptions() {
-    generateBtn.disabled = true;
-    progressSection.style.display = 'flex';
     generatedSection.style.display = 'none';
     generatedContainer.innerHTML = '';
 
     currentFormContext = collectFormContext();
 
-    var progressId = createProgressId();
-    loadingProgress.start(progressId);
-
     try {
-      var apiKey = apiKeyInput.value.trim();
-      setApiKey(apiKey);
+      await loadingSession.withProgress(async function(progressId) {
+        var apiKey = apiKeyInput.value.trim();
+        setApiKey(apiKey);
 
-      var response = await fetch('/spines/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conceptId: currentFormContext.conceptId,
-          protagonistCharacterId: currentFormContext.protagonistCharacterId,
-          npcCharacterIds: currentFormContext.npcCharacterIds,
-          worldbuildingId: currentFormContext.worldbuildingId,
-          tone: currentFormContext.tone,
-          startingSituation: currentFormContext.startingSituation,
-          apiKey: apiKey,
-          progressId: progressId,
-        }),
+        var response = await fetch('/spines/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conceptId: currentFormContext.conceptId,
+            protagonistCharacterId: currentFormContext.protagonistCharacterId,
+            npcCharacterIds: currentFormContext.npcCharacterIds,
+            worldbuildingId: currentFormContext.worldbuildingId,
+            tone: currentFormContext.tone,
+            startingSituation: currentFormContext.startingSituation,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to generate spines');
+        }
+
+        generatedOptions = data.options;
+
+        data.options.forEach(function (option, i) {
+          generatedContainer.appendChild(renderSpineCard(option, i, false));
+        });
+
+        generatedSection.style.display = '';
       });
-
-      var data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to generate spines');
-      }
-
-      generatedOptions = data.options;
-
-      data.options.forEach(function (option, i) {
-        generatedContainer.appendChild(renderSpineCard(option, i, false));
-      });
-
-      generatedSection.style.display = '';
     } catch (error) {
       var errorEl = document.createElement('p');
       errorEl.className = 'form-error';
       errorEl.textContent = error instanceof Error ? error.message : 'Generation failed';
       generatedContainer.appendChild(errorEl);
       generatedSection.style.display = '';
-    } finally {
-      loadingProgress.stop();
-      progressSection.style.display = 'none';
-      updateGenerateButton();
     }
   }
 
@@ -8210,9 +8320,15 @@ function initCreateStoryPage() {
   var progressContent = document.getElementById('create-story-progress-content');
   var errorDiv = document.getElementById('create-story-error');
 
-  if (!form || !createBtn) return;
+  if (!form || !createBtn || !errorDiv || !progressSection || !progressContent) return;
 
-  var loadingProgress = createLoadingProgressController(progressContent);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: progressSection,
+    progressElement: progressContent,
+    buttonElement: createBtn,
+    onHide: updateCreateButton,
+  });
+  var inlineError = createInlineErrorController(errorDiv);
 
   // Restore API key
   var storedApiKey = getApiKey();
@@ -8267,55 +8383,37 @@ function initCreateStoryPage() {
     });
   }
 
-  function showError(msg) {
-    if (errorDiv) {
-      errorDiv.textContent = msg;
-      errorDiv.style.display = '';
-    }
-  }
-
-  function hideError() {
-    if (errorDiv) {
-      errorDiv.style.display = 'none';
-    }
-  }
-
   async function createStory() {
-    hideError();
-    createBtn.disabled = true;
-    if (progressSection) progressSection.style.display = 'flex';
-
-    var progressId = createProgressId();
-    loadingProgress.start(progressId);
+    inlineError.clear();
 
     try {
-      var apiKey = apiKeyInput.value.trim();
-      setApiKey(apiKey);
+      await loadingSession.withProgress(async function(progressId) {
+        var apiKey = apiKeyInput.value.trim();
+        setApiKey(apiKey);
 
-      var response = await fetch('/create-story/api/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          spineId: spineSelect.value,
-          title: titleInput.value.trim(),
-          apiKey: apiKey,
-          progressId: progressId,
-        }),
+        var response = await fetch('/create-story/api/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            spineId: spineSelect.value,
+            title: titleInput.value.trim(),
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to create story');
+        }
+
+        window.location.assign('/play/' + data.storyId + '/briefing');
       });
-
-      var data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to create story');
-      }
-
-      window.location.assign('/play/' + data.storyId + '/briefing');
     } catch (error) {
-      showError(error instanceof Error ? error.message : 'Something went wrong. Please try again.');
-      updateCreateButton();
-    } finally {
-      loadingProgress.stop();
-      if (progressSection) progressSection.style.display = 'none';
+      inlineError.show(
+        error instanceof Error ? error.message : 'Something went wrong. Please try again.'
+      );
     }
   }
 
@@ -8347,8 +8445,11 @@ function initCreateStoryPage() {
       return;
     }
 
-    var loadingProgress = createLoadingProgressController(loading);
-    var ideationCtrl = createSceneIdeationController(storyId, loading, loadingProgress);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+    });
+    var ideationCtrl = createSceneIdeationController(storyId);
     var ideationContainer = document.getElementById('scene-ideation-container');
 
     function setError(message) {
@@ -8426,48 +8527,44 @@ function initCreateStoryPage() {
     async function beginAdventure(apiKey, selectedDirection) {
       beginBtn.disabled = true;
       clearError();
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var body = {
-          apiKey: apiKey,
-          progressId: progressId,
-        };
-        if (selectedDirection) {
-          body.selectedSceneDirection = selectedDirection;
-        }
+        await loadingSession.withProgress(async function(progressId) {
+          var body = {
+            apiKey: apiKey,
+            progressId: progressId,
+          };
+          if (selectedDirection) {
+            body.selectedSceneDirection = selectedDirection;
+          }
 
-        var response = await fetch('/play/' + storyId + '/begin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
+          var response = await fetch('/play/' + storyId + '/begin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          var data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Failed to begin adventure');
+          }
+
+          window.location.assign('/play/' + storyId + '?page=1&newStory=true');
         });
-        var data = await response.json();
-
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Failed to begin adventure');
-        }
-
-        window.location.assign('/play/' + storyId + '?page=1&newStory=true');
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Failed to begin adventure');
         beginBtn.disabled = false;
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
       }
     }
 
     async function startIdeation(apiKey) {
       clearError();
       beginBtn.disabled = true;
-      loading.style.display = 'flex';
 
       try {
-        var options = await ideationCtrl.fetchSceneOptions(apiKey, 'opening');
-        loading.style.display = 'none';
+        var options = await loadingSession.withProgress(async function(progressId) {
+          return ideationCtrl.fetchSceneOptions(apiKey, 'opening', undefined, undefined, undefined, progressId);
+        });
 
         var target = ideationContainer || briefingContainer;
         ideationCtrl.renderIdeationUI(
@@ -8481,7 +8578,6 @@ function initCreateStoryPage() {
           }
         );
       } catch (error) {
-        loading.style.display = 'none';
         setError(error instanceof Error ? error.message : 'Scene ideation failed');
         beginBtn.disabled = false;
       }
@@ -8517,10 +8613,16 @@ function initCreateStoryPage() {
     var editCloseBtn = document.getElementById('concept-edit-close');
     var editSaveBtn = document.getElementById('concept-edit-save');
     var editCancelBtn = document.getElementById('concept-edit-cancel');
+    var errorElement = document.getElementById('concepts-error');
 
-    if (!loading || !developBtn) return;
+    if (!loading || !developBtn || !errorElement) return;
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      onHide: updateDevelopButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var currentEditConceptId = null;
     var lastEvaluatedConcept = null;
     var lastVerification = null;
@@ -8545,11 +8647,7 @@ function initCreateStoryPage() {
     }
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     // ── Seed selector ───────────────────────────────────────────────
@@ -8629,42 +8727,38 @@ function initCreateStoryPage() {
         return;
       }
 
+      inlineError.clear();
       developBtn.disabled = true;
       if (conceptResultsSection) conceptResultsSection.style.display = 'none';
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concepts/api/generate/develop', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            seedId: selectedSeedId,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/concepts/api/generate/develop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              seedId: selectedSeedId,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
+
+          var data = null;
+          try { data = await response.json(); } catch (_e) { data = null; }
+
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to develop concept');
+          }
+
+          setApiKey(apiKey);
+          lastEvaluatedConcept = data.evaluatedConcept;
+          lastVerification = data.verification || null;
+          lastSourceKernelId = data.sourceKernelId || null;
+
+          renderDevelopedConcept(data.evaluatedConcept, data.verification);
         });
-
-        var data = null;
-        try { data = await response.json(); } catch (_e) { data = null; }
-
-        if (!response.ok || !data || !data.success) {
-          throw new Error(data && data.error ? data.error : 'Failed to develop concept');
-        }
-
-        setApiKey(apiKey);
-        lastEvaluatedConcept = data.evaluatedConcept;
-        lastVerification = data.verification || null;
-        lastSourceKernelId = data.sourceKernelId || null;
-
-        renderDevelopedConcept(data.evaluatedConcept, data.verification);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Something went wrong');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateDevelopButtonState();
       }
     }
 
@@ -8958,63 +9052,62 @@ function initCreateStoryPage() {
         return;
       }
 
+      inlineError.clear();
       btn.disabled = true;
       btn.textContent = 'Hardening...';
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concepts/api/' + encodeURIComponent(conceptId) + '/harden', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
-        });
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/concepts/api/' + encodeURIComponent(conceptId) + '/harden', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
 
-        var data = await response.json();
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Failed to harden concept');
-        }
+          var data = null;
+          try { data = await response.json(); } catch (_parseError) { data = null; }
 
-        setApiKey(apiKey);
-        btn.textContent = 'Already Hardened';
-
-        var card = btn.closest('.saved-concept-card');
-        if (card) {
-          var badges = card.querySelector('.spine-badges');
-          if (badges) {
-            var hardenBadge = document.createElement('span');
-            hardenBadge.className = 'spine-badge spine-badge-type';
-            hardenBadge.style.background = 'var(--accent-green, #2ecc71)';
-            hardenBadge.textContent = 'Hardened';
-            badges.appendChild(hardenBadge);
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to harden concept');
           }
 
-          var stressResult = data.driftRisks || data.playerBreaks
-            ? { driftRisks: data.driftRisks || [], playerBreaks: data.playerBreaks || [] }
-            : null;
-          if (stressResult) {
-            var stressHtml = renderStressTestSection(stressResult);
-            if (stressHtml) {
-              var timestampField = card.querySelector('.form-actions');
-              if (timestampField) {
-                timestampField.insertAdjacentHTML('beforebegin', stressHtml);
-              } else {
-                card.insertAdjacentHTML('beforeend', stressHtml);
+          setApiKey(apiKey);
+          btn.textContent = 'Already Hardened';
+
+          var card = btn.closest('.saved-concept-card');
+          if (card) {
+            var badges = card.querySelector('.spine-badges');
+            if (badges) {
+              var hardenBadge = document.createElement('span');
+              hardenBadge.className = 'spine-badge spine-badge-type';
+              hardenBadge.style.background = 'var(--accent-green, #2ecc71)';
+              hardenBadge.textContent = 'Hardened';
+              badges.appendChild(hardenBadge);
+            }
+
+            var stressResult = data.driftRisks || data.playerBreaks
+              ? { driftRisks: data.driftRisks || [], playerBreaks: data.playerBreaks || [] }
+              : null;
+            if (stressResult) {
+              var stressHtml = renderStressTestSection(stressResult);
+              if (stressHtml) {
+                var timestampField = card.querySelector('.form-actions');
+                if (timestampField) {
+                  timestampField.insertAdjacentHTML('beforebegin', stressHtml);
+                } else {
+                  card.insertAdjacentHTML('beforeend', stressHtml);
+                }
               }
             }
           }
-        }
+        });
       } catch (error) {
         btn.disabled = false;
         btn.textContent = 'Harden';
         showError(error instanceof Error ? error.message : 'Failed to harden');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
       }
     }
 
@@ -9204,14 +9297,25 @@ function initContentPacketsPage() {
   var resultsEl = document.getElementById('content-generation-results');
   var generatedList = document.getElementById('generated-packets-list');
   var generateBtn = document.getElementById('content-generate-btn');
-  var loadingProgress = progressEl ? createLoadingProgressController(progressEl) : null;
+  var errorEl = document.getElementById('content-generation-error');
+  if (!errorEl) {
+    return;
+  }
+  var loadingSession = progressEl
+    ? createLoadingOverlaySession({
+      overlayElement: progressEl,
+      progressElement: progressEl,
+      buttonElement: generateBtn,
+    })
+    : null;
+  var inlineError = createInlineErrorController(errorEl);
 
   initExemplarControls();
 
   if (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      handleContentGenerate();
+      void handleContentGenerate();
     });
   }
 
@@ -9288,21 +9392,20 @@ function initContentPacketsPage() {
     });
   }
 
-  function handleContentGenerate() {
+  async function handleContentGenerate() {
+    inlineError.clear();
+
     var apiKey = getApiKey();
     if (!apiKey || apiKey.length < 10) {
-      alert('Please enter a valid OpenRouter API key.');
+      inlineError.show('Please enter a valid OpenRouter API key.');
       return;
     }
 
     var ideas = collectExemplarIdeas();
     if (ideas.length === 0) {
-      alert('Please enter at least one exemplar idea.');
+      inlineError.show('Please enter at least one exemplar idea.');
       return;
     }
-
-    var usePipeline = document.getElementById('usePipeline');
-    var pipeline = usePipeline ? usePipeline.checked : false;
 
     var moodInput = document.getElementById('contentMoodKeywords');
     var prefInput = document.getElementById('contentPreferences');
@@ -9310,54 +9413,79 @@ function initContentPacketsPage() {
     var payload = {
       exemplarIdeas: ideas,
       apiKey: apiKey,
-      pipeline: pipeline,
     };
 
     if (moodInput && moodInput.value.trim()) {
-      if (pipeline) {
-        payload.moodOrGenre = moodInput.value.trim();
-      } else {
-        payload.moodKeywords = moodInput.value.trim();
-      }
+      payload.moodOrGenre = moodInput.value.trim();
     }
     if (prefInput && prefInput.value.trim()) {
       payload.contentPreferences = prefInput.value.trim();
     }
 
-    var progressId = createProgressId();
-    payload.progressId = progressId;
-
-    if (generateBtn) generateBtn.disabled = true;
     if (resultsEl) resultsEl.style.display = 'none';
-    if (loadingProgress) loadingProgress.start(progressId);
 
-    fetch('/content-packets/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (loadingProgress) loadingProgress.stop();
-        if (generateBtn) generateBtn.disabled = false;
+    try {
+      var data = loadingSession
+        ? await loadingSession.withProgress(async function (progressId) {
+          payload.progressId = progressId;
 
-        if (!data.success) {
-          alert('Generation failed: ' + (data.error || 'Unknown error'));
-          return;
-        }
+          var response = await fetch('/content-packets/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
 
-        renderGeneratedPackets(
-          data.packetCards || [],
-          data.packets || [],
-          data.evaluations || [],
-          data.tasteProfile || null
-        );
-      })
-      .catch(function (err) {
-        if (loadingProgress) loadingProgress.stop();
-        if (generateBtn) generateBtn.disabled = false;
-        alert('Generation failed: ' + err.message);
-      });
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_) {
+            data = null;
+          }
+
+          if (!response.ok) {
+            throw new Error((data && data.error) || 'Request failed');
+          }
+
+          return data;
+        })
+        : await (async function () {
+          payload.progressId = createProgressId();
+
+          var response = await fetch('/content-packets/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_) {
+            data = null;
+          }
+
+          if (!response.ok) {
+            throw new Error((data && data.error) || 'Request failed');
+          }
+
+          return data;
+        })();
+
+      if (!data || !data.success) {
+        inlineError.show('Generation failed: ' + ((data && data.error) || 'Unknown error'));
+        return;
+      }
+
+      inlineError.clear();
+      renderGeneratedPackets(
+        data.packetCards || [],
+        data.packets || [],
+        data.evaluations || [],
+        data.tasteProfile || null
+      );
+    } catch (err) {
+      inlineError.show('Generation failed: ' + err.message);
+    }
   }
 
   function renderGeneratedPackets(packetCards, packets, evaluations, tasteProfile) {
@@ -9695,8 +9823,17 @@ if (document.readyState === 'loading') {
     var savedContainer = document.getElementById('saved-kernels');
     var progressSection = document.getElementById('kernel-progress-section');
     var progressContent = document.getElementById('kernel-progress-content');
+    var errorElement = document.getElementById('kernel-generation-error');
 
-    if (!generateBtn || !apiKeyInput || !generatedContainer || !savedContainer || !progressSection || !progressContent) {
+    if (
+      !generateBtn ||
+      !apiKeyInput ||
+      !generatedContainer ||
+      !savedContainer ||
+      !progressSection ||
+      !progressContent ||
+      !errorElement
+    ) {
       return;
     }
 
@@ -9709,7 +9846,13 @@ if (document.readyState === 'loading') {
         '<p class="loading-status">Generating kernels...</p>';
     }
 
-    var loadingProgress = createLoadingProgressController(progressContent);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: progressSection,
+      progressElement: progressContent,
+      buttonElement: generateBtn,
+      onHide: syncGenerateButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var lastGeneratedKernels = [];
     var lastSeeds = null;
     var savedKernelsById = {};
@@ -9720,11 +9863,7 @@ if (document.readyState === 'loading') {
     }
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     function formatGenerateErrorMessage(data) {
@@ -9887,6 +10026,8 @@ if (document.readyState === 'loading') {
     }
 
     async function handleGenerate() {
+      inlineError.clear();
+
       if (typeof apiKeyInput.checkValidity === 'function' && !apiKeyInput.checkValidity()) {
         apiKeyInput.reportValidity();
         return;
@@ -9904,54 +10045,47 @@ if (document.readyState === 'loading') {
         return;
       }
 
-      generateBtn.disabled = true;
-      progressSection.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
-
       try {
-        var response = await fetch('/kernels/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            thematicInterests: seeds.thematicInterests,
-            emotionalCore: seeds.emotionalCore,
-            sparkLine: seeds.sparkLine,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
-        });
+        await loadingSession.withProgress(async function (progressId) {
+          var response = await fetch('/kernels/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              thematicInterests: seeds.thematicInterests,
+              emotionalCore: seeds.emotionalCore,
+              sparkLine: seeds.sparkLine,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
 
-        var data = null;
-        try {
-          data = await response.json();
-        } catch (_parseError) {
-          data = null;
-        }
-
-        if (!response.ok || !data.success || !Array.isArray(data.evaluatedKernels)) {
-          if (data && typeof data === 'object') {
-            if (data.code) {
-              console.error('Kernel generation error code:', data.code, '| Retryable:', data.retryable);
-            }
-            if (data.debug) {
-              console.error('Kernel generation debug info:', data.debug);
-            }
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_parseError) {
+            data = null;
           }
 
-          throw new Error(formatGenerateErrorMessage(data));
-        }
+          if (!response.ok || !data.success || !Array.isArray(data.evaluatedKernels)) {
+            if (data && typeof data === 'object') {
+              if (data.code) {
+                console.error('Kernel generation error code:', data.code, '| Retryable:', data.retryable);
+              }
+              if (data.debug) {
+                console.error('Kernel generation debug info:', data.debug);
+              }
+            }
 
-        setApiKey(apiKey);
-        lastSeeds = seeds;
-        lastGeneratedKernels = data.evaluatedKernels;
-        renderGeneratedKernels(data.evaluatedKernels);
+            throw new Error(formatGenerateErrorMessage(data));
+          }
+
+          setApiKey(apiKey);
+          lastSeeds = seeds;
+          lastGeneratedKernels = data.evaluatedKernels;
+          renderGeneratedKernels(data.evaluatedKernels);
+        });
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to generate kernels');
-      } finally {
-        loadingProgress.stop();
-        progressSection.style.display = 'none';
-        syncGenerateButtonState();
       }
     }
 
@@ -10251,17 +10385,25 @@ if (document.readyState === 'loading') {
     var loading = document.getElementById('evolution-loading');
     var resultsSection = document.getElementById('evolution-results-section');
     var resultsContainer = document.getElementById('evolution-cards');
+    var errorElement = document.getElementById('evolution-error');
 
     if (
       !(kernelSelector instanceof HTMLSelectElement) ||
       !(apiKeyInput instanceof HTMLInputElement) ||
       !(evolveBtn instanceof HTMLButtonElement) ||
-      !(loading instanceof HTMLElement)
+      !(loading instanceof HTMLElement) ||
+      !(errorElement instanceof HTMLElement)
     ) {
       return;
     }
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      buttonElement: evolveBtn,
+      onHide: updateEvolveButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var selectedKernelId = '';
     var selectedParentIds = [];
     var evolvedConcepts = [];
@@ -10275,11 +10417,7 @@ if (document.readyState === 'loading') {
     };
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     function getEvolutionApiKey() {
@@ -10498,50 +10636,45 @@ if (document.readyState === 'loading') {
         return;
       }
 
-      evolveBtn.disabled = true;
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
+      inlineError.clear();
 
       try {
-        var response = await fetch('/evolve/api/evolve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            conceptIds: selectedParentIds,
-            kernelId: selectedKernelId,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
-        });
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/evolve/api/evolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              conceptIds: selectedParentIds,
+              kernelId: selectedKernelId,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
 
-        var data = null;
-        try {
-          data = await response.json();
-        } catch (_parseError) {
-          data = null;
-        }
-
-        if (!response.ok || !data || !data.success) {
-          if (data && typeof data === 'object') {
-            if (data.code) {
-              console.error('Concept evolution error code:', data.code, '| Retryable:', data.retryable);
-            }
-            if (data.debug) {
-              console.error('Concept evolution debug info:', data.debug);
-            }
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_parseError) {
+            data = null;
           }
-          throw new Error(data && data.error ? data.error : 'Failed to evolve concepts');
-        }
 
-        setApiKey(apiKey);
-        renderEvolvedConcepts(data.evaluatedConcepts, data.verifications);
+          if (!response.ok || !data || !data.success) {
+            if (data && typeof data === 'object') {
+              if (data.code) {
+                console.error('Concept evolution error code:', data.code, '| Retryable:', data.retryable);
+              }
+              if (data.debug) {
+                console.error('Concept evolution debug info:', data.debug);
+              }
+            }
+            throw new Error(data && data.error ? data.error : 'Failed to evolve concepts');
+          }
+
+          setApiKey(apiKey);
+          renderEvolvedConcepts(data.evaluatedConcepts, data.verifications);
+        });
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to evolve concepts');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateEvolveButtonState();
       }
     }
 
@@ -10655,7 +10788,7 @@ if (document.readyState === 'loading') {
 
   // ── Scene Ideation Controller ────────────────────────────────────
 
-  function createSceneIdeationController(storyId, loadingEl, loadingProgressCtrl) {
+  function createSceneIdeationController(storyId) {
     function fetchSceneOptions(apiKey, mode, pageId, choiceIndex, protagonistGuidance, progressId) {
       var body = { apiKey: apiKey, mode: mode || 'opening' };
       if (progressId) {
@@ -10760,26 +10893,30 @@ if (document.readyState === 'loading') {
     var loading = document.getElementById('kernel-evo-loading');
     var resultsSection = document.getElementById('kernel-evo-results-section');
     var resultsContainer = document.getElementById('kernel-evo-cards');
+    var errorElement = document.getElementById('kernel-evolution-error');
 
     if (
       !(apiKeyInput instanceof HTMLInputElement) ||
       !(evolveBtn instanceof HTMLButtonElement) ||
-      !(loading instanceof HTMLElement)
+      !(loading instanceof HTMLElement) ||
+      !(errorElement instanceof HTMLElement)
     ) {
       return;
     }
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      buttonElement: evolveBtn,
+      onHide: updateEvolveButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var selectedParentIds = [];
     var evolvedKernels = [];
     var allSavedKernels = [];
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     function getEvoApiKey() {
@@ -10919,41 +11056,36 @@ if (document.readyState === 'loading') {
         return;
       }
 
-      evolveBtn.disabled = true;
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
+      inlineError.clear();
 
       try {
-        var response = await fetch('/evolve-kernels/api/evolve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            kernelIds: selectedParentIds,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/evolve-kernels/api/evolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              kernelIds: selectedParentIds,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
+
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_parseError) {
+            data = null;
+          }
+
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to evolve kernels');
+          }
+
+          setApiKey(apiKey);
+          renderEvolvedKernels(data.evaluatedKernels);
         });
-
-        var data = null;
-        try {
-          data = await response.json();
-        } catch (_parseError) {
-          data = null;
-        }
-
-        if (!response.ok || !data || !data.success) {
-          throw new Error(data && data.error ? data.error : 'Failed to evolve kernels');
-        }
-
-        setApiKey(apiKey);
-        renderEvolvedKernels(data.evaluatedKernels);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to evolve kernels');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateEvolveButtonState();
       }
     }
 
@@ -11077,10 +11209,17 @@ if (document.readyState === 'loading') {
     var kernelOpposingForce = document.getElementById('selected-kernel-opposing-force');
     var kernelQuestion = document.getElementById('selected-kernel-thematic-question');
     var kernelScore = document.getElementById('selected-kernel-overall-score');
+    var errorElement = document.getElementById('concept-seeds-error');
 
-    if (!loading || !generateBtn) return;
+    if (!loading || !generateBtn || !errorElement) return;
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      buttonElement: generateBtn,
+      onHide: updateGenerateButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var selectedKernelId = '';
     var lastGeneratedSeeds = null;
     var lastGeneratedCharacterWorlds = null;
@@ -11209,11 +11348,7 @@ if (document.readyState === 'loading') {
     }
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     // ── Kernel selector ─────────────────────────────────────────────
@@ -11272,48 +11407,44 @@ if (document.readyState === 'loading') {
         return;
       }
 
+      inlineError.clear();
       generateBtn.disabled = true;
       if (seedResultsSection) seedResultsSection.style.display = 'none';
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concept-seeds/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            protagonistDetails: inputs.protagonistDetails,
-            genreVibes: inputs.genreVibes,
-            moodKeywords: inputs.moodKeywords,
-            contentPreferences: inputs.contentPreferences,
-            excludedGenres: collectExcludedGenres(),
-            kernelId: selectedKernelId,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/concept-seeds/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              protagonistDetails: inputs.protagonistDetails,
+              genreVibes: inputs.genreVibes,
+              moodKeywords: inputs.moodKeywords,
+              contentPreferences: inputs.contentPreferences,
+              excludedGenres: collectExcludedGenres(),
+              kernelId: selectedKernelId,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
+
+          var data = null;
+          try { data = await response.json(); } catch (_e) { data = null; }
+
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to generate seeds');
+          }
+
+          setApiKey(apiKey);
+          lastGeneratedSeeds = data.seeds;
+          lastGeneratedCharacterWorlds = data.characterWorlds;
+          lastKernelId = data.kernelId || selectedKernelId;
+          lastFormInputs = inputs;
+
+          renderGeneratedSeeds(data.seeds, data.characterWorlds);
         });
-
-        var data = null;
-        try { data = await response.json(); } catch (_e) { data = null; }
-
-        if (!response.ok || !data || !data.success) {
-          throw new Error(data && data.error ? data.error : 'Failed to generate seeds');
-        }
-
-        setApiKey(apiKey);
-        lastGeneratedSeeds = data.seeds;
-        lastGeneratedCharacterWorlds = data.characterWorlds;
-        lastKernelId = data.kernelId || selectedKernelId;
-        lastFormInputs = inputs;
-
-        renderGeneratedSeeds(data.seeds, data.characterWorlds);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Something went wrong');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateGenerateButtonState();
       }
     }
 
@@ -12467,7 +12598,11 @@ function initCharacterWebsPage() {
     });
   }
 
-  var loadingProgress = createLoadingProgressController(loading);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: loading,
+    progressElement: loading,
+    buttonElements: [generateWebBtn, regenerateWebBtn].filter(Boolean),
+  });
   var stageDefinitions = [
     { stage: 1, label: 'Character Kernel', field: 'characterKernel' },
     { stage: 2, label: 'Tridimensional Profile', field: 'tridimensionalProfile' },
@@ -13251,19 +13386,22 @@ function initCharacterWebsPage() {
     return data;
   }
 
-  async function withProgress(action) {
+  async function withLoadingOverlay(action) {
     clearError();
+    if (loadingSession.isActive()) {
+      return action();
+    }
+
     loading.style.display = 'flex';
     try {
       return await action();
     } finally {
-      loadingProgress.stop();
       loading.style.display = 'none';
     }
   }
 
   async function selectWeb(webId, preferredCharacterId) {
-    return withProgress(async function () {
+    return withLoadingOverlay(async function () {
       var data = await fetchJson(
         '/character-webs/api/' + encodeURIComponent(webId),
         { method: 'GET' },
@@ -13292,7 +13430,7 @@ function initCharacterWebsPage() {
   }
 
   async function refreshWebs(preferredWebId, preferredCharacterId) {
-    return withProgress(async function () {
+    return withLoadingOverlay(async function () {
       var data = await fetchJson(
         '/character-webs/api/list',
         { method: 'GET' },
@@ -13394,27 +13532,23 @@ function initCharacterWebsPage() {
 
     try {
       var apiKey = getApiKeyFromPage();
-      var progressId = createProgressId();
-      loading.style.display = 'flex';
-      loadingProgress.start(progressId);
-      await fetchJson(
-        '/character-webs/api/' +
-          encodeURIComponent(state.selectedWeb.web.id) +
-          '/' +
-          (mode === 'regenerate' ? 'regenerate' : 'generate'),
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ apiKey: apiKey, progressId: progressId }),
-        },
-        'Failed to update character web'
-      );
-      await refreshWebs(state.selectedWeb.web.id);
+      await loadingSession.withProgress(async function (progressId) {
+        await fetchJson(
+          '/character-webs/api/' +
+            encodeURIComponent(state.selectedWeb.web.id) +
+            '/' +
+            (mode === 'regenerate' ? 'regenerate' : 'generate'),
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ apiKey: apiKey, progressId: progressId }),
+          },
+          'Failed to update character web'
+        );
+        await refreshWebs(state.selectedWeb.web.id);
+      });
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to update character web');
-    } finally {
-      loadingProgress.stop();
-      loading.style.display = 'none';
     }
   }
 
@@ -13478,28 +13612,24 @@ function initCharacterWebsPage() {
   async function runCharacterStageAction(charId, stage, mode) {
     try {
       var apiKey = getApiKeyFromPage();
-      var progressId = createProgressId();
-      loading.style.display = 'flex';
-      loadingProgress.start(progressId);
-      var data = await fetchJson(
-        '/character-webs/api/characters/' +
-          encodeURIComponent(charId) +
-          '/' +
-          (mode === 'regenerate' ? 'regenerate' : 'generate'),
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stage: stage, apiKey: apiKey, progressId: progressId }),
-        },
-        'Failed to run character stage'
-      );
-      state.selectedCharacter = data.character;
-      await refreshWebs(data.character.sourceWebId, data.character.id);
+      await loadingSession.withProgress(async function (progressId) {
+        var data = await fetchJson(
+          '/character-webs/api/characters/' +
+            encodeURIComponent(charId) +
+            '/' +
+            (mode === 'regenerate' ? 'regenerate' : 'generate'),
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stage: stage, apiKey: apiKey, progressId: progressId }),
+          },
+          'Failed to run character stage'
+        );
+        state.selectedCharacter = data.character;
+        await refreshWebs(data.character.sourceWebId, data.character.id);
+      });
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to run character stage');
-    } finally {
-      loadingProgress.stop();
-      loading.style.display = 'none';
     }
   }
 
@@ -13589,7 +13719,11 @@ function initCharactersPage() {
     return;
   }
 
-  var loadingProgress = createLoadingProgressController(loading);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: loading,
+    progressElement: loading,
+    buttonElement: decomposeBtn,
+  });
   var state = {
     characters: [],
     selectedCharacter: null,
@@ -13938,36 +14072,29 @@ function initCharactersPage() {
 
     try {
       var apiKey = getApiKeyFromPage();
-      var progressId = createProgressId();
-      decomposeBtn.disabled = true;
-      loading.style.display = 'flex';
-      loadingProgress.start(progressId);
+      await loadingSession.withProgress(async function (progressId) {
+        var response = await fetch('/characters/decompose', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            characterName: characterName,
+            characterDescription: characterDescription,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
 
-      var response = await fetch('/characters/decompose', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          characterName: characterName,
-          characterDescription: characterDescription,
-          apiKey: apiKey,
-          progressId: progressId,
-        }),
+        var data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error((data && data.error) || 'Decomposition failed');
+        }
+
+        nameInput.value = '';
+        descInput.value = '';
+        await refreshCharacters(data.character && data.character.id);
       });
-
-      var data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error((data && data.error) || 'Decomposition failed');
-      }
-
-      nameInput.value = '';
-      descInput.value = '';
-      await refreshCharacters(data.character && data.character.id);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Decomposition failed');
-    } finally {
-      loadingProgress.stop();
-      loading.style.display = 'none';
-      decomposeBtn.disabled = false;
     }
   }
 
@@ -14392,7 +14519,7 @@ function initCharacterBrainstormerPage() {
   var diversityNoteEl = document.getElementById('character-brainstormer-diversity-note');
   var copyAllBtn = document.getElementById('character-brainstormer-copy-all-btn');
 
-  if (!loading || !generateBtn || !conceptSelector || !worldbuildingSelector) {
+  if (!loading || !errorBlock || !generateBtn || !conceptSelector || !worldbuildingSelector) {
     return;
   }
 
@@ -14402,7 +14529,12 @@ function initCharacterBrainstormerPage() {
     });
   }
 
-  var loadingProgress = createLoadingProgressController(loading);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: loading,
+    progressElement: loading,
+    buttonElement: generateBtn,
+  });
+  var inlineError = createInlineErrorController(errorBlock);
   var lastResult = null;
 
   // ── API key restore ──────────────────────────────────────────────
@@ -14444,20 +14576,6 @@ function initCharacterBrainstormerPage() {
   updateGenerateButtonState();
 
   // ── Error display ────────────────────────────────────────────────
-
-  function showError(message) {
-    if (errorBlock) {
-      errorBlock.textContent = message;
-      errorBlock.style.display = 'block';
-    }
-  }
-
-  function clearError() {
-    if (errorBlock) {
-      errorBlock.textContent = '';
-      errorBlock.style.display = 'none';
-    }
-  }
 
   // ── Markdown formatting ──────────────────────────────────────────
 
@@ -14637,50 +14755,45 @@ function initCharacterBrainstormerPage() {
         ? userNotesInput.value.trim()
         : '';
 
-    clearError();
+    inlineError.clear();
     setApiKey(apiKey);
-    generateBtn.disabled = true;
     if (resultsSection) {
       resultsSection.style.display = 'none';
     }
-    loading.style.display = 'flex';
-
-    var progressId = createProgressId();
-    loadingProgress.start(progressId);
 
     try {
-      var response = await fetch('/character-brainstormer/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conceptId: conceptId,
-          worldbuildingId: worldbuildingId,
-          userNotes: userNotes,
-          apiKey: apiKey,
-          progressId: progressId,
-        }),
+      await loadingSession.withProgress(async function (progressId) {
+        var response = await fetch('/character-brainstormer/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conceptId: conceptId,
+            worldbuildingId: worldbuildingId,
+            userNotes: userNotes,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = null;
+        try {
+          data = await response.json();
+        } catch (_e) {
+          data = null;
+        }
+
+        if (!response.ok || !data || !data.success) {
+          var errorMsg =
+            (data && data.error) || 'Generation failed (HTTP ' + response.status + ')';
+          inlineError.show(errorMsg);
+          return;
+        }
+
+        renderBrainstormResults(data.result);
       });
-
-      var data = null;
-      try {
-        data = await response.json();
-      } catch (_e) {
-        data = null;
-      }
-
-      if (!response.ok || !data || !data.success) {
-        var errorMsg =
-          (data && data.error) || 'Generation failed (HTTP ' + response.status + ')';
-        showError(errorMsg);
-        return;
-      }
-
-      renderBrainstormResults(data.result);
     } catch (err) {
-      showError(err instanceof Error ? err.message : 'Network error');
+      inlineError.show(err instanceof Error ? err.message : 'Network error');
     } finally {
-      loadingProgress.stop();
-      loading.style.display = 'none';
       updateGenerateButtonState();
     }
   }

@@ -14,8 +14,17 @@
     var savedContainer = document.getElementById('saved-kernels');
     var progressSection = document.getElementById('kernel-progress-section');
     var progressContent = document.getElementById('kernel-progress-content');
+    var errorElement = document.getElementById('kernel-generation-error');
 
-    if (!generateBtn || !apiKeyInput || !generatedContainer || !savedContainer || !progressSection || !progressContent) {
+    if (
+      !generateBtn ||
+      !apiKeyInput ||
+      !generatedContainer ||
+      !savedContainer ||
+      !progressSection ||
+      !progressContent ||
+      !errorElement
+    ) {
       return;
     }
 
@@ -28,7 +37,13 @@
         '<p class="loading-status">Generating kernels...</p>';
     }
 
-    var loadingProgress = createLoadingProgressController(progressContent);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: progressSection,
+      progressElement: progressContent,
+      buttonElement: generateBtn,
+      onHide: syncGenerateButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var lastGeneratedKernels = [];
     var lastSeeds = null;
     var savedKernelsById = {};
@@ -39,11 +54,7 @@
     }
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     function formatGenerateErrorMessage(data) {
@@ -206,6 +217,8 @@
     }
 
     async function handleGenerate() {
+      inlineError.clear();
+
       if (typeof apiKeyInput.checkValidity === 'function' && !apiKeyInput.checkValidity()) {
         apiKeyInput.reportValidity();
         return;
@@ -223,54 +236,47 @@
         return;
       }
 
-      generateBtn.disabled = true;
-      progressSection.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
-
       try {
-        var response = await fetch('/kernels/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            thematicInterests: seeds.thematicInterests,
-            emotionalCore: seeds.emotionalCore,
-            sparkLine: seeds.sparkLine,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
-        });
+        await loadingSession.withProgress(async function (progressId) {
+          var response = await fetch('/kernels/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              thematicInterests: seeds.thematicInterests,
+              emotionalCore: seeds.emotionalCore,
+              sparkLine: seeds.sparkLine,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
 
-        var data = null;
-        try {
-          data = await response.json();
-        } catch (_parseError) {
-          data = null;
-        }
-
-        if (!response.ok || !data.success || !Array.isArray(data.evaluatedKernels)) {
-          if (data && typeof data === 'object') {
-            if (data.code) {
-              console.error('Kernel generation error code:', data.code, '| Retryable:', data.retryable);
-            }
-            if (data.debug) {
-              console.error('Kernel generation debug info:', data.debug);
-            }
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_parseError) {
+            data = null;
           }
 
-          throw new Error(formatGenerateErrorMessage(data));
-        }
+          if (!response.ok || !data.success || !Array.isArray(data.evaluatedKernels)) {
+            if (data && typeof data === 'object') {
+              if (data.code) {
+                console.error('Kernel generation error code:', data.code, '| Retryable:', data.retryable);
+              }
+              if (data.debug) {
+                console.error('Kernel generation debug info:', data.debug);
+              }
+            }
 
-        setApiKey(apiKey);
-        lastSeeds = seeds;
-        lastGeneratedKernels = data.evaluatedKernels;
-        renderGeneratedKernels(data.evaluatedKernels);
+            throw new Error(formatGenerateErrorMessage(data));
+          }
+
+          setApiKey(apiKey);
+          lastSeeds = seeds;
+          lastGeneratedKernels = data.evaluatedKernels;
+          renderGeneratedKernels(data.evaluatedKernels);
+        });
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to generate kernels');
-      } finally {
-        loadingProgress.stop();
-        progressSection.style.display = 'none';
-        syncGenerateButtonState();
       }
     }
 

@@ -39,13 +39,15 @@ function makeSavedPacket(overrides: Partial<SavedContentPacket> = {}): SavedCont
       playerPosition: 'You are the only witness with standing to act.',
     },
     origin: {
-      generationMode: 'quick',
+      generationMode: 'pipeline',
       sourceArtifacts: [
         {
-          artifactType: 'EXEMPLAR',
-          sourceId: 'exemplar-01',
+          artifactType: 'SPARK',
+          sourceId: 'spark-01',
           contentKind: 'ENTITY',
-          summary: 'An exemplar that drove the packet',
+          summary: 'A spark that drove the packet',
+          imageSeed: 'Floodlit salvage rig',
+          collisionTags: ['salt', 'debt'],
         },
       ],
     },
@@ -123,15 +125,17 @@ describe('content packet card presenter', () => {
     ]);
     expect(card.packetDetails.map((detail) => detail.key)).not.toContain('contentKind');
     expect(card.originDetails).toEqual([
-      expect.objectContaining({ key: 'generationMode', value: 'quick' }),
+      expect.objectContaining({ key: 'generationMode', value: 'pipeline' }),
       expect.objectContaining({
         key: 'sourceArtifact-1',
         label: 'Source Artifact 1',
         value: [
-          'Type: EXEMPLAR',
-          'Source ID: exemplar-01',
+          'Type: SPARK',
+          'Source ID: spark-01',
           'Kind: ENTITY',
-          'Summary: An exemplar that drove the packet',
+          'Summary: A spark that drove the packet',
+          'Image Seed: Floodlit salvage rig',
+          'Collision Tags: salt, debt',
         ],
       }),
     ]);

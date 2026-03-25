@@ -21,6 +21,10 @@ import {
 import { buildLlmRouteErrorResult, wrapAsyncRoute } from '../utils/index.js';
 import { groupSavedContentPacketsByKind } from '../utils/group-saved-content-packets-by-kind.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
+import {
+  parseGenerateContentRequest,
+  parseGenerateTasteProfileRequest,
+} from './content-packets-request-parser.js';
 
 export const contentPacketRoutes = Router();
 
@@ -64,89 +68,28 @@ contentPacketRoutes.get(
   })
 );
 
-// --- POST /api/generate --- Generate content packets (quick or pipeline)
+// --- POST /api/generate --- Generate content packets via the pipeline
 contentPacketRoutes.post(
   '/api/generate',
   wrapAsyncRoute(async (req: Request, res: Response) => {
-    const body = req.body as {
-      exemplarIdeas?: unknown;
-      genreVibes?: string;
-      moodKeywords?: string;
-      contentPreferences?: string;
-      kernelBlock?: string;
-      moodOrGenre?: string;
-      pipeline?: boolean;
-      apiKey?: string;
-      progressId?: unknown;
-    };
-
-    const apiKey = body.apiKey?.trim();
-    if (!apiKey || apiKey.length < 10) {
-      return res.status(400).json({ success: false, error: 'OpenRouter API key is required' });
+    const parsed = parseGenerateContentRequest(req.body);
+    if (!parsed.ok) {
+      return res.status(400).json({ success: false, error: parsed.error });
     }
 
-    if (!Array.isArray(body.exemplarIdeas) || body.exemplarIdeas.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'At least one exemplar idea is required' });
-    }
-
-    const exemplarIdeas = (body.exemplarIdeas as unknown[])
-      .filter((idea): idea is string => typeof idea === 'string')
-      .map((idea) => idea.trim())
-      .filter((idea) => idea.length > 0);
-
-    if (exemplarIdeas.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'At least one non-empty exemplar idea is required' });
-    }
-
-    const progress = createRouteGenerationProgress(body.progressId, 'content-generation');
+    const progress = createRouteGenerationProgress(parsed.value.progressId, 'content-generation');
 
     try {
-      if (body.pipeline) {
-        const result = await contentService.generateContentPipeline({
-          exemplarIdeas,
-          moodOrGenre: body.moodOrGenre?.trim() ?? undefined,
-          contentPreferences: body.contentPreferences?.trim() ?? undefined,
-          kernelBlock: body.kernelBlock?.trim() ?? undefined,
-          apiKey,
-          onGenerationStage: progress.onGenerationStage,
-        });
-
-        progress.complete();
-
-        const evaluationByContentId = new Map(
-          result.evaluations.map((evaluation) => [evaluation.contentId, evaluation])
-        );
-
-        return res.json({
-          success: true,
-          packets: result.packets,
-          packetCards: result.packets.map((generatedPacket) =>
-            buildGeneratedContentPacketCardViewModel(generatedPacket, {
-              includeContentKind: true,
-              evaluation: evaluationByContentId.get(generatedPacket.packet.contentId),
-            })
-          ),
-          evaluations: result.evaluations,
-          tasteProfile: result.tasteProfile,
-          sparks: result.sparks,
-        });
-      }
-
-      const result = await contentService.generateContentQuick({
-        exemplarIdeas,
-        genreVibes: body.genreVibes?.trim() ?? undefined,
-        moodKeywords: body.moodKeywords?.trim() ?? undefined,
-        contentPreferences: body.contentPreferences?.trim() ?? undefined,
-        kernelBlock: body.kernelBlock?.trim() ?? undefined,
-        apiKey,
+      const result = await contentService.generateContentPipeline({
+        ...parsed.value.command,
         onGenerationStage: progress.onGenerationStage,
       });
 
       progress.complete();
+
+      const evaluationByContentId = new Map(
+        result.evaluations.map((evaluation) => [evaluation.contentId, evaluation])
+      );
 
       return res.json({
         success: true,
@@ -154,8 +97,12 @@ contentPacketRoutes.post(
         packetCards: result.packets.map((generatedPacket) =>
           buildGeneratedContentPacketCardViewModel(generatedPacket, {
             includeContentKind: true,
+            evaluation: evaluationByContentId.get(generatedPacket.packet.contentId),
           })
         ),
+        evaluations: result.evaluations,
+        tasteProfile: result.tasteProfile,
+        sparks: result.sparks,
       });
     } catch (error) {
       if (error instanceof LLMError) {
@@ -260,44 +207,16 @@ contentPacketRoutes.get(
 contentPacketRoutes.post(
   '/taste-profiles/api/generate',
   wrapAsyncRoute(async (req: Request, res: Response) => {
-    const body = req.body as {
-      exemplarIdeas?: unknown;
-      moodOrGenre?: string;
-      contentPreferences?: string;
-      apiKey?: string;
-      progressId?: unknown;
-    };
-
-    const apiKey = body.apiKey?.trim();
-    if (!apiKey || apiKey.length < 10) {
-      return res.status(400).json({ success: false, error: 'OpenRouter API key is required' });
+    const parsed = parseGenerateTasteProfileRequest(req.body);
+    if (!parsed.ok) {
+      return res.status(400).json({ success: false, error: parsed.error });
     }
 
-    if (!Array.isArray(body.exemplarIdeas) || body.exemplarIdeas.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'At least one exemplar idea is required' });
-    }
-
-    const exemplarIdeas = (body.exemplarIdeas as unknown[])
-      .filter((idea): idea is string => typeof idea === 'string')
-      .map((idea) => idea.trim())
-      .filter((idea) => idea.length > 0);
-
-    if (exemplarIdeas.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, error: 'At least one non-empty exemplar idea is required' });
-    }
-
-    const progress = createRouteGenerationProgress(body.progressId, 'content-generation');
+    const progress = createRouteGenerationProgress(parsed.value.progressId, 'content-generation');
 
     try {
       const result = await contentService.distillTaste({
-        exemplarIdeas,
-        moodOrGenre: body.moodOrGenre?.trim() ?? undefined,
-        contentPreferences: body.contentPreferences?.trim() ?? undefined,
-        apiKey,
+        ...parsed.value.command,
         onGenerationStage: progress.onGenerationStage,
       });
 

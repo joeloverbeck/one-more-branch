@@ -211,15 +211,17 @@ describe('kernels page controller', () => {
 
     expect(progressSection.style.display).toBe('flex');
     expect(progressContent.classList.contains('loading-overlay-content')).toBe(true);
+    expect(generateBtn.disabled).toBe(true);
 
     resolveGenerate?.(mockJsonResponse({ success: true, evaluatedKernels: [generated] }));
     await flushPromises();
     await flushPromises();
 
     expect(progressSection.style.display).toBe('none');
+    expect(generateBtn.disabled).toBe(false);
   });
 
-  it('surfaces server debug fields in kernels generation error messages', async () => {
+  it('surfaces server debug fields in the kernels-owned generation error node', async () => {
     global.fetch = createRoutedFetch({
       '/kernels/api/list': () => mockJsonResponse({ success: true, kernels: [] }),
       '/generation-progress/': () => mockJsonResponse({ status: 'failed' }),
@@ -244,6 +246,13 @@ describe('kernels page controller', () => {
     loadAppAndInit();
     await flushPromises();
 
+    const globalScope = globalThis as typeof globalThis & {
+      showFormError?: (message: string) => void;
+    };
+    const showFormErrorSpy = globalScope.showFormError
+      ? jest.spyOn(globalScope, 'showFormError')
+      : null;
+
     const apiKeyInput = document.getElementById('kernelApiKey') as HTMLInputElement;
     apiKeyInput.value = 'sk-or-valid-test-key-12345';
     apiKeyInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -257,11 +266,15 @@ describe('kernels page controller', () => {
     await flushPromises();
     await flushPromises();
 
-    const formError = document.querySelector('.alert-error.form-error');
-    expect(formError?.textContent).toContain('API request error: Provider returned error');
-    expect(formError?.textContent).toContain('Code: HTTP_400');
-    expect(formError?.textContent).toContain('HTTP status: 400');
-    expect(formError?.textContent).toContain('Model: openai/gpt-4o-mini');
+    const generationError = document.getElementById('kernel-generation-error') as HTMLElement;
+    expect(generationError.style.display).toBe('block');
+    expect(generationError.textContent).toContain('API request error: Provider returned error');
+    expect(generationError.textContent).toContain('Code: HTTP_400');
+    expect(generationError.textContent).toContain('HTTP status: 400');
+    expect(generationError.textContent).toContain('Model: openai/gpt-4o-mini');
+    if (showFormErrorSpy) {
+      expect(showFormErrorSpy).not.toHaveBeenCalled();
+    }
   });
 
   it('deletes a saved kernel via the delete action', async () => {

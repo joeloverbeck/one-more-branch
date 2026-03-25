@@ -38,7 +38,7 @@ export interface ContentPacketContext {
 }
 
 export interface ContentPacketSourceArtifact {
-  readonly artifactType: 'EXEMPLAR' | 'SPARK';
+  readonly artifactType: 'SPARK';
   readonly sourceId: string;
   readonly contentKind?: ContentKind;
   readonly summary: string;
@@ -47,17 +47,11 @@ export interface ContentPacketSourceArtifact {
 }
 
 export interface ContentPacketOrigin {
-  readonly generationMode: 'quick' | 'pipeline';
+  readonly generationMode: 'pipeline';
   readonly sourceArtifacts: readonly ContentPacketSourceArtifact[];
 }
 
-export interface ConceptSeedOneShotPacket extends ConceptSeedPacket, ContentPacketContext {}
-
-export interface ConceptSeedOneShotLineagedPacket extends ConceptSeedOneShotPacket {
-  readonly sourceExemplarIds: readonly string[];
-}
-
-export interface ConceptSeedPacketerPacket extends ConceptSeedOneShotPacket {
+export interface ConceptSeedPacketerPacket extends ConceptSeedPacket, ContentPacketContext {
   readonly sourceSparkIds: readonly string[];
 }
 
@@ -108,19 +102,6 @@ export interface SparkstormerContext {
 
 export interface SparkstormerResult {
   readonly sparks: readonly ContentSpark[];
-  readonly rawResponse: string;
-}
-
-export interface ContentOneShotContext {
-  readonly exemplarIdeas: readonly string[];
-  readonly genreVibes?: string;
-  readonly moodKeywords?: string;
-  readonly contentPreferences?: string;
-  readonly kernelBlock?: string;
-}
-
-export interface ContentOneShotResult {
-  readonly packets: readonly ConceptSeedOneShotLineagedPacket[];
   readonly rawResponse: string;
 }
 
@@ -178,10 +159,6 @@ function isContentEvaluationScores(value: unknown): value is ContentEvaluationSc
     isValidScore(value['tasteAlignment']) &&
     isValidScore(value['causalSpecificity'])
   );
-}
-
-export function formatContentExemplarId(index: number): string {
-  return `exemplar-${String(index + 1).padStart(2, '0')}`;
 }
 
 export function cloneContentPacketContext(context: ContentPacketContext): ContentPacketContext {
@@ -258,7 +235,7 @@ export function isContentPacketSourceArtifact(
   }
 
   return (
-    (value['artifactType'] === 'EXEMPLAR' || value['artifactType'] === 'SPARK') &&
+    value['artifactType'] === 'SPARK' &&
     isNonEmptyString(value['sourceId']) &&
     (value['contentKind'] === undefined || isContentKind(value['contentKind'])) &&
     isNonEmptyString(value['summary']) &&
@@ -279,7 +256,7 @@ export function isContentPacketOrigin(value: unknown): value is ContentPacketOri
   }
 
   return (
-    (value['generationMode'] === 'quick' || value['generationMode'] === 'pipeline') &&
+    value['generationMode'] === 'pipeline' &&
     Array.isArray(value['sourceArtifacts']) &&
     value['sourceArtifacts'].length > 0 &&
     value['sourceArtifacts'].every((artifact) => isContentPacketSourceArtifact(artifact))

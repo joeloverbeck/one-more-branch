@@ -21,17 +21,25 @@
     var loading = document.getElementById('evolution-loading');
     var resultsSection = document.getElementById('evolution-results-section');
     var resultsContainer = document.getElementById('evolution-cards');
+    var errorElement = document.getElementById('evolution-error');
 
     if (
       !(kernelSelector instanceof HTMLSelectElement) ||
       !(apiKeyInput instanceof HTMLInputElement) ||
       !(evolveBtn instanceof HTMLButtonElement) ||
-      !(loading instanceof HTMLElement)
+      !(loading instanceof HTMLElement) ||
+      !(errorElement instanceof HTMLElement)
     ) {
       return;
     }
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      buttonElement: evolveBtn,
+      onHide: updateEvolveButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var selectedKernelId = '';
     var selectedParentIds = [];
     var evolvedConcepts = [];
@@ -45,11 +53,7 @@
     };
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     function getEvolutionApiKey() {
@@ -268,50 +272,45 @@
         return;
       }
 
-      evolveBtn.disabled = true;
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
+      inlineError.clear();
 
       try {
-        var response = await fetch('/evolve/api/evolve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            conceptIds: selectedParentIds,
-            kernelId: selectedKernelId,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
-        });
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/evolve/api/evolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              conceptIds: selectedParentIds,
+              kernelId: selectedKernelId,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
 
-        var data = null;
-        try {
-          data = await response.json();
-        } catch (_parseError) {
-          data = null;
-        }
-
-        if (!response.ok || !data || !data.success) {
-          if (data && typeof data === 'object') {
-            if (data.code) {
-              console.error('Concept evolution error code:', data.code, '| Retryable:', data.retryable);
-            }
-            if (data.debug) {
-              console.error('Concept evolution debug info:', data.debug);
-            }
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_parseError) {
+            data = null;
           }
-          throw new Error(data && data.error ? data.error : 'Failed to evolve concepts');
-        }
 
-        setApiKey(apiKey);
-        renderEvolvedConcepts(data.evaluatedConcepts, data.verifications);
+          if (!response.ok || !data || !data.success) {
+            if (data && typeof data === 'object') {
+              if (data.code) {
+                console.error('Concept evolution error code:', data.code, '| Retryable:', data.retryable);
+              }
+              if (data.debug) {
+                console.error('Concept evolution debug info:', data.debug);
+              }
+            }
+            throw new Error(data && data.error ? data.error : 'Failed to evolve concepts');
+          }
+
+          setApiKey(apiKey);
+          renderEvolvedConcepts(data.evaluatedConcepts, data.verifications);
+        });
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to evolve concepts');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateEvolveButtonState();
       }
     }
 

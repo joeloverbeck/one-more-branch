@@ -7,6 +7,21 @@ function flushClientWork(): Promise<void> {
 }
 
 describe('character webs page controller', () => {
+  function createDeferredResponse(): {
+    promise: Promise<Response>;
+    resolve: (response: Response) => void;
+  } {
+    let resolveResponse: (response: Response) => void = () => {};
+    const promise = new Promise<Response>((resolve) => {
+      resolveResponse = resolve;
+    });
+
+    return {
+      promise,
+      resolve: resolveResponse,
+    };
+  }
+
   beforeEach(() => {
     jest.useFakeTimers();
     Object.defineProperty(window, 'crypto', {
@@ -302,5 +317,89 @@ describe('character webs page controller', () => {
     expect(document.getElementById('character-stage-list')?.textContent).toContain(
       'Recover the vanished map.'
     );
+    expect(document.getElementById('loading')?.style.display).toBe('none');
+  });
+
+  it('keeps the loading session active through web generation and the follow-up refresh', async () => {
+    const generateDeferred = createDeferredResponse();
+    const web = {
+      id: 'web-1',
+      name: 'Shattered Compass',
+      createdAt: '2026-03-09T12:00:00.000Z',
+      updatedAt: '2026-03-09T12:00:00.000Z',
+      protagonistName: 'Iria Vale',
+      assignments: [],
+      relationshipArchetypes: [],
+      castDynamicsSummary: '',
+    };
+    let generateRequestBody: Record<string, unknown> | null = null;
+
+    global.fetch = jest.fn((url: string, init?: RequestInit) => {
+      if (url.includes('/character-webs/api/web-1/generate')) {
+        generateRequestBody = JSON.parse(init?.body as string) as Record<string, unknown>;
+        return generateDeferred.promise;
+      }
+
+      if (url.includes('/character-webs/api/list')) {
+        return Promise.resolve(mockJsonResponse({ success: true, webs: [web] }));
+      }
+
+      if (url.includes('/character-webs/api/web-1')) {
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            web,
+            characters: [],
+          })
+        );
+      }
+
+      if (url.includes('/concepts/api/list')) {
+        return Promise.resolve(mockJsonResponse({ success: true, concepts: [] }));
+      }
+
+      if (url.includes('/worldbuilding/api/list')) {
+        return Promise.resolve(mockJsonResponse({ success: true, worldbuildings: [] }));
+      }
+
+      if (url.includes('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, 404));
+    }) as jest.Mock;
+
+    document.body.innerHTML = buildCharacterWebsPageHtml();
+    loadAppAndInit();
+    await flushClientWork();
+
+    (document.querySelector('.character-web-select-btn') as HTMLButtonElement).click();
+    await flushClientWork();
+
+    (document.getElementById('character-webs-api-key') as HTMLInputElement).value =
+      'sk-or-valid-key-12345';
+
+    const generateBtn = document.getElementById('character-web-generate-btn') as HTMLButtonElement;
+    const regenerateBtn = document.getElementById(
+      'character-web-regenerate-btn'
+    ) as HTMLButtonElement;
+    const loading = document.getElementById('loading') as HTMLDivElement;
+
+    generateBtn.click();
+
+    expect(loading.style.display).toBe('flex');
+    expect(generateBtn.disabled).toBe(true);
+    expect(regenerateBtn.disabled).toBe(true);
+
+    generateDeferred.resolve(mockJsonResponse({ success: true }));
+    await flushClientWork();
+
+    expect(generateRequestBody).toEqual({
+      apiKey: 'sk-or-valid-key-12345',
+      progressId: 'character-web-progress-id',
+    });
+    expect(loading.style.display).toBe('none');
+    expect(generateBtn.disabled).toBe(false);
+    expect(regenerateBtn.disabled).toBe(false);
   });
 });

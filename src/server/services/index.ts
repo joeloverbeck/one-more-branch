@@ -59,8 +59,6 @@ export {
   createContentService,
   contentService,
   type ContentService,
-  type ContentQuickInput,
-  type ContentQuickResult,
   type ContentPipelineInput,
   type ContentPipelineResult,
   type DistillTasteInput,

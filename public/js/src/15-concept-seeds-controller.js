@@ -16,10 +16,17 @@
     var kernelOpposingForce = document.getElementById('selected-kernel-opposing-force');
     var kernelQuestion = document.getElementById('selected-kernel-thematic-question');
     var kernelScore = document.getElementById('selected-kernel-overall-score');
+    var errorElement = document.getElementById('concept-seeds-error');
 
-    if (!loading || !generateBtn) return;
+    if (!loading || !generateBtn || !errorElement) return;
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      buttonElement: generateBtn,
+      onHide: updateGenerateButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var selectedKernelId = '';
     var lastGeneratedSeeds = null;
     var lastGeneratedCharacterWorlds = null;
@@ -148,11 +155,7 @@
     }
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     // ── Kernel selector ─────────────────────────────────────────────
@@ -211,48 +214,44 @@
         return;
       }
 
+      inlineError.clear();
       generateBtn.disabled = true;
       if (seedResultsSection) seedResultsSection.style.display = 'none';
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concept-seeds/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            protagonistDetails: inputs.protagonistDetails,
-            genreVibes: inputs.genreVibes,
-            moodKeywords: inputs.moodKeywords,
-            contentPreferences: inputs.contentPreferences,
-            excludedGenres: collectExcludedGenres(),
-            kernelId: selectedKernelId,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/concept-seeds/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              protagonistDetails: inputs.protagonistDetails,
+              genreVibes: inputs.genreVibes,
+              moodKeywords: inputs.moodKeywords,
+              contentPreferences: inputs.contentPreferences,
+              excludedGenres: collectExcludedGenres(),
+              kernelId: selectedKernelId,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
+
+          var data = null;
+          try { data = await response.json(); } catch (_e) { data = null; }
+
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to generate seeds');
+          }
+
+          setApiKey(apiKey);
+          lastGeneratedSeeds = data.seeds;
+          lastGeneratedCharacterWorlds = data.characterWorlds;
+          lastKernelId = data.kernelId || selectedKernelId;
+          lastFormInputs = inputs;
+
+          renderGeneratedSeeds(data.seeds, data.characterWorlds);
         });
-
-        var data = null;
-        try { data = await response.json(); } catch (_e) { data = null; }
-
-        if (!response.ok || !data || !data.success) {
-          throw new Error(data && data.error ? data.error : 'Failed to generate seeds');
-        }
-
-        setApiKey(apiKey);
-        lastGeneratedSeeds = data.seeds;
-        lastGeneratedCharacterWorlds = data.characterWorlds;
-        lastKernelId = data.kernelId || selectedKernelId;
-        lastFormInputs = inputs;
-
-        renderGeneratedSeeds(data.seeds, data.characterWorlds);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Something went wrong');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateGenerateButtonState();
       }
     }
 

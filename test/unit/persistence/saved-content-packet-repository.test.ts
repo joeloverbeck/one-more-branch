@@ -69,13 +69,15 @@ function createSavedContentPacket(id: string, updatedAt?: string): SavedContentP
         'You are the janitor whose memory makes you the only reliable witness to the building.',
     },
     origin: {
-      generationMode: 'quick',
+      generationMode: 'pipeline',
       sourceArtifacts: [
         {
-          artifactType: 'EXEMPLAR',
-          sourceId: 'exemplar-01',
+          artifactType: 'SPARK',
+          sourceId: 'spark-01',
           contentKind: 'ENTITY',
           summary: 'A building whose rooms rearrange around emotional conflict',
+          imageSeed: 'A corridor turning like a tidepool',
+          collisionTags: ['architecture', 'emotion'],
         },
       ],
     },

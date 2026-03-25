@@ -20,9 +20,24 @@ function initSpinesPage() {
   var startingSituationInput = document.getElementById('spineStartingSituation');
   var npcSelect = document.getElementById('spineNpcIds');
 
-  if (!form || !generateBtn) return;
+  if (
+    !form ||
+    !generateBtn ||
+    !progressSection ||
+    !progressContent ||
+    !generatedSection ||
+    !generatedContainer ||
+    !savedContainer
+  ) {
+    return;
+  }
 
-  var loadingProgress = createLoadingProgressController(progressContent);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: progressSection,
+    progressElement: progressContent,
+    buttonElement: generateBtn,
+    onHide: updateGenerateButton,
+  });
 
   // Restore API key
   var storedApiKey = getApiKey();
@@ -145,58 +160,51 @@ function initSpinesPage() {
   var generatedOptions = [];
 
   async function fetchSpineOptions() {
-    generateBtn.disabled = true;
-    progressSection.style.display = 'flex';
     generatedSection.style.display = 'none';
     generatedContainer.innerHTML = '';
 
     currentFormContext = collectFormContext();
 
-    var progressId = createProgressId();
-    loadingProgress.start(progressId);
-
     try {
-      var apiKey = apiKeyInput.value.trim();
-      setApiKey(apiKey);
+      await loadingSession.withProgress(async function(progressId) {
+        var apiKey = apiKeyInput.value.trim();
+        setApiKey(apiKey);
 
-      var response = await fetch('/spines/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conceptId: currentFormContext.conceptId,
-          protagonistCharacterId: currentFormContext.protagonistCharacterId,
-          npcCharacterIds: currentFormContext.npcCharacterIds,
-          worldbuildingId: currentFormContext.worldbuildingId,
-          tone: currentFormContext.tone,
-          startingSituation: currentFormContext.startingSituation,
-          apiKey: apiKey,
-          progressId: progressId,
-        }),
+        var response = await fetch('/spines/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conceptId: currentFormContext.conceptId,
+            protagonistCharacterId: currentFormContext.protagonistCharacterId,
+            npcCharacterIds: currentFormContext.npcCharacterIds,
+            worldbuildingId: currentFormContext.worldbuildingId,
+            tone: currentFormContext.tone,
+            startingSituation: currentFormContext.startingSituation,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to generate spines');
+        }
+
+        generatedOptions = data.options;
+
+        data.options.forEach(function (option, i) {
+          generatedContainer.appendChild(renderSpineCard(option, i, false));
+        });
+
+        generatedSection.style.display = '';
       });
-
-      var data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Failed to generate spines');
-      }
-
-      generatedOptions = data.options;
-
-      data.options.forEach(function (option, i) {
-        generatedContainer.appendChild(renderSpineCard(option, i, false));
-      });
-
-      generatedSection.style.display = '';
     } catch (error) {
       var errorEl = document.createElement('p');
       errorEl.className = 'form-error';
       errorEl.textContent = error instanceof Error ? error.message : 'Generation failed';
       generatedContainer.appendChild(errorEl);
       generatedSection.style.display = '';
-    } finally {
-      loadingProgress.stop();
-      progressSection.style.display = 'none';
-      updateGenerateButton();
     }
   }
 

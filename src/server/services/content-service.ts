@@ -2,18 +2,13 @@ import { generateTasteProfile } from '../../llm/content-taste-distiller-generati
 import { generateSparks } from '../../llm/content-sparkstormer-generation.js';
 import { generateContentPackets } from '../../llm/content-packeter-generation.js';
 import { evaluateContentPackets } from '../../llm/content-evaluator-generation.js';
-import { generateContentOneShot } from '../../llm/content-one-shot-generation.js';
 import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
 import type { GenerationStageCallback } from '../../engine/types.js';
 import { projectConceptSeedPacket } from '../../models/concept-seed-packet.js';
-import { formatContentExemplarId } from '../../models/content-generation-contracts.js';
 import type {
-  ConceptSeedOneShotLineagedPacket,
-  ConceptSeedOneShotPacket,
   ConceptSeedPacketerPacket,
   ContentEvaluation,
   GeneratedContentPacket,
-  ContentOneShotContext,
   ContentPacketContext,
   ContentPacketOrigin,
   ContentPacketSourceArtifact,
@@ -27,16 +22,6 @@ import type {
 import type { ConceptSeedPacket } from '../../models/concept-seed-packet.js';
 
 // --- Input types ---
-
-export interface ContentQuickInput {
-  readonly exemplarIdeas: readonly string[];
-  readonly genreVibes?: string;
-  readonly moodKeywords?: string;
-  readonly contentPreferences?: string;
-  readonly kernelBlock?: string;
-  readonly apiKey: string;
-  readonly onGenerationStage?: GenerationStageCallback;
-}
 
 export interface ContentPipelineInput {
   readonly exemplarIdeas: readonly string[];
@@ -80,11 +65,6 @@ export interface EvaluatePacketsInput {
 
 // --- Result types ---
 
-export interface ContentQuickResult {
-  readonly packets: readonly GeneratedContentPacket[];
-  readonly rawResponse: string;
-}
-
 export interface ContentPipelineResult {
   readonly tasteProfile: TasteProfile;
   readonly sparks: readonly ContentSpark[];
@@ -111,7 +91,6 @@ export interface EvaluatePacketsResult {
 // --- Service interface ---
 
 export interface ContentService {
-  generateContentQuick(input: ContentQuickInput): Promise<ContentQuickResult>;
   generateContentPipeline(input: ContentPipelineInput): Promise<ContentPipelineResult>;
   distillTaste(input: DistillTasteInput): Promise<DistillTasteResult>;
   generateSparks(input: GenerateSparksInput): Promise<GenerateSparksResult>;
@@ -122,7 +101,6 @@ export interface ContentService {
 // --- Dependencies ---
 
 interface ContentServiceDeps {
-  readonly generateContentOneShot: typeof generateContentOneShot;
   readonly generateTasteProfile: typeof generateTasteProfile;
   readonly generateSparks: typeof generateSparks;
   readonly generateContentPackets: typeof generateContentPackets;
@@ -130,7 +108,6 @@ interface ContentServiceDeps {
 }
 
 const defaultDeps: ContentServiceDeps = {
-  generateContentOneShot,
   generateTasteProfile,
   generateSparks,
   generateContentPackets,
@@ -162,7 +139,7 @@ function requireExemplarIdeas(ideas: readonly string[]): readonly string[] {
 }
 
 function buildPacketContext(
-  packet: ConceptSeedOneShotPacket | ConceptSeedPacketerPacket
+  packet: ConceptSeedPacketerPacket
 ): ContentPacketContext {
   return {
     premiseSummary: packet.premiseSummary,
@@ -170,24 +147,6 @@ function buildPacketContext(
     worldState: packet.worldState,
     playerPosition: packet.playerPosition,
   };
-}
-
-function buildQuickSourceArtifacts(
-  packet: ConceptSeedOneShotLineagedPacket,
-  exemplarsById: ReadonlyMap<string, string>
-): readonly ContentPacketSourceArtifact[] {
-  return packet.sourceExemplarIds.map((sourceId) => {
-    const summary = exemplarsById.get(sourceId);
-    if (!summary) {
-      throw new Error(`Missing source exemplar for packet ${packet.contentId}: ${sourceId}`);
-    }
-
-    return {
-      artifactType: 'EXEMPLAR',
-      sourceId,
-      summary,
-    };
-  });
 }
 
 function buildPipelineSourceArtifacts(
@@ -212,7 +171,7 @@ function buildPipelineSourceArtifacts(
 }
 
 function buildGeneratedPacket(
-  packet: ConceptSeedOneShotPacket | ConceptSeedPacketerPacket,
+  packet: ConceptSeedPacketerPacket,
   origin: ContentPacketOrigin
 ): GeneratedContentPacket {
   return {
@@ -226,37 +185,6 @@ function buildGeneratedPacket(
 
 export function createContentService(deps: ContentServiceDeps = defaultDeps): ContentService {
   return {
-    async generateContentQuick(input: ContentQuickInput): Promise<ContentQuickResult> {
-      const apiKey = requireApiKey(input.apiKey);
-      const exemplarIdeas = requireExemplarIdeas(input.exemplarIdeas);
-      const onGenerationStage = input.onGenerationStage;
-      const exemplarsById = new Map(
-        exemplarIdeas.map((idea, index) => [formatContentExemplarId(index), idea] as const)
-      );
-
-      const context: ContentOneShotContext = {
-        exemplarIdeas,
-        genreVibes: input.genreVibes?.trim() ?? undefined,
-        moodKeywords: input.moodKeywords?.trim() ?? undefined,
-        contentPreferences: input.contentPreferences?.trim() ?? undefined,
-        kernelBlock: input.kernelBlock?.trim() ?? undefined,
-      };
-
-      const result = await runGenerationStage(onGenerationStage, 'GENERATING_CONTENT', () =>
-        deps.generateContentOneShot(context, apiKey)
-      );
-
-      return {
-        packets: result.packets.map((packet) =>
-          buildGeneratedPacket(packet, {
-            generationMode: 'quick',
-            sourceArtifacts: buildQuickSourceArtifacts(packet, exemplarsById),
-          })
-        ),
-        rawResponse: result.rawResponse,
-      };
-    },
-
     async generateContentPipeline(input: ContentPipelineInput): Promise<ContentPipelineResult> {
       const apiKey = requireApiKey(input.apiKey);
       const exemplarIdeas = requireExemplarIdeas(input.exemplarIdeas);
@@ -265,8 +193,8 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
       // Stage 1: Taste Distiller
       const tasteContext: TasteDistillerContext = {
         exemplarIdeas,
-        moodOrGenre: input.moodOrGenre?.trim() ?? undefined,
-        contentPreferences: input.contentPreferences?.trim() ?? undefined,
+        moodOrGenre: input.moodOrGenre,
+        contentPreferences: input.contentPreferences,
       };
 
       const tasteResult = await runGenerationStage(onGenerationStage, 'DISTILLING_TASTE', () =>
@@ -328,8 +256,8 @@ export function createContentService(deps: ContentServiceDeps = defaultDeps): Co
 
       const context: TasteDistillerContext = {
         exemplarIdeas,
-        moodOrGenre: input.moodOrGenre?.trim() ?? undefined,
-        contentPreferences: input.contentPreferences?.trim() ?? undefined,
+        moodOrGenre: input.moodOrGenre,
+        contentPreferences: input.contentPreferences,
       };
 
       const result = await runGenerationStage(onGenerationStage, 'DISTILLING_TASTE', () =>

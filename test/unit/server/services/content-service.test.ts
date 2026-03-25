@@ -1,12 +1,10 @@
 import { createContentService } from '@/server/services/content-service';
 import type {
-  ConceptSeedOneShotLineagedPacket,
   ConceptSeedPacketerPacket,
   TasteProfile,
   ContentSpark,
   ContentEvaluation,
   GeneratedContentPacket,
-  ContentOneShotContext,
   TasteDistillerContext,
   SparkstormerContext,
   ContentPacketerContext,
@@ -51,6 +49,7 @@ function createPacketerPacket(id = 'content_1'): ConceptSeedPacketerPacket {
     premiseSummary: 'A test premise',
     situationFrame: 'A pressured test situation',
     worldState: 'A baseline world state',
+    playerPosition: 'You are the compromised witness who can still interfere with the machine.',
     sourceSparkIds: ['spark_1'],
     contentKind: 'ENTITY',
     coreAnomaly: 'anomaly',
@@ -87,64 +86,6 @@ function createEvaluation(id = 'content_1'): ContentEvaluation {
   };
 }
 
-function createOneShotPacket(
-  overrides: Partial<ConceptSeedOneShotLineagedPacket> = {}
-): ConceptSeedOneShotLineagedPacket {
-  return {
-    contentId: 'pkt-01',
-    sourceExemplarIds: ['exemplar-01'],
-    premiseSummary: 'A one-shot premise',
-    situationFrame: 'A one-shot situation',
-    worldState: 'A one-shot world state',
-    playerPosition: 'You are the compromised insider who still has a narrow chance to intervene.',
-    contentKind: 'ENTITY',
-    coreAnomaly: 'anomaly',
-    humanAnchor: 'anchor',
-    socialEngine: 'engine',
-    choicePressure: 'pressure',
-    signatureImage: 'image',
-    escalationPath: 'hint',
-    wildnessInvariant: 'invariant',
-    dullCollapse: 'collapse',
-    interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
-    ...overrides,
-  };
-}
-
-function createQuickGeneratedPacket(): GeneratedContentPacket {
-  return {
-    packet: {
-      contentId: 'pkt-01',
-      contentKind: 'ENTITY',
-      coreAnomaly: 'anomaly',
-      humanAnchor: 'anchor',
-      socialEngine: 'engine',
-      choicePressure: 'pressure',
-      signatureImage: 'image',
-      escalationPath: 'hint',
-      wildnessInvariant: 'invariant',
-      dullCollapse: 'collapse',
-      interactionVerbs: ['verb1', 'verb2', 'verb3', 'verb4'],
-    },
-    context: {
-      premiseSummary: 'A one-shot premise',
-      situationFrame: 'A one-shot situation',
-      worldState: 'A one-shot world state',
-      playerPosition: 'You are the compromised insider who still has a narrow chance to intervene.',
-    },
-    origin: {
-      generationMode: 'quick',
-      sourceArtifacts: [
-        {
-          artifactType: 'EXEMPLAR',
-          sourceId: 'exemplar-01',
-          summary: EXEMPLAR_IDEAS[0]!,
-        },
-      ],
-    },
-  };
-}
-
 function createPipelineGeneratedPacket(): GeneratedContentPacket {
   return {
     packet: {
@@ -164,6 +105,7 @@ function createPipelineGeneratedPacket(): GeneratedContentPacket {
       premiseSummary: 'A test premise',
       situationFrame: 'A pressured test situation',
       worldState: 'A baseline world state',
+      playerPosition: 'You are the compromised witness who can still interfere with the machine.',
     },
     origin: {
       generationMode: 'pipeline',
@@ -201,13 +143,8 @@ function createMockDeps() {
   const sparks = [createSpark()];
   const packets = [createPacketerPacket()];
   const evaluations = [createEvaluation()];
-  const oneShotPackets = [createOneShotPacket()];
 
   return {
-    generateContentOneShot: jest.fn().mockResolvedValue({
-      packets: oneShotPackets,
-      rawResponse: '{}',
-    }),
     generateTasteProfile: jest.fn().mockResolvedValue({
       tasteProfile,
       rawResponse: '{}',
@@ -224,96 +161,11 @@ function createMockDeps() {
       evaluations,
       rawResponse: '{}',
     }),
-    fixtures: { tasteProfile, sparks, packets, evaluations, oneShotPackets },
+    fixtures: { tasteProfile, sparks, packets, evaluations },
   };
 }
 
 describe('ContentService', () => {
-  describe('generateContentQuick', () => {
-    it('calls generateContentOneShot with correct context', async () => {
-      const deps = createMockDeps();
-      const service = createContentService(deps);
-
-      const result = await service.generateContentQuick({
-        exemplarIdeas: EXEMPLAR_IDEAS,
-        genreVibes: 'dark fantasy',
-        moodKeywords: 'grim',
-        contentPreferences: 'violent',
-        kernelBlock: 'some kernel',
-        apiKey: VALID_API_KEY,
-      });
-
-      expect(deps.generateContentOneShot).toHaveBeenCalledTimes(1);
-      expect(deps.generateContentOneShot).toHaveBeenCalledWith(
-        expect.objectContaining<ContentOneShotContext>({
-          exemplarIdeas: EXEMPLAR_IDEAS,
-          genreVibes: 'dark fantasy',
-          moodKeywords: 'grim',
-          contentPreferences: 'violent',
-          kernelBlock: 'some kernel',
-        }),
-        VALID_API_KEY
-      );
-      expect(result.packets).toEqual([createQuickGeneratedPacket()]);
-    });
-
-    it('requires apiKey (throws on missing)', async () => {
-      const deps = createMockDeps();
-      const service = createContentService(deps);
-
-      await expect(
-        service.generateContentQuick({
-          exemplarIdeas: EXEMPLAR_IDEAS,
-          apiKey: '',
-        })
-      ).rejects.toThrow('OpenRouter API key is required');
-    });
-
-    it('returns generated asset candidates with nested context and exemplar origin artifacts', async () => {
-      const deps = createMockDeps();
-      const service = createContentService(deps);
-
-      const result = await service.generateContentQuick({
-        exemplarIdeas: EXEMPLAR_IDEAS,
-        apiKey: VALID_API_KEY,
-      });
-
-      expect(result.packets).toEqual([createQuickGeneratedPacket()]);
-    });
-
-    it('fails when quick lineage references an unknown exemplar ID', async () => {
-      const deps = createMockDeps();
-      deps.generateContentOneShot.mockResolvedValue({
-        packets: [createOneShotPacket({ sourceExemplarIds: ['exemplar-99'] })],
-        rawResponse: '{}',
-      });
-      const service = createContentService(deps);
-
-      await expect(
-        service.generateContentQuick({
-          exemplarIdeas: EXEMPLAR_IDEAS,
-          apiKey: VALID_API_KEY,
-        })
-      ).rejects.toThrow('Missing source exemplar for packet pkt-01: exemplar-99');
-    });
-
-    it('fires onGenerationStage callbacks for GENERATING_CONTENT stage', async () => {
-      const deps = createMockDeps();
-      const service = createContentService(deps);
-      const stages: GenerationStageEvent[] = [];
-
-      await service.generateContentQuick({
-        exemplarIdeas: EXEMPLAR_IDEAS,
-        apiKey: VALID_API_KEY,
-        onGenerationStage: (event: GenerationStageEvent) => stages.push(event),
-      });
-
-      expect(stages).toHaveLength(2);
-      expect(stages[0]).toEqual({ stage: 'GENERATING_CONTENT', status: 'started', attempt: 1 });
-      expectCompletedStage(stages[1]!, 'GENERATING_CONTENT');
-    });
-  });
-
   describe('generateContentPipeline', () => {
     it('calls all 4 stages in order: distillTaste -> generateSparks -> packageContent -> evaluatePackets', async () => {
       const deps = createMockDeps();
@@ -446,6 +298,27 @@ describe('ContentService', () => {
 
       expect(result.packets).toEqual([createPipelineGeneratedPacket()]);
     });
+
+    it('passes route-normalized optional strings through without re-trimming them', async () => {
+      const deps = createMockDeps();
+      const service = createContentService(deps);
+
+      await service.generateContentPipeline({
+        exemplarIdeas: EXEMPLAR_IDEAS,
+        moodOrGenre: '  cosmic horror  ',
+        contentPreferences: '  body horror  ',
+        apiKey: VALID_API_KEY,
+      });
+
+      expect(deps.generateTasteProfile).toHaveBeenCalledWith(
+        expect.objectContaining<TasteDistillerContext>({
+          exemplarIdeas: EXEMPLAR_IDEAS,
+          moodOrGenre: '  cosmic horror  ',
+          contentPreferences: '  body horror  ',
+        }),
+        VALID_API_KEY
+      );
+    });
   });
 
   describe('distillTaste', () => {
@@ -485,6 +358,27 @@ describe('ContentService', () => {
       expect(stages).toHaveLength(2);
       expect(stages[0]).toEqual({ stage: 'DISTILLING_TASTE', status: 'started', attempt: 1 });
       expectCompletedStage(stages[1]!, 'DISTILLING_TASTE');
+    });
+
+    it('passes route-normalized optional strings through without re-trimming them', async () => {
+      const deps = createMockDeps();
+      const service = createContentService(deps);
+
+      await service.distillTaste({
+        exemplarIdeas: EXEMPLAR_IDEAS,
+        moodOrGenre: '  cosmic horror  ',
+        contentPreferences: '  body horror  ',
+        apiKey: VALID_API_KEY,
+      });
+
+      expect(deps.generateTasteProfile).toHaveBeenCalledWith(
+        expect.objectContaining<TasteDistillerContext>({
+          exemplarIdeas: EXEMPLAR_IDEAS,
+          moodOrGenre: '  cosmic horror  ',
+          contentPreferences: '  body horror  ',
+        }),
+        VALID_API_KEY
+      );
     });
   });
 
@@ -572,7 +466,7 @@ describe('ContentService', () => {
       const service = createContentService(deps);
 
       await expect(
-        service.generateContentQuick({ exemplarIdeas: [], apiKey: VALID_API_KEY })
+        service.generateContentPipeline({ exemplarIdeas: [], apiKey: VALID_API_KEY })
       ).rejects.toThrow('At least one exemplar idea is required');
     });
 
@@ -581,7 +475,7 @@ describe('ContentService', () => {
       const service = createContentService(deps);
 
       await expect(
-        service.generateContentQuick({ exemplarIdeas: ['  ', ''], apiKey: VALID_API_KEY })
+        service.generateContentPipeline({ exemplarIdeas: ['  ', ''], apiKey: VALID_API_KEY })
       ).rejects.toThrow('At least one non-empty exemplar idea is required');
     });
 
@@ -590,7 +484,7 @@ describe('ContentService', () => {
       const service = createContentService(deps);
 
       await expect(
-        service.generateContentQuick({ exemplarIdeas: EXEMPLAR_IDEAS, apiKey: 'short' })
+        service.generateContentPipeline({ exemplarIdeas: EXEMPLAR_IDEAS, apiKey: 'short' })
       ).rejects.toThrow('OpenRouter API key is required');
     });
   });

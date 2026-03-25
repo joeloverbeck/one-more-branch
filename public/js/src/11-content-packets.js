@@ -9,14 +9,25 @@ function initContentPacketsPage() {
   var resultsEl = document.getElementById('content-generation-results');
   var generatedList = document.getElementById('generated-packets-list');
   var generateBtn = document.getElementById('content-generate-btn');
-  var loadingProgress = progressEl ? createLoadingProgressController(progressEl) : null;
+  var errorEl = document.getElementById('content-generation-error');
+  if (!errorEl) {
+    return;
+  }
+  var loadingSession = progressEl
+    ? createLoadingOverlaySession({
+      overlayElement: progressEl,
+      progressElement: progressEl,
+      buttonElement: generateBtn,
+    })
+    : null;
+  var inlineError = createInlineErrorController(errorEl);
 
   initExemplarControls();
 
   if (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      handleContentGenerate();
+      void handleContentGenerate();
     });
   }
 
@@ -93,21 +104,20 @@ function initContentPacketsPage() {
     });
   }
 
-  function handleContentGenerate() {
+  async function handleContentGenerate() {
+    inlineError.clear();
+
     var apiKey = getApiKey();
     if (!apiKey || apiKey.length < 10) {
-      alert('Please enter a valid OpenRouter API key.');
+      inlineError.show('Please enter a valid OpenRouter API key.');
       return;
     }
 
     var ideas = collectExemplarIdeas();
     if (ideas.length === 0) {
-      alert('Please enter at least one exemplar idea.');
+      inlineError.show('Please enter at least one exemplar idea.');
       return;
     }
-
-    var usePipeline = document.getElementById('usePipeline');
-    var pipeline = usePipeline ? usePipeline.checked : false;
 
     var moodInput = document.getElementById('contentMoodKeywords');
     var prefInput = document.getElementById('contentPreferences');
@@ -115,54 +125,79 @@ function initContentPacketsPage() {
     var payload = {
       exemplarIdeas: ideas,
       apiKey: apiKey,
-      pipeline: pipeline,
     };
 
     if (moodInput && moodInput.value.trim()) {
-      if (pipeline) {
-        payload.moodOrGenre = moodInput.value.trim();
-      } else {
-        payload.moodKeywords = moodInput.value.trim();
-      }
+      payload.moodOrGenre = moodInput.value.trim();
     }
     if (prefInput && prefInput.value.trim()) {
       payload.contentPreferences = prefInput.value.trim();
     }
 
-    var progressId = createProgressId();
-    payload.progressId = progressId;
-
-    if (generateBtn) generateBtn.disabled = true;
     if (resultsEl) resultsEl.style.display = 'none';
-    if (loadingProgress) loadingProgress.start(progressId);
 
-    fetch('/content-packets/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        if (loadingProgress) loadingProgress.stop();
-        if (generateBtn) generateBtn.disabled = false;
+    try {
+      var data = loadingSession
+        ? await loadingSession.withProgress(async function (progressId) {
+          payload.progressId = progressId;
 
-        if (!data.success) {
-          alert('Generation failed: ' + (data.error || 'Unknown error'));
-          return;
-        }
+          var response = await fetch('/content-packets/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
 
-        renderGeneratedPackets(
-          data.packetCards || [],
-          data.packets || [],
-          data.evaluations || [],
-          data.tasteProfile || null
-        );
-      })
-      .catch(function (err) {
-        if (loadingProgress) loadingProgress.stop();
-        if (generateBtn) generateBtn.disabled = false;
-        alert('Generation failed: ' + err.message);
-      });
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_) {
+            data = null;
+          }
+
+          if (!response.ok) {
+            throw new Error((data && data.error) || 'Request failed');
+          }
+
+          return data;
+        })
+        : await (async function () {
+          payload.progressId = createProgressId();
+
+          var response = await fetch('/content-packets/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_) {
+            data = null;
+          }
+
+          if (!response.ok) {
+            throw new Error((data && data.error) || 'Request failed');
+          }
+
+          return data;
+        })();
+
+      if (!data || !data.success) {
+        inlineError.show('Generation failed: ' + ((data && data.error) || 'Unknown error'));
+        return;
+      }
+
+      inlineError.clear();
+      renderGeneratedPackets(
+        data.packetCards || [],
+        data.packets || [],
+        data.evaluations || [],
+        data.tasteProfile || null
+      );
+    } catch (err) {
+      inlineError.show('Generation failed: ' + err.message);
+    }
   }
 
   function renderGeneratedPackets(packetCards, packets, evaluations, tasteProfile) {

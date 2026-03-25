@@ -22,7 +22,11 @@ function initCharactersPage() {
     return;
   }
 
-  var loadingProgress = createLoadingProgressController(loading);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: loading,
+    progressElement: loading,
+    buttonElement: decomposeBtn,
+  });
   var state = {
     characters: [],
     selectedCharacter: null,
@@ -371,36 +375,29 @@ function initCharactersPage() {
 
     try {
       var apiKey = getApiKeyFromPage();
-      var progressId = createProgressId();
-      decomposeBtn.disabled = true;
-      loading.style.display = 'flex';
-      loadingProgress.start(progressId);
+      await loadingSession.withProgress(async function (progressId) {
+        var response = await fetch('/characters/decompose', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            characterName: characterName,
+            characterDescription: characterDescription,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
 
-      var response = await fetch('/characters/decompose', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          characterName: characterName,
-          characterDescription: characterDescription,
-          apiKey: apiKey,
-          progressId: progressId,
-        }),
+        var data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error((data && data.error) || 'Decomposition failed');
+        }
+
+        nameInput.value = '';
+        descInput.value = '';
+        await refreshCharacters(data.character && data.character.id);
       });
-
-      var data = await response.json();
-      if (!response.ok || !data.success) {
-        throw new Error((data && data.error) || 'Decomposition failed');
-      }
-
-      nameInput.value = '';
-      descInput.value = '';
-      await refreshCharacters(data.character && data.character.id);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Decomposition failed');
-    } finally {
-      loadingProgress.stop();
-      loading.style.display = 'none';
-      decomposeBtn.disabled = false;
     }
   }
 

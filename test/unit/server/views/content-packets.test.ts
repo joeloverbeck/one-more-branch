@@ -140,4 +140,46 @@ describe('content-packets page template', () => {
     expect(html.indexOf('Premise Summary')).toBeLessThan(html.indexOf('Content ID'));
     expect(html.indexOf('Generation Mode')).toBeGreaterThan(html.indexOf('Interaction Verbs'));
   });
+
+  it('renders an inline generation error container', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const renderTemplate = renderEjs as (
+      source: string,
+      data: {
+        title: string;
+        hasSavedPackets: boolean;
+        contentKindGroups: Array<{
+          kind: string;
+          displayLabel: string;
+          cards: Array<{
+            id: string;
+            pinned: boolean;
+            contextDetails: Array<{
+              key: string;
+              label: string;
+              value: string | readonly string[];
+            }>;
+            packetDetails: Array<{ key: string; label: string; value: string | readonly string[] }>;
+            originDetails: Array<{ key: string; label: string; value: string | readonly string[] }>;
+            metaDetails: Array<{ key: string; label: string; value: string | readonly string[] }>;
+          }>;
+        }>;
+      },
+      options: { filename: string }
+    ) => string;
+
+    const html = renderTemplate(
+      template,
+      {
+        title: 'Content Packets - One More Branch',
+        hasSavedPackets: false,
+        contentKindGroups: [],
+      },
+      { filename: templatePath }
+    );
+
+    expect(html).toContain('id="content-generation-error"');
+    expect(html).toContain('class="alert alert-error"');
+    expect(html).toContain('role="alert"');
+  });
 });

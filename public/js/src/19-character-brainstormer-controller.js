@@ -19,7 +19,7 @@ function initCharacterBrainstormerPage() {
   var diversityNoteEl = document.getElementById('character-brainstormer-diversity-note');
   var copyAllBtn = document.getElementById('character-brainstormer-copy-all-btn');
 
-  if (!loading || !generateBtn || !conceptSelector || !worldbuildingSelector) {
+  if (!loading || !errorBlock || !generateBtn || !conceptSelector || !worldbuildingSelector) {
     return;
   }
 
@@ -29,7 +29,12 @@ function initCharacterBrainstormerPage() {
     });
   }
 
-  var loadingProgress = createLoadingProgressController(loading);
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: loading,
+    progressElement: loading,
+    buttonElement: generateBtn,
+  });
+  var inlineError = createInlineErrorController(errorBlock);
   var lastResult = null;
 
   // ── API key restore ──────────────────────────────────────────────
@@ -71,20 +76,6 @@ function initCharacterBrainstormerPage() {
   updateGenerateButtonState();
 
   // ── Error display ────────────────────────────────────────────────
-
-  function showError(message) {
-    if (errorBlock) {
-      errorBlock.textContent = message;
-      errorBlock.style.display = 'block';
-    }
-  }
-
-  function clearError() {
-    if (errorBlock) {
-      errorBlock.textContent = '';
-      errorBlock.style.display = 'none';
-    }
-  }
 
   // ── Markdown formatting ──────────────────────────────────────────
 
@@ -264,50 +255,45 @@ function initCharacterBrainstormerPage() {
         ? userNotesInput.value.trim()
         : '';
 
-    clearError();
+    inlineError.clear();
     setApiKey(apiKey);
-    generateBtn.disabled = true;
     if (resultsSection) {
       resultsSection.style.display = 'none';
     }
-    loading.style.display = 'flex';
-
-    var progressId = createProgressId();
-    loadingProgress.start(progressId);
 
     try {
-      var response = await fetch('/character-brainstormer/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conceptId: conceptId,
-          worldbuildingId: worldbuildingId,
-          userNotes: userNotes,
-          apiKey: apiKey,
-          progressId: progressId,
-        }),
+      await loadingSession.withProgress(async function (progressId) {
+        var response = await fetch('/character-brainstormer/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conceptId: conceptId,
+            worldbuildingId: worldbuildingId,
+            userNotes: userNotes,
+            apiKey: apiKey,
+            progressId: progressId,
+          }),
+        });
+
+        var data = null;
+        try {
+          data = await response.json();
+        } catch (_e) {
+          data = null;
+        }
+
+        if (!response.ok || !data || !data.success) {
+          var errorMsg =
+            (data && data.error) || 'Generation failed (HTTP ' + response.status + ')';
+          inlineError.show(errorMsg);
+          return;
+        }
+
+        renderBrainstormResults(data.result);
       });
-
-      var data = null;
-      try {
-        data = await response.json();
-      } catch (_e) {
-        data = null;
-      }
-
-      if (!response.ok || !data || !data.success) {
-        var errorMsg =
-          (data && data.error) || 'Generation failed (HTTP ' + response.status + ')';
-        showError(errorMsg);
-        return;
-      }
-
-      renderBrainstormResults(data.result);
     } catch (err) {
-      showError(err instanceof Error ? err.message : 'Network error');
+      inlineError.show(err instanceof Error ? err.message : 'Network error');
     } finally {
-      loadingProgress.stop();
-      loading.style.display = 'none';
       updateGenerateButtonState();
     }
   }

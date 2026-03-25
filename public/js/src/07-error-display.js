@@ -30,6 +30,23 @@
     errorBlock.style.display = 'none';
   }
 
+  function createInlineErrorController(errorElement) {
+    if (!errorElement) {
+      throw new Error('createInlineErrorController requires an error element');
+    }
+
+    return {
+      show: function show(message) {
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+      },
+      clear: function clear() {
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
+      },
+    };
+  }
+
   function showFormError(message) {
     let errorDiv = document.querySelector('.alert-error.form-error');
     if (!errorDiv) {

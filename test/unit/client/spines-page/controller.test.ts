@@ -17,6 +17,28 @@ const MOCK_SPINE_OPTION = {
 };
 
 describe('spines page controller', () => {
+  function createDeferredResponse(): {
+    promise: Promise<Response>;
+    resolve: (response: Response) => void;
+  } {
+    let resolveResponse: (response: Response) => void = () => {};
+    const promise = new Promise<Response>((resolve) => {
+      resolveResponse = resolve;
+    });
+
+    return {
+      promise,
+      resolve: resolveResponse,
+    };
+  }
+
+  async function settleAsyncWork(): Promise<void> {
+    await Promise.resolve();
+    await jest.runAllTimersAsync();
+    await Promise.resolve();
+    await jest.runAllTimersAsync();
+  }
+
   beforeEach(() => {
     jest.useFakeTimers();
 
@@ -118,10 +140,105 @@ describe('spines page controller', () => {
       conceptId: string;
       protagonistCharacterId: string;
       worldbuildingId: string;
+      progressId: string;
     };
     expect(body.conceptId).toBe('concept-1');
     expect(body.protagonistCharacterId).toBe('char-1');
     expect(body.worldbuildingId).toBe('wb-1');
+    expect(body.progressId).toBe('progress-test-uuid');
+  });
+
+  it('shows the overlay during generation and cleans it up after success', async () => {
+    const generateDeferred = createDeferredResponse();
+    global.fetch = jest.fn((url: string) => {
+      if (url === '/spines/api/generate') {
+        return generateDeferred.promise;
+      }
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+
+      return Promise.resolve(mockJsonResponse({ error: 'Not found' }, 404));
+    });
+
+    setupPage();
+
+    (document.getElementById('spineConceptId') as HTMLSelectElement).value = 'concept-1';
+    (document.getElementById('spineProtagonistId') as HTMLSelectElement).value = 'char-1';
+    (document.getElementById('spineWorldbuildingId') as HTMLSelectElement).value = 'wb-1';
+    const apiKey = document.getElementById('spineApiKey') as HTMLInputElement;
+    apiKey.value = 'sk-or-test-key-valid';
+    apiKey.dispatchEvent(new Event('input'));
+    document.getElementById('spineConceptId')!.dispatchEvent(new Event('change'));
+    document.getElementById('spineProtagonistId')!.dispatchEvent(new Event('change'));
+    document.getElementById('spineWorldbuildingId')!.dispatchEvent(new Event('change'));
+
+    const generateBtn = document.getElementById('generate-spines-btn') as HTMLButtonElement;
+    const progressSection = document.getElementById('spine-progress-section') as HTMLElement;
+
+    generateBtn.click();
+
+    expect(progressSection.style.display).toBe('flex');
+    expect(generateBtn.disabled).toBe(true);
+
+    generateDeferred.resolve(
+      mockJsonResponse({
+        success: true,
+        options: [MOCK_SPINE_OPTION],
+      })
+    );
+
+    await settleAsyncWork();
+
+    expect(progressSection.style.display).toBe('none');
+    expect(generateBtn.disabled).toBe(false);
+    expect(document.getElementById('generated-spines-section')?.style.display).toBe('');
+    expect(document.querySelector('.save-spine-btn')).not.toBeNull();
+  });
+
+  it('shows the error and still cleans up the loading session after failure', async () => {
+    const generateDeferred = createDeferredResponse();
+    global.fetch = jest.fn((url: string) => {
+      if (url === '/spines/api/generate') {
+        return generateDeferred.promise;
+      }
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'failed' }));
+      }
+
+      return Promise.resolve(mockJsonResponse({ error: 'Not found' }, 404));
+    });
+
+    setupPage();
+
+    (document.getElementById('spineConceptId') as HTMLSelectElement).value = 'concept-1';
+    (document.getElementById('spineProtagonistId') as HTMLSelectElement).value = 'char-1';
+    (document.getElementById('spineWorldbuildingId') as HTMLSelectElement).value = 'wb-1';
+    const apiKey = document.getElementById('spineApiKey') as HTMLInputElement;
+    apiKey.value = 'sk-or-test-key-valid';
+    apiKey.dispatchEvent(new Event('input'));
+    document.getElementById('spineConceptId')!.dispatchEvent(new Event('change'));
+    document.getElementById('spineProtagonistId')!.dispatchEvent(new Event('change'));
+    document.getElementById('spineWorldbuildingId')!.dispatchEvent(new Event('change'));
+
+    const generateBtn = document.getElementById('generate-spines-btn') as HTMLButtonElement;
+    const progressSection = document.getElementById('spine-progress-section') as HTMLElement;
+
+    generateBtn.click();
+
+    expect(progressSection.style.display).toBe('flex');
+    expect(generateBtn.disabled).toBe(true);
+
+    generateDeferred.resolve(
+      mockJsonResponse({ success: false, error: 'Generation failed hard' }, 500)
+    );
+
+    await settleAsyncWork();
+
+    expect(progressSection.style.display).toBe('none');
+    expect(generateBtn.disabled).toBe(false);
+    expect(document.getElementById('generated-spines-section')?.style.display).toBe('');
+    expect(document.getElementById('generated-spines')?.textContent).toContain('Generation failed hard');
   });
 
   it('calls /spines/api/save when save button is clicked on a generated spine', async () => {
