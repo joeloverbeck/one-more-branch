@@ -767,6 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initKernelEvolutionPage();
   initCharacterWebsPage();
   initCharactersPage();
+  initCharacterBrainstormerPage();
   initSpinesPage();
   initCreateStoryPage();
 });
