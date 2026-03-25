@@ -78,6 +78,25 @@ describe('buildContentOneShotPrompt', () => {
     expect(userMessage!.content).not.toContain('viewpointPressure');
   });
 
+  it('requires playerPosition to describe a pressured player-facing role', () => {
+    const messages = buildContentOneShotPrompt(makeContext());
+    const combinedPrompt = messages.map((message) => message.content).join('\n');
+
+    expect(combinedPrompt).toContain('playerPosition is required.');
+    expect(combinedPrompt).toContain('who the player is');
+    expect(combinedPrompt).toContain('what they know or do not know');
+    expect(combinedPrompt).toContain('why their position is inherently pressured');
+  });
+
+  it('rejects generic interactionVerbs unless the packet makes them concrete', () => {
+    const messages = buildContentOneShotPrompt(makeContext());
+    const combinedPrompt = messages.map((message) => message.content).join('\n');
+
+    expect(combinedPrompt).toContain('interactionVerbs: exactly 4-6 story-specific concrete verbs');
+    expect(combinedPrompt).toContain('Generic verbs like "explore", "fight", or "talk"');
+    expect(combinedPrompt).toContain('made unusually concrete by the packet itself');
+  });
+
   it('omits optional sections when not provided', () => {
     const context = makeContext();
     const messages = buildContentOneShotPrompt(context);

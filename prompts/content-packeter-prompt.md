@@ -3,7 +3,7 @@
 - Source: `src/llm/prompts/content-packeter-prompt.ts`
 - Orchestration: `src/llm/content-packeter-generation.ts`
 - Output schema: `src/llm/schemas/content-packeter-schema.ts`
-- Models: `src/models/content-packet.ts`
+- Models: `src/models/content-generation-contracts.ts`
 
 ## Pipeline Position
 
@@ -14,9 +14,9 @@ Stage 3 in the content generation pipeline. Selects and expands the 12-16 strong
 ## System Message Template
 
 ```text
-You are a content expansion architect for interactive fiction. Select the strongest sparks and expand them into load-bearing content packets — fully structured seeds with social engines, choice pressure, escalation paths, and wildness invariants.
+You are a content-packeting engine for branching interactive fiction. Given a taste profile and a set of raw sparks, you expand the best sparks into 12-16 load-bearing content packets.
 
-Every packet must feel specific, human, and charged.
+Each packet is a fully fleshed-out content seed with explicit setup context and structure: premiseSummary, situationFrame, worldState, playerPosition, coreAnomaly, humanAnchor, socialEngine, choicePressure, signatureImage, escalationPath, wildnessInvariant, dullCollapse, and interactionVerbs. These packets will later be evaluated, ranked, and woven into story concepts.
 
 {{CONTENT_POLICY}}
 ```
@@ -24,7 +24,7 @@ Every packet must feel specific, human, and charged.
 ## User Message Template
 
 ```text
-Select and expand the 12-16 strongest sparks into content packets with explicit setup context.
+Expand the best 12-16 sparks into full content packets.
 
 TASTE PROFILE:
 {{tasteProfile JSON}}
@@ -35,13 +35,13 @@ SPARKS:
 {{optional STORY KERNEL block}}
 
 OUTPUT REQUIREMENTS:
-- Return JSON: { "packets": ConceptSeedPacketerPacket[] }
+- Return JSON matching exactly: { "packets": [ ... ] }
+- Each packet object must have: `contentId`, `sourceSparkIds`, `contentKind`, `premiseSummary`, `situationFrame`, `worldState`, `playerPosition`, `coreAnomaly`, `humanAnchor`, `socialEngine`, `choicePressure`, `signatureImage`, `escalationPath`, `wildnessInvariant`, `dullCollapse`, `interactionVerbs`
+- `playerPosition` is required in every packet and must describe who the player is, what they know or do not know, and why their position is inherently pressured
+- `premiseSummary`, `situationFrame`, and `worldState` must carry setup explicitly rather than burying it all inside `coreAnomaly`
+- `interactionVerbs`: exactly 4-6 story-specific action verbs per packet
+- Generic verbs like `explore`, `fight`, or `talk` are not enough unless the packet makes them unusually concrete
 - 12-16 packets total
-- Every packet must have ALL required fields
-- Each packet must include `premiseSummary`, `situationFrame`, and `worldState`
-- `playerPosition` is required
-- Honour taste profile's collision patterns, tone blend, scene appetites
-- Respect antiPatterns and surfaceDoNotRepeat
 ```
 
 ## JSON Response Shape
@@ -94,7 +94,7 @@ Content packets are the primary semantic units consumed by concept stages:
 - `wildnessInvariant` is the most critical field — it carries the core strangeness that must survive all downstream stages
 - `dullCollapse` describes the failure mode — what the packet becomes if its uniqueness is stripped away
 - `playerPosition` is a required part of the packet contract and should name the player's pressured position rather than merely describing abstract tension
-- `interactionVerbs` (4-6) provide concrete, story-specific player action vocabulary
+- `interactionVerbs` (4-6) provide concrete, story-specific player action vocabulary; generic verbs are only acceptable when the packet itself makes them unusually concrete
 - `premiseSummary`, `situationFrame`, and `worldState` are generation-time context inputs for the saved asset candidate; they are not part of the lean downstream `ConceptSeedPacket` projection used by concept stages
 - `sourceSparkIds` traces lineage back to sparkstormer output and should be treated as transient generation lineage rather than a persisted display alias
 - Each packet expands exactly ONE spark — `sourceSparkIds` must contain exactly 1 entry (enforced at parse time, not in the JSON Schema — Anthropic rejects `maxItems`). Cross-packet uniqueness is also enforced: no two packets may reference the same sparkId

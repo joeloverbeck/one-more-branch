@@ -131,6 +131,26 @@ describe('buildContentPacketerPrompt', () => {
     expect(userMessage!.content).not.toContain('viewpointPressure');
   });
 
+  it('requires playerPosition to describe a pressured player-facing role', () => {
+    const messages = buildContentPacketerPrompt(makeContext());
+    const combinedPrompt = messages.map((message) => message.content).join('\n');
+
+    expect(combinedPrompt).toContain(
+      'playerPosition: mandatory description of who the player is inside this setup'
+    );
+    expect(combinedPrompt).toContain('what they know or do not know');
+    expect(combinedPrompt).toContain('why their position is inherently pressured');
+  });
+
+  it('rejects generic interactionVerbs unless the packet makes them concrete', () => {
+    const messages = buildContentPacketerPrompt(makeContext());
+    const combinedPrompt = messages.map((message) => message.content).join('\n');
+
+    expect(combinedPrompt).toContain('interactionVerbs: 4-6 story-specific action verbs');
+    expect(combinedPrompt).toContain('Generic verbs like "explore", "fight", or "talk"');
+    expect(combinedPrompt).toContain('made unusually concrete by the packet itself');
+  });
+
   it('injects optional kernel block when provided', () => {
     const context = makeContext({ kernelBlock: 'A story about grief becoming currency' });
     const messages = buildContentPacketerPrompt(context);
