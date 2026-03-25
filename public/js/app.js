@@ -9329,6 +9329,7 @@ function initContentPacketsPage() {
 
     if (generateBtn) generateBtn.disabled = true;
     if (resultsEl) resultsEl.style.display = 'none';
+    if (progressEl) progressEl.style.display = 'flex';
     if (loadingProgress) loadingProgress.start(progressId);
 
     fetch('/content-packets/api/generate', {
@@ -9339,6 +9340,7 @@ function initContentPacketsPage() {
       .then(function (res) { return res.json(); })
       .then(function (data) {
         if (loadingProgress) loadingProgress.stop();
+        if (progressEl) progressEl.style.display = 'none';
         if (generateBtn) generateBtn.disabled = false;
 
         if (!data.success) {
@@ -9355,6 +9357,7 @@ function initContentPacketsPage() {
       })
       .catch(function (err) {
         if (loadingProgress) loadingProgress.stop();
+        if (progressEl) progressEl.style.display = 'none';
         if (generateBtn) generateBtn.disabled = false;
         alert('Generation failed: ' + err.message);
       });

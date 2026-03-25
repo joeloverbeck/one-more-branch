@@ -31,11 +31,27 @@ describe('content-packets page controller', () => {
   let fetchMock: jest.Mock;
   let alertMock: jest.Mock;
 
+  interface Deferred<T> {
+    promise: Promise<T>;
+    resolve: (value: T | PromiseLike<T>) => void;
+    reject: (reason?: unknown) => void;
+  }
+
   function mockJsonResponse(body: unknown, ok = true): Response {
     return {
       ok,
       json: jest.fn().mockResolvedValue(body),
     } as unknown as Response;
+  }
+
+  function createDeferred<T>(): Deferred<T> {
+    let resolve!: (value: T | PromiseLike<T>) => void;
+    let reject!: (reason?: unknown) => void;
+    const promise = new Promise<T>((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
   }
 
   function flushPromises(): Promise<void> {
@@ -67,6 +83,116 @@ describe('content-packets page controller', () => {
     jest.restoreAllMocks();
     document.body.innerHTML = '';
     sessionStorage.clear();
+  });
+
+  it('shows the loading overlay during generation and hides it after a successful response', async () => {
+    const generateResponse = createDeferred<Response>();
+
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const url = extractUrl(input);
+      if (url === '/content-packets/api/generate') {
+        return generateResponse.promise;
+      }
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'unknown' }));
+      }
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false));
+    });
+
+    loadAppAndInit();
+
+    const apiKeyInput = document.getElementById('contentApiKey') as HTMLInputElement;
+    const form = document.getElementById('content-generate-form') as HTMLFormElement;
+    const progressEl = document.getElementById('content-generation-progress') as HTMLDivElement;
+    const generateBtn = document.getElementById('content-generate-btn') as HTMLButtonElement;
+
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+
+    form.dispatchEvent(new Event('submit'));
+
+    expect(progressEl.style.display).toBe('flex');
+    expect(generateBtn.disabled).toBe(true);
+
+    generateResponse.resolve(
+      mockJsonResponse({
+        success: true,
+        packets: [],
+        packetCards: [],
+        evaluations: [],
+        tasteProfile: null,
+      })
+    );
+
+    await flushPromises();
+    await flushPromises();
+
+    expect(progressEl.style.display).toBe('none');
+    expect(generateBtn.disabled).toBe(false);
+    expect(alertMock).not.toHaveBeenCalled();
+  });
+
+  it('hides the loading overlay after an API-level failure response', async () => {
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const url = extractUrl(input);
+      if (url === '/content-packets/api/generate') {
+        return Promise.resolve(mockJsonResponse({ success: false, error: 'Bad pipeline output' }));
+      }
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'unknown' }));
+      }
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false));
+    });
+
+    loadAppAndInit();
+
+    const apiKeyInput = document.getElementById('contentApiKey') as HTMLInputElement;
+    const form = document.getElementById('content-generate-form') as HTMLFormElement;
+    const progressEl = document.getElementById('content-generation-progress') as HTMLDivElement;
+    const generateBtn = document.getElementById('content-generate-btn') as HTMLButtonElement;
+
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+
+    form.dispatchEvent(new Event('submit'));
+    expect(progressEl.style.display).toBe('flex');
+
+    await flushPromises();
+    await flushPromises();
+
+    expect(progressEl.style.display).toBe('none');
+    expect(generateBtn.disabled).toBe(false);
+    expect(alertMock).toHaveBeenCalledWith('Generation failed: Bad pipeline output');
+  });
+
+  it('hides the loading overlay after a rejected fetch', async () => {
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const url = extractUrl(input);
+      if (url === '/content-packets/api/generate') {
+        return Promise.reject(new Error('Network down'));
+      }
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'unknown' }));
+      }
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, false));
+    });
+
+    loadAppAndInit();
+
+    const apiKeyInput = document.getElementById('contentApiKey') as HTMLInputElement;
+    const form = document.getElementById('content-generate-form') as HTMLFormElement;
+    const progressEl = document.getElementById('content-generation-progress') as HTMLDivElement;
+    const generateBtn = document.getElementById('content-generate-btn') as HTMLButtonElement;
+
+    apiKeyInput.value = 'sk-or-valid-test-key-12345';
+
+    form.dispatchEvent(new Event('submit'));
+    expect(progressEl.style.display).toBe('flex');
+
+    await flushPromises();
+    await flushPromises();
+
+    expect(progressEl.style.display).toBe('none');
+    expect(generateBtn.disabled).toBe(false);
+    expect(alertMock).toHaveBeenCalledWith('Generation failed: Network down');
   });
 
   it('renders generated packet cards with sectioned context/origin details and saves the full candidate with evaluation', async () => {
