@@ -1,3 +1,5 @@
+**Status**: COMPLETED
+
 # Improvements to Writer (opening and continuation)
 
 We fed some examples of narrative text from stories at stories/* to ChatGPT Pro. I also provided the current prompts for the opening and continuation writers (see prompt docs at prompts/* ). The goal was for ChatGPT to determine if our prompts could be improved to produce better writing quality.

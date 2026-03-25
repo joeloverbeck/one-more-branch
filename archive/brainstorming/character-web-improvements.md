@@ -1,3 +1,5 @@
+**Status**: COMPLETED
+
 # Character Web and Character Development Improvements
 
 I fed the prompt docs from prompts/* related to character web generation and character development to ChatGPT to see if our system had issues, or if ChatGPT could determine improvements.
