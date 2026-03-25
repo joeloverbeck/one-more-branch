@@ -18,10 +18,16 @@
     var editCloseBtn = document.getElementById('concept-edit-close');
     var editSaveBtn = document.getElementById('concept-edit-save');
     var editCancelBtn = document.getElementById('concept-edit-cancel');
+    var errorElement = document.getElementById('concepts-error');
 
-    if (!loading || !developBtn) return;
+    if (!loading || !developBtn || !errorElement) return;
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      onHide: updateDevelopButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var currentEditConceptId = null;
     var lastEvaluatedConcept = null;
     var lastVerification = null;
@@ -46,11 +52,7 @@
     }
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     // ── Seed selector ───────────────────────────────────────────────
@@ -130,42 +132,38 @@
         return;
       }
 
+      inlineError.clear();
       developBtn.disabled = true;
       if (conceptResultsSection) conceptResultsSection.style.display = 'none';
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concepts/api/generate/develop', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            seedId: selectedSeedId,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/concepts/api/generate/develop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              seedId: selectedSeedId,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
+
+          var data = null;
+          try { data = await response.json(); } catch (_e) { data = null; }
+
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to develop concept');
+          }
+
+          setApiKey(apiKey);
+          lastEvaluatedConcept = data.evaluatedConcept;
+          lastVerification = data.verification || null;
+          lastSourceKernelId = data.sourceKernelId || null;
+
+          renderDevelopedConcept(data.evaluatedConcept, data.verification);
         });
-
-        var data = null;
-        try { data = await response.json(); } catch (_e) { data = null; }
-
-        if (!response.ok || !data || !data.success) {
-          throw new Error(data && data.error ? data.error : 'Failed to develop concept');
-        }
-
-        setApiKey(apiKey);
-        lastEvaluatedConcept = data.evaluatedConcept;
-        lastVerification = data.verification || null;
-        lastSourceKernelId = data.sourceKernelId || null;
-
-        renderDevelopedConcept(data.evaluatedConcept, data.verification);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Something went wrong');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateDevelopButtonState();
       }
     }
 
@@ -459,63 +457,62 @@
         return;
       }
 
+      inlineError.clear();
       btn.disabled = true;
       btn.textContent = 'Hardening...';
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concepts/api/' + encodeURIComponent(conceptId) + '/harden', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
-        });
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/concepts/api/' + encodeURIComponent(conceptId) + '/harden', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
 
-        var data = await response.json();
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Failed to harden concept');
-        }
+          var data = null;
+          try { data = await response.json(); } catch (_parseError) { data = null; }
 
-        setApiKey(apiKey);
-        btn.textContent = 'Already Hardened';
-
-        var card = btn.closest('.saved-concept-card');
-        if (card) {
-          var badges = card.querySelector('.spine-badges');
-          if (badges) {
-            var hardenBadge = document.createElement('span');
-            hardenBadge.className = 'spine-badge spine-badge-type';
-            hardenBadge.style.background = 'var(--accent-green, #2ecc71)';
-            hardenBadge.textContent = 'Hardened';
-            badges.appendChild(hardenBadge);
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to harden concept');
           }
 
-          var stressResult = data.driftRisks || data.playerBreaks
-            ? { driftRisks: data.driftRisks || [], playerBreaks: data.playerBreaks || [] }
-            : null;
-          if (stressResult) {
-            var stressHtml = renderStressTestSection(stressResult);
-            if (stressHtml) {
-              var timestampField = card.querySelector('.form-actions');
-              if (timestampField) {
-                timestampField.insertAdjacentHTML('beforebegin', stressHtml);
-              } else {
-                card.insertAdjacentHTML('beforeend', stressHtml);
+          setApiKey(apiKey);
+          btn.textContent = 'Already Hardened';
+
+          var card = btn.closest('.saved-concept-card');
+          if (card) {
+            var badges = card.querySelector('.spine-badges');
+            if (badges) {
+              var hardenBadge = document.createElement('span');
+              hardenBadge.className = 'spine-badge spine-badge-type';
+              hardenBadge.style.background = 'var(--accent-green, #2ecc71)';
+              hardenBadge.textContent = 'Hardened';
+              badges.appendChild(hardenBadge);
+            }
+
+            var stressResult = data.driftRisks || data.playerBreaks
+              ? { driftRisks: data.driftRisks || [], playerBreaks: data.playerBreaks || [] }
+              : null;
+            if (stressResult) {
+              var stressHtml = renderStressTestSection(stressResult);
+              if (stressHtml) {
+                var timestampField = card.querySelector('.form-actions');
+                if (timestampField) {
+                  timestampField.insertAdjacentHTML('beforebegin', stressHtml);
+                } else {
+                  card.insertAdjacentHTML('beforeend', stressHtml);
+                }
               }
             }
           }
-        }
+        });
       } catch (error) {
         btn.disabled = false;
         btn.textContent = 'Harden';
         showError(error instanceof Error ? error.message : 'Failed to harden');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
       }
     }
 

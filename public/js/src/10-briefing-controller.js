@@ -16,8 +16,11 @@
       return;
     }
 
-    var loadingProgress = createLoadingProgressController(loading);
-    var ideationCtrl = createSceneIdeationController(storyId, loading, loadingProgress);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+    });
+    var ideationCtrl = createSceneIdeationController(storyId);
     var ideationContainer = document.getElementById('scene-ideation-container');
 
     function setError(message) {
@@ -95,48 +98,44 @@
     async function beginAdventure(apiKey, selectedDirection) {
       beginBtn.disabled = true;
       clearError();
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var body = {
-          apiKey: apiKey,
-          progressId: progressId,
-        };
-        if (selectedDirection) {
-          body.selectedSceneDirection = selectedDirection;
-        }
+        await loadingSession.withProgress(async function(progressId) {
+          var body = {
+            apiKey: apiKey,
+            progressId: progressId,
+          };
+          if (selectedDirection) {
+            body.selectedSceneDirection = selectedDirection;
+          }
 
-        var response = await fetch('/play/' + storyId + '/begin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
+          var response = await fetch('/play/' + storyId + '/begin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          var data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Failed to begin adventure');
+          }
+
+          window.location.assign('/play/' + storyId + '?page=1&newStory=true');
         });
-        var data = await response.json();
-
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Failed to begin adventure');
-        }
-
-        window.location.assign('/play/' + storyId + '?page=1&newStory=true');
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Failed to begin adventure');
         beginBtn.disabled = false;
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
       }
     }
 
     async function startIdeation(apiKey) {
       clearError();
       beginBtn.disabled = true;
-      loading.style.display = 'flex';
 
       try {
-        var options = await ideationCtrl.fetchSceneOptions(apiKey, 'opening');
-        loading.style.display = 'none';
+        var options = await loadingSession.withProgress(async function(progressId) {
+          return ideationCtrl.fetchSceneOptions(apiKey, 'opening', undefined, undefined, undefined, progressId);
+        });
 
         var target = ideationContainer || briefingContainer;
         ideationCtrl.renderIdeationUI(
@@ -150,7 +149,6 @@
           }
         );
       } catch (error) {
-        loading.style.display = 'none';
         setError(error instanceof Error ? error.message : 'Scene ideation failed');
         beginBtn.disabled = false;
       }

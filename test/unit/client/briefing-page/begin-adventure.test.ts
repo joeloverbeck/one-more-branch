@@ -92,8 +92,12 @@ describe('briefing begin adventure', () => {
 
     // Step 1: Click "Begin Adventure" - triggers ensureApiKey -> startIdeation -> fetch ideate-scene
     const beginBtn = document.getElementById('begin-adventure-btn') as HTMLButtonElement;
+    const loading = document.getElementById('loading') as HTMLElement;
     beginBtn.click();
+    await Promise.resolve();
+    expect(loading.style.display).toBe('flex');
     await jest.runAllTimersAsync();
+    expect(loading.style.display).toBe('none');
 
     // Verify ideation fetch was called
     const ideationCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
@@ -116,7 +120,9 @@ describe('briefing begin adventure', () => {
     // Step 3: Click "Confirm Direction" to proceed to beginAdventure
     expect(confirmBtn.disabled).toBe(false);
     confirmBtn.click();
+    expect(loading.style.display).toBe('flex');
     await jest.runAllTimersAsync();
+    expect(loading.style.display).toBe('none');
 
     // Step 4: Verify the POST to /begin was made with correct data
     const postCall = (fetchMock.mock.calls as [string, RequestInit?][]).find(
@@ -140,5 +146,33 @@ describe('briefing begin adventure', () => {
         'diversityLane'
       )
     ).toBe(false);
+  });
+
+  it('hides the overlay and restores the begin button when ideation fails', async () => {
+    setupPage();
+    sessionStorage.setItem('omb_api_key', 'sk-or-valid-test-key-12345');
+
+    fetchMock.mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('generation-progress')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+      if (typeof url === 'string' && url.includes('/ideate-scene')) {
+        return Promise.resolve(mockJsonResponse({ success: false, error: 'Scene ideation failed' }, false, 500));
+      }
+      return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+    });
+
+    const beginBtn = document.getElementById('begin-adventure-btn') as HTMLButtonElement;
+    const loading = document.getElementById('loading') as HTMLElement;
+    const error = document.getElementById('briefing-error') as HTMLElement;
+
+    beginBtn.click();
+    await Promise.resolve();
+    expect(loading.style.display).toBe('flex');
+    await jest.runAllTimersAsync();
+
+    expect(loading.style.display).toBe('none');
+    expect(beginBtn.disabled).toBe(false);
+    expect(error.textContent).toContain('Scene ideation failed');
   });
 });

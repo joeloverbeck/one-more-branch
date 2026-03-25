@@ -19,6 +19,9 @@ describe('evolution page template', () => {
     expect(template).toContain('id="evolution-results-section"');
     expect(template).toContain('id="evolution-cards"');
     expect(template).toContain('id="evolution-loading"');
+    expect(template).toContain('id="evolution-error"');
+    expect(template).toContain('role="alert"');
+    expect(template).toContain('aria-live="polite"');
   });
 
   it('starts with hidden parent/results/loading sections and disabled evolve button', () => {

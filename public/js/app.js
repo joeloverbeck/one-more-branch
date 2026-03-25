@@ -8445,8 +8445,11 @@ function initCreateStoryPage() {
       return;
     }
 
-    var loadingProgress = createLoadingProgressController(loading);
-    var ideationCtrl = createSceneIdeationController(storyId, loading, loadingProgress);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+    });
+    var ideationCtrl = createSceneIdeationController(storyId);
     var ideationContainer = document.getElementById('scene-ideation-container');
 
     function setError(message) {
@@ -8524,48 +8527,44 @@ function initCreateStoryPage() {
     async function beginAdventure(apiKey, selectedDirection) {
       beginBtn.disabled = true;
       clearError();
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var body = {
-          apiKey: apiKey,
-          progressId: progressId,
-        };
-        if (selectedDirection) {
-          body.selectedSceneDirection = selectedDirection;
-        }
+        await loadingSession.withProgress(async function(progressId) {
+          var body = {
+            apiKey: apiKey,
+            progressId: progressId,
+          };
+          if (selectedDirection) {
+            body.selectedSceneDirection = selectedDirection;
+          }
 
-        var response = await fetch('/play/' + storyId + '/begin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
+          var response = await fetch('/play/' + storyId + '/begin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          var data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.error || 'Failed to begin adventure');
+          }
+
+          window.location.assign('/play/' + storyId + '?page=1&newStory=true');
         });
-        var data = await response.json();
-
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Failed to begin adventure');
-        }
-
-        window.location.assign('/play/' + storyId + '?page=1&newStory=true');
       } catch (error) {
         setError(error instanceof Error ? error.message : 'Failed to begin adventure');
         beginBtn.disabled = false;
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
       }
     }
 
     async function startIdeation(apiKey) {
       clearError();
       beginBtn.disabled = true;
-      loading.style.display = 'flex';
 
       try {
-        var options = await ideationCtrl.fetchSceneOptions(apiKey, 'opening');
-        loading.style.display = 'none';
+        var options = await loadingSession.withProgress(async function(progressId) {
+          return ideationCtrl.fetchSceneOptions(apiKey, 'opening', undefined, undefined, undefined, progressId);
+        });
 
         var target = ideationContainer || briefingContainer;
         ideationCtrl.renderIdeationUI(
@@ -8579,7 +8578,6 @@ function initCreateStoryPage() {
           }
         );
       } catch (error) {
-        loading.style.display = 'none';
         setError(error instanceof Error ? error.message : 'Scene ideation failed');
         beginBtn.disabled = false;
       }
@@ -8615,10 +8613,16 @@ function initCreateStoryPage() {
     var editCloseBtn = document.getElementById('concept-edit-close');
     var editSaveBtn = document.getElementById('concept-edit-save');
     var editCancelBtn = document.getElementById('concept-edit-cancel');
+    var errorElement = document.getElementById('concepts-error');
 
-    if (!loading || !developBtn) return;
+    if (!loading || !developBtn || !errorElement) return;
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      onHide: updateDevelopButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var currentEditConceptId = null;
     var lastEvaluatedConcept = null;
     var lastVerification = null;
@@ -8643,11 +8647,7 @@ function initCreateStoryPage() {
     }
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     // ── Seed selector ───────────────────────────────────────────────
@@ -8727,42 +8727,38 @@ function initCreateStoryPage() {
         return;
       }
 
+      inlineError.clear();
       developBtn.disabled = true;
       if (conceptResultsSection) conceptResultsSection.style.display = 'none';
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concepts/api/generate/develop', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            seedId: selectedSeedId,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/concepts/api/generate/develop', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              seedId: selectedSeedId,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
+
+          var data = null;
+          try { data = await response.json(); } catch (_e) { data = null; }
+
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to develop concept');
+          }
+
+          setApiKey(apiKey);
+          lastEvaluatedConcept = data.evaluatedConcept;
+          lastVerification = data.verification || null;
+          lastSourceKernelId = data.sourceKernelId || null;
+
+          renderDevelopedConcept(data.evaluatedConcept, data.verification);
         });
-
-        var data = null;
-        try { data = await response.json(); } catch (_e) { data = null; }
-
-        if (!response.ok || !data || !data.success) {
-          throw new Error(data && data.error ? data.error : 'Failed to develop concept');
-        }
-
-        setApiKey(apiKey);
-        lastEvaluatedConcept = data.evaluatedConcept;
-        lastVerification = data.verification || null;
-        lastSourceKernelId = data.sourceKernelId || null;
-
-        renderDevelopedConcept(data.evaluatedConcept, data.verification);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Something went wrong');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateDevelopButtonState();
       }
     }
 
@@ -9056,63 +9052,62 @@ function initCreateStoryPage() {
         return;
       }
 
+      inlineError.clear();
       btn.disabled = true;
       btn.textContent = 'Hardening...';
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concepts/api/' + encodeURIComponent(conceptId) + '/harden', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
-        });
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/concepts/api/' + encodeURIComponent(conceptId) + '/harden', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
 
-        var data = await response.json();
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Failed to harden concept');
-        }
+          var data = null;
+          try { data = await response.json(); } catch (_parseError) { data = null; }
 
-        setApiKey(apiKey);
-        btn.textContent = 'Already Hardened';
-
-        var card = btn.closest('.saved-concept-card');
-        if (card) {
-          var badges = card.querySelector('.spine-badges');
-          if (badges) {
-            var hardenBadge = document.createElement('span');
-            hardenBadge.className = 'spine-badge spine-badge-type';
-            hardenBadge.style.background = 'var(--accent-green, #2ecc71)';
-            hardenBadge.textContent = 'Hardened';
-            badges.appendChild(hardenBadge);
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to harden concept');
           }
 
-          var stressResult = data.driftRisks || data.playerBreaks
-            ? { driftRisks: data.driftRisks || [], playerBreaks: data.playerBreaks || [] }
-            : null;
-          if (stressResult) {
-            var stressHtml = renderStressTestSection(stressResult);
-            if (stressHtml) {
-              var timestampField = card.querySelector('.form-actions');
-              if (timestampField) {
-                timestampField.insertAdjacentHTML('beforebegin', stressHtml);
-              } else {
-                card.insertAdjacentHTML('beforeend', stressHtml);
+          setApiKey(apiKey);
+          btn.textContent = 'Already Hardened';
+
+          var card = btn.closest('.saved-concept-card');
+          if (card) {
+            var badges = card.querySelector('.spine-badges');
+            if (badges) {
+              var hardenBadge = document.createElement('span');
+              hardenBadge.className = 'spine-badge spine-badge-type';
+              hardenBadge.style.background = 'var(--accent-green, #2ecc71)';
+              hardenBadge.textContent = 'Hardened';
+              badges.appendChild(hardenBadge);
+            }
+
+            var stressResult = data.driftRisks || data.playerBreaks
+              ? { driftRisks: data.driftRisks || [], playerBreaks: data.playerBreaks || [] }
+              : null;
+            if (stressResult) {
+              var stressHtml = renderStressTestSection(stressResult);
+              if (stressHtml) {
+                var timestampField = card.querySelector('.form-actions');
+                if (timestampField) {
+                  timestampField.insertAdjacentHTML('beforebegin', stressHtml);
+                } else {
+                  card.insertAdjacentHTML('beforeend', stressHtml);
+                }
               }
             }
           }
-        }
+        });
       } catch (error) {
         btn.disabled = false;
         btn.textContent = 'Harden';
         showError(error instanceof Error ? error.message : 'Failed to harden');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
       }
     }
 
@@ -10390,17 +10385,25 @@ if (document.readyState === 'loading') {
     var loading = document.getElementById('evolution-loading');
     var resultsSection = document.getElementById('evolution-results-section');
     var resultsContainer = document.getElementById('evolution-cards');
+    var errorElement = document.getElementById('evolution-error');
 
     if (
       !(kernelSelector instanceof HTMLSelectElement) ||
       !(apiKeyInput instanceof HTMLInputElement) ||
       !(evolveBtn instanceof HTMLButtonElement) ||
-      !(loading instanceof HTMLElement)
+      !(loading instanceof HTMLElement) ||
+      !(errorElement instanceof HTMLElement)
     ) {
       return;
     }
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      buttonElement: evolveBtn,
+      onHide: updateEvolveButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var selectedKernelId = '';
     var selectedParentIds = [];
     var evolvedConcepts = [];
@@ -10414,11 +10417,7 @@ if (document.readyState === 'loading') {
     };
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     function getEvolutionApiKey() {
@@ -10637,50 +10636,45 @@ if (document.readyState === 'loading') {
         return;
       }
 
-      evolveBtn.disabled = true;
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
+      inlineError.clear();
 
       try {
-        var response = await fetch('/evolve/api/evolve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            conceptIds: selectedParentIds,
-            kernelId: selectedKernelId,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
-        });
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/evolve/api/evolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              conceptIds: selectedParentIds,
+              kernelId: selectedKernelId,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
 
-        var data = null;
-        try {
-          data = await response.json();
-        } catch (_parseError) {
-          data = null;
-        }
-
-        if (!response.ok || !data || !data.success) {
-          if (data && typeof data === 'object') {
-            if (data.code) {
-              console.error('Concept evolution error code:', data.code, '| Retryable:', data.retryable);
-            }
-            if (data.debug) {
-              console.error('Concept evolution debug info:', data.debug);
-            }
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_parseError) {
+            data = null;
           }
-          throw new Error(data && data.error ? data.error : 'Failed to evolve concepts');
-        }
 
-        setApiKey(apiKey);
-        renderEvolvedConcepts(data.evaluatedConcepts, data.verifications);
+          if (!response.ok || !data || !data.success) {
+            if (data && typeof data === 'object') {
+              if (data.code) {
+                console.error('Concept evolution error code:', data.code, '| Retryable:', data.retryable);
+              }
+              if (data.debug) {
+                console.error('Concept evolution debug info:', data.debug);
+              }
+            }
+            throw new Error(data && data.error ? data.error : 'Failed to evolve concepts');
+          }
+
+          setApiKey(apiKey);
+          renderEvolvedConcepts(data.evaluatedConcepts, data.verifications);
+        });
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to evolve concepts');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateEvolveButtonState();
       }
     }
 
@@ -10794,7 +10788,7 @@ if (document.readyState === 'loading') {
 
   // ── Scene Ideation Controller ────────────────────────────────────
 
-  function createSceneIdeationController(storyId, loadingEl, loadingProgressCtrl) {
+  function createSceneIdeationController(storyId) {
     function fetchSceneOptions(apiKey, mode, pageId, choiceIndex, protagonistGuidance, progressId) {
       var body = { apiKey: apiKey, mode: mode || 'opening' };
       if (progressId) {
@@ -10899,26 +10893,30 @@ if (document.readyState === 'loading') {
     var loading = document.getElementById('kernel-evo-loading');
     var resultsSection = document.getElementById('kernel-evo-results-section');
     var resultsContainer = document.getElementById('kernel-evo-cards');
+    var errorElement = document.getElementById('kernel-evolution-error');
 
     if (
       !(apiKeyInput instanceof HTMLInputElement) ||
       !(evolveBtn instanceof HTMLButtonElement) ||
-      !(loading instanceof HTMLElement)
+      !(loading instanceof HTMLElement) ||
+      !(errorElement instanceof HTMLElement)
     ) {
       return;
     }
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      buttonElement: evolveBtn,
+      onHide: updateEvolveButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var selectedParentIds = [];
     var evolvedKernels = [];
     var allSavedKernels = [];
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     function getEvoApiKey() {
@@ -11058,41 +11056,36 @@ if (document.readyState === 'loading') {
         return;
       }
 
-      evolveBtn.disabled = true;
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
+      inlineError.clear();
 
       try {
-        var response = await fetch('/evolve-kernels/api/evolve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            kernelIds: selectedParentIds,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/evolve-kernels/api/evolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              kernelIds: selectedParentIds,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
+
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_parseError) {
+            data = null;
+          }
+
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to evolve kernels');
+          }
+
+          setApiKey(apiKey);
+          renderEvolvedKernels(data.evaluatedKernels);
         });
-
-        var data = null;
-        try {
-          data = await response.json();
-        } catch (_parseError) {
-          data = null;
-        }
-
-        if (!response.ok || !data || !data.success) {
-          throw new Error(data && data.error ? data.error : 'Failed to evolve kernels');
-        }
-
-        setApiKey(apiKey);
-        renderEvolvedKernels(data.evaluatedKernels);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to evolve kernels');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateEvolveButtonState();
       }
     }
 
@@ -11216,10 +11209,17 @@ if (document.readyState === 'loading') {
     var kernelOpposingForce = document.getElementById('selected-kernel-opposing-force');
     var kernelQuestion = document.getElementById('selected-kernel-thematic-question');
     var kernelScore = document.getElementById('selected-kernel-overall-score');
+    var errorElement = document.getElementById('concept-seeds-error');
 
-    if (!loading || !generateBtn) return;
+    if (!loading || !generateBtn || !errorElement) return;
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      buttonElement: generateBtn,
+      onHide: updateGenerateButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var selectedKernelId = '';
     var lastGeneratedSeeds = null;
     var lastGeneratedCharacterWorlds = null;
@@ -11348,11 +11348,7 @@ if (document.readyState === 'loading') {
     }
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     // ── Kernel selector ─────────────────────────────────────────────
@@ -11411,48 +11407,44 @@ if (document.readyState === 'loading') {
         return;
       }
 
+      inlineError.clear();
       generateBtn.disabled = true;
       if (seedResultsSection) seedResultsSection.style.display = 'none';
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
 
       try {
-        var response = await fetch('/concept-seeds/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            protagonistDetails: inputs.protagonistDetails,
-            genreVibes: inputs.genreVibes,
-            moodKeywords: inputs.moodKeywords,
-            contentPreferences: inputs.contentPreferences,
-            excludedGenres: collectExcludedGenres(),
-            kernelId: selectedKernelId,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/concept-seeds/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              protagonistDetails: inputs.protagonistDetails,
+              genreVibes: inputs.genreVibes,
+              moodKeywords: inputs.moodKeywords,
+              contentPreferences: inputs.contentPreferences,
+              excludedGenres: collectExcludedGenres(),
+              kernelId: selectedKernelId,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
+
+          var data = null;
+          try { data = await response.json(); } catch (_e) { data = null; }
+
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to generate seeds');
+          }
+
+          setApiKey(apiKey);
+          lastGeneratedSeeds = data.seeds;
+          lastGeneratedCharacterWorlds = data.characterWorlds;
+          lastKernelId = data.kernelId || selectedKernelId;
+          lastFormInputs = inputs;
+
+          renderGeneratedSeeds(data.seeds, data.characterWorlds);
         });
-
-        var data = null;
-        try { data = await response.json(); } catch (_e) { data = null; }
-
-        if (!response.ok || !data || !data.success) {
-          throw new Error(data && data.error ? data.error : 'Failed to generate seeds');
-        }
-
-        setApiKey(apiKey);
-        lastGeneratedSeeds = data.seeds;
-        lastGeneratedCharacterWorlds = data.characterWorlds;
-        lastKernelId = data.kernelId || selectedKernelId;
-        lastFormInputs = inputs;
-
-        renderGeneratedSeeds(data.seeds, data.characterWorlds);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Something went wrong');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateGenerateButtonState();
       }
     }
 

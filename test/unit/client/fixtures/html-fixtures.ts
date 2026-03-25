@@ -645,6 +645,7 @@ export function buildConceptsPageHtml(): string {
     <main class="container" id="concepts-page">
       <section class="form-section">
         <h1>Develop Concept Seeds</h1>
+        <div id="concepts-error" class="alert alert-error form-error" style="display: none;" role="alert" aria-live="polite"></div>
         <section id="concept-develop-section">
           <h2>Develop a Saved Seed</h2>
           <form id="concept-develop-form">
@@ -689,6 +690,7 @@ export function buildEvolutionPageHtml(): string {
   return `
     <main class="container" id="evolution-page">
       <section class="form-section">
+        <div id="evolution-error" class="alert alert-error form-error" style="display: none;" role="alert" aria-live="polite"></div>
         <section id="evolution-kernel-section">
           <select id="evolution-kernel-selector">
             <option value="">Select a saved kernel...</option>
@@ -755,6 +757,87 @@ export function buildKernelsPageHtml(): string {
           <div id="saved-kernels"></div>
         </section>
       </section>
+    </main>
+  `;
+}
+
+export function buildKernelEvolutionPageHtml(): string {
+  return `
+    <main class="container" id="kernel-evolution-page">
+      <section class="form-section">
+        <div id="kernel-evolution-error" class="alert alert-error form-error" style="display: none;" role="alert" aria-live="polite"></div>
+        <section id="kernel-evo-parent-section" class="spine-section">
+          <p id="kernel-evo-selection-counter">Selected: 0/3 (select 2-3 kernels)</p>
+          <div id="kernel-evo-parent-cards" class="spine-options-container"></div>
+        </section>
+        <section id="kernel-evo-actions-section" class="spine-section">
+          <input type="password" id="kernelEvoApiKey" required />
+          <button type="button" id="kernel-evo-btn" disabled>Evolve Kernels</button>
+        </section>
+        <section id="kernel-evo-results-section" style="display: none;">
+          <div id="kernel-evo-cards" class="spine-options-container"></div>
+        </section>
+      </section>
+      <div class="loading-overlay" id="kernel-evo-loading" style="display:none;">
+        <div class="loading-stage" aria-live="polite"></div>
+        <p class="loading-status">Working...</p>
+      </div>
+    </main>
+  `;
+}
+
+export function buildConceptSeedsPageHtml(): string {
+  return `
+    <main class="container" id="concept-seeds-page">
+      <section class="form-section">
+        <div id="concept-seeds-error" class="alert alert-error form-error" style="display: none;" role="alert" aria-live="polite"></div>
+        <section id="seed-generate-section">
+          <form id="seed-generate-form">
+            <div class="form-group">
+              <select id="kernel-selector" required>
+                <option value="">Select a saved kernel...</option>
+                <option value="kernel-1">Kernel 1</option>
+              </select>
+            </div>
+            <article id="selected-kernel-summary" style="display:none;">
+              <span id="selected-kernel-dramatic-thesis"></span>
+              <span id="selected-kernel-value-at-stake"></span>
+              <span id="selected-kernel-opposing-force"></span>
+              <span id="selected-kernel-thematic-question"></span>
+              <span id="selected-kernel-overall-score"></span>
+            </article>
+            <div class="form-group"><textarea id="protagonistDetails"></textarea></div>
+            <div class="form-group"><input type="text" id="genreVibes" /></div>
+            <div class="form-group"><input type="text" id="moodKeywords" /></div>
+            <div class="form-group"><input type="text" id="contentPreferences" /></div>
+            <div class="form-group">
+              <div id="genre-chip-counter">(6 of 6 available)</div>
+              <div id="genre-chip-grid">
+                <button type="button" class="genre-chip" data-genre="FANTASY">Fantasy</button>
+                <button type="button" class="genre-chip" data-genre="SCI_FI">Sci Fi</button>
+                <button type="button" class="genre-chip" data-genre="HORROR">Horror</button>
+                <button type="button" class="genre-chip" data-genre="ROMANCE">Romance</button>
+                <button type="button" class="genre-chip" data-genre="MYSTERY">Mystery</button>
+                <button type="button" class="genre-chip" data-genre="THRILLER">Thriller</button>
+              </div>
+            </div>
+            <div class="form-group"><input type="password" id="seedApiKey" required /></div>
+            <div class="form-actions">
+              <button type="button" id="generate-seeds-btn" disabled>Generate Seeds</button>
+            </div>
+          </form>
+        </section>
+        <section id="seed-results-section" style="display: none;">
+          <div id="seed-result-cards" class="spine-options-container"></div>
+        </section>
+        <section id="saved-seeds-section">
+          <div id="saved-seeds-list" class="spine-options-container"></div>
+        </section>
+      </section>
+      <div class="loading-overlay" id="loading" style="display:none;">
+        <div class="loading-stage" aria-live="polite"></div>
+        <p class="loading-status">Working...</p>
+      </div>
     </main>
   `;
 }

@@ -23,6 +23,9 @@ describe('concepts page template', () => {
     const template = fs.readFileSync(conceptsPath, 'utf8');
 
     expect(template).toContain('id="seed-selector"');
+    expect(template).toContain('id="concepts-error"');
+    expect(template).toContain('role="alert"');
+    expect(template).toContain('aria-live="polite"');
     expect(template).toContain('id="selected-seed-summary"');
     expect(template).toContain('id="develop-concept-btn"');
     expect(template).toMatch(/id="develop-concept-btn"[^>]*disabled/);

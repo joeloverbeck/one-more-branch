@@ -13,26 +13,30 @@
     var loading = document.getElementById('kernel-evo-loading');
     var resultsSection = document.getElementById('kernel-evo-results-section');
     var resultsContainer = document.getElementById('kernel-evo-cards');
+    var errorElement = document.getElementById('kernel-evolution-error');
 
     if (
       !(apiKeyInput instanceof HTMLInputElement) ||
       !(evolveBtn instanceof HTMLButtonElement) ||
-      !(loading instanceof HTMLElement)
+      !(loading instanceof HTMLElement) ||
+      !(errorElement instanceof HTMLElement)
     ) {
       return;
     }
 
-    var loadingProgress = createLoadingProgressController(loading);
+    var loadingSession = createLoadingOverlaySession({
+      overlayElement: loading,
+      progressElement: loading,
+      buttonElement: evolveBtn,
+      onHide: updateEvolveButtonState,
+    });
+    var inlineError = createInlineErrorController(errorElement);
     var selectedParentIds = [];
     var evolvedKernels = [];
     var allSavedKernels = [];
 
     function showError(message) {
-      if (typeof showFormError === 'function') {
-        showFormError(message);
-      } else {
-        alert(message);
-      }
+      inlineError.show(message);
     }
 
     function getEvoApiKey() {
@@ -172,41 +176,36 @@
         return;
       }
 
-      evolveBtn.disabled = true;
-      loading.style.display = 'flex';
-      var progressId = createProgressId();
-      loadingProgress.start(progressId);
+      inlineError.clear();
 
       try {
-        var response = await fetch('/evolve-kernels/api/evolve', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            kernelIds: selectedParentIds,
-            apiKey: apiKey,
-            progressId: progressId,
-          }),
+        await loadingSession.withProgress(async function(progressId) {
+          var response = await fetch('/evolve-kernels/api/evolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              kernelIds: selectedParentIds,
+              apiKey: apiKey,
+              progressId: progressId,
+            }),
+          });
+
+          var data = null;
+          try {
+            data = await response.json();
+          } catch (_parseError) {
+            data = null;
+          }
+
+          if (!response.ok || !data || !data.success) {
+            throw new Error(data && data.error ? data.error : 'Failed to evolve kernels');
+          }
+
+          setApiKey(apiKey);
+          renderEvolvedKernels(data.evaluatedKernels);
         });
-
-        var data = null;
-        try {
-          data = await response.json();
-        } catch (_parseError) {
-          data = null;
-        }
-
-        if (!response.ok || !data || !data.success) {
-          throw new Error(data && data.error ? data.error : 'Failed to evolve kernels');
-        }
-
-        setApiKey(apiKey);
-        renderEvolvedKernels(data.evaluatedKernels);
       } catch (error) {
         showError(error instanceof Error ? error.message : 'Failed to evolve kernels');
-      } finally {
-        loadingProgress.stop();
-        loading.style.display = 'none';
-        updateEvolveButtonState();
       }
     }
 
