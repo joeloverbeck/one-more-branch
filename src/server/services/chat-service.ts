@@ -8,7 +8,7 @@ import type {
   ChatSessionSummary,
   ChatTurn,
 } from '../../models/chat/index.js';
-import { parseChatInput } from '../../models/chat/index.js';
+import { ChatDomainError, parseChatInput } from '../../models/chat/index.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
 import { loadCharacter } from '../../persistence/character-repository.js';
 import {
@@ -76,8 +76,20 @@ const defaultDeps: ChatServiceDeps = {
 
 function requireDistinctCharacterIds(params: CreateChatParams): void {
   if (params.targetCharacterId === params.interlocutorCharacterId) {
-    throw new Error('Target and interlocutor must be different characters');
+    throw new ChatDomainError(
+      'Target and interlocutor must be different characters',
+      'VALIDATION_FAILED'
+    );
   }
+}
+
+function createMissingResourceError(
+  role: 'Target' | 'Interlocutor' | 'Chat',
+  id: string
+): ChatDomainError {
+  const message =
+    role === 'Chat' ? `Chat not found: ${id}` : `${role} character not found: ${id}`;
+  return new ChatDomainError(message, 'RESOURCE_NOT_FOUND');
 }
 
 async function requireCharacter(
@@ -87,7 +99,7 @@ async function requireCharacter(
 ): Promise<StandaloneDecomposedCharacter> {
   const character = await deps.loadCharacter(characterId);
   if (character === null) {
-    throw new Error(`${role} character not found: ${characterId}`);
+    throw createMissingResourceError(role, characterId);
   }
 
   return character;
@@ -96,7 +108,7 @@ async function requireCharacter(
 async function requireChatSession(deps: ChatServiceDeps, chatId: string): Promise<ChatSession> {
   const session = await deps.loadChat(chatId);
   if (session === null) {
-    throw new Error(`Chat not found: ${chatId}`);
+    throw createMissingResourceError('Chat', chatId);
   }
 
   return session;
@@ -108,12 +120,12 @@ function requireParsedBlocks(
 ): { trimmedMessage: string; blocks: ReturnType<typeof parseChatInput> } {
   const trimmedMessage = userMessage.trim();
   if (trimmedMessage.length === 0) {
-    throw new Error('User message is required');
+    throw new ChatDomainError('User message is required', 'VALIDATION_FAILED');
   }
 
   const blocks = deps.parseChatInput(trimmedMessage);
   if (blocks.length === 0) {
-    throw new Error('User message is required');
+    throw new ChatDomainError('User message is required', 'VALIDATION_FAILED');
   }
 
   return { trimmedMessage, blocks };

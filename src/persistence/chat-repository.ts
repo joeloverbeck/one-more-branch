@@ -1,4 +1,4 @@
-import type { ChatSession, ChatSessionSummary, ChatTurn } from '../models/chat/index.js';
+import { ChatDomainError, type ChatSession, type ChatSessionSummary, type ChatTurn } from '../models/chat/index.js';
 import {
   parseChatSession,
   parseChatTurn,
@@ -92,14 +92,17 @@ export async function updateChat(
     const existing = await chatSessionStore.read(chatId);
 
     if (existing === null) {
-      throw new Error(`Chat not found: ${chatId}`);
+      throw new ChatDomainError(`Chat not found: ${chatId}`, 'RESOURCE_NOT_FOUND');
     }
 
     const parsedExisting = parseChatSession(existing, filePath);
     const updated = parseChatSession(updater(parsedExisting), filePath);
 
     if (updated.id !== chatId) {
-      throw new Error(`Chat ID mismatch for update: expected ${chatId}, received ${updated.id}`);
+      throw new ChatDomainError(
+        `Chat ID mismatch for update: expected ${chatId}, received ${updated.id}`,
+        'RESOURCE_CONFLICT'
+      );
     }
 
     await ensureChatWriteTarget(chatId);

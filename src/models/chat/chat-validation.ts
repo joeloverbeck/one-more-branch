@@ -40,6 +40,8 @@ import type {
 } from './chat-state-update.js';
 import type { RollingSummaryOutput } from './chat-rolling-summary.js';
 
+import { ChatDomainError } from './chat-errors.js';
+
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -429,7 +431,10 @@ export function isRollingSummaryOutput(value: unknown): value is RollingSummaryO
 
 export function parseChatSession(value: unknown, sourcePath: string): ChatSession {
   if (!isChatSession(value)) {
-    throw new Error(`Invalid chat session payload at ${sourcePath}`);
+    throw new ChatDomainError(
+      `Invalid chat session payload at ${sourcePath}`,
+      'INVALID_PERSISTED_DATA'
+    );
   }
 
   return value;
@@ -437,7 +442,10 @@ export function parseChatSession(value: unknown, sourcePath: string): ChatSessio
 
 export function parseChatTurn(value: unknown, sourcePath: string): ChatTurn {
   if (!isChatTurn(value)) {
-    throw new Error(`Invalid chat turn payload at ${sourcePath}`);
+    throw new ChatDomainError(
+      `Invalid chat turn payload at ${sourcePath}`,
+      'INVALID_PERSISTED_DATA'
+    );
   }
 
   return value;
@@ -445,7 +453,10 @@ export function parseChatTurn(value: unknown, sourcePath: string): ChatTurn {
 
 export function parseChatTurns(value: unknown, sourcePath: string): ChatTurn[] {
   if (!isChatTurnArray(value)) {
-    throw new Error(`Invalid chat turns payload at ${sourcePath}`);
+    throw new ChatDomainError(
+      `Invalid chat turns payload at ${sourcePath}`,
+      'INVALID_PERSISTED_DATA'
+    );
   }
 
   return [...value];

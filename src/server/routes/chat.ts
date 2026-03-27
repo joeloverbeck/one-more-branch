@@ -1,6 +1,7 @@
 import { type Request, type Response, Router } from 'express';
 import { LLMError } from '../../llm/llm-client-types.js';
 import {
+  ChatDomainError,
   DISTANCE_BAND_VALUES,
   PRIVACY_VALUES,
   TIME_OF_DAY_VALUES,
@@ -44,6 +45,13 @@ interface ChatTurnBody {
   readonly isSessionResume?: unknown;
 }
 
+class RouteValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'RouteValidationError';
+  }
+}
+
 function trimString(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
@@ -85,7 +93,7 @@ function parseBoolean(value: unknown): boolean | undefined {
 function parseRequiredString(label: string, value: unknown): string {
   const trimmed = trimString(value);
   if (trimmed.length === 0) {
-    throw new Error(`${label} is required`);
+    throw new RouteValidationError(`${label} is required`);
   }
 
   return trimmed;
@@ -101,7 +109,7 @@ function parseEnumValue<TValue extends string>(
     return trimmed as TValue;
   }
 
-  throw new Error(`${label} is invalid`);
+  throw new RouteValidationError(`${label} is invalid`);
 }
 
 function parseChatCreateBody(body: ChatCreateBody): {
@@ -135,21 +143,24 @@ function parseChatCreateBody(body: ChatCreateBody): {
 }
 
 function resolveStatusCode(error: Error): number {
-  if (
-    error.message.includes('not found') ||
-    error.message.includes('not found:') ||
-    error.message.startsWith('Chat not found')
-  ) {
-    return 404;
+  if (error instanceof RouteValidationError) {
+    return 400;
   }
 
-  if (
-    error.message.includes('is required') ||
-    error.message.includes('is invalid') ||
-    error.message.includes('must be different') ||
-    error.message.includes('characters or fewer')
-  ) {
-    return 400;
+  if (error instanceof ChatDomainError) {
+    switch (error.code) {
+      case 'VALIDATION_FAILED':
+        return 400;
+      case 'RESOURCE_NOT_FOUND':
+        return 404;
+      case 'RESOURCE_CONFLICT':
+        return 409;
+      case 'INVALID_PERSISTED_DATA':
+      case 'INVARIANT_VIOLATION':
+        return 500;
+      default:
+        return 500;
+    }
   }
 
   return 500;

@@ -1,6 +1,6 @@
 import type { GenerationStageCallback, GenerationStage } from '../../engine/types.js';
 import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
-import type { ChatBible, ChatSession, ChatTurn } from '../../models/chat/index.js';
+import { ChatDomainError, type ChatBible, type ChatSession, type ChatTurn } from '../../models/chat/index.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
 import { generateChatBible } from './chat-bible-generation.js';
 import { generateChatTurnPlan } from './chat-planner-generation.js';
@@ -99,7 +99,10 @@ export async function runChatPipeline(
   onGenerationStage?: GenerationStageCallback
 ): Promise<ChatPipelineResult> {
   if (context.latestUserTurn.speaker !== 'USER') {
-    throw new Error('Chat pipeline requires latestUserTurn to have speaker USER');
+    throw new ChatDomainError(
+      'Chat pipeline requires latestUserTurn to have speaker USER',
+      'INVARIANT_VIOLATION'
+    );
   }
 
   const bibleWasRefreshed = shouldRefreshChatBible(context);

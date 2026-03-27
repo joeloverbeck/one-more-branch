@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { ChatSession, ChatTurn } from '@/models/chat';
+import { ChatDomainError, type ChatSession, type ChatTurn } from '@/models/chat';
 import {
   deleteChat,
   getRecentTurns,
@@ -263,6 +263,40 @@ describe('chat-repository', () => {
     await expect(loadChat(chatId)).resolves.toEqual(updated);
   });
 
+  it('throws a typed not-found error when updating a missing chat', async () => {
+    const missingChatId = `${TEST_PREFIX}-${randomUUID()}`;
+
+    await expect(updateChat(missingChatId, (session) => session)).rejects.toBeInstanceOf(
+      ChatDomainError
+    );
+    await expect(updateChat(missingChatId, (session) => session)).rejects.toMatchObject({
+      code: 'RESOURCE_NOT_FOUND',
+      message: `Chat not found: ${missingChatId}`,
+    });
+  });
+
+  it('throws a typed conflict error when an update mutates the chat id', async () => {
+    const chatId = `${TEST_PREFIX}-${randomUUID()}`;
+    createdChatIds.add(chatId);
+    await saveChat(createChatSession(chatId));
+
+    await expect(
+      updateChat(chatId, (session) => ({
+        ...session,
+        id: `${chatId}-other`,
+      }))
+    ).rejects.toBeInstanceOf(ChatDomainError);
+    await expect(
+      updateChat(chatId, (session) => ({
+        ...session,
+        id: `${chatId}-other`,
+      }))
+    ).rejects.toMatchObject({
+      code: 'RESOURCE_CONFLICT',
+      message: `Chat ID mismatch for update: expected ${chatId}, received ${chatId}-other`,
+    });
+  });
+
   it('deletes a chat directory and remains safe on repeated deletes', async () => {
     const chatId = `${TEST_PREFIX}-${randomUUID()}`;
     createdChatIds.add(chatId);
@@ -286,9 +320,11 @@ describe('chat-repository', () => {
       updatedAt: '2026-03-27T09:05:00.000Z',
     });
 
-    await expect(loadChat(chatId)).rejects.toThrow(
-      `Invalid chat session payload at ${getChatSessionFilePath(chatId)}`
-    );
+    await expect(loadChat(chatId)).rejects.toBeInstanceOf(ChatDomainError);
+    await expect(loadChat(chatId)).rejects.toMatchObject({
+      code: 'INVALID_PERSISTED_DATA',
+      message: `Invalid chat session payload at ${getChatSessionFilePath(chatId)}`,
+    });
   });
 
   it('throws for malformed persisted turns', async () => {
@@ -297,8 +333,10 @@ describe('chat-repository', () => {
     await ensureDirectory(getChatDir(chatId));
     await writeJsonFile(getChatTurnsFilePath(chatId), [{ turnNumber: 1, speaker: 'USER' }]);
 
-    await expect(loadTurns(chatId)).rejects.toThrow(
-      `Invalid chat turns payload at ${getChatTurnsFilePath(chatId)}`
-    );
+    await expect(loadTurns(chatId)).rejects.toBeInstanceOf(ChatDomainError);
+    await expect(loadTurns(chatId)).rejects.toMatchObject({
+      code: 'INVALID_PERSISTED_DATA',
+      message: `Invalid chat turns payload at ${getChatTurnsFilePath(chatId)}`,
+    });
   });
 });

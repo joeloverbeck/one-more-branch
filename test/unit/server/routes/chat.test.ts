@@ -27,6 +27,7 @@ jest.mock('@/logging', () => ({
 }));
 
 import { LLMError } from '@/llm';
+import { ChatDomainError } from '@/models/chat';
 import { chatRoutes } from '@/server/routes/chat';
 
 type RouteLayer = {
@@ -332,7 +333,9 @@ describe('chat routes', () => {
   });
 
   it('GET /:chatId renders a 404 error page when the chat is missing', async () => {
-    mockChatService.resumeChat.mockRejectedValue(new Error('Chat not found: missing-chat'));
+    mockChatService.resumeChat.mockRejectedValue(
+      new ChatDomainError('custom prose for missing chat', 'RESOURCE_NOT_FOUND')
+    );
 
     const handler = getRouteHandler('get', '/:chatId');
     const req = mockReq({ params: { chatId: 'missing-chat' } });
@@ -344,7 +347,7 @@ describe('chat routes', () => {
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.render).toHaveBeenCalledWith('pages/error', {
       title: 'Error',
-      message: 'Chat not found: missing-chat',
+      message: 'custom prose for missing chat',
     });
   });
 
@@ -443,7 +446,9 @@ describe('chat routes', () => {
   });
 
   it('POST /:chatId/turn maps missing chats to 404 and fails progress', async () => {
-    mockChatService.sendTurn.mockRejectedValue(new Error('Chat not found: missing-chat'));
+    mockChatService.sendTurn.mockRejectedValue(
+      new ChatDomainError('custom missing-chat prose', 'RESOURCE_NOT_FOUND')
+    );
 
     const handler = getRouteHandler('post', '/:chatId/turn');
     const req = mockReq({
@@ -461,12 +466,42 @@ describe('chat routes', () => {
 
     expect(mockGenerationProgressService.fail).toHaveBeenCalledWith(
       'chat-progress-404',
-      'Chat not found: missing-chat'
+      'custom missing-chat prose'
     );
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      error: 'Chat not found: missing-chat',
+      error: 'custom missing-chat prose',
+    });
+  });
+
+  it('POST /:chatId/turn maps resource conflicts to 409 by code, not message text', async () => {
+    mockChatService.sendTurn.mockRejectedValue(
+      new ChatDomainError('totally custom conflict prose', 'RESOURCE_CONFLICT')
+    );
+
+    const handler = getRouteHandler('post', '/:chatId/turn');
+    const req = mockReq({
+      params: { chatId: 'chat-1' },
+      body: {
+        message: 'Tell me what happened.',
+        apiKey: 'valid-api-key-12345',
+        progressId: 'chat-progress-409',
+      },
+    });
+    const res = mockRes();
+
+    void handler(req, res);
+    await flushPromises();
+
+    expect(mockGenerationProgressService.fail).toHaveBeenCalledWith(
+      'chat-progress-409',
+      'totally custom conflict prose'
+    );
+    expect(res.status).toHaveBeenCalledWith(409);
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: 'totally custom conflict prose',
     });
   });
 

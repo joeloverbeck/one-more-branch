@@ -1,6 +1,7 @@
 import type { ChatPipelineResult } from '@/llm';
 import type { GenerationStageCallback } from '@/engine/types';
 import type {
+  ChatDomainError,
   ChatLeadInContext,
   ChatPhysicalContext,
   ChatSession,
@@ -8,6 +9,7 @@ import type {
   ChatTurn,
 } from '@/models/chat';
 import type { StandaloneDecomposedCharacter } from '@/models/standalone-decomposed-character';
+import { ChatDomainError as ChatDomainErrorClass } from '@/models/chat';
 import { createChatService } from '@/server/services/chat-service';
 
 type ChatServiceDeps = NonNullable<Parameters<typeof createChatService>[0]>;
@@ -230,7 +232,11 @@ describe('chat-service', () => {
         physicalContext: createPhysicalContext(),
         leadInContext: createLeadInContext(),
       })
-    ).rejects.toThrow('Target and interlocutor must be different characters');
+    ).rejects.toMatchObject<Partial<ChatDomainError>>({
+      name: 'ChatDomainError',
+      code: 'VALIDATION_FAILED',
+      message: 'Target and interlocutor must be different characters',
+    });
   });
 
   it('rejects chat creation when the target character is missing', async () => {
@@ -251,7 +257,19 @@ describe('chat-service', () => {
         physicalContext: createPhysicalContext(),
         leadInContext: createLeadInContext(),
       })
-    ).rejects.toThrow('Target character not found: target-1');
+    ).rejects.toBeInstanceOf(ChatDomainErrorClass);
+
+    await expect(
+      service.createChat({
+        targetCharacterId: 'target-1',
+        interlocutorCharacterId: 'interlocutor-1',
+        physicalContext: createPhysicalContext(),
+        leadInContext: createLeadInContext(),
+      })
+    ).rejects.toMatchObject<Partial<ChatDomainError>>({
+      code: 'RESOURCE_NOT_FOUND',
+      message: 'Target character not found: target-1',
+    });
   });
 
   it('creates and saves a chat with canonical initial state', async () => {
@@ -336,7 +354,10 @@ describe('chat-service', () => {
         userMessage: 'Tell me what happened.',
         apiKey: 'test-key',
       })
-    ).rejects.toThrow('Chat not found: missing-chat');
+    ).rejects.toMatchObject<Partial<ChatDomainError>>({
+      code: 'RESOURCE_NOT_FOUND',
+      message: 'Chat not found: missing-chat',
+    });
   });
 
   it('rejects empty user input before persistence', async () => {
@@ -349,7 +370,10 @@ describe('chat-service', () => {
         userMessage: '   ',
         apiKey: 'test-key',
       })
-    ).rejects.toThrow('User message is required');
+    ).rejects.toMatchObject<Partial<ChatDomainError>>({
+      code: 'VALIDATION_FAILED',
+      message: 'User message is required',
+    });
 
     expect(deps.saveTurn).not.toHaveBeenCalled();
     expect(deps.runChatPipeline).not.toHaveBeenCalled();
@@ -367,7 +391,10 @@ describe('chat-service', () => {
         userMessage: '*  *',
         apiKey: 'test-key',
       })
-    ).rejects.toThrow('User message is required');
+    ).rejects.toMatchObject<Partial<ChatDomainError>>({
+      code: 'VALIDATION_FAILED',
+      message: 'User message is required',
+    });
 
     expect(deps.saveTurn).not.toHaveBeenCalled();
     expect(deps.runChatPipeline).not.toHaveBeenCalled();
@@ -448,6 +475,10 @@ describe('chat-service', () => {
     );
 
     await expect(service.resumeChat('missing-chat')).rejects.toThrow('Chat not found: missing-chat');
+    await expect(service.resumeChat('missing-chat')).rejects.toMatchObject<Partial<ChatDomainError>>({
+      code: 'RESOURCE_NOT_FOUND',
+      message: 'Chat not found: missing-chat',
+    });
   });
 
   it('delegates deleteChat and listChats to the repository', async () => {

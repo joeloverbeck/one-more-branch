@@ -34,6 +34,7 @@ jest.mock('../../../../src/llm/chat/chat-summary-generation', () => ({
   },
 }));
 
+import { ChatDomainError } from '../../../../src/models/chat';
 import { runChatPipeline, type ChatPipelineContext } from '../../../../src/llm/chat/chat-pipeline';
 import type { GenerationStageEvent } from '../../../../src/engine/types';
 import type { StandaloneDecomposedCharacter } from '../../../../src/models/standalone-decomposed-character';
@@ -517,6 +518,20 @@ describe('runChatPipeline', () => {
         }),
         'test-key'
       )
-    ).rejects.toThrow('Chat pipeline requires latestUserTurn to have speaker USER');
+    ).rejects.toBeInstanceOf(ChatDomainError);
+    await expect(
+      runChatPipeline(
+        makeContext({
+          latestUserTurn: {
+            ...makeContext().latestUserTurn,
+            speaker: 'CHARACTER',
+          },
+        }),
+        'test-key'
+      )
+    ).rejects.toMatchObject({
+      code: 'INVARIANT_VIOLATION',
+      message: 'Chat pipeline requires latestUserTurn to have speaker USER',
+    });
   });
 });
