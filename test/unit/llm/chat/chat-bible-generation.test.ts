@@ -16,7 +16,8 @@ jest.mock('../../../../src/llm/prompts/chat/chat-bible-prompt', () => ({
   },
 }));
 
-import { generateChatBible, type ChatBibleContext } from '../../../../src/llm/chat/chat-bible-generation';
+import { generateChatBible } from '../../../../src/llm/chat/chat-bible-generation';
+import type { ChatBibleContext } from '../../../../src/llm/chat/chat-bible-context';
 import { CHAT_BIBLE_SCHEMA } from '../../../../src/llm/schemas/chat-bible-schema';
 import { LLMError } from '../../../../src/llm/llm-client-types';
 import type { DecomposedWorld } from '../../../../src/models/decomposed-world';

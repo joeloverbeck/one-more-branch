@@ -3,32 +3,26 @@ import { CONTENT_POLICY } from '../../content-policy.js';
 import type { ChatBibleContext } from '../../chat/chat-bible-context.js';
 import {
   buildInterlocutorSummarySection,
-  buildKnowledgeSection,
   buildLeadInSection,
   buildOlderChatSummarySection,
   buildPhysicalContextSection,
   buildRecentTurnsSection,
-  buildRelationshipSection,
   buildTargetCharacterSummarySection,
   buildWorldbuildingSection,
 } from './chat-context-prompt-sections.js';
 
-const SYSTEM_PROMPT = `You are curating an authoritative brief for a one-on-one in-world chat.
+const SYSTEM_PROMPT = `You are establishing the objective scene reality for an in-world one-on-one conversation.
+Focus on physical environment, narrative momentum, and conversation state.
 Physical context is mandatory and authoritative.
-Separate permanent profile, current state, and conversation memory.
-Preserve knowledge boundaries, false beliefs, and secrets.
-State why this conversation is happening now.
-Surface what the character wants, what they fear, what they will protect, and what pressure is active.
+State why this conversation is happening now and what pressures are active.
 Compress aggressively for the next 1-3 turns only.
-Do not write dialogue.`;
+Do not write dialogue. Do not analyze character psychology.`;
 
-export function buildChatBibleMessages(context: ChatBibleContext): ChatMessage[] {
+export function buildChatSceneContextMessages(context: ChatBibleContext): ChatMessage[] {
   const userSections = [
-    buildTargetCharacterSummarySection(context, 'legacyFull'),
-    buildInterlocutorSummarySection(context, 'legacyFull'),
+    buildTargetCharacterSummarySection(context, 'identity'),
+    buildInterlocutorSummarySection(context, 'identity'),
     buildWorldbuildingSection(context),
-    buildRelationshipSection(context),
-    buildKnowledgeSection(context),
     buildPhysicalContextSection(context),
     buildLeadInSection(context),
     buildOlderChatSummarySection(context),
