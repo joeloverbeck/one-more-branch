@@ -136,6 +136,20 @@ describe('parseMacroArchitectureResponseObject', () => {
     );
   });
 
+  it('silently strips invented obligation tags not in the genre registry', () => {
+    const parsed = createValidMacroArchitecture();
+    const acts = parsed['acts'] as Array<Record<string, unknown>>;
+    acts[1]['obligationTargets'] = [
+      'key_clue_recontextualized',
+      'consent_as_dramatic_architecture',
+      'totally_made_up_tag',
+    ];
+
+    const result = parseMacroArchitectureResponseObject(parsed);
+
+    expect(result.acts[1].obligationTargets).toEqual(['key_clue_recontextualized']);
+  });
+
   it('rejects non-string promise target arrays', () => {
     const parsed = createValidMacroArchitecture();
     ((parsed['acts'] as Array<Record<string, unknown>>)[1] as Record<string, unknown>)[
