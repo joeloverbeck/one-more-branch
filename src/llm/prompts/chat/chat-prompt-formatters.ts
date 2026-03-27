@@ -1,5 +1,12 @@
 import type { SpeechFingerprint } from '../../../models/decomposed-character.js';
-import type { ChatBible, ChatBlock, ChatTurn, TurnMeta, TurnPlannerOutput } from '../../../models/chat/index.js';
+import type {
+  ChatBible,
+  ChatBlock,
+  ChatTurn,
+  RollingSummaryOutput,
+  TurnMeta,
+  TurnPlannerOutput,
+} from '../../../models/chat/index.js';
 
 export function formatStringList(items: readonly string[]): string {
   if (items.length === 0) {
@@ -7,6 +14,25 @@ export function formatStringList(items: readonly string[]): string {
   }
 
   return items.map((item) => `- ${item}`).join('\n');
+}
+
+export function formatRollingSummary(summary: RollingSummaryOutput | null): string {
+  if (summary === null) {
+    return 'None';
+  }
+
+  return [
+    `Compressed Summary: ${summary.compressedSummary}`,
+    'Key Commitments:',
+    formatStringList(summary.keyCommitments),
+    'Key Revelations:',
+    formatStringList(summary.keyRevelations),
+    'Unresolved Questions:',
+    formatStringList(summary.unresolvedQuestions),
+    'Leverage Shifts:',
+    formatStringList(summary.leverageShifts),
+    `Emotional Trajectory: ${summary.emotionalTrajectory}`,
+  ].join('\n');
 }
 
 export function formatRecentTurns(turns: readonly ChatTurn[]): string {

@@ -1,4 +1,5 @@
 import type { ChatBible } from './chat-bible.js';
+import type { RollingSummaryOutput } from './chat-rolling-summary.js';
 
 export const TIME_OF_DAY_VALUES = [
   'DAWN',
@@ -69,7 +70,7 @@ export interface ChatSession {
   readonly leadInContext: ChatLeadInContext;
   readonly chatBible: ChatBible | null;
   readonly turnCount: number;
-  readonly rollingSummary: string | null;
+  readonly rollingSummary: RollingSummaryOutput | null;
   readonly relationshipState: ChatRelationshipState;
   readonly knowledgeState: ChatKnowledgeState;
 }

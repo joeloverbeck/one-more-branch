@@ -8,7 +8,7 @@ import {
 } from '../schemas/chat-summary-schema.js';
 
 export interface ChatSummaryContext {
-  readonly existingSummary: string | null;
+  readonly existingSummary: RollingSummaryOutput | null;
   readonly turnsToCompress: readonly ChatTurn[];
 }
 

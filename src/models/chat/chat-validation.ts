@@ -402,7 +402,7 @@ export function isChatSession(value: unknown): value is ChatSession {
     isChatLeadInContext(value['leadInContext']) &&
     (value['chatBible'] === null || isChatBible(value['chatBible'])) &&
     Number.isInteger(value['turnCount']) &&
-    isNullableString(value['rollingSummary']) &&
+    (value['rollingSummary'] === null || isRollingSummaryOutput(value['rollingSummary'])) &&
     isChatRelationshipState(value['relationshipState']) &&
     isChatKnowledgeState(value['knowledgeState'])
   );

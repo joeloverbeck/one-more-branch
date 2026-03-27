@@ -1,7 +1,7 @@
 import type { ChatMessage } from '../../llm-client-types.js';
 import { CONTENT_POLICY } from '../../content-policy.js';
 import type { ChatSummaryContext } from '../../chat/chat-summary-generation.js';
-import { formatRecentTurns } from './chat-prompt-formatters.js';
+import { formatRecentTurns, formatRollingSummary } from './chat-prompt-formatters.js';
 
 const SYSTEM_PROMPT = `Compress older one-on-one chat turns into durable continuity memory.
 Preserve only facts that matter for future turns: commitments, leverage, disclosures, lies exposed, confessions, unresolved questions, and continuity-critical changes.
@@ -12,7 +12,7 @@ The emotional trajectory must stay factual and externally grounded, not sentimen
 
 export function buildChatSummaryMessages(context: ChatSummaryContext): ChatMessage[] {
   const userSections = [
-    `EXISTING ROLLING SUMMARY\n${context.existingSummary ?? 'None'}`,
+    `EXISTING ROLLING SUMMARY\n${formatRollingSummary(context.existingSummary)}`,
     `TURNS TO COMPRESS\n${formatRecentTurns(context.turnsToCompress)}`,
   ];
 

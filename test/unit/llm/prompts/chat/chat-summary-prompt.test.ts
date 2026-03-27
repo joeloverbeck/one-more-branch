@@ -3,7 +3,14 @@ import type { ChatSummaryContext } from '../../../../../src/llm/chat/chat-summar
 
 function makeContext(): ChatSummaryContext {
   return {
-    existingSummary: 'They ended the previous exchange with an accusation and no proof.',
+    existingSummary: {
+      compressedSummary: 'They ended the previous exchange with an accusation and no proof.',
+      keyCommitments: ['Meet before dawn'],
+      keyRevelations: ['She already copied the ledger'],
+      unresolvedQuestions: ['Who warned the courier?'],
+      leverageShifts: ['She forced him to answer first.'],
+      emotionalTrajectory: 'Guarded hostility tightening into accusation.',
+    },
     turnsToCompress: [
       {
         turnNumber: 9,
@@ -55,8 +62,12 @@ describe('buildChatSummaryMessages', () => {
 
     expect(userContent).toContain('EXISTING ROLLING SUMMARY');
     expect(userContent).toContain(
-      'They ended the previous exchange with an accusation and no proof.'
+      'Compressed Summary: They ended the previous exchange with an accusation and no proof.'
     );
+    expect(userContent).toContain('Key Commitments:');
+    expect(userContent).toContain('- Meet before dawn');
+    expect(userContent).toContain('Key Revelations:');
+    expect(userContent).toContain('- She already copied the ledger');
   });
 
   it('renders null existing summary explicitly and preserves formatted turns', () => {

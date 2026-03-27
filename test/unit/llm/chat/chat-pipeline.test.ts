@@ -212,7 +212,14 @@ function makeContext(overrides: Partial<ChatPipelineContext> = {}): ChatPipeline
         responseConstraints: ['Keep it immediate.'],
       },
       turnCount: 3,
-      rollingSummary: 'They circle around the accusation.',
+      rollingSummary: {
+        compressedSummary: 'They circle around the accusation.',
+        keyCommitments: [],
+        keyRevelations: ['She suspects he moved the ledger.'],
+        unresolvedQuestions: ['Who moved the ledger?'],
+        leverageShifts: ['Neither has yielded ground.'],
+        emotionalTrajectory: 'Distrust stays controlled but sharpens.',
+      },
       relationshipState: {
         dynamic: 'strained allies',
         valence: -1,
@@ -454,7 +461,14 @@ describe('runChatPipeline', () => {
       'test-key'
     );
 
-    expect(result.updatedSession.rollingSummary).toBe('Compressed summary text.');
+    expect(result.updatedSession.rollingSummary).toEqual({
+      compressedSummary: 'Compressed summary text.',
+      keyCommitments: ['Meet again at dawn.'],
+      keyRevelations: ['She copied the ledger.'],
+      unresolvedQuestions: ['Who moved the ledger?'],
+      leverageShifts: ['She seized the initiative.'],
+      emotionalTrajectory: 'Distrust intensifies.',
+    });
   });
 
   it('rejects a non-USER latestUserTurn', async () => {

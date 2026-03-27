@@ -176,7 +176,7 @@ export async function runChatPipeline(
 
     updatedSession = {
       ...updatedSession,
-      rollingSummary: summary.compressedSummary,
+      rollingSummary: summary,
       updatedAt: completedAt,
     };
   }

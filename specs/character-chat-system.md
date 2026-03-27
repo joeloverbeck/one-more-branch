@@ -73,7 +73,7 @@ User types message (free text as their avatar character)
 
 ### Session Resume Flow
 
-1. Load `chat.json` (metadata, physical context, relationship state, rolling summary, cached bible)
+1. Load `chat.json` (metadata, physical context, relationship state, structured rolling summary, cached bible)
 2. Load `turns.json` (all turns)
 3. Trigger bible refresh before first new turn
 4. Display conversation history, accept new input
@@ -119,7 +119,7 @@ interface ChatSession {
   readonly leadInContext: ChatLeadInContext;      // Set once at creation
   readonly chatBible: ChatBible | null;          // Latest bible output (cached)
   readonly turnCount: number;
-  readonly rollingSummary: string | null;         // Compressed older turns
+  readonly rollingSummary: RollingSummaryOutput | null; // Structured durable memory for older turns
   readonly relationshipState: ChatRelationshipState;
   readonly knowledgeState: ChatKnowledgeState;
 }
@@ -500,7 +500,7 @@ Do not write dialogue.
 3. RELATIONSHIP STATE (current relationship between the two)
 4. PHYSICAL CONTEXT (current `ChatPhysicalContext`)
 5. PRE-CHAT LEAD-IN (from `ChatLeadInContext`)
-6. OLDER CHAT SUMMARY (rolling summary, if any)
+6. OLDER CHAT SUMMARY (formatted from persisted `RollingSummaryOutput`, if any)
 7. RECENT CHAT TURNS (last 6-12 turns, structured)
 
 #### Turn Planner Prompt
@@ -592,7 +592,7 @@ Preserve any information needed for continuity in future turns.
 
 **User message sections:**
 
-1. EXISTING ROLLING SUMMARY (if any, to append to)
+1. EXISTING ROLLING SUMMARY (full prior `RollingSummaryOutput`, if any)
 2. TURNS TO COMPRESS (the batch of older turns being compressed)
 
 ## Prompt Documentation
@@ -760,7 +760,7 @@ test/e2e/
 - **Bible caching**: The bible is cached in chat.json. It is only regenerated on explicit triggers, never on every turn.
 - **Physical context mutability**: The State Updater can change any physical context field. The updated context is persisted immediately.
 - **Character immutability**: The `StandaloneDecomposedCharacter` profiles are never modified by the chat system. All state changes are local to the chat session.
-- **Memory separation**: Conversational memory (rolling summary, recent turns) is separate from character knowledge state (facts, beliefs, secrets). These are stored in different fields and passed to different prompt sections.
+- **Memory separation**: Conversational memory (structured rolling summary, recent turns) is separate from character knowledge state (facts, beliefs, secrets). These are stored in different fields and passed to different prompt sections.
 - **Content policy**: All 5 LLM prompt stages include the NC-21 content policy block.
 - **API key security**: Never persisted to disk, only in browser session storage. Passed explicitly to every LLM call.
 - **Two different characters**: The target character and interlocutor character must be different saved characters.

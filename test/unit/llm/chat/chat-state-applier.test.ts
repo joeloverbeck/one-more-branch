@@ -27,7 +27,14 @@ function makeSession(): ChatSession {
     },
     chatBible: null,
     turnCount: 7,
-    rollingSummary: 'Earlier summary',
+    rollingSummary: {
+      compressedSummary: 'Earlier summary',
+      keyCommitments: ['Return before dawn.'],
+      keyRevelations: ['She already saw the duplicate seal.'],
+      unresolvedQuestions: ['Who moved the ledger first?'],
+      leverageShifts: ['He lost initiative when she named the guard.'],
+      emotionalTrajectory: 'Guarded distrust hardening into accusation.',
+    },
     relationshipState: {
       dynamic: 'strained allies',
       valence: 4,

@@ -2,7 +2,7 @@ import { formatStandaloneCharacterSummary } from '../../../models/standalone-dec
 import type { ChatMessage } from '../../llm-client-types.js';
 import { CONTENT_POLICY } from '../../content-policy.js';
 import type { ChatBibleContext } from '../../chat/chat-bible-generation.js';
-import { formatRecentTurns, formatStringList } from './chat-prompt-formatters.js';
+import { formatRecentTurns, formatRollingSummary, formatStringList } from './chat-prompt-formatters.js';
 
 const SYSTEM_PROMPT = `You are curating an authoritative brief for a one-on-one in-world chat.
 Physical context is mandatory and authoritative.
@@ -79,7 +79,7 @@ export function buildChatBibleMessages(context: ChatBibleContext): ChatMessage[]
     buildKnowledgeSection(context),
     buildPhysicalContextSection(context),
     buildLeadInSection(context),
-    `OLDER CHAT SUMMARY\n${context.rollingSummary ?? 'None'}`,
+    `OLDER CHAT SUMMARY\n${formatRollingSummary(context.rollingSummary)}`,
     `RECENT CHAT TURNS\n${formatRecentTurns(context.recentTurns)}`,
   ];
 

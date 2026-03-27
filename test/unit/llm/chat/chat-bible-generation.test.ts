@@ -169,6 +169,24 @@ describe('generateChatBible', () => {
     expect(mockBuildMessages).toHaveBeenCalledWith(context);
   });
 
+  it('passes structured rolling summaries through to the prompt builder unchanged', async () => {
+    const context = {
+      ...makeContext(),
+      rollingSummary: {
+        compressedSummary: 'The confrontation hardened into open suspicion.',
+        keyCommitments: ['Meet again at dawn.'],
+        keyRevelations: ['She copied the ledger.'],
+        unresolvedQuestions: ['Who else knows about the ledger?'],
+        leverageShifts: ['She gained initiative by naming the ledger first.'],
+        emotionalTrajectory: 'Distrust tightening into accusation.',
+      },
+    };
+
+    await generateChatBible(context, 'test-key');
+
+    expect(mockBuildMessages).toHaveBeenCalledWith(context);
+  });
+
   it('calls runLlmStage with the correct stage metadata and schema', async () => {
     await generateChatBible(makeContext(), 'test-key');
 

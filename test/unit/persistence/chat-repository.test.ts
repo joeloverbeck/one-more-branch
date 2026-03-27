@@ -171,6 +171,26 @@ describe('chat-repository', () => {
     await expect(loadChat(chatId)).resolves.toEqual(session);
   });
 
+  it('round-trips a structured rolling summary in chat session storage', async () => {
+    const chatId = `${TEST_PREFIX}-${randomUUID()}`;
+    createdChatIds.add(chatId);
+    const session = {
+      ...createChatSession(chatId),
+      rollingSummary: {
+        compressedSummary: 'The confrontation hardened into open suspicion.',
+        keyCommitments: ['Meet again at dawn.'],
+        keyRevelations: ['She copied the ledger.'],
+        unresolvedQuestions: ['Who else knows about the ledger?'],
+        leverageShifts: ['She gained initiative by naming the ledger first.'],
+        emotionalTrajectory: 'Distrust tightening into accusation.',
+      },
+    };
+
+    await saveChat(session);
+
+    await expect(loadChat(chatId)).resolves.toEqual(session);
+  });
+
   it('returns null for a missing chat session', async () => {
     await expect(loadChat(`${TEST_PREFIX}-${randomUUID()}`)).resolves.toBeNull();
   });

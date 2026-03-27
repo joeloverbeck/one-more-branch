@@ -25,7 +25,14 @@ import { CHAT_SUMMARY_SCHEMA } from '../../../../src/llm/schemas/chat-summary-sc
 
 function makeContext(): ChatSummaryContext {
   return {
-    existingSummary: 'They ended the prior exchange under threat.',
+    existingSummary: {
+      compressedSummary: 'They ended the prior exchange under threat.',
+      keyCommitments: ['Meet again at dawn.'],
+      keyRevelations: ['She already suspected he moved the ledger.'],
+      unresolvedQuestions: ['Who else knows about the ledger?'],
+      leverageShifts: ['She forced him defensive by asking first.'],
+      emotionalTrajectory: 'Guarded suspicion tightening into accusation.',
+    },
     turnsToCompress: [
       {
         turnNumber: 7,
@@ -58,6 +65,14 @@ beforeEach(() => {
 describe('generateChatSummary', () => {
   it('calls the prompt builder with the provided context', async () => {
     const context = makeContext();
+    await generateChatSummary(context, 'test-key');
+
+    expect(mockBuildMessages).toHaveBeenCalledWith(context);
+  });
+
+  it('passes structured existing summaries through to the prompt builder unchanged', async () => {
+    const context = makeContext();
+
     await generateChatSummary(context, 'test-key');
 
     expect(mockBuildMessages).toHaveBeenCalledWith(context);

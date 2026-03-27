@@ -144,6 +144,15 @@ describe('chat model contracts', () => {
       responseConstraints: ['Keep the reply grounded and immediate.'],
     };
 
+    const summary: RollingSummaryOutput = {
+      compressedSummary: 'The archive confrontation hardened into mutual suspicion.',
+      keyCommitments: ['Meet again at dawn'],
+      keyRevelations: ['She knows about the second key'],
+      unresolvedQuestions: ['Who took the ledger?'],
+      leverageShifts: ['She gained initiative by naming the missing ledger first.'],
+      emotionalTrajectory: 'Controlled distrust escalating toward open accusation',
+    };
+
     const session: ChatSession = {
       id: 'chat-1',
       createdAt: '2026-03-27T09:00:00.000Z',
@@ -160,7 +169,7 @@ describe('chat model contracts', () => {
       },
       chatBible,
       turnCount: 2,
-      rollingSummary: null,
+      rollingSummary: summary,
       relationshipState: {
         dynamic: 'strained allies',
         valence: -1,
@@ -217,16 +226,8 @@ describe('chat model contracts', () => {
       timestamp: '2026-03-27T09:05:00.000Z',
     };
 
-    const summary: RollingSummaryOutput = {
-      compressedSummary: 'The archive confrontation hardened into mutual suspicion.',
-      keyCommitments: ['Meet again at dawn'],
-      keyRevelations: ['She knows about the second key'],
-      unresolvedQuestions: ['Who took the ledger?'],
-      leverageShifts: ['She gained initiative by naming the missing ledger first.'],
-      emotionalTrajectory: 'Controlled distrust escalating toward open accusation',
-    };
-
     expect(session.chatBible).toBe(chatBible);
+    expect(session.rollingSummary).toBe(summary);
     expect(turn.stateUpdate).toBe(stateUpdate);
     expect(summary.keyRevelations).toContain('She knows about the second key');
   });
@@ -257,7 +258,14 @@ describe('chat model contracts', () => {
       },
       chatBible: null,
       turnCount: 1,
-      rollingSummary: null,
+      rollingSummary: {
+        compressedSummary: 'The archive confrontation hardened into mutual suspicion.',
+        keyCommitments: ['Meet again at dawn'],
+        keyRevelations: ['She knows about the second key'],
+        unresolvedQuestions: ['Who took the ledger?'],
+        leverageShifts: ['She gained initiative by naming the missing ledger first.'],
+        emotionalTrajectory: 'Controlled distrust escalating toward open accusation',
+      },
       relationshipState: {
         dynamic: 'strained allies',
         valence: -1,
@@ -294,6 +302,53 @@ describe('chat model contracts', () => {
     );
     expect(() => parseChatTurns([{ turnNumber: 1, speaker: 'USER' }], 'turns.json')).toThrow(
       'Invalid chat turns payload at turns.json'
+    );
+  });
+
+  it('rejects string-backed rolling summaries on persisted chat sessions', () => {
+    const legacySession = {
+      id: 'chat-1',
+      createdAt: '2026-03-27T09:00:00.000Z',
+      updatedAt: '2026-03-27T09:05:00.000Z',
+      targetCharacterId: 'target-1',
+      interlocutorCharacterId: 'interlocutor-1',
+      targetCharacterName: 'Mara',
+      interlocutorCharacterName: 'Iven',
+      physicalContext: {
+        location: 'Archive',
+        microLocation: 'Lamp-lit records table',
+        timeOfDay: 'EVENING',
+        privacy: 'PRIVATE',
+        distanceBand: 'CONVERSATIONAL',
+        characterActivity: 'Sorting damaged ledgers',
+        interactableObjects: ['ledger', 'oil lamp'],
+        ambientConditions: ['rain on the roof', 'ink smell'],
+      },
+      leadInContext: {
+        leadInSummary: 'The archive door is barred behind them.',
+        recentEvents: ['The raid scattered the staff.'],
+        whyNow: 'They have only minutes before the bells.',
+      },
+      chatBible: null,
+      turnCount: 1,
+      rollingSummary: 'Legacy string summary',
+      relationshipState: {
+        dynamic: 'strained allies',
+        valence: -1,
+        tension: 7,
+        leverage: 'Shared culpability',
+      },
+      knowledgeState: {
+        knownFacts: ['The ledger is gone.'],
+        suspicions: ['Someone inside helped.'],
+        falseBeliefs: ['He thinks she came alone.'],
+        secretsRevealed: ['The guard saw them both.'],
+      },
+    };
+
+    expect(isChatSession(legacySession)).toBe(false);
+    expect(() => parseChatSession(legacySession, 'session.json')).toThrow(
+      'Invalid chat session payload at session.json'
     );
   });
 

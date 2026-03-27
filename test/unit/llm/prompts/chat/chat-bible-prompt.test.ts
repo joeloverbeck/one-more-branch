@@ -70,7 +70,14 @@ function makeContext(): ChatBibleContext {
       recentEvents: ['The signal fire failed', 'A coded note appeared'],
       whyNow: 'The trail goes cold by dawn.',
     },
-    rollingSummary: 'Their last meeting ended with a threat and no proof.',
+    rollingSummary: {
+      compressedSummary: 'Their last meeting ended with a threat and no proof.',
+      keyCommitments: ['Meet before dawn'],
+      keyRevelations: ['Iria copied the key'],
+      unresolvedQuestions: ['Who warned the courier?'],
+      leverageShifts: ['Tomas forced Iria to show how much she knew.'],
+      emotionalTrajectory: 'Guarded hostility tightening into direct accusation.',
+    },
     recentTurns: [
       {
         turnNumber: 11,
@@ -149,5 +156,25 @@ describe('buildChatBibleMessages', () => {
 
     expect(userContent).toContain('OLDER CHAT SUMMARY\nNone');
     expect(userContent).toContain('RECENT CHAT TURNS\nNo prior turns in this session.');
+  });
+
+  it('formats structured rolling summaries into deterministic text', () => {
+    const userContent = buildChatBibleMessages(makeContext())[1].content;
+
+    expect(userContent).toContain('OLDER CHAT SUMMARY');
+    expect(userContent).toContain(
+      'Compressed Summary: Their last meeting ended with a threat and no proof.'
+    );
+    expect(userContent).toContain('Key Commitments:');
+    expect(userContent).toContain('- Meet before dawn');
+    expect(userContent).toContain('Key Revelations:');
+    expect(userContent).toContain('- Iria copied the key');
+    expect(userContent).toContain('Unresolved Questions:');
+    expect(userContent).toContain('- Who warned the courier?');
+    expect(userContent).toContain('Leverage Shifts:');
+    expect(userContent).toContain('- Tomas forced Iria to show how much she knew.');
+    expect(userContent).toContain(
+      'Emotional Trajectory: Guarded hostility tightening into direct accusation.'
+    );
   });
 });

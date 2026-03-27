@@ -6,6 +6,7 @@ import type {
   ChatPhysicalContext,
   ChatRelationshipState,
   ChatTurn,
+  RollingSummaryOutput,
 } from '../../models/chat/index.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
 import { runLlmStage } from '../llm-stage-runner.js';
@@ -22,7 +23,7 @@ export interface ChatBibleContext {
   readonly knowledgeState: ChatKnowledgeState;
   readonly physicalContext: ChatPhysicalContext;
   readonly leadInContext: ChatLeadInContext;
-  readonly rollingSummary: string | null;
+  readonly rollingSummary: RollingSummaryOutput | null;
   readonly recentTurns: readonly ChatTurn[];
 }
 
