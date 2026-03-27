@@ -23,10 +23,14 @@ describe('view partial templates', () => {
     expect(template).toContain('href="/concept-seeds"');
     expect(template).toContain('href="/concepts"');
     expect(template).toContain('href="/evolve"');
+    expect(template).toContain('href="/chat"');
     expect(template).toContain('href="/logs"');
+    expect(template).toContain("cp.startsWith('/character') || cp.startsWith('/chat')");
+    expect(template).toContain("cp === '/chat' || cp.startsWith('/chat')");
 
     expect(template.indexOf('Architecture')).toBeLessThan(template.indexOf('Kernels'));
     expect(template.indexOf('Kernels')).toBeLessThan(template.indexOf('Concepts'));
+    expect(template.indexOf('Character Webs')).toBeLessThan(template.indexOf('Chat with Character'));
   });
 
   it('footer partial exists and includes identity and disclaimer text', () => {

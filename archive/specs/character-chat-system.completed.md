@@ -1,5 +1,7 @@
 # Spec: Character Chat System
 
+**Status**: COMPLETED
+
 ## Overview
 
 Add a standalone chat feature that lets users have one-on-one in-character conversations with any saved character. The user selects two saved `StandaloneDecomposedCharacter` profiles — one as the LLM-controlled target character, one as the user's avatar — provides physical context and lead-in situation, then chats in real time. Chats are persisted to disk and can be resumed at any time.
@@ -833,3 +835,18 @@ test/e2e/
 8. **Delete chat**: Delete a chat. Verify `chats/{chatId}/` directory is removed.
 9. **Run tests**: `npm test` passes, `npm run test:coverage` meets 70% threshold.
 10. **Lint and typecheck**: `npm run lint` and `npm run typecheck` pass.
+
+## Outcome
+
+- Completion date: 2026-03-27
+- What was actually changed:
+  - Implemented the chat domain models, persistence, prompt builders, schemas, generation stages, chat pipeline, service layer, routes, EJS pages, and client controllers described by this spec.
+  - Added chat stage model/config registration and wired the feature into the shared navigation.
+  - Added prompt documentation for the implemented chat stages in `prompts/`.
+- Deviations from the original plan:
+  - The shipped pipeline is effectively a 5-stage system because rolling summarization is implemented as a first-class stage alongside bible, planner, writer, and state updater.
+  - Progress polling uses the shared generation-progress infrastructure instead of a dedicated `GET /chat/:chatId/progress/:progressId` route.
+  - Header integration and prompt-doc finalization were completed in follow-up ticket work after the main chat system landed.
+- Verification results:
+  - Chat system unit coverage is present across models, schemas, prompts, pipeline, routes, services, persistence, and client controllers.
+  - Latest verification on 2026-03-27: `npm run test:unit` passed, `npm run typecheck` passed, `npm run lint` passed.

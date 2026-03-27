@@ -181,9 +181,29 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/scene-ideator-prompt.md',
   },
   {
+    promptType: 'chatBible',
+    sourcePath: 'src/llm/prompts/chat/chat-bible-prompt.ts',
+    docPath: 'prompts/chat-bible-curator-prompt.md',
+  },
+  {
+    promptType: 'chatPlanner',
+    sourcePath: 'src/llm/prompts/chat/chat-planner-prompt.ts',
+    docPath: 'prompts/chat-turn-planner-prompt.md',
+  },
+  {
     promptType: 'chatWriter',
     sourcePath: 'src/llm/prompts/chat/chat-writer-prompt.ts',
     docPath: 'prompts/chat-turn-writer-prompt.md',
+  },
+  {
+    promptType: 'chatStateUpdater',
+    sourcePath: 'src/llm/prompts/chat/chat-state-updater-prompt.ts',
+    docPath: 'prompts/chat-state-updater-prompt.md',
+  },
+  {
+    promptType: 'chatSummarizer',
+    sourcePath: 'src/llm/prompts/chat/chat-summary-prompt.ts',
+    docPath: 'prompts/chat-summarizer-prompt.md',
   },
 ];
 
@@ -259,5 +279,21 @@ describe('prompt documentation alignment', () => {
     expect(packeterDoc).not.toContain('viewpointPressure');
     expect(packeterDoc).toContain('story-specific');
     expect(packeterDoc).toContain('Generic verbs like');
+  });
+
+  it('documents chat prompt authority boundaries and pipeline contracts', () => {
+    const bibleDoc = readRepoFile('prompts/chat-bible-curator-prompt.md');
+    const plannerDoc = readRepoFile('prompts/chat-turn-planner-prompt.md');
+    const updaterDoc = readRepoFile('prompts/chat-state-updater-prompt.md');
+    const summaryDoc = readRepoFile('prompts/chat-summarizer-prompt.md');
+
+    expect(bibleDoc).toContain('current physical reality');
+    expect(bibleDoc).toContain('continuity-safe handoff');
+    expect(plannerDoc).toContain('hidden in-character reply turn');
+    expect(plannerDoc).toContain('ordered visible `blockPlan`');
+    expect(updaterDoc).toContain('state extraction');
+    expect(updaterDoc).toContain('shouldRefreshChatBible');
+    expect(summaryDoc).toContain('durable continuity memory');
+    expect(summaryDoc).toContain('RollingSummaryOutput');
   });
 });
