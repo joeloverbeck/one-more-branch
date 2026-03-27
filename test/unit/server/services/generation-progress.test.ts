@@ -115,6 +115,7 @@ describe('generation-progress service', () => {
       'spine-generation',
       'create-story',
       'character-brainstorming',
+      'chat-turn-generation',
     ]);
 
     const service = createGenerationProgressService();
@@ -125,6 +126,7 @@ describe('generation-progress service', () => {
     service.start('progress-content', 'content-generation');
     service.start('progress-character-web', 'character-web-generation');
     service.start('progress-character-stage', 'character-stage-generation');
+    service.start('progress-chat-turn', 'chat-turn-generation');
 
     const beginSnapshot = service.get('progress-begin');
     const conceptSnapshot = service.get('progress-concept');
@@ -132,11 +134,13 @@ describe('generation-progress service', () => {
     const kernelSnapshot = service.get('progress-kernel');
     const characterWebSnapshot = service.get('progress-character-web');
     const characterStageSnapshot = service.get('progress-character-stage');
+    const chatTurnSnapshot = service.get('progress-chat-turn');
     expect(beginSnapshot.flowType).toBe('begin-adventure');
     expect(conceptSnapshot.flowType).toBe('concept-generation');
     expect(evolutionSnapshot.flowType).toBe('concept-evolution');
     expect(kernelSnapshot.flowType).toBe('kernel-generation');
     expect(characterWebSnapshot.flowType).toBe('character-web-generation');
     expect(characterStageSnapshot.flowType).toBe('character-stage-generation');
+    expect(chatTurnSnapshot.flowType).toBe('chat-turn-generation');
   });
 });

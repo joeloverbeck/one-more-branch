@@ -1666,6 +1666,36 @@ const STAGE_PHRASE_POOLS = {
     'Planting contradictions that make characters unpredictable...',
     'Excavating backstory events specific enough to be unforgettable...',
   ],
+  CURATING_CHAT_BIBLE: [
+    'Distilling the relationship pressure into a sharper conversational brief...',
+    'Rebuilding the chat bible around what matters right now...',
+    'Selecting the facts that should constrain this exchange...',
+    'Curating the emotional and physical reality before anyone speaks...',
+  ],
+  PLANNING_CHAT_TURN: [
+    'Deciding what the character wants from this reply...',
+    'Plotting the next conversational feint...',
+    'Choosing what to reveal, deflect, or weaponize...',
+    'Planning the turn beneath the surface text...',
+  ],
+  WRITING_CHAT_TURN: [
+    'Drafting the visible response block by block...',
+    'Turning intent into action beats and dialogue...',
+    'Shaping the reply so it sounds like the character, not the outline...',
+    'Writing the turn with pressure, subtext, and momentum...',
+  ],
+  UPDATING_CHAT_STATE: [
+    'Reconciling what just changed between them...',
+    'Updating relationship, knowledge, and physical state...',
+    'Checking whether the conversation shifted the world around it...',
+    'Recording the pressure this turn created for the next one...',
+  ],
+  SUMMARIZING_CHAT_MEMORY: [
+    'Compressing the conversation into durable memory...',
+    'Summarizing the old turns without losing the leverage...',
+    'Preserving the important beats before the chat grows longer...',
+    'Rolling older conversation into a tighter memory package...',
+  ],
 };
 
 const STAGE_DISPLAY_NAMES = {
@@ -1718,4 +1748,9 @@ const STAGE_DISPLAY_NAMES = {
   GENERATING_WORLD_SEED: 'SEEDING WORLD',
   ELABORATING_WORLD: 'ELABORATING WORLD',
   BRAINSTORMING_CHARACTERS: 'BRAINSTORMING CHARACTERS',
+  CURATING_CHAT_BIBLE: 'CURATING CHAT BIBLE',
+  PLANNING_CHAT_TURN: 'PLANNING CHAT TURN',
+  WRITING_CHAT_TURN: 'WRITING CHAT TURN',
+  UPDATING_CHAT_STATE: 'UPDATING CHAT STATE',
+  SUMMARIZING_CHAT_MEMORY: 'SUMMARIZING CHAT MEMORY',
 };

@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import type { GenerationStageCallback } from '../../engine/types.js';
 import { runChatPipeline, type ChatPipelineResult } from '../../llm/index.js';
 import type {
   ChatLeadInContext,
@@ -32,6 +33,7 @@ export interface SendTurnParams {
   readonly userMessage: string;
   readonly apiKey: string;
   readonly isSessionResume?: boolean;
+  readonly onGenerationStage?: GenerationStageCallback;
 }
 
 interface ChatServiceDeps {
@@ -190,7 +192,8 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
           latestUserTurn: userTurn,
           isSessionResume: params.isSessionResume ?? false,
         },
-        params.apiKey
+        params.apiKey,
+        params.onGenerationStage
       );
 
       await deps.saveTurn(params.chatId, pipelineResult.characterTurn);

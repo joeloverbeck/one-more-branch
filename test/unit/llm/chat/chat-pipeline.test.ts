@@ -35,6 +35,7 @@ jest.mock('../../../../src/llm/chat/chat-summary-generation', () => ({
 }));
 
 import { runChatPipeline, type ChatPipelineContext } from '../../../../src/llm/chat/chat-pipeline';
+import type { GenerationStageEvent } from '../../../../src/engine/types';
 import type { StandaloneDecomposedCharacter } from '../../../../src/models/standalone-decomposed-character';
 
 function makeCharacter(id: string, name: string): StandaloneDecomposedCharacter {
@@ -469,6 +470,40 @@ describe('runChatPipeline', () => {
       leverageShifts: ['She seized the initiative.'],
       emotionalTrajectory: 'Distrust intensifies.',
     });
+  });
+
+  it('emits ordered stage progress events for the executed chat stages', async () => {
+    const onGenerationStage = jest.fn<(event: GenerationStageEvent) => void>();
+
+    await runChatPipeline(
+      makeContext({
+        chatSession: {
+          ...makeContext().chatSession,
+          chatBible: null,
+          rollingSummary: null,
+          turnCount: 7,
+        },
+      }),
+      'test-key',
+      onGenerationStage
+    );
+
+    const stageEvents = (onGenerationStage.mock.calls as Array<[GenerationStageEvent]>).map(
+      ([event]): string => `${event.status}:${event.stage}`
+    );
+
+    expect(stageEvents).toEqual([
+      'started:CURATING_CHAT_BIBLE',
+      'completed:CURATING_CHAT_BIBLE',
+      'started:PLANNING_CHAT_TURN',
+      'completed:PLANNING_CHAT_TURN',
+      'started:WRITING_CHAT_TURN',
+      'completed:WRITING_CHAT_TURN',
+      'started:UPDATING_CHAT_STATE',
+      'completed:UPDATING_CHAT_STATE',
+      'started:SUMMARIZING_CHAT_MEMORY',
+      'completed:SUMMARIZING_CHAT_MEMORY',
+    ]);
   });
 
   it('rejects a non-USER latestUserTurn', async () => {

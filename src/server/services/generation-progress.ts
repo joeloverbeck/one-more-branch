@@ -20,6 +20,7 @@ export const GENERATION_FLOW_TYPES = [
   'spine-generation',
   'create-story',
   'character-brainstorming',
+  'chat-turn-generation',
 ] as const;
 
 export type GenerationFlowType = (typeof GENERATION_FLOW_TYPES)[number];

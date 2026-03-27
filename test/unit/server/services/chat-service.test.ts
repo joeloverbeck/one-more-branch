@@ -1,4 +1,5 @@
 import type { ChatPipelineResult } from '@/llm';
+import type { GenerationStageCallback } from '@/engine/types';
 import type {
   ChatLeadInContext,
   ChatPhysicalContext,
@@ -387,7 +388,8 @@ describe('chat-service', () => {
 
     expect(deps.runChatPipeline).toHaveBeenLastCalledWith(
       expect.objectContaining({ isSessionResume: true }),
-      'test-key'
+      'test-key',
+      undefined
     );
 
     await service.sendTurn({
@@ -398,7 +400,29 @@ describe('chat-service', () => {
 
     expect(deps.runChatPipeline).toHaveBeenLastCalledWith(
       expect.objectContaining({ isSessionResume: false }),
-      'test-key'
+      'test-key',
+      undefined
+    );
+  });
+
+  it('forwards route progress callbacks into the chat pipeline when provided', async () => {
+    const onGenerationStage: GenerationStageCallback = jest.fn();
+    const deps = createDeps({
+      now: jest.fn().mockReturnValue('2026-03-27T09:01:00.000Z'),
+    });
+    const service = createChatService(deps);
+
+    await service.sendTurn({
+      chatId: 'chat-1',
+      userMessage: 'Tell me what happened.',
+      apiKey: 'test-key',
+      onGenerationStage,
+    });
+
+    expect(deps.runChatPipeline).toHaveBeenLastCalledWith(
+      expect.objectContaining({ isSessionResume: false }),
+      'test-key',
+      onGenerationStage
     );
   });
 

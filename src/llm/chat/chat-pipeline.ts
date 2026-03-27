@@ -1,3 +1,5 @@
+import type { GenerationStageCallback, GenerationStage } from '../../engine/types.js';
+import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
 import type { ChatBible, ChatSession, ChatTurn } from '../../models/chat/index.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
 import { generateChatBible } from './chat-bible-generation.js';
@@ -23,6 +25,12 @@ export interface ChatPipelineResult {
   readonly bibleWasRefreshed: boolean;
   readonly summaryWasGenerated: boolean;
 }
+
+const CHAT_BIBLE_STAGE: GenerationStage = 'CURATING_CHAT_BIBLE';
+const CHAT_PLANNER_STAGE: GenerationStage = 'PLANNING_CHAT_TURN';
+const CHAT_WRITER_STAGE: GenerationStage = 'WRITING_CHAT_TURN';
+const CHAT_STATE_STAGE: GenerationStage = 'UPDATING_CHAT_STATE';
+const CHAT_SUMMARY_STAGE: GenerationStage = 'SUMMARIZING_CHAT_MEMORY';
 
 function getLatestPriorCharacterTurn(allTurns: readonly ChatTurn[], latestUserTurn: ChatTurn): ChatTurn | null {
   for (let index = allTurns.length - 1; index >= 0; index -= 1) {
@@ -87,7 +95,8 @@ function buildCharacterTurn(latestUserTurn: ChatTurn, completedAt: string, write
 
 export async function runChatPipeline(
   context: ChatPipelineContext,
-  apiKey: string
+  apiKey: string,
+  onGenerationStage?: GenerationStageCallback
 ): Promise<ChatPipelineResult> {
   if (context.latestUserTurn.speaker !== 'USER') {
     throw new Error('Chat pipeline requires latestUserTurn to have speaker USER');
@@ -98,55 +107,75 @@ export async function runChatPipeline(
     context.chatSession.chatBible !== null && !bibleWasRefreshed
       ? context.chatSession.chatBible
       : (
-          await generateChatBible(
-            {
-              targetCharacter: context.targetCharacter,
-              interlocutorCharacter: context.interlocutorCharacter,
-              relationshipState: context.chatSession.relationshipState,
-              knowledgeState: context.chatSession.knowledgeState,
-              physicalContext: context.chatSession.physicalContext,
-              leadInContext: context.chatSession.leadInContext,
-              rollingSummary: context.chatSession.rollingSummary,
-              recentTurns: context.recentTurns,
-            },
-            apiKey
+          await runGenerationStage(
+            onGenerationStage,
+            CHAT_BIBLE_STAGE,
+            async () =>
+              generateChatBible(
+                {
+                  targetCharacter: context.targetCharacter,
+                  interlocutorCharacter: context.interlocutorCharacter,
+                  relationshipState: context.chatSession.relationshipState,
+                  knowledgeState: context.chatSession.knowledgeState,
+                  physicalContext: context.chatSession.physicalContext,
+                  leadInContext: context.chatSession.leadInContext,
+                  rollingSummary: context.chatSession.rollingSummary,
+                  recentTurns: context.recentTurns,
+                },
+                apiKey
+              )
           )
         ).chatBible;
 
   const turnPlan = (
-    await generateChatTurnPlan(
-      {
-        targetCharacter: context.targetCharacter,
-        chatBible,
-        recentTurns: context.recentTurns,
-        latestUserTurn: context.latestUserTurn,
-      },
-      apiKey
+    await runGenerationStage(
+      onGenerationStage,
+      CHAT_PLANNER_STAGE,
+      async () =>
+        generateChatTurnPlan(
+          {
+            targetCharacter: context.targetCharacter,
+            chatBible,
+            recentTurns: context.recentTurns,
+            latestUserTurn: context.latestUserTurn,
+          },
+          apiKey
+        )
     )
   ).turnPlan;
 
   const writerTurn = (
-    await generateChatWriterTurn(
-      {
-        targetCharacter: context.targetCharacter,
-        chatBible,
-        turnPlan,
-        recentTurns: context.recentTurns,
-        latestUserTurn: context.latestUserTurn,
-      },
-      apiKey
+    await runGenerationStage(
+      onGenerationStage,
+      CHAT_WRITER_STAGE,
+      async () =>
+        generateChatWriterTurn(
+          {
+            targetCharacter: context.targetCharacter,
+            chatBible,
+            turnPlan,
+            recentTurns: context.recentTurns,
+            latestUserTurn: context.latestUserTurn,
+          },
+          apiKey
+        )
     )
   ).writerTurn;
 
   const stateUpdate = (
-    await generateChatStateUpdate(
-      {
-        chatBible,
-        latestUserTurn: context.latestUserTurn,
-        turnPlan,
-        writerTurn,
-      },
-      apiKey
+    await runGenerationStage(
+      onGenerationStage,
+      CHAT_STATE_STAGE,
+      async () =>
+        generateChatStateUpdate(
+          {
+            chatBible,
+            latestUserTurn: context.latestUserTurn,
+            turnPlan,
+            writerTurn,
+          },
+          apiKey
+        )
     )
   ).stateUpdate;
 
@@ -165,12 +194,17 @@ export async function runChatPipeline(
 
   if (summaryWasGenerated) {
     const summary = (
-      await generateChatSummary(
-        {
-          existingSummary: updatedSession.rollingSummary,
-          turnsToCompress: [...context.allTurns, characterTurn],
-        },
-        apiKey
+      await runGenerationStage(
+        onGenerationStage,
+        CHAT_SUMMARY_STAGE,
+        async () =>
+          generateChatSummary(
+            {
+              existingSummary: updatedSession.rollingSummary,
+              turnsToCompress: [...context.allTurns, characterTurn],
+            },
+            apiKey
+          )
       )
     ).summary;
 
