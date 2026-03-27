@@ -15136,9 +15136,10 @@ function initChatNewPage() {
   var errorBlock = document.getElementById('chat-new-error');
   var targetSelect = document.getElementById('chat-target-character-id');
   var interlocutorSelect = document.getElementById('chat-interlocutor-character-id');
+  var worldbuildingSelect = document.getElementById('chat-worldbuilding-id');
   var submitButton = document.getElementById('chat-new-submit');
 
-  if (!targetSelect || !interlocutorSelect || !submitButton) {
+  if (!targetSelect || !interlocutorSelect || !worldbuildingSelect || !submitButton) {
     return;
   }
 
@@ -15162,7 +15163,7 @@ function initChatNewPage() {
     errorBlock.style.display = 'none';
   }
 
-  function populateSelect(select, characters) {
+  function populateSelect(select, items, labelField) {
     var placeholder = select.querySelector('option');
     var placeholderHtml = placeholder
       ? '<option value="' + escapeHtml(placeholder.value || '') + '">' + escapeHtml(placeholder.textContent || '') + '</option>'
@@ -15170,13 +15171,13 @@ function initChatNewPage() {
 
     select.innerHTML =
       placeholderHtml +
-      characters
-        .map(function (character) {
+      items
+        .map(function (item) {
           return (
             '<option value="' +
-            escapeHtml(character.id || '') +
+            escapeHtml(item.id || '') +
             '">' +
-            escapeHtml(character.name || 'Unnamed') +
+            escapeHtml(item[labelField] || 'Unnamed') +
             '</option>'
           );
         })
@@ -15221,6 +15222,12 @@ function initChatNewPage() {
     }
   });
 
+  worldbuildingSelect.addEventListener('change', function () {
+    if (worldbuildingSelect.value) {
+      clearError();
+    }
+  });
+
   form.addEventListener('submit', function (event) {
     if (submitting) {
       event.preventDefault();
@@ -15236,18 +15243,40 @@ function initChatNewPage() {
     submitButton.disabled = true;
   });
 
-  void (async function loadCharacters() {
+  void (async function loadFormOptions() {
     try {
-      var response = await fetch('/characters/api/list', { method: 'GET' });
-      var data = await response.json();
-      if (!response.ok || !data.success || !Array.isArray(data.characters)) {
-        throw new Error((data && data.error) || 'Failed to load characters');
+      var responses = await Promise.all([
+        fetch('/characters/api/list', { method: 'GET' }),
+        fetch('/worldbuilding/api/list', { method: 'GET' }),
+      ]);
+      var charactersResponse = responses[0];
+      var worldbuildingsResponse = responses[1];
+      var charactersData = await charactersResponse.json();
+      var worldbuildingsData = await worldbuildingsResponse.json();
+
+      if (
+        !charactersResponse.ok ||
+        !charactersData.success ||
+        !Array.isArray(charactersData.characters)
+      ) {
+        throw new Error((charactersData && charactersData.error) || 'Failed to load characters');
       }
 
-      populateSelect(targetSelect, data.characters);
-      populateSelect(interlocutorSelect, data.characters);
+      if (
+        !worldbuildingsResponse.ok ||
+        !worldbuildingsData.success ||
+        !Array.isArray(worldbuildingsData.worldbuildings)
+      ) {
+        throw new Error(
+          (worldbuildingsData && worldbuildingsData.error) || 'Failed to load worldbuildings'
+        );
+      }
+
+      populateSelect(targetSelect, charactersData.characters, 'name');
+      populateSelect(interlocutorSelect, charactersData.characters, 'name');
+      populateSelect(worldbuildingSelect, worldbuildingsData.worldbuildings, 'name');
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to load characters');
+      setError(error instanceof Error ? error.message : 'Failed to load form options');
     }
   })();
 }

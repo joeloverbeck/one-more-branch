@@ -5,6 +5,8 @@ describe('chat new page controller', () => {
   async function settleAsyncWork(): Promise<void> {
     await Promise.resolve();
     await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
   }
 
   function getPageHtml(): string {
@@ -17,6 +19,9 @@ describe('chat new page controller', () => {
           </select>
           <select id="chat-interlocutor-character-id" name="interlocutorCharacterId" required>
             <option value="">Select the user's character...</option>
+          </select>
+          <select id="chat-worldbuilding-id" name="worldbuildingId" required>
+            <option value="">Select worldbuilding...</option>
           </select>
           <input id="chat-location" name="location" required />
           <input id="chat-micro-location" name="microLocation" required />
@@ -42,15 +47,26 @@ describe('chat new page controller', () => {
   });
 
   it('loads character options into both selects on init', async () => {
-    global.fetch = jest.fn().mockResolvedValue(
-      mockJsonResponse({
-        success: true,
-        characters: [
-          { id: 'char-1', name: 'Mara' },
-          { id: 'char-2', name: 'Iven' },
-        ],
-      })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockJsonResponse({
+          success: true,
+          characters: [
+            { id: 'char-1', name: 'Mara' },
+            { id: 'char-2', name: 'Iven' },
+          ],
+        })
+      )
+      .mockResolvedValueOnce(
+        mockJsonResponse({
+          success: true,
+          worldbuildings: [
+            { id: 'world-1', name: 'Salt Archive' },
+            { id: 'world-2', name: 'Glass Orchard' },
+          ],
+        })
+      );
 
     loadAppAndInit();
     await settleAsyncWork();
@@ -59,23 +75,36 @@ describe('chat new page controller', () => {
     const interlocutorSelect = document.getElementById(
       'chat-interlocutor-character-id'
     ) as HTMLSelectElement;
+    const worldbuildingSelect = document.getElementById(
+      'chat-worldbuilding-id'
+    ) as HTMLSelectElement;
 
     expect(targetSelect.options).toHaveLength(3);
     expect(interlocutorSelect.options).toHaveLength(3);
+    expect(worldbuildingSelect.options).toHaveLength(3);
     expect(targetSelect.options[1]?.textContent).toBe('Mara');
     expect(interlocutorSelect.options[2]?.value).toBe('char-2');
+    expect(worldbuildingSelect.options[1]?.textContent).toBe('Salt Archive');
   });
 
   it('blocks submit when target and interlocutor are the same character', async () => {
-    global.fetch = jest.fn().mockResolvedValue(
-      mockJsonResponse({
-        success: true,
-        characters: [
-          { id: 'char-1', name: 'Mara' },
-          { id: 'char-2', name: 'Iven' },
-        ],
-      })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockJsonResponse({
+          success: true,
+          characters: [
+            { id: 'char-1', name: 'Mara' },
+            { id: 'char-2', name: 'Iven' },
+          ],
+        })
+      )
+      .mockResolvedValueOnce(
+        mockJsonResponse({
+          success: true,
+          worldbuildings: [{ id: 'world-1', name: 'Salt Archive' }],
+        })
+      );
 
     loadAppAndInit();
     await settleAsyncWork();
@@ -86,6 +115,7 @@ describe('chat new page controller', () => {
     (document.getElementById('chat-target-character-id') as HTMLSelectElement).value = 'char-1';
     (document.getElementById('chat-interlocutor-character-id') as HTMLSelectElement).value =
       'char-1';
+    (document.getElementById('chat-worldbuilding-id') as HTMLSelectElement).value = 'world-1';
     (document.getElementById('chat-location') as HTMLInputElement).value = 'Archive';
     (document.getElementById('chat-micro-location') as HTMLInputElement).value = 'Alcove';
     (document.getElementById('chat-time-of-day') as HTMLSelectElement).value = 'EVENING';
@@ -107,15 +137,23 @@ describe('chat new page controller', () => {
   });
 
   it('disables repeat submission after a valid submit', async () => {
-    global.fetch = jest.fn().mockResolvedValue(
-      mockJsonResponse({
-        success: true,
-        characters: [
-          { id: 'char-1', name: 'Mara' },
-          { id: 'char-2', name: 'Iven' },
-        ],
-      })
-    );
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockJsonResponse({
+          success: true,
+          characters: [
+            { id: 'char-1', name: 'Mara' },
+            { id: 'char-2', name: 'Iven' },
+          ],
+        })
+      )
+      .mockResolvedValueOnce(
+        mockJsonResponse({
+          success: true,
+          worldbuildings: [{ id: 'world-1', name: 'Salt Archive' }],
+        })
+      );
 
     loadAppAndInit();
     await settleAsyncWork();
@@ -126,6 +164,7 @@ describe('chat new page controller', () => {
     (document.getElementById('chat-target-character-id') as HTMLSelectElement).value = 'char-1';
     (document.getElementById('chat-interlocutor-character-id') as HTMLSelectElement).value =
       'char-2';
+    (document.getElementById('chat-worldbuilding-id') as HTMLSelectElement).value = 'world-1';
     (document.getElementById('chat-location') as HTMLInputElement).value = 'Archive';
     (document.getElementById('chat-micro-location') as HTMLInputElement).value = 'Alcove';
     (document.getElementById('chat-time-of-day') as HTMLSelectElement).value = 'EVENING';
@@ -145,5 +184,36 @@ describe('chat new page controller', () => {
     expect(firstResult).toBe(true);
     expect(submitButton.disabled).toBe(true);
     expect(secondResult).toBe(false);
+  });
+
+  it('shows an error when worldbuilding options fail to load', async () => {
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce(
+        mockJsonResponse({
+          success: true,
+          characters: [
+            { id: 'char-1', name: 'Mara' },
+            { id: 'char-2', name: 'Iven' },
+          ],
+        })
+      )
+      .mockResolvedValueOnce(
+        mockJsonResponse(
+          {
+            success: false,
+            error: 'Failed to load worldbuildings',
+          },
+          500
+        )
+      );
+
+    loadAppAndInit();
+    await settleAsyncWork();
+
+    const errorEl = document.getElementById('chat-new-error') as HTMLDivElement;
+
+    expect(errorEl.textContent).toContain('Failed to load worldbuildings');
+    expect(errorEl.style.display).toBe('block');
   });
 });

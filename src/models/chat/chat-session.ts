@@ -62,6 +62,7 @@ export interface ChatSession {
   readonly id: string;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly worldbuildingId: string;
   readonly targetCharacterId: string;
   readonly interlocutorCharacterId: string;
   readonly targetCharacterName: string;

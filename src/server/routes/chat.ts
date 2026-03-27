@@ -23,6 +23,7 @@ const MAX_CHAT_MESSAGE_LENGTH = 2000;
 const MIN_API_KEY_LENGTH = 10;
 
 interface ChatCreateBody {
+  readonly worldbuildingId?: unknown;
   readonly targetCharacterId?: unknown;
   readonly interlocutorCharacterId?: unknown;
   readonly location?: unknown;
@@ -113,12 +114,14 @@ function parseEnumValue<TValue extends string>(
 }
 
 function parseChatCreateBody(body: ChatCreateBody): {
+  worldbuildingId: string;
   targetCharacterId: string;
   interlocutorCharacterId: string;
   physicalContext: ChatPhysicalContext;
   leadInContext: ChatLeadInContext;
 } {
   return {
+    worldbuildingId: parseRequiredString('worldbuildingId', body.worldbuildingId),
     targetCharacterId: parseRequiredString('targetCharacterId', body.targetCharacterId),
     interlocutorCharacterId: parseRequiredString(
       'interlocutorCharacterId',

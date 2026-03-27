@@ -11,6 +11,7 @@ import type {
 import { ChatDomainError, parseChatInput } from '../../models/chat/index.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
 import { loadCharacter } from '../../persistence/character-repository.js';
+import { loadWorldbuildingById } from '../../services/worldbuilding-service.js';
 import {
   deleteChat,
   getRecentTurns,
@@ -22,6 +23,7 @@ import {
 } from '../../persistence/chat-repository.js';
 
 export interface CreateChatParams {
+  readonly worldbuildingId: string;
   readonly targetCharacterId: string;
   readonly interlocutorCharacterId: string;
   readonly physicalContext: ChatPhysicalContext;
@@ -42,6 +44,7 @@ export interface SendTurnResult extends ChatPipelineResult {
 
 interface ChatServiceDeps {
   readonly loadCharacter: typeof loadCharacter;
+  readonly loadWorldbuildingById: typeof loadWorldbuildingById;
   readonly saveChat: typeof saveChat;
   readonly loadChat: typeof loadChat;
   readonly listChats: typeof listChats;
@@ -65,6 +68,7 @@ export interface ChatService {
 
 const defaultDeps: ChatServiceDeps = {
   loadCharacter,
+  loadWorldbuildingById,
   saveChat,
   loadChat,
   listChats,
@@ -109,6 +113,23 @@ async function requireCharacter(
   return character;
 }
 
+async function requireWorldbuilding(
+  deps: ChatServiceDeps,
+  worldbuildingId: string
+): Promise<void> {
+  const worldbuilding = await deps.loadWorldbuildingById(worldbuildingId);
+  if (worldbuilding === null) {
+    throw new ChatDomainError(`Worldbuilding not found: ${worldbuildingId}`, 'RESOURCE_NOT_FOUND');
+  }
+
+  if (worldbuilding.decomposedWorld === null) {
+    throw new ChatDomainError(
+      `Worldbuilding must be decomposed before chat creation: ${worldbuildingId}`,
+      'VALIDATION_FAILED'
+    );
+  }
+}
+
 async function requireChatSession(deps: ChatServiceDeps, chatId: string): Promise<ChatSession> {
   const session = await deps.loadChat(chatId);
   if (session === null) {
@@ -143,6 +164,7 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
       const [targetCharacter, interlocutorCharacter] = await Promise.all([
         requireCharacter(deps, 'Target', params.targetCharacterId),
         requireCharacter(deps, 'Interlocutor', params.interlocutorCharacterId),
+        requireWorldbuilding(deps, params.worldbuildingId),
       ]);
 
       const timestamp = deps.now();
@@ -150,6 +172,7 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
         id: deps.createId(),
         createdAt: timestamp,
         updatedAt: timestamp,
+        worldbuildingId: params.worldbuildingId,
         targetCharacterId: targetCharacter.id,
         interlocutorCharacterId: interlocutorCharacter.id,
         targetCharacterName: targetCharacter.name,

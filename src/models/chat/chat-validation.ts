@@ -396,6 +396,7 @@ export function isChatSession(value: unknown): value is ChatSession {
     isString(value['id']) &&
     isIsoDateString(value['createdAt']) &&
     isIsoDateString(value['updatedAt']) &&
+    isString(value['worldbuildingId']) &&
     isString(value['targetCharacterId']) &&
     isString(value['interlocutorCharacterId']) &&
     isString(value['targetCharacterName']) &&

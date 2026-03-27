@@ -9,6 +9,7 @@ import type {
   ChatTurn,
 } from '@/models/chat';
 import type { StandaloneDecomposedCharacter } from '@/models/standalone-decomposed-character';
+import type { SavedWorldbuilding } from '@/models/saved-worldbuilding';
 import { ChatDomainError as ChatDomainErrorClass } from '@/models/chat';
 import { createChatService } from '@/server/services/chat-service';
 
@@ -69,6 +70,7 @@ function createSession(overrides: Partial<ChatSession> = {}): ChatSession {
     id: 'chat-1',
     createdAt: '2026-03-27T09:00:00.000Z',
     updatedAt: '2026-03-27T09:00:00.000Z',
+    worldbuildingId: 'world-1',
     targetCharacterId: 'target-1',
     interlocutorCharacterId: 'interlocutor-1',
     targetCharacterName: 'Mara',
@@ -90,6 +92,29 @@ function createSession(overrides: Partial<ChatSession> = {}): ChatSession {
       falseBeliefs: [],
       secretsRevealed: [],
     },
+    ...overrides,
+  };
+}
+
+function createWorldbuilding(
+  overrides: Partial<SavedWorldbuilding> = {}
+): SavedWorldbuilding {
+  return {
+    id: 'world-1',
+    name: 'The Salt Archive',
+    sourceKind: 'RAW_DECOMPOSED',
+    createdAt: '2026-03-27T08:00:00.000Z',
+    updatedAt: '2026-03-27T08:00:00.000Z',
+    inputs: {},
+    worldSeed: null,
+    rawWorldMarkdown: null,
+    rawSourceText: 'A city built into a flooded archive.',
+    decomposedWorld: {
+      facts: [],
+      openQuestions: [],
+      rawWorldbuilding: 'A city built into a flooded archive.',
+    },
+    completedStages: [],
     ...overrides,
   };
 }
@@ -206,6 +231,7 @@ function createDeps(overrides: Partial<ChatServiceDeps> = {}): ChatServiceDeps {
       }
       return Promise.resolve(null);
     }),
+    loadWorldbuildingById: jest.fn().mockResolvedValue(createWorldbuilding()),
     saveChat: jest.fn().mockResolvedValue(undefined),
     loadChat: jest.fn().mockResolvedValue(createSession()),
     listChats: jest.fn().mockResolvedValue([createSummary()]),
@@ -227,6 +253,7 @@ describe('chat-service', () => {
 
     await expect(
       service.createChat({
+        worldbuildingId: 'world-1',
         targetCharacterId: 'target-1',
         interlocutorCharacterId: 'target-1',
         physicalContext: createPhysicalContext(),
@@ -252,6 +279,7 @@ describe('chat-service', () => {
 
     await expect(
       service.createChat({
+        worldbuildingId: 'world-1',
         targetCharacterId: 'target-1',
         interlocutorCharacterId: 'interlocutor-1',
         physicalContext: createPhysicalContext(),
@@ -261,6 +289,7 @@ describe('chat-service', () => {
 
     await expect(
       service.createChat({
+        worldbuildingId: 'world-1',
         targetCharacterId: 'target-1',
         interlocutorCharacterId: 'interlocutor-1',
         physicalContext: createPhysicalContext(),
@@ -277,6 +306,7 @@ describe('chat-service', () => {
     const service = createChatService(deps);
 
     const session = await service.createChat({
+      worldbuildingId: 'world-1',
       targetCharacterId: 'target-1',
       interlocutorCharacterId: 'interlocutor-1',
       physicalContext: createPhysicalContext(),
@@ -289,6 +319,50 @@ describe('chat-service', () => {
       updatedAt: '2026-03-27T09:00:00.000Z',
     }));
     expect(deps.saveChat).toHaveBeenCalledWith(session);
+  });
+
+  it('rejects chat creation when the worldbuilding is missing', async () => {
+    const service = createChatService(
+      createDeps({
+        loadWorldbuildingById: jest.fn().mockResolvedValue(null),
+      })
+    );
+
+    await expect(
+      service.createChat({
+        worldbuildingId: 'world-404',
+        targetCharacterId: 'target-1',
+        interlocutorCharacterId: 'interlocutor-1',
+        physicalContext: createPhysicalContext(),
+        leadInContext: createLeadInContext(),
+      })
+    ).rejects.toMatchObject<Partial<ChatDomainError>>({
+      code: 'RESOURCE_NOT_FOUND',
+      message: 'Worldbuilding not found: world-404',
+    });
+  });
+
+  it('rejects chat creation when the worldbuilding has not been decomposed', async () => {
+    const service = createChatService(
+      createDeps({
+        loadWorldbuildingById: jest
+          .fn()
+          .mockResolvedValue(createWorldbuilding({ decomposedWorld: null })),
+      })
+    );
+
+    await expect(
+      service.createChat({
+        worldbuildingId: 'world-1',
+        targetCharacterId: 'target-1',
+        interlocutorCharacterId: 'interlocutor-1',
+        physicalContext: createPhysicalContext(),
+        leadInContext: createLeadInContext(),
+      })
+    ).rejects.toMatchObject<Partial<ChatDomainError>>({
+      code: 'VALIDATION_FAILED',
+      message: 'Worldbuilding must be decomposed before chat creation: world-1',
+    });
   });
 
   it('saves the user turn before calling the pipeline', async () => {

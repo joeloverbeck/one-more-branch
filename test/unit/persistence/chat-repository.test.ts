@@ -26,6 +26,7 @@ function createChatSession(id: string, updatedAt = '2026-03-27T09:05:00.000Z'): 
     id,
     createdAt: '2026-03-27T09:00:00.000Z',
     updatedAt,
+    worldbuildingId: 'world-1',
     targetCharacterId: 'target-1',
     interlocutorCharacterId: 'interlocutor-1',
     targetCharacterName: 'Mara',

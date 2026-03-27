@@ -24,6 +24,7 @@ describe('chat-new page template', () => {
     expect(html).toContain('action="/chat"');
     expect(html).toContain('method="post"');
     expect(html).toContain('data-chat-new-form');
+    expect(html).toContain('name="worldbuildingId"');
     expect(html).toContain('name="targetCharacterId"');
     expect(html).toContain('name="interlocutorCharacterId"');
     expect(html).toContain('name="location"');

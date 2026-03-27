@@ -80,6 +80,7 @@ function createSession(): Record<string, unknown> {
     id: 'chat-1',
     createdAt: '2026-03-27T09:00:00.000Z',
     updatedAt: '2026-03-27T09:02:00.000Z',
+    worldbuildingId: 'world-1',
     targetCharacterId: 'target-1',
     interlocutorCharacterId: 'interlocutor-1',
     targetCharacterName: 'Mara',
@@ -265,6 +266,7 @@ describe('chat routes', () => {
     const handler = getRouteHandler('post', '/');
     const req = mockReq({
       body: {
+        worldbuildingId: ' world-1 ',
         targetCharacterId: ' target-1 ',
         interlocutorCharacterId: ' interlocutor-1 ',
         location: ' Archive ',
@@ -286,6 +288,7 @@ describe('chat routes', () => {
     await flushPromises();
 
     expect(mockChatService.createChat).toHaveBeenCalledWith({
+      worldbuildingId: 'world-1',
       targetCharacterId: 'target-1',
       interlocutorCharacterId: 'interlocutor-1',
       physicalContext: {
@@ -323,7 +326,7 @@ describe('chat routes', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.render).toHaveBeenCalledWith('pages/error', {
       title: 'Error',
-      message: 'targetCharacterId is required',
+      message: 'worldbuildingId is required',
     });
   });
 
