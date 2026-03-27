@@ -1,12 +1,19 @@
-const mockGenerateChatBible = jest.fn();
+const mockGenerateChatSceneContext = jest.fn();
+const mockGenerateChatCharacterContext = jest.fn();
 const mockGenerateChatTurnPlan = jest.fn();
 const mockGenerateChatWriterTurn = jest.fn();
 const mockGenerateChatStateUpdate = jest.fn();
 const mockGenerateChatSummary = jest.fn();
 
-jest.mock('../../../../src/llm/chat/chat-bible-generation', () => ({
-  get generateChatBible(): typeof mockGenerateChatBible {
-    return mockGenerateChatBible;
+jest.mock('../../../../src/llm/chat/chat-scene-context-generation', () => ({
+  get generateChatSceneContext(): typeof mockGenerateChatSceneContext {
+    return mockGenerateChatSceneContext;
+  },
+}));
+
+jest.mock('../../../../src/llm/chat/chat-character-context-generation', () => ({
+  get generateChatCharacterContext(): typeof mockGenerateChatCharacterContext {
+    return mockGenerateChatCharacterContext;
   },
 }));
 
@@ -34,7 +41,12 @@ jest.mock('../../../../src/llm/chat/chat-summary-generation', () => ({
   },
 }));
 
-import { ChatDomainError } from '../../../../src/models/chat';
+import {
+  assembleChatBible,
+  ChatDomainError,
+  type ChatCharacterContext,
+  type ChatSceneContext,
+} from '../../../../src/models/chat';
 import { runChatPipeline, type ChatPipelineContext } from '../../../../src/llm/chat/chat-pipeline';
 import type { GenerationStageEvent } from '../../../../src/engine/types';
 import type { DecomposedWorld } from '../../../../src/models/decomposed-world';
@@ -264,7 +276,64 @@ function makeContext(overrides: Partial<ChatPipelineContext> = {}): ChatPipeline
   };
 }
 
-const GENERATED_BIBLE = makeContext().chatSession.chatBible!;
+const GENERATED_SCENE_CONTEXT: ChatSceneContext = {
+  sessionPremise: 'Two allies test whether trust is still possible.',
+  physicalReality: {
+    location: 'Archive',
+    microLocation: 'Lamp-lit table',
+    timeOfDay: 'EVENING',
+    privacy: 'PRIVATE',
+    distanceBand: 'CONVERSATIONAL',
+    characterActivity: 'Sorting ledgers',
+    interactableObjects: ['ledger', 'lamp'],
+    ambientConditions: ['rain', 'ink smell'],
+  },
+  preChatMomentum: {
+    leadInSummary: 'They arrive separately after the raid.',
+    recentEvents: ['A guard vanished.'],
+    whyNow: 'The ledger cannot stay missing until dawn.',
+    stakesNow: ['Mutual ruin if exposed'],
+    unresolvedPressures: ['Neither trusts the other'],
+  },
+  conversationNow: {
+    rollingSummary: 'They circle around the accusation.',
+    activeThreads: ['ledger'],
+    commitments: [],
+    sensitiveTopics: ['the duplicate seal'],
+    lastTurnPressure: null,
+  },
+};
+
+const GENERATED_CHARACTER_CONTEXT: ChatCharacterContext = {
+  characterNow: {
+    currentObjective: 'Force the truth out first.',
+    immediateNeedFromConversation: 'Keep leverage.',
+    emotionalState: 'contained anger',
+    willingnessToEngage: 'GUARDED',
+    topicsToAdvance: ['the ledger'],
+    topicsToProtect: ['the duplicate seal'],
+  },
+  relationshipNow: {
+    dynamic: 'strained allies',
+    valence: -1,
+    tension: 7,
+    leverage: 'Shared culpability',
+    whatCharacterBelievesAboutInterlocutor: ['He is stalling.'],
+  },
+  knowledgeNow: {
+    knownFacts: ['The ledger is gone.'],
+    suspicions: ['He moved it.'],
+    falseBeliefs: ['He thinks she trusts him.'],
+    secretsRevealed: ['The guard saw them.'],
+    secretsKept: ['She copied the ledger.'],
+    knowledgeBoundaries: ['She does not know who ordered the theft.'],
+  },
+  continuityGuardrails: ['No sudden confession.'],
+  responseConstraints: ['Keep it immediate.'],
+};
+
+const GENERATED_BIBLE = assembleChatBible(GENERATED_SCENE_CONTEXT, GENERATED_CHARACTER_CONTEXT);
+
 const TURN_PLAN = {
   internalSelfCheck: {
     whatDoIWant: 'Corner him.',
@@ -296,6 +365,7 @@ const TURN_PLAN = {
     revealsSecret: false,
   },
 };
+
 const WRITER_TURN = {
   blocks: [
     { type: 'ACTION' as const, text: 'She steadies the lamp with two fingers.' },
@@ -308,6 +378,7 @@ const WRITER_TURN = {
     finalPressure: 'She refuses to let him redirect.',
   },
 };
+
 const STATE_UPDATE = {
   summaryDelta: 'The exchange sharpens into a veiled accusation.',
   relationshipShifts: [
@@ -343,7 +414,14 @@ const STATE_UPDATE = {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockGenerateChatBible.mockResolvedValue({ chatBible: GENERATED_BIBLE, rawResponse: '{}' });
+  mockGenerateChatSceneContext.mockResolvedValue({
+    sceneContext: GENERATED_SCENE_CONTEXT,
+    rawResponse: '{}',
+  });
+  mockGenerateChatCharacterContext.mockResolvedValue({
+    characterContext: GENERATED_CHARACTER_CONTEXT,
+    rawResponse: '{}',
+  });
   mockGenerateChatTurnPlan.mockResolvedValue({ turnPlan: TURN_PLAN, rawResponse: '{}' });
   mockGenerateChatWriterTurn.mockResolvedValue({ writerTurn: WRITER_TURN, rawResponse: '{}' });
   mockGenerateChatStateUpdate.mockResolvedValue({ stateUpdate: STATE_UPDATE, rawResponse: '{}' });
@@ -361,7 +439,7 @@ beforeEach(() => {
 });
 
 describe('runChatPipeline', () => {
-  it('passes decomposedWorld into bible generation when the bible refreshes', async () => {
+  it('passes decomposedWorld into scene-context generation when the bible refreshes', async () => {
     const context = makeContext({
       chatSession: {
         ...makeContext().chatSession,
@@ -372,10 +450,30 @@ describe('runChatPipeline', () => {
 
     await runChatPipeline(context, 'test-key');
 
-    expect(mockGenerateChatBible).toHaveBeenCalledWith(
+    expect(mockGenerateChatSceneContext).toHaveBeenCalledWith(
       expect.objectContaining({
         decomposedWorld: context.decomposedWorld,
       }),
+      'test-key'
+    );
+  });
+
+  it('passes the generated scene context into character-context generation', async () => {
+    const context = makeContext({
+      chatSession: {
+        ...makeContext().chatSession,
+        chatBible: null,
+        rollingSummary: null,
+      },
+    });
+
+    await runChatPipeline(context, 'test-key');
+
+    expect(mockGenerateChatCharacterContext).toHaveBeenCalledWith(
+      expect.objectContaining({
+        decomposedWorld: context.decomposedWorld,
+      }),
+      GENERATED_SCENE_CONTEXT,
       'test-key'
     );
   });
@@ -392,13 +490,15 @@ describe('runChatPipeline', () => {
       'test-key'
     );
 
-    expect(mockGenerateChatBible).toHaveBeenCalledTimes(1);
+    expect(mockGenerateChatSceneContext).toHaveBeenCalledTimes(1);
+    expect(mockGenerateChatCharacterContext).toHaveBeenCalledTimes(1);
   });
 
   it('refreshes the bible on session resume', async () => {
     await runChatPipeline(makeContext({ isSessionResume: true }), 'test-key');
 
-    expect(mockGenerateChatBible).toHaveBeenCalledTimes(1);
+    expect(mockGenerateChatSceneContext).toHaveBeenCalledTimes(1);
+    expect(mockGenerateChatCharacterContext).toHaveBeenCalledTimes(1);
   });
 
   it('refreshes the bible every 10 completed character turns', async () => {
@@ -412,7 +512,8 @@ describe('runChatPipeline', () => {
       'test-key'
     );
 
-    expect(mockGenerateChatBible).toHaveBeenCalledTimes(1);
+    expect(mockGenerateChatSceneContext).toHaveBeenCalledTimes(1);
+    expect(mockGenerateChatCharacterContext).toHaveBeenCalledTimes(1);
   });
 
   it('refreshes the bible when the latest prior character turn requested it', async () => {
@@ -433,13 +534,30 @@ describe('runChatPipeline', () => {
       'test-key'
     );
 
-    expect(mockGenerateChatBible).toHaveBeenCalledTimes(1);
+    expect(mockGenerateChatSceneContext).toHaveBeenCalledTimes(1);
+    expect(mockGenerateChatCharacterContext).toHaveBeenCalledTimes(1);
   });
 
   it('does not refresh the bible on a normal mid-conversation turn', async () => {
     await runChatPipeline(makeContext(), 'test-key');
 
-    expect(mockGenerateChatBible).not.toHaveBeenCalled();
+    expect(mockGenerateChatSceneContext).not.toHaveBeenCalled();
+    expect(mockGenerateChatCharacterContext).not.toHaveBeenCalled();
+  });
+
+  it('stores the assembled bible on the updated session when a refresh occurs', async () => {
+    const result = await runChatPipeline(
+      makeContext({
+        chatSession: {
+          ...makeContext().chatSession,
+          chatBible: null,
+          rollingSummary: null,
+        },
+      }),
+      'test-key'
+    );
+
+    expect(result.updatedSession.chatBible).toEqual(GENERATED_BIBLE);
   });
 
   it('generates summary every 8 completed character turns', async () => {
@@ -511,7 +629,7 @@ describe('runChatPipeline', () => {
     });
   });
 
-  it('emits ordered stage progress events for the executed chat stages', async () => {
+  it('emits ordered stage progress events for the executed split chat stages', async () => {
     const onGenerationStage = jest.fn<(event: GenerationStageEvent) => void>();
 
     await runChatPipeline(
@@ -532,8 +650,10 @@ describe('runChatPipeline', () => {
     );
 
     expect(stageEvents).toEqual([
-      'started:CURATING_CHAT_BIBLE',
-      'completed:CURATING_CHAT_BIBLE',
+      'started:CURATING_CHAT_SCENE',
+      'completed:CURATING_CHAT_SCENE',
+      'started:CURATING_CHAT_CHARACTER',
+      'completed:CURATING_CHAT_CHARACTER',
       'started:PLANNING_CHAT_TURN',
       'completed:PLANNING_CHAT_TURN',
       'started:WRITING_CHAT_TURN',

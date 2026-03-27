@@ -54,7 +54,6 @@ import { STRUCTURE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/structu
 import { WRITER_GENERATION_SCHEMA } from '../../../../src/llm/schemas/writer-schema';
 import { CHARACTER_WEB_GENERATION_SCHEMA } from '../../../../src/llm/schemas/character-web-schema';
 import { CHARACTER_BRAINSTORMER_SCHEMA } from '../../../../src/llm/schemas/character-brainstormer-schema';
-import { CHAT_BIBLE_SCHEMA } from '../../../../src/llm/schemas/chat-bible-schema';
 import { CHAT_CHARACTER_CONTEXT_SCHEMA } from '../../../../src/llm/schemas/chat-character-context-schema';
 import { CHAT_PLANNER_SCHEMA } from '../../../../src/llm/schemas/chat-planner-schema';
 import { CHAT_SCENE_CONTEXT_SCHEMA } from '../../../../src/llm/schemas/chat-scene-context-schema';
@@ -320,7 +319,6 @@ describe('Anthropic schema compatibility', () => {
     { name: 'WORLDBUILDING_SEED_SCHEMA', schema: WORLDBUILDING_SEED_SCHEMA },
     { name: 'WORLDBUILDING_ELABORATION_SCHEMA', schema: WORLDBUILDING_ELABORATION_SCHEMA },
     { name: 'CHARACTER_BRAINSTORMER_SCHEMA', schema: CHARACTER_BRAINSTORMER_SCHEMA },
-    { name: 'CHAT_BIBLE_SCHEMA', schema: CHAT_BIBLE_SCHEMA },
     { name: 'CHAT_SCENE_CONTEXT_SCHEMA', schema: CHAT_SCENE_CONTEXT_SCHEMA },
     { name: 'CHAT_CHARACTER_CONTEXT_SCHEMA', schema: CHAT_CHARACTER_CONTEXT_SCHEMA },
     { name: 'CHAT_PLANNER_SCHEMA', schema: CHAT_PLANNER_SCHEMA },

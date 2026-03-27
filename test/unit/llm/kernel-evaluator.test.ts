@@ -19,6 +19,7 @@ jest.mock('../../../src/logging/index.js', () => ({
 }));
 
 import { evaluateKernels, parseKernelScoringResponse } from '../../../src/llm/kernel-evaluator';
+import { getStageMaxTokens } from '../../../src/config/stage-model';
 import {
   buildKernelEvaluatorDeepEvalPrompt,
   buildKernelEvaluatorScoringPrompt,
@@ -385,10 +386,11 @@ describe('kernel-evaluator', () => {
 
     const scoringRequestBody = getRequestBody(0);
     const deepRequestBody = getRequestBody(1);
+    const kernelEvaluatorMaxTokens = getStageMaxTokens('kernelEvaluator');
     expect(scoringRequestBody['response_format']).toEqual(KERNEL_EVALUATION_SCORING_SCHEMA);
-    expect(scoringRequestBody['max_tokens']).toBe(16384);
+    expect(scoringRequestBody['max_tokens']).toBe(kernelEvaluatorMaxTokens);
     expect(deepRequestBody['response_format']).toEqual(KERNEL_EVALUATION_DEEP_SCHEMA);
-    expect(deepRequestBody['max_tokens']).toBe(16384);
+    expect(deepRequestBody['max_tokens']).toBe(kernelEvaluatorMaxTokens);
     expect(mockLogPrompt).toHaveBeenCalledWith(mockLogger, 'kernelEvaluator', expect.any(Array));
     expect(mockLogPrompt).toHaveBeenCalledTimes(2);
   });

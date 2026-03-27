@@ -1674,11 +1674,17 @@ const STAGE_PHRASE_POOLS = {
     'Planting contradictions that make characters unpredictable...',
     'Excavating backstory events specific enough to be unforgettable...',
   ],
-  CURATING_CHAT_BIBLE: [
-    'Distilling the relationship pressure into a sharper conversational brief...',
-    'Rebuilding the chat bible around what matters right now...',
-    'Selecting the facts that should constrain this exchange...',
-    'Curating the emotional and physical reality before anyone speaks...',
+  CURATING_CHAT_SCENE: [
+    'Locking in the physical scene and active pressures...',
+    'Distilling what is concretely true before anyone speaks...',
+    'Curating the environmental and conversational state of play...',
+    'Establishing the scene reality that should constrain the exchange...',
+  ],
+  CURATING_CHAT_CHARACTER: [
+    'Projecting the character\'s motives against the established scene...',
+    'Synthesizing what the character wants, fears, and will protect...',
+    'Mapping relationship leverage and knowledge boundaries for the next reply...',
+    'Curating the character-side continuity guardrails before the turn is planned...',
   ],
   PLANNING_CHAT_TURN: [
     'Deciding what the character wants from this reply...',
@@ -1756,7 +1762,8 @@ const STAGE_DISPLAY_NAMES = {
   GENERATING_WORLD_SEED: 'SEEDING WORLD',
   ELABORATING_WORLD: 'ELABORATING WORLD',
   BRAINSTORMING_CHARACTERS: 'BRAINSTORMING CHARACTERS',
-  CURATING_CHAT_BIBLE: 'CURATING CHAT BIBLE',
+  CURATING_CHAT_SCENE: 'CURATING CHAT SCENE',
+  CURATING_CHAT_CHARACTER: 'CURATING CHAT CHARACTER',
   PLANNING_CHAT_TURN: 'PLANNING CHAT TURN',
   WRITING_CHAT_TURN: 'WRITING CHAT TURN',
   UPDATING_CHAT_STATE: 'UPDATING CHAT STATE',

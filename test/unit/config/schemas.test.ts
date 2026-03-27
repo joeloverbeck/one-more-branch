@@ -187,6 +187,26 @@ describe('config schemas', () => {
       }
     });
 
+    it('accepts sparse per-stage override maps', () => {
+      const result = AppConfigSchema.parse({
+        llm: {
+          models: {
+            chatSceneContext: 'anthropic/claude-sonnet-4.6',
+          },
+          stageMaxTokens: {
+            chatSceneContext: 2048,
+          },
+          stageTemperatures: {
+            chatSceneContext: 0.4,
+          },
+        },
+      });
+
+      expect(result.llm.models).toEqual({ chatSceneContext: 'anthropic/claude-sonnet-4.6' });
+      expect(result.llm.stageMaxTokens).toEqual({ chatSceneContext: 2048 });
+      expect(result.llm.stageTemperatures).toEqual({ chatSceneContext: 0.4 });
+    });
+
     it('rejects unknown llm.models stage keys', () => {
       expect(() =>
         AppConfigSchema.parse({
@@ -197,6 +217,19 @@ describe('config schemas', () => {
               conceptSeeder: 'anthropic/claude-sonnet-4.6',
               conceptEvolverSeeder: 'anthropic/claude-sonnet-4.6',
               invalidStageName: 'z-ai/glm-5',
+            },
+          },
+        })
+      ).toThrow();
+    });
+
+    it('rejects unknown llm.stageMaxTokens stage keys', () => {
+      expect(() =>
+        AppConfigSchema.parse({
+          llm: {
+            stageMaxTokens: {
+              chatSceneContext: 2048,
+              invalidStageName: 1024,
             },
           },
         })

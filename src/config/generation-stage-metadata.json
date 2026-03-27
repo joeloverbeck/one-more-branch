@@ -1861,13 +1861,23 @@
       ]
     },
     {
-      "id": "CURATING_CHAT_BIBLE",
-      "displayName": "CURATING CHAT BIBLE",
+      "id": "CURATING_CHAT_SCENE",
+      "displayName": "CURATING CHAT SCENE",
       "phrases": [
-        "Distilling the relationship pressure into a sharper conversational brief...",
-        "Rebuilding the chat bible around what matters right now...",
-        "Selecting the facts that should constrain this exchange...",
-        "Curating the emotional and physical reality before anyone speaks..."
+        "Locking in the physical scene and active pressures...",
+        "Distilling what is concretely true before anyone speaks...",
+        "Curating the environmental and conversational state of play...",
+        "Establishing the scene reality that should constrain the exchange..."
+      ]
+    },
+    {
+      "id": "CURATING_CHAT_CHARACTER",
+      "displayName": "CURATING CHAT CHARACTER",
+      "phrases": [
+        "Projecting the character's motives against the established scene...",
+        "Synthesizing what the character wants, fears, and will protect...",
+        "Mapping relationship leverage and knowledge boundaries for the next reply...",
+        "Curating the character-side continuity guardrails before the turn is planned..."
       ]
     },
     {

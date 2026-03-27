@@ -262,11 +262,9 @@ describe('llm-stage-runner', () => {
   it('uses stage-configured temperature when no explicit override is provided', async () => {
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify({ ok: true })));
 
-    expect(getConfig().llm.stageTemperatures?.chatBible).toBe(0.3);
-
     await runLlmStage({
-      stageModel: 'chatBible',
-      promptType: 'chatBible',
+      stageModel: 'chatSceneContext',
+      promptType: 'chatSceneContext',
       apiKey: 'test-api-key',
       schema: CONCEPT_IDEATION_SCHEMA,
       messages: [{ role: 'user', content: 'test message' }],
@@ -285,8 +283,8 @@ describe('llm-stage-runner', () => {
     fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify({ ok: true })));
 
     await runLlmStage({
-      stageModel: 'chatBible',
-      promptType: 'chatBible',
+      stageModel: 'chatSceneContext',
+      promptType: 'chatSceneContext',
       apiKey: 'test-api-key',
       options: {
         temperature: 0.55,
