@@ -354,7 +354,7 @@ export function isChatStateUpdate(value: unknown): value is ChatStateUpdate {
   );
 }
 
-function isTurnMeta(value: unknown): value is TurnMeta {
+export function isTurnMeta(value: unknown): value is TurnMeta {
   if (!isObjectRecord(value)) {
     return false;
   }

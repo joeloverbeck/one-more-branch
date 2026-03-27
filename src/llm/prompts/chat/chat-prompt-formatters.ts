@@ -1,5 +1,5 @@
 import type { SpeechFingerprint } from '../../../models/decomposed-character.js';
-import type { ChatTurn } from '../../../models/chat/index.js';
+import type { ChatBible, ChatTurn, TurnPlannerOutput } from '../../../models/chat/index.js';
 
 export function formatStringList(items: readonly string[]): string {
   if (items.length === 0) {
@@ -56,5 +56,87 @@ export function formatSpeechFingerprint(fingerprint: SpeechFingerprint): string 
     'Discourse Markers:',
     formatStringList(fingerprint.discourseMarkers),
     `Register Shifts: ${fingerprint.registerShifts}`,
+  ].join('\n');
+}
+
+export function formatChatBible(chatBible: ChatBible): string {
+  return [
+    `Session Premise: ${chatBible.sessionPremise}`,
+    'Character Now:',
+    `- Objective: ${chatBible.characterNow.currentObjective}`,
+    `- Immediate Need: ${chatBible.characterNow.immediateNeedFromConversation}`,
+    `- Emotional State: ${chatBible.characterNow.emotionalState}`,
+    `- Willingness: ${chatBible.characterNow.willingnessToEngage}`,
+    'Topics To Advance:',
+    formatStringList(chatBible.characterNow.topicsToAdvance),
+    'Topics To Protect:',
+    formatStringList(chatBible.characterNow.topicsToProtect),
+    'Relationship Now:',
+    `- Dynamic: ${chatBible.relationshipNow.dynamic}`,
+    `- Valence: ${chatBible.relationshipNow.valence}`,
+    `- Tension: ${chatBible.relationshipNow.tension}`,
+    `- Leverage: ${chatBible.relationshipNow.leverage}`,
+    'Beliefs About Interlocutor:',
+    formatStringList(chatBible.relationshipNow.whatCharacterBelievesAboutInterlocutor),
+    'Knowledge Now:',
+    'Known Facts:',
+    formatStringList(chatBible.knowledgeNow.knownFacts),
+    'Suspicions:',
+    formatStringList(chatBible.knowledgeNow.suspicions),
+    'False Beliefs:',
+    formatStringList(chatBible.knowledgeNow.falseBeliefs),
+    'Secrets Kept:',
+    formatStringList(chatBible.knowledgeNow.secretsKept),
+    'Knowledge Boundaries:',
+    formatStringList(chatBible.knowledgeNow.knowledgeBoundaries),
+    'Conversation Now:',
+    `Rolling Summary: ${chatBible.conversationNow.rollingSummary ?? 'None'}`,
+    'Active Threads:',
+    formatStringList(chatBible.conversationNow.activeThreads),
+    'Commitments:',
+    formatStringList(chatBible.conversationNow.commitments),
+    'Sensitive Topics:',
+    formatStringList(chatBible.conversationNow.sensitiveTopics),
+    `Last Turn Pressure: ${chatBible.conversationNow.lastTurnPressure ?? 'None'}`,
+    'Continuity Guardrails:',
+    formatStringList(chatBible.continuityGuardrails),
+    'Response Constraints:',
+    formatStringList(chatBible.responseConstraints),
+  ].join('\n');
+}
+
+export function formatTurnPlan(turnPlan: TurnPlannerOutput): string {
+  return [
+    'Internal Self-Check:',
+    `- What Do I Want: ${turnPlan.internalSelfCheck.whatDoIWant}`,
+    `- What Do I Know: ${turnPlan.internalSelfCheck.whatDoIKnow}`,
+    `- What Am I Hiding: ${turnPlan.internalSelfCheck.whatAmIHiding}`,
+    `- How Honest Am I: ${turnPlan.internalSelfCheck.howHonestAmI}`,
+    `Response Goal: ${turnPlan.responseGoal}`,
+    `Speech Act: ${turnPlan.speechAct}`,
+    `Honesty Mode: ${turnPlan.honestyMode}`,
+    `Surface Emotion: ${turnPlan.surfaceEmotion}`,
+    `Suppressed Emotion: ${turnPlan.suppressedEmotion ?? 'None'}`,
+    `Subtext: ${turnPlan.subtext}`,
+    'Must Address:',
+    formatStringList(turnPlan.mustAddress),
+    'Must Avoid:',
+    formatStringList(turnPlan.mustAvoid),
+    `Block Plan: ${turnPlan.blockPlan.join(' -> ')}`,
+    'Action Plan:',
+    turnPlan.actionPlan.length === 0
+      ? '- None'
+      : turnPlan.actionPlan
+          .map(
+            (item) =>
+              `- ${item.kind}: ${item.text} (changesPhysicalState=${item.changesPhysicalState})`
+          )
+          .join('\n'),
+    `Question Back: ${turnPlan.questionBack ?? 'None'}`,
+    `Target Length: ${turnPlan.targetLength}`,
+    'Expected Impact:',
+    `- Relationship Delta Hint: ${turnPlan.expectedImpact.relationshipDeltaHint}`,
+    `- Tension Delta Hint: ${turnPlan.expectedImpact.tensionDeltaHint}`,
+    `- Reveals Secret: ${turnPlan.expectedImpact.revealsSecret}`,
   ].join('\n');
 }

@@ -180,6 +180,11 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     sourcePath: 'src/llm/prompts/scene-ideator-prompt.ts',
     docPath: 'prompts/scene-ideator-prompt.md',
   },
+  {
+    promptType: 'chatWriter',
+    sourcePath: 'src/llm/prompts/chat/chat-writer-prompt.ts',
+    docPath: 'prompts/chat-turn-writer-prompt.md',
+  },
 ];
 
 function readRepoFile(relativePath: string): string {
