@@ -545,6 +545,31 @@ describe('runChatPipeline', () => {
     expect(mockGenerateChatCharacterContext).not.toHaveBeenCalled();
   });
 
+  it('reuses the existing assembled bible for downstream stages when refresh is skipped', async () => {
+    const context = makeContext();
+
+    await runChatPipeline(context, 'test-key');
+
+    expect(mockGenerateChatTurnPlan).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chatBible: context.chatSession.chatBible,
+      }),
+      'test-key'
+    );
+    expect(mockGenerateChatWriterTurn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chatBible: context.chatSession.chatBible,
+      }),
+      'test-key'
+    );
+    expect(mockGenerateChatStateUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chatBible: context.chatSession.chatBible,
+      }),
+      'test-key'
+    );
+  });
+
   it('stores the assembled bible on the updated session when a refresh occurs', async () => {
     const result = await runChatPipeline(
       makeContext({
