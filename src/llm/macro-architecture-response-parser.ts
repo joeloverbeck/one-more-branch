@@ -1,3 +1,4 @@
+import { isGenreObligationTag } from '../models/genre-obligations.js';
 import type { MacroArchitectureResult } from '../models/structure-generation.js';
 import { LLMError } from './llm-client-types.js';
 
@@ -195,7 +196,7 @@ export function parseMacroArchitectureResponseObject(
       obligationTargets: parseStringArray(
         record['obligationTargets'],
         `acts[${actIndex}].obligationTargets`
-      ),
+      ).filter((tag) => isGenreObligationTag(tag)),
     };
   });
 
