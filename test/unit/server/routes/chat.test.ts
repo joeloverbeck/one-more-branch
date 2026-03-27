@@ -182,6 +182,19 @@ function createCharacterTurn(): Record<string, unknown> {
   };
 }
 
+function createUserTurn(): Record<string, unknown> {
+  return {
+    turnNumber: 1,
+    speaker: 'USER' as const,
+    blocks: [
+      { type: 'ACTION' as const, text: 'I close the ledger.' },
+      { type: 'SPEECH' as const, text: 'Tell me what happened.' },
+    ],
+    rawText: '*I close the ledger.* Tell me what happened.',
+    timestamp: '2026-03-27T09:01:00.000Z',
+  };
+}
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockChatService.listChats.mockResolvedValue([]);
@@ -200,6 +213,7 @@ beforeEach(() => {
     ],
   });
   mockChatService.sendTurn.mockResolvedValue({
+    userTurn: createUserTurn(),
     characterTurn: createCharacterTurn(),
     updatedSession: createSession(),
     bibleWasRefreshed: false,
@@ -439,6 +453,7 @@ describe('chat routes', () => {
       expect.objectContaining({
         success: true,
         progressId: 'chat-progress-1',
+        userTurn: expect.any(Object),
         characterTurn: expect.any(Object),
         updatedSession: expect.any(Object),
       })

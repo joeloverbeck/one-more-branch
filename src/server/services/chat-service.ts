@@ -36,6 +36,10 @@ export interface SendTurnParams {
   readonly onGenerationStage?: GenerationStageCallback;
 }
 
+export interface SendTurnResult extends ChatPipelineResult {
+  readonly userTurn: ChatTurn;
+}
+
 interface ChatServiceDeps {
   readonly loadCharacter: typeof loadCharacter;
   readonly saveChat: typeof saveChat;
@@ -53,7 +57,7 @@ interface ChatServiceDeps {
 
 export interface ChatService {
   createChat(params: CreateChatParams): Promise<ChatSession>;
-  sendTurn(params: SendTurnParams): Promise<ChatPipelineResult>;
+  sendTurn(params: SendTurnParams): Promise<SendTurnResult>;
   resumeChat(chatId: string): Promise<{ session: ChatSession; turns: ChatTurn[] }>;
   deleteChat(chatId: string): Promise<void>;
   listChats(): Promise<ChatSessionSummary[]>;
@@ -173,7 +177,7 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
       return session;
     },
 
-    async sendTurn(params: SendTurnParams): Promise<ChatPipelineResult> {
+    async sendTurn(params: SendTurnParams): Promise<SendTurnResult> {
       const { trimmedMessage, blocks } = requireParsedBlocks(deps, params.userMessage);
       const session = await requireChatSession(deps, params.chatId);
       const userTurnTimestamp = deps.now();
@@ -210,7 +214,10 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
 
       await deps.saveTurn(params.chatId, pipelineResult.characterTurn);
       await deps.saveChat(pipelineResult.updatedSession);
-      return pipelineResult;
+      return {
+        userTurn,
+        ...pipelineResult,
+      };
     },
 
     async resumeChat(chatId: string): Promise<{ session: ChatSession; turns: ChatTurn[] }> {

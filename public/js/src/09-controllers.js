@@ -770,4 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCharacterBrainstormerPage();
   initSpinesPage();
   initCreateStoryPage();
+  initChatPage();
+  initChatNewPage();
+  initChatListPage();
 });

@@ -331,7 +331,10 @@ describe('chat-service', () => {
       apiKey: 'test-key',
     });
 
-    expect(result).toBe(pipelineResult);
+    expect(result).toEqual({
+      userTurn: createUserTurn({ timestamp: '2026-03-27T09:01:00.000Z' }),
+      ...pipelineResult,
+    });
     expect(deps.saveTurn).toHaveBeenNthCalledWith(
       1,
       'chat-1',
@@ -339,6 +342,34 @@ describe('chat-service', () => {
     );
     expect(deps.saveTurn).toHaveBeenNthCalledWith(2, 'chat-1', pipelineResult.characterTurn);
     expect(deps.saveChat).toHaveBeenCalledWith(pipelineResult.updatedSession);
+  });
+
+  it('returns the canonical saved user turn so callers do not duplicate parsing logic', async () => {
+    const deps = createDeps({
+      parseChatInput: jest.fn().mockReturnValue([
+        { type: 'ACTION', text: 'I close the ledger.' },
+        { type: 'SPEECH', text: 'Tell me what happened.' },
+      ]),
+      now: jest.fn().mockReturnValue('2026-03-27T09:01:00.000Z'),
+    });
+    const service = createChatService(deps);
+
+    const result = await service.sendTurn({
+      chatId: 'chat-1',
+      userMessage: '*I close the ledger.* Tell me what happened.',
+      apiKey: 'test-key',
+    });
+
+    expect(result.userTurn).toEqual({
+      turnNumber: 1,
+      speaker: 'USER',
+      blocks: [
+        { type: 'ACTION', text: 'I close the ledger.' },
+        { type: 'SPEECH', text: 'Tell me what happened.' },
+      ],
+      rawText: '*I close the ledger.* Tell me what happened.',
+      timestamp: '2026-03-27T09:01:00.000Z',
+    });
   });
 
   it('rejects sendTurn when the chat session is missing', async () => {
