@@ -519,7 +519,10 @@ describe('chat-service', () => {
     });
 
     expect(deps.runChatPipeline).toHaveBeenLastCalledWith(
-      expect.objectContaining({ isSessionResume: true }),
+      expect.objectContaining({
+        isSessionResume: true,
+        decomposedWorld: createWorldbuilding().decomposedWorld,
+      }),
       'test-key',
       undefined
     );
@@ -531,7 +534,10 @@ describe('chat-service', () => {
     });
 
     expect(deps.runChatPipeline).toHaveBeenLastCalledWith(
-      expect.objectContaining({ isSessionResume: false }),
+      expect.objectContaining({
+        isSessionResume: false,
+        decomposedWorld: createWorldbuilding().decomposedWorld,
+      }),
       'test-key',
       undefined
     );
@@ -552,10 +558,55 @@ describe('chat-service', () => {
     });
 
     expect(deps.runChatPipeline).toHaveBeenLastCalledWith(
-      expect.objectContaining({ isSessionResume: false }),
+      expect.objectContaining({
+        isSessionResume: false,
+        decomposedWorld: createWorldbuilding().decomposedWorld,
+      }),
       'test-key',
       onGenerationStage
     );
+  });
+
+  it('rejects sendTurn when the session worldbuilding is missing', async () => {
+    const deps = createDeps({
+      loadWorldbuildingById: jest.fn().mockResolvedValue(null),
+    });
+    const service = createChatService(deps);
+
+    await expect(
+      service.sendTurn({
+        chatId: 'chat-1',
+        userMessage: 'Tell me what happened.',
+        apiKey: 'test-key',
+      })
+    ).rejects.toMatchObject<Partial<ChatDomainError>>({
+      code: 'RESOURCE_NOT_FOUND',
+      message: 'Worldbuilding not found: world-1',
+    });
+
+    expect(deps.runChatPipeline).not.toHaveBeenCalled();
+  });
+
+  it('rejects sendTurn when the session worldbuilding is no longer decomposed', async () => {
+    const deps = createDeps({
+      loadWorldbuildingById: jest
+        .fn()
+        .mockResolvedValue(createWorldbuilding({ decomposedWorld: null })),
+    });
+    const service = createChatService(deps);
+
+    await expect(
+      service.sendTurn({
+        chatId: 'chat-1',
+        userMessage: 'Tell me what happened.',
+        apiKey: 'test-key',
+      })
+    ).rejects.toMatchObject<Partial<ChatDomainError>>({
+      code: 'VALIDATION_FAILED',
+      message: 'Worldbuilding must be decomposed before chat turn generation: world-1',
+    });
+
+    expect(deps.runChatPipeline).not.toHaveBeenCalled();
   });
 
   it('returns a chat session and all turns when resuming', async () => {

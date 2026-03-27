@@ -9,6 +9,7 @@ import type {
   RollingSummaryOutput,
 } from '../../models/chat/index.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
+import type { DecomposedWorld } from '../../models/decomposed-world.js';
 import { runLlmStage } from '../llm-stage-runner.js';
 import { buildChatBibleMessages } from '../prompts/chat/chat-bible-prompt.js';
 import {
@@ -19,6 +20,7 @@ import {
 export interface ChatBibleContext {
   readonly targetCharacter: StandaloneDecomposedCharacter;
   readonly interlocutorCharacter: StandaloneDecomposedCharacter;
+  readonly decomposedWorld: DecomposedWorld;
   readonly relationshipState: ChatRelationshipState;
   readonly knowledgeState: ChatKnowledgeState;
   readonly physicalContext: ChatPhysicalContext;

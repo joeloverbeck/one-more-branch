@@ -9,6 +9,7 @@ import type {
   ChatTurn,
 } from '../../models/chat/index.js';
 import { ChatDomainError, parseChatInput } from '../../models/chat/index.js';
+import type { DecomposedWorld } from '../../models/decomposed-world.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
 import { loadCharacter } from '../../persistence/character-repository.js';
 import { loadWorldbuildingById } from '../../services/worldbuilding-service.js';
@@ -130,6 +131,25 @@ async function requireWorldbuilding(
   }
 }
 
+async function requireDecomposedWorld(
+  deps: ChatServiceDeps,
+  worldbuildingId: string
+): Promise<DecomposedWorld> {
+  const worldbuilding = await deps.loadWorldbuildingById(worldbuildingId);
+  if (worldbuilding === null) {
+    throw new ChatDomainError(`Worldbuilding not found: ${worldbuildingId}`, 'RESOURCE_NOT_FOUND');
+  }
+
+  if (worldbuilding.decomposedWorld === null) {
+    throw new ChatDomainError(
+      `Worldbuilding must be decomposed before chat turn generation: ${worldbuildingId}`,
+      'VALIDATION_FAILED'
+    );
+  }
+
+  return worldbuilding.decomposedWorld;
+}
+
 async function requireChatSession(deps: ChatServiceDeps, chatId: string): Promise<ChatSession> {
   const session = await deps.loadChat(chatId);
   if (session === null) {
@@ -214,9 +234,11 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
 
       await deps.saveTurn(params.chatId, userTurn);
 
-      const [targetCharacter, interlocutorCharacter, recentTurns, allTurns] = await Promise.all([
+      const [targetCharacter, interlocutorCharacter, decomposedWorld, recentTurns, allTurns] =
+        await Promise.all([
         requireCharacter(deps, 'Target', session.targetCharacterId),
         requireCharacter(deps, 'Interlocutor', session.interlocutorCharacterId),
+        requireDecomposedWorld(deps, session.worldbuildingId),
         deps.getRecentTurns(params.chatId, 12),
         deps.loadTurns(params.chatId),
       ]);
@@ -226,6 +248,7 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
           chatSession: session,
           targetCharacter,
           interlocutorCharacter,
+          decomposedWorld,
           recentTurns,
           allTurns,
           latestUserTurn: userTurn,

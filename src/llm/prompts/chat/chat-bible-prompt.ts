@@ -2,6 +2,7 @@ import { formatStandaloneCharacterSummary } from '../../../models/standalone-dec
 import type { ChatMessage } from '../../llm-client-types.js';
 import { CONTENT_POLICY } from '../../content-policy.js';
 import type { ChatBibleContext } from '../../chat/chat-bible-generation.js';
+import { buildWorldSection } from '../sections/shared/worldbuilding-sections.js';
 import { formatRollingSummaryForPrompt } from './chat-memory-prompt-adapter.js';
 import { formatRecentTurns, formatStringList } from './chat-prompt-formatters.js';
 
@@ -76,6 +77,9 @@ export function buildChatBibleMessages(context: ChatBibleContext): ChatMessage[]
   const userSections = [
     `TARGET CHARACTER DECOMPOSITION\n${formatStandaloneCharacterSummary(context.targetCharacter)}`,
     `INTERLOCUTOR CHARACTER PROFILE\n${formatStandaloneCharacterSummary(context.interlocutorCharacter)}`,
+    context.decomposedWorld.facts.length > 0
+      ? buildWorldSection(context.decomposedWorld, 'CHAT')
+      : 'WORLDBUILDING:\n(none provided)',
     buildRelationshipSection(context),
     buildKnowledgeSection(context),
     buildPhysicalContextSection(context),

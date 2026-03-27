@@ -19,6 +19,23 @@ jest.mock('../../../../src/llm/prompts/chat/chat-bible-prompt', () => ({
 import { generateChatBible, type ChatBibleContext } from '../../../../src/llm/chat/chat-bible-generation';
 import { CHAT_BIBLE_SCHEMA } from '../../../../src/llm/schemas/chat-bible-schema';
 import { LLMError } from '../../../../src/llm/llm-client-types';
+import type { DecomposedWorld } from '../../../../src/models/decomposed-world';
+
+const DECOMPOSED_WORLD: DecomposedWorld = {
+  worldLogline: 'An observatory city built around a dead star clock.',
+  facts: [
+    {
+      id: 'wf-1',
+      domain: 'governance',
+      fact: 'Public accusations require witness oaths before dawn.',
+      scope: 'citywide',
+      factType: 'LAW',
+      narrativeWeight: 'HIGH',
+    },
+  ],
+  openQuestions: ['Who falsified the last oath register?'],
+  rawWorldbuilding: 'An observatory city built around a dead star clock.',
+};
 
 function makeContext(): ChatBibleContext {
   return {
@@ -68,6 +85,7 @@ function makeContext(): ChatBibleContext {
       appearance: 'tired',
       createdAt: '2026-03-01T00:00:00.000Z',
     },
+    decomposedWorld: DECOMPOSED_WORLD,
     relationshipState: {
       dynamic: 'frayed allies',
       valence: -1,

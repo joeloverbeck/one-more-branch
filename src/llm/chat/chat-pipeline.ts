@@ -1,6 +1,7 @@
 import type { GenerationStageCallback, GenerationStage } from '../../engine/types.js';
 import { runGenerationStage } from '../../engine/generation-pipeline-helpers.js';
 import { ChatDomainError, type ChatBible, type ChatSession, type ChatTurn } from '../../models/chat/index.js';
+import type { DecomposedWorld } from '../../models/decomposed-world.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
 import { generateChatBible } from './chat-bible-generation.js';
 import { generateChatTurnPlan } from './chat-planner-generation.js';
@@ -13,6 +14,7 @@ export interface ChatPipelineContext {
   readonly chatSession: ChatSession;
   readonly targetCharacter: StandaloneDecomposedCharacter;
   readonly interlocutorCharacter: StandaloneDecomposedCharacter;
+  readonly decomposedWorld: DecomposedWorld;
   readonly recentTurns: readonly ChatTurn[];
   readonly allTurns: readonly ChatTurn[];
   readonly latestUserTurn: ChatTurn;
@@ -118,6 +120,7 @@ export async function runChatPipeline(
                 {
                   targetCharacter: context.targetCharacter,
                   interlocutorCharacter: context.interlocutorCharacter,
+                  decomposedWorld: context.decomposedWorld,
                   relationshipState: context.chatSession.relationshipState,
                   knowledgeState: context.chatSession.knowledgeState,
                   physicalContext: context.chatSession.physicalContext,

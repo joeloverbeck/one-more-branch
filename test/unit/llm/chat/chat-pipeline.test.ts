@@ -37,7 +37,25 @@ jest.mock('../../../../src/llm/chat/chat-summary-generation', () => ({
 import { ChatDomainError } from '../../../../src/models/chat';
 import { runChatPipeline, type ChatPipelineContext } from '../../../../src/llm/chat/chat-pipeline';
 import type { GenerationStageEvent } from '../../../../src/engine/types';
+import type { DecomposedWorld } from '../../../../src/models/decomposed-world';
 import type { StandaloneDecomposedCharacter } from '../../../../src/models/standalone-decomposed-character';
+
+const DECOMPOSED_WORLD: DecomposedWorld = {
+  worldLogline: 'A city of archives slowly sinking into saltwater.',
+  facts: [
+    {
+      id: 'wf-1',
+      domain: 'culture',
+      fact: 'Speaking a true name in public is taboo among archivists.',
+      scope: 'citywide',
+      factType: 'TABOO',
+      narrativeWeight: 'HIGH',
+      sensoryHook: 'Conversations hitch whenever a name is almost spoken.',
+    },
+  ],
+  openQuestions: ['Who first broke the archive seals?'],
+  rawWorldbuilding: 'A city of archives slowly sinking into saltwater.',
+};
 
 function makeCharacter(id: string, name: string): StandaloneDecomposedCharacter {
   return {
@@ -237,6 +255,7 @@ function makeContext(overrides: Partial<ChatPipelineContext> = {}): ChatPipeline
     },
     targetCharacter: makeCharacter('target-1', 'Mara'),
     interlocutorCharacter: makeCharacter('interlocutor-1', 'Iven'),
+    decomposedWorld: DECOMPOSED_WORLD,
     recentTurns: [priorCharacterTurn, latestUserTurn],
     allTurns: [priorCharacterTurn, latestUserTurn],
     latestUserTurn,
@@ -342,6 +361,25 @@ beforeEach(() => {
 });
 
 describe('runChatPipeline', () => {
+  it('passes decomposedWorld into bible generation when the bible refreshes', async () => {
+    const context = makeContext({
+      chatSession: {
+        ...makeContext().chatSession,
+        chatBible: null,
+        rollingSummary: null,
+      },
+    });
+
+    await runChatPipeline(context, 'test-key');
+
+    expect(mockGenerateChatBible).toHaveBeenCalledWith(
+      expect.objectContaining({
+        decomposedWorld: context.decomposedWorld,
+      }),
+      'test-key'
+    );
+  });
+
   it('refreshes the bible on first turn', async () => {
     await runChatPipeline(
       makeContext({

@@ -1,6 +1,38 @@
 import { buildChatBibleMessages } from '../../../../../src/llm/prompts/chat/chat-bible-prompt';
 import type { ChatBibleContext } from '../../../../../src/llm/chat/chat-bible-generation';
+import type { DecomposedWorld } from '../../../../../src/models/decomposed-world';
 import type { StandaloneDecomposedCharacter } from '../../../../../src/models/standalone-decomposed-character';
+
+const DECOMPOSED_WORLD: DecomposedWorld = {
+  worldLogline: 'A rain-soaked observatory city running on oath and suspicion.',
+  facts: [
+    {
+      id: 'wf-1',
+      domain: 'culture',
+      fact: 'Naming a betrayer aloud in a sealed room is treated as a binding accusation.',
+      scope: 'citywide',
+      factType: 'PRACTICE',
+      narrativeWeight: 'HIGH',
+      sensoryHook: 'Voices drop whenever the ritual wording begins.',
+    },
+    {
+      id: 'wf-2',
+      domain: 'geography',
+      fact: 'Most private meetings happen in upper galleries above the flood line.',
+      scope: 'district',
+      narrativeWeight: 'MEDIUM',
+    },
+    {
+      id: 'wf-3',
+      domain: 'language',
+      fact: 'Honorifics mark whether a debt is still considered open.',
+      scope: 'citywide',
+      factType: 'NORM',
+      narrativeWeight: 'MEDIUM',
+    },
+  ],
+  rawWorldbuilding: 'A rain-soaked observatory city running on oath and suspicion.',
+};
 
 function makeCharacter(
   name: string,
@@ -43,6 +75,7 @@ function makeContext(): ChatBibleContext {
       coreTraits: ['gentle', 'secretive'],
       knowledgeBoundaries: 'Knows the route, not the full conspiracy.',
     }),
+    decomposedWorld: DECOMPOSED_WORLD,
     relationshipState: {
       dynamic: 'Brittle allies',
       valence: -1,
@@ -129,6 +162,7 @@ describe('buildChatBibleMessages', () => {
 
     expect(userContent).toContain('TARGET CHARACTER DECOMPOSITION');
     expect(userContent).toContain('INTERLOCUTOR CHARACTER PROFILE');
+    expect(userContent).toContain('WORLDBUILDING');
     expect(userContent).toContain('RELATIONSHIP STATE');
     expect(userContent).toContain('KNOWLEDGE STATE');
     expect(userContent).toContain('PHYSICAL CONTEXT');
@@ -150,12 +184,25 @@ describe('buildChatBibleMessages', () => {
   it('renders absent prior history explicitly', () => {
     const userContent = buildChatBibleMessages({
       ...makeContext(),
+      decomposedWorld: { facts: [], rawWorldbuilding: '' },
       rollingSummary: null,
       recentTurns: [],
     })[1].content;
 
+    expect(userContent).toContain('WORLDBUILDING:\n(none provided)');
     expect(userContent).toContain('OLDER CHAT SUMMARY\nNone');
     expect(userContent).toContain('RECENT CHAT TURNS\nNo prior turns in this session.');
+  });
+
+  it('renders chat-specific worldbuilding sections when facts are present', () => {
+    const userContent = buildChatBibleMessages(makeContext())[1].content;
+
+    expect(userContent).toContain('WORLDBUILDING (structured for chat):');
+    expect(userContent).toContain('[SOCIAL & CULTURAL CONTEXT]');
+    expect(userContent).toContain('Naming a betrayer aloud in a sealed room is treated as a binding accusation.');
+    expect(userContent).toContain('Honorifics mark whether a debt is still considered open.');
+    expect(userContent).toContain('[GEOGRAPHY & SETTING]');
+    expect(userContent).toContain('Most private meetings happen in upper galleries above the flood line.');
   });
 
   it('formats structured rolling summaries into deterministic text', () => {
