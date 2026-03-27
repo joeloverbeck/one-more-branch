@@ -1,3 +1,5 @@
+**Status**: COMPLETED
+
 # Improvements to Content Packets Pipeline
 
 I haven't been entirely happy with the content packets produced by the full pipeline in localhost:3000/content-packets . The prompt docs are at prompts/* , starting with content-*. 
@@ -111,3 +113,10 @@ In schema terms, this is the shape I would move toward:
 }
 
 The shortest takeaway is this: your pipeline already knows how to generate strange, vivid material. What it still needs is a first-class model of what kind of decisions this specific user wants to make—and a final judge that scores that as hard as it scores originality.
+
+## Outcome
+
+- Completion date: 2026-03-27
+- What actually changed: the content-packets pipeline prompts now encode the main implemented improvements from this brainstorm, including richer taste-profile structure in `prompts/content-taste-distiller-prompt.md`, explicit player-role and resistance fields in `prompts/content-sparkstormer-prompt.md`, required `playerPosition` in `prompts/content-packeter-prompt.md`, and evaluator scoring/persistence support for `tasteAlignment` and `causalSpecificity` across prompts, models, routes, persistence, presenters, and tests.
+- Deviations from the original plan: the shipped implementation did not adopt every proposed schema field verbatim. The implemented version centers on `engagementModes`, `valueTensions`, `deepPatterns`, `playerRole`, `want`, `counterforce`, `playerPosition`, and evaluator scoring additions, rather than the full suggested expansion such as `uncertaintyHook`, `branchFork`, `coreDilemmaOptions`, and `choiceStateDelta`.
+- Verification results: verified via repo search that the prompt docs, model contracts, persistence layer, server routes/views, and test suites all reference the implemented content-packet pipeline additions, including `engagementModes`, `valueTensions`, `deepPatterns`, `playerRole`, `counterforce`, `playerPosition`, `tasteAlignment`, and `causalSpecificity`.
