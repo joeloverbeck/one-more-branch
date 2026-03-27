@@ -10,8 +10,17 @@ import {
   PRIVACY_VALUES,
   TIME_OF_DAY_VALUES,
 } from './chat-session.js';
-import type { ChatBible, ChatBibleCharacterNow, ChatBibleConversationNow, ChatBibleKnowledgeNow, ChatBiblePreChatMomentum, ChatBibleRelationshipNow } from './chat-bible.js';
+import type {
+  ChatBible,
+  ChatBibleCharacterNow,
+  ChatBibleConversationNow,
+  ChatBibleKnowledgeNow,
+  ChatBiblePreChatMomentum,
+  ChatBibleRelationshipNow,
+} from './chat-bible.js';
 import { WILLINGNESS_TO_ENGAGE_VALUES } from './chat-bible.js';
+import type { ChatCharacterContext } from './chat-character-context.js';
+import type { ChatSceneContext } from './chat-scene-context.js';
 import type {
   ActionPlanItem,
   TurnPlannerExpectedImpact,
@@ -190,6 +199,33 @@ function isChatBibleConversationNow(value: unknown): value is ChatBibleConversat
     isStringArray(value['commitments']) &&
     isStringArray(value['sensitiveTopics']) &&
     isNullableString(value['lastTurnPressure'])
+  );
+}
+
+export function isChatSceneContext(value: unknown): value is ChatSceneContext {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  return (
+    isString(value['sessionPremise']) &&
+    isChatPhysicalContext(value['physicalReality']) &&
+    isChatBiblePreChatMomentum(value['preChatMomentum']) &&
+    isChatBibleConversationNow(value['conversationNow'])
+  );
+}
+
+export function isChatCharacterContext(value: unknown): value is ChatCharacterContext {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  return (
+    isChatBibleCharacterNow(value['characterNow']) &&
+    isChatBibleRelationshipNow(value['relationshipNow']) &&
+    isChatBibleKnowledgeNow(value['knowledgeNow']) &&
+    isStringArray(value['continuityGuardrails']) &&
+    isStringArray(value['responseConstraints'])
   );
 }
 

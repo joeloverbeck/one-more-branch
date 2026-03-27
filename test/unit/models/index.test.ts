@@ -27,6 +27,7 @@ import {
 import {
   TIME_OF_DAY_VALUES as TIME_OF_DAY_VALUES_DIRECT,
   CHAT_SPEAKER_VALUES as CHAT_SPEAKER_VALUES_DIRECT,
+  assembleChatBible as assembleChatBibleDirect,
 } from '@/models/chat';
 import * as models from '@/models';
 
@@ -69,6 +70,10 @@ describe('models barrel exports', () => {
   it('re-exports chat model constants from the root models barrel', () => {
     expect(models.TIME_OF_DAY_VALUES).toBe(TIME_OF_DAY_VALUES_DIRECT);
     expect(models.CHAT_SPEAKER_VALUES).toBe(CHAT_SPEAKER_VALUES_DIRECT);
+  });
+
+  it('re-exports split chat-bible model contracts from the root models barrel', () => {
+    expect(models.assembleChatBible).toBe(assembleChatBibleDirect);
   });
 
   it('supports creating and validating model objects via barrel imports', () => {

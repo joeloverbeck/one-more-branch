@@ -4,6 +4,8 @@ import type {
   ChatPhysicalContext,
   ChatRelationshipState,
 } from './chat-session.js';
+import type { ChatCharacterContext } from './chat-character-context.js';
+import type { ChatSceneContext } from './chat-scene-context.js';
 
 export const WILLINGNESS_TO_ENGAGE_VALUES = [
   'EAGER',
@@ -56,4 +58,21 @@ export interface ChatBible {
   readonly conversationNow: ChatBibleConversationNow;
   readonly continuityGuardrails: readonly string[];
   readonly responseConstraints: readonly string[];
+}
+
+export function assembleChatBible(
+  scene: ChatSceneContext,
+  character: ChatCharacterContext
+): ChatBible {
+  return {
+    sessionPremise: scene.sessionPremise,
+    physicalReality: scene.physicalReality,
+    preChatMomentum: scene.preChatMomentum,
+    conversationNow: scene.conversationNow,
+    characterNow: character.characterNow,
+    relationshipNow: character.relationshipNow,
+    knowledgeNow: character.knowledgeNow,
+    continuityGuardrails: character.continuityGuardrails,
+    responseConstraints: character.responseConstraints,
+  };
 }
