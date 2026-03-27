@@ -296,4 +296,50 @@ describe('chat model contracts', () => {
       'Invalid chat turns payload at turns.json'
     );
   });
+
+  it('rejects persisted state updates whose relationship deltas violate canonical bounds', () => {
+    const invalidTurn = {
+      turnNumber: 2,
+      speaker: 'CHARACTER',
+      blocks: [{ type: 'SPEECH', text: 'You already know enough.' }],
+      stateUpdate: {
+        summaryDelta: 'The exchange becomes openly adversarial.',
+        relationshipShifts: [
+          {
+            shiftDescription: 'Trust collapses completely.',
+            suggestedValenceChange: -3,
+            suggestedTensionChange: 2,
+            suggestedNewDynamic: 'open hostility',
+          },
+        ],
+        knowledgeChanges: {
+          newKnownFacts: [],
+          newSuspicions: [],
+          falseBeliefsCorrected: [],
+          secretsRevealed: [],
+        },
+        conversationUpdate: {
+          commitmentsMade: [],
+          threatsMade: [],
+          questionsOpened: [],
+          questionsResolved: [],
+        },
+        physicalStateUpdate: {
+          locationChanged: false,
+          newLocation: null,
+          newMicroLocation: null,
+          newDistanceBand: null,
+          objectStateChanges: [],
+        },
+        shouldRefreshChatBible: false,
+        shouldTriggerSummary: false,
+      },
+      timestamp: '2026-03-27T09:05:00.000Z',
+    };
+
+    expect(isChatTurn(invalidTurn)).toBe(false);
+    expect(() => parseChatTurns([invalidTurn], 'turns.json')).toThrow(
+      'Invalid chat turns payload at turns.json'
+    );
+  });
 });

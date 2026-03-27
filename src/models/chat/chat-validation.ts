@@ -290,8 +290,8 @@ function isChatRelationshipShift(value: unknown): value is ChatRelationshipShift
 
   return (
     isString(value['shiftDescription']) &&
-    isFiniteNumber(value['suggestedValenceChange']) &&
-    isFiniteNumber(value['suggestedTensionChange']) &&
+    isNumberInRange(value['suggestedValenceChange'], -2, 2) &&
+    isNumberInRange(value['suggestedTensionChange'], -2, 2) &&
     isNullableString(value['suggestedNewDynamic'])
   );
 }

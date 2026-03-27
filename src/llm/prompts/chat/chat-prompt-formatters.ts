@@ -1,5 +1,5 @@
 import type { SpeechFingerprint } from '../../../models/decomposed-character.js';
-import type { ChatBible, ChatTurn, TurnPlannerOutput } from '../../../models/chat/index.js';
+import type { ChatBible, ChatBlock, ChatTurn, TurnMeta, TurnPlannerOutput } from '../../../models/chat/index.js';
 
 export function formatStringList(items: readonly string[]): string {
   if (items.length === 0) {
@@ -38,6 +38,25 @@ export function formatRecentTurns(turns: readonly ChatTurn[]): string {
       return lines.join('\n');
     })
     .join('\n\n');
+}
+
+export function formatChatWriterTurn(writerTurn: {
+  readonly blocks: readonly ChatBlock[];
+  readonly turnMeta: TurnMeta;
+}): string {
+  const lines = ['Blocks:'];
+
+  for (const block of writerTurn.blocks) {
+    const prefix =
+      block.type === 'ACTION' ? 'ACTION' : `SPEECH${block.delivery ? ` (${block.delivery})` : ''}`;
+    lines.push(`- ${prefix}: ${block.text}`);
+  }
+
+  lines.push(
+    `Turn Meta: expectsReply=${writerTurn.turnMeta.expectsReply}; endsWithQuestion=${writerTurn.turnMeta.endsWithQuestion}; visibleEmotion=${writerTurn.turnMeta.visibleEmotion}; finalPressure=${writerTurn.turnMeta.finalPressure ?? 'null'}`
+  );
+
+  return lines.join('\n');
 }
 
 export function formatSpeechFingerprint(fingerprint: SpeechFingerprint): string {
