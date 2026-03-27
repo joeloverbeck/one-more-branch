@@ -164,6 +164,60 @@ export function buildWorldSectionForCharacterDev(world: DecomposedWorld): string
 }
 
 /**
+ * CHAT consumer: social norms, local setting, and naming cues.
+ * Purpose: keep character conversations grounded in relevant world context.
+ */
+export function buildWorldSectionForChat(world: DecomposedWorld): string {
+  if (world.facts.length === 0) return '';
+
+  const sections: string[] = ['WORLDBUILDING (structured for chat):'];
+
+  if (world.worldLogline) {
+    sections.push(`World logline: ${world.worldLogline}`);
+    sections.push('');
+  }
+
+  const socialFacts = sortByWeight(
+    world.facts.filter(
+      (f) =>
+        hasDomain(f, 'society', 'culture', 'religion', 'governance') ||
+        hasFactType(f, 'NORM', 'PRACTICE', 'TABOO', 'BELIEF', 'LAW')
+    )
+  );
+
+  const renderedFactIds = new Set(socialFacts.map((fact) => fact.id));
+
+  if (socialFacts.length > 0) {
+    sections.push('[SOCIAL & CULTURAL CONTEXT]');
+    socialFacts.forEach((f) => sections.push(renderFactWithSensory(f)));
+    sections.push('');
+  }
+
+  const geographyFacts = sortByWeight(
+    world.facts.filter((f) => hasDomain(f, 'geography') && !renderedFactIds.has(f.id))
+  );
+
+  if (geographyFacts.length > 0) {
+    geographyFacts.forEach((fact) => renderedFactIds.add(fact.id));
+    sections.push('[GEOGRAPHY & SETTING]');
+    geographyFacts.forEach((f) => sections.push(renderFactLine(f)));
+    sections.push('');
+  }
+
+  const namingFacts = sortByWeight(
+    world.facts.filter((f) => hasDomain(f, 'language') && !renderedFactIds.has(f.id))
+  );
+
+  if (namingFacts.length > 0) {
+    sections.push('[NAMING & LANGUAGE]');
+    namingFacts.forEach((f) => sections.push(renderFactLine(f)));
+    sections.push('');
+  }
+
+  return sections.join('\n');
+}
+
+/**
  * PAGE consumer: all facts (no reveal filtering for now).
  * Purpose: keep page generation grounded in world context.
  */

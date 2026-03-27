@@ -19,12 +19,14 @@ Even after CHATWB-002 stores `worldbuildingId` on the chat session, the LLM stag
 5. `loadWorldbuildingById()` at `src/services/worldbuilding-service.ts:138-140` returns `SavedWorldbuilding | null` which has `decomposedWorld: DecomposedWorld | null` — confirmed.
 6. `buildWorldSectionForChat()` will exist after CHATWB-001 — dependency confirmed.
 7. `DecomposedWorld` type importable from `src/models/decomposed-world.ts` — confirmed.
+8. The repository currently has a split world-formatting architecture: specialized prompt builders live in `src/llm/prompts/sections/shared/worldbuilding-sections.ts`, while `formatDecomposedWorldForPrompt()` and `WorldPromptConsumer` still live in `src/models/decomposed-world.ts`. That broader ownership cleanup is real, but it is separate from this ticket's chat-pipeline wiring scope — confirmed.
 
 ## Architecture Check
 
 1. Follows the established pattern: worldbuilding loaded by service → passed through context objects → formatted by consumer-specific builder → rendered into prompt. This is exactly how the story pipeline works (generation-context-assembler → planner prompt → formatDecomposedWorldForPrompt).
 2. Worldbuilding injected at Chat Bible stage only. The Bible curates all scene context for downstream stages (planner, writer, state updater), so world facts flow through the bible's structured output rather than being repeated in every prompt. This minimizes token cost while maximizing coverage.
-3. No backwards-compatibility aliasing/shims introduced.
+3. This ticket should not absorb the broader formatter-ownership refactor. Keeping this ticket focused on chat pipeline threading preserves a clean vertical slice and avoids mixing behavior delivery with cross-cutting prompt-layer cleanup.
+4. No backwards-compatibility aliasing/shims introduced.
 
 ## What to Change
 
@@ -67,6 +69,7 @@ In `sendTurn()`:
 - Injecting worldbuilding into planner, writer, or state updater prompts (Chat Bible curates context for them)
 - Modifying the Chat Bible schema/output structure to explicitly surface world facts
 - Filtering worldbuilding facts based on conversation progress or topic
+- Consolidating `formatDecomposedWorldForPrompt()` / `WorldPromptConsumer` ownership into the prompt layer (tracked separately)
 
 ## Acceptance Criteria
 
