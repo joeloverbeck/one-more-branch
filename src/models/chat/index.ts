@@ -4,3 +4,4 @@ export * from './chat-bible.js';
 export * from './chat-turn-plan.js';
 export * from './chat-state-update.js';
 export * from './chat-rolling-summary.js';
+export * from './chat-validation.js';

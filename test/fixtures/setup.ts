@@ -25,7 +25,7 @@ async function clearTestStorage(): Promise<void> {
     return;
   }
 
-  const storageDirs = ['stories', 'concepts', 'kernels'];
+  const storageDirs = ['stories', 'chats', 'concepts', 'kernels'];
   await Promise.all(
     storageDirs.map(async (dirName) => {
       const dirPath = path.join(tempStorageRoot as string, dirName);
@@ -43,10 +43,12 @@ beforeAll(async () => {
   tempConfigDir = await fs.mkdtemp(path.join(os.tmpdir(), 'omb-test-config-'));
 
   const storiesDir = path.join(tempStorageRoot, 'stories');
+  const chatsDir = path.join(tempStorageRoot, 'chats');
   const conceptsDir = path.join(tempStorageRoot, 'concepts');
   const kernelsDir = path.join(tempStorageRoot, 'kernels');
   await Promise.all([
     fs.mkdir(storiesDir, { recursive: true }),
+    fs.mkdir(chatsDir, { recursive: true }),
     fs.mkdir(conceptsDir, { recursive: true }),
     fs.mkdir(kernelsDir, { recursive: true }),
   ]);
@@ -54,6 +56,7 @@ beforeAll(async () => {
   const testConfig = {
     storage: {
       storiesDir,
+      chatsDir,
       conceptsDir,
       kernelsDir,
     },

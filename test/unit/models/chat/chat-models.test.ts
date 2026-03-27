@@ -8,6 +8,12 @@ import type {
   RollingSummaryOutput,
   TimeOfDay,
 } from '../../../../src/models/chat/index.js';
+import {
+  isChatSession,
+  isChatTurn,
+  parseChatSession,
+  parseChatTurns,
+} from '../../../../src/models/chat/index.js';
 
 describe('chat model contracts', () => {
   it('exports canonical chat literal value sets from the chat barrel', () => {
@@ -223,5 +229,71 @@ describe('chat model contracts', () => {
     expect(session.chatBible).toBe(chatBible);
     expect(turn.stateUpdate).toBe(stateUpdate);
     expect(summary.keyRevelations).toContain('She knows about the second key');
+  });
+
+  it('provides runtime guards for persisted chat session and turn payloads', () => {
+    const session = {
+      id: 'chat-1',
+      createdAt: '2026-03-27T09:00:00.000Z',
+      updatedAt: '2026-03-27T09:05:00.000Z',
+      targetCharacterId: 'target-1',
+      interlocutorCharacterId: 'interlocutor-1',
+      targetCharacterName: 'Mara',
+      interlocutorCharacterName: 'Iven',
+      physicalContext: {
+        location: 'Archive',
+        microLocation: 'Lamp-lit records table',
+        timeOfDay: 'EVENING',
+        privacy: 'PRIVATE',
+        distanceBand: 'CONVERSATIONAL',
+        characterActivity: 'Sorting damaged ledgers',
+        interactableObjects: ['ledger', 'oil lamp'],
+        ambientConditions: ['rain on the roof', 'ink smell'],
+      },
+      leadInContext: {
+        leadInSummary: 'The archive door is barred behind them.',
+        recentEvents: ['The raid scattered the staff.'],
+        whyNow: 'They have only minutes before the bells.',
+      },
+      chatBible: null,
+      turnCount: 1,
+      rollingSummary: null,
+      relationshipState: {
+        dynamic: 'strained allies',
+        valence: -1,
+        tension: 7,
+        leverage: 'Shared culpability',
+      },
+      knowledgeState: {
+        knownFacts: ['The ledger is gone.'],
+        suspicions: ['Someone inside helped.'],
+        falseBeliefs: ['He thinks she came alone.'],
+        secretsRevealed: ['The guard saw them both.'],
+      },
+    };
+
+    const turn = {
+      turnNumber: 1,
+      speaker: 'USER',
+      blocks: [{ type: 'SPEECH', text: 'Tell me what you hid.' }],
+      rawText: 'Tell me what you hid.',
+      timestamp: '2026-03-27T09:05:00.000Z',
+    };
+
+    expect(isChatSession(session)).toBe(true);
+    expect(isChatTurn(turn)).toBe(true);
+    expect(parseChatSession(session, 'session.json')).toBe(session);
+    expect(parseChatTurns([turn], 'turns.json')).toEqual([turn]);
+  });
+
+  it('rejects malformed persisted payloads through the runtime validators', () => {
+    expect(isChatSession({ id: 'chat-1' })).toBe(false);
+    expect(isChatTurn({ turnNumber: 1, speaker: 'USER' })).toBe(false);
+    expect(() => parseChatSession({ id: 'chat-1' }, 'session.json')).toThrow(
+      'Invalid chat session payload at session.json'
+    );
+    expect(() => parseChatTurns([{ turnNumber: 1, speaker: 'USER' }], 'turns.json')).toThrow(
+      'Invalid chat turns payload at turns.json'
+    );
   });
 });

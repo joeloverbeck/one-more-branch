@@ -13,6 +13,7 @@ const ServerConfigSchema = z.object({
  */
 const StorageConfigSchema = z.object({
   storiesDir: z.string().min(1).default('stories'),
+  chatsDir: z.string().min(1).default('chats'),
   conceptsDir: z.string().min(1).default('concepts'),
   kernelsDir: z.string().min(1).default('kernels'),
   charactersDir: z.string().min(1).default('characters'),

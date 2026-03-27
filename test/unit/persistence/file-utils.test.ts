@@ -5,10 +5,15 @@ import {
   deleteDirectory,
   directoryExists,
   ensureDirectory,
+  ensureChatsDir,
   ensureKernelGenerationsDir,
   ensureKernelsDir,
   ensureStoriesDir,
   fileExists,
+  getChatDir,
+  getChatSessionFilePath,
+  getChatTurnsFilePath,
+  getChatsDir,
   getKernelFilePath,
   getKernelGenerationFilePath,
   getKernelGenerationsDir,
@@ -43,6 +48,15 @@ describe('file-utils', () => {
     expect(getPageFilePath('abc-123', 5)).toBe(path.join(storiesDir, 'abc-123', 'page_5.json'));
   });
 
+  it('builds deterministic chat paths', () => {
+    const chatsDir = getChatsDir();
+    expect(getChatDir('chat-123')).toBe(path.join(chatsDir, 'chat-123'));
+    expect(getChatSessionFilePath('chat-123')).toBe(
+      path.join(chatsDir, 'chat-123', 'chat.json')
+    );
+    expect(getChatTurnsFilePath('chat-123')).toBe(path.join(chatsDir, 'chat-123', 'turns.json'));
+  });
+
   it('builds deterministic kernel and kernel generation paths', () => {
     const kernelsDir = getKernelsDir();
     const generationsDir = getKernelGenerationsDir();
@@ -57,6 +71,11 @@ describe('file-utils', () => {
   it('ensures the stories directory exists', async () => {
     ensureStoriesDir();
     await expect(directoryExists(getStoriesDir())).resolves.toBe(true);
+  });
+
+  it('ensures the chats directory exists', async () => {
+    ensureChatsDir();
+    await expect(directoryExists(getChatsDir())).resolves.toBe(true);
   });
 
   it('ensures kernel directories exist', async () => {
