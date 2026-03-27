@@ -257,4 +257,49 @@ describe('chat page controller', () => {
 
     expect(sendButton.disabled).toBe(false);
   });
+
+  it('displays model and HTTP status from debug payload in error message', async () => {
+    global.fetch = jest.fn((url: string) => {
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+
+      if (url === '/chat/chat-1/turn') {
+        return Promise.resolve(
+          mockJsonResponse(
+            {
+              success: false,
+              error: 'API request error: Provider returned error',
+              code: 'HTTP_400',
+              retryable: false,
+              debug: {
+                httpStatus: 400,
+                model: 'anthropic/claude-sonnet-4.5',
+              },
+            },
+            400
+          )
+        );
+      }
+
+      return Promise.resolve(mockJsonResponse({ success: false }, 404));
+    }) as jest.Mock;
+
+    loadAppAndInit();
+
+    const form = document.getElementById('chat-turn-form') as HTMLFormElement;
+    const messageInput = document.getElementById('chat-message') as HTMLTextAreaElement;
+
+    messageInput.value = 'Hello there.';
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    await Promise.resolve();
+    await jest.runAllTimersAsync();
+    await Promise.resolve();
+
+    const turnError = document.getElementById('chat-turn-error') as HTMLDivElement;
+    expect(turnError.style.display).toBe('block');
+    expect(turnError.textContent).toContain('anthropic/claude-sonnet-4.5');
+    expect(turnError.textContent).toContain('HTTP 400');
+  });
 });

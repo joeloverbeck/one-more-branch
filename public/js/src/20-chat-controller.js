@@ -242,7 +242,20 @@ function initChatPage() {
         }
 
         if (!response.ok || !payload || !payload.success) {
-          throw new Error((payload && payload.error) || 'Failed to send chat turn');
+          var errorMessage = (payload && payload.error) || 'Failed to send chat turn';
+          if (payload && payload.debug) {
+            var debugParts = [];
+            if (payload.debug.model) {
+              debugParts.push('Model: ' + payload.debug.model);
+            }
+            if (payload.debug.httpStatus) {
+              debugParts.push('HTTP ' + payload.debug.httpStatus);
+            }
+            if (debugParts.length > 0) {
+              errorMessage += ' [' + debugParts.join(', ') + ']';
+            }
+          }
+          throw new Error(errorMessage);
         }
 
         return payload;

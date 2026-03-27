@@ -555,6 +555,44 @@ describe('chat routes', () => {
     );
   });
 
+  it('POST /:chatId/turn includes debug info for HTTP 400 LLM errors', async () => {
+    mockChatService.sendTurn.mockRejectedValue(
+      new LLMError('Provider returned error', 'HTTP_400', false, {
+        httpStatus: 400,
+        model: 'anthropic/claude-sonnet-4.5',
+        rawErrorBody: JSON.stringify({
+          error: { message: 'Provider returned error', metadata: { raw: 'context_length_exceeded' } },
+        }),
+        parsedError: { message: 'Provider returned error' },
+      })
+    );
+
+    const handler = getRouteHandler('post', '/:chatId/turn');
+    const req = mockReq({
+      params: { chatId: 'chat-1' },
+      body: {
+        message: 'Hello there.',
+        apiKey: 'valid-api-key-12345',
+        progressId: 'chat-progress-400',
+      },
+    });
+    const res = mockRes();
+
+    void handler(req, res);
+    await flushPromises();
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    const calls = (res.json as jest.Mock).mock.calls as Array<[Record<string, unknown>]>;
+    const jsonPayload = calls[0]?.[0] as Record<string, unknown>;
+    expect(jsonPayload['success']).toBe(false);
+    expect(jsonPayload['code']).toBe('HTTP_400');
+    expect(jsonPayload['debug']).toBeDefined();
+
+    const debug = jsonPayload['debug'] as Record<string, unknown>;
+    expect(debug['httpStatus']).toBe(400);
+    expect(debug['model']).toBe('anthropic/claude-sonnet-4.5');
+  });
+
   it('DELETE /:chatId deletes the chat and returns success JSON', async () => {
     const handler = getRouteHandler('delete', '/:chatId');
     const req = mockReq({ params: { chatId: 'chat-1' } });
