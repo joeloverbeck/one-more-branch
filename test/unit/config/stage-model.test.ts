@@ -1,4 +1,9 @@
-import { getStageModel, getStageMaxTokens, type LlmStage } from '@/config/stage-model';
+import {
+  getStageModel,
+  getStageMaxTokens,
+  getStageTemperature,
+  type LlmStage,
+} from '@/config/stage-model';
 import { getConfig, loadConfig, resetConfig } from '@/config/index';
 import { LLM_STAGE_KEYS } from '@/config/llm-stage-registry';
 
@@ -123,6 +128,55 @@ describe('getStageMaxTokens', () => {
       const maxTokens = getStageMaxTokens(stage);
       expect(typeof maxTokens).toBe('number');
       expect(maxTokens).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('getStageTemperature', () => {
+  beforeEach(() => {
+    resetConfig();
+  });
+
+  afterEach(() => {
+    resetConfig();
+  });
+
+  it('returns global temperature when no stageTemperatures config exists', () => {
+    process.env['CONFIG_PATH'] = '/dev/null';
+    loadConfig();
+    delete process.env['CONFIG_PATH'];
+
+    const config = getConfig();
+    const temperature = getStageTemperature('writer');
+    expect(temperature).toBe(config.llm.temperature);
+  });
+
+  it('returns stage-specific temperature when configured', () => {
+    loadConfig();
+
+    const config = getConfig();
+    const temperature = getStageTemperature('chatBible');
+    const expected = config.llm.stageTemperatures?.['chatBible'] ?? config.llm.temperature;
+    expect(temperature).toBe(expected);
+    expect(temperature).toBe(0.3);
+  });
+
+  it('returns global temperature for stage without per-stage override', () => {
+    loadConfig();
+
+    const config = getConfig();
+    const temperature = getStageTemperature('writer');
+    expect(temperature).toBe(config.llm.temperature);
+  });
+
+  it('resolves each LlmStage to a valid temperature', () => {
+    loadConfig();
+
+    for (const stage of LLM_STAGE_KEYS) {
+      const temperature = getStageTemperature(stage);
+      expect(typeof temperature).toBe('number');
+      expect(temperature).toBeGreaterThanOrEqual(0);
+      expect(temperature).toBeLessThanOrEqual(2);
     }
   });
 });

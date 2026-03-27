@@ -6,10 +6,22 @@ import { LLM_STAGE_KEYS } from '@/config/llm-stage-registry';
 function readDefaultStageModels(): Record<string, string> {
   const configPath = path.resolve(process.cwd(), 'configs/default.json');
   const parsed = JSON.parse(fs.readFileSync(configPath, 'utf8')) as {
-    llm?: { models?: Record<string, string> };
+    llm?: {
+      models?: Record<string, string>;
+      stageTemperatures?: Record<string, number>;
+    };
   };
 
   return parsed.llm?.models ?? {};
+}
+
+function readDefaultStageTemperatures(): Record<string, number> {
+  const configPath = path.resolve(process.cwd(), 'configs/default.json');
+  const parsed = JSON.parse(fs.readFileSync(configPath, 'utf8')) as {
+    llm?: { stageTemperatures?: Record<string, number> };
+  };
+
+  return parsed.llm?.stageTemperatures ?? {};
 }
 
 describe('stage-model config coverage', () => {
@@ -38,5 +50,22 @@ describe('stage-model config coverage', () => {
     const modelKeys = Object.keys(readDefaultStageModels());
 
     expect(modelKeys).toEqual([...LLM_STAGE_KEYS]);
+  });
+
+  it('defines stage temperature overrides only for explicitly tuned stages', () => {
+    const temperatures = readDefaultStageTemperatures();
+
+    expect(Object.keys(temperatures)).toEqual([
+      'chatBible',
+      'chatPlanner',
+      'chatWriter',
+      'chatStateUpdater',
+      'chatSummarizer',
+    ]);
+    expect(temperatures.chatBible).toBe(0.3);
+    expect(temperatures.chatPlanner).toBe(0.3);
+    expect(temperatures.chatWriter).toBe(0.7);
+    expect(temperatures.chatStateUpdater).toBe(0.2);
+    expect(temperatures.chatSummarizer).toBe(0.2);
   });
 });

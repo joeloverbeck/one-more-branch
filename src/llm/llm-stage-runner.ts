@@ -1,5 +1,9 @@
-import { getStageModel, getStageMaxTokens, type LlmStage } from '../config/stage-model.js';
-import { getConfig } from '../config/index.js';
+import {
+  getStageModel,
+  getStageMaxTokens,
+  getStageTemperature,
+  type LlmStage,
+} from '../config/stage-model.js';
 import { logger, logPrompt, logResponse, type PromptType } from '../logging/index.js';
 import type { GenerationOptions } from './generation-pipeline-types.js';
 import {
@@ -103,9 +107,8 @@ async function fetchAndParseLlmStage<TParsed>(
 export async function runLlmStage<TParsed>(
   params: LlmStageRunnerParams<TParsed>
 ): Promise<LlmStageRunnerResult<TParsed>> {
-  const config = getConfig().llm;
   const primaryModel = params.options?.model ?? getStageModel(params.stageModel);
-  const temperature = params.options?.temperature ?? config.temperature;
+  const temperature = params.options?.temperature ?? getStageTemperature(params.stageModel);
   const maxTokens = params.options?.maxTokens ?? getStageMaxTokens(params.stageModel);
 
   logPrompt(logger, params.promptType, params.messages);

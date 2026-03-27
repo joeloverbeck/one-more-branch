@@ -202,5 +202,34 @@ describe('config schemas', () => {
         })
       ).toThrow();
     });
+
+    it('accepts explicit per-stage temperature overrides for every registered stage', () => {
+      const perStageTemperatures = Object.fromEntries(
+        LLM_STAGE_KEYS.map((stage, index) => [stage, Number((0.1 + index * 0.01).toFixed(2))])
+      );
+
+      const result = AppConfigSchema.parse({
+        llm: {
+          stageTemperatures: perStageTemperatures,
+        },
+      });
+
+      for (const stage of LLM_STAGE_KEYS) {
+        expect(result.llm.stageTemperatures?.[stage]).toBe(perStageTemperatures[stage]);
+      }
+    });
+
+    it('rejects unknown llm.stageTemperatures stage keys', () => {
+      expect(() =>
+        AppConfigSchema.parse({
+          llm: {
+            stageTemperatures: {
+              characterBrainstormer: 0.3,
+              invalidStageName: 0.4,
+            },
+          },
+        })
+      ).toThrow();
+    });
   });
 });
