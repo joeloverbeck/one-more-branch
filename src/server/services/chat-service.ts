@@ -1,0 +1,217 @@
+import { randomUUID } from 'crypto';
+import { runChatPipeline, type ChatPipelineResult } from '../../llm/index.js';
+import type {
+  ChatLeadInContext,
+  ChatPhysicalContext,
+  ChatSession,
+  ChatSessionSummary,
+  ChatTurn,
+} from '../../models/chat/index.js';
+import { parseChatInput } from '../../models/chat/index.js';
+import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
+import { loadCharacter } from '../../persistence/character-repository.js';
+import {
+  deleteChat,
+  getRecentTurns,
+  listChats,
+  loadChat,
+  loadTurns,
+  saveChat,
+  saveTurn,
+} from '../../persistence/chat-repository.js';
+
+export interface CreateChatParams {
+  readonly targetCharacterId: string;
+  readonly interlocutorCharacterId: string;
+  readonly physicalContext: ChatPhysicalContext;
+  readonly leadInContext: ChatLeadInContext;
+}
+
+export interface SendTurnParams {
+  readonly chatId: string;
+  readonly userMessage: string;
+  readonly apiKey: string;
+  readonly isSessionResume?: boolean;
+}
+
+interface ChatServiceDeps {
+  readonly loadCharacter: typeof loadCharacter;
+  readonly saveChat: typeof saveChat;
+  readonly loadChat: typeof loadChat;
+  readonly listChats: typeof listChats;
+  readonly deleteChat: typeof deleteChat;
+  readonly saveTurn: typeof saveTurn;
+  readonly loadTurns: typeof loadTurns;
+  readonly getRecentTurns: typeof getRecentTurns;
+  readonly parseChatInput: typeof parseChatInput;
+  readonly runChatPipeline: typeof runChatPipeline;
+  readonly createId: () => string;
+  readonly now: () => string;
+}
+
+export interface ChatService {
+  createChat(params: CreateChatParams): Promise<ChatSession>;
+  sendTurn(params: SendTurnParams): Promise<ChatPipelineResult>;
+  resumeChat(chatId: string): Promise<{ session: ChatSession; turns: ChatTurn[] }>;
+  deleteChat(chatId: string): Promise<void>;
+  listChats(): Promise<ChatSessionSummary[]>;
+}
+
+const defaultDeps: ChatServiceDeps = {
+  loadCharacter,
+  saveChat,
+  loadChat,
+  listChats,
+  deleteChat,
+  saveTurn,
+  loadTurns,
+  getRecentTurns,
+  parseChatInput,
+  runChatPipeline,
+  createId: () => randomUUID(),
+  now: () => new Date().toISOString(),
+};
+
+function requireDistinctCharacterIds(params: CreateChatParams): void {
+  if (params.targetCharacterId === params.interlocutorCharacterId) {
+    throw new Error('Target and interlocutor must be different characters');
+  }
+}
+
+async function requireCharacter(
+  deps: ChatServiceDeps,
+  role: 'Target' | 'Interlocutor',
+  characterId: string
+): Promise<StandaloneDecomposedCharacter> {
+  const character = await deps.loadCharacter(characterId);
+  if (character === null) {
+    throw new Error(`${role} character not found: ${characterId}`);
+  }
+
+  return character;
+}
+
+async function requireChatSession(deps: ChatServiceDeps, chatId: string): Promise<ChatSession> {
+  const session = await deps.loadChat(chatId);
+  if (session === null) {
+    throw new Error(`Chat not found: ${chatId}`);
+  }
+
+  return session;
+}
+
+function requireParsedBlocks(
+  deps: ChatServiceDeps,
+  userMessage: string
+): { trimmedMessage: string; blocks: ReturnType<typeof parseChatInput> } {
+  const trimmedMessage = userMessage.trim();
+  if (trimmedMessage.length === 0) {
+    throw new Error('User message is required');
+  }
+
+  const blocks = deps.parseChatInput(trimmedMessage);
+  if (blocks.length === 0) {
+    throw new Error('User message is required');
+  }
+
+  return { trimmedMessage, blocks };
+}
+
+export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatService {
+  return {
+    async createChat(params: CreateChatParams): Promise<ChatSession> {
+      requireDistinctCharacterIds(params);
+
+      const [targetCharacter, interlocutorCharacter] = await Promise.all([
+        requireCharacter(deps, 'Target', params.targetCharacterId),
+        requireCharacter(deps, 'Interlocutor', params.interlocutorCharacterId),
+      ]);
+
+      const timestamp = deps.now();
+      const session: ChatSession = {
+        id: deps.createId(),
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        targetCharacterId: targetCharacter.id,
+        interlocutorCharacterId: interlocutorCharacter.id,
+        targetCharacterName: targetCharacter.name,
+        interlocutorCharacterName: interlocutorCharacter.name,
+        physicalContext: params.physicalContext,
+        leadInContext: params.leadInContext,
+        chatBible: null,
+        turnCount: 0,
+        rollingSummary: null,
+        relationshipState: {
+          dynamic: '',
+          valence: 0,
+          tension: 0,
+          leverage: '',
+        },
+        knowledgeState: {
+          knownFacts: [],
+          suspicions: [],
+          falseBeliefs: [],
+          secretsRevealed: [],
+        },
+      };
+
+      await deps.saveChat(session);
+      return session;
+    },
+
+    async sendTurn(params: SendTurnParams): Promise<ChatPipelineResult> {
+      const { trimmedMessage, blocks } = requireParsedBlocks(deps, params.userMessage);
+      const session = await requireChatSession(deps, params.chatId);
+      const userTurnTimestamp = deps.now();
+      const userTurn: ChatTurn = {
+        turnNumber: session.turnCount + 1,
+        speaker: 'USER',
+        blocks,
+        rawText: trimmedMessage,
+        timestamp: userTurnTimestamp,
+      };
+
+      await deps.saveTurn(params.chatId, userTurn);
+
+      const [targetCharacter, interlocutorCharacter, recentTurns, allTurns] = await Promise.all([
+        requireCharacter(deps, 'Target', session.targetCharacterId),
+        requireCharacter(deps, 'Interlocutor', session.interlocutorCharacterId),
+        deps.getRecentTurns(params.chatId, 12),
+        deps.loadTurns(params.chatId),
+      ]);
+
+      const pipelineResult = await deps.runChatPipeline(
+        {
+          chatSession: session,
+          targetCharacter,
+          interlocutorCharacter,
+          recentTurns,
+          allTurns,
+          latestUserTurn: userTurn,
+          isSessionResume: params.isSessionResume ?? false,
+        },
+        params.apiKey
+      );
+
+      await deps.saveTurn(params.chatId, pipelineResult.characterTurn);
+      await deps.saveChat(pipelineResult.updatedSession);
+      return pipelineResult;
+    },
+
+    async resumeChat(chatId: string): Promise<{ session: ChatSession; turns: ChatTurn[] }> {
+      const session = await requireChatSession(deps, chatId);
+      const turns = await deps.loadTurns(chatId);
+      return { session, turns };
+    },
+
+    async deleteChat(chatId: string): Promise<void> {
+      await deps.deleteChat(chatId);
+    },
+
+    async listChats(): Promise<ChatSessionSummary[]> {
+      return deps.listChats();
+    },
+  };
+}
+
+export const chatService = createChatService();
