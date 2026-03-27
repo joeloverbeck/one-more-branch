@@ -8,7 +8,7 @@ import {
   buildConceptAnalysisSection,
   buildKernelGroundingSection,
 } from './sections/shared/concept-kernel-sections.js';
-import { buildWorldSectionForCharacterDev } from './sections/shared/worldbuilding-sections.js';
+import { buildWorldSection } from './sections/shared/worldbuilding-sections.js';
 
 export interface CharTridimensionalPromptContext extends CharacterDevPromptContext {
   readonly characterKernel: CharacterKernel;
@@ -107,7 +107,7 @@ export function buildCharTridimensionalPrompt(
   }
 
   const worldSection = context.decomposedWorld
-    ? buildWorldSectionForCharacterDev(context.decomposedWorld)
+    ? buildWorldSection(context.decomposedWorld, 'CHARACTER_DEV')
     : context.worldbuilding && context.worldbuilding.length > 0
       ? `WORLDBUILDING:\n${context.worldbuilding}`
       : '';

@@ -2,13 +2,13 @@ import type { GenreFrame } from '../../models/concept-generator.js';
 import type { DecomposedCharacter } from '../../models/decomposed-character.js';
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
 import type { DecomposedWorld } from '../../models/decomposed-world.js';
-import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
 import type { StorySpine } from '../../models/story-spine.js';
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
+import { buildWorldSection } from './sections/shared/worldbuilding-sections.js';
 
 export interface SpineRewriteContext {
   readonly tone: string;
@@ -62,7 +62,7 @@ export function buildSpineRewritePrompt(context: SpineRewriteContext): ChatMessa
 
   const worldSection =
     context.decomposedWorld.facts.length > 0
-      ? formatDecomposedWorldForPrompt(context.decomposedWorld)
+      ? buildWorldSection(context.decomposedWorld)
       : '(no worldbuilding)';
 
   const userPrompt = `The story spine has been irreversibly broken. Rewrite it to accommodate the narrative direction.

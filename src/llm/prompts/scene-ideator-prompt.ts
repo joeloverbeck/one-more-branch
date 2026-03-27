@@ -1,5 +1,4 @@
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
-import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
 import type { ProtagonistGuidance } from '../../models/protagonist-guidance.js';
 import { isProtagonistGuidanceEmpty } from '../../models/protagonist-guidance.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -23,6 +22,7 @@ import type { SceneIdeationSlate } from '../scene-ideation-slate.js';
 import { buildSceneIdeationContextSignals } from '../scene-ideation-context-signals.js';
 import { buildSceneIdeationSlate } from '../scene-ideation-slate.js';
 import { SCENE_IDEA_LANES } from '../../models/scene-direction-taxonomy.js';
+import { buildWorldSection } from './sections/shared/worldbuilding-sections.js';
 
 function buildSceneIdeatorRole(targetOptionCount: number): string {
   return `You are a scene direction architect for interactive branching fiction. Your job is to generate exactly ${targetOptionCount} distinct scene direction options that give the player meaningful creative control over what kind of scene comes next.
@@ -259,7 +259,7 @@ export function buildSceneIdeatorPrompt(
     userSections.push(`CHARACTERS:\n${charText}\n`);
   }
 
-  const worldText = formatDecomposedWorldForPrompt(context.decomposedWorld);
+  const worldText = buildWorldSection(context.decomposedWorld);
   if (worldText) {
     userSections.push(`WORLD:\n${worldText}\n`);
   }

@@ -6,8 +6,6 @@ import type {
   DecomposedCharacter,
   SpeechFingerprint,
 } from '../../../src/models/decomposed-character';
-import { formatDecomposedWorldForPrompt } from '../../../src/models/decomposed-world';
-import type { DecomposedWorld } from '../../../src/models/decomposed-world';
 
 describe('formatDecomposedCharacterForPrompt', () => {
   function createCharacter(overrides?: Partial<DecomposedCharacter>): DecomposedCharacter {
@@ -210,68 +208,5 @@ describe('formatSpeechFingerprintForWriter', () => {
     expect(result).not.toContain('Discourse markers:');
     expect(result).not.toContain('Register shifts:');
     expect(result).not.toContain('Anti-examples (how they do NOT sound):');
-  });
-});
-
-describe('formatDecomposedWorldForPrompt', () => {
-  it('groups facts by domain', () => {
-    const world: DecomposedWorld = {
-      facts: [
-        { domain: 'magic', fact: 'Blood runes bind oaths', scope: 'Worldwide' },
-        { domain: 'magic', fact: 'Only mages can see runes', scope: 'Worldwide' },
-        { domain: 'society', fact: 'The tribunal controls justice', scope: 'Capital' },
-      ],
-      rawWorldbuilding: 'some raw text',
-    };
-    const result = formatDecomposedWorldForPrompt(world);
-    expect(result).toContain('WORLDBUILDING (structured):');
-    expect(result).toContain('[MAGIC]');
-    expect(result).toContain('[SOCIETY]');
-    expect(result).toContain('Blood runes bind oaths (scope: Worldwide)');
-  });
-
-  it('returns empty string for no facts', () => {
-    const world: DecomposedWorld = { facts: [], rawWorldbuilding: 'raw text' };
-    expect(formatDecomposedWorldForPrompt(world)).toBe('');
-  });
-
-  it('includes factType tags when present', () => {
-    const world: DecomposedWorld = {
-      facts: [
-        {
-          domain: 'magic',
-          fact: 'Iron disrupts magical fields',
-          scope: 'Worldwide',
-          factType: 'LAW',
-        },
-        {
-          domain: 'religion',
-          fact: 'The clans believe the old gods sleep',
-          scope: 'North',
-          factType: 'BELIEF',
-        },
-        {
-          domain: 'society',
-          fact: 'Tavern talk claims the duke is a fraud',
-          scope: 'Capital',
-          factType: 'RUMOR',
-        },
-      ],
-      rawWorldbuilding: 'some raw text',
-    };
-    const result = formatDecomposedWorldForPrompt(world);
-    expect(result).toContain('[LAW] Iron disrupts magical fields (scope: Worldwide)');
-    expect(result).toContain('[BELIEF] The clans believe the old gods sleep (scope: North)');
-    expect(result).toContain('[RUMOR] Tavern talk claims the duke is a fraud (scope: Capital)');
-  });
-
-  it('omits factType tag when factType is undefined', () => {
-    const world: DecomposedWorld = {
-      facts: [{ domain: 'magic', fact: 'Magic exists in this world', scope: 'Worldwide' }],
-      rawWorldbuilding: 'some raw text',
-    };
-    const result = formatDecomposedWorldForPrompt(world);
-    expect(result).toContain('- Magic exists in this world (scope: Worldwide)');
-    expect(result).not.toMatch(/\[LAW\]|\[NORM\]|\[BELIEF\]|\[DISPUTED\]|\[RUMOR\]|\[MYSTERY\]/);
   });
 });

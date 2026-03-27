@@ -7,7 +7,7 @@ import {
   buildConceptAnalysisSection,
   buildKernelGroundingSection,
 } from './sections/shared/concept-kernel-sections.js';
-import { buildWorldSectionForCharacterWeb } from './sections/shared/worldbuilding-sections.js';
+import { buildWorldSection } from './sections/shared/worldbuilding-sections.js';
 
 export interface CharacterWebPromptContext {
   readonly kernelSummary?: string;
@@ -79,7 +79,7 @@ export function buildCharacterWebPrompt(context: CharacterWebPromptContext): Cha
   }
 
   const worldSection = context.decomposedWorld
-    ? buildWorldSectionForCharacterWeb(context.decomposedWorld)
+    ? buildWorldSection(context.decomposedWorld, 'CHARACTER_WEB')
     : context.worldbuilding && context.worldbuilding.length > 0
       ? `WORLDBUILDING:\n${context.worldbuilding}`
       : '';
