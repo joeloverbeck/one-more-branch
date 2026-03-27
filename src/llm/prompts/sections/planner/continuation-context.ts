@@ -1,5 +1,4 @@
 import { formatDecomposedCharacterForPrompt } from '../../../../models/decomposed-character.js';
-import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
 import { isProtagonistGuidanceEmpty } from '../../../../models/protagonist-guidance.js';
 import type { ProtagonistGuidance } from '../../../../models/protagonist-guidance.js';
 import type { AccumulatedStructureState, StoryStructure } from '../../../../models/story-arc.js';
@@ -22,6 +21,7 @@ import {
   buildNpcAgendasSection,
   buildNpcRelationshipsSection,
 } from '../shared/npc-state-sections.js';
+import { buildWorldSection } from '../shared/worldbuilding-sections.js';
 
 function formatCharacterCanon(characterCanon: Readonly<Record<string, readonly string[]>>): string {
   const entries = Object.entries(characterCanon);
@@ -610,7 +610,7 @@ function buildContinuationContextSection(
 ): string {
   const worldSection =
     context.decomposedWorld.facts.length > 0
-      ? `${formatDecomposedWorldForPrompt(context.decomposedWorld)}
+      ? `${buildWorldSection(context.decomposedWorld)}
 
 `
       : '';

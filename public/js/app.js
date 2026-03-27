@@ -1674,6 +1674,36 @@ const STAGE_PHRASE_POOLS = {
     'Planting contradictions that make characters unpredictable...',
     'Excavating backstory events specific enough to be unforgettable...',
   ],
+  CURATING_CHAT_BIBLE: [
+    'Distilling the relationship pressure into a sharper conversational brief...',
+    'Rebuilding the chat bible around what matters right now...',
+    'Selecting the facts that should constrain this exchange...',
+    'Curating the emotional and physical reality before anyone speaks...',
+  ],
+  PLANNING_CHAT_TURN: [
+    'Deciding what the character wants from this reply...',
+    'Plotting the next conversational feint...',
+    'Choosing what to reveal, deflect, or weaponize...',
+    'Planning the turn beneath the surface text...',
+  ],
+  WRITING_CHAT_TURN: [
+    'Drafting the visible response block by block...',
+    'Turning intent into action beats and dialogue...',
+    'Shaping the reply so it sounds like the character, not the outline...',
+    'Writing the turn with pressure, subtext, and momentum...',
+  ],
+  UPDATING_CHAT_STATE: [
+    'Reconciling what just changed between them...',
+    'Updating relationship, knowledge, and physical state...',
+    'Checking whether the conversation shifted the world around it...',
+    'Recording the pressure this turn created for the next one...',
+  ],
+  SUMMARIZING_CHAT_MEMORY: [
+    'Compressing the conversation into durable memory...',
+    'Summarizing the old turns without losing the leverage...',
+    'Preserving the important beats before the chat grows longer...',
+    'Rolling older conversation into a tighter memory package...',
+  ],
 };
 
 const STAGE_DISPLAY_NAMES = {
@@ -1726,6 +1756,11 @@ const STAGE_DISPLAY_NAMES = {
   GENERATING_WORLD_SEED: 'SEEDING WORLD',
   ELABORATING_WORLD: 'ELABORATING WORLD',
   BRAINSTORMING_CHARACTERS: 'BRAINSTORMING CHARACTERS',
+  CURATING_CHAT_BIBLE: 'CURATING CHAT BIBLE',
+  PLANNING_CHAT_TURN: 'PLANNING CHAT TURN',
+  WRITING_CHAT_TURN: 'WRITING CHAT TURN',
+  UPDATING_CHAT_STATE: 'UPDATING CHAT STATE',
+  SUMMARIZING_CHAT_MEMORY: 'SUMMARIZING CHAT MEMORY',
 };
 
 // ── Configuration ──────────────────────────────────────────────────
@@ -7997,6 +8032,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initCharacterBrainstormerPage();
   initSpinesPage();
   initCreateStoryPage();
+  initChatPage();
+  initChatNewPage();
+  initChatListPage();
 });
 
 // ── Spine Page Controller ────────────────────────────────────────
@@ -14800,6 +14838,518 @@ function initCharacterBrainstormerPage() {
 
   generateBtn.addEventListener('click', function () {
     void handleBrainstormGenerate();
+  });
+}
+
+function initChatPage() {
+  var page = document.getElementById('chat-page');
+  if (!page || !page.getAttribute('data-chat-id')) {
+    return;
+  }
+  if (page.getAttribute('data-chat-controller-initialized') === 'true') {
+    return;
+  }
+  page.setAttribute('data-chat-controller-initialized', 'true');
+
+  var chatId = page.getAttribute('data-chat-id') || '';
+  var targetCharacterName = page.getAttribute('data-target-character-name') || 'Character';
+  var interlocutorCharacterName =
+    page.getAttribute('data-interlocutor-character-name') || 'You';
+  var messageList = document.getElementById('chat-message-list');
+  var form = document.getElementById('chat-turn-form');
+  var apiKeyInput = document.getElementById('chat-api-key');
+  var messageInput = document.getElementById('chat-message');
+  var sendButton = document.getElementById('chat-send-button');
+  var loadingIndicator = document.getElementById('chat-loading-indicator');
+  var progressStatus = document.getElementById('chat-progress-status');
+  var pageError = document.getElementById('chat-error');
+  var turnError = document.getElementById('chat-turn-error');
+
+  if (
+    !messageList ||
+    !form ||
+    !apiKeyInput ||
+    !messageInput ||
+    !sendButton ||
+    !loadingIndicator ||
+    !progressStatus
+  ) {
+    return;
+  }
+
+  if (!progressStatus.querySelector('.loading-stage')) {
+    progressStatus.innerHTML =
+      '<div class="loading-stage"></div><p class="loading-status">Character is thinking...</p>';
+  }
+  progressStatus.style.display = 'none';
+
+  var storedApiKey = getApiKey();
+  if (storedApiKey && apiKeyInput.value.length === 0) {
+    apiKeyInput.value = storedApiKey;
+  }
+
+  var shouldSendResumeFlag = messageList.querySelector('[data-chat-turn]') !== null;
+  var inFlight = false;
+  var loadingSession = createLoadingOverlaySession({
+    overlayElement: loadingIndicator,
+    progressElement: progressStatus,
+    buttonElement: sendButton,
+    onShow: function () {
+      progressStatus.style.display = 'block';
+    },
+    onHide: function () {
+      progressStatus.style.display = 'none';
+    },
+  });
+
+  function setError(element, message) {
+    if (!element) {
+      return;
+    }
+
+    element.textContent = message;
+    element.style.display = 'block';
+  }
+
+  function clearError(element) {
+    if (!element) {
+      return;
+    }
+
+    element.textContent = '';
+    element.style.display = 'none';
+  }
+
+  function clearErrors() {
+    clearError(pageError);
+    clearError(turnError);
+  }
+
+  function formatTimestamp(timestamp) {
+    if (!timestamp) {
+      return '';
+    }
+
+    try {
+      return (
+        new Date(timestamp).toLocaleString('en-US', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+          timeZone: 'UTC',
+        }) + ' UTC'
+      );
+    } catch (_error) {
+      return timestamp;
+    }
+  }
+
+  function buildTurnBlockHtml(block) {
+    if (!block || block.type === 'ACTION') {
+      return '<p data-chat-block="ACTION"><em>' + escapeHtml(block && block.text) + '</em></p>';
+    }
+
+    return (
+      '<p data-chat-block="SPEECH">' +
+      (block.delivery ? '<strong>' + escapeHtml(block.delivery) + ':</strong> ' : '') +
+      '&ldquo;' +
+      escapeHtml(block.text) +
+      '&rdquo;</p>'
+    );
+  }
+
+  function buildTurnHtml(turn) {
+    var speakerName =
+      turn.speaker === 'CHARACTER' ? targetCharacterName : interlocutorCharacterName;
+    var blocks = Array.isArray(turn.blocks) ? turn.blocks : [];
+
+    return (
+      '<article class="story-card" data-chat-turn data-chat-speaker="' +
+      escapeHtml(turn.speaker || '') +
+      '" data-turn-number="' +
+      escapeHtml(String(turn.turnNumber || '')) +
+      '">' +
+      '<div class="story-card-content">' +
+      '<h3>' +
+      escapeHtml(speakerName) +
+      '<small>#' +
+      escapeHtml(String(turn.turnNumber || '')) +
+      '</small></h3>' +
+      '<p class="form-help"><time datetime="' +
+      escapeHtml(turn.timestamp || '') +
+      '">' +
+      escapeHtml(formatTimestamp(turn.timestamp || '')) +
+      '</time></p>' +
+      blocks.map(buildTurnBlockHtml).join('') +
+      '</div></article>'
+    );
+  }
+
+  function appendTurn(turn) {
+    if (!turn) {
+      return;
+    }
+
+    var emptyState = document.getElementById('chat-empty-state');
+    if (emptyState && emptyState.parentNode) {
+      emptyState.parentNode.removeChild(emptyState);
+    }
+
+    messageList.insertAdjacentHTML('beforeend', buildTurnHtml(turn));
+    var turns = messageList.querySelectorAll('[data-chat-turn]');
+    var lastTurn = turns.length > 0 ? turns[turns.length - 1] : null;
+    if (lastTurn && typeof lastTurn.scrollIntoView === 'function') {
+      lastTurn.scrollIntoView({ block: 'end' });
+    }
+  }
+
+  function updateField(name, value, fallback) {
+    var field = page.querySelector('[data-chat-field="' + name + '"]');
+    if (field) {
+      field.textContent = value || fallback || '';
+    }
+  }
+
+  function joinList(values) {
+    return Array.isArray(values) && values.length > 0 ? values.join(', ') : 'None';
+  }
+
+  function updateSidebar(session) {
+    if (!session) {
+      return;
+    }
+
+    var physicalContext = session.physicalContext || {};
+    var relationshipState = session.relationshipState || {};
+    var leadInContext = session.leadInContext || {};
+
+    updateField('location', physicalContext.location, '');
+    updateField('microLocation', physicalContext.microLocation, '');
+    updateField('timeOfDay', physicalContext.timeOfDay, '');
+    updateField('privacy', physicalContext.privacy, '');
+    updateField('distanceBand', physicalContext.distanceBand, '');
+    updateField('characterActivity', physicalContext.characterActivity, '');
+    updateField('interactableObjects', joinList(physicalContext.interactableObjects), 'None');
+    updateField('ambientConditions', joinList(physicalContext.ambientConditions), 'None');
+    updateField('dynamic', relationshipState.dynamic, 'Unformed');
+    updateField('valence', String(relationshipState.valence != null ? relationshipState.valence : 0), '0');
+    updateField('tension', String(relationshipState.tension != null ? relationshipState.tension : 0), '0');
+    updateField('leverage', relationshipState.leverage, 'None');
+    updateField('whyNow', leadInContext.whyNow, '');
+  }
+
+  async function submitTurn() {
+    if (inFlight) {
+      return;
+    }
+
+    clearErrors();
+
+    var rawMessage = typeof messageInput.value === 'string' ? messageInput.value.trim() : '';
+    if (rawMessage.length === 0) {
+      setError(turnError, 'Message is required');
+      return;
+    }
+
+    var apiKey = typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
+    if (apiKey.length < 10) {
+      setError(turnError, 'OpenRouter API key is required');
+      return;
+    }
+
+    inFlight = true;
+    setApiKey(apiKey);
+
+    try {
+      var data = await loadingSession.withProgress(async function (progressId) {
+        var body = {
+          message: rawMessage,
+          apiKey: apiKey,
+          progressId: progressId,
+        };
+
+        if (shouldSendResumeFlag) {
+          body.isSessionResume = true;
+        }
+
+        var response = await fetch('/chat/' + encodeURIComponent(chatId) + '/turn', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        var payload = null;
+        try {
+          payload = await response.json();
+        } catch (_error) {
+          payload = null;
+        }
+
+        if (!response.ok || !payload || !payload.success) {
+          throw new Error((payload && payload.error) || 'Failed to send chat turn');
+        }
+
+        return payload;
+      });
+
+      appendTurn(data.userTurn);
+      appendTurn(data.characterTurn);
+      updateSidebar(data.updatedSession);
+      messageInput.value = '';
+      shouldSendResumeFlag = false;
+    } catch (error) {
+      setError(turnError, error instanceof Error ? error.message : 'Failed to send chat turn');
+    } finally {
+      inFlight = false;
+    }
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    void submitTurn();
+  });
+
+  messageInput.addEventListener('keydown', function (event) {
+    if (event.key !== 'Enter' || event.shiftKey) {
+      return;
+    }
+
+    event.preventDefault();
+    if (typeof form.requestSubmit === 'function') {
+      form.requestSubmit();
+      return;
+    }
+
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  });
+}
+
+function initChatNewPage() {
+  var form = document.querySelector('form[data-chat-new-form]');
+  if (!form) {
+    return;
+  }
+  if (form.getAttribute('data-chat-new-controller-initialized') === 'true') {
+    return;
+  }
+  form.setAttribute('data-chat-new-controller-initialized', 'true');
+
+  var errorBlock = document.getElementById('chat-new-error');
+  var targetSelect = document.getElementById('chat-target-character-id');
+  var interlocutorSelect = document.getElementById('chat-interlocutor-character-id');
+  var worldbuildingSelect = document.getElementById('chat-worldbuilding-id');
+  var submitButton = document.getElementById('chat-new-submit');
+
+  if (!targetSelect || !interlocutorSelect || !worldbuildingSelect || !submitButton) {
+    return;
+  }
+
+  var submitting = false;
+
+  function setError(message) {
+    if (!errorBlock) {
+      return;
+    }
+
+    errorBlock.textContent = message;
+    errorBlock.style.display = 'block';
+  }
+
+  function clearError() {
+    if (!errorBlock) {
+      return;
+    }
+
+    errorBlock.textContent = '';
+    errorBlock.style.display = 'none';
+  }
+
+  function populateSelect(select, items, labelField) {
+    var placeholder = select.querySelector('option');
+    var placeholderHtml = placeholder
+      ? '<option value="' + escapeHtml(placeholder.value || '') + '">' + escapeHtml(placeholder.textContent || '') + '</option>'
+      : '<option value="">Select...</option>';
+
+    select.innerHTML =
+      placeholderHtml +
+      items
+        .map(function (item) {
+          return (
+            '<option value="' +
+            escapeHtml(item.id || '') +
+            '">' +
+            escapeHtml(item[labelField] || 'Unnamed') +
+            '</option>'
+          );
+        })
+        .join('');
+  }
+
+  function hasDistinctCharacters() {
+    return (
+      typeof targetSelect.value === 'string' &&
+      targetSelect.value.length > 0 &&
+      targetSelect.value !== interlocutorSelect.value
+    );
+  }
+
+  function validateBeforeSubmit() {
+    clearError();
+
+    if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+      if (typeof form.reportValidity === 'function') {
+        form.reportValidity();
+      }
+      return false;
+    }
+
+    if (!hasDistinctCharacters()) {
+      setError('Target and interlocutor must be different characters');
+      return false;
+    }
+
+    return true;
+  }
+
+  targetSelect.addEventListener('change', function () {
+    if (hasDistinctCharacters()) {
+      clearError();
+    }
+  });
+
+  interlocutorSelect.addEventListener('change', function () {
+    if (hasDistinctCharacters()) {
+      clearError();
+    }
+  });
+
+  worldbuildingSelect.addEventListener('change', function () {
+    if (worldbuildingSelect.value) {
+      clearError();
+    }
+  });
+
+  form.addEventListener('submit', function (event) {
+    if (submitting) {
+      event.preventDefault();
+      return;
+    }
+
+    if (!validateBeforeSubmit()) {
+      event.preventDefault();
+      return;
+    }
+
+    submitting = true;
+    submitButton.disabled = true;
+  });
+
+  void (async function loadFormOptions() {
+    try {
+      var responses = await Promise.all([
+        fetch('/characters/api/list', { method: 'GET' }),
+        fetch('/worldbuilding/api/list', { method: 'GET' }),
+      ]);
+      var charactersResponse = responses[0];
+      var worldbuildingsResponse = responses[1];
+      var charactersData = await charactersResponse.json();
+      var worldbuildingsData = await worldbuildingsResponse.json();
+
+      if (
+        !charactersResponse.ok ||
+        !charactersData.success ||
+        !Array.isArray(charactersData.characters)
+      ) {
+        throw new Error((charactersData && charactersData.error) || 'Failed to load characters');
+      }
+
+      if (
+        !worldbuildingsResponse.ok ||
+        !worldbuildingsData.success ||
+        !Array.isArray(worldbuildingsData.worldbuildings)
+      ) {
+        throw new Error(
+          (worldbuildingsData && worldbuildingsData.error) || 'Failed to load worldbuildings'
+        );
+      }
+
+      populateSelect(targetSelect, charactersData.characters, 'name');
+      populateSelect(interlocutorSelect, charactersData.characters, 'name');
+      populateSelect(worldbuildingSelect, worldbuildingsData.worldbuildings, 'name');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to load form options');
+    }
+  })();
+}
+
+function initChatListPage() {
+  var page = document.querySelector('[data-chat-list]');
+  if (!page) {
+    return;
+  }
+  if (page.getAttribute('data-chat-list-controller-initialized') === 'true') {
+    return;
+  }
+  page.setAttribute('data-chat-list-controller-initialized', 'true');
+
+  function ensureEmptyState() {
+    if (page.querySelector('[data-chat-summary]')) {
+      return;
+    }
+
+    if (document.getElementById('chat-list-empty-state')) {
+      return;
+    }
+
+    var listItems = document.getElementById('chat-list-items') || page.querySelector('.story-card-content');
+    if (!listItems) {
+      return;
+    }
+
+    var emptyState = document.createElement('p');
+    emptyState.id = 'chat-list-empty-state';
+    emptyState.textContent = 'No chats yet. Start one from the new chat setup page.';
+    listItems.appendChild(emptyState);
+  }
+
+  page.querySelectorAll('[data-chat-delete-button]').forEach(function (button) {
+    button.addEventListener('click', async function () {
+      if (button.disabled) {
+        return;
+      }
+
+      var chatId = button.getAttribute('data-chat-id') || '';
+      var label = button.getAttribute('data-chat-label') || 'this chat';
+      if (!chatId) {
+        return;
+      }
+
+      if (!window.confirm('Delete chat "' + label + '"?')) {
+        return;
+      }
+
+      button.disabled = true;
+
+      try {
+        var response = await fetch('/chat/' + encodeURIComponent(chatId), {
+          method: 'DELETE',
+        });
+        var data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error((data && data.error) || 'Failed to delete chat');
+        }
+
+        var card = button.closest('[data-chat-summary]');
+        if (card && card.parentNode) {
+          card.parentNode.removeChild(card);
+        }
+        ensureEmptyState();
+      } catch (error) {
+        button.disabled = false;
+        if (typeof window.alert === 'function') {
+          window.alert(error instanceof Error ? error.message : 'Failed to delete chat');
+        }
+      }
+    });
   });
 }
 })();

@@ -5,7 +5,7 @@ import {
   buildConceptAnalysisSection,
   buildKernelGroundingSection,
 } from './sections/shared/concept-kernel-sections.js';
-import { buildWorldSectionForCharacterWeb } from './sections/shared/worldbuilding-sections.js';
+import { buildWorldSection } from './sections/shared/worldbuilding-sections.js';
 
 const ROLE_INTRO = `You are a character concept brainstormer for interactive branching fiction. Your purpose is to generate a diverse set of 6-10 CHARACTER CONCEPTS that are unique, original, memorable, and distinct from each other. These are brainstorming sketches — rich enough to inspire, not full character sheets.`;
 
@@ -112,7 +112,7 @@ export function buildCharacterBrainstormerMessages(
   }
 
   if (context.decomposedWorld) {
-    const worldSection = buildWorldSectionForCharacterWeb(context.decomposedWorld);
+    const worldSection = buildWorldSection(context.decomposedWorld, 'CHARACTER_WEB');
     if (worldSection.length > 0) {
       userSections.push(`WORLD CONTEXT:\n${worldSection.trim()}`);
     }

@@ -1,0 +1,227 @@
+import { buildChatBibleMessages } from '../../../../../src/llm/prompts/chat/chat-bible-prompt';
+import type { ChatBibleContext } from '../../../../../src/llm/chat/chat-bible-generation';
+import type { DecomposedWorld } from '../../../../../src/models/decomposed-world';
+import type { StandaloneDecomposedCharacter } from '../../../../../src/models/standalone-decomposed-character';
+
+const DECOMPOSED_WORLD: DecomposedWorld = {
+  worldLogline: 'A rain-soaked observatory city running on oath and suspicion.',
+  facts: [
+    {
+      id: 'wf-1',
+      domain: 'culture',
+      fact: 'Naming a betrayer aloud in a sealed room is treated as a binding accusation.',
+      scope: 'citywide',
+      factType: 'PRACTICE',
+      narrativeWeight: 'HIGH',
+      sensoryHook: 'Voices drop whenever the ritual wording begins.',
+    },
+    {
+      id: 'wf-2',
+      domain: 'geography',
+      fact: 'Most private meetings happen in upper galleries above the flood line.',
+      scope: 'district',
+      narrativeWeight: 'MEDIUM',
+    },
+    {
+      id: 'wf-3',
+      domain: 'language',
+      fact: 'Honorifics mark whether a debt is still considered open.',
+      scope: 'citywide',
+      factType: 'NORM',
+      narrativeWeight: 'MEDIUM',
+    },
+  ],
+  rawWorldbuilding: 'A rain-soaked observatory city running on oath and suspicion.',
+};
+
+function makeCharacter(
+  name: string,
+  overrides: Partial<StandaloneDecomposedCharacter> = {}
+): StandaloneDecomposedCharacter {
+  return {
+    id: `char-${name.toLowerCase().replace(/\s+/g, '-')}`,
+    name,
+    rawDescription: `${name} is dangerous and exhausted.`,
+    speechFingerprint: {
+      catchphrases: ['Stay on bearing.'],
+      vocabularyProfile: 'Clipped naval diction',
+      sentencePatterns: 'Short commands with precise follow-through',
+      verbalTics: ['Listen'],
+      dialogueSamples: ['Stay on bearing, and maybe we survive this yet.'],
+      metaphorFrames: 'Storms and navigation',
+      antiExamples: ['Whatever, let us vibe.'],
+      discourseMarkers: ['No.', 'Then listen.'],
+      registerShifts: 'Gets colder under pressure.',
+    },
+    coreTraits: ['guarded', 'precise'],
+    superObjective: 'Recover the map',
+    knowledgeBoundaries: 'Knows the codes, not the mastermind.',
+    falseBeliefs: ['The other character already chose betrayal'],
+    secretsKept: ['She copied the cipher key'],
+    decisionPattern: 'Acts fast, then fortifies the choice.',
+    coreBeliefs: ['Competence is safer than trust'],
+    conflictPriority: 'Mission over comfort',
+    appearance: 'Rain-dark coat and immaculate gloves',
+    createdAt: '2026-03-01T10:00:00.000Z',
+    immediateObjectives: ['Secure the map', 'Test Tomas'],
+    ...overrides,
+  };
+}
+
+function makeContext(): ChatBibleContext {
+  return {
+    targetCharacter: makeCharacter('Iria Vale'),
+    interlocutorCharacter: makeCharacter('Tomas Wren', {
+      coreTraits: ['gentle', 'secretive'],
+      knowledgeBoundaries: 'Knows the route, not the full conspiracy.',
+    }),
+    decomposedWorld: DECOMPOSED_WORLD,
+    relationshipState: {
+      dynamic: 'Brittle allies',
+      valence: -1,
+      tension: 7,
+      leverage: 'Each knows one ruinous fact about the other',
+    },
+    knowledgeState: {
+      knownFacts: ['The courier missed the rendezvous'],
+      suspicions: ['Tomas met the courier first'],
+      falseBeliefs: ['The observatory is still unobserved'],
+      secretsRevealed: ['Iria copied the key'],
+    },
+    physicalContext: {
+      location: 'Abandoned observatory',
+      microLocation: 'Upper gallery',
+      timeOfDay: 'EVENING',
+      privacy: 'PRIVATE',
+      distanceBand: 'CONVERSATIONAL',
+      characterActivity: 'Watching the stairwell',
+      interactableObjects: ['Telescope', 'Lantern'],
+      ambientConditions: ['Rain', 'Drafts'],
+    },
+    leadInContext: {
+      leadInSummary: 'They arrive separately after the courier disappears.',
+      recentEvents: ['The signal fire failed', 'A coded note appeared'],
+      whyNow: 'The trail goes cold by dawn.',
+    },
+    rollingSummary: {
+      compressedSummary: 'Their last meeting ended with a threat and no proof.',
+      keyCommitments: ['Meet before dawn'],
+      keyRevelations: ['Iria copied the key'],
+      unresolvedQuestions: ['Who warned the courier?'],
+      leverageShifts: ['Tomas forced Iria to show how much she knew.'],
+      emotionalTrajectory: 'Guarded hostility tightening into direct accusation.',
+    },
+    recentTurns: [
+      {
+        turnNumber: 11,
+        speaker: 'USER',
+        rawText: '*shuts the door* Did you sell me out?',
+        blocks: [
+          { type: 'ACTION', text: 'shuts the door' },
+          { type: 'SPEECH', text: 'Did you sell me out?' },
+        ],
+        timestamp: '2026-03-02T09:00:00.000Z',
+      },
+      {
+        turnNumber: 12,
+        speaker: 'CHARACTER',
+        blocks: [
+          { type: 'ACTION', text: 'does not look up from the telescope' },
+          { type: 'SPEECH', delivery: 'flat', text: 'If I had, you would already know.' },
+        ],
+        turnMeta: {
+          expectsReply: true,
+          endsWithQuestion: false,
+          visibleEmotion: 'contained anger',
+          finalPressure: 'Demands proof instead of denial',
+        },
+        timestamp: '2026-03-02T09:01:00.000Z',
+      },
+    ],
+  };
+}
+
+describe('buildChatBibleMessages', () => {
+  it('returns exactly 2 messages with system and user roles', () => {
+    const messages = buildChatBibleMessages(makeContext());
+
+    expect(messages).toHaveLength(2);
+    expect(messages[0].role).toBe('system');
+    expect(messages[1].role).toBe('user');
+  });
+
+  it('includes the content policy block in the system prompt', () => {
+    const messages = buildChatBibleMessages(makeContext());
+
+    expect(messages[0].content).toContain('CONTENT GUIDELINES');
+    expect(messages[0].content).toContain('NC-21');
+  });
+
+  it('includes all required user sections', () => {
+    const userContent = buildChatBibleMessages(makeContext())[1].content;
+
+    expect(userContent).toContain('TARGET CHARACTER DECOMPOSITION');
+    expect(userContent).toContain('INTERLOCUTOR CHARACTER PROFILE');
+    expect(userContent).toContain('WORLDBUILDING');
+    expect(userContent).toContain('RELATIONSHIP STATE');
+    expect(userContent).toContain('KNOWLEDGE STATE');
+    expect(userContent).toContain('PHYSICAL CONTEXT');
+    expect(userContent).toContain('PRE-CHAT LEAD-IN');
+    expect(userContent).toContain('OLDER CHAT SUMMARY');
+    expect(userContent).toContain('RECENT CHAT TURNS');
+  });
+
+  it('formats recent turns with block boundaries and speaker ownership', () => {
+    const userContent = buildChatBibleMessages(makeContext())[1].content;
+
+    expect(userContent).toContain('TURN 11 [USER]');
+    expect(userContent).toContain('TURN 12 [CHARACTER]');
+    expect(userContent).toContain('- ACTION: shuts the door');
+    expect(userContent).toContain('- SPEECH: Did you sell me out?');
+    expect(userContent).toContain('- SPEECH (flat): If I had, you would already know.');
+  });
+
+  it('renders absent prior history explicitly', () => {
+    const userContent = buildChatBibleMessages({
+      ...makeContext(),
+      decomposedWorld: { facts: [], rawWorldbuilding: '' },
+      rollingSummary: null,
+      recentTurns: [],
+    })[1].content;
+
+    expect(userContent).toContain('WORLDBUILDING:\n(none provided)');
+    expect(userContent).toContain('OLDER CHAT SUMMARY\nNone');
+    expect(userContent).toContain('RECENT CHAT TURNS\nNo prior turns in this session.');
+  });
+
+  it('renders chat-specific worldbuilding sections when facts are present', () => {
+    const userContent = buildChatBibleMessages(makeContext())[1].content;
+
+    expect(userContent).toContain('WORLDBUILDING (structured for chat):');
+    expect(userContent).toContain('[SOCIAL & CULTURAL CONTEXT]');
+    expect(userContent).toContain('Naming a betrayer aloud in a sealed room is treated as a binding accusation.');
+    expect(userContent).toContain('Honorifics mark whether a debt is still considered open.');
+    expect(userContent).toContain('[GEOGRAPHY & SETTING]');
+    expect(userContent).toContain('Most private meetings happen in upper galleries above the flood line.');
+  });
+
+  it('formats structured rolling summaries into deterministic text', () => {
+    const userContent = buildChatBibleMessages(makeContext())[1].content;
+
+    expect(userContent).toContain('OLDER CHAT SUMMARY');
+    expect(userContent).toContain(
+      'Compressed Summary: Their last meeting ended with a threat and no proof.'
+    );
+    expect(userContent).toContain('Key Commitments:');
+    expect(userContent).toContain('- Meet before dawn');
+    expect(userContent).toContain('Key Revelations:');
+    expect(userContent).toContain('- Iria copied the key');
+    expect(userContent).toContain('Unresolved Questions:');
+    expect(userContent).toContain('- Who warned the courier?');
+    expect(userContent).toContain('Leverage Shifts:');
+    expect(userContent).toContain('- Tomas forced Iria to show how much she knew.');
+    expect(userContent).toContain(
+      'Emotional Trajectory: Guarded hostility tightening into direct accusation.'
+    );
+  });
+});

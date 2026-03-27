@@ -88,6 +88,11 @@ describe('Engine types', () => {
         'GENERATING_WORLD_SEED',
         'ELABORATING_WORLD',
         'BRAINSTORMING_CHARACTERS',
+        'CURATING_CHAT_BIBLE',
+        'PLANNING_CHAT_TURN',
+        'WRITING_CHAT_TURN',
+        'UPDATING_CHAT_STATE',
+        'SUMMARIZING_CHAT_MEMORY',
       ];
 
       expect(GENERATION_STAGES).toEqual(expectedStages);

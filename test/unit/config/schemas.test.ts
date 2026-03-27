@@ -8,6 +8,7 @@ describe('config schemas', () => {
 
       expect(result.server.port).toBe(3000);
       expect(result.storage.storiesDir).toBe('stories');
+      expect(result.storage.chatsDir).toBe('chats');
       expect(result.storage.kernelsDir).toBe('kernels');
       expect(result.llm.defaultModel).toBe('anthropic/claude-sonnet-4.5');
       expect(result.llm.temperature).toBe(0.8);
@@ -24,7 +25,11 @@ describe('config schemas', () => {
     it('overrides defaults with provided values', () => {
       const input = {
         server: { port: 8080 },
-        storage: { storiesDir: 'custom-stories', kernelsDir: 'custom-kernels' },
+        storage: {
+          storiesDir: 'custom-stories',
+          chatsDir: 'custom-chats',
+          kernelsDir: 'custom-kernels',
+        },
         llm: {
           defaultModel: 'openai/gpt-4',
           temperature: 0.5,
@@ -44,6 +49,7 @@ describe('config schemas', () => {
 
       expect(result.server.port).toBe(8080);
       expect(result.storage.storiesDir).toBe('custom-stories');
+      expect(result.storage.chatsDir).toBe('custom-chats');
       expect(result.storage.kernelsDir).toBe('custom-kernels');
       expect(result.llm.defaultModel).toBe('openai/gpt-4');
       expect(result.llm.temperature).toBe(0.5);
@@ -143,6 +149,7 @@ describe('config schemas', () => {
     it('requires non-empty strings for model and storage directories', () => {
       expect(() => AppConfigSchema.parse({ llm: { defaultModel: '' } })).toThrow();
       expect(() => AppConfigSchema.parse({ storage: { storiesDir: '' } })).toThrow();
+      expect(() => AppConfigSchema.parse({ storage: { chatsDir: '' } })).toThrow();
       expect(() => AppConfigSchema.parse({ storage: { kernelsDir: '' } })).toThrow();
     });
 
@@ -190,6 +197,35 @@ describe('config schemas', () => {
               conceptSeeder: 'anthropic/claude-sonnet-4.6',
               conceptEvolverSeeder: 'anthropic/claude-sonnet-4.6',
               invalidStageName: 'z-ai/glm-5',
+            },
+          },
+        })
+      ).toThrow();
+    });
+
+    it('accepts explicit per-stage temperature overrides for every registered stage', () => {
+      const perStageTemperatures = Object.fromEntries(
+        LLM_STAGE_KEYS.map((stage, index) => [stage, Number((0.1 + index * 0.01).toFixed(2))])
+      );
+
+      const result = AppConfigSchema.parse({
+        llm: {
+          stageTemperatures: perStageTemperatures,
+        },
+      });
+
+      for (const stage of LLM_STAGE_KEYS) {
+        expect(result.llm.stageTemperatures?.[stage]).toBe(perStageTemperatures[stage]);
+      }
+    });
+
+    it('rejects unknown llm.stageTemperatures stage keys', () => {
+      expect(() =>
+        AppConfigSchema.parse({
+          llm: {
+            stageTemperatures: {
+              characterBrainstormer: 0.3,
+              invalidStageName: 0.4,
             },
           },
         })

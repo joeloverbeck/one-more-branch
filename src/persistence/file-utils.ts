@@ -29,6 +29,29 @@ export function getPageFilePath(storyId: string, pageId: number): string {
   return path.join(getStoryDir(storyId), `page_${pageId}.json`);
 }
 
+export function getChatsDir(): string {
+  return path.resolve(process.cwd(), getConfig().storage.chatsDir);
+}
+
+export function ensureChatsDir(): void {
+  const chatsDir = getChatsDir();
+  if (!existsSync(chatsDir)) {
+    mkdirSync(chatsDir, { recursive: true });
+  }
+}
+
+export function getChatDir(chatId: string): string {
+  return path.join(getChatsDir(), chatId);
+}
+
+export function getChatSessionFilePath(chatId: string): string {
+  return path.join(getChatDir(chatId), 'chat.json');
+}
+
+export function getChatTurnsFilePath(chatId: string): string {
+  return path.join(getChatDir(chatId), 'turns.json');
+}
+
 export async function atomicWriteFile(filePath: string, data: string): Promise<void> {
   const tempPath = `${filePath}.tmp.${Date.now()}.${Math.random().toString(36).slice(2)}`;
 

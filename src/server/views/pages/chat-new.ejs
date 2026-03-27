@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container" id="chat-new-page">
+    <section class="hero">
+      <h1>New Character Chat</h1>
+      <p class="tagline">Choose both characters, set the scene, and create a resumable conversation.</p>
+    </section>
+
+    <div class="alert alert-error" id="chat-new-error" style="display: none;" role="alert"></div>
+
+    <section class="form-section">
+      <form
+        id="chat-new-form"
+        action="/chat"
+        method="post"
+        data-chat-new-form
+      >
+        <div class="stories-grid">
+          <article class="story-card">
+            <div class="story-card-content">
+              <h2>Characters</h2>
+
+              <div class="form-group">
+                <label for="chat-target-character-id">Target Character *</label>
+                <select id="chat-target-character-id" name="targetCharacterId" required>
+                  <option value="">Select the character to play...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="chat-interlocutor-character-id">Interlocutor *</label>
+                <select id="chat-interlocutor-character-id" name="interlocutorCharacterId" required>
+                  <option value="">Select the user's character...</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="chat-worldbuilding-id">Worldbuilding *</label>
+                <select id="chat-worldbuilding-id" name="worldbuildingId" required>
+                  <option value="">Select worldbuilding...</option>
+                </select>
+                <p class="form-help">Choose the decomposed world context this chat belongs to.</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="story-card">
+            <div class="story-card-content">
+              <h2>Physical Context</h2>
+
+              <div class="form-group">
+                <label for="chat-location">Location *</label>
+                <input type="text" id="chat-location" name="location" required maxlength="200">
+              </div>
+
+              <div class="form-group">
+                <label for="chat-micro-location">Micro-Location *</label>
+                <input type="text" id="chat-micro-location" name="microLocation" required maxlength="200">
+              </div>
+
+              <div class="form-group">
+                <label for="chat-time-of-day">Time of Day *</label>
+                <select id="chat-time-of-day" name="timeOfDay" required>
+                  <option value="">Select time of day...</option>
+                  <option value="DAWN">Dawn</option>
+                  <option value="MORNING">Morning</option>
+                  <option value="MIDDAY">Midday</option>
+                  <option value="AFTERNOON">Afternoon</option>
+                  <option value="DUSK">Dusk</option>
+                  <option value="EVENING">Evening</option>
+                  <option value="LATE_NIGHT">Late Night</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="chat-privacy">Privacy *</label>
+                <select id="chat-privacy" name="privacy" required>
+                  <option value="">Select privacy...</option>
+                  <option value="PRIVATE">Private</option>
+                  <option value="SEMI_PRIVATE">Semi-Private</option>
+                  <option value="PUBLIC">Public</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="chat-distance-band">Distance *</label>
+                <select id="chat-distance-band" name="distanceBand" required>
+                  <option value="">Select distance...</option>
+                  <option value="INTIMATE">Intimate</option>
+                  <option value="ARM_REACH">Arm's Reach</option>
+                  <option value="CONVERSATIONAL">Conversational</option>
+                  <option value="ACROSS_ROOM">Across Room</option>
+                  <option value="DISTANT">Distant</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="chat-character-activity">Character Activity *</label>
+                <input
+                  type="text"
+                  id="chat-character-activity"
+                  name="characterActivity"
+                  required
+                  maxlength="200"
+                >
+              </div>
+
+              <div class="form-group">
+                <label for="chat-interactable-objects">Interactable Objects</label>
+                <textarea
+                  id="chat-interactable-objects"
+                  name="interactableObjects"
+                  rows="3"
+                  placeholder="ledger, lamp, sealed door"
+                ></textarea>
+                <p class="form-help">Optional. Separate items with commas.</p>
+              </div>
+
+              <div class="form-group">
+                <label for="chat-ambient-conditions">Ambient Conditions</label>
+                <textarea
+                  id="chat-ambient-conditions"
+                  name="ambientConditions"
+                  rows="3"
+                  placeholder="rain, low light, distant music"
+                ></textarea>
+                <p class="form-help">Optional. Separate items with commas.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <article class="story-card">
+          <div class="story-card-content">
+            <h2>Lead-In Context</h2>
+
+            <div class="form-group">
+              <label for="chat-lead-in-summary">Lead-In Summary *</label>
+              <textarea id="chat-lead-in-summary" name="leadInSummary" rows="4" required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="chat-recent-events">Recent Events</label>
+              <textarea
+                id="chat-recent-events"
+                name="recentEvents"
+                rows="4"
+                placeholder="One event per line"
+              ></textarea>
+              <p class="form-help">Optional. Enter one event per line.</p>
+            </div>
+
+            <div class="form-group">
+              <label for="chat-why-now">Why Now? *</label>
+              <textarea id="chat-why-now" name="whyNow" rows="4" required></textarea>
+            </div>
+          </div>
+          <div class="story-card-actions">
+            <button type="submit" class="btn btn-primary" id="chat-new-submit">Create Chat</button>
+          </div>
+        </article>
+      </form>
+    </section>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

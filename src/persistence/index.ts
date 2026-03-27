@@ -1,7 +1,12 @@
 export { Storage, storage } from './storage';
 
 export {
+  ensureChatsDir,
   ensureStoriesDir,
+  getChatDir,
+  getChatSessionFilePath,
+  getChatTurnsFilePath,
+  getChatsDir,
   getStoriesDir,
   getStoryDir,
   getStoryFilePath,
@@ -19,6 +24,17 @@ export {
   storyExists,
   updateStory,
 } from './story-repository';
+
+export {
+  deleteChat,
+  getRecentTurns,
+  listChats,
+  loadChat,
+  loadTurns,
+  saveChat,
+  saveTurn,
+  updateChat,
+} from './chat-repository';
 
 export {
   addChoice,

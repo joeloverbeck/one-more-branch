@@ -26,6 +26,7 @@ describe('config loader', () => {
 
       expect(config.server.port).toBe(3000);
       expect(config.storage.storiesDir).toBe('stories');
+      expect(config.storage.chatsDir).toBe('chats');
       expect(config.storage.kernelsDir).toBe('kernels');
     });
 
@@ -70,6 +71,7 @@ describe('config loader', () => {
 
         // Zod defaults for missing sections
         expect(config.storage.storiesDir).toBe('stories');
+        expect(config.storage.chatsDir).toBe('chats');
         expect(config.storage.kernelsDir).toBe('kernels');
         expect(config.llm.defaultModel).toBe('anthropic/claude-sonnet-4.5');
         expect(config.logging.level).toBe('info');

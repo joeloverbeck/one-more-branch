@@ -70,3 +70,10 @@ export {
   type EvaluatePacketsInput,
   type EvaluatePacketsResult,
 } from './content-service.js';
+export {
+  createChatService,
+  chatService,
+  type ChatService,
+  type CreateChatParams,
+  type SendTurnParams,
+} from './chat-service.js';

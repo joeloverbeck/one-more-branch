@@ -11,3 +11,8 @@ export function getStageMaxTokens(stage: LlmStage): number {
   const config = getConfig().llm;
   return config.stageMaxTokens?.[stage] ?? config.maxTokens;
 }
+
+export function getStageTemperature(stage: LlmStage): number {
+  const config = getConfig().llm;
+  return config.stageTemperatures?.[stage] ?? config.temperature;
+}

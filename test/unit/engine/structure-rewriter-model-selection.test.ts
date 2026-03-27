@@ -21,6 +21,7 @@ jest.mock('../../../src/logging', () => ({
 jest.mock('../../../src/config/stage-model', () => ({
   getStageModel: jest.fn().mockReturnValue('test-model/structure-rewrite-v1'),
   getStageMaxTokens: jest.fn().mockReturnValue(32768),
+  getStageTemperature: jest.fn().mockReturnValue(0.8),
 }));
 
 jest.mock('../../../src/config', () => ({
@@ -37,7 +38,11 @@ jest.mock('../../../src/config', () => ({
 }));
 
 import { createStructureRewriter } from '../../../src/engine/structure-rewriter';
-import { getStageModel, getStageMaxTokens } from '../../../src/config/stage-model';
+import {
+  getStageModel,
+  getStageMaxTokens,
+  getStageTemperature,
+} from '../../../src/config/stage-model';
 import type { StructureRewriteContext } from '../../../src/llm/structure-rewrite-types';
 import {
   buildMinimalDecomposedCharacter,
@@ -191,6 +196,7 @@ describe('structure-rewriter default generator model selection', () => {
     mockLogPrompt.mockReset();
     (getStageModel as jest.Mock).mockReturnValue('test-model/structure-rewrite-v1');
     (getStageMaxTokens as jest.Mock).mockReturnValue(32768);
+    (getStageTemperature as jest.Mock).mockReturnValue(0.8);
 
     fetchSpy = jest.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
@@ -238,6 +244,7 @@ describe('structure-rewriter default generator model selection', () => {
     const body = JSON.parse(fetchCall[1].body as string) as Record<string, unknown>;
     expect(body['model']).toBe('test-model/structure-rewrite-v1');
     expect(body['max_tokens']).toBe(32768);
+    expect(body['temperature']).toBe(0.8);
   });
 
   it('logs the rewrite prompt through the shared runner', async () => {

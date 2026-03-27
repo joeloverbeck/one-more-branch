@@ -89,6 +89,9 @@ export {
 export { mergePageWriterAndReconciledStateWithAnalystResults } from './result-merger.js';
 
 export { generateAgendaResolver } from './agenda-resolver-generation.js';
+export { runChatPipeline } from './chat/chat-pipeline.js';
+export type { ChatPipelineContext, ChatPipelineResult } from './chat/chat-pipeline.js';
+export { applyChatStateUpdate } from './chat/chat-state-applier.js';
 
 export { generateSceneDirections } from './scene-ideator.js';
 export type {

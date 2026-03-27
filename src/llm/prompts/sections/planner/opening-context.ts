@@ -1,9 +1,9 @@
 import { formatDecomposedCharacterForPrompt } from '../../../../models/decomposed-character.js';
-import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
 import { createInitialStructureState } from '../../../../models/story-arc.js';
 import type { StoryKernel } from '../../../../models/story-kernel.js';
 import type { OpeningPagePlanContext } from '../../../context-types.js';
 import { buildSharedStructureContext } from '../../continuation/story-structure-section.js';
+import { buildWorldSection } from '../shared/worldbuilding-sections.js';
 import type { PlannerContextOptions } from './continuation-context.js';
 
 function buildOpeningValueSpectrumSection(storyKernel: StoryKernel | undefined): string {
@@ -31,7 +31,7 @@ export function buildPlannerOpeningContextSection(
 ): string {
   const worldSection =
     context.decomposedWorld.facts.length > 0
-      ? `${formatDecomposedWorldForPrompt(context.decomposedWorld)}
+      ? `${buildWorldSection(context.decomposedWorld)}
 
 `
       : '';

@@ -24,6 +24,10 @@ import {
   DIRECTION_OF_CHANGE_VALUES as DIRECTION_OF_CHANGE_VALUES_DIRECT,
   computeKernelOverallScore as computeKernelOverallScoreDirect,
 } from '@/models/story-kernel';
+import {
+  TIME_OF_DAY_VALUES as TIME_OF_DAY_VALUES_DIRECT,
+  CHAT_SPEAKER_VALUES as CHAT_SPEAKER_VALUES_DIRECT,
+} from '@/models/chat';
 import * as models from '@/models';
 
 describe('models barrel exports', () => {
@@ -62,6 +66,11 @@ describe('models barrel exports', () => {
     expect(models.computeKernelOverallScore).toBe(computeKernelOverallScoreDirect);
   });
 
+  it('re-exports chat model constants from the root models barrel', () => {
+    expect(models.TIME_OF_DAY_VALUES).toBe(TIME_OF_DAY_VALUES_DIRECT);
+    expect(models.CHAT_SPEAKER_VALUES).toBe(CHAT_SPEAKER_VALUES_DIRECT);
+  });
+
   it('supports creating and validating model objects via barrel imports', () => {
     const story = models.createStory({
       title: 'Test Story',
@@ -80,5 +89,10 @@ describe('models barrel exports', () => {
 
     expect(models.validateStory(story).valid).toBe(true);
     expect(models.validatePage(page).valid).toBe(true);
+  });
+
+  it('exposes chat literal domains through barrel imports', () => {
+    expect(models.TIME_OF_DAY_VALUES).toContain('EVENING');
+    expect(models.CHAT_SPEAKER_VALUES).toEqual(['USER', 'CHARACTER']);
   });
 });

@@ -23,7 +23,7 @@ jest.mock('../../../src/logging/index.js', () => ({
 
 import type { LlmStageRunnerParams } from '../../../src/llm/llm-stage-runner';
 import { runLlmStage, runTwoPhaseLlmStage } from '../../../src/llm/llm-stage-runner';
-import { getConfig } from '../../../src/config';
+import { getConfig, loadConfig, resetConfig } from '../../../src/config';
 import { LLMError } from '../../../src/llm/llm-client-types';
 import { CONCEPT_IDEATION_SCHEMA } from '../../../src/llm/schemas/concept-ideator-schema';
 
@@ -72,9 +72,13 @@ async function advanceRetryDelays(): Promise<void> {
 describe('llm-stage-runner', () => {
   const fetchMock: jest.MockedFunction<typeof fetch> = jest.fn();
   const originalFetch = global.fetch;
+  const originalConfigPath = process.env['CONFIG_PATH'];
 
   beforeEach(() => {
     jest.useFakeTimers();
+    delete process.env['CONFIG_PATH'];
+    resetConfig();
+    loadConfig();
     fetchMock.mockReset();
     mockLogPrompt.mockReset();
     mockLogResponse.mockReset();
@@ -82,6 +86,12 @@ describe('llm-stage-runner', () => {
   });
 
   afterEach(() => {
+    resetConfig();
+    if (originalConfigPath !== undefined) {
+      process.env['CONFIG_PATH'] = originalConfigPath;
+    } else {
+      delete process.env['CONFIG_PATH'];
+    }
     jest.useRealTimers();
   });
 
@@ -209,7 +219,7 @@ describe('llm-stage-runner', () => {
     await advanceRetryDelays();
     await expectation;
 
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenCalledTimes(6);
   });
 
   it('falls back to the default model on HTTP_429 before retrying the whole stage', async () => {
@@ -247,6 +257,51 @@ describe('llm-stage-runner', () => {
 
     expect(firstCallBody['model']).toBe('z-ai/glm-5');
     expect(secondCallBody['model']).toBe(getConfig().llm.defaultModel);
+  });
+
+  it('uses stage-configured temperature when no explicit override is provided', async () => {
+    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify({ ok: true })));
+
+    expect(getConfig().llm.stageTemperatures?.chatBible).toBe(0.3);
+
+    await runLlmStage({
+      stageModel: 'chatBible',
+      promptType: 'chatBible',
+      apiKey: 'test-api-key',
+      schema: CONCEPT_IDEATION_SCHEMA,
+      messages: [{ role: 'user', content: 'test message' }],
+      parseResponse: (parsed) => parsed as { ok: boolean },
+    });
+
+    const requestBody = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string) as Record<
+      string,
+      unknown
+    >;
+
+    expect(requestBody['temperature']).toBe(0.3);
+  });
+
+  it('prefers explicit temperature overrides over stage-configured defaults', async () => {
+    fetchMock.mockResolvedValue(responseWithMessageContent(JSON.stringify({ ok: true })));
+
+    await runLlmStage({
+      stageModel: 'chatBible',
+      promptType: 'chatBible',
+      apiKey: 'test-api-key',
+      options: {
+        temperature: 0.55,
+      },
+      schema: CONCEPT_IDEATION_SCHEMA,
+      messages: [{ role: 'user', content: 'test message' }],
+      parseResponse: (parsed) => parsed as { ok: boolean },
+    });
+
+    const requestBody = JSON.parse(fetchMock.mock.calls[0]?.[1]?.body as string) as Record<
+      string,
+      unknown
+    >;
+
+    expect(requestBody['temperature']).toBe(0.55);
   });
 
   it('runs two-phase stages sequentially and combines parsed/raw outputs', async () => {

@@ -19,6 +19,7 @@ character-webs/**
 characters/**
 spines/**
 stories/**
+chats/**
 !stories/.gitkeep
 old-stories/
 

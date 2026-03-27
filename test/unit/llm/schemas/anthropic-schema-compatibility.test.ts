@@ -54,6 +54,11 @@ import { STRUCTURE_GENERATION_SCHEMA } from '../../../../src/llm/schemas/structu
 import { WRITER_GENERATION_SCHEMA } from '../../../../src/llm/schemas/writer-schema';
 import { CHARACTER_WEB_GENERATION_SCHEMA } from '../../../../src/llm/schemas/character-web-schema';
 import { CHARACTER_BRAINSTORMER_SCHEMA } from '../../../../src/llm/schemas/character-brainstormer-schema';
+import { CHAT_BIBLE_SCHEMA } from '../../../../src/llm/schemas/chat-bible-schema';
+import { CHAT_PLANNER_SCHEMA } from '../../../../src/llm/schemas/chat-planner-schema';
+import { CHAT_STATE_UPDATER_SCHEMA } from '../../../../src/llm/schemas/chat-state-updater-schema';
+import { CHAT_SUMMARY_SCHEMA } from '../../../../src/llm/schemas/chat-summary-schema';
+import { CHAT_WRITER_SCHEMA } from '../../../../src/llm/schemas/chat-writer-schema';
 import { CHAR_KERNEL_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-kernel-schema';
 import { CHAR_TRIDIMENSIONAL_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-tridimensional-schema';
 import { CHAR_AGENCY_GENERATION_SCHEMA } from '../../../../src/llm/schemas/char-agency-schema';
@@ -313,6 +318,11 @@ describe('Anthropic schema compatibility', () => {
     { name: 'WORLDBUILDING_SEED_SCHEMA', schema: WORLDBUILDING_SEED_SCHEMA },
     { name: 'WORLDBUILDING_ELABORATION_SCHEMA', schema: WORLDBUILDING_ELABORATION_SCHEMA },
     { name: 'CHARACTER_BRAINSTORMER_SCHEMA', schema: CHARACTER_BRAINSTORMER_SCHEMA },
+    { name: 'CHAT_BIBLE_SCHEMA', schema: CHAT_BIBLE_SCHEMA },
+    { name: 'CHAT_PLANNER_SCHEMA', schema: CHAT_PLANNER_SCHEMA },
+    { name: 'CHAT_STATE_UPDATER_SCHEMA', schema: CHAT_STATE_UPDATER_SCHEMA },
+    { name: 'CHAT_SUMMARY_SCHEMA', schema: CHAT_SUMMARY_SCHEMA },
+    { name: 'CHAT_WRITER_SCHEMA', schema: CHAT_WRITER_SCHEMA },
   ];
 
   it.each(llmResponseSchemas)(

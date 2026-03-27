@@ -1,7 +1,7 @@
 import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
-import { buildWorldSectionForSpine } from './sections/shared/worldbuilding-sections.js';
+import { buildWorldSection } from './sections/shared/worldbuilding-sections.js';
 import type { SpinePromptContext } from './spine-prompt.js';
 import { formatStandaloneCharacterSummary } from '../../models/standalone-decomposed-character.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
@@ -95,7 +95,7 @@ export function buildSpineFoundationPrompt(context: SpinePromptContext): ChatMes
   systemSections.push(FOUNDATION_DESIGN_GUIDELINES);
 
   const worldSection = context.decomposedWorld
-    ? `${buildWorldSectionForSpine(context.decomposedWorld)}\n\n`
+    ? `${buildWorldSection(context.decomposedWorld, 'SPINE')}\n\n`
     : context.worldbuilding
       ? `WORLDBUILDING:\n${context.worldbuilding}\n\n`
       : '';

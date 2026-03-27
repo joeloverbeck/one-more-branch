@@ -1,5 +1,4 @@
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
-import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
 import { formatCanonForPrompt } from '../../engine/canon-manager.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import type { LorekeeperContext } from '../context-types.js';
@@ -9,6 +8,7 @@ import { buildSharedStructureContext } from './continuation/index.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
+import { buildWorldSection } from './sections/shared/worldbuilding-sections.js';
 
 function formatNumberedLines(lines: readonly string[]): string {
   return lines.map((line, index) => `${index + 1}. ${line}`).join('\n');
@@ -224,7 +224,7 @@ ${plan.continuityAnchors.map((anchor) => `- ${anchor}`).join('\n') || '- (none)'
 ${mentionedCharacterDirective}
 === FULL STORY CONTEXT ===
 
-${context.decomposedWorld.facts.length > 0 ? formatDecomposedWorldForPrompt(context.decomposedWorld) : 'WORLDBUILDING:\n(none provided)'}
+${context.decomposedWorld.facts.length > 0 ? buildWorldSection(context.decomposedWorld) : 'WORLDBUILDING:\n(none provided)'}
 
 ${buildToneDirective(context.tone, context.toneFeel, context.toneAvoid)}
 

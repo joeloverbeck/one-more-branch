@@ -250,9 +250,7 @@ export type {
   DecomposedWorld,
   NarrativeWeight,
   WorldStoryFunction,
-  WorldPromptConsumer,
 } from './decomposed-world';
-export { formatDecomposedWorldForPrompt } from './decomposed-world';
 
 export type { WorldSeed } from './world-seed';
 export type { SavedWorldbuilding, WorldbuildingSourceKind } from './saved-worldbuilding';
@@ -456,3 +454,54 @@ export {
 
 export type { SavedSpine } from './saved-spine';
 export { isSavedSpine } from './saved-spine';
+
+export type {
+  TimeOfDay,
+  Privacy,
+  DistanceBand,
+  ChatPhysicalContext,
+  ChatLeadInContext,
+  ChatRelationshipState,
+  ChatKnowledgeState,
+  ChatSession,
+  ChatSessionSummary,
+  ChatSpeaker,
+  ChatBlockType,
+  ChatBlock,
+  TurnMeta,
+  ChatTurn,
+  WillingnessToEngage,
+  ChatBiblePreChatMomentum,
+  ChatBibleCharacterNow,
+  ChatBibleRelationshipNow,
+  ChatBibleKnowledgeNow,
+  ChatBibleConversationNow,
+  ChatBible,
+  SpeechAct,
+  HonestyMode,
+  ActionPlanKind,
+  TurnTargetLength,
+  TurnPlannerInternalSelfCheck,
+  ActionPlanItem,
+  TurnPlannerExpectedImpact,
+  TurnPlannerOutput,
+  ChatRelationshipShift,
+  ChatKnowledgeChanges,
+  ChatConversationUpdate,
+  ChatPhysicalStateUpdate,
+  ChatStateUpdate,
+  RollingSummaryOutput,
+} from './chat';
+export {
+  parseChatInput,
+  TIME_OF_DAY_VALUES,
+  PRIVACY_VALUES,
+  DISTANCE_BAND_VALUES,
+  CHAT_SPEAKER_VALUES,
+  CHAT_BLOCK_TYPE_VALUES,
+  WILLINGNESS_TO_ENGAGE_VALUES,
+  SPEECH_ACT_VALUES,
+  HONESTY_MODE_VALUES,
+  ACTION_PLAN_KIND_VALUES,
+  TURN_TARGET_LENGTH_VALUES,
+} from './chat';

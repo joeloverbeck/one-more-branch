@@ -13,6 +13,7 @@ const ServerConfigSchema = z.object({
  */
 const StorageConfigSchema = z.object({
   storiesDir: z.string().min(1).default('stories'),
+  chatsDir: z.string().min(1).default('chats'),
   conceptsDir: z.string().min(1).default('concepts'),
   kernelsDir: z.string().min(1).default('kernels'),
   charactersDir: z.string().min(1).default('characters'),
@@ -53,10 +54,17 @@ const stageMaxTokensSchemaShape = Object.fromEntries(
 
 const StageMaxTokensConfigSchema = z.object(stageMaxTokensSchemaShape).strict();
 
+const stageTemperaturesSchemaShape = Object.fromEntries(
+  LLM_STAGE_KEYS.map((stage) => [stage, z.number().min(0).max(2).optional()])
+) as Record<(typeof LLM_STAGE_KEYS)[number], z.ZodOptional<z.ZodNumber>>;
+
+const StageTemperaturesConfigSchema = z.object(stageTemperaturesSchemaShape).strict();
+
 const LLMConfigSchema = z.object({
   defaultModel: z.string().min(1).default('anthropic/claude-sonnet-4.5'),
   models: LLMModelsConfigSchema.optional(),
   stageMaxTokens: StageMaxTokensConfigSchema.optional(),
+  stageTemperatures: StageTemperaturesConfigSchema.optional(),
   temperature: z.number().min(0).max(2).default(0.8),
   maxTokens: z.number().int().min(256).max(131072).default(16384),
   retry: RetryConfigSchema.optional().transform((val) => val ?? RetryConfigSchema.parse({})),

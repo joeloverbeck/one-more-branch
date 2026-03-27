@@ -2,10 +2,10 @@ import type { ConceptSpec, ConceptVerification } from '../../../../models/concep
 import type { DecomposedCharacter } from '../../../../models/decomposed-character.js';
 import { formatDecomposedCharacterForPrompt } from '../../../../models/decomposed-character.js';
 import type { DecomposedWorld } from '../../../../models/decomposed-world.js';
-import { formatDecomposedWorldForPrompt } from '../../../../models/decomposed-world.js';
 import { getGenreObligationTags } from '../../../../models/genre-obligations.js';
 import type { StoryKernel } from '../../../../models/story-kernel.js';
 import type { StorySpine } from '../../../../models/story-spine.js';
+import { buildWorldSection } from '../shared/worldbuilding-sections.js';
 
 export interface StructureContext {
   tone: string;
@@ -35,7 +35,7 @@ export function buildStructureGenerationWorldSection(context: StructureContext):
     return '';
   }
 
-  return `${formatDecomposedWorldForPrompt(context.decomposedWorld)}\n\n`;
+  return `${buildWorldSection(context.decomposedWorld)}\n\n`;
 }
 
 export function buildStructureGenerationStartingSituationSection(

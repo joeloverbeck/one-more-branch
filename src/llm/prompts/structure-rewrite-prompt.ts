@@ -1,5 +1,4 @@
 import { formatDecomposedCharacterForPrompt } from '../../models/decomposed-character.js';
-import { formatDecomposedWorldForPrompt } from '../../models/decomposed-world.js';
 import { getGenreObligationTags } from '../../models/genre-obligations.js';
 import type { PromptOptions } from '../generation-pipeline-types.js';
 import type { ChatMessage } from '../llm-client-types.js';
@@ -7,6 +6,7 @@ import type { StructureRewriteContext } from '../structure-rewrite-types.js';
 import { buildStructureSystemPrompt } from './system-prompt.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
+import { buildWorldSection } from './sections/shared/worldbuilding-sections.js';
 
 function getActsToRegenerate(currentActIndex: number, totalActs: number): string {
   const currentActLabel = `Act ${currentActIndex + 1}`;
@@ -168,7 +168,7 @@ ${formatPlannedBeats(context.plannedBeats)}
 
   const worldSection =
     context.decomposedWorld.facts.length > 0
-      ? `World:\n${formatDecomposedWorldForPrompt(context.decomposedWorld)}\n`
+      ? `World:\n${buildWorldSection(context.decomposedWorld)}\n`
       : '';
 
   const toneFeelLine =
