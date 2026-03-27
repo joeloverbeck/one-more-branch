@@ -96,6 +96,7 @@ src/models/
   chat/
     chat-session.ts          # ChatSession, ChatPhysicalContext, ChatLeadInContext
     chat-turn.ts             # ChatTurn, ChatBlock, TurnMeta
+    chat-input-parser.ts     # Canonical parser for raw user input -> ChatBlock[]
     chat-bible.ts            # ChatBible (Bible Curator output)
     chat-turn-plan.ts        # TurnPlannerOutput (Turn Planner output)
     chat-state-update.ts     # ChatStateUpdate (State Updater output)
@@ -630,8 +631,6 @@ src/server/
       chat-list.ejs          # Chat list page
       chat-new.ejs           # Chat setup form
       chat.ejs               # Chat conversation page
-  utils/
-    chat-input-parser.ts     # Parse *action* and speech from user input
 ```
 
 ### Routes
@@ -686,7 +685,7 @@ node scripts/concat-client-js.js
 ### Chat Controller Features
 
 - Text input with send button (Enter to send)
-- Parse user input (*asterisks* -> ACTION, rest -> SPEECH)
+- Parse user input with the canonical chat-domain parser (`src/models/chat/chat-input-parser.ts`)
 - Display loading indicator during pipeline execution ("Character is thinking..." with stage updates)
 - Render CHARACTER response blocks (ACTION in italics, SPEECH in quotes with delivery tags)
 - Render USER blocks (same format)
@@ -708,6 +707,7 @@ Parse free text into `ChatBlock[]`:
 
 - Text wrapped in `*asterisks*` -> ACTION block
 - All other text -> SPEECH block
+- Canonical TypeScript implementation lives in `src/models/chat/chat-input-parser.ts`
 - Example: `*leans forward* "I don't believe you." *taps the table*`
   -> `[ACTION("leans forward"), SPEECH("I don't believe you."), ACTION("taps the table")]`
 - If no asterisks, the entire input is one SPEECH block
@@ -729,8 +729,8 @@ Parse free text into `ChatBlock[]`:
 ```
 test/unit/
   models/chat/                    # Chat model type guards and validation
+  models/chat/chat-input-parser/  # User input parsing (*action* vs speech)
   persistence/chat-repository/    # Chat CRUD operations
-  server/utils/chat-input-parser/ # User input parsing (*action* vs speech)
   llm/chat/                       # Pipeline trigger logic, bible refresh logic
 ```
 
@@ -773,6 +773,7 @@ test/e2e/
 |------|---------|
 | `src/models/chat/chat-session.ts` | ChatSession, ChatPhysicalContext, ChatLeadInContext types |
 | `src/models/chat/chat-turn.ts` | ChatTurn, ChatBlock, TurnMeta types |
+| `src/models/chat/chat-input-parser.ts` | Canonical user input parser |
 | `src/models/chat/chat-bible.ts` | ChatBible type |
 | `src/models/chat/chat-turn-plan.ts` | TurnPlannerOutput type |
 | `src/models/chat/chat-state-update.ts` | ChatStateUpdate type |
@@ -801,7 +802,6 @@ test/e2e/
 | `src/server/views/pages/chat-list.ejs` | Chat list page template |
 | `src/server/views/pages/chat-new.ejs` | Chat setup form template |
 | `src/server/views/pages/chat.ejs` | Chat conversation page template |
-| `src/server/utils/chat-input-parser.ts` | User input parser |
 | `public/js/src/20-chat-controller.js` | Chat page JS controller |
 | `public/js/src/21-chat-new-controller.js` | Setup form JS controller |
 | `public/js/src/22-chat-list-controller.js` | Chat list JS controller |

@@ -495,6 +495,7 @@ export type {
   RollingSummaryOutput,
 } from './chat';
 export {
+  parseChatInput,
   TIME_OF_DAY_VALUES,
   PRIVACY_VALUES,
   DISTANCE_BAND_VALUES,
