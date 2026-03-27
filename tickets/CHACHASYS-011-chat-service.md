@@ -4,7 +4,7 @@
 **Priority**: HIGH
 **Effort**: Medium
 **Engine Changes**: None
-**Deps**: CHACHASYS-001, CHACHASYS-002, CHACHASYS-003, CHACHASYS-010
+**Deps**: CHACHASYS-001, CHACHASYS-002, CHACHASYS-003, CHACHASYS-010, CHACHASYS-016 (if delivered first)
 
 ## Problem
 
@@ -16,12 +16,14 @@ The chat service is the business logic layer between routes and the pipeline/per
 2. Chat repository from CHACHASYS-002 provides all CRUD operations.
 3. Chat pipeline from CHACHASYS-010 provides `runChatPipeline`.
 4. Input parser from CHACHASYS-003 provides `parseChatInput`.
+5. If CHACHASYS-016 lands first, the service must treat `ChatSession.rollingSummary` as an opaque canonical domain field and must not collapse it back to a string.
 
 ## Architecture Check
 
 1. Service is stateless — all state is in the repository and pipeline.
 2. User turn is persisted BEFORE pipeline runs (spec invariant: no turn lost on failure).
 3. Service delegates to pipeline for LLM work, repository for persistence.
+4. This ticket should not re-own rolling-summary shape decisions. It should consume whatever canonical `ChatSession` contract exists when implemented.
 
 ## What to Change
 
