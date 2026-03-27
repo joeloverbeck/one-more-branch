@@ -18,6 +18,8 @@ export const LLM_STAGE_KEYS = [
   'characterContextualizer',
   'characterBrainstormer',
   'chatBible',
+  'chatSceneContext',
+  'chatCharacterContext',
   'chatPlanner',
   'chatWriter',
   'chatStateUpdater',

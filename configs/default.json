@@ -28,6 +28,8 @@
       "characterContextualizer": "x-ai/grok-4.20-beta",
       "characterBrainstormer": "anthropic/claude-sonnet-4.5",
       "chatBible": "anthropic/claude-sonnet-4.6",
+      "chatSceneContext": "anthropic/claude-sonnet-4.6",
+      "chatCharacterContext": "anthropic/claude-sonnet-4.6",
       "chatPlanner": "anthropic/claude-sonnet-4.6",
       "chatWriter": "anthropic/claude-sonnet-4.6",
       "chatStateUpdater": "x-ai/grok-4.20-beta",
