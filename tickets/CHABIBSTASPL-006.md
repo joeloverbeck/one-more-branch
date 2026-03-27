@@ -23,6 +23,7 @@ The new LLM stages (`chatSceneContext`, `chatCharacterContext`) and generation s
 
 1. Single-source-of-truth approach: modify `generation-stage-metadata.json`, run sync script, run concat script. No manual duplication across files.
 2. No backwards-compatibility aliasing. Old entries are replaced, not deprecated.
+3. This ticket owns removal of the old stage key/stage-name surface area. After it lands, registry/config/generated metadata should not expose `chatBible` or `CURATING_CHAT_BIBLE` anywhere.
 
 ## What to Change
 
@@ -72,6 +73,12 @@ This auto-updates:
 
 If `src/config/stage-model.ts` (or equivalent) maps stage keys to model selections, add entries for `chatSceneContext` and `chatCharacterContext` (same model as `chatBible` used). Remove `chatBible` entry.
 
+### 5. Update tests and generated artifacts that enumerate stage keys/stages
+
+- Update tests that explicitly list or assert `chatBible` / `CURATING_CHAT_BIBLE` values
+- Regenerate files so `public/js/src/00-stage-metadata.js`, `public/js/app.js`, and `src/engine/generated-generation-stages.ts` stop exposing the old stage
+- Search for lingering references to `chatBible` as a stage key or `CURATING_CHAT_BIBLE` as a generation stage and remove them where they are part of registry/config/generated metadata concerns
+
 ## Files to Touch
 
 - `src/config/llm-stage-registry.ts` (modify)
@@ -80,6 +87,9 @@ If `src/config/stage-model.ts` (or equivalent) maps stage keys to model selectio
 - `src/engine/generated-generation-stages.ts` (auto-generated)
 - `public/js/src/00-stage-metadata.js` (auto-generated)
 - `public/js/app.js` (auto-generated)
+- `test/unit/config/stage-model-config-coverage.test.ts` (modify if needed)
+- `test/unit/config/stage-model.test.ts` (modify if needed)
+- `test/unit/engine/types.test.ts` (modify if needed)
 
 ## Out of Scope
 
@@ -105,7 +115,8 @@ If `src/config/stage-model.ts` (or equivalent) maps stage keys to model selectio
 7. `app.js` is regenerated and contains the new stage metadata.
 8. `npm run typecheck` passes (the `GenerationStage` type includes new values, excludes old).
 9. `npm run test:client` passes.
-10. Existing suite: `npm test` passes.
+10. No registry/config/generated artifact still exposes `chatBible` or `CURATING_CHAT_BIBLE`.
+11. Existing suite: `npm test` passes.
 
 ### Invariants
 

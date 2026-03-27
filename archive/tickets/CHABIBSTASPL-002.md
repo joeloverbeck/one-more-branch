@@ -1,6 +1,6 @@
 # CHABIBSTASPL-002: Create JSON schemas for ChatSceneContext and ChatCharacterContext
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Small
 **Engine Changes**: None
@@ -17,11 +17,17 @@ The two new LLM stages each need a JSON schema with `strict: true` for structure
 3. Enum values for `timeOfDay`, `privacy`, `distanceBand`, `willingnessToEngage` are defined as constants in the schema file — **confirmed**.
 4. Schema test lives at `test/unit/llm/schemas/chat-bible-schema.test.ts` — **confirmed**.
 5. `parseChatBibleResponse()` transformer exists in or near the schema file — **confirmed** (it's in the schema file).
+6. `ChatSceneContext` and `ChatCharacterContext` model types already exist in `src/models/chat/` — **confirmed**.
+7. Runtime validators `isChatSceneContext()` and `isChatCharacterContext()` already exist in `src/models/chat/chat-validation.ts` and are already covered by unit tests — **confirmed**.
+8. `assembleChatBible(scene, character)` already exists in `src/models/chat/chat-bible.ts` and is already covered by unit tests — **confirmed**.
+9. The current pipeline, prompt builders, and generation functions still use the single `chatBible` stage — **confirmed**. This ticket should not preemptively rewire them.
 
 ## Architecture Check
 
-1. Two smaller schemas (~18 and ~27 properties) each stay well under the ~30-property safe limit. This is cleaner than a single lenient schema because `strict: true` provides grammar enforcement guarantees.
-2. No backwards-compatibility aliasing. The old `CHAT_BIBLE_SCHEMA` will be deleted in CHABIBSTASPL-005 after the pipeline is rewired; this ticket only adds new schemas.
+1. Two smaller strict schemas remain a better long-term architecture than continuing to expand one large `CHAT_BIBLE_SCHEMA`. They preserve grammar enforcement while reducing Anthropic grammar compilation risk.
+2. This ticket should stay focused on the schema layer. Reworking prompts, generation, registry entries, or pipeline orchestration here would couple concerns and make the split harder to validate incrementally.
+3. No backwards-compatibility aliasing. The old `CHAT_BIBLE_SCHEMA` remains unchanged until the later rewiring ticket replaces it end-to-end.
+4. The cleanest implementation is to reuse the existing chat model types and enum/value sources directly. Do not duplicate model-layer validation or introduce parallel compatibility types.
 
 ## What to Change
 
@@ -50,10 +56,20 @@ Verify at schema-creation time:
 - Scene schema: `sessionPremise`(1) + `physicalReality`(8) + `preChatMomentum`(5) + `conversationNow`(5) = **19 leaf properties** — safe
 - Character schema: `characterNow`(6) + `relationshipNow`(5) + `knowledgeNow`(6) + `continuityGuardrails`(1) + `responseConstraints`(1) = **19 leaf properties** — safe (spec said ~27 counting nested objects, but leaf count is what matters for grammar size)
 
+### 4. Test the schema layer only
+
+- Add focused schema tests for strictness, required top-level shape, nullable handling, parser happy path, and parser rejection.
+- Reuse existing model-validator coverage instead of duplicating it in schema tests.
+
 ## Files to Touch
 
 - `src/llm/schemas/chat-scene-context-schema.ts` (new)
 - `src/llm/schemas/chat-character-context-schema.ts` (new)
+- `src/llm/schemas/chat-context-schema-helpers.ts` (new, small shared helpers to avoid duplicate schema fragments)
+- `test/unit/llm/schemas/chat-scene-context-schema.test.ts` (new)
+- `test/unit/llm/schemas/chat-character-context-schema.test.ts` (new)
+- `test/unit/llm/schemas/anthropic-schema-compatibility.test.ts` (update schema inventory coverage)
+- `src/llm/schemas/index.ts` (optional export only if needed for consistency)
 
 ## Out of Scope
 
@@ -63,7 +79,9 @@ Verify at schema-creation time:
 - Pipeline rewiring (CHABIBSTASPL-005)
 - Stage registry changes (CHABIBSTASPL-006)
 - Strict-false fallback (CHABIBSTASPL-007)
-- Modifying any existing schema files
+- Modifying model-layer types or validators that already exist and pass
+- Broad prompt-doc changes
+- Rewriting unrelated files for stylistic consistency alone
 
 ## Acceptance Criteria
 
@@ -74,13 +92,15 @@ Verify at schema-creation time:
 3. `parseChatSceneContextResponse` correctly transforms a valid raw response into a `ChatSceneContext` that passes `isChatSceneContext()`.
 4. `parseChatCharacterContextResponse` correctly transforms a valid raw response into a `ChatCharacterContext` that passes `isChatCharacterContext()`.
 5. Both parsers reject malformed input (missing required fields, wrong types).
-6. Existing suite: `npm test` passes. `npm run typecheck` passes.
+6. Relevant schema tests pass.
+7. `npm run typecheck`, `npm run lint`, and `npm test` pass.
 
 ### Invariants
 
 1. `CHAT_BIBLE_SCHEMA` is unchanged (still exists, still exported, still used by current pipeline until CHABIBSTASPL-005).
 2. Each new schema has <=30 leaf properties.
 3. Nullable fields use `anyOf: [{type:'string'}, {type:'null'}]` pattern (Anthropic compatibility).
+4. Existing `ChatSceneContext` / `ChatCharacterContext` model contracts remain the source of truth for parser output.
 
 ## Test Plan
 
@@ -91,5 +111,21 @@ Verify at schema-creation time:
 
 ### Commands
 
-1. `npm test -- --testPathPattern="test/unit/llm/schemas/chat-(scene|character)-context-schema"`
-2. `npm run typecheck && npm run lint && npm test`
+1. `npm test -- --testPathPatterns="test/unit/llm/schemas/chat-(scene|character)-context-schema"`
+2. `npm run typecheck`
+3. `npm run lint`
+4. `npm test`
+
+### Full-Suite Coupling
+
+- `test/unit/llm/schemas/anthropic-schema-compatibility.test.ts` enumerates all static `JsonSchema` exports under `src/llm/schemas/`.
+- Adding new schema modules requires updating that coverage list so the repository-level schema compatibility audit continues to cover every static schema.
+
+## Outcome
+
+- Completed: 2026-03-27
+- Added `CHAT_SCENE_CONTEXT_SCHEMA` and `CHAT_CHARACTER_CONTEXT_SCHEMA` with strict structured-output definitions and parser functions backed by the existing model validators.
+- Added focused schema tests for strictness, nullable handling, parser happy paths, parser rejection, and grammar leaf-property budget checks.
+- Updated the repository-wide Anthropic schema compatibility audit so the new static schema exports remain covered by the full-suite invariant.
+- Deviation from original plan: the ticket initially assumed split model types, validators, and assembly logic still needed implementation, but those pieces already existed. The actual implementation was therefore intentionally narrower and cleaner: schema-layer work only, with no prompt, generation, pipeline, or registry rewiring.
+- Verification: `npm test -- --testPathPatterns="test/unit/llm/schemas/chat-(scene|character)-context-schema"`, `npm run typecheck`, `npm run lint`, and `npm test` all passed.

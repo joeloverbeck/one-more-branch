@@ -24,6 +24,7 @@ The chat pipeline currently calls `generateChatBible()` as a single stage. It mu
 
 1. Sequential two-stage call inside the same `shouldRefreshChatBible()` branch is the minimal change. The merge via `assembleChatBible()` means the rest of the pipeline sees the same `ChatBible` type — no ripple effects.
 2. No backwards-compatibility aliasing. Old files are deleted, not deprecated.
+3. This ticket is the primary owner of eliminating the monolithic chat-bible implementation path. Once the pipeline is rewired, no source file, schema inventory, or prompt doc should continue referencing `generateChatBible`, `CHAT_BIBLE_SCHEMA`, or `buildChatBibleMessages`.
 
 ## What to Change
 
@@ -62,7 +63,14 @@ Remove import of `generateChatBible`.
 - `test/unit/llm/schemas/chat-bible-schema.test.ts`
 - `test/unit/llm/prompts/chat/chat-bible-prompt.test.ts`
 
-### 4. Update pipeline test
+### 4. Delete/update supporting references to the removed monolithic path
+
+- Remove `CHAT_BIBLE_SCHEMA` from `test/unit/llm/schemas/anthropic-schema-compatibility.test.ts`
+- Remove the old prompt-doc contract entry from `test/unit/llm/prompt-doc-alignment.test.ts`
+- Delete or replace `prompts/chat-bible-curator-prompt.md` so prompt docs do not point at deleted source files
+- Search for any remaining imports or references to `chat-bible-generation`, `chat-bible-schema`, `chat-bible-prompt`, `generateChatBible`, `buildChatBibleMessages`, or `CHAT_BIBLE_SCHEMA` and remove them
+
+### 5. Update pipeline test
 
 Modify `test/unit/llm/chat/chat-pipeline.test.ts`:
 - Replace `generateChatBible` mock with `generateChatSceneContext` + `generateChatCharacterContext` mocks
@@ -80,6 +88,9 @@ Modify `test/unit/llm/chat/chat-pipeline.test.ts`:
 - `test/unit/llm/chat/chat-bible-generation.test.ts` (delete)
 - `test/unit/llm/schemas/chat-bible-schema.test.ts` (delete)
 - `test/unit/llm/prompts/chat/chat-bible-prompt.test.ts` (delete)
+- `test/unit/llm/schemas/anthropic-schema-compatibility.test.ts` (modify)
+- `test/unit/llm/prompt-doc-alignment.test.ts` (modify)
+- `prompts/chat-bible-curator-prompt.md` (delete or replace)
 
 ## Out of Scope
 
@@ -103,7 +114,8 @@ Modify `test/unit/llm/chat/chat-pipeline.test.ts`:
 6. When bible refresh is skipped (not needed), neither scene nor character generation is called.
 7. Downstream stages (planner, writer, state updater) still receive a valid `ChatBible`.
 8. No TypeScript errors from deleted file imports (`npm run typecheck`).
-9. Existing suite: `npm test` passes with no regressions outside deleted test files.
+9. No prompt docs or schema inventory tests reference deleted monolithic chat-bible files.
+10. Existing suite: `npm test` passes with no regressions outside deleted test files.
 
 ### Invariants
 
@@ -112,6 +124,7 @@ Modify `test/unit/llm/chat/chat-pipeline.test.ts`:
 3. `shouldRefreshChatBible()` logic is unchanged.
 4. All downstream consumers (`formatChatBible`, planner prompt, writer prompt, state updater prompt) are NOT modified.
 5. `bibleWasRefreshed` flag in `ChatPipelineResult` still works correctly.
+6. The repo does not retain both the new split path and the old monolithic implementation path after this ticket lands.
 
 ## Test Plan
 
