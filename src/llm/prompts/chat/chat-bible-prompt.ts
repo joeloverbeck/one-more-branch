@@ -1,8 +1,8 @@
 import { formatStandaloneCharacterSummary } from '../../../models/standalone-decomposed-character.js';
-import type { ChatTurn } from '../../../models/chat/index.js';
 import type { ChatMessage } from '../../llm-client-types.js';
 import { CONTENT_POLICY } from '../../content-policy.js';
 import type { ChatBibleContext } from '../../chat/chat-bible-generation.js';
+import { formatRecentTurns, formatStringList } from './chat-prompt-formatters.js';
 
 const SYSTEM_PROMPT = `You are curating an authoritative brief for a one-on-one in-world chat.
 Physical context is mandatory and authoritative.
@@ -12,44 +12,6 @@ State why this conversation is happening now.
 Surface what the character wants, what they fear, what they will protect, and what pressure is active.
 Compress aggressively for the next 1-3 turns only.
 Do not write dialogue.`;
-
-function formatStringList(items: readonly string[]): string {
-  if (items.length === 0) {
-    return '- None';
-  }
-
-  return items.map((item) => `- ${item}`).join('\n');
-}
-
-function formatRecentTurns(turns: readonly ChatTurn[]): string {
-  if (turns.length === 0) {
-    return 'No prior turns in this session.';
-  }
-
-  return turns
-    .map((turn) => {
-      const lines = [`TURN ${turn.turnNumber} [${turn.speaker}]`];
-
-      if (turn.rawText) {
-        lines.push(`Raw Text: ${turn.rawText}`);
-      }
-
-      lines.push('Blocks:');
-      for (const block of turn.blocks) {
-        const prefix = block.type === 'ACTION' ? 'ACTION' : `SPEECH${block.delivery ? ` (${block.delivery})` : ''}`;
-        lines.push(`- ${prefix}: ${block.text}`);
-      }
-
-      if (turn.turnMeta) {
-        lines.push(
-          `Turn Meta: expectsReply=${turn.turnMeta.expectsReply}; endsWithQuestion=${turn.turnMeta.endsWithQuestion}; visibleEmotion=${turn.turnMeta.visibleEmotion}; finalPressure=${turn.turnMeta.finalPressure ?? 'null'}`
-        );
-      }
-
-      return lines.join('\n');
-    })
-    .join('\n\n');
-}
 
 function buildRelationshipSection(context: ChatBibleContext): string {
   const { relationshipState } = context;

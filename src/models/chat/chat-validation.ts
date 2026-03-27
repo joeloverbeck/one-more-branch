@@ -64,6 +64,10 @@ function isFiniteNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
+function isNumberInRange(value: unknown, min: number, max: number): value is number {
+  return isFiniteNumber(value) && value >= min && value <= max;
+}
+
 function isIsoDateString(value: unknown): value is string {
   return typeof value === 'string' && !Number.isNaN(Date.parse(value));
 }
@@ -236,8 +240,8 @@ function isTurnPlannerExpectedImpact(value: unknown): value is TurnPlannerExpect
   }
 
   return (
-    isFiniteNumber(value['relationshipDeltaHint']) &&
-    isFiniteNumber(value['tensionDeltaHint']) &&
+    isNumberInRange(value['relationshipDeltaHint'], -2, 2) &&
+    isNumberInRange(value['tensionDeltaHint'], -2, 2) &&
     isBoolean(value['revealsSecret'])
   );
 }
