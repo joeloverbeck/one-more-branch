@@ -4,6 +4,10 @@ import { render as renderEjs } from 'ejs';
 
 describe('chat page template', () => {
   const templatePath = path.join(__dirname, '../../../../src/server/views/pages/chat.ejs');
+  const sidebarPartialPath = path.join(
+    __dirname,
+    '../../../../src/server/views/partials/chat-sidebar.ejs'
+  );
   const renderTemplate = renderEjs as (
     source: string,
     data: {
@@ -148,6 +152,15 @@ describe('chat page template', () => {
     },
     options: { filename: string }
   ) => string;
+
+  it('includes the chat sidebar partial instead of inlining the sidebar markup in the page template', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const sidebarPartial = fs.readFileSync(sidebarPartialPath, 'utf8');
+
+    expect(template).toContain("<%- include('../partials/chat-sidebar', {");
+    expect(template).not.toContain('<aside class="chat-sidebar" id="chat-sidebar">');
+    expect(sidebarPartial).toContain('<aside class="chat-sidebar" id="chat-sidebar">');
+  });
 
   it('renders prior turns with action and speech blocks', () => {
     const template = fs.readFileSync(templatePath, 'utf8');
