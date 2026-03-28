@@ -69,6 +69,16 @@
         : normalized;
     }
 
+    function resolveRelationshipMetric(relationshipNow, relationshipState, name) {
+      const absoluteValue = relationshipNow?.[name];
+      if (typeof absoluteValue === 'number' && Number.isFinite(absoluteValue)) {
+        return absoluteValue;
+      }
+
+      const fallbackValue = relationshipState?.[name];
+      return typeof fallbackValue === 'number' && Number.isFinite(fallbackValue) ? fallbackValue : 0;
+    }
+
     function buildInnerWorldData(turn) {
       if (!turn || turn.speaker !== 'CHARACTER') {
         return [];
@@ -289,6 +299,18 @@
     );
     var conversationSummary = buildConversationSummary(bootstrapChatBible);
     var guardrailsSummary = buildGuardrailsSummary(bootstrapChatBible);
+    var displayedRelationshipNow = {
+      valence: resolveRelationshipMetric(
+        bootstrapChatBible?.relationshipNow,
+        session.relationshipState,
+        'valence'
+      ),
+      tension: resolveRelationshipMetric(
+        bootstrapChatBible?.relationshipNow,
+        session.relationshipState,
+        'tension'
+      ),
+    };
   %>
 
   <main
@@ -569,8 +591,8 @@
         <summary class="chat-accordion-summary">
           <span class="chat-accordion-summary__title">Relationship</span>
           <span class="chat-accordion-summary__meta">
-            <span class="chat-summary-stat">V: <span data-chat-field="valence"><%= session.relationshipState.valence %></span></span>
-            <span class="chat-summary-stat">T: <span data-chat-field="tension"><%= session.relationshipState.tension %></span></span>
+            <span class="chat-summary-stat">V: <span data-chat-field="valence"><%= displayedRelationshipNow.valence %></span></span>
+            <span class="chat-summary-stat">T: <span data-chat-field="tension"><%= displayedRelationshipNow.tension %></span></span>
           </span>
         </summary>
 
@@ -580,12 +602,13 @@
               <div class="chat-metric-card__header">
                 <h3>Valence</h3>
                 <div class="chat-metric-card__meta">
-                  <span class="chat-metric-card__value" data-chat-gauge-value="valence"><%= session.relationshipState.valence %></span>
+                  <span class="chat-metric-card__value" data-chat-gauge-value="valence"><%= displayedRelationshipNow.valence %></span>
                   <span class="chat-metric-card__delta" data-chat-gauge-delta="valence">0</span>
                 </div>
               </div>
               <div class="chat-gauge chat-gauge--valence" data-chat-gauge="valence">
                 <span class="chat-gauge__track"></span>
+                <span class="chat-gauge__ghost"></span>
                 <span class="chat-gauge__marker"></span>
               </div>
               <svg class="chat-sparkline" data-chat-sparkline="valence" viewBox="0 0 120 32" aria-label="Valence trend"></svg>
@@ -595,12 +618,13 @@
               <div class="chat-metric-card__header">
                 <h3>Tension</h3>
                 <div class="chat-metric-card__meta">
-                  <span class="chat-metric-card__value" data-chat-gauge-value="tension"><%= session.relationshipState.tension %></span>
+                  <span class="chat-metric-card__value" data-chat-gauge-value="tension"><%= displayedRelationshipNow.tension %></span>
                   <span class="chat-metric-card__delta" data-chat-gauge-delta="tension">0</span>
                 </div>
               </div>
               <div class="chat-gauge chat-gauge--tension" data-chat-gauge="tension">
                 <span class="chat-gauge__track"></span>
+                <span class="chat-gauge__ghost"></span>
                 <span class="chat-gauge__marker"></span>
               </div>
               <svg class="chat-sparkline" data-chat-sparkline="tension" viewBox="0 0 120 32" aria-label="Tension trend"></svg>

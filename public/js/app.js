@@ -15898,20 +15898,37 @@ window.ChatSidebar = (function () {
     return { min: 0, max: 10 };
   }
 
-  function renderGauge(root, name, value) {
+  function normalizeGaugePosition(name, value) {
+    var bounds = getGaugeBounds(name);
+    return clamp((value - bounds.min) / (bounds.max - bounds.min), 0, 1);
+  }
+
+  function renderGauge(root, name, value, previousValue) {
     var gauge = root.querySelector('[data-chat-gauge="' + name + '"]');
     if (!gauge) {
       return;
     }
 
     var marker = gauge.querySelector('.chat-gauge__marker');
+    var ghost = gauge.querySelector('.chat-gauge__ghost');
     if (!marker) {
       return;
     }
 
     var bounds = getGaugeBounds(name);
-    var normalized = clamp((value - bounds.min) / (bounds.max - bounds.min), 0, 1);
+    var normalized = normalizeGaugePosition(name, value);
     marker.style.left = String(normalized * 100) + '%';
+
+    if (ghost) {
+      if (typeof previousValue === 'number' && isFinite(previousValue)) {
+        ghost.style.left = String(normalizeGaugePosition(name, previousValue) * 100) + '%';
+        ghost.style.display = 'block';
+      } else {
+        ghost.style.display = 'none';
+        ghost.style.left = '';
+      }
+    }
+
     gauge.setAttribute('aria-valuemin', String(bounds.min));
     gauge.setAttribute('aria-valuemax', String(bounds.max));
     gauge.setAttribute('aria-valuenow', String(value));
@@ -15991,6 +16008,59 @@ window.ChatSidebar = (function () {
     return history;
   }
 
+  function resolveRelationshipMetric(relationshipState, chatBible, name) {
+    var relationshipNow = chatBible && chatBible.relationshipNow ? chatBible.relationshipNow : null;
+    var absoluteValue = relationshipNow && relationshipNow[name];
+    if (typeof absoluteValue === 'number' && isFinite(absoluteValue)) {
+      return absoluteValue;
+    }
+
+    var fallbackValue = relationshipState && relationshipState[name];
+    return typeof fallbackValue === 'number' && isFinite(fallbackValue) ? fallbackValue : 0;
+  }
+
+  function rebaseRelationshipHistory(history, relationshipState, chatBible) {
+    if (!Array.isArray(history) || history.length === 0) {
+      return [];
+    }
+
+    var relationshipNow = chatBible && chatBible.relationshipNow ? chatBible.relationshipNow : null;
+    if (
+      !relationshipNow ||
+      typeof relationshipNow.valence !== 'number' ||
+      !isFinite(relationshipNow.valence) ||
+      typeof relationshipNow.tension !== 'number' ||
+      !isFinite(relationshipNow.tension)
+    ) {
+      return history.slice();
+    }
+
+    var lastPoint = history[history.length - 1];
+    var fallbackCurrentValence = relationshipState && typeof relationshipState.valence === 'number'
+      ? relationshipState.valence
+      : 0;
+    var fallbackCurrentTension = relationshipState && typeof relationshipState.tension === 'number'
+      ? relationshipState.tension
+      : 0;
+    var currentValence = lastPoint && typeof lastPoint.valence === 'number'
+      ? lastPoint.valence
+      : fallbackCurrentValence;
+    var currentTension = lastPoint && typeof lastPoint.tension === 'number'
+      ? lastPoint.tension
+      : fallbackCurrentTension;
+    var valenceOffset = relationshipNow.valence - currentValence;
+    var tensionOffset = relationshipNow.tension - currentTension;
+
+    return history.map(function (point) {
+      return {
+        turnNumber: point.turnNumber,
+        valence: point.valence + valenceOffset,
+        tension: point.tension + tensionOffset,
+        dynamic: point.dynamic,
+      };
+    });
+  }
+
   function readDelta(history, name) {
     if (!Array.isArray(history) || history.length < 2) {
       return 0;
@@ -16001,16 +16071,23 @@ window.ChatSidebar = (function () {
     return currentPoint[name] - previousPoint[name];
   }
 
-  function updateRelationshipVisuals(root, history, relationshipState) {
-    var valence = relationshipState && typeof relationshipState.valence === 'number'
-      ? relationshipState.valence
-      : 0;
-    var tension = relationshipState && typeof relationshipState.tension === 'number'
-      ? relationshipState.tension
-      : 0;
+  function updateRelationshipVisuals(root, history, relationshipState, chatBible) {
+    var valence = resolveRelationshipMetric(relationshipState, chatBible, 'valence');
+    var tension = resolveRelationshipMetric(relationshipState, chatBible, 'tension');
+    var previousPoint = Array.isArray(history) && history.length > 1 ? history[history.length - 2] : null;
 
-    renderGauge(root, 'valence', valence);
-    renderGauge(root, 'tension', tension);
+    renderGauge(
+      root,
+      'valence',
+      valence,
+      previousPoint && typeof previousPoint.valence === 'number' ? previousPoint.valence : null
+    );
+    renderGauge(
+      root,
+      'tension',
+      tension,
+      previousPoint && typeof previousPoint.tension === 'number' ? previousPoint.tension : null
+    );
     renderSparkline(root, 'valence', history);
     renderSparkline(root, 'tension', history);
 
@@ -16048,9 +16125,10 @@ window.ChatSidebar = (function () {
     var knowledgeState = hasKnowledgeState ? (session.knowledgeState || {}) : (priorState.knowledgeState || {});
     var chatBible = hasChatBible ? session.chatBible : (priorState.chatBible || null);
     var rollingSummary = hasRollingSummary ? session.rollingSummary : (priorState.rollingSummary || null);
-    var history = options && Array.isArray(options.relationshipHistory)
+    var rawHistory = options && Array.isArray(options.relationshipHistory)
       ? options.relationshipHistory
       : buildNextHistory(root.__chatRelationshipHistory, relationshipState);
+    var displayHistory = rebaseRelationshipHistory(rawHistory, relationshipState, chatBible);
 
     updateField(root, 'location', physicalContext.location, '');
     updateField(root, 'microLocation', physicalContext.microLocation, '');
@@ -16075,8 +16153,8 @@ window.ChatSidebar = (function () {
       'None'
     );
     updateField(root, 'dynamic', relationshipState.dynamic, 'Unformed');
-    updateField(root, 'valence', String(relationshipState.valence != null ? relationshipState.valence : 0), '0');
-    updateField(root, 'tension', String(relationshipState.tension != null ? relationshipState.tension : 0), '0');
+    updateField(root, 'valence', String(resolveRelationshipMetric(relationshipState, chatBible, 'valence')), '0');
+    updateField(root, 'tension', String(resolveRelationshipMetric(relationshipState, chatBible, 'tension')), '0');
     updateField(root, 'leverage', relationshipState.leverage, 'None');
     updateField(root, 'whyNow', leadInContext.whyNow, '');
 
@@ -16203,8 +16281,8 @@ window.ChatSidebar = (function () {
       'No response constraints.'
     );
 
-    updateRelationshipVisuals(root, history, relationshipState);
-    root.__chatRelationshipHistory = history;
+    updateRelationshipVisuals(root, displayHistory, relationshipState, chatBible);
+    root.__chatRelationshipHistory = rawHistory;
     root.__chatSidebarState = {
       physicalContext: physicalContext,
       relationshipState: relationshipState,

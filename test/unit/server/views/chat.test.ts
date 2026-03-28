@@ -259,6 +259,10 @@ describe('chat page template', () => {
               topicsToProtect: ['the copied seal'],
             },
             relationshipNow: {
+              dynamic: 'guarded detente',
+              valence: 4,
+              tension: 8,
+              leverage: 'She knows which ledger page is missing.',
               whatCharacterBelievesAboutInterlocutor: ['He is testing how much I already know.'],
             },
             knowledgeNow: {
@@ -344,6 +348,11 @@ describe('chat page template', () => {
     expect(html).toContain('Trust frays further.');
     expect(html).toContain('data-chat-gauge="valence"');
     expect(html).toContain('data-chat-gauge="tension"');
+    expect(html).toContain('data-chat-gauge-value="valence">4</span>');
+    expect(html).toContain('data-chat-gauge-value="tension">8</span>');
+    expect(html).toContain('data-chat-field="valence">4</span>');
+    expect(html).toContain('data-chat-field="tension">8</span>');
+    expect(html).toContain('class="chat-gauge__ghost"');
     expect(html).toContain('data-chat-sparkline="valence"');
     expect(html).toContain('data-chat-sparkline="tension"');
     expect(html).toContain('data-chat-list="interactableObjects"');

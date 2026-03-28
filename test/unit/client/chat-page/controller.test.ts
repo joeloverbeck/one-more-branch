@@ -64,6 +64,7 @@ describe('chat page controller', () => {
               <span data-chat-gauge-delta="valence">0</span>
               <div class="chat-gauge chat-gauge--valence" data-chat-gauge="valence">
                 <span class="chat-gauge__track"></span>
+                <span class="chat-gauge__ghost"></span>
                 <span class="chat-gauge__marker"></span>
               </div>
               <svg class="chat-sparkline" data-chat-sparkline="valence" viewBox="0 0 120 32"></svg>
@@ -71,6 +72,7 @@ describe('chat page controller', () => {
               <span data-chat-gauge-delta="tension">0</span>
               <div class="chat-gauge chat-gauge--tension" data-chat-gauge="tension">
                 <span class="chat-gauge__track"></span>
+                <span class="chat-gauge__ghost"></span>
                 <span class="chat-gauge__marker"></span>
               </div>
               <svg class="chat-sparkline" data-chat-sparkline="tension" viewBox="0 0 120 32"></svg>
@@ -197,7 +199,7 @@ describe('chat page controller', () => {
           </form>
         </section>
       </main>
-      <script type="application/json" id="chat-ui-bootstrap">{"chatBible":{"characterNow":{"currentObjective":"Keep Iven talking long enough to learn who else touched the ledger tonight.","immediateNeedFromConversation":"Confirm whether he saw the copied seal.","emotionalState":"guarded","willingnessToEngage":"GUARDED","topicsToAdvance":["the ledger"],"topicsToProtect":["the copy"]},"relationshipNow":{"whatCharacterBelievesAboutInterlocutor":["He is stalling."]},"knowledgeNow":{"knownFacts":["This should stay out of Character Mind"],"suspicions":["This should stay out of Character Mind"],"falseBeliefs":["This should stay out of Character Mind"],"secretsRevealed":["This should stay out of Character Mind"],"secretsKept":["Mara copied one page."],"knowledgeBoundaries":["Who ordered the raid."]},"conversationNow":{"activeThreads":["the ledger"],"commitments":[],"sensitiveTopics":["the copy"],"lastTurnPressure":"Iven is testing how much Mara knows."},"continuityGuardrails":["Do not confess without direct pressure."],"responseConstraints":["Stay grounded in the immediate exchange."]},"rollingSummary":{"compressedSummary":"They are circling the copied ledger without naming who moved it."},"knowledgeState":{"knownFacts":["The ledger seal matters."],"suspicions":["Iven hid the copy."],"falseBeliefs":["The room is unwatched."],"secretsRevealed":["Mara searched his satchel."]},"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""},{"turnNumber":2,"valence":-1,"tension":6,"dynamic":"strained allies"}]}</script>
+      <script type="application/json" id="chat-ui-bootstrap">{"chatBible":{"characterNow":{"currentObjective":"Keep Iven talking long enough to learn who else touched the ledger tonight.","immediateNeedFromConversation":"Confirm whether he saw the copied seal.","emotionalState":"guarded","willingnessToEngage":"GUARDED","topicsToAdvance":["the ledger"],"topicsToProtect":["the copy"]},"relationshipNow":{"dynamic":"guarded detente","valence":3,"tension":8,"leverage":"She knows which ledger page is missing.","whatCharacterBelievesAboutInterlocutor":["He is stalling."]},"knowledgeNow":{"knownFacts":["This should stay out of Character Mind"],"suspicions":["This should stay out of Character Mind"],"falseBeliefs":["This should stay out of Character Mind"],"secretsRevealed":["This should stay out of Character Mind"],"secretsKept":["Mara copied one page."],"knowledgeBoundaries":["Who ordered the raid."]},"conversationNow":{"activeThreads":["the ledger"],"commitments":[],"sensitiveTopics":["the copy"],"lastTurnPressure":"Iven is testing how much Mara knows."},"continuityGuardrails":["Do not confess without direct pressure."],"responseConstraints":["Stay grounded in the immediate exchange."]},"rollingSummary":{"compressedSummary":"They are circling the copied ledger without naming who moved it."},"knowledgeState":{"knownFacts":["The ledger seal matters."],"suspicions":["Iven hid the copy."],"falseBeliefs":["The room is unwatched."],"secretsRevealed":["Mara searched his satchel."]},"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""},{"turnNumber":2,"valence":-1,"tension":6,"dynamic":"strained allies"}]}</script>
     `;
   }
 
@@ -386,6 +388,10 @@ describe('chat page controller', () => {
                   topicsToProtect: ['the copied seal'],
                 },
                 relationshipNow: {
+                  dynamic: 'veiled brinkmanship',
+                  valence: 5,
+                  tension: 8,
+                  leverage: 'The copied seal is now mutual leverage.',
                   whatCharacterBelievesAboutInterlocutor: [
                     'He is buying time for someone else.',
                   ],
@@ -595,13 +601,19 @@ describe('chat page controller', () => {
     expect(document.querySelector('[data-chat-field="whyNow"]')?.textContent).toBe(
       'The bells will cover the truth.'
     );
-    expect(document.querySelector('[data-chat-gauge-value="valence"]')?.textContent).toBe('1');
+    expect(document.querySelector('[data-chat-gauge-value="valence"]')?.textContent).toBe('5');
     expect(document.querySelector('[data-chat-gauge-delta="valence"]')?.textContent).toBe('+2');
     expect(document.querySelector('[data-chat-gauge-value="tension"]')?.textContent).toBe('8');
     expect(document.querySelector('[data-chat-gauge-delta="tension"]')?.textContent).toBe('+2');
     expect(
       document.querySelector('[data-chat-gauge="valence"]')?.getAttribute('aria-valuenow')
-    ).toBe('1');
+    ).toBe('5');
+    expect((document.querySelector('[data-chat-gauge="valence"] .chat-gauge__ghost') as HTMLElement)?.style.left).toBe(
+      '80%'
+    );
+    expect((document.querySelector('[data-chat-gauge="tension"] .chat-gauge__ghost') as HTMLElement)?.style.left).toBe(
+      '60%'
+    );
     expect(document.querySelector('[data-chat-sparkline="valence"] polyline')).not.toBeNull();
     expect(document.querySelector('[data-chat-sparkline="tension"] polyline')).not.toBeNull();
     expect(document.querySelector('[data-chat-turn-count]')?.textContent).toBe('2 turns');
@@ -638,12 +650,80 @@ describe('chat page controller', () => {
     expect(document.querySelector('[data-chat-list="ambientConditions"]')?.textContent).toContain(
       'rain'
     );
-    expect(document.querySelector('[data-chat-gauge-value="valence"]')?.textContent).toBe('-1');
+    expect(document.querySelector('[data-chat-gauge-value="valence"]')?.textContent).toBe('3');
     expect(document.querySelector('[data-chat-gauge-delta="valence"]')?.textContent).toBe('-1');
-    expect(document.querySelector('[data-chat-gauge-value="tension"]')?.textContent).toBe('6');
+    expect(document.querySelector('[data-chat-gauge-value="tension"]')?.textContent).toBe('8');
     expect(document.querySelector('[data-chat-gauge-delta="tension"]')?.textContent).toBe('+6');
+    expect((document.querySelector('[data-chat-gauge="valence"] .chat-gauge__ghost') as HTMLElement)?.style.left).toBe(
+      '90%'
+    );
+    expect((document.querySelector('[data-chat-gauge="tension"] .chat-gauge__ghost') as HTMLElement)?.style.left).toBe(
+      '20%'
+    );
     expect(document.querySelector('[data-chat-sparkline="valence"] polyline')).not.toBeNull();
     expect(document.querySelector('[data-chat-sparkline="tension"] polyline')).not.toBeNull();
+  });
+
+  it('falls back to relationshipState values when chat bible relationship metrics are absent', () => {
+    const bootstrap = document.getElementById('chat-ui-bootstrap') as HTMLScriptElement;
+    bootstrap.textContent = JSON.stringify({
+      chatBible: {
+        characterNow: {
+          currentObjective: 'Keep Iven talking long enough to learn who else touched the ledger tonight.',
+          immediateNeedFromConversation: 'Confirm whether he saw the copied seal.',
+          emotionalState: 'guarded',
+          willingnessToEngage: 'GUARDED',
+          topicsToAdvance: ['the ledger'],
+          topicsToProtect: ['the copy'],
+        },
+        relationshipNow: {
+          whatCharacterBelievesAboutInterlocutor: ['He is stalling.'],
+        },
+        knowledgeNow: {
+          knownFacts: [],
+          suspicions: [],
+          falseBeliefs: [],
+          secretsRevealed: [],
+          secretsKept: [],
+          knowledgeBoundaries: [],
+        },
+        conversationNow: {
+          activeThreads: [],
+          commitments: [],
+          sensitiveTopics: [],
+          lastTurnPressure: null,
+        },
+        continuityGuardrails: [],
+        responseConstraints: [],
+      },
+      rollingSummary: null,
+      knowledgeState: {
+        knownFacts: ['The ledger seal matters.'],
+        suspicions: ['Iven hid the copy.'],
+        falseBeliefs: ['The room is unwatched.'],
+        secretsRevealed: ['Mara searched his satchel.'],
+      },
+      relationshipHistory: [
+        { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
+        { turnNumber: 2, valence: -1, tension: 6, dynamic: 'strained allies' },
+      ],
+    });
+
+    global.fetch = jest.fn((url: string) => {
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, 404));
+    }) as jest.Mock;
+
+    loadAppAndInit();
+
+    expect(document.querySelector('[data-chat-gauge-value="valence"]')?.textContent).toBe('-1');
+    expect(document.querySelector('[data-chat-gauge-value="tension"]')?.textContent).toBe('6');
+    expect(
+      document.querySelector('[data-chat-gauge="valence"]')?.getAttribute('aria-valuenow')
+    ).toBe('-1');
   });
 
   it('updates composer state from message and API key input, and manages the API key popover', () => {
