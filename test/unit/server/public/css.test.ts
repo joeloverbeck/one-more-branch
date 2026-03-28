@@ -105,4 +105,18 @@ describe('public stylesheet', () => {
       '.chat-conversation::-webkit-scrollbar-thumb:hover,\n.chat-sidebar::-webkit-scrollbar-thumb:hover {'
     );
   });
+
+  it('styles chat sidebar sections as cards and keeps spacing on the container', () => {
+    const css = fs.readFileSync(cssPath, 'utf8');
+
+    expect(css).toContain('.chat-sidebar {');
+    expect(css).toContain('gap: 0.85rem;');
+    expect(css).toContain('.chat-sidebar__section {');
+    expect(css).toContain('padding: 0.95rem 1rem;');
+    expect(css).toContain('border: 1px solid rgba(183, 189, 208, 0.14);');
+    expect(css).toContain('border-radius: 12px;');
+    expect(css).toContain('box-shadow: 0 10px 24px rgba(5, 11, 24, 0.16);');
+    expect(css).not.toContain('padding-bottom: 0.9rem;');
+    expect(css).not.toContain('border-bottom: 1px solid rgba(183, 189, 208, 0.12);');
+  });
 });
