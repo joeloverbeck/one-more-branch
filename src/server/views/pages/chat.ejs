@@ -68,16 +68,37 @@
 
               <% turn.blocks.forEach(function(block) { %>
                 <% if (block.type === 'ACTION') { %>
-                  <p data-chat-block="ACTION"><em><%= block.text %></em></p>
+                  <div class="chat-block chat-block--action" data-chat-block="ACTION">
+                    <em><%= block.text %></em>
+                  </div>
                 <% } else { %>
-                  <p data-chat-block="SPEECH">
+                  <div class="chat-block chat-block--speech" data-chat-block="SPEECH">
                     <% if (block.delivery) { %>
-                      <strong><%= block.delivery %>:</strong>
+                      <span class="chat-delivery"><%= block.delivery %></span>
                     <% } %>
-                    &ldquo;<%= block.text %>&rdquo;
-                  </p>
+                    <p>&ldquo;<%= block.text %>&rdquo;</p>
+                  </div>
                 <% } %>
               <% }); %>
+
+              <% if (turn.speaker === 'CHARACTER') { %>
+                <% const speechAct = turn.plannerOutput?.speechAct; %>
+                <% const honestyMode = turn.plannerOutput?.honestyMode; %>
+                <% const visibleEmotion = turn.turnMeta?.visibleEmotion; %>
+                <% if (speechAct || honestyMode || visibleEmotion) { %>
+                  <div class="chat-tag-bar">
+                    <% if (speechAct) { %>
+                      <span class="chat-tag chat-tag--speech-act"><%= speechAct %></span>
+                    <% } %>
+                    <% if (honestyMode) { %>
+                      <span class="chat-tag chat-tag--honesty"><%= honestyMode %></span>
+                    <% } %>
+                    <% if (visibleEmotion) { %>
+                      <span class="chat-tag chat-tag--emotion"><%= visibleEmotion %></span>
+                    <% } %>
+                  </div>
+                <% } %>
+              <% } %>
             </div>
           </article>
         <% }); %>

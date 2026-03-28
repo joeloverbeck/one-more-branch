@@ -152,6 +152,16 @@ describe('chat page controller', () => {
             characterTurn: {
               turnNumber: 2,
               speaker: 'CHARACTER',
+              turnMeta: {
+                expectsReply: true,
+                endsWithQuestion: false,
+                visibleEmotion: 'guarded',
+                finalPressure: null,
+              },
+              plannerOutput: {
+                speechAct: 'DEFLECT',
+                honestyMode: 'PARTIAL',
+              },
               blocks: [
                 { type: 'ACTION', text: 'Mara stiffens.' },
                 { type: 'SPEECH', delivery: 'dry', text: 'You already know enough.' },
@@ -219,12 +229,25 @@ describe('chat page controller', () => {
     });
     expect(messageInput.value).toBe('');
     expect(document.querySelectorAll('[data-chat-turn]')).toHaveLength(2);
-    expect(document.querySelector('[data-chat-block="ACTION"] em')?.textContent).toBe(
+    expect(document.querySelectorAll('.chat-turn--user')).toHaveLength(1);
+    expect(document.querySelectorAll('.chat-turn--character')).toHaveLength(1);
+    expect(document.querySelector('[data-chat-block="ACTION"].chat-block--action em')?.textContent).toBe(
       'I close the ledger.'
     );
-    expect(document.querySelectorAll('[data-chat-block="SPEECH"] strong')[0]?.textContent).toBe(
-      'dry:'
+    expect(
+      document.querySelectorAll('[data-chat-block="SPEECH"].chat-block--speech .chat-delivery')[0]
+        ?.textContent
+    ).toBe('dry');
+    expect(
+      document.querySelector('.chat-turn--character .chat-tag--speech-act')?.textContent
+    ).toBe('DEFLECT');
+    expect(document.querySelector('.chat-turn--character .chat-tag--honesty')?.textContent).toBe(
+      'PARTIAL'
     );
+    expect(document.querySelector('.chat-turn--character .chat-tag--emotion')?.textContent).toBe(
+      'guarded'
+    );
+    expect(document.querySelector('.chat-turn--user .chat-tag-bar')).toBeNull();
     expect(document.querySelector('[data-chat-field="location"]')?.textContent).toBe('Bell tower');
     expect(document.querySelectorAll('[data-chat-field="timeOfDay"]')[0]?.textContent).toBe(
       'LATE_NIGHT'
@@ -368,6 +391,77 @@ describe('chat page controller', () => {
 
     expect(messageInput.value).toBe('');
     expect(messageInput.style.height).toBe('46px');
+  });
+
+  it('renders character turns without a tag bar when planner and meta fields are missing', async () => {
+    global.fetch = jest.fn((url: string) => {
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+
+      if (url === '/chat/chat-1/turn') {
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            userTurn: {
+              turnNumber: 1,
+              speaker: 'USER',
+              blocks: [{ type: 'SPEECH', text: 'Tell me what happened.' }],
+              rawText: 'Tell me what happened.',
+              timestamp: '2026-03-27T10:00:00.000Z',
+            },
+            characterTurn: {
+              turnNumber: 2,
+              speaker: 'CHARACTER',
+              blocks: [{ type: 'SPEECH', text: 'No.' }],
+              timestamp: '2026-03-27T10:00:05.000Z',
+            },
+            updatedSession: {
+              physicalContext: {
+                location: 'Archive',
+                microLocation: 'Reading alcove',
+                timeOfDay: 'EVENING',
+                privacy: 'PRIVATE',
+                distanceBand: 'CONVERSATIONAL',
+                characterActivity: 'Cataloguing ledgers',
+                interactableObjects: ['ledger'],
+                ambientConditions: ['rain'],
+              },
+              relationshipState: {
+                dynamic: 'strained allies',
+                valence: -1,
+                tension: 7,
+                leverage: 'Shared guilt',
+              },
+              leadInContext: {
+                whyNow: 'Before dawn.',
+              },
+            },
+          })
+        );
+      }
+
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, 404));
+    }) as jest.Mock;
+
+    loadAppAndInit();
+
+    const form = document.getElementById('chat-turn-form') as HTMLFormElement;
+    const messageInput = document.getElementById('chat-message') as HTMLTextAreaElement;
+
+    messageInput.value = 'Tell me what happened.';
+    messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    await Promise.resolve();
+    await jest.runAllTimersAsync();
+    await Promise.resolve();
+
+    expect(document.querySelectorAll('[data-chat-turn]')).toHaveLength(2);
+    expect(document.querySelector('.chat-turn--character .chat-tag-bar')).toBeNull();
+    expect(
+      document.querySelector('.chat-turn--character [data-chat-block="SPEECH"] p')?.textContent
+    ).toContain('No.');
   });
 
   it('prevents duplicate submits while a turn request is in flight', async () => {

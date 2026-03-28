@@ -38,6 +38,13 @@ describe('chat page template', () => {
         turnNumber: number;
         speaker: 'USER' | 'CHARACTER';
         timestamp: string;
+        turnMeta?: {
+          visibleEmotion: string;
+        };
+        plannerOutput?: {
+          speechAct?: string;
+          honestyMode?: string;
+        };
         blocks: Array<{
           type: 'ACTION' | 'SPEECH';
           text: string;
@@ -110,6 +117,13 @@ describe('chat page template', () => {
             turnNumber: 2,
             speaker: 'CHARACTER',
             timestamp: '2026-03-27T09:02:00.000Z',
+            turnMeta: {
+              visibleEmotion: 'guarded',
+            },
+            plannerOutput: {
+              speechAct: 'DEFLECT',
+              honestyMode: 'PARTIAL',
+            },
             blocks: [{ type: 'SPEECH', text: 'You already know enough.', delivery: 'dryly' }],
           },
         ],
@@ -140,9 +154,84 @@ describe('chat page template', () => {
     expect(html).toContain('class="chat-conversation"');
     expect(html).toContain('class="chat-sidebar"');
     expect(html).toContain('class="chat-input-bar"');
+    expect(html).toContain('class="chat-block chat-block--action"');
     expect(html).toContain('<em>He sets the ledger on the table.</em>');
+    expect(html).toContain('class="chat-block chat-block--speech"');
     expect(html).toContain('&ldquo;Tell me what happened.&rdquo;');
-    expect(html).toContain('dryly:');
+    expect(html).toContain('<span class="chat-delivery">dryly</span>');
+    expect(html).toContain('&ldquo;You already know enough.&rdquo;');
+    expect(html).toContain('class="chat-tag-bar"');
+    expect(html).toContain('class="chat-tag chat-tag--speech-act">DEFLECT</span>');
+    expect(html).toContain('class="chat-tag chat-tag--honesty">PARTIAL</span>');
+    expect(html).toContain('class="chat-tag chat-tag--emotion">guarded</span>');
+    expect(html).not.toContain('chat-tag-bar"><span class="chat-tag chat-tag--speech-act">Tell');
+  });
+
+  it('omits missing character tag pills without skipping the rest of the turn', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+
+    const html = renderTemplate(
+      template,
+      {
+        title: 'Chat with Mara - One More Branch',
+        session: {
+          id: 'chat-1',
+          targetCharacterName: 'Mara',
+          interlocutorCharacterName: 'Iven',
+          physicalContext: {
+            location: 'Archive',
+            microLocation: 'Reading alcove',
+            timeOfDay: 'EVENING',
+            privacy: 'PRIVATE',
+            distanceBand: 'CONVERSATIONAL',
+            characterActivity: 'Cataloguing ledgers',
+            interactableObjects: ['ledger', 'lamp'],
+            ambientConditions: ['rain', 'dust'],
+          },
+          leadInContext: {
+            leadInSummary: 'They meet after the raid.',
+            recentEvents: ['A witness vanished.'],
+            whyNow: 'The ledger must be found before dawn.',
+          },
+          relationshipState: {
+            dynamic: 'strained allies',
+            valence: -1,
+            tension: 6,
+            leverage: 'Shared guilt',
+          },
+        },
+        turns: [
+          {
+            turnNumber: 2,
+            speaker: 'CHARACTER',
+            timestamp: '2026-03-27T09:02:00.000Z',
+            turnMeta: {
+              visibleEmotion: 'guarded',
+            },
+            blocks: [{ type: 'SPEECH', text: 'You already know enough.' }],
+          },
+        ],
+        chatUiBootstrap: {
+          chatBible: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipHistory: [
+            { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
+            { turnNumber: 2, valence: 0, tension: 0, dynamic: '' },
+          ],
+        },
+      },
+      { filename: templatePath }
+    );
+
+    expect(html).toContain('class="chat-tag-bar"');
+    expect(html).toContain('class="chat-tag chat-tag--emotion">guarded</span>');
+    expect(html).not.toContain('chat-tag--speech-act');
+    expect(html).not.toContain('chat-tag--honesty');
     expect(html).toContain('&ldquo;You already know enough.&rdquo;');
   });
 

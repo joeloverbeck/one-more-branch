@@ -579,6 +579,68 @@ body.chat-page-body main {
   margin: 0;
 }
 
+.chat-block {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.chat-block--action {
+  padding-left: 0.85rem;
+  border-left: 3px solid rgba(123, 165, 255, 0.35);
+  color: rgba(228, 234, 245, 0.9);
+}
+
+.chat-block--speech {
+  gap: 0.2rem;
+}
+
+.chat-delivery {
+  font-size: 0.76rem;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  color: var(--color-text-muted);
+}
+
+.chat-tag-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.1rem;
+}
+
+.chat-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(183, 189, 208, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(236, 241, 255, 0.92);
+  font-size: 0.74rem;
+  line-height: 1.1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.chat-tag--speech-act {
+  background: rgba(89, 176, 255, 0.16);
+  border-color: rgba(89, 176, 255, 0.26);
+}
+
+.chat-tag--honesty {
+  background: rgba(255, 187, 87, 0.14);
+  border-color: rgba(255, 187, 87, 0.24);
+}
+
+.chat-tag--emotion {
+  background: rgba(122, 231, 186, 0.14);
+  border-color: rgba(122, 231, 186, 0.22);
+  text-transform: none;
+}
+
 .chat-sidebar {
   grid-area: sidebar;
   min-height: 0;

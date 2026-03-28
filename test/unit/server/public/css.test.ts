@@ -37,6 +37,11 @@ describe('public stylesheet', () => {
     expect(css).toContain('.open-threads-text--high');
     expect(css).toContain('.open-threads-text--medium');
     expect(css).toContain('.open-threads-text--low');
+    expect(css).toContain('.chat-block--action');
+    expect(css).toContain('.chat-block--speech');
+    expect(css).toContain('.chat-delivery');
+    expect(css).toContain('.chat-tag-bar');
+    expect(css).toContain('.chat-tag--emotion');
   });
 
   it('includes mobile and spinner animation rules', () => {
