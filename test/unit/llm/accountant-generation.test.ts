@@ -109,4 +109,53 @@ describe('accountant-generation', () => {
     const responseFormat = body['response_format'] as { json_schema?: { name?: string } };
     expect(responseFormat.json_schema?.name).toBe('state_accountant');
   });
+
+  it('retries with a non-strict accountant schema when provider rejects oversized compiled grammar', async () => {
+    const oversizedGrammarError = {
+      error: {
+        message: 'Provider returned error',
+        code: 400,
+        metadata: {
+          raw: JSON.stringify({
+            type: 'error',
+            error: {
+              type: 'invalid_request_error',
+              message:
+                'The compiled grammar is too large, which would cause performance issues. Simplify your tool schemas or reduce the number of strict tools.',
+            },
+            request_id: 'req_test_grammar_too_large',
+          }),
+        },
+      },
+    };
+
+    fetchMock
+      .mockResolvedValueOnce(createJsonResponse(400, oversizedGrammarError))
+      .mockResolvedValueOnce(responseWithStructuredContent(JSON.stringify(validAccountantPayload)));
+
+    const result = await generateAccountantWithFallback(accountantMessages, {
+      apiKey: 'test-key',
+    });
+
+    expect(result.stateIntents.currentLocation).toBe('Archive access corridor');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    const firstInit = fetchMock.mock.calls[0]?.[1];
+    const secondInit = fetchMock.mock.calls[1]?.[1];
+    const firstBody =
+      typeof firstInit?.body === 'string'
+        ? (JSON.parse(firstInit.body) as Record<string, unknown>)
+        : {};
+    const secondBody =
+      typeof secondInit?.body === 'string'
+        ? (JSON.parse(secondInit.body) as Record<string, unknown>)
+        : {};
+
+    expect(
+      (firstBody['response_format'] as { json_schema?: { strict?: boolean } }).json_schema?.strict
+    ).toBe(true);
+    expect(
+      (secondBody['response_format'] as { json_schema?: { strict?: boolean } }).json_schema?.strict
+    ).toBe(false);
+  });
 });

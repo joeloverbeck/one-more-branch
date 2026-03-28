@@ -1,4 +1,4 @@
-const mockRunLlmStage = jest.fn();
+const mockRunLlmStage = jest.fn<Promise<{ parsed: unknown; rawResponse: string }>, [unknown]>();
 const mockBuildMessages = jest.fn().mockReturnValue([
   { role: 'system', content: 'System prompt' },
   { role: 'user', content: 'User prompt' },
@@ -215,9 +215,39 @@ describe('generateChatSceneContext', () => {
     expect(result.rawResponse).toContain('sessionPremise');
   });
 
+  it('retries with a lenient schema when the provider rejects the strict grammar', async () => {
+    mockRunLlmStage
+      .mockRejectedValueOnce(new Error('The compiled grammar is too large'))
+      .mockResolvedValueOnce({
+        parsed: PARSED_SCENE_CONTEXT,
+        rawResponse: '{"sessionPremise":"Two allies test whether trust is still possible."}',
+      });
+
+    const result = await generateChatSceneContext(makeContext(), 'test-key');
+
+    expect(result.sceneContext).toEqual(PARSED_SCENE_CONTEXT);
+    expect(mockRunLlmStage).toHaveBeenCalledTimes(2);
+    expect(mockRunLlmStage).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        schema: CHAT_SCENE_CONTEXT_SCHEMA,
+      })
+    );
+    const secondStageInput: unknown = mockRunLlmStage.mock.calls[1]?.[0];
+    expect(secondStageInput).toMatchObject({
+      schema: {
+        json_schema: {
+            name: CHAT_SCENE_CONTEXT_SCHEMA.json_schema.name,
+            strict: false,
+        },
+      },
+    });
+  });
+
   it('propagates LLM client errors', async () => {
     mockRunLlmStage.mockRejectedValue(new LLMError('API error', 'API_ERROR', true));
 
     await expect(generateChatSceneContext(makeContext(), 'test-key')).rejects.toThrow('API error');
+    expect(mockRunLlmStage).toHaveBeenCalledTimes(1);
   });
 });

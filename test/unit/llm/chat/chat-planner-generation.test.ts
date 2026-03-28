@@ -1,4 +1,4 @@
-const mockRunLlmStage = jest.fn();
+const mockRunLlmStage = jest.fn<Promise<{ parsed: unknown; rawResponse: string }>, [unknown]>();
 const mockBuildMessages = jest.fn().mockReturnValue([
   { role: 'system', content: 'System prompt' },
   { role: 'user', content: 'User prompt' },
@@ -193,9 +193,39 @@ describe('generateChatTurnPlan', () => {
     expect(result.rawResponse).toContain('responseGoal');
   });
 
+  it('retries with a lenient schema when the provider rejects the strict grammar', async () => {
+    mockRunLlmStage
+      .mockRejectedValueOnce(new Error('The compiled grammar is too large'))
+      .mockResolvedValueOnce({
+        parsed: PARSED_TURN_PLAN,
+        rawResponse: '{"responseGoal":"Probe without surrendering leverage."}',
+      });
+
+    const result = await generateChatTurnPlan(makeContext(), 'test-key');
+
+    expect(result.turnPlan).toEqual(PARSED_TURN_PLAN);
+    expect(mockRunLlmStage).toHaveBeenCalledTimes(2);
+    expect(mockRunLlmStage).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        schema: CHAT_PLANNER_SCHEMA,
+      })
+    );
+    const secondStageInput: unknown = mockRunLlmStage.mock.calls[1]?.[0];
+    expect(secondStageInput).toMatchObject({
+      schema: {
+        json_schema: {
+            name: CHAT_PLANNER_SCHEMA.json_schema.name,
+            strict: false,
+        },
+      },
+    });
+  });
+
   it('propagates LLM client errors', async () => {
     mockRunLlmStage.mockRejectedValue(new LLMError('API error', 'API_ERROR', true));
 
     await expect(generateChatTurnPlan(makeContext(), 'test-key')).rejects.toThrow('API error');
+    expect(mockRunLlmStage).toHaveBeenCalledTimes(1);
   });
 });

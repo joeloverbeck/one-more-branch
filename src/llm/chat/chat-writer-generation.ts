@@ -9,6 +9,7 @@ import type { GenerationOptions } from '../generation-pipeline-types.js';
 import { LLMError } from '../llm-client-types.js';
 import { runLlmStage } from '../llm-stage-runner.js';
 import { buildChatWriterMessages } from '../prompts/chat/chat-writer-prompt.js';
+import { buildLenientSchema, withGrammarFallback } from '../structured-output-fallback.js';
 import {
   CHAT_WRITER_SCHEMA,
   parseChatWriterResponse,
@@ -88,15 +89,28 @@ export async function generateChatWriterTurn(
   options?: Partial<GenerationOptions>
 ): Promise<ChatWriterGenerationResult> {
   const messages = buildChatWriterMessages(context);
-  const result = await runLlmStage({
-    stageModel: 'chatWriter',
-    promptType: 'chatWriter',
-    apiKey,
-    options,
-    schema: CHAT_WRITER_SCHEMA,
-    messages,
-    parseResponse: parseChatWriterResponse,
-  });
+  const result = await withGrammarFallback(
+    () =>
+      runLlmStage({
+        stageModel: 'chatWriter',
+        promptType: 'chatWriter',
+        apiKey,
+        options,
+        schema: CHAT_WRITER_SCHEMA,
+        messages,
+        parseResponse: parseChatWriterResponse,
+      }),
+    () =>
+      runLlmStage({
+        stageModel: 'chatWriter',
+        promptType: 'chatWriter',
+        apiKey,
+        options,
+        schema: buildLenientSchema(CHAT_WRITER_SCHEMA),
+        messages,
+        parseResponse: parseChatWriterResponse,
+      })
+  );
 
   return {
     writerTurn: validateWriterTurnAgainstPlan(result.parsed, context.turnPlan),

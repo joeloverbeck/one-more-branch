@@ -2,6 +2,7 @@ import type { RollingSummaryOutput, ChatTurn } from '../../models/chat/index.js'
 import type { GenerationOptions } from '../generation-pipeline-types.js';
 import { runLlmStage } from '../llm-stage-runner.js';
 import { buildChatSummaryMessages } from '../prompts/chat/chat-summary-prompt.js';
+import { buildLenientSchema, withGrammarFallback } from '../structured-output-fallback.js';
 import {
   CHAT_SUMMARY_SCHEMA,
   parseChatSummaryResponse,
@@ -23,15 +24,28 @@ export async function generateChatSummary(
   options?: Partial<GenerationOptions>
 ): Promise<ChatSummaryGenerationResult> {
   const messages = buildChatSummaryMessages(context);
-  const result = await runLlmStage({
-    stageModel: 'chatSummarizer',
-    promptType: 'chatSummarizer',
-    apiKey,
-    options,
-    schema: CHAT_SUMMARY_SCHEMA,
-    messages,
-    parseResponse: parseChatSummaryResponse,
-  });
+  const result = await withGrammarFallback(
+    () =>
+      runLlmStage({
+        stageModel: 'chatSummarizer',
+        promptType: 'chatSummarizer',
+        apiKey,
+        options,
+        schema: CHAT_SUMMARY_SCHEMA,
+        messages,
+        parseResponse: parseChatSummaryResponse,
+      }),
+    () =>
+      runLlmStage({
+        stageModel: 'chatSummarizer',
+        promptType: 'chatSummarizer',
+        apiKey,
+        options,
+        schema: buildLenientSchema(CHAT_SUMMARY_SCHEMA),
+        messages,
+        parseResponse: parseChatSummaryResponse,
+      })
+  );
 
   return {
     summary: result.parsed,

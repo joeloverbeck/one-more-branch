@@ -1,4 +1,4 @@
-const mockRunLlmStage = jest.fn();
+const mockRunLlmStage = jest.fn<Promise<{ parsed: unknown; rawResponse: string }>, [unknown]>();
 const mockBuildMessages = jest.fn().mockReturnValue([
   { role: 'system', content: 'System prompt' },
   { role: 'user', content: 'User prompt' },
@@ -229,11 +229,41 @@ describe('generateChatCharacterContext', () => {
     expect(result.rawResponse).toContain('currentObjective');
   });
 
+  it('retries with a lenient schema when the provider rejects the strict grammar', async () => {
+    mockRunLlmStage
+      .mockRejectedValueOnce(new Error('reduce the number of strict tools'))
+      .mockResolvedValueOnce({
+        parsed: PARSED_CHARACTER_CONTEXT,
+        rawResponse: '{"characterNow":{"currentObjective":"Get the truth first"}}',
+      });
+
+    const result = await generateChatCharacterContext(makeContext(), makeSceneContext(), 'test-key');
+
+    expect(result.characterContext).toEqual(PARSED_CHARACTER_CONTEXT);
+    expect(mockRunLlmStage).toHaveBeenCalledTimes(2);
+    expect(mockRunLlmStage).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        schema: CHAT_CHARACTER_CONTEXT_SCHEMA,
+      })
+    );
+    const secondStageInput: unknown = mockRunLlmStage.mock.calls[1]?.[0];
+    expect(secondStageInput).toMatchObject({
+      schema: {
+        json_schema: {
+            name: CHAT_CHARACTER_CONTEXT_SCHEMA.json_schema.name,
+            strict: false,
+        },
+      },
+    });
+  });
+
   it('propagates LLM client errors', async () => {
     mockRunLlmStage.mockRejectedValue(new LLMError('API error', 'API_ERROR', true));
 
     await expect(
       generateChatCharacterContext(makeContext(), makeSceneContext(), 'test-key')
     ).rejects.toThrow('API error');
+    expect(mockRunLlmStage).toHaveBeenCalledTimes(1);
   });
 });

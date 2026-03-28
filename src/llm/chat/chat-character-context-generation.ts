@@ -2,6 +2,7 @@ import type { ChatCharacterContext, ChatSceneContext } from '../../models/chat/i
 import type { GenerationOptions } from '../generation-pipeline-types.js';
 import { runLlmStage } from '../llm-stage-runner.js';
 import { buildChatCharacterContextMessages } from '../prompts/chat/chat-character-context-prompt.js';
+import { buildLenientSchema, withGrammarFallback } from '../structured-output-fallback.js';
 import {
   CHAT_CHARACTER_CONTEXT_SCHEMA,
   parseChatCharacterContextResponse,
@@ -20,15 +21,28 @@ export async function generateChatCharacterContext(
   options?: Partial<GenerationOptions>
 ): Promise<ChatCharacterContextGenerationResult> {
   const messages = buildChatCharacterContextMessages(context, sceneContext);
-  const result = await runLlmStage({
-    stageModel: 'chatCharacterContext',
-    promptType: 'chatCharacterContext',
-    apiKey,
-    options,
-    schema: CHAT_CHARACTER_CONTEXT_SCHEMA,
-    messages,
-    parseResponse: parseChatCharacterContextResponse,
-  });
+  const result = await withGrammarFallback(
+    () =>
+      runLlmStage({
+        stageModel: 'chatCharacterContext',
+        promptType: 'chatCharacterContext',
+        apiKey,
+        options,
+        schema: CHAT_CHARACTER_CONTEXT_SCHEMA,
+        messages,
+        parseResponse: parseChatCharacterContextResponse,
+      }),
+    () =>
+      runLlmStage({
+        stageModel: 'chatCharacterContext',
+        promptType: 'chatCharacterContext',
+        apiKey,
+        options,
+        schema: buildLenientSchema(CHAT_CHARACTER_CONTEXT_SCHEMA),
+        messages,
+        parseResponse: parseChatCharacterContextResponse,
+      })
+  );
 
   return {
     characterContext: result.parsed,

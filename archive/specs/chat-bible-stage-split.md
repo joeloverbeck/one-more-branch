@@ -1,6 +1,6 @@
 # Chat Bible Stage Split
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Created**: 2026-03-27
 **Scope**: Split the single `chatBible` LLM stage into two smaller stages to fix the Anthropic "compiled grammar is too large" error
 
@@ -222,3 +222,10 @@ Safe limits (inferred from Anthropic behavior): <30 properties, <3 nesting level
 As a safety net, also add the planner-style `strict: false` fallback to all chat generation functions (scene context, character context, planner, writer, state updater, summarizer). This protects against future schema growth pushing any individual stage over the grammar limit.
 
 Pattern to follow: `src/llm/planner-generation.ts:165` (`generatePlannerWithFallback`).
+
+## Outcome
+
+- Completed on 2026-03-28.
+- The chat-bible split had already landed; this follow-up safety net was implemented afterward.
+- Actual implementation differed slightly from the original spec’s fallback note: rather than adding chat-only fallback logic, the repository now uses a shared structured-output fallback utility reused by planner, accountant, and all six chat structured-output stages.
+- This keeps the architecture cleaner than adding more stage-local copies and leaves future structured-output stages with a single integration path.

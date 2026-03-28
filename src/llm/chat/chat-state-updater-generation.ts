@@ -2,6 +2,7 @@ import type { ChatBible, ChatStateUpdate, ChatTurn, TurnPlannerOutput } from '..
 import type { GenerationOptions } from '../generation-pipeline-types.js';
 import { runLlmStage } from '../llm-stage-runner.js';
 import { buildChatStateUpdaterMessages } from '../prompts/chat/chat-state-updater-prompt.js';
+import { buildLenientSchema, withGrammarFallback } from '../structured-output-fallback.js';
 import {
   CHAT_STATE_UPDATER_SCHEMA,
   parseChatStateUpdaterResponse,
@@ -26,15 +27,28 @@ export async function generateChatStateUpdate(
   options?: Partial<GenerationOptions>
 ): Promise<ChatStateUpdaterGenerationResult> {
   const messages = buildChatStateUpdaterMessages(context);
-  const result = await runLlmStage({
-    stageModel: 'chatStateUpdater',
-    promptType: 'chatStateUpdater',
-    apiKey,
-    options,
-    schema: CHAT_STATE_UPDATER_SCHEMA,
-    messages,
-    parseResponse: parseChatStateUpdaterResponse,
-  });
+  const result = await withGrammarFallback(
+    () =>
+      runLlmStage({
+        stageModel: 'chatStateUpdater',
+        promptType: 'chatStateUpdater',
+        apiKey,
+        options,
+        schema: CHAT_STATE_UPDATER_SCHEMA,
+        messages,
+        parseResponse: parseChatStateUpdaterResponse,
+      }),
+    () =>
+      runLlmStage({
+        stageModel: 'chatStateUpdater',
+        promptType: 'chatStateUpdater',
+        apiKey,
+        options,
+        schema: buildLenientSchema(CHAT_STATE_UPDATER_SCHEMA),
+        messages,
+        parseResponse: parseChatStateUpdaterResponse,
+      })
+  );
 
   return {
     stateUpdate: result.parsed,

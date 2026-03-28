@@ -3,6 +3,7 @@ import type { StandaloneDecomposedCharacter } from '../../models/standalone-deco
 import type { GenerationOptions } from '../generation-pipeline-types.js';
 import { runLlmStage } from '../llm-stage-runner.js';
 import { buildChatPlannerMessages } from '../prompts/chat/chat-planner-prompt.js';
+import { buildLenientSchema, withGrammarFallback } from '../structured-output-fallback.js';
 import {
   CHAT_PLANNER_SCHEMA,
   parseChatPlannerResponse,
@@ -26,15 +27,28 @@ export async function generateChatTurnPlan(
   options?: Partial<GenerationOptions>
 ): Promise<ChatPlannerGenerationResult> {
   const messages = buildChatPlannerMessages(context);
-  const result = await runLlmStage({
-    stageModel: 'chatPlanner',
-    promptType: 'chatPlanner',
-    apiKey,
-    options,
-    schema: CHAT_PLANNER_SCHEMA,
-    messages,
-    parseResponse: parseChatPlannerResponse,
-  });
+  const result = await withGrammarFallback(
+    () =>
+      runLlmStage({
+        stageModel: 'chatPlanner',
+        promptType: 'chatPlanner',
+        apiKey,
+        options,
+        schema: CHAT_PLANNER_SCHEMA,
+        messages,
+        parseResponse: parseChatPlannerResponse,
+      }),
+    () =>
+      runLlmStage({
+        stageModel: 'chatPlanner',
+        promptType: 'chatPlanner',
+        apiKey,
+        options,
+        schema: buildLenientSchema(CHAT_PLANNER_SCHEMA),
+        messages,
+        parseResponse: parseChatPlannerResponse,
+      })
+  );
 
   return {
     turnPlan: result.parsed,

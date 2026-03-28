@@ -11,6 +11,7 @@ import {
 import { isStructuredOutputNotSupported } from './schemas/error-detection.js';
 import { PAGE_PLANNER_GENERATION_SCHEMA } from './schemas/page-planner-schema.js';
 import { validatePagePlannerResponse } from './schemas/page-planner-response-transformer.js';
+import { buildLenientSchema, isGrammarTooLargeError } from './structured-output-fallback.js';
 import type {
   GenerationObservabilityContext,
   GenerationOptions,
@@ -139,29 +140,6 @@ async function callPlannerStructured(
   }
 }
 
-function buildLenientPlannerSchema(): JsonSchema {
-  return {
-    ...PAGE_PLANNER_GENERATION_SCHEMA,
-    json_schema: {
-      ...PAGE_PLANNER_GENERATION_SCHEMA.json_schema,
-      strict: false,
-    },
-  };
-}
-
-function isPlannerGrammarTooLargeError(error: unknown): boolean {
-  const signalPhrases = ['compiled grammar is too large', 'reduce the number of strict tools'];
-
-  const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
-  const rawErrorBody =
-    error instanceof LLMError && typeof error.context?.['rawErrorBody'] === 'string'
-      ? error.context['rawErrorBody']
-      : '';
-
-  const combined = `${message}\n${rawErrorBody}`.toLowerCase();
-  return signalPhrases.some((phrase) => combined.includes(phrase));
-}
-
 export async function generatePlannerWithFallback(
   messages: ChatMessage[],
   options: GenerationOptions
@@ -169,8 +147,8 @@ export async function generatePlannerWithFallback(
   try {
     return await callPlannerStructured(messages, options);
   } catch (error) {
-    if (isPlannerGrammarTooLargeError(error)) {
-      return callPlannerStructured(messages, options, buildLenientPlannerSchema());
+    if (isGrammarTooLargeError(error)) {
+      return callPlannerStructured(messages, options, buildLenientSchema(PAGE_PLANNER_GENERATION_SCHEMA));
     }
 
     if (isStructuredOutputNotSupported(error)) {
