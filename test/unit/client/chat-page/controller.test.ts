@@ -749,6 +749,9 @@ describe('chat page controller', () => {
     const messageInput = document.getElementById('chat-message') as HTMLTextAreaElement;
     const form = document.getElementById('chat-turn-form') as HTMLFormElement;
 
+    messageInput.style.minHeight = '46px';
+    messageInput.style.maxHeight = '168px';
+
     Object.defineProperty(messageInput, 'scrollHeight', {
       configurable: true,
       get: () => (messageInput.value.length > 0 ? 140 : 20),
@@ -765,6 +768,36 @@ describe('chat page controller', () => {
     await Promise.resolve();
 
     expect(messageInput.value).toBe('');
+    expect(messageInput.style.height).toBe('46px');
+  });
+
+  it('uses the rendered textarea min-height as the resize floor', () => {
+    const originalGetComputedStyle = window.getComputedStyle.bind(window);
+    jest.spyOn(window, 'getComputedStyle').mockImplementation((element: Element) => {
+      const styles = originalGetComputedStyle(element);
+      if (element.id !== 'chat-message') {
+        return styles;
+      }
+
+      return {
+        ...styles,
+        minHeight: '46px',
+        maxHeight: '168px',
+      } as CSSStyleDeclaration;
+    });
+
+    loadAppAndInit();
+
+    const messageInput = document.getElementById('chat-message') as HTMLTextAreaElement;
+
+    Object.defineProperty(messageInput, 'scrollHeight', {
+      configurable: true,
+      get: () => 20,
+    });
+
+    messageInput.value = 'Short';
+    messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+
     expect(messageInput.style.height).toBe('46px');
   });
 

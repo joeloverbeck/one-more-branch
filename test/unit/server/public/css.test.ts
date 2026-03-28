@@ -72,4 +72,15 @@ describe('public stylesheet', () => {
     const matchCount = css.split(sharedSelector).length - 1;
     expect(matchCount).toBe(1);
   });
+
+  it('makes the chat composer textarea fill its grid column', () => {
+    const css = fs.readFileSync(cssPath, 'utf8');
+
+    expect(css).toContain('.chat-input-form__message {');
+    expect(css).toContain('min-width: 0;');
+    expect(css).toContain('.chat-input-form__message textarea {');
+    expect(css).toContain('width: 100%;');
+    expect(css).toContain('box-sizing: border-box;');
+    expect(css).toContain('min-height: 46px;');
+  });
 });

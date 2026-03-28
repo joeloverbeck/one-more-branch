@@ -14878,9 +14878,6 @@ function initChatPage() {
     ? apiKeyToggle.querySelector('.chat-apikey-btn__icon')
     : null;
   var apiKeyAnchor = apiKeyToggle && apiKeyToggle.parentElement ? apiKeyToggle.parentElement : null;
-  var MIN_MESSAGE_HEIGHT = 46;
-  var MAX_MESSAGE_HEIGHT = 168;
-
   if (
     !messageList ||
     !form ||
@@ -15009,10 +15006,17 @@ function initChatPage() {
   }
 
   function autoResizeMessageInput() {
+    var computedStyles =
+      typeof window.getComputedStyle === 'function' ? window.getComputedStyle(messageInput) : null;
+    var minHeight = computedStyles ? Number.parseFloat(computedStyles.minHeight) : NaN;
+    var maxHeight = computedStyles ? Number.parseFloat(computedStyles.maxHeight) : NaN;
+    var resolvedMinHeight = Number.isFinite(minHeight) ? minHeight : 46;
+    var resolvedMaxHeight = Number.isFinite(maxHeight) ? maxHeight : 168;
+
     messageInput.style.height = 'auto';
     var nextHeight = Math.min(
-      Math.max(messageInput.scrollHeight, MIN_MESSAGE_HEIGHT),
-      MAX_MESSAGE_HEIGHT
+      Math.max(messageInput.scrollHeight, resolvedMinHeight),
+      resolvedMaxHeight
     );
     messageInput.style.height = nextHeight + 'px';
   }
