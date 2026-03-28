@@ -126,6 +126,24 @@ describe('chat page template', () => {
             whatCharacterBelievesAboutInterlocutor: string[];
           };
         }>;
+        relationshipPresentation: {
+          valence: {
+            value: number;
+            delta: number;
+            summary: string;
+            trend: string;
+            gaugeAriaLabel: string;
+            sparklineAriaLabel: string;
+          };
+          tension: {
+            value: number;
+            delta: number;
+            summary: string;
+            trend: string;
+            gaugeAriaLabel: string;
+            sparklineAriaLabel: string;
+          };
+        };
       };
     },
     options: { filename: string }
@@ -308,6 +326,26 @@ describe('chat page template', () => {
               },
             },
           ],
+          relationshipPresentation: {
+            valence: {
+              value: 4,
+              delta: 4,
+              summary: 'Loyal and warming',
+              trend: 'warming',
+              gaugeAriaLabel:
+                'Valence: Loyal and warming. Current value 4 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Loyal and warming across 1 recorded turns.',
+            },
+            tension: {
+              value: 8,
+              delta: 8,
+              summary: 'Breaking and rising',
+              trend: 'rising',
+              gaugeAriaLabel:
+                'Tension: Breaking and rising. Current value 8 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Breaking and rising across 1 recorded turns.',
+            },
+          },
         },
       },
       { filename: templatePath }
@@ -484,6 +522,26 @@ describe('chat page template', () => {
               },
             },
           ],
+          relationshipPresentation: {
+            valence: {
+              value: 0,
+              delta: 0,
+              summary: 'Neutral and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Valence: Neutral and steady. Current value 0 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Neutral and steady across 1 recorded turns.',
+            },
+            tension: {
+              value: 0,
+              delta: 0,
+              summary: 'Calm and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Tension: Calm and steady. Current value 0 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Calm and steady across 1 recorded turns.',
+            },
+          },
         },
       },
       { filename: templatePath }
@@ -551,6 +609,26 @@ describe('chat page template', () => {
             secretsRevealed: [],
           },
           relationshipTimeline: [],
+          relationshipPresentation: {
+            valence: {
+              value: -1,
+              delta: 0,
+              summary: 'Frayed and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Valence: Frayed and steady. Current value -1 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Frayed and steady across 0 recorded turns.',
+            },
+            tension: {
+              value: 6,
+              delta: 0,
+              summary: 'Strained and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Tension: Strained and steady. Current value 6 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Strained and steady across 0 recorded turns.',
+            },
+          },
         },
       },
       { filename: templatePath }
@@ -604,6 +682,26 @@ describe('chat page template', () => {
             secretsRevealed: [],
           },
           relationshipTimeline: [],
+          relationshipPresentation: {
+            valence: {
+              value: 0,
+              delta: 0,
+              summary: 'Neutral and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Valence: Neutral and steady. Current value 0 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Neutral and steady across 0 recorded turns.',
+            },
+            tension: {
+              value: 0,
+              delta: 0,
+              summary: 'Calm and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Tension: Calm and steady. Current value 0 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Calm and steady across 0 recorded turns.',
+            },
+          },
         },
       },
       { filename: templatePath }
@@ -690,6 +788,26 @@ describe('chat page template', () => {
             secretsRevealed: [],
           },
           relationshipTimeline: [],
+          relationshipPresentation: {
+            valence: {
+              value: 0,
+              delta: 0,
+              summary: 'Neutral and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Valence: Neutral and steady. Current value 0 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Neutral and steady across 0 recorded turns.',
+            },
+            tension: {
+              value: 0,
+              delta: 0,
+              summary: 'Calm and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Tension: Calm and steady. Current value 0 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Calm and steady across 0 recorded turns.',
+            },
+          },
         },
       },
       { filename: templatePath }

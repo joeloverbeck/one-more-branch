@@ -335,6 +335,7 @@ function initChatPage() {
       updateSidebar(data.updatedSession, {
         latestRelationshipSnapshot: data.characterTurn && data.characterTurn.relationshipSnapshot,
         latestTurnNumber: data.characterTurn && data.characterTurn.turnNumber,
+        relationshipPresentation: data.relationshipPresentation,
       });
       messageInput.value = '';
       autoResizeMessageInput();

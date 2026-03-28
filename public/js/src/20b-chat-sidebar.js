@@ -156,60 +156,13 @@ window.ChatSidebar = (function () {
     return { min: 0, max: 10 };
   }
 
-  function getMetricBand(name, value) {
-    if (name === 'valence') {
-      if (value <= -3) {
-        return 'Hostile';
-      }
-      if (value < 0) {
-        return 'Frayed';
-      }
-      if (value === 0) {
-        return 'Neutral';
-      }
-      if (value < 3) {
-        return 'Open';
-      }
-      return 'Loyal';
+  function readRelationshipMetricPresentation(relationshipPresentation, name) {
+    if (!relationshipPresentation || typeof relationshipPresentation !== 'object') {
+      return null;
     }
 
-    if (value <= 2) {
-      return 'Calm';
-    }
-    if (value <= 6) {
-      return 'Strained';
-    }
-    return 'Breaking';
-  }
-
-  function getMetricTrend(name, delta) {
-    if (typeof delta !== 'number' || !isFinite(delta) || delta === 0) {
-      return 'steady';
-    }
-
-    if (name === 'valence') {
-      return delta > 0 ? 'warming' : 'cooling';
-    }
-
-    return delta > 0 ? 'rising' : 'easing';
-  }
-
-  function buildMetricSummary(name, value, delta) {
-    return getMetricBand(name, value) + ' and ' + getMetricTrend(name, delta);
-  }
-
-  function buildGaugeAriaLabel(name, value, delta) {
-    var bounds = getGaugeBounds(name);
-    var title = name === 'valence' ? 'Valence' : 'Tension';
-    return title + ': ' + buildMetricSummary(name, value, delta) + '. Current value ' + String(value) +
-      ' on a scale from ' + String(bounds.min) + ' to ' + String(bounds.max) + '.';
-  }
-
-  function buildSparklineAriaLabel(name, value, delta, pointCount) {
-    var title = name === 'valence' ? 'Valence' : 'Tension';
-    var turns = typeof pointCount === 'number' && pointCount > 0 ? pointCount : 0;
-    return title + ' trend: ' + buildMetricSummary(name, value, delta) + ' across ' +
-      String(turns) + ' recorded ' + (turns === 1 ? 'turn' : 'turns') + '.';
+    var metricPresentation = relationshipPresentation[name];
+    return metricPresentation && typeof metricPresentation === 'object' ? metricPresentation : null;
   }
 
   function normalizeGaugePosition(name, value) {
@@ -217,7 +170,7 @@ window.ChatSidebar = (function () {
     return clamp((value - bounds.min) / (bounds.max - bounds.min), 0, 1);
   }
 
-  function renderGauge(root, name, value, previousValue) {
+  function renderGauge(root, name, value, previousValue, ariaLabel) {
     var gauge = root.querySelector('[data-chat-gauge="' + name + '"]');
     if (!gauge) {
       return;
@@ -246,14 +199,9 @@ window.ChatSidebar = (function () {
     gauge.setAttribute('aria-valuemin', String(bounds.min));
     gauge.setAttribute('aria-valuemax', String(bounds.max));
     gauge.setAttribute('aria-valuenow', String(value));
-    gauge.setAttribute(
-      'aria-label',
-      buildGaugeAriaLabel(
-        name,
-        value,
-        typeof previousValue === 'number' && isFinite(previousValue) ? value - previousValue : 0
-      )
-    );
+    if (typeof ariaLabel === 'string' && ariaLabel.length > 0) {
+      gauge.setAttribute('aria-label', ariaLabel);
+    }
   }
 
   function buildSparklinePoints(values, min, max) {
@@ -273,7 +221,7 @@ window.ChatSidebar = (function () {
     }).join(' ');
   }
 
-  function renderSparkline(root, name, history) {
+  function renderSparkline(root, name, history, ariaLabel) {
     var sparkline = root.querySelector('[data-chat-sparkline="' + name + '"]');
     if (!sparkline) {
       return;
@@ -319,7 +267,9 @@ window.ChatSidebar = (function () {
     currentDot.setAttribute('stroke-width', '2');
     sparkline.appendChild(currentDot);
     sparkline.setAttribute('role', 'img');
-    sparkline.setAttribute('aria-label', buildSparklineAriaLabel(name, currentValue, currentValue - previousValue, values.length));
+    if (typeof ariaLabel === 'string' && ariaLabel.length > 0) {
+      sparkline.setAttribute('aria-label', ariaLabel);
+    }
   }
 
   function getLatestRelationshipSnapshot(relationshipTimeline) {
@@ -401,29 +351,52 @@ window.ChatSidebar = (function () {
     return currentPoint[name] - previousPoint[name];
   }
 
-  function updateRelationshipVisuals(root, relationshipTimeline, relationshipState) {
+  function updateRelationshipVisuals(root, relationshipTimeline, relationshipState, relationshipPresentation) {
     var relationshipSnapshot = getLatestRelationshipSnapshot(relationshipTimeline);
     var history = buildRelationshipHistory(relationshipTimeline);
-    var valence = resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'valence');
-    var tension = resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'tension');
-    var previousPoint = Array.isArray(history) && history.length > 1 ? history[history.length - 2] : null;
-    var valenceDeltaValue = readDelta(history, 'valence');
-    var tensionDeltaValue = readDelta(history, 'tension');
+    var valencePresentation = readRelationshipMetricPresentation(relationshipPresentation, 'valence');
+    var tensionPresentation = readRelationshipMetricPresentation(relationshipPresentation, 'tension');
+    var valence = valencePresentation && typeof valencePresentation.value === 'number'
+      ? valencePresentation.value
+      : resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'valence');
+    var tension = tensionPresentation && typeof tensionPresentation.value === 'number'
+      ? tensionPresentation.value
+      : resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'tension');
+    var valenceDeltaValue = valencePresentation && typeof valencePresentation.delta === 'number'
+      ? valencePresentation.delta
+      : readDelta(history, 'valence');
+    var tensionDeltaValue = tensionPresentation && typeof tensionPresentation.delta === 'number'
+      ? tensionPresentation.delta
+      : readDelta(history, 'tension');
+    var previousValence = valence - valenceDeltaValue;
+    var previousTension = tension - tensionDeltaValue;
 
     renderGauge(
       root,
       'valence',
       valence,
-      previousPoint && typeof previousPoint.valence === 'number' ? previousPoint.valence : null
+      previousValence,
+      valencePresentation && valencePresentation.gaugeAriaLabel
     );
     renderGauge(
       root,
       'tension',
       tension,
-      previousPoint && typeof previousPoint.tension === 'number' ? previousPoint.tension : null
+      previousTension,
+      tensionPresentation && tensionPresentation.gaugeAriaLabel
     );
-    renderSparkline(root, 'valence', history);
-    renderSparkline(root, 'tension', history);
+    renderSparkline(
+      root,
+      'valence',
+      history,
+      valencePresentation && valencePresentation.sparklineAriaLabel
+    );
+    renderSparkline(
+      root,
+      'tension',
+      history,
+      tensionPresentation && tensionPresentation.sparklineAriaLabel
+    );
 
     var valenceValue = root.querySelector('[data-chat-gauge-value="valence"]');
     var tensionValue = root.querySelector('[data-chat-gauge-value="tension"]');
@@ -447,16 +420,24 @@ window.ChatSidebar = (function () {
       tensionDelta.textContent = formatSignedNumber(tensionDeltaValue);
     }
     if (valenceSummary) {
-      valenceSummary.textContent = buildMetricSummary('valence', valence, valenceDeltaValue);
+      valenceSummary.textContent = valencePresentation && valencePresentation.summary
+        ? valencePresentation.summary
+        : valenceSummary.textContent;
     }
     if (tensionSummary) {
-      tensionSummary.textContent = buildMetricSummary('tension', tension, tensionDeltaValue);
+      tensionSummary.textContent = tensionPresentation && tensionPresentation.summary
+        ? tensionPresentation.summary
+        : tensionSummary.textContent;
     }
     if (valenceTrend) {
-      valenceTrend.textContent = getMetricTrend('valence', valenceDeltaValue);
+      valenceTrend.textContent = valencePresentation && valencePresentation.trend
+        ? valencePresentation.trend
+        : valenceTrend.textContent;
     }
     if (tensionTrend) {
-      tensionTrend.textContent = getMetricTrend('tension', tensionDeltaValue);
+      tensionTrend.textContent = tensionPresentation && tensionPresentation.trend
+        ? tensionPresentation.trend
+        : tensionTrend.textContent;
     }
   }
 
@@ -482,6 +463,9 @@ window.ChatSidebar = (function () {
         options && options.latestRelationshipSnapshot,
         options && options.latestTurnNumber
       );
+    var relationshipPresentation = options && options.relationshipPresentation
+      ? options.relationshipPresentation
+      : root.__chatRelationshipPresentation;
     var relationshipSnapshot = getLatestRelationshipSnapshot(relationshipTimeline);
 
     updateField(root, 'location', physicalContext.location, '');
@@ -635,8 +619,9 @@ window.ChatSidebar = (function () {
       'No response constraints.'
     );
 
-    updateRelationshipVisuals(root, relationshipTimeline, relationshipState);
+    updateRelationshipVisuals(root, relationshipTimeline, relationshipState, relationshipPresentation);
     root.__chatRelationshipTimeline = relationshipTimeline;
+    root.__chatRelationshipPresentation = relationshipPresentation;
     root.__chatSidebarState = {
       physicalContext: physicalContext,
       relationshipState: relationshipState,
@@ -656,6 +641,9 @@ window.ChatSidebar = (function () {
     var relationshipTimeline = bootstrap && Array.isArray(bootstrap.relationshipTimeline)
       ? bootstrap.relationshipTimeline
       : [];
+    var relationshipPresentation = bootstrap && bootstrap.relationshipPresentation
+      ? bootstrap.relationshipPresentation
+      : null;
     var initialSession = Object.assign({}, session, {
       knowledgeState: bootstrap && bootstrap.knowledgeState ? bootstrap.knowledgeState : undefined,
       rollingSummary: bootstrap && Object.prototype.hasOwnProperty.call(bootstrap, 'rollingSummary')
@@ -666,7 +654,10 @@ window.ChatSidebar = (function () {
         : undefined,
     });
 
-    update(root, initialSession, { relationshipTimeline: relationshipTimeline });
+    update(root, initialSession, {
+      relationshipTimeline: relationshipTimeline,
+      relationshipPresentation: relationshipPresentation,
+    });
   }
 
   return {

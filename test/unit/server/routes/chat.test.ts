@@ -281,6 +281,24 @@ beforeEach(() => {
     updatedSession: createSession(),
     bibleWasRefreshed: false,
     summaryWasGenerated: false,
+    relationshipPresentation: {
+      valence: {
+        value: -1,
+        delta: -1,
+        summary: 'Frayed and cooling',
+        trend: 'cooling',
+        gaugeAriaLabel: 'Valence: Frayed and cooling. Current value -1 on a scale from -5 to 5.',
+        sparklineAriaLabel: 'Valence trend: Frayed and cooling across 1 recorded turns.',
+      },
+      tension: {
+        value: 7,
+        delta: 7,
+        summary: 'Breaking and rising',
+        trend: 'rising',
+        gaugeAriaLabel: 'Tension: Breaking and rising. Current value 7 on a scale from 0 to 10.',
+        sparklineAriaLabel: 'Tension trend: Breaking and rising across 1 recorded turns.',
+      },
+    },
   });
   mockChatService.deleteChat.mockResolvedValue(undefined);
 });
@@ -411,6 +429,14 @@ describe('chat routes', () => {
           chatBible: null,
           rollingSummary: null,
           knowledgeState: expect.any(Object),
+          relationshipPresentation: expect.objectContaining({
+            valence: expect.objectContaining({
+              summary: 'Frayed and cooling',
+            }),
+            tension: expect.objectContaining({
+              summary: 'Breaking and rising',
+            }),
+          }),
           relationshipTimeline: [
             {
               turnNumber: 2,
@@ -505,6 +531,26 @@ describe('chat routes', () => {
           chatBible: createChatBible(),
           rollingSummary: null,
           knowledgeState: expect.any(Object),
+          relationshipPresentation: {
+            valence: {
+              value: -1,
+              delta: 1,
+              summary: 'Frayed and warming',
+              trend: 'warming',
+              gaugeAriaLabel:
+                'Valence: Frayed and warming. Current value -1 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Frayed and warming across 2 recorded turns.',
+            },
+            tension: {
+              value: 1,
+              delta: -2,
+              summary: 'Calm and easing',
+              trend: 'easing',
+              gaugeAriaLabel:
+                'Tension: Calm and easing. Current value 1 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Calm and easing across 2 recorded turns.',
+            },
+          },
           relationshipTimeline: [
             {
               turnNumber: 2,
@@ -642,6 +688,11 @@ describe('chat routes', () => {
         userTurn: expect.any(Object),
         characterTurn: expect.any(Object),
         updatedSession: expect.any(Object),
+        relationshipPresentation: expect.objectContaining({
+          valence: expect.objectContaining({
+            summary: 'Frayed and cooling',
+          }),
+        }),
       })
     );
     const jsonCalls = (res.json as jest.Mock).mock.calls as Array<[Record<string, unknown>]>;

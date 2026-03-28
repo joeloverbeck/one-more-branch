@@ -205,7 +205,7 @@ describe('chat page controller', () => {
           </form>
         </section>
       </main>
-      <script type="application/json" id="chat-ui-bootstrap">{"chatBible":{"characterNow":{"currentObjective":"Keep Iven talking long enough to learn who else touched the ledger tonight.","immediateNeedFromConversation":"Confirm whether he saw the copied seal.","emotionalState":"guarded","willingnessToEngage":"GUARDED","topicsToAdvance":["the ledger"],"topicsToProtect":["the copy"]},"relationshipNow":{"dynamic":"stale prompt state","valence":-2,"tension":4,"leverage":"This should not drive display.","whatCharacterBelievesAboutInterlocutor":["This should not drive display."]},"knowledgeNow":{"knownFacts":["This should stay out of Character Mind"],"suspicions":["This should stay out of Character Mind"],"falseBeliefs":["This should stay out of Character Mind"],"secretsRevealed":["This should stay out of Character Mind"],"secretsKept":["Mara copied one page."],"knowledgeBoundaries":["Who ordered the raid."]},"conversationNow":{"activeThreads":["the ledger"],"commitments":[],"sensitiveTopics":["the copy"],"lastTurnPressure":"Iven is testing how much Mara knows."},"continuityGuardrails":["Do not confess without direct pressure."],"responseConstraints":["Stay grounded in the immediate exchange."]},"rollingSummary":{"compressedSummary":"They are circling the copied ledger without naming who moved it."},"knowledgeState":{"knownFacts":["The ledger seal matters."],"suspicions":["Iven hid the copy."],"falseBeliefs":["The room is unwatched."],"secretsRevealed":["Mara searched his satchel."]},"relationshipTimeline":[{"turnNumber":2,"snapshot":{"dynamic":"guarded detente","valence":3,"tension":6,"leverage":"She knows which ledger page is missing.","whatCharacterBelievesAboutInterlocutor":["He is stalling."]}}]}</script>
+      <script type="application/json" id="chat-ui-bootstrap">{"chatBible":{"characterNow":{"currentObjective":"Keep Iven talking long enough to learn who else touched the ledger tonight.","immediateNeedFromConversation":"Confirm whether he saw the copied seal.","emotionalState":"guarded","willingnessToEngage":"GUARDED","topicsToAdvance":["the ledger"],"topicsToProtect":["the copy"]},"relationshipNow":{"dynamic":"stale prompt state","valence":-2,"tension":4,"leverage":"This should not drive display.","whatCharacterBelievesAboutInterlocutor":["This should not drive display."]},"knowledgeNow":{"knownFacts":["This should stay out of Character Mind"],"suspicions":["This should stay out of Character Mind"],"falseBeliefs":["This should stay out of Character Mind"],"secretsRevealed":["This should stay out of Character Mind"],"secretsKept":["Mara copied one page."],"knowledgeBoundaries":["Who ordered the raid."]},"conversationNow":{"activeThreads":["the ledger"],"commitments":[],"sensitiveTopics":["the copy"],"lastTurnPressure":"Iven is testing how much Mara knows."},"continuityGuardrails":["Do not confess without direct pressure."],"responseConstraints":["Stay grounded in the immediate exchange."]},"rollingSummary":{"compressedSummary":"They are circling the copied ledger without naming who moved it."},"knowledgeState":{"knownFacts":["The ledger seal matters."],"suspicions":["Iven hid the copy."],"falseBeliefs":["The room is unwatched."],"secretsRevealed":["Mara searched his satchel."]},"relationshipTimeline":[{"turnNumber":2,"snapshot":{"dynamic":"guarded detente","valence":3,"tension":6,"leverage":"She knows which ledger page is missing.","whatCharacterBelievesAboutInterlocutor":["He is stalling."]}}],"relationshipPresentation":{"valence":{"value":3,"delta":3,"summary":"Loyal and warming","trend":"warming","gaugeAriaLabel":"Valence: Loyal and warming. Current value 3 on a scale from -5 to 5.","sparklineAriaLabel":"Valence trend: Loyal and warming across 1 recorded turns."},"tension":{"value":6,"delta":6,"summary":"Strained and rising","trend":"rising","gaugeAriaLabel":"Tension: Strained and rising. Current value 6 on a scale from 0 to 10.","sparklineAriaLabel":"Tension trend: Strained and rising across 1 recorded turns."}}}</script>
     `;
   }
 
@@ -430,6 +430,24 @@ describe('chat page controller', () => {
               },
               rollingSummary: {
                 compressedSummary: 'The bells now cover both the accusation and the next move.',
+              },
+            },
+            relationshipPresentation: {
+              valence: {
+                value: 5,
+                delta: 2,
+                summary: 'Loyal and warming',
+                trend: 'warming',
+                gaugeAriaLabel: 'Valence: Loyal and warming. Current value 5 on a scale from -5 to 5.',
+                sparklineAriaLabel: 'Valence trend: Loyal and warming across 2 recorded turns.',
+              },
+              tension: {
+                value: 8,
+                delta: 2,
+                summary: 'Breaking and rising',
+                trend: 'rising',
+                gaugeAriaLabel: 'Tension: Breaking and rising. Current value 8 on a scale from 0 to 10.',
+                sparklineAriaLabel: 'Tension trend: Breaking and rising across 2 recorded turns.',
               },
             },
           })
@@ -743,6 +761,24 @@ describe('chat page controller', () => {
         secretsRevealed: ['Mara searched his satchel.'],
       },
       relationshipTimeline: [],
+      relationshipPresentation: {
+        valence: {
+          value: -1,
+          delta: 0,
+          summary: 'Frayed and steady',
+          trend: 'steady',
+          gaugeAriaLabel: 'Valence: Frayed and steady. Current value -1 on a scale from -5 to 5.',
+          sparklineAriaLabel: 'Valence trend: Frayed and steady across 0 recorded turns.',
+        },
+        tension: {
+          value: 6,
+          delta: 0,
+          summary: 'Strained and steady',
+          trend: 'steady',
+          gaugeAriaLabel: 'Tension: Strained and steady. Current value 6 on a scale from 0 to 10.',
+          sparklineAriaLabel: 'Tension trend: Strained and steady across 0 recorded turns.',
+        },
+      },
     });
 
     global.fetch = jest.fn((url: string) => {

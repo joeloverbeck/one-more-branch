@@ -1,6 +1,7 @@
 import { type Request, type Response, Router } from 'express';
 import { LLMError } from '../../llm/llm-client-types.js';
 import {
+  buildChatRelationshipPresentation,
   buildChatRelationshipTimeline,
   ChatDomainError,
   DISTANCE_BAND_VALUES,
@@ -53,14 +54,20 @@ interface ChatUiBootstrap {
   readonly rollingSummary: ChatSession['rollingSummary'];
   readonly knowledgeState: ChatSession['knowledgeState'];
   readonly relationshipTimeline: ReturnType<typeof buildChatRelationshipTimeline>;
+  readonly relationshipPresentation: ReturnType<typeof buildChatRelationshipPresentation>;
 }
 
 function buildChatUiBootstrap(session: ChatSession, turns: Parameters<typeof buildChatRelationshipTimeline>[0]): ChatUiBootstrap {
+  const relationshipTimeline = buildChatRelationshipTimeline(turns);
   return {
     chatBible: session.chatBible,
     rollingSummary: session.rollingSummary,
     knowledgeState: session.knowledgeState,
-    relationshipTimeline: buildChatRelationshipTimeline(turns),
+    relationshipTimeline,
+    relationshipPresentation: buildChatRelationshipPresentation(
+      relationshipTimeline,
+      session.relationshipState
+    ),
   };
 }
 

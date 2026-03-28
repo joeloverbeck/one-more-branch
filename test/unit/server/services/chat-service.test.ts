@@ -414,6 +414,26 @@ describe('chat-service', () => {
 
     expect(result).toEqual({
       userTurn: createUserTurn({ timestamp: '2026-03-27T09:01:00.000Z' }),
+      relationshipPresentation: {
+        valence: {
+          value: -1,
+          delta: -1,
+          summary: 'Frayed and cooling',
+          trend: 'cooling',
+          gaugeAriaLabel:
+            'Valence: Frayed and cooling. Current value -1 on a scale from -5 to 5.',
+          sparklineAriaLabel: 'Valence trend: Frayed and cooling across 1 recorded turn.',
+        },
+        tension: {
+          value: 7,
+          delta: 7,
+          summary: 'Breaking and rising',
+          trend: 'rising',
+          gaugeAriaLabel:
+            'Tension: Breaking and rising. Current value 7 on a scale from 0 to 10.',
+          sparklineAriaLabel: 'Tension trend: Breaking and rising across 1 recorded turn.',
+        },
+      },
       ...pipelineResult,
     });
     expect(deps.commitChatTurn).toHaveBeenCalledWith(
@@ -522,6 +542,8 @@ describe('chat-service', () => {
       rawText: '*I close the ledger.* Tell me what happened.',
       timestamp: '2026-03-27T09:01:00.000Z',
     });
+    expect(result.relationshipPresentation.valence.summary).toBe('Frayed and cooling');
+    expect(result.relationshipPresentation.tension.summary).toBe('Breaking and rising');
   });
 
   it('rejects sendTurn when the chat session is missing', async () => {

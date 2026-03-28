@@ -2,13 +2,19 @@ import { randomUUID } from 'crypto';
 import type { GenerationStageCallback } from '../../engine/types.js';
 import { runChatPipeline, type ChatPipelineResult } from '../../llm/index.js';
 import type {
+  ChatRelationshipPresentation,
   ChatLeadInContext,
   ChatPhysicalContext,
   ChatSession,
   ChatSessionSummary,
   ChatTurn,
 } from '../../models/chat/index.js';
-import { ChatDomainError, parseChatInput } from '../../models/chat/index.js';
+import {
+  buildChatRelationshipPresentation,
+  buildChatRelationshipTimeline,
+  ChatDomainError,
+  parseChatInput,
+} from '../../models/chat/index.js';
 import type { DecomposedWorld } from '../../models/decomposed-world.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
 import { loadCharacter } from '../../persistence/character-repository.js';
@@ -41,6 +47,7 @@ export interface SendTurnParams {
 
 export interface SendTurnResult extends ChatPipelineResult {
   readonly userTurn: ChatTurn;
+  readonly relationshipPresentation: ChatRelationshipPresentation;
 }
 
 interface ChatServiceDeps {
@@ -264,8 +271,17 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
         characterTurn: pipelineResult.characterTurn,
         updatedSession: pipelineResult.updatedSession,
       });
+      const relationshipTimeline = buildChatRelationshipTimeline([
+        ...priorAllTurns,
+        userTurn,
+        pipelineResult.characterTurn,
+      ]);
       return {
         userTurn,
+        relationshipPresentation: buildChatRelationshipPresentation(
+          relationshipTimeline,
+          pipelineResult.updatedSession.relationshipState
+        ),
         ...pipelineResult,
       };
     },
