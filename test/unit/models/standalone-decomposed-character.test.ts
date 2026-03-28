@@ -1,6 +1,8 @@
-import { formatStandaloneCharacterSummary } from '../../../src/models/standalone-decomposed-character';
+import {
+  formatStandaloneCharacterPromptSummary,
+  type StandaloneDecomposedCharacter,
+} from '../../../src/models/standalone-decomposed-character';
 import { EmotionSalience } from '../../../src/models/character-enums';
-import type { StandaloneDecomposedCharacter } from '../../../src/models/standalone-decomposed-character';
 
 function makeCharacter(
   overrides: Partial<StandaloneDecomposedCharacter> = {}
@@ -60,16 +62,44 @@ function makeCharacter(
   };
 }
 
-describe('formatStandaloneCharacterSummary', () => {
-  it('includes focalization and stress-variant details when present', () => {
-    const result = formatStandaloneCharacterSummary(makeCharacter());
+describe('formatStandaloneCharacterPromptSummary', () => {
+  it('renders the identity view without psychology-only fields', () => {
+    const result = formatStandaloneCharacterPromptSummary(makeCharacter(), 'identity');
 
+    expect(result).toContain('Name: Iria Vale');
+    expect(result).toContain('Core Traits: guarded, precise');
+    expect(result).toContain('Appearance: Rain-dark coat and immaculate gloves');
+    expect(result).not.toContain('Super-Objective:');
+    expect(result).not.toContain('Knowledge Boundaries:');
+    expect(result).not.toContain('A dangerous and exhausted navigator.');
+  });
+
+  it('renders the psychology view with structured lists and no raw description', () => {
+    const result = formatStandaloneCharacterPromptSummary(makeCharacter(), 'psychology');
+
+    expect(result).toContain('Super-Objective: Recover the map');
+    expect(result).toContain('Stakes:\n- Lose the map');
+    expect(result).toContain('Personal Dilemmas:\n- Protect the source or save the alliance');
     expect(result).toContain('Focalization Filter:');
-    expect(result).toContain('Notices First: Breaks in resolve');
-    expect(result).toContain('Systematically Misses: Unscripted kindness');
-    expect(result).toContain('Misreads As: Reads hesitation as stalling');
+    expect(result).toContain('- Notices First: Breaks in resolve');
     expect(result).toContain('Stress Variants:');
-    expect(result).toContain('Under Threat: Gets colder and more procedural');
-    expect(result).toContain('When Winning: Presses for irreversible leverage');
+    expect(result).toContain('- When Winning: Presses for irreversible leverage');
+    expect(result).toContain('Core Beliefs:\n- Competence is safer than trust');
+    expect(result).toContain('Constraints:\n- Cannot expose the informant');
+    expect(result).not.toContain('A dangerous and exhausted navigator.');
+  });
+
+  it('renders the standalone view for planner and spine consumers', () => {
+    const result = formatStandaloneCharacterPromptSummary(makeCharacter(), 'standalone');
+
+    expect(result).toContain('Iria Vale');
+    expect(result).toContain('  Traits: guarded, precise');
+    expect(result).toContain('  Super-Objective: Recover the map');
+    expect(result).toContain('  Focalization Filter:');
+    expect(result).toContain('    Notices First: Breaks in resolve');
+    expect(result).toContain('  Stress Variants:');
+    expect(result).toContain('    Under Threat: Gets colder and more procedural');
+    expect(result).toContain('  Immediate Objectives: Secure the map; Test Tomas');
+    expect(result).not.toContain('A dangerous and exhausted navigator.');
   });
 });

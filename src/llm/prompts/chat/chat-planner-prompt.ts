@@ -1,5 +1,5 @@
 import type { ChatTurn } from '../../../models/chat/index.js';
-import { formatStandaloneCharacterSummary } from '../../../models/standalone-decomposed-character.js';
+import { formatStandaloneCharacterPromptSummary } from '../../../models/standalone-decomposed-character.js';
 import type { ChatMessage } from '../../llm-client-types.js';
 import { CONTENT_POLICY } from '../../content-policy.js';
 import type { ChatPlannerContext } from '../../chat/chat-planner-generation.js';
@@ -24,7 +24,7 @@ function formatLatestUserTurn(turn: ChatTurn): string {
 export function buildChatPlannerMessages(context: ChatPlannerContext): ChatMessage[] {
   const userSections = [
     `CHAT BIBLE\n${formatChatBible(context.chatBible)}`,
-    `TARGET CHARACTER DECOMPOSITION\n${formatStandaloneCharacterSummary(context.targetCharacter)}`,
+    `TARGET CHARACTER DECOMPOSITION\n${formatStandaloneCharacterPromptSummary(context.targetCharacter, 'standalone')}`,
     `TARGET CHARACTER SPEECH FINGERPRINT\n${formatSpeechFingerprint(context.targetCharacter.speechFingerprint)}`,
     `RECENT CHAT TURNS\n${formatRecentTurns(context.recentTurns)}`,
     `LATEST USER TURN\n${formatLatestUserTurn(context.latestUserTurn)}`,

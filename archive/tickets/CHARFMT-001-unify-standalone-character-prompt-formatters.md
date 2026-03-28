@@ -1,6 +1,6 @@
 # CHARFMT-001: Unify standalone character prompt formatter ownership
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Medium
 **Engine Changes**: None
@@ -22,12 +22,23 @@ This duplication already caused real field drift: the chat psychology formatter 
 2. Chat scene and chat character context prompts still own separate local identity and psychology formatting logic in `src/llm/prompts/chat/chat-context-prompt-sections.ts` — CONFIRMED.
 3. The current duplication is semantic, not just cosmetic: the same `StandaloneDecomposedCharacter` fields are rendered by different helpers with different layouts and historically diverged in coverage — CONFIRMED by comparing the functions and the `CHATDECAUD-001` bug.
 4. There is no existing shared “character summary schema” or formatter-spec module that defines which fields belong to which prompt detail level — CONFIRMED.
+5. The clean seam is not “one formatter output for every consumer.” Current consumers legitimately need at least three prompt views:
+   - identity-only chat scene context
+   - psychology-heavy chat character context
+   - standalone shared profile for planner / spine / contextualizer consumers
+   This means the refactor should centralize field ownership by named view, while still allowing each consumer to keep its own section heading or surrounding prose — CONFIRMED by comparing prompt responsibilities.
+6. Verification is currently weaker than the ticket originally implied:
+   - there is direct unit coverage for `formatStandaloneCharacterSummary()`
+   - there is prompt-level coverage for chat scene / chat character / chat planner
+   - there is no direct unit coverage yet for shared identity / psychology formatter views because they do not exist
+   - there is no focused prompt test coverage yet for spine foundation or character contextualizer consumers
 
 ## Architecture Check
 
-1. A single owned formatter seam for `StandaloneDecomposedCharacter` summaries is cleaner than prompt-local duplication because field coverage changes happen once and propagate intentionally to all consumers.
-2. The right architecture is not “make every consumer use identical prose,” but “centralize field ownership and detail-level definitions, while allowing prompt-local headings/layout wrappers.”
-3. No backwards-compatibility shims or alias APIs are needed. Existing callers can be migrated directly to the new shared formatter entry points and old local helpers removed.
+1. A single owned formatter seam for `StandaloneDecomposedCharacter` summary field selection is cleaner than prompt-local duplication because field coverage changes happen once and propagate intentionally to all consumers.
+2. The right architecture is not “make every consumer use identical prose,” but “centralize field ownership and named summary views, while allowing prompt-local headings/layout wrappers.”
+3. The shared seam should live with the `StandaloneDecomposedCharacter` model, because this is where the prompt-safe projection of that schema belongs today. Pulling this into chat-only prompt code would keep the ownership problem in the wrong layer.
+4. No backwards-compatibility shims or alias APIs are needed. Existing callers can be migrated directly to the new shared formatter entry points and old local helpers removed.
 
 ## What to Change
 
@@ -37,7 +48,7 @@ Create a single shared rendering seam for `StandaloneDecomposedCharacter` that s
 
 - `identity`
 - `psychology`
-- `standalone` or equivalent shared full-summary mode
+- `standalone`
 
 The shared seam should own:
 
@@ -45,6 +56,7 @@ The shared seam should own:
 - ordering of fields within each level
 - exclusion of `rawDescription`
 - rendering of composite fields like `stressVariants` and `focalizationFilter`
+- any view-specific list formatting needed by the prompt contract
 
 Prompt-local code may still wrap the output with section titles like `TARGET CHARACTER DECOMPOSITION`, but should not re-own field selection.
 
@@ -67,6 +79,7 @@ The implementation should preserve the current architecture goal:
 - chat scene context stays identity-focused
 - chat psychology context gets the full structured psychology surface it needs
 - planner/spine/contextualizer consumers can continue to use a stable shared standalone profile
+- the planner remains free to compose the standalone profile alongside a separate speech-fingerprint section
 
 ## Files to Touch
 
@@ -75,9 +88,14 @@ The implementation should preserve the current architecture goal:
 - `src/llm/prompts/chat/chat-scene-context-prompt.ts` (modify, if needed for API changes)
 - `src/llm/prompts/chat/chat-character-context-prompt.ts` (modify, if needed for API changes)
 - `src/llm/prompts/chat/chat-planner-prompt.ts` (modify, only if call shape changes)
-- `src/llm/prompts/spine-foundation-prompt.ts` (modify, if call shape changes)
-- `src/llm/prompts/character-contextualizer-prompt.ts` (modify, if call shape changes)
-- `src/llm/spine-generator.ts` (modify, if call shape changes)
+- `src/llm/prompts/spine-foundation-prompt.ts` (modify, only if call shape changes)
+- `src/llm/prompts/character-contextualizer-prompt.ts` (modify, only if call shape changes)
+- `src/llm/spine-generator.ts` (modify, only if call shape changes)
+- `test/unit/models/standalone-decomposed-character.test.ts` (modify)
+- `test/unit/llm/prompts/chat/chat-scene-context-prompt.test.ts` (modify)
+- `test/unit/llm/prompts/chat/chat-character-context-prompt.test.ts` (modify)
+- `test/unit/llm/prompts/chat/chat-planner-prompt.test.ts` (modify)
+- focused non-chat prompt tests under `test/unit/llm/prompts/` if added for spine/contextualizer coverage
 
 ## Out of Scope
 
@@ -94,6 +112,7 @@ The implementation should preserve the current architecture goal:
 2. Chat scene, chat psychology, planner, and other standalone-summary consumers continue to receive the expected detail level without `rawDescription`.
 3. Adding a new supported structured field to the shared formatter contract requires updating one shared definition, not multiple prompt-local field lists.
 4. Existing suite: `npm test`
+5. Lint and typecheck remain clean after the formatter API consolidation.
 
 ### Invariants
 
@@ -104,11 +123,11 @@ The implementation should preserve the current architecture goal:
 
 ### New/Modified Tests
 
-1. `test/unit/models/standalone-decomposed-character.test.ts` — expand coverage to assert shared detail-level rendering behavior directly.
+1. `test/unit/models/standalone-decomposed-character.test.ts` — expand coverage to assert shared named-view rendering behavior directly.
 2. `test/unit/llm/prompts/chat/chat-scene-context-prompt.test.ts` — verify scene-context still receives identity-only summaries after the refactor.
 3. `test/unit/llm/prompts/chat/chat-character-context-prompt.test.ts` — verify chat psychology summaries still include the full structured psychology surface after migrating to the shared renderer.
 4. `test/unit/llm/prompts/chat/chat-planner-prompt.test.ts` — verify planner-visible standalone summaries still include the expected fields after the shared renderer change.
-5. Additional consumer tests under `test/unit/llm/prompts/` or `test/unit/llm/` as needed — verify spine/contextualizer consumers continue to receive the intended shared profile.
+5. Additional consumer tests under `test/unit/llm/prompts/` or `test/unit/llm/` as needed — add focused spine/contextualizer coverage if those consumers are touched by the new API.
 
 ### Commands
 
@@ -116,3 +135,20 @@ The implementation should preserve the current architecture goal:
 2. `npm run lint`
 3. `npm run typecheck`
 4. `npm test`
+
+## Outcome
+
+- Completed: 2026-03-28
+- What changed:
+  - Introduced a single shared `formatStandaloneCharacterPromptSummary(..., view)` seam in `src/models/standalone-decomposed-character.ts` with explicit `identity`, `psychology`, and `standalone` views.
+  - Removed prompt-local character field ownership from `src/llm/prompts/chat/chat-context-prompt-sections.ts`.
+  - Migrated planner, spine foundation, spine generator, and character contextualizer consumers to the shared standalone view.
+  - Added direct view-contract coverage plus focused non-chat prompt coverage for spine foundation and character contextualizer consumers.
+- Deviations from the original plan:
+  - Existing chat consumer tests were already sufficient at the prompt boundary and did not require code changes; the added coverage went into direct model-view tests and missing non-chat prompt consumers instead.
+  - No changes were needed in `chat-scene-context-prompt.ts` or `chat-character-context-prompt.ts` because their composition layer remained correct once the shared renderer replaced prompt-local formatting logic.
+- Verification:
+  - `npm run test:unit -- --runInBand test/unit/models/standalone-decomposed-character.test.ts test/unit/llm/prompts/chat/chat-scene-context-prompt.test.ts test/unit/llm/prompts/chat/chat-character-context-prompt.test.ts test/unit/llm/prompts/chat/chat-planner-prompt.test.ts test/unit/llm/prompts/spine-foundation-prompt.test.ts test/unit/llm/prompts/character-contextualizer-prompt.test.ts`
+  - `npm run lint`
+  - `npm run typecheck`
+  - `npm test`
