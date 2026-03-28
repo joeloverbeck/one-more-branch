@@ -14865,6 +14865,8 @@ function initChatPage() {
   var messageList = document.getElementById('chat-message-list');
   var form = document.getElementById('chat-turn-form');
   var apiKeyInput = document.getElementById('chat-api-key');
+  var apiKeyToggle = document.getElementById('chat-apikey-toggle');
+  var apiKeyPopover = document.getElementById('chat-apikey-popover');
   var messageInput = document.getElementById('chat-message');
   var sendButton = document.getElementById('chat-send-button');
   var loadingIndicator = document.getElementById('chat-loading-indicator');
@@ -14872,6 +14874,12 @@ function initChatPage() {
   var pageError = document.getElementById('chat-error');
   var turnError = document.getElementById('chat-turn-error');
   var sidebarToggle = page.querySelector('[data-chat-sidebar-toggle]');
+  var apiKeyToggleIcon = apiKeyToggle
+    ? apiKeyToggle.querySelector('.chat-apikey-btn__icon')
+    : null;
+  var apiKeyAnchor = apiKeyToggle && apiKeyToggle.parentElement ? apiKeyToggle.parentElement : null;
+  var MIN_MESSAGE_HEIGHT = 46;
+  var MAX_MESSAGE_HEIGHT = 168;
 
   if (
     !messageList ||
@@ -14903,10 +14911,13 @@ function initChatPage() {
     progressElement: progressStatus,
     buttonElement: sendButton,
     onShow: function () {
+      messageInput.readOnly = true;
       progressStatus.style.display = 'block';
     },
     onHide: function () {
+      messageInput.readOnly = false;
       progressStatus.style.display = 'none';
+      updateSendButtonState();
     },
   });
 
@@ -14931,6 +14942,79 @@ function initChatPage() {
   function clearErrors() {
     clearError(pageError);
     clearError(turnError);
+  }
+
+  function getMessageValue() {
+    return typeof messageInput.value === 'string' ? messageInput.value.trim() : '';
+  }
+
+  function getApiKeyValue() {
+    return typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
+  }
+
+  function updateSendButtonState() {
+    sendButton.disabled = inFlight || getMessageValue().length === 0 || getApiKeyValue().length < 10;
+  }
+
+  function syncApiKeyToggleState() {
+    if (!apiKeyToggle) {
+      return;
+    }
+
+    var hasApiKey = getApiKeyValue().length >= 10;
+    apiKeyToggle.classList.toggle('chat-apikey-btn--configured', hasApiKey);
+    apiKeyToggle.setAttribute(
+      'aria-label',
+      hasApiKey ? 'API key configured' : 'Open API key settings'
+    );
+    apiKeyToggle.setAttribute('title', hasApiKey ? 'API key configured' : 'API key settings');
+
+    if (apiKeyToggleIcon) {
+      apiKeyToggleIcon.textContent = hasApiKey ? 'Locked' : 'Unlocked';
+    }
+  }
+
+  function isApiKeyPopoverOpen() {
+    return Boolean(apiKeyPopover && !apiKeyPopover.hasAttribute('hidden'));
+  }
+
+  function closeApiKeyPopover() {
+    if (!apiKeyPopover || !apiKeyToggle) {
+      return;
+    }
+
+    apiKeyPopover.setAttribute('hidden', '');
+    apiKeyToggle.setAttribute('aria-expanded', 'false');
+  }
+
+  function openApiKeyPopover() {
+    if (!apiKeyPopover || !apiKeyToggle) {
+      return;
+    }
+
+    apiKeyPopover.removeAttribute('hidden');
+    apiKeyToggle.setAttribute('aria-expanded', 'true');
+  }
+
+  function toggleApiKeyPopover() {
+    if (isApiKeyPopoverOpen()) {
+      closeApiKeyPopover();
+      return;
+    }
+
+    openApiKeyPopover();
+    if (typeof apiKeyInput.focus === 'function') {
+      apiKeyInput.focus();
+    }
+  }
+
+  function autoResizeMessageInput() {
+    messageInput.style.height = 'auto';
+    var nextHeight = Math.min(
+      Math.max(messageInput.scrollHeight, MIN_MESSAGE_HEIGHT),
+      MAX_MESSAGE_HEIGHT
+    );
+    messageInput.style.height = nextHeight + 'px';
   }
 
   function formatTimestamp(timestamp) {
@@ -15074,20 +15158,24 @@ function initChatPage() {
 
     clearErrors();
 
-    var rawMessage = typeof messageInput.value === 'string' ? messageInput.value.trim() : '';
+    var rawMessage = getMessageValue();
     if (rawMessage.length === 0) {
       setError(turnError, 'Message is required');
+      updateSendButtonState();
       return;
     }
 
-    var apiKey = typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
+    var apiKey = getApiKeyValue();
     if (apiKey.length < 10) {
       setError(turnError, 'OpenRouter API key is required');
+      updateSendButtonState();
       return;
     }
 
     inFlight = true;
     setApiKey(apiKey);
+    syncApiKeyToggleState();
+    updateSendButtonState();
 
     try {
       var data = await loadingSession.withProgress(async function (progressId) {
@@ -15138,11 +15226,14 @@ function initChatPage() {
       appendTurn(data.characterTurn);
       updateSidebar(data.updatedSession);
       messageInput.value = '';
+      autoResizeMessageInput();
+      closeApiKeyPopover();
       shouldSendResumeFlag = false;
     } catch (error) {
       setError(turnError, error instanceof Error ? error.message : 'Failed to send chat turn');
     } finally {
       inFlight = false;
+      updateSendButtonState();
     }
   }
 
@@ -15157,6 +15248,41 @@ function initChatPage() {
       syncSidebarToggle();
     });
   }
+
+  if (apiKeyToggle) {
+    apiKeyToggle.addEventListener('click', function () {
+      toggleApiKeyPopover();
+    });
+  }
+
+  document.addEventListener('click', function (event) {
+    if (!isApiKeyPopoverOpen() || !apiKeyAnchor) {
+      return;
+    }
+
+    var target = event.target;
+    if (target instanceof Node && apiKeyAnchor.contains(target)) {
+      return;
+    }
+
+    closeApiKeyPopover();
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+      closeApiKeyPopover();
+    }
+  });
+
+  apiKeyInput.addEventListener('input', function () {
+    syncApiKeyToggleState();
+    updateSendButtonState();
+  });
+
+  messageInput.addEventListener('input', function () {
+    autoResizeMessageInput();
+    updateSendButtonState();
+  });
 
   messageInput.addEventListener('keydown', function (event) {
     if (event.key !== 'Enter' || event.shiftKey) {
@@ -15174,6 +15300,9 @@ function initChatPage() {
 
   updateTurnCount();
   syncSidebarToggle();
+  syncApiKeyToggleState();
+  autoResizeMessageInput();
+  updateSendButtonState();
 }
 
 function initChatNewPage() {

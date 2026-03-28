@@ -44,15 +44,31 @@ describe('chat page controller', () => {
           <span data-chat-field="whyNow">Before dawn.</span>
         </aside>
         <section class="chat-input-bar">
-          <form id="chat-turn-form" data-chat-turn-form>
-            <input type="password" id="chat-api-key" name="apiKey" />
-            <textarea id="chat-message" name="message"></textarea>
+          <form id="chat-turn-form" class="chat-input-form" data-chat-turn-form>
+            <div class="chat-input-form__composer">
+              <div class="chat-apikey-popover-anchor">
+                <button
+                  type="button"
+                  id="chat-apikey-toggle"
+                  class="chat-apikey-btn"
+                  aria-controls="chat-apikey-popover"
+                  aria-expanded="false"
+                >
+                  <span class="chat-apikey-btn__icon">Unlocked</span>
+                  <span class="chat-apikey-btn__label">API Key</span>
+                </button>
+                <div id="chat-apikey-popover" hidden>
+                  <input type="password" id="chat-api-key" name="apiKey" />
+                </div>
+              </div>
+              <textarea id="chat-message" name="message" rows="1"></textarea>
+            </div>
             <div id="chat-turn-error" class="alert alert-error" style="display: none;" role="alert"></div>
             <div id="chat-loading-indicator" style="display: none;" aria-live="polite">
               Character is thinking...
             </div>
             <div id="chat-progress-status" data-chat-progress></div>
-            <button type="submit" id="chat-send-button">Send</button>
+            <button type="submit" id="chat-send-button" class="chat-send-btn">Send</button>
           </form>
         </section>
       </main>
@@ -176,13 +192,21 @@ describe('chat page controller', () => {
     const messageInput = document.getElementById('chat-message') as HTMLTextAreaElement;
     const form = document.getElementById('chat-turn-form') as HTMLFormElement;
     const loadingIndicator = document.getElementById('chat-loading-indicator') as HTMLDivElement;
+    const sendButton = document.getElementById('chat-send-button') as HTMLButtonElement;
+    const apiKeyToggle = document.getElementById('chat-apikey-toggle') as HTMLButtonElement;
 
     expect(apiKeyInput.value).toBe('sk-or-stored-key-12345');
+    expect(apiKeyToggle.classList.contains('chat-apikey-btn--configured')).toBe(true);
+    expect(apiKeyToggle.querySelector('.chat-apikey-btn__icon')?.textContent).toBe('Locked');
+    expect(sendButton.disabled).toBe(true);
 
     messageInput.value = '*I close the ledger.* Tell me what happened.';
+    messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(sendButton.disabled).toBe(false);
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 
     expect(loadingIndicator.style.display).toBe('flex');
+    expect(messageInput.readOnly).toBe(true);
 
     await Promise.resolve();
     await jest.runAllTimersAsync();
@@ -220,6 +244,130 @@ describe('chat page controller', () => {
     expect(document.querySelector('[data-chat-turn-count]')?.textContent).toBe('2 turns');
     expect(scrollIntoViewMock).toHaveBeenCalled();
     expect(loadingIndicator.style.display).toBe('none');
+    expect(messageInput.readOnly).toBe(false);
+    expect(sendButton.disabled).toBe(true);
+  });
+
+  it('updates composer state from message and API key input, and manages the API key popover', () => {
+    global.fetch = jest.fn((url: string) => {
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, 404));
+    }) as jest.Mock;
+
+    loadAppAndInit();
+
+    const apiKeyInput = document.getElementById('chat-api-key') as HTMLInputElement;
+    const apiKeyToggle = document.getElementById('chat-apikey-toggle') as HTMLButtonElement;
+    const apiKeyPopover = document.getElementById('chat-apikey-popover') as HTMLDivElement;
+    const messageInput = document.getElementById('chat-message') as HTMLTextAreaElement;
+    const sendButton = document.getElementById('chat-send-button') as HTMLButtonElement;
+
+    expect(sendButton.disabled).toBe(true);
+    expect(apiKeyToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(apiKeyPopover.hasAttribute('hidden')).toBe(true);
+
+    apiKeyToggle.click();
+    expect(apiKeyToggle.getAttribute('aria-expanded')).toBe('true');
+    expect(apiKeyPopover.hasAttribute('hidden')).toBe(false);
+
+    document.body.click();
+    expect(apiKeyToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(apiKeyPopover.hasAttribute('hidden')).toBe(true);
+
+    apiKeyInput.value = 'short';
+    apiKeyInput.dispatchEvent(new Event('input', { bubbles: true }));
+    messageInput.value = 'Hello there.';
+    messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(sendButton.disabled).toBe(true);
+    expect(apiKeyToggle.classList.contains('chat-apikey-btn--configured')).toBe(false);
+    expect(apiKeyToggle.querySelector('.chat-apikey-btn__icon')?.textContent).toBe('Unlocked');
+
+    apiKeyInput.value = 'sk-or-valid-key-67890';
+    apiKeyInput.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(sendButton.disabled).toBe(false);
+    expect(apiKeyToggle.classList.contains('chat-apikey-btn--configured')).toBe(true);
+    expect(apiKeyToggle.querySelector('.chat-apikey-btn__icon')?.textContent).toBe('Locked');
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(apiKeyPopover.hasAttribute('hidden')).toBe(true);
+  });
+
+  it('auto-grows the message box and resets it after a successful submit', async () => {
+    global.fetch = jest.fn((url: string) => {
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+
+      if (url === '/chat/chat-1/turn') {
+        return Promise.resolve(
+          mockJsonResponse({
+            success: true,
+            userTurn: {
+              turnNumber: 1,
+              speaker: 'USER',
+              blocks: [{ type: 'SPEECH', text: 'Tell me what happened.' }],
+              rawText: 'Tell me what happened.',
+              timestamp: '2026-03-27T10:00:00.000Z',
+            },
+            characterTurn: {
+              turnNumber: 2,
+              speaker: 'CHARACTER',
+              blocks: [{ type: 'SPEECH', text: 'No.' }],
+              timestamp: '2026-03-27T10:00:05.000Z',
+            },
+            updatedSession: {
+              physicalContext: {
+                location: 'Archive',
+                microLocation: 'Reading alcove',
+                timeOfDay: 'EVENING',
+                privacy: 'PRIVATE',
+                distanceBand: 'CONVERSATIONAL',
+                characterActivity: 'Cataloguing ledgers',
+                interactableObjects: ['ledger'],
+                ambientConditions: ['rain'],
+              },
+              relationshipState: {
+                dynamic: 'strained allies',
+                valence: -1,
+                tension: 7,
+                leverage: 'Shared guilt',
+              },
+              leadInContext: {
+                whyNow: 'Before dawn.',
+              },
+            },
+          })
+        );
+      }
+
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, 404));
+    }) as jest.Mock;
+
+    loadAppAndInit();
+
+    const messageInput = document.getElementById('chat-message') as HTMLTextAreaElement;
+    const form = document.getElementById('chat-turn-form') as HTMLFormElement;
+
+    Object.defineProperty(messageInput, 'scrollHeight', {
+      configurable: true,
+      get: () => (messageInput.value.length > 0 ? 140 : 20),
+    });
+
+    messageInput.value = 'Tell me what happened.\nNow.';
+    messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(messageInput.style.height).toBe('140px');
+
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    await Promise.resolve();
+    await jest.runAllTimersAsync();
+    await Promise.resolve();
+
+    expect(messageInput.value).toBe('');
+    expect(messageInput.style.height).toBe('46px');
   });
 
   it('prevents duplicate submits while a turn request is in flight', async () => {
@@ -247,6 +395,7 @@ describe('chat page controller', () => {
     const sendButton = document.getElementById('chat-send-button') as HTMLButtonElement;
 
     messageInput.value = 'Tell me what happened.';
+    messageInput.dispatchEvent(new Event('input', { bubbles: true }));
 
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
@@ -299,7 +448,7 @@ describe('chat page controller', () => {
     await jest.runAllTimersAsync();
     await Promise.resolve();
 
-    expect(sendButton.disabled).toBe(false);
+    expect(sendButton.disabled).toBe(true);
   });
 
   it('displays model and HTTP status from debug payload in error message', async () => {
@@ -335,6 +484,7 @@ describe('chat page controller', () => {
     const messageInput = document.getElementById('chat-message') as HTMLTextAreaElement;
 
     messageInput.value = 'Hello there.';
+    messageInput.dispatchEvent(new Event('input', { bubbles: true }));
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 
     await Promise.resolve();

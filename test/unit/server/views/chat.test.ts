@@ -205,8 +205,13 @@ describe('chat page template', () => {
     expect(html).toContain('data-chat-field="dynamic"');
     expect(html).toContain('id="chat-turn-form"');
     expect(html).toContain('data-chat-turn-form');
+    expect(html).toContain('id="chat-apikey-toggle"');
+    expect(html).toContain('id="chat-apikey-popover"');
     expect(html).toContain('name="apiKey"');
     expect(html).toContain('name="message"');
+    expect(html).toContain('rows="1"');
+    expect(html).toContain('maxlength="2000"');
+    expect(html).toContain('class="btn btn-primary chat-send-btn"');
     expect(html).toContain('id="chat-loading-indicator"');
     expect(html).toContain('data-chat-progress');
     expect(html).toContain('<script type="application/json" id="chat-ui-bootstrap">');

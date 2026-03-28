@@ -125,25 +125,40 @@
 
     <section class="chat-input-bar">
       <form id="chat-turn-form" class="chat-input-form" data-chat-turn-form>
-        <div class="chat-input-form__row">
-          <div class="form-group chat-input-form__api-key">
-            <label for="chat-api-key">OpenRouter API Key</label>
-            <input
-              type="password"
-              id="chat-api-key"
-              name="apiKey"
-              placeholder="sk-or-..."
-              autocomplete="off"
+        <div class="chat-input-form__composer">
+          <div class="chat-apikey-popover-anchor">
+            <button
+              type="button"
+              id="chat-apikey-toggle"
+              class="btn btn-secondary btn-small chat-apikey-btn"
+              aria-controls="chat-apikey-popover"
+              aria-expanded="false"
+              aria-label="Open API key settings"
+              title="API key settings"
             >
-            <p class="form-help">Stored client-side for turn generation only.</p>
+              <span class="chat-apikey-btn__icon" aria-hidden="true">Unlocked</span>
+              <span class="chat-apikey-btn__label">API Key</span>
+            </button>
+
+            <div id="chat-apikey-popover" class="chat-apikey-popover" hidden>
+              <label class="chat-apikey-popover__label" for="chat-api-key">OpenRouter API Key</label>
+              <input
+                type="password"
+                id="chat-api-key"
+                name="apiKey"
+                placeholder="sk-or-..."
+                autocomplete="off"
+              >
+              <p class="form-help">Stored client-side for turn generation only.</p>
+            </div>
           </div>
 
-          <div class="form-group chat-input-form__message">
-            <label for="chat-message">Message</label>
+          <div class="chat-input-form__message">
+            <label class="sr-only" for="chat-message">Message</label>
             <textarea
               id="chat-message"
               name="message"
-              rows="3"
+              rows="1"
               maxlength="2000"
               placeholder="Use *asterisks* for actions and plain text for speech."
               required
@@ -151,7 +166,7 @@
           </div>
 
           <div class="chat-input-form__actions">
-            <button type="submit" class="btn btn-primary" id="chat-send-button">Send</button>
+            <button type="submit" class="btn btn-primary chat-send-btn" id="chat-send-button">Send</button>
           </div>
         </div>
 
