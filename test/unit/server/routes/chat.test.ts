@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-assignment */
 import type { Request, Response } from 'express';
+import type { ChatBible, ChatSession, ChatTurn } from '@/models/chat';
 
 const mockChatService = {
   listChats: jest.fn(),
@@ -75,7 +76,7 @@ function mockRes(): Response {
   } as unknown as Response;
 }
 
-function createSession(): Record<string, unknown> {
+function createSession(): ChatSession {
   return {
     id: 'chat-1',
     createdAt: '2026-03-27T09:00:00.000Z',
@@ -118,7 +119,61 @@ function createSession(): Record<string, unknown> {
   };
 }
 
-function createCharacterTurn(): Record<string, unknown> {
+function createChatBible(): ChatBible {
+  return {
+    sessionPremise: 'A private confrontation after the raid.',
+    physicalReality: {
+      location: 'Archive',
+      microLocation: 'Reading alcove',
+      timeOfDay: 'EVENING',
+      privacy: 'PRIVATE',
+      distanceBand: 'CONVERSATIONAL',
+      characterActivity: 'Cataloguing ledgers',
+      interactableObjects: ['ledger'],
+      ambientConditions: ['rain'],
+    },
+    preChatMomentum: {
+      leadInSummary: 'They meet after the raid.',
+      recentEvents: ['A witness vanished.'],
+      whyNow: 'The ledger must be found before dawn.',
+      stakesNow: ['Exposure ruins them both.'],
+      unresolvedPressures: ['Neither knows who else is listening.'],
+    },
+    characterNow: {
+      currentObjective: 'Keep the upper hand.',
+      immediateNeedFromConversation: 'Find out what Iven knows.',
+      emotionalState: 'guarded',
+      willingnessToEngage: 'GUARDED',
+      topicsToAdvance: ['the ledger'],
+      topicsToProtect: ['the copy'],
+    },
+    relationshipNow: {
+      dynamic: 'strained allies',
+      valence: -1,
+      tension: 6,
+      leverage: 'Shared guilt',
+      whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+    },
+    knowledgeNow: {
+      knownFacts: ['The ledger is missing.'],
+      suspicions: ['Iven moved it.'],
+      falseBeliefs: [],
+      secretsRevealed: [],
+      secretsKept: ['Mara copied one page.'],
+      knowledgeBoundaries: ['Who ordered the raid.'],
+    },
+    conversationNow: {
+      activeThreads: ['the missing ledger'],
+      commitments: [],
+      sensitiveTopics: ['the copy'],
+      lastTurnPressure: 'Iven asked what Mara already knows.',
+    },
+    continuityGuardrails: ['Do not confess without pressure.'],
+    responseConstraints: ['Stay grounded in the immediate exchange.'],
+  };
+}
+
+function createCharacterTurn(): ChatTurn {
   return {
     turnNumber: 2,
     speaker: 'CHARACTER' as const,
@@ -179,11 +234,18 @@ function createCharacterTurn(): Record<string, unknown> {
       shouldRefreshChatBible: false,
       shouldTriggerSummary: false,
     },
+    relationshipSnapshot: {
+      dynamic: 'strained allies',
+      valence: -1,
+      tension: 7,
+      leverage: 'Shared guilt',
+      whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+    },
     timestamp: '2026-03-27T09:02:00.000Z',
   };
 }
 
-function createUserTurn(): Record<string, unknown> {
+function createUserTurn(): ChatTurn {
   return {
     turnNumber: 1,
     speaker: 'USER' as const,
@@ -219,6 +281,24 @@ beforeEach(() => {
     updatedSession: createSession(),
     bibleWasRefreshed: false,
     summaryWasGenerated: false,
+    relationshipPresentation: {
+      valence: {
+        value: -1,
+        delta: -1,
+        summary: 'Frayed and cooling',
+        trend: 'cooling',
+        gaugeAriaLabel: 'Valence: Frayed and cooling. Current value -1 on a scale from -5 to 5.',
+        sparklineAriaLabel: 'Valence trend: Frayed and cooling across 1 recorded turns.',
+      },
+      tension: {
+        value: 7,
+        delta: 7,
+        summary: 'Breaking and rising',
+        trend: 'rising',
+        gaugeAriaLabel: 'Tension: Breaking and rising. Current value 7 on a scale from 0 to 10.',
+        sparklineAriaLabel: 'Tension trend: Breaking and rising across 1 recorded turns.',
+      },
+    },
   });
   mockChatService.deleteChat.mockResolvedValue(undefined);
 });
@@ -345,6 +425,155 @@ describe('chat routes', () => {
         title: 'Chat with Mara - One More Branch',
         session: expect.objectContaining({ id: 'chat-1' }),
         turns: expect.any(Array),
+        chatUiBootstrap: expect.objectContaining({
+          chatBible: null,
+          rollingSummary: null,
+          knowledgeState: expect.any(Object),
+          relationshipPresentation: expect.objectContaining({
+            valence: expect.objectContaining({
+              summary: 'Frayed and cooling',
+            }),
+            tension: expect.objectContaining({
+              summary: 'Breaking and rising',
+            }),
+          }),
+          relationshipTimeline: [
+            {
+              turnNumber: 2,
+              snapshot: {
+                dynamic: 'strained allies',
+                valence: -1,
+                tension: 7,
+                leverage: 'Shared guilt',
+                whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+              },
+            },
+          ],
+        }),
+      })
+    );
+  });
+
+  it('GET /:chatId builds cumulative relationship history for the bootstrap payload', async () => {
+    const characterTurn = createCharacterTurn();
+    const laterCharacterTurn = {
+      ...createCharacterTurn(),
+      turnNumber: 4,
+      timestamp: '2026-03-27T09:04:00.000Z',
+      stateUpdate: {
+        ...createCharacterTurn().stateUpdate,
+        relationshipShifts: [
+          {
+            shiftDescription: 'Mara softens slightly.',
+            suggestedValenceChange: 1,
+            suggestedTensionChange: -2,
+            suggestedNewDynamic: null,
+          },
+        ],
+      },
+      relationshipSnapshot: {
+        dynamic: 'open suspicion',
+        valence: -1,
+        tension: 1,
+        leverage: 'Shared guilt',
+        whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+      },
+    };
+
+    mockChatService.resumeChat.mockResolvedValue({
+      session: {
+        ...createSession(),
+        chatBible: createChatBible(),
+      },
+      turns: [
+        createUserTurn(),
+        {
+          ...characterTurn,
+          stateUpdate: {
+            ...characterTurn.stateUpdate,
+            relationshipShifts: [
+              {
+                shiftDescription: 'The accusation lands.',
+                suggestedValenceChange: -2,
+                suggestedTensionChange: 3,
+                suggestedNewDynamic: 'open suspicion',
+              },
+            ],
+          },
+          relationshipSnapshot: {
+            dynamic: 'open suspicion',
+            valence: -2,
+            tension: 3,
+            leverage: 'Shared guilt',
+            whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+          },
+        },
+        {
+          ...createUserTurn(),
+          turnNumber: 3,
+          timestamp: '2026-03-27T09:03:00.000Z',
+        },
+        laterCharacterTurn,
+      ],
+    });
+
+    const handler = getRouteHandler('get', '/:chatId');
+    const req = mockReq({ params: { chatId: 'chat-1' } });
+    const res = mockRes();
+
+    void handler(req, res);
+    await flushPromises();
+
+    expect(res.render).toHaveBeenCalledWith(
+      'pages/chat',
+      expect.objectContaining({
+        chatUiBootstrap: {
+          chatBible: createChatBible(),
+          rollingSummary: null,
+          knowledgeState: expect.any(Object),
+          relationshipPresentation: {
+            valence: {
+              value: -1,
+              delta: 1,
+              summary: 'Frayed and warming',
+              trend: 'warming',
+              gaugeAriaLabel:
+                'Valence: Frayed and warming. Current value -1 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Frayed and warming across 2 recorded turns.',
+            },
+            tension: {
+              value: 1,
+              delta: -2,
+              summary: 'Calm and easing',
+              trend: 'easing',
+              gaugeAriaLabel:
+                'Tension: Calm and easing. Current value 1 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Calm and easing across 2 recorded turns.',
+            },
+          },
+          relationshipTimeline: [
+            {
+              turnNumber: 2,
+              snapshot: {
+                dynamic: 'open suspicion',
+                valence: -2,
+                tension: 3,
+                leverage: 'Shared guilt',
+                whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+              },
+            },
+            {
+              turnNumber: 4,
+              snapshot: {
+                dynamic: 'open suspicion',
+                valence: -1,
+                tension: 1,
+                leverage: 'Shared guilt',
+                whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+              },
+            },
+          ],
+        },
       })
     );
   });
@@ -459,8 +688,15 @@ describe('chat routes', () => {
         userTurn: expect.any(Object),
         characterTurn: expect.any(Object),
         updatedSession: expect.any(Object),
+        relationshipPresentation: expect.objectContaining({
+          valence: expect.objectContaining({
+            summary: 'Frayed and cooling',
+          }),
+        }),
       })
     );
+    const jsonCalls = (res.json as jest.Mock).mock.calls as Array<[Record<string, unknown>]>;
+    expect(jsonCalls[0]?.[0]).not.toHaveProperty('updatedChatBible');
   });
 
   it('POST /:chatId/turn maps missing chats to 404 and fails progress', async () => {
@@ -553,6 +789,44 @@ describe('chat routes', () => {
         error: 'API error: Model failed',
       })
     );
+  });
+
+  it('POST /:chatId/turn includes debug info for HTTP 400 LLM errors', async () => {
+    mockChatService.sendTurn.mockRejectedValue(
+      new LLMError('Provider returned error', 'HTTP_400', false, {
+        httpStatus: 400,
+        model: 'anthropic/claude-sonnet-4.5',
+        rawErrorBody: JSON.stringify({
+          error: { message: 'Provider returned error', metadata: { raw: 'context_length_exceeded' } },
+        }),
+        parsedError: { message: 'Provider returned error' },
+      })
+    );
+
+    const handler = getRouteHandler('post', '/:chatId/turn');
+    const req = mockReq({
+      params: { chatId: 'chat-1' },
+      body: {
+        message: 'Hello there.',
+        apiKey: 'valid-api-key-12345',
+        progressId: 'chat-progress-400',
+      },
+    });
+    const res = mockRes();
+
+    void handler(req, res);
+    await flushPromises();
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    const calls = (res.json as jest.Mock).mock.calls as Array<[Record<string, unknown>]>;
+    const jsonPayload = calls[0]?.[0] as Record<string, unknown>;
+    expect(jsonPayload['success']).toBe(false);
+    expect(jsonPayload['code']).toBe('HTTP_400');
+    expect(jsonPayload['debug']).toBeDefined();
+
+    const debug = jsonPayload['debug'] as Record<string, unknown>;
+    expect(debug['httpStatus']).toBe(400);
+    expect(debug['model']).toBe('anthropic/claude-sonnet-4.5');
   });
 
   it('DELETE /:chatId deletes the chat and returns success JSON', async () => {

@@ -14,6 +14,7 @@ import {
   buildKernelGroundingSection,
 } from './sections/shared/concept-kernel-sections.js';
 import { buildWorldSection } from './sections/shared/worldbuilding-sections.js';
+import { valenceLabel } from './relationship-label-maps.js';
 
 export interface CharPresentationPromptContext extends CharacterDevPromptContext {
   readonly characterKernel: CharacterKernel;
@@ -41,7 +42,7 @@ function formatRelationships(relationships: DeepRelationshipResult['relationship
   return relationships
     .map(
       (relationship) =>
-        `- ${relationship.fromCharacter} -> ${relationship.toCharacter}: ${relationship.relationshipType} (${relationship.valence}, ${relationship.numericValence})\n  History: ${relationship.history}\n  Current Tension: ${relationship.currentTension}\n  Leverage: ${relationship.leverage}`
+        `- ${relationship.fromCharacter} -> ${relationship.toCharacter}: ${relationship.relationshipType} (${relationship.valence}, ${valenceLabel(relationship.numericValence)})\n  History: ${relationship.history}\n  Current Tension: ${relationship.currentTension}\n  Leverage: ${relationship.leverage}`
     )
     .join('\n');
 }

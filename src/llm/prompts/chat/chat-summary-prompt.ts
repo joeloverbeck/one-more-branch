@@ -12,9 +12,13 @@ Keep the summary additive and continuity-safe: merge any existing rolling summar
 The emotional trajectory must stay factual and externally grounded, not sentimental.`;
 
 export function buildChatSummaryMessages(context: ChatSummaryContext): ChatMessage[] {
+  const speakerNames = {
+    target: context.targetCharacterName,
+    interlocutor: context.interlocutorCharacterName,
+  };
   const userSections = [
     `EXISTING ROLLING SUMMARY\n${formatRollingSummaryForPrompt(context.existingSummary)}`,
-    `TURNS TO COMPRESS\n${formatRecentTurns(context.turnsToCompress)}`,
+    `TURNS TO COMPRESS\n${formatRecentTurns(context.turnsToCompress, speakerNames)}`,
   ];
 
   return [

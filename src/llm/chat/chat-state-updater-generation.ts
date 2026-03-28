@@ -1,7 +1,15 @@
-import type { ChatBible, ChatStateUpdate, ChatTurn, TurnPlannerOutput } from '../../models/chat/index.js';
+import type {
+  ChatBible,
+  ChatRelationshipSnapshot,
+  ChatStateUpdate,
+  ChatTurn,
+  RollingSummaryOutput,
+  TurnPlannerOutput,
+} from '../../models/chat/index.js';
 import type { GenerationOptions } from '../generation-pipeline-types.js';
 import { runLlmStage } from '../llm-stage-runner.js';
 import { buildChatStateUpdaterMessages } from '../prompts/chat/chat-state-updater-prompt.js';
+import { buildLenientSchema, withGrammarFallback } from '../structured-output-fallback.js';
 import {
   CHAT_STATE_UPDATER_SCHEMA,
   parseChatStateUpdaterResponse,
@@ -9,7 +17,10 @@ import {
 import type { ChatWriterTurn } from './chat-writer-generation.js';
 
 export interface ChatStateUpdaterContext {
+  readonly targetCharacterName: string;
+  readonly interlocutorCharacterName: string;
   readonly chatBible: ChatBible;
+  readonly rollingSummary: RollingSummaryOutput | null;
   readonly latestUserTurn: ChatTurn;
   readonly turnPlan: TurnPlannerOutput;
   readonly writerTurn: ChatWriterTurn;
@@ -17,6 +28,7 @@ export interface ChatStateUpdaterContext {
 
 export interface ChatStateUpdaterGenerationResult {
   readonly stateUpdate: ChatStateUpdate;
+  readonly relationshipSnapshot: ChatRelationshipSnapshot;
   readonly rawResponse: string;
 }
 
@@ -26,18 +38,32 @@ export async function generateChatStateUpdate(
   options?: Partial<GenerationOptions>
 ): Promise<ChatStateUpdaterGenerationResult> {
   const messages = buildChatStateUpdaterMessages(context);
-  const result = await runLlmStage({
-    stageModel: 'chatStateUpdater',
-    promptType: 'chatStateUpdater',
-    apiKey,
-    options,
-    schema: CHAT_STATE_UPDATER_SCHEMA,
-    messages,
-    parseResponse: parseChatStateUpdaterResponse,
-  });
+  const result = await withGrammarFallback(
+    () =>
+      runLlmStage({
+        stageModel: 'chatStateUpdater',
+        promptType: 'chatStateUpdater',
+        apiKey,
+        options,
+        schema: CHAT_STATE_UPDATER_SCHEMA,
+        messages,
+        parseResponse: parseChatStateUpdaterResponse,
+      }),
+    () =>
+      runLlmStage({
+        stageModel: 'chatStateUpdater',
+        promptType: 'chatStateUpdater',
+        apiKey,
+        options,
+        schema: buildLenientSchema(CHAT_STATE_UPDATER_SCHEMA),
+        messages,
+        parseResponse: parseChatStateUpdaterResponse,
+      })
+  );
 
   return {
-    stateUpdate: result.parsed,
+    stateUpdate: result.parsed.stateUpdate,
+    relationshipSnapshot: result.parsed.relationshipSnapshot,
     rawResponse: result.rawResponse,
   };
 }

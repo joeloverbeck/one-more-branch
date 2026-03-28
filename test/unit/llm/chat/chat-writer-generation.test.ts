@@ -1,4 +1,4 @@
-const mockRunLlmStage = jest.fn();
+const mockRunLlmStage = jest.fn<Promise<{ parsed: unknown; rawResponse: string }>, [unknown]>();
 const mockBuildMessages = jest.fn().mockReturnValue([
   { role: 'system', content: 'System prompt' },
   { role: 'user', content: 'User prompt' },
@@ -48,6 +48,7 @@ function makeContext(): ChatWriterContext {
       appearance: 'severe',
       createdAt: '2026-03-01T00:00:00.000Z',
     },
+    rollingSummary: null,
     chatBible: {
       sessionPremise: 'Two allies test whether trust is still possible.',
       physicalReality: {
@@ -91,7 +92,6 @@ function makeContext(): ChatWriterContext {
         knowledgeBoundaries: ['She does not know who ordered the theft'],
       },
       conversationNow: {
-        rollingSummary: null,
         activeThreads: ['Who lied first'],
         commitments: [],
         sensitiveTopics: ['Her brother'],
@@ -205,6 +205,35 @@ describe('generateChatWriterTurn', () => {
     expect(result.rawResponse).toContain('blocks');
   });
 
+  it('retries with a lenient schema when the provider rejects the strict grammar', async () => {
+    mockRunLlmStage
+      .mockRejectedValueOnce(new Error('reduce the number of strict tools'))
+      .mockResolvedValueOnce({
+        parsed: PARSED_WRITER_TURN,
+        rawResponse: '{"blocks":[{"type":"ACTION"}]}',
+      });
+
+    const result = await generateChatWriterTurn(makeContext(), 'test-key');
+
+    expect(result.writerTurn).toEqual(PARSED_WRITER_TURN);
+    expect(mockRunLlmStage).toHaveBeenCalledTimes(2);
+    expect(mockRunLlmStage).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        schema: CHAT_WRITER_SCHEMA,
+      })
+    );
+    const secondStageInput: unknown = mockRunLlmStage.mock.calls[1]?.[0];
+    expect(secondStageInput).toMatchObject({
+      schema: {
+        json_schema: {
+            name: CHAT_WRITER_SCHEMA.json_schema.name,
+            strict: false,
+        },
+      },
+    });
+  });
+
   it('rejects output whose block sequence diverges from the planner blockPlan', async () => {
     mockRunLlmStage.mockResolvedValue({
       parsed: {
@@ -293,5 +322,6 @@ describe('generateChatWriterTurn', () => {
     mockRunLlmStage.mockRejectedValue(new LLMError('API error', 'API_ERROR', true));
 
     await expect(generateChatWriterTurn(makeContext(), 'test-key')).rejects.toThrow('API error');
+    expect(mockRunLlmStage).toHaveBeenCalledTimes(1);
   });
 });

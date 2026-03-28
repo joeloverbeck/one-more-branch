@@ -1,5 +1,33 @@
 import type { LLMError } from '../../llm/llm-client-types.js';
 
+function extractRawBodyDetail(rawErrorBody: string | undefined): string | null {
+  if (!rawErrorBody || rawErrorBody.length === 0) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(rawErrorBody) as {
+      error?: {
+        message?: string;
+        metadata?: { raw?: string; provider_error?: string };
+      };
+    };
+    const metadata = parsed.error?.metadata;
+    if (typeof metadata?.raw === 'string' && metadata.raw.length > 0) {
+      return metadata.raw.length <= 300 ? metadata.raw : `${metadata.raw.slice(0, 300)}...`;
+    }
+    if (typeof metadata?.provider_error === 'string' && metadata.provider_error.length > 0) {
+      return metadata.provider_error.length <= 300
+        ? metadata.provider_error
+        : `${metadata.provider_error.slice(0, 300)}...`;
+    }
+  } catch {
+    // Not parseable JSON, ignore.
+  }
+
+  return null;
+}
+
 /**
  * Formats an LLMError into a user-friendly message based on HTTP status and context.
  * Handles common API errors like auth failures, rate limits, and service unavailability.
@@ -12,6 +40,7 @@ export function formatLLMError(error: LLMError): string {
   const rawErrorBody = error.context?.['rawErrorBody'] as string | undefined;
   const parseStage = error.context?.['parseStage'] as string | undefined;
   const contentShape = error.context?.['contentShape'] as string | undefined;
+  const model = error.context?.['model'] as string | undefined;
 
   // Extract provider-specific error message if available
   const providerMessage = parsedError?.message ?? '';
@@ -34,9 +63,20 @@ export function formatLLMError(error: LLMError): string {
     ) {
       return 'Story generation failed due to a configuration error. Please try again or report this issue.';
     }
-    // Include provider message for 400 errors if available
+    // Include provider message for 400 errors if available and distinct
     if (providerMessage && providerMessage !== error.message) {
       return `API request error: ${providerMessage}`;
+    }
+    // When providerMessage is vague (e.g. "Provider returned error"), try to extract
+    // more detail from the raw error body (OpenRouter often includes metadata.raw)
+    const rawDetail = extractRawBodyDetail(rawErrorBody);
+    if (rawDetail) {
+      const modelLabel = model ? ` (model: ${model})` : '';
+      return `API request error${modelLabel}: ${rawDetail}`;
+    }
+    // Fall back to including model name for actionable context
+    if (model) {
+      return `API request error (model: ${model}): ${error.message}`;
     }
     return `API request error: ${error.message}`;
   }

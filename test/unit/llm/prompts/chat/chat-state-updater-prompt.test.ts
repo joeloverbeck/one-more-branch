@@ -3,6 +3,16 @@ import type { ChatStateUpdaterContext } from '../../../../../src/llm/chat/chat-s
 
 function makeContext(): ChatStateUpdaterContext {
   return {
+    targetCharacterName: 'Iria Vale',
+    interlocutorCharacterName: 'Tomas Braga',
+    rollingSummary: {
+      compressedSummary: 'Their last meeting ended with a threat and no proof.',
+      keyCommitments: ['Meet before dawn'],
+      keyRevelations: ['Iria copied the key'],
+      unresolvedQuestions: ['Who ordered the theft?'],
+      leverageShifts: ['Tomas forced Iria onto the defensive.'],
+      emotionalTrajectory: 'Guarded hostility.',
+    },
     chatBible: {
       sessionPremise: 'A guarded reunion after a failed mission.',
       physicalReality: {
@@ -46,7 +56,6 @@ function makeContext(): ChatStateUpdaterContext {
         knowledgeBoundaries: ['She does not know who ordered the theft'],
       },
       conversationNow: {
-        rollingSummary: 'Their last meeting ended with a threat and no proof.',
         activeThreads: ['Who betrayed whom first'],
         commitments: ['Meet before dawn'],
         sensitiveTopics: ['Her brother'],
@@ -125,6 +134,7 @@ describe('buildChatStateUpdaterMessages', () => {
 
     expect(systemContent).toContain('CONTENT GUIDELINES');
     expect(systemContent).toContain('Track knowledge asymmetry');
+    expect(systemContent).toContain('Return the canonical post-turn relationship snapshot');
     expect(systemContent).toContain('Do not invent state changes unsupported by the provided turn.');
   });
 
@@ -132,6 +142,7 @@ describe('buildChatStateUpdaterMessages', () => {
     const userContent = buildChatStateUpdaterMessages(makeContext())[1].content;
 
     expect(userContent).toContain('PRE-TURN CHAT BIBLE');
+    expect(userContent).toContain('OLDER CHAT SUMMARY');
     expect(userContent).toContain('LATEST USER TURN');
     expect(userContent).toContain('TURN PLAN');
     expect(userContent).toContain('FINAL WRITTEN TURN');
@@ -140,7 +151,7 @@ describe('buildChatStateUpdaterMessages', () => {
   it('formats the latest user turn and final writer turn separately', () => {
     const userContent = buildChatStateUpdaterMessages(makeContext())[1].content;
 
-    expect(userContent).toContain('LATEST USER TURN\nTURN 12 [USER]');
+    expect(userContent).toContain('LATEST USER TURN\nTURN 12 [Tomas Braga]');
     expect(userContent).toContain('- ACTION: steps closer');
     expect(userContent).toContain('- SPEECH: Then prove it.');
     expect(userContent).toContain('FINAL WRITTEN TURN\nBlocks:');
@@ -151,5 +162,7 @@ describe('buildChatStateUpdaterMessages', () => {
     expect(userContent).toContain(
       'Turn Meta: expectsReply=true; endsWithQuestion=false; visibleEmotion=controlled anger; finalPressure=She refuses to let him redirect.'
     );
+    expect(userContent).toContain('Compressed Summary: Their last meeting ended with a threat and no proof.');
+    expect(userContent).not.toContain('Rolling Summary: Their last meeting ended with a threat and no proof.');
   });
 });

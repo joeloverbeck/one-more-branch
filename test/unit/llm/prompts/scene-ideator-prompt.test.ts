@@ -226,7 +226,7 @@ describe('buildSceneIdeatorPrompt', () => {
       const messages = buildSceneIdeatorPrompt(ctx);
       expect(messages[1].content).toContain('NPC-PROTAGONIST RELATIONSHIPS');
       expect(messages[1].content).toContain('[Elena]');
-      expect(messages[1].content).toContain('Dynamic: ally | Valence: 3');
+      expect(messages[1].content).toContain('Dynamic: ally | Valence: trusting and close');
     });
 
     it('renders inventory when present', () => {

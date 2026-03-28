@@ -53,4 +53,65 @@ describe('formatLLMError', () => {
       'API error: Model returned malformed JSON content (array). Please retry.'
     );
   });
+
+  it('formats 400 with vague provider message by including model and raw body detail', () => {
+    const error = new LLMError('Provider returned error', 'HTTP_400', false, {
+      httpStatus: 400,
+      model: 'anthropic/claude-sonnet-4.5',
+      rawErrorBody: JSON.stringify({
+        error: {
+          message: 'Provider returned error',
+          metadata: { raw: 'Input too long for model context window' },
+        },
+      }),
+      parsedError: { message: 'Provider returned error' },
+    });
+
+    const result = formatLLMError(error);
+    expect(result).toContain('anthropic/claude-sonnet-4.5');
+    expect(result).not.toBe('API request error: Provider returned error');
+  });
+
+  it('formats 400 with vague provider message and no raw body detail by including model', () => {
+    const error = new LLMError('Provider returned error', 'HTTP_400', false, {
+      httpStatus: 400,
+      model: 'anthropic/claude-sonnet-4.5',
+      rawErrorBody: JSON.stringify({ error: { message: 'Provider returned error' } }),
+      parsedError: { message: 'Provider returned error' },
+    });
+
+    const result = formatLLMError(error);
+    expect(result).toContain('anthropic/claude-sonnet-4.5');
+    expect(result).toContain('Provider returned error');
+  });
+
+  it('formats 400 with distinct provider message as before', () => {
+    const error = new LLMError('Provider returned error', 'HTTP_400', false, {
+      httpStatus: 400,
+      model: 'anthropic/claude-sonnet-4.5',
+      parsedError: { message: 'Input exceeds context length of 200000 tokens' },
+    });
+
+    expect(formatLLMError(error)).toBe(
+      'API request error: Input exceeds context length of 200000 tokens'
+    );
+  });
+
+  it('formats 400 with raw body metadata when provider message is vague', () => {
+    const rawBody = JSON.stringify({
+      error: {
+        message: 'Provider returned error',
+        metadata: { raw: 'context_length_exceeded: max 200000 tokens' },
+      },
+    });
+    const error = new LLMError('Provider returned error', 'HTTP_400', false, {
+      httpStatus: 400,
+      model: 'openai/gpt-4o',
+      rawErrorBody: rawBody,
+      parsedError: { message: 'Provider returned error' },
+    });
+
+    const result = formatLLMError(error);
+    expect(result).toContain('context_length_exceeded');
+  });
 });

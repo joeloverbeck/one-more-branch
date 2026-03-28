@@ -31,6 +31,18 @@ function makeCharacter(
     conflictPriority: 'Mission over comfort',
     appearance: 'Rain-dark coat and immaculate gloves',
     createdAt: '2026-03-01T10:00:00.000Z',
+    stressVariants: {
+      underThreat: 'Gets colder and more procedural',
+      inIntimacy: 'Deflects with mission language',
+      whenLying: 'Over-explains tactical details',
+      whenAshamed: 'Turns severe and overcorrects',
+      whenWinning: 'Presses for irreversible leverage',
+    },
+    focalizationFilter: {
+      noticesFirst: 'Breaks in resolve',
+      systematicallyMisses: 'Unscripted kindness',
+      misreadsAs: 'Reads hesitation as stalling',
+    },
     immediateObjectives: ['Secure the map', 'Test Tomas'],
     ...overrides,
   };
@@ -39,6 +51,15 @@ function makeCharacter(
 function makeContext(): ChatPlannerContext {
   return {
     targetCharacter: makeCharacter('Iria Vale'),
+    interlocutorCharacterName: 'Tomas Braga',
+    rollingSummary: {
+      compressedSummary: 'Their last meeting ended with a threat and no proof.',
+      keyCommitments: ['Meet before dawn'],
+      keyRevelations: ['Iria copied the key'],
+      unresolvedQuestions: ['Who ordered the theft?'],
+      leverageShifts: ['Tomas forced Iria onto the defensive.'],
+      emotionalTrajectory: 'Guarded hostility.',
+    },
     chatBible: {
       sessionPremise: 'A guarded reunion after a failed mission.',
       physicalReality: {
@@ -82,7 +103,6 @@ function makeContext(): ChatPlannerContext {
         knowledgeBoundaries: ['She does not know who ordered the theft'],
       },
       conversationNow: {
-        rollingSummary: 'Their last meeting ended with a threat and no proof.',
         activeThreads: ['Who betrayed whom first'],
         commitments: ['Meet before dawn'],
         sensitiveTopics: ['Her brother'],
@@ -114,6 +134,13 @@ function makeContext(): ChatPlannerContext {
           endsWithQuestion: false,
           visibleEmotion: 'contained anger',
           finalPressure: 'Demands proof instead of denial',
+        },
+        relationshipSnapshot: {
+          dynamic: 'brittle allies',
+          valence: -1,
+          tension: 7,
+          leverage: 'Each knows one ruinous fact about the other',
+          whatCharacterBelievesAboutInterlocutor: ['He still wants the alliance to survive'],
         },
         timestamp: '2026-03-02T09:01:00.000Z',
       },
@@ -151,16 +178,25 @@ describe('buildChatPlannerMessages', () => {
     const userContent = buildChatPlannerMessages(makeContext())[1].content;
 
     expect(userContent).toContain('CHAT BIBLE');
+    expect(userContent).toContain('OLDER CHAT SUMMARY');
     expect(userContent).toContain('TARGET CHARACTER DECOMPOSITION');
     expect(userContent).toContain('TARGET CHARACTER SPEECH FINGERPRINT');
     expect(userContent).toContain('RECENT CHAT TURNS');
     expect(userContent).toContain('LATEST USER TURN');
   });
 
-  it('includes decomposed motivation context and speech fingerprint guidance', () => {
+  it('wires the standalone summary view and keeps speech fingerprint guidance separate', () => {
     const userContent = buildChatPlannerMessages(makeContext())[1].content;
 
+    expect(userContent).toContain('TARGET CHARACTER DECOMPOSITION\nIria Vale\n  Traits: guarded, precise');
     expect(userContent).toContain('Immediate Objectives: Secure the map; Test Tomas');
+    expect(userContent).toContain('Focalization Filter:');
+    expect(userContent).toContain('Notices First: Breaks in resolve');
+    expect(userContent).toContain('Stress Variants:');
+    expect(userContent).toContain('When Lying: Over-explains tactical details');
+    expect(userContent).not.toContain('Knowledge Boundaries: Knows the codes, not the mastermind.');
+    expect(userContent).not.toContain('Core Beliefs:');
+    expect(userContent).not.toContain('Iria Vale is dangerous and exhausted.');
     expect(userContent).toContain('Vocabulary Profile: Clipped naval diction');
     expect(userContent).toContain('Dialogue Samples:');
     expect(userContent).toContain('- Stay on bearing, and maybe we survive this yet.');
@@ -169,10 +205,17 @@ describe('buildChatPlannerMessages', () => {
   it('formats recent turns and latest user turn separately', () => {
     const userContent = buildChatPlannerMessages(makeContext())[1].content;
 
-    expect(userContent).toContain('RECENT CHAT TURNS\nTURN 11 [USER]');
-    expect(userContent).toContain('TURN 12 [CHARACTER]');
-    expect(userContent).toContain('LATEST USER TURN\nTURN 13 [USER]');
+    expect(userContent).toContain('RECENT CHAT TURNS\nTURN 11 [Tomas Braga]');
+    expect(userContent).toContain('TURN 12 [Iria Vale]');
+    expect(userContent).toContain('LATEST USER TURN\nTURN 13 [Tomas Braga]');
     expect(userContent).toContain('- ACTION: steps closer');
     expect(userContent).toContain('- SPEECH: Then prove it.');
+  });
+
+  it('renders the canonical session rolling summary outside the chat bible', () => {
+    const userContent = buildChatPlannerMessages(makeContext())[1].content;
+
+    expect(userContent).toContain('OLDER CHAT SUMMARY\nCompressed Summary: Their last meeting ended with a threat and no proof.');
+    expect(userContent).not.toContain('Rolling Summary: Their last meeting ended with a threat and no proof.');
   });
 });

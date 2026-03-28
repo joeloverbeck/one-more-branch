@@ -9,6 +9,7 @@ import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildGenreConventionsSection } from './sections/shared/genre-conventions-section.js';
 import { buildWorldSection } from './sections/shared/worldbuilding-sections.js';
+import { valenceLabel } from './relationship-label-maps.js';
 
 function formatNumberedLines(lines: readonly string[]): string {
   return lines.map((line, index) => `${index + 1}. ${line}`).join('\n');
@@ -136,7 +137,7 @@ ${npcRelationshipEntries
   .map(
     (r) =>
       `[${r.npcName}]
-  Dynamic: ${r.dynamic} | Valence: ${r.valence}
+  Dynamic: ${r.dynamic} | Valence: ${valenceLabel(r.valence)}
   Tension: ${r.currentTension}`
   )
   .join('\n\n')}

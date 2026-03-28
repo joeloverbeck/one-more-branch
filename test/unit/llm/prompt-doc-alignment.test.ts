@@ -181,9 +181,14 @@ const PROMPT_DOC_CONTRACTS: readonly PromptDocContract[] = [
     docPath: 'prompts/scene-ideator-prompt.md',
   },
   {
-    promptType: 'chatBible',
-    sourcePath: 'src/llm/prompts/chat/chat-bible-prompt.ts',
-    docPath: 'prompts/chat-bible-curator-prompt.md',
+    promptType: 'chatSceneContext',
+    sourcePath: 'src/llm/prompts/chat/chat-scene-context-prompt.ts',
+    docPath: 'prompts/chat-scene-context-prompt.md',
+  },
+  {
+    promptType: 'chatCharacterContext',
+    sourcePath: 'src/llm/prompts/chat/chat-character-context-prompt.ts',
+    docPath: 'prompts/chat-character-context-prompt.md',
   },
   {
     promptType: 'chatPlanner',
@@ -282,13 +287,16 @@ describe('prompt documentation alignment', () => {
   });
 
   it('documents chat prompt authority boundaries and pipeline contracts', () => {
-    const bibleDoc = readRepoFile('prompts/chat-bible-curator-prompt.md');
+    const sceneDoc = readRepoFile('prompts/chat-scene-context-prompt.md');
+    const characterDoc = readRepoFile('prompts/chat-character-context-prompt.md');
     const plannerDoc = readRepoFile('prompts/chat-turn-planner-prompt.md');
     const updaterDoc = readRepoFile('prompts/chat-state-updater-prompt.md');
     const summaryDoc = readRepoFile('prompts/chat-summarizer-prompt.md');
 
-    expect(bibleDoc).toContain('current physical reality');
-    expect(bibleDoc).toContain('continuity-safe handoff');
+    expect(sceneDoc).toContain('objective scene reality');
+    expect(sceneDoc).toContain('authoritative scene brief');
+    expect(characterDoc).toContain('treat the provided `ChatSceneContext` as ground truth');
+    expect(characterDoc).toContain('continuity guardrails');
     expect(plannerDoc).toContain('hidden in-character reply turn');
     expect(plannerDoc).toContain('ordered visible `blockPlan`');
     expect(updaterDoc).toContain('state extraction');

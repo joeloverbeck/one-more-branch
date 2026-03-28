@@ -37,6 +37,19 @@ describe('public stylesheet', () => {
     expect(css).toContain('.open-threads-text--high');
     expect(css).toContain('.open-threads-text--medium');
     expect(css).toContain('.open-threads-text--low');
+    expect(css).toContain('.chat-block--action');
+    expect(css).toContain('.chat-block--speech');
+    expect(css).toContain('.chat-delivery');
+    expect(css).toContain('.chat-tag-bar');
+    expect(css).toContain('.chat-tag--emotion');
+    expect(css).toContain('.chat-inner-world');
+    expect(css).toContain('.chat-inner-world__summary');
+    expect(css).toContain('.chat-inner-world__emotion-grid');
+    expect(css).toContain('.chat-inner-world__pill--physical');
+    expect(css).toContain('.chat-metric-card__summary');
+    expect(css).toContain('.chat-metric-card__trend');
+    expect(css).toContain('.chat-gauge__anchors');
+    expect(css).toContain('.chat-sparkline__current-dot');
   });
 
   it('includes mobile and spinner animation rules', () => {
@@ -62,5 +75,48 @@ describe('public stylesheet', () => {
 
     const matchCount = css.split(sharedSelector).length - 1;
     expect(matchCount).toBe(1);
+  });
+
+  it('makes the chat composer textarea fill its grid column', () => {
+    const css = fs.readFileSync(cssPath, 'utf8');
+
+    expect(css).toContain('.chat-input-form__message {');
+    expect(css).toContain('min-width: 0;');
+    expect(css).toContain('.chat-input-form__message textarea {');
+    expect(css).toContain('width: 100%;');
+    expect(css).toContain('box-sizing: border-box;');
+    expect(css).toContain('min-height: 46px;');
+  });
+
+  it('applies thin dark scrollbars to the chat page scroll containers', () => {
+    const css = fs.readFileSync(cssPath, 'utf8');
+
+    expect(css).toContain('.chat-conversation,\n.chat-sidebar {');
+    expect(css).toContain('scrollbar-width: thin;');
+    expect(css).toContain('scrollbar-color: rgba(39, 64, 111, 0.5) transparent;');
+    expect(css).toContain('.chat-conversation::-webkit-scrollbar,\n.chat-sidebar::-webkit-scrollbar {');
+    expect(css).toContain(
+      '.chat-conversation::-webkit-scrollbar-track,\n.chat-sidebar::-webkit-scrollbar-track {'
+    );
+    expect(css).toContain(
+      '.chat-conversation::-webkit-scrollbar-thumb,\n.chat-sidebar::-webkit-scrollbar-thumb {'
+    );
+    expect(css).toContain(
+      '.chat-conversation::-webkit-scrollbar-thumb:hover,\n.chat-sidebar::-webkit-scrollbar-thumb:hover {'
+    );
+  });
+
+  it('styles chat sidebar sections as cards and keeps spacing on the container', () => {
+    const css = fs.readFileSync(cssPath, 'utf8');
+
+    expect(css).toContain('.chat-sidebar {');
+    expect(css).toContain('gap: 0.85rem;');
+    expect(css).toContain('.chat-sidebar__section {');
+    expect(css).toContain('padding: 0.95rem 1rem;');
+    expect(css).toContain('border: 1px solid rgba(183, 189, 208, 0.14);');
+    expect(css).toContain('border-radius: 12px;');
+    expect(css).toContain('box-shadow: 0 10px 24px rgba(5, 11, 24, 0.16);');
+    expect(css).not.toContain('padding-bottom: 0.9rem;');
+    expect(css).not.toContain('border-bottom: 1px solid rgba(183, 189, 208, 0.12);');
   });
 });

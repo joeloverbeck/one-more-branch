@@ -4,6 +4,10 @@ import { render as renderEjs } from 'ejs';
 
 describe('chat page template', () => {
   const templatePath = path.join(__dirname, '../../../../src/server/views/pages/chat.ejs');
+  const sidebarPartialPath = path.join(
+    __dirname,
+    '../../../../src/server/views/partials/chat-sidebar.ejs'
+  );
   const renderTemplate = renderEjs as (
     source: string,
     data: {
@@ -38,15 +42,125 @@ describe('chat page template', () => {
         turnNumber: number;
         speaker: 'USER' | 'CHARACTER';
         timestamp: string;
+        turnMeta?: {
+          expectsReply?: boolean;
+          endsWithQuestion?: boolean;
+          visibleEmotion: string;
+          finalPressure?: string | null;
+        };
+        plannerOutput?: {
+          internalSelfCheck?: {
+            whatDoIWant: string;
+            whatDoIKnow: string;
+            whatAmIHiding: string;
+            howHonestAmI: string;
+          };
+          responseGoal?: string;
+          speechAct?: string;
+          honestyMode?: string;
+          surfaceEmotion?: string;
+          suppressedEmotion?: string | null;
+          subtext?: string;
+          mustAddress?: string[];
+          mustAvoid?: string[];
+          targetLength?: string;
+          actionPlan?: Array<{
+            kind: string;
+            text: string;
+            changesPhysicalState: boolean;
+          }>;
+          expectedImpact?: {
+            relationshipDeltaHint: number;
+            tensionDeltaHint: number;
+            revealsSecret: boolean;
+          };
+        };
+        stateUpdate?: {
+          summaryDelta?: string;
+          relationshipShifts?: Array<{
+            shiftDescription: string;
+            suggestedValenceChange: number;
+            suggestedTensionChange: number;
+            suggestedNewDynamic: string | null;
+          }>;
+          knowledgeChanges?: {
+            newKnownFacts: string[];
+            newSuspicions: string[];
+            falseBeliefsCorrected: string[];
+            secretsRevealed: string[];
+          };
+          conversationUpdate?: {
+            commitmentsMade: string[];
+            threatsMade: string[];
+            questionsOpened: string[];
+            questionsResolved: string[];
+          };
+          physicalStateUpdate?: {
+            locationChanged: boolean;
+            newLocation: string | null;
+            newMicroLocation: string | null;
+            newDistanceBand: string | null;
+            objectStateChanges: string[];
+          };
+        };
         blocks: Array<{
           type: 'ACTION' | 'SPEECH';
           text: string;
           delivery?: string;
         }>;
       }>;
+      chatUiBootstrap: {
+        chatBible: Record<string, unknown> | null;
+        rollingSummary: {
+          compressedSummary: string;
+        } | null;
+        knowledgeState: {
+          knownFacts: string[];
+          suspicions: string[];
+          falseBeliefs: string[];
+          secretsRevealed: string[];
+        };
+        relationshipTimeline: Array<{
+          turnNumber: number;
+          snapshot: {
+            dynamic: string;
+            valence: number;
+            tension: number;
+            leverage: string;
+            whatCharacterBelievesAboutInterlocutor: string[];
+          };
+        }>;
+        relationshipPresentation: {
+          valence: {
+            value: number;
+            delta: number;
+            summary: string;
+            trend: string;
+            gaugeAriaLabel: string;
+            sparklineAriaLabel: string;
+          };
+          tension: {
+            value: number;
+            delta: number;
+            summary: string;
+            trend: string;
+            gaugeAriaLabel: string;
+            sparklineAriaLabel: string;
+          };
+        };
+      };
     },
     options: { filename: string }
   ) => string;
+
+  it('includes the chat sidebar partial instead of inlining the sidebar markup in the page template', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const sidebarPartial = fs.readFileSync(sidebarPartialPath, 'utf8');
+
+    expect(template).toContain("<%- include('../partials/chat-sidebar', {");
+    expect(template).not.toContain('<aside class="chat-sidebar" id="chat-sidebar">');
+    expect(sidebarPartial).toContain('<aside class="chat-sidebar" id="chat-sidebar">');
+  });
 
   it('renders prior turns with action and speech blocks', () => {
     const template = fs.readFileSync(templatePath, 'utf8');
@@ -95,22 +209,448 @@ describe('chat page template', () => {
             turnNumber: 2,
             speaker: 'CHARACTER',
             timestamp: '2026-03-27T09:02:00.000Z',
+            turnMeta: {
+              expectsReply: true,
+              endsWithQuestion: false,
+              visibleEmotion: 'guarded',
+              finalPressure: 'Keep him defensive.',
+            },
+            plannerOutput: {
+              internalSelfCheck: {
+                whatDoIWant: 'An admission I can use later.',
+                whatDoIKnow: 'He is hiding the second ledger.',
+                whatAmIHiding: 'I know where the copy is.',
+                howHonestAmI: 'Only as honest as leverage requires.',
+              },
+              responseGoal: 'Corner him without losing composure.',
+              speechAct: 'DEFLECT',
+              honestyMode: 'PARTIAL',
+              surfaceEmotion: 'cold focus',
+              suppressedEmotion: 'fear',
+              subtext: 'If he pushes harder, I will expose him first.',
+              mustAddress: ['the missing ledger'],
+              mustAvoid: ['the copied ledger'],
+              targetLength: 'MEDIUM',
+              actionPlan: [
+                {
+                  kind: 'GESTURE',
+                  text: 'Fold my hands to look calm.',
+                  changesPhysicalState: false,
+                },
+                {
+                  kind: 'MOVEMENT',
+                  text: 'Take one step toward the lamp.',
+                  changesPhysicalState: true,
+                },
+              ],
+              expectedImpact: {
+                relationshipDeltaHint: -1,
+                tensionDeltaHint: 2,
+                revealsSecret: false,
+              },
+            },
+            stateUpdate: {
+              summaryDelta: 'The conversation hardens into suspicion.',
+              relationshipShifts: [
+                {
+                  shiftDescription: 'Trust frays further.',
+                  suggestedValenceChange: -1,
+                  suggestedTensionChange: 2,
+                  suggestedNewDynamic: 'escalating standoff',
+                },
+              ],
+              knowledgeChanges: {
+                newKnownFacts: ['He recognizes the ledger seal.'],
+                newSuspicions: ['He hid the copy intentionally.'],
+                falseBeliefsCorrected: [],
+                secretsRevealed: [],
+              },
+              conversationUpdate: {
+                commitmentsMade: ['He will answer before dawn.'],
+                threatsMade: [],
+                questionsOpened: ['Who moved the copy?'],
+                questionsResolved: [],
+              },
+              physicalStateUpdate: {
+                locationChanged: false,
+                newLocation: null,
+                newMicroLocation: null,
+                newDistanceBand: 'ARM_REACH',
+                objectStateChanges: ['The lamp guttered lower.'],
+              },
+            },
             blocks: [{ type: 'SPEECH', text: 'You already know enough.', delivery: 'dryly' }],
           },
         ],
+        chatUiBootstrap: {
+          chatBible: {
+            characterNow: {
+              currentObjective:
+                'Keep Iven talking long enough to learn who else touched the ledger tonight.',
+              immediateNeedFromConversation: 'Confirm whether he saw the copied seal.',
+              emotionalState: 'guarded',
+              willingnessToEngage: 'GUARDED',
+              topicsToAdvance: ['the missing ledger'],
+              topicsToProtect: ['the copied seal'],
+            },
+            relationshipNow: {
+              dynamic: 'guarded detente',
+              valence: 4,
+              tension: 8,
+              leverage: 'She knows which ledger page is missing.',
+              whatCharacterBelievesAboutInterlocutor: ['He is testing how much I already know.'],
+            },
+            knowledgeNow: {
+              knownFacts: ['This should not render in Character Mind'],
+              suspicions: ['This should not render in Character Mind'],
+              falseBeliefs: ['This should not render in Character Mind'],
+              secretsRevealed: ['This should not render in Character Mind'],
+              secretsKept: ['Mara hid one copied page.'],
+              knowledgeBoundaries: ['She still does not know who ordered the raid.'],
+            },
+            conversationNow: {
+              activeThreads: ['the missing ledger', 'who moved the copy'],
+              commitments: ['Iven will answer before dawn.'],
+              sensitiveTopics: ['the copied seal'],
+              lastTurnPressure: 'Iven pressed Mara on what she already knows.',
+            },
+            continuityGuardrails: ['Do not confess without direct pressure.'],
+            responseConstraints: ['Stay grounded in the immediate exchange.'],
+          },
+          rollingSummary: {
+            compressedSummary:
+              'They are circling the copied ledger without admitting who moved it.',
+          },
+          knowledgeState: {
+            knownFacts: ['Iven recognizes the ledger seal.'],
+            suspicions: ['He hid the copy intentionally.'],
+            falseBeliefs: ['The reading alcove is unwatched.'],
+            secretsRevealed: ['Mara already searched his satchel.'],
+          },
+          relationshipTimeline: [
+            {
+              turnNumber: 2,
+              snapshot: {
+                dynamic: 'guarded detente',
+                valence: 4,
+                tension: 8,
+                leverage: 'She knows which ledger page is missing.',
+                whatCharacterBelievesAboutInterlocutor: ['He is testing how much I already know.'],
+              },
+            },
+          ],
+          relationshipPresentation: {
+            valence: {
+              value: 4,
+              delta: 4,
+              summary: 'Loyal and warming',
+              trend: 'warming',
+              gaugeAriaLabel:
+                'Valence: Loyal and warming. Current value 4 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Loyal and warming across 1 recorded turns.',
+            },
+            tension: {
+              value: 8,
+              delta: 8,
+              summary: 'Breaking and rising',
+              trend: 'rising',
+              gaugeAriaLabel:
+                'Tension: Breaking and rising. Current value 8 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Breaking and rising across 1 recorded turns.',
+            },
+          },
+        },
       },
       { filename: templatePath }
     );
 
     expect(html).toContain('id="chat-page"');
+    expect(html).toContain('class="chat-page-body"');
+    expect(html).toContain('class="chat-layout"');
     expect(html).toContain('data-chat-id="chat-1"');
     expect(html).toContain('data-chat-turn');
     expect(html).toContain('data-chat-speaker="USER"');
     expect(html).toContain('data-chat-speaker="CHARACTER"');
+    expect(html).toContain('class="chat-conversation"');
+    expect(html).toContain('class="chat-sidebar"');
+    expect(html.match(/class="chat-sidebar__section"/g)).toHaveLength(2);
+    expect(html.match(/class="chat-accordion chat-sidebar__section"/g)).toHaveLength(6);
+    expect(html).toContain('class="chat-input-bar"');
+    expect(html).toContain('data-chat-section="physical"');
+    expect(html).toContain('data-chat-section="relationship"');
+    expect(html).toContain('data-chat-section="knowledge"');
+    expect(html).toContain('data-chat-section="mind"');
+    expect(html).toContain('data-chat-section="conversation"');
+    expect(html).toContain('data-chat-section="guardrails"');
+    expect(html).toContain('class="chat-accordion-summary"');
+    expect(html).toContain('class="chat-block chat-block--action"');
     expect(html).toContain('<em>He sets the ledger on the table.</em>');
+    expect(html).toContain('class="chat-block chat-block--speech"');
     expect(html).toContain('&ldquo;Tell me what happened.&rdquo;');
-    expect(html).toContain('dryly:');
+    expect(html).toContain('<span class="chat-delivery">dryly</span>');
     expect(html).toContain('&ldquo;You already know enough.&rdquo;');
+    expect(html).toContain('class="chat-tag-bar"');
+    expect(html).toContain('class="chat-tag chat-tag--speech-act">DEFLECT</span>');
+    expect(html).toContain('class="chat-tag chat-tag--honesty">PARTIAL</span>');
+    expect(html).toContain('class="chat-tag chat-tag--emotion">guarded</span>');
+    expect(html).toContain('class="chat-inner-world"');
+    expect(html).toContain("Character's Inner World");
+    expect(html).toContain('Internal Self-Check');
+    expect(html).toContain('What I want');
+    expect(html).toContain('An admission I can use later.');
+    expect(html).toContain('Emotional Layer');
+    expect(html).toContain('Surface emotion');
+    expect(html).toContain('Suppressed emotion');
+    expect(html).toContain('Response Strategy');
+    expect(html).toContain('Must address');
+    expect(html).toContain('Action Plan');
+    expect(html).toContain('Physical change');
+    expect(html).toContain('Turn Impact');
+    expect(html).toContain('Expects reply');
+    expect(html).toContain('Relationship delta hint');
+    expect(html).toContain('State Changes');
+    expect(html).toContain('The conversation hardens into suspicion.');
+    expect(html).toContain('Trust frays further.');
+    expect(html).toContain('data-chat-gauge="valence"');
+    expect(html).toContain('data-chat-gauge="tension"');
+    expect(html).toContain('data-chat-gauge-value="valence">4</span>');
+    expect(html).toContain('data-chat-gauge-value="tension">8</span>');
+    expect(html).toContain('data-chat-gauge-summary="valence">Loyal and warming</p>');
+    expect(html).toContain('data-chat-gauge-summary="tension">Breaking and rising</p>');
+    expect(html).toContain('data-chat-gauge-trend="valence">warming</span>');
+    expect(html).toContain('data-chat-gauge-trend="tension">rising</span>');
+    expect(html).toContain('data-chat-field="valence">4</span>');
+    expect(html).toContain('data-chat-field="tension">8</span>');
+    expect(html).toContain('class="chat-gauge__ghost"');
+    expect(html).toContain('Hostile');
+    expect(html).toContain('Neutral');
+    expect(html).toContain('Loyal');
+    expect(html).toContain('Calm');
+    expect(html).toContain('Strained');
+    expect(html).toContain('Breaking');
+    expect(html).toContain('role="meter"');
+    expect(html).toContain('aria-label="Valence: Loyal and warming.');
+    expect(html).toContain('data-chat-sparkline="valence"');
+    expect(html).toContain('data-chat-sparkline="tension"');
+    expect(html).toContain('aria-label="Tension trend: Breaking and rising');
+    expect(html).toContain('data-chat-list="interactableObjects"');
+    expect(html).toContain('data-chat-list="ambientConditions"');
+    expect(html).toContain('data-chat-field="knowledgeSummary">1 fact, 1 suspicion</span>');
+    expect(html).toContain('Known Facts');
+    expect(html).toContain('Iven recognizes the ledger seal.');
+    expect(html).toContain('class="chat-sidebar-list chat-list--italic" data-chat-list="suspicions"');
+    expect(html).toContain('He hid the copy intentionally.');
+    expect(html).toContain('class="chat-sidebar-list chat-list--warning" data-chat-list="falseBeliefs"');
+    expect(html).toContain('The reading alcove is unwatched.');
+    expect(html).toContain('Mara already searched his satchel.');
+    expect(html).toContain(
+      'data-chat-field="currentObjectiveSummary">Keep Iven talking long enough to learn who else touched t...'
+    );
+    expect(html).toContain('Current Objective');
+    expect(html).toContain('Confirm whether he saw the copied seal.');
+    expect(html).toContain('data-chat-field="willingnessToEngage">GUARDED</span>');
+    expect(html).toContain('Topics to Protect');
+    expect(html).toContain('Lock</span><span>the copied seal</span>');
+    expect(html).toContain('He is testing how much I already know.');
+    expect(html).toContain('Mara hid one copied page.');
+    expect(html).toContain('She still does not know who ordered the raid.');
+    expect(html).toContain('data-chat-field="conversationSummary">2 threads, 1 commitment</span>');
+    expect(html).toContain('Active Threads');
+    expect(html).toContain('who moved the copy');
+    expect(html).toContain('Commitments');
+    expect(html).toContain('Iven will answer before dawn.');
+    expect(html).toContain('Sensitive Topics');
+    expect(html).toContain('the copied seal');
+    expect(html).toContain('Iven pressed Mara on what she already knows.');
+    expect(html).toContain('They are circling the copied ledger without admitting who moved it.');
+    expect(html).toContain('data-chat-field="guardrailsSummary">1 guardrail, 1 constraint</span>');
+    expect(html).toContain('Continuity Guardrails');
+    expect(html).toContain('Do not confess without direct pressure.');
+    expect(html).toContain('Response Constraints');
+    expect(html).toContain('Stay grounded in the immediate exchange.');
+    expect(html).not.toContain('chat-tag-bar"><span class="chat-tag chat-tag--speech-act">Tell');
+    expect(html).not.toContain('<details class="chat-inner-world" open');
+  });
+
+  it('omits missing character tag pills without skipping the rest of the turn', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+
+    const html = renderTemplate(
+      template,
+      {
+        title: 'Chat with Mara - One More Branch',
+        session: {
+          id: 'chat-1',
+          targetCharacterName: 'Mara',
+          interlocutorCharacterName: 'Iven',
+          physicalContext: {
+            location: 'Archive',
+            microLocation: 'Reading alcove',
+            timeOfDay: 'EVENING',
+            privacy: 'PRIVATE',
+            distanceBand: 'CONVERSATIONAL',
+            characterActivity: 'Cataloguing ledgers',
+            interactableObjects: ['ledger', 'lamp'],
+            ambientConditions: ['rain', 'dust'],
+          },
+          leadInContext: {
+            leadInSummary: 'They meet after the raid.',
+            recentEvents: ['A witness vanished.'],
+            whyNow: 'The ledger must be found before dawn.',
+          },
+          relationshipState: {
+            dynamic: 'strained allies',
+            valence: -1,
+            tension: 6,
+            leverage: 'Shared guilt',
+          },
+        },
+        turns: [
+          {
+            turnNumber: 2,
+            speaker: 'CHARACTER',
+            timestamp: '2026-03-27T09:02:00.000Z',
+            turnMeta: {
+              visibleEmotion: 'guarded',
+            },
+            blocks: [{ type: 'SPEECH', text: 'You already know enough.' }],
+          },
+        ],
+        chatUiBootstrap: {
+          chatBible: null,
+          rollingSummary: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipTimeline: [
+            {
+              turnNumber: 2,
+              snapshot: {
+                dynamic: 'strained allies',
+                valence: 0,
+                tension: 0,
+                leverage: 'Shared guilt',
+                whatCharacterBelievesAboutInterlocutor: [],
+              },
+            },
+          ],
+          relationshipPresentation: {
+            valence: {
+              value: 0,
+              delta: 0,
+              summary: 'Neutral and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Valence: Neutral and steady. Current value 0 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Neutral and steady across 1 recorded turns.',
+            },
+            tension: {
+              value: 0,
+              delta: 0,
+              summary: 'Calm and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Tension: Calm and steady. Current value 0 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Calm and steady across 1 recorded turns.',
+            },
+          },
+        },
+      },
+      { filename: templatePath }
+    );
+
+    expect(html).toContain('class="chat-tag-bar"');
+    expect(html).toContain('class="chat-tag chat-tag--emotion">guarded</span>');
+    expect(html).not.toContain('chat-tag--speech-act');
+    expect(html).not.toContain('chat-tag--honesty');
+    expect(html).not.toContain('class="chat-inner-world"');
+    expect(html).toContain('&ldquo;You already know enough.&rdquo;');
+  });
+
+  it('never renders the inner-world panel for user turns', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+
+    const html = renderTemplate(
+      template,
+      {
+        title: 'Chat with Mara - One More Branch',
+        session: {
+          id: 'chat-1',
+          targetCharacterName: 'Mara',
+          interlocutorCharacterName: 'Iven',
+          physicalContext: {
+            location: 'Archive',
+            microLocation: 'Reading alcove',
+            timeOfDay: 'EVENING',
+            privacy: 'PRIVATE',
+            distanceBand: 'CONVERSATIONAL',
+            characterActivity: 'Cataloguing ledgers',
+            interactableObjects: ['ledger', 'lamp'],
+            ambientConditions: ['rain', 'dust'],
+          },
+          leadInContext: {
+            leadInSummary: 'They meet after the raid.',
+            recentEvents: ['A witness vanished.'],
+            whyNow: 'The ledger must be found before dawn.',
+          },
+          relationshipState: {
+            dynamic: 'strained allies',
+            valence: -1,
+            tension: 6,
+            leverage: 'Shared guilt',
+          },
+        },
+        turns: [
+          {
+            turnNumber: 1,
+            speaker: 'USER',
+            timestamp: '2026-03-27T09:01:00.000Z',
+            plannerOutput: {
+              speechAct: 'DEFLECT',
+            },
+            blocks: [{ type: 'SPEECH', text: 'Tell me what happened.' }],
+          },
+        ],
+        chatUiBootstrap: {
+          chatBible: null,
+          rollingSummary: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipTimeline: [],
+          relationshipPresentation: {
+            valence: {
+              value: -1,
+              delta: 0,
+              summary: 'Frayed and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Valence: Frayed and steady. Current value -1 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Frayed and steady across 0 recorded turns.',
+            },
+            tension: {
+              value: 6,
+              delta: 0,
+              summary: 'Strained and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Tension: Strained and steady. Current value 6 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Strained and steady across 0 recorded turns.',
+            },
+          },
+        },
+      },
+      { filename: templatePath }
+    );
+
+    expect(html).not.toContain('class="chat-inner-world"');
+    expect(html).not.toContain('Character\'s Inner World');
   });
 
   it('renders scene-state and composer hooks for client enhancement', () => {
@@ -147,21 +687,326 @@ describe('chat page template', () => {
           },
         },
         turns: [],
+        chatUiBootstrap: {
+          chatBible: null,
+          rollingSummary: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipTimeline: [],
+          relationshipPresentation: {
+            valence: {
+              value: 0,
+              delta: 0,
+              summary: 'Neutral and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Valence: Neutral and steady. Current value 0 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Neutral and steady across 0 recorded turns.',
+            },
+            tension: {
+              value: 0,
+              delta: 0,
+              summary: 'Calm and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Tension: Calm and steady. Current value 0 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Calm and steady across 0 recorded turns.',
+            },
+          },
+        },
       },
       { filename: templatePath }
     );
 
     expect(html).toContain('id="chat-physical-context"');
+    expect(html).toContain('data-chat-section="physical"');
+    expect(html).toContain('data-chat-section="relationship"');
+    expect(html).toContain('data-chat-section="knowledge"');
+    expect(html).toContain('data-chat-section="mind"');
+    expect(html).toContain('data-chat-section="conversation"');
+    expect(html).toContain('data-chat-section="guardrails"');
+    expect(html).toContain('data-chat-gauge="valence"');
+    expect(html).toContain('data-chat-sparkline="valence"');
+    expect(html).toContain('data-chat-gauge-summary="valence">Neutral and steady</p>');
+    expect(html).toContain('data-chat-gauge-trend="valence">steady</span>');
+    expect(html).toContain('data-chat-turn-count');
+    expect(html).toContain('Hide Scene State');
+    expect(html).toContain('data-chat-sidebar-toggle');
+    expect(html).toContain('EVENING');
+    expect(html).toContain('PRIVATE');
+    expect(html).toContain('CONVERSATIONAL');
     expect(html).toContain('data-chat-field="location"');
     expect(html).toContain('data-chat-field="dynamic"');
     expect(html).toContain('id="chat-turn-form"');
     expect(html).toContain('data-chat-turn-form');
+    expect(html).toContain('id="chat-apikey-toggle"');
+    expect(html).toContain('id="chat-apikey-popover"');
     expect(html).toContain('name="apiKey"');
     expect(html).toContain('name="message"');
+    expect(html).toContain('rows="1"');
+    expect(html).toContain('maxlength="2000"');
+    expect(html).toContain('class="btn btn-primary chat-send-btn"');
     expect(html).toContain('id="chat-loading-indicator"');
     expect(html).toContain('data-chat-progress');
+    expect(html).toContain('<script type="application/json" id="chat-ui-bootstrap">');
+    expect(html).toContain('"relationshipTimeline":[]');
     expect(html).toContain('No turns yet. Start the conversation below.');
     expect(html).toContain('None');
     expect(html).toContain('Unformed');
+  });
+
+  it('does not render the redundant header subtitle', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+
+    const html = renderTemplate(
+      template,
+      {
+        title: 'Chat with Mara - One More Branch',
+        session: {
+          id: 'chat-1',
+          targetCharacterName: 'Mara',
+          interlocutorCharacterName: 'Iven',
+          physicalContext: {
+            location: 'Archive',
+            microLocation: 'Reading alcove',
+            timeOfDay: 'EVENING',
+            privacy: 'PRIVATE',
+            distanceBand: 'CONVERSATIONAL',
+            characterActivity: 'Cataloguing ledgers',
+            interactableObjects: [],
+            ambientConditions: [],
+          },
+          leadInContext: {
+            leadInSummary: 'They meet after the raid.',
+            recentEvents: [],
+            whyNow: 'The ledger must be found before dawn.',
+          },
+          relationshipState: {
+            dynamic: 'strained allies',
+            valence: -1,
+            tension: 6,
+            leverage: 'Shared guilt',
+          },
+        },
+        turns: [],
+        chatUiBootstrap: {
+          chatBible: null,
+          rollingSummary: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipTimeline: [],
+          relationshipPresentation: {
+            valence: {
+              value: -1,
+              delta: 0,
+              summary: 'Frayed and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Valence: Frayed and steady. Current value -1 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Frayed and steady across 0 recorded turns.',
+            },
+            tension: {
+              value: 6,
+              delta: 0,
+              summary: 'Strained and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Tension: Strained and steady. Current value 6 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Strained and steady across 0 recorded turns.',
+            },
+          },
+        },
+      },
+      { filename: templatePath }
+    );
+
+    expect(html).toContain('class="chat-header__identity"');
+    expect(html).toContain('In-Character Conversation');
+    expect(html).toContain('Mara and Iven');
+    expect(html).not.toContain('chat-header__summary');
+    expect(html).not.toContain('A resumable exchange grounded in the current scene state.');
+  });
+
+  it('renders identity, scene context, and meta controls in separate header regions', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+
+    const html = renderTemplate(
+      template,
+      {
+        title: 'Chat with Mara - One More Branch',
+        session: {
+          id: 'chat-1',
+          targetCharacterName: 'Mara',
+          interlocutorCharacterName: 'Iven',
+          physicalContext: {
+            location: 'Archive',
+            microLocation: 'Reading alcove',
+            timeOfDay: 'EVENING',
+            privacy: 'PRIVATE',
+            distanceBand: 'CONVERSATIONAL',
+            characterActivity: 'Cataloguing ledgers',
+            interactableObjects: [],
+            ambientConditions: [],
+          },
+          leadInContext: {
+            leadInSummary: 'They meet after the raid.',
+            recentEvents: [],
+            whyNow: 'Before dawn.',
+          },
+          relationshipState: {
+            dynamic: 'strained allies',
+            valence: -1,
+            tension: 6,
+            leverage: 'Shared guilt',
+          },
+        },
+        turns: [],
+        chatUiBootstrap: {
+          chatBible: null,
+          rollingSummary: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipTimeline: [],
+          relationshipPresentation: {
+            valence: {
+              value: -1,
+              delta: 0,
+              summary: 'Frayed and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Valence: Frayed and steady. Current value -1 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Frayed and steady across 0 recorded turns.',
+            },
+            tension: {
+              value: 6,
+              delta: 0,
+              summary: 'Strained and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Tension: Strained and steady. Current value 6 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Strained and steady across 0 recorded turns.',
+            },
+          },
+        },
+      },
+      { filename: templatePath }
+    );
+
+    expect(html).toMatch(
+      /<div class="chat-header__identity">[\s\S]*?<h1>Mara and Iven<\/h1>[\s\S]*?<\/div>/
+    );
+    expect(html).toMatch(
+      /<div class="chat-header__context">[\s\S]*?data-chat-field="timeOfDay"[\s\S]*?data-chat-field="privacy"[\s\S]*?data-chat-field="distanceBand"[\s\S]*?<\/div>/
+    );
+    expect(html).toMatch(
+      /<div class="chat-header__meta">[\s\S]*?data-chat-turn-count[\s\S]*?data-chat-sidebar-toggle[\s\S]*?<\/div>/
+    );
+  });
+
+  it('renders knowledge and character mind empty states when bootstrap data is absent', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+
+    const html = renderTemplate(
+      template,
+      {
+        title: 'Chat with Mara - One More Branch',
+        session: {
+          id: 'chat-1',
+          targetCharacterName: 'Mara',
+          interlocutorCharacterName: 'Iven',
+          physicalContext: {
+            location: 'Archive',
+            microLocation: 'Reading alcove',
+            timeOfDay: 'EVENING',
+            privacy: 'PRIVATE',
+            distanceBand: 'CONVERSATIONAL',
+            characterActivity: 'Cataloguing ledgers',
+            interactableObjects: [],
+            ambientConditions: [],
+          },
+          leadInContext: {
+            leadInSummary: 'They meet after the raid.',
+            recentEvents: [],
+            whyNow: 'The ledger must be found before dawn.',
+          },
+          relationshipState: {
+            dynamic: '',
+            valence: 0,
+            tension: 0,
+            leverage: '',
+          },
+        },
+        turns: [],
+        chatUiBootstrap: {
+          chatBible: null,
+          rollingSummary: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipTimeline: [],
+          relationshipPresentation: {
+            valence: {
+              value: 0,
+              delta: 0,
+              summary: 'Neutral and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Valence: Neutral and steady. Current value 0 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Neutral and steady across 0 recorded turns.',
+            },
+            tension: {
+              value: 0,
+              delta: 0,
+              summary: 'Calm and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Tension: Calm and steady. Current value 0 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Calm and steady across 0 recorded turns.',
+            },
+          },
+        },
+      },
+      { filename: templatePath }
+    );
+
+    expect(html).toContain('data-chat-field="knowledgeSummary">0 facts, 0 suspicions</span>');
+    expect(html).toContain('No facts tracked.');
+    expect(html).toContain('No suspicions tracked.');
+    expect(html).toContain('No false beliefs tracked.');
+    expect(html).toContain('No secrets revealed.');
+    expect(html).toContain('data-chat-field="currentObjectiveSummary">No objective available</span>');
+    expect(html).toContain('No current objective available.');
+    expect(html).toContain('No immediate need available.');
+    expect(html).toContain('No emotional state available.');
+    expect(html).toContain('data-chat-field="willingnessToEngage">Unknown</span>');
+    expect(html).toContain('No active advance topics.');
+    expect(html).toContain('No protected topics.');
+    expect(html).toContain('No beliefs recorded.');
+    expect(html).toContain('No secrets currently kept.');
+    expect(html).toContain('No active knowledge boundaries.');
+    expect(html).toContain('data-chat-field="conversationSummary">0 threads, 0 commitments</span>');
+    expect(html).toContain('No active last-turn pressure.');
+    expect(html).toContain('No rolling summary available.');
+    expect(html).toContain('No active threads.');
+    expect(html).toContain('No commitments tracked.');
+    expect(html).toContain('No sensitive topics noted.');
+    expect(html).toContain('data-chat-field="guardrailsSummary">0 guardrails, 0 constraints</span>');
+    expect(html).toContain('No continuity guardrails.');
+    expect(html).toContain('No response constraints.');
   });
 });

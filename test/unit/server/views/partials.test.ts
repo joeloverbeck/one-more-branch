@@ -4,6 +4,10 @@ import path from 'path';
 describe('view partial templates', () => {
   const headerPath = path.join(__dirname, '../../../../src/server/views/partials/header.ejs');
   const footerPath = path.join(__dirname, '../../../../src/server/views/partials/footer.ejs');
+  const chatSidebarPath = path.join(
+    __dirname,
+    '../../../../src/server/views/partials/chat-sidebar.ejs'
+  );
 
   it('header partial exists and includes logo and dropdown navigation', () => {
     expect(fs.existsSync(headerPath)).toBe(true);
@@ -41,5 +45,31 @@ describe('view partial templates', () => {
     expect(template).toContain('<footer class="site-footer">');
     expect(template).toContain('One More Branch - Interactive Storytelling');
     expect(template).toContain('Content is AI-generated and may contain mature themes.');
+  });
+
+  it('chat sidebar partial exists and preserves the canonical sidebar hooks', () => {
+    expect(fs.existsSync(chatSidebarPath)).toBe(true);
+
+    const template = fs.readFileSync(chatSidebarPath, 'utf8');
+
+    expect(template).toContain('<aside class="chat-sidebar" id="chat-sidebar">');
+    expect(template).toContain('id="chat-physical-context"');
+    expect(template).toContain('id="chat-relationship-state"');
+    expect(template).toContain('id="chat-knowledge-state"');
+    expect(template).toContain('id="chat-character-mind"');
+    expect(template).toContain('id="chat-conversation-state"');
+    expect(template).toContain('id="chat-guardrails"');
+    expect(template).toContain('id="chat-lead-in-context"');
+    expect(template).toContain('data-chat-section="physical"');
+    expect(template).toContain('data-chat-section="relationship"');
+    expect(template).toContain('data-chat-section="knowledge"');
+    expect(template).toContain('data-chat-section="mind"');
+    expect(template).toContain('data-chat-section="conversation"');
+    expect(template).toContain('data-chat-section="guardrails"');
+    expect(template).toContain('data-chat-list="interactableObjects"');
+    expect(template).toContain('data-chat-list="activeThreads"');
+    expect(template).toContain('data-chat-list="responseConstraints"');
+    expect(template).toContain('data-chat-gauge="valence"');
+    expect(template).toContain('data-chat-gauge="tension"');
   });
 });

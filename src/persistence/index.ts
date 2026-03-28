@@ -4,8 +4,7 @@ export {
   ensureChatsDir,
   ensureStoriesDir,
   getChatDir,
-  getChatSessionFilePath,
-  getChatTurnsFilePath,
+  getChatStateFilePath,
   getChatsDir,
   getStoriesDir,
   getStoryDir,
@@ -26,6 +25,7 @@ export {
 } from './story-repository';
 
 export {
+  commitChatTurn,
   deleteChat,
   getRecentTurns,
   listChats,

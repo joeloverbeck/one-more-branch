@@ -5,7 +5,10 @@
 
 ## Purpose
 
-Extract the factual state delta caused by the completed character turn. This stage converts the hidden plan plus final written turn into relationship, knowledge, conversation, and physical-state updates that the persistence layer can safely apply.
+Extract the factual post-turn state caused by the completed character turn. This stage converts the hidden plan plus final written turn into:
+
+- delta-oriented session updates (`stateUpdate`)
+- one canonical absolute post-turn relationship snapshot (`relationshipSnapshot`)
 
 ## Authority Boundary
 
@@ -19,6 +22,7 @@ The system prompt must instruct the model to:
 
 - extract only state changes that actually occurred
 - track relationship shifts only when meaningful
+- return the canonical post-turn relationship snapshot
 - track knowledge asymmetry, false beliefs, and secret movement
 - track commitments, threats, opened questions, and resolved questions
 - track physical changes only if they are visible in the written turn
@@ -39,7 +43,12 @@ The user message is organized into these sections, in order:
 
 ## Output Contract
 
-The updater returns a strict `ChatStateUpdate` object with:
+The updater returns a strict object with:
+
+- `stateUpdate`
+- `relationshipSnapshot`
+
+`stateUpdate` still contains:
 
 - `summaryDelta`
 - `relationshipShifts`
@@ -48,6 +57,14 @@ The updater returns a strict `ChatStateUpdate` object with:
 - `physicalStateUpdate`
 - `shouldRefreshChatBible`
 - `shouldTriggerSummary`
+
+`relationshipSnapshot` contains:
+
+- `dynamic`
+- `valence`
+- `tension`
+- `leverage`
+- `whatCharacterBelievesAboutInterlocutor`
 
 Notable required nested fields include:
 
@@ -68,3 +85,4 @@ Notable required nested fields include:
 
 - The updater runs after the writer and before session state is applied by `applyChatStateUpdate()`.
 - Its refresh and summarize booleans feed directly into pipeline orchestration.
+- The pipeline persists `relationshipSnapshot` on the committed character turn as the canonical relationship-display timeline source.

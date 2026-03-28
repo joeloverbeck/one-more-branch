@@ -6,117 +6,611 @@
   <title><%= title %></title>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body>
+<body class="chat-page-body">
   <%- include('../partials/header') %>
 
+  <%
+    function hasInnerWorldText(value) {
+      return typeof value === 'string' && value.trim().length > 0;
+    }
+
+    function hasInnerWorldItems(values) {
+      return Array.isArray(values) && values.length > 0;
+    }
+
+    function formatSignedInnerWorldNumber(value) {
+      if (typeof value !== 'number' || !Number.isFinite(value) || value === 0) {
+        return String(value || 0);
+      }
+
+      return `${value > 0 ? '+' : ''}${value}`;
+    }
+
+    function normalizeSidebarText(value, fallback) {
+      return typeof value === 'string' && value.trim().length > 0 ? value.trim() : fallback;
+    }
+
+    function sanitizeSidebarItems(values) {
+      return Array.isArray(values)
+        ? values.filter((value) => typeof value === 'string' && value.trim().length > 0)
+        : [];
+    }
+
+    function pluralizeSidebarCount(count, singular, plural) {
+      return `${count} ${count === 1 ? singular : plural}`;
+    }
+
+    function buildKnowledgeSummary(knowledgeState) {
+      const knownFacts = sanitizeSidebarItems(knowledgeState?.knownFacts);
+      const suspicions = sanitizeSidebarItems(knowledgeState?.suspicions);
+      return `${pluralizeSidebarCount(knownFacts.length, 'fact', 'facts')}, ${pluralizeSidebarCount(suspicions.length, 'suspicion', 'suspicions')}`;
+    }
+
+    function buildConversationSummary(chatBible) {
+      const activeThreads = sanitizeSidebarItems(chatBible?.conversationNow?.activeThreads);
+      const commitments = sanitizeSidebarItems(chatBible?.conversationNow?.commitments);
+      return `${pluralizeSidebarCount(activeThreads.length, 'thread', 'threads')}, ${pluralizeSidebarCount(commitments.length, 'commitment', 'commitments')}`;
+    }
+
+    function buildGuardrailsSummary(chatBible) {
+      const guardrails = sanitizeSidebarItems(chatBible?.continuityGuardrails);
+      const constraints = sanitizeSidebarItems(chatBible?.responseConstraints);
+      return `${pluralizeSidebarCount(guardrails.length, 'guardrail', 'guardrails')}, ${pluralizeSidebarCount(constraints.length, 'constraint', 'constraints')}`;
+    }
+
+    function truncateSidebarSummary(value, maxLength) {
+      const normalized = normalizeSidebarText(value, '');
+      if (normalized.length === 0) {
+        return 'No objective available';
+      }
+
+      return normalized.length > maxLength
+        ? `${normalized.slice(0, Math.max(maxLength - 3, 1)).trimEnd()}...`
+        : normalized;
+    }
+
+    function getLatestRelationshipSnapshot(relationshipTimeline) {
+      if (!Array.isArray(relationshipTimeline) || relationshipTimeline.length === 0) {
+        return null;
+      }
+
+      return relationshipTimeline[relationshipTimeline.length - 1]?.snapshot ?? null;
+    }
+
+    function resolveRelationshipMetric(relationshipSnapshot, relationshipState, name) {
+      const absoluteValue = relationshipSnapshot?.[name];
+      if (typeof absoluteValue === 'number' && Number.isFinite(absoluteValue)) {
+        return absoluteValue;
+      }
+
+      const fallbackValue = relationshipState?.[name];
+      return typeof fallbackValue === 'number' && Number.isFinite(fallbackValue) ? fallbackValue : 0;
+    }
+
+    function buildRelationshipHistory(relationshipTimeline) {
+      const history = [{
+        turnNumber: 0,
+        valence: 0,
+        tension: 0,
+      }];
+
+      if (!Array.isArray(relationshipTimeline)) {
+        return history;
+      }
+
+      relationshipTimeline.forEach((point) => {
+        if (!point?.snapshot) {
+          return;
+        }
+
+        history.push({
+          turnNumber: typeof point.turnNumber === 'number' ? point.turnNumber : history.length,
+          valence: typeof point.snapshot.valence === 'number' ? point.snapshot.valence : 0,
+          tension: typeof point.snapshot.tension === 'number' ? point.snapshot.tension : 0,
+        });
+      });
+
+      return history;
+    }
+
+    function readRelationshipDelta(history, name) {
+      if (!Array.isArray(history) || history.length < 2) {
+        return 0;
+      }
+
+      const previousPoint = history[history.length - 2];
+      const currentPoint = history[history.length - 1];
+      return currentPoint[name] - previousPoint[name];
+    }
+
+    function buildInnerWorldData(turn) {
+      if (!turn || turn.speaker !== 'CHARACTER') {
+        return [];
+      }
+
+      const plannerOutput = turn.plannerOutput ?? null;
+      const turnMeta = turn.turnMeta ?? {};
+      const stateUpdate = turn.stateUpdate ?? null;
+      const sections = [];
+
+      if (plannerOutput?.internalSelfCheck) {
+        const internalSelfCheckRows = [
+          { label: 'What I want', value: plannerOutput.internalSelfCheck.whatDoIWant },
+          { label: 'What I know', value: plannerOutput.internalSelfCheck.whatDoIKnow },
+          { label: "What I'm hiding", value: plannerOutput.internalSelfCheck.whatAmIHiding },
+          { label: 'How honest am I', value: plannerOutput.internalSelfCheck.howHonestAmI },
+        ].filter((row) => hasInnerWorldText(row.value));
+
+        if (internalSelfCheckRows.length > 0) {
+          sections.push({
+            title: 'Internal Self-Check',
+            rows: internalSelfCheckRows,
+          });
+        }
+      }
+
+      if (plannerOutput) {
+        const emotionCards = [];
+        if (hasInnerWorldText(plannerOutput.surfaceEmotion)) {
+          emotionCards.push({
+            label: 'Surface emotion',
+            value: plannerOutput.surfaceEmotion,
+          });
+        }
+        if (hasInnerWorldText(plannerOutput.suppressedEmotion)) {
+          emotionCards.push({
+            label: 'Suppressed emotion',
+            value: plannerOutput.suppressedEmotion,
+          });
+        }
+
+        if (emotionCards.length > 0 || hasInnerWorldText(plannerOutput.subtext)) {
+          sections.push({
+            title: 'Emotional Layer',
+            emotionCards,
+            subtext: hasInnerWorldText(plannerOutput.subtext) ? plannerOutput.subtext : null,
+          });
+        }
+
+        const strategyRows = [
+          { label: 'Response goal', value: plannerOutput.responseGoal },
+          { label: 'Target length', value: plannerOutput.targetLength },
+        ].filter((row) => hasInnerWorldText(row.value));
+
+        if (
+          strategyRows.length > 0 ||
+          hasInnerWorldItems(plannerOutput.mustAddress) ||
+          hasInnerWorldItems(plannerOutput.mustAvoid)
+        ) {
+          sections.push({
+            title: 'Response Strategy',
+            rows: strategyRows,
+            mustAddress: hasInnerWorldItems(plannerOutput.mustAddress) ? plannerOutput.mustAddress : [],
+            mustAvoid: hasInnerWorldItems(plannerOutput.mustAvoid) ? plannerOutput.mustAvoid : [],
+          });
+        }
+
+        if (hasInnerWorldItems(plannerOutput.actionPlan)) {
+          sections.push({
+            title: 'Action Plan',
+            actionPlan: plannerOutput.actionPlan,
+          });
+        }
+      }
+
+      const turnImpactRows = [
+        { label: 'Final pressure', value: turnMeta.finalPressure },
+        plannerOutput?.expectedImpact
+          ? {
+              label: 'Relationship delta hint',
+              value: formatSignedInnerWorldNumber(plannerOutput.expectedImpact.relationshipDeltaHint),
+            }
+          : null,
+        plannerOutput?.expectedImpact
+          ? {
+              label: 'Tension delta hint',
+              value: formatSignedInnerWorldNumber(plannerOutput.expectedImpact.tensionDeltaHint),
+            }
+          : null,
+        plannerOutput?.expectedImpact
+          ? {
+              label: 'Reveals secret',
+              value: plannerOutput.expectedImpact.revealsSecret ? 'Yes' : 'No',
+            }
+          : null,
+      ].filter((row) => row && hasInnerWorldText(row.value));
+
+      if (turnImpactRows.length > 0 || turnMeta.expectsReply === true || turnMeta.endsWithQuestion === true) {
+        sections.push({
+          title: 'Turn Impact',
+          rows: turnImpactRows,
+          expectsReply: turnMeta.expectsReply === true,
+          endsWithQuestion: turnMeta.endsWithQuestion === true,
+        });
+      }
+
+      if (stateUpdate) {
+        const knowledgeChanges = stateUpdate.knowledgeChanges ?? {};
+        const conversationUpdate = stateUpdate.conversationUpdate ?? {};
+        const physicalStateUpdate = stateUpdate.physicalStateUpdate ?? {};
+
+        const stateRows = [
+          { label: 'Summary', value: stateUpdate.summaryDelta },
+          {
+            label: 'New known facts',
+            value: hasInnerWorldItems(knowledgeChanges.newKnownFacts)
+              ? knowledgeChanges.newKnownFacts.join(', ')
+              : '',
+          },
+          {
+            label: 'New suspicions',
+            value: hasInnerWorldItems(knowledgeChanges.newSuspicions)
+              ? knowledgeChanges.newSuspicions.join(', ')
+              : '',
+          },
+          {
+            label: 'False beliefs corrected',
+            value: hasInnerWorldItems(knowledgeChanges.falseBeliefsCorrected)
+              ? knowledgeChanges.falseBeliefsCorrected.join(', ')
+              : '',
+          },
+          {
+            label: 'Secrets revealed',
+            value: hasInnerWorldItems(knowledgeChanges.secretsRevealed)
+              ? knowledgeChanges.secretsRevealed.join(', ')
+              : '',
+          },
+          {
+            label: 'Commitments made',
+            value: hasInnerWorldItems(conversationUpdate.commitmentsMade)
+              ? conversationUpdate.commitmentsMade.join(', ')
+              : '',
+          },
+          {
+            label: 'Threats made',
+            value: hasInnerWorldItems(conversationUpdate.threatsMade)
+              ? conversationUpdate.threatsMade.join(', ')
+              : '',
+          },
+          {
+            label: 'Questions opened',
+            value: hasInnerWorldItems(conversationUpdate.questionsOpened)
+              ? conversationUpdate.questionsOpened.join(', ')
+              : '',
+          },
+          {
+            label: 'Questions resolved',
+            value: hasInnerWorldItems(conversationUpdate.questionsResolved)
+              ? conversationUpdate.questionsResolved.join(', ')
+              : '',
+          },
+          {
+            label: 'Location changed',
+            value:
+              typeof physicalStateUpdate.locationChanged === 'boolean'
+                ? physicalStateUpdate.locationChanged
+                  ? 'Yes'
+                  : 'No'
+                : '',
+          },
+          { label: 'New location', value: physicalStateUpdate.newLocation },
+          { label: 'New micro-location', value: physicalStateUpdate.newMicroLocation },
+          { label: 'New distance band', value: physicalStateUpdate.newDistanceBand },
+          {
+            label: 'Object state changes',
+            value: hasInnerWorldItems(physicalStateUpdate.objectStateChanges)
+              ? physicalStateUpdate.objectStateChanges.join(', ')
+              : '',
+          },
+        ].filter((row) => hasInnerWorldText(row.value));
+
+        sections.push({
+          title: 'State Changes',
+          rows: stateRows,
+          relationshipShifts: hasInnerWorldItems(stateUpdate.relationshipShifts)
+            ? stateUpdate.relationshipShifts
+            : [],
+        });
+      }
+
+      return sections.filter((section) => {
+        return (
+          hasInnerWorldItems(section.rows) ||
+          hasInnerWorldItems(section.emotionCards) ||
+          hasInnerWorldItems(section.mustAddress) ||
+          hasInnerWorldItems(section.mustAvoid) ||
+          hasInnerWorldItems(section.actionPlan) ||
+          hasInnerWorldItems(section.relationshipShifts) ||
+          hasInnerWorldText(section.subtext) ||
+          section.expectsReply === true ||
+          section.endsWithQuestion === true
+        );
+      });
+    }
+
+    var bootstrapKnowledgeState = chatUiBootstrap?.knowledgeState ?? {
+      knownFacts: [],
+      suspicions: [],
+      falseBeliefs: [],
+      secretsRevealed: [],
+    };
+    var bootstrapRelationshipTimeline = Array.isArray(chatUiBootstrap?.relationshipTimeline)
+      ? chatUiBootstrap.relationshipTimeline
+      : [];
+    var bootstrapRelationshipSnapshot = getLatestRelationshipSnapshot(bootstrapRelationshipTimeline);
+    var bootstrapRelationshipPresentation = chatUiBootstrap?.relationshipPresentation ?? {
+      valence: {
+        value: resolveRelationshipMetric(bootstrapRelationshipSnapshot, session.relationshipState, 'valence'),
+        delta: readRelationshipDelta(buildRelationshipHistory(bootstrapRelationshipTimeline), 'valence'),
+        summary: '',
+        trend: '',
+        gaugeAriaLabel: '',
+        sparklineAriaLabel: '',
+      },
+      tension: {
+        value: resolveRelationshipMetric(bootstrapRelationshipSnapshot, session.relationshipState, 'tension'),
+        delta: readRelationshipDelta(buildRelationshipHistory(bootstrapRelationshipTimeline), 'tension'),
+        summary: '',
+        trend: '',
+        gaugeAriaLabel: '',
+        sparklineAriaLabel: '',
+      },
+    };
+    var bootstrapChatBible = chatUiBootstrap?.chatBible ?? null;
+    var bootstrapRollingSummary = chatUiBootstrap?.rollingSummary ?? null;
+    var knowledgeSummary = buildKnowledgeSummary(bootstrapKnowledgeState);
+    var currentObjectiveSummary = truncateSidebarSummary(
+      bootstrapChatBible?.characterNow?.currentObjective,
+      60
+    );
+    var conversationSummary = buildConversationSummary(bootstrapChatBible);
+    var guardrailsSummary = buildGuardrailsSummary(bootstrapChatBible);
+  %>
+
   <main
-    class="container"
+    class="chat-layout"
     id="chat-page"
     data-chat-id="<%= session.id %>"
     data-target-character-name="<%= session.targetCharacterName %>"
     data-interlocutor-character-name="<%= session.interlocutorCharacterName %>"
   >
-    <section class="hero">
-      <h1><%= session.targetCharacterName %> and <%= session.interlocutorCharacterName %></h1>
-      <p class="tagline">A resumable in-character conversation grounded in the current scene state.</p>
-    </section>
+    <header class="chat-header">
+      <div class="chat-header__identity">
+        <p class="chat-header__eyebrow">In-Character Conversation</p>
+        <h1><%= session.targetCharacterName %> and <%= session.interlocutorCharacterName %></h1>
+      </div>
 
-    <div class="alert alert-error" id="chat-error" style="display: none;" role="alert"></div>
+      <div class="chat-header__context">
+        <div class="chat-header__context-badges">
+          <span class="chat-badge" data-chat-field="timeOfDay"><%= session.physicalContext.timeOfDay %></span>
+          <span class="chat-badge" data-chat-field="privacy"><%= session.physicalContext.privacy %></span>
+          <span class="chat-badge" data-chat-field="distanceBand"><%= session.physicalContext.distanceBand %></span>
+        </div>
+      </div>
 
-    <section class="form-section">
-      <div class="stories-grid">
-        <article class="story-card">
-          <div class="story-card-content">
-            <h2>Conversation</h2>
-            <div id="chat-message-list" aria-live="polite">
-              <% if (!Array.isArray(turns) || turns.length === 0) { %>
-                <p id="chat-empty-state">No turns yet. Start the conversation below.</p>
-              <% } else { %>
-                <% turns.forEach(function(turn) { %>
-                  <article
-                    class="story-card"
-                    data-chat-turn
-                    data-chat-speaker="<%= turn.speaker %>"
-                    data-turn-number="<%= turn.turnNumber %>"
-                  >
-                    <div class="story-card-content">
-                      <h3>
-                        <%= turn.speaker === 'CHARACTER' ? session.targetCharacterName : session.interlocutorCharacterName %>
-                        <small>#<%= turn.turnNumber %></small>
-                      </h3>
-                      <p class="form-help">
-                        <time datetime="<%= turn.timestamp %>"><%= new Date(turn.timestamp).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }) %> UTC</time>
-                      </p>
+      <div class="chat-header__meta">
+        <span class="chat-badge chat-badge--accent" data-chat-turn-count>
+          <%= turns.length %> <%= turns.length === 1 ? 'turn' : 'turns' %>
+        </span>
+        <button
+          type="button"
+          class="btn btn-secondary btn-small chat-sidebar-toggle"
+          data-chat-sidebar-toggle
+          aria-controls="chat-sidebar"
+          aria-expanded="true"
+        >
+          Hide Scene State
+        </button>
+      </div>
+    </header>
 
-                      <% turn.blocks.forEach(function(block) { %>
-                        <% if (block.type === 'ACTION') { %>
-                          <p data-chat-block="ACTION"><em><%= block.text %></em></p>
-                        <% } else { %>
-                          <p data-chat-block="SPEECH">
-                            <% if (block.delivery) { %>
-                              <strong><%= block.delivery %>:</strong>
-                            <% } %>
-                            &ldquo;<%= block.text %>&rdquo;
-                          </p>
-                        <% } %>
+    <section class="chat-conversation" id="chat-message-list" aria-live="polite">
+      <div class="alert alert-error" id="chat-error" style="display: none;" role="alert"></div>
+
+      <% if (!Array.isArray(turns) || turns.length === 0) { %>
+        <p id="chat-empty-state" class="chat-empty-state">No turns yet. Start the conversation below.</p>
+      <% } else { %>
+        <% turns.forEach(function(turn) { %>
+          <article
+            class="chat-turn chat-turn--<%= turn.speaker === 'CHARACTER' ? 'character' : 'user' %>"
+            data-chat-turn
+            data-chat-speaker="<%= turn.speaker %>"
+            data-turn-number="<%= turn.turnNumber %>"
+          >
+            <div class="chat-turn__card">
+              <h2 class="chat-turn__heading">
+                <span>
+                  <%= turn.speaker === 'CHARACTER' ? session.targetCharacterName : session.interlocutorCharacterName %>
+                </span>
+                <small>#<%= turn.turnNumber %></small>
+              </h2>
+              <p class="form-help">
+                <time datetime="<%= turn.timestamp %>"><%= new Date(turn.timestamp).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }) %> UTC</time>
+              </p>
+
+              <% turn.blocks.forEach(function(block) { %>
+                <% if (block.type === 'ACTION') { %>
+                  <div class="chat-block chat-block--action" data-chat-block="ACTION">
+                    <em><%= block.text %></em>
+                  </div>
+                <% } else { %>
+                  <div class="chat-block chat-block--speech" data-chat-block="SPEECH">
+                    <% if (block.delivery) { %>
+                      <span class="chat-delivery"><%= block.delivery %></span>
+                    <% } %>
+                    <p>&ldquo;<%= block.text %>&rdquo;</p>
+                  </div>
+                <% } %>
+              <% }); %>
+
+              <% if (turn.speaker === 'CHARACTER') { %>
+                <% const speechAct = turn.plannerOutput?.speechAct; %>
+                <% const honestyMode = turn.plannerOutput?.honestyMode; %>
+                <% const visibleEmotion = turn.turnMeta?.visibleEmotion; %>
+                <% const innerWorldSections = buildInnerWorldData(turn); %>
+                <% if (speechAct || honestyMode || visibleEmotion) { %>
+                  <div class="chat-tag-bar">
+                    <% if (speechAct) { %>
+                      <span class="chat-tag chat-tag--speech-act"><%= speechAct %></span>
+                    <% } %>
+                    <% if (honestyMode) { %>
+                      <span class="chat-tag chat-tag--honesty"><%= honestyMode %></span>
+                    <% } %>
+                    <% if (visibleEmotion) { %>
+                      <span class="chat-tag chat-tag--emotion"><%= visibleEmotion %></span>
+                    <% } %>
+                  </div>
+                <% } %>
+
+                <% if (innerWorldSections.length > 0) { %>
+                  <details class="chat-inner-world">
+                    <summary class="chat-inner-world__summary">Character's Inner World</summary>
+                    <div class="chat-inner-world__content">
+                      <% innerWorldSections.forEach(function(section) { %>
+                        <section class="chat-inner-world__section">
+                          <h3 class="chat-inner-world__section-title"><%= section.title %></h3>
+
+                          <% if (section.rows && section.rows.length > 0) { %>
+                            <dl class="chat-inner-world__details">
+                              <% section.rows.forEach(function(row) { %>
+                                <div class="chat-inner-world__detail">
+                                  <dt><%= row.label %></dt>
+                                  <dd><%= row.value %></dd>
+                                </div>
+                              <% }); %>
+                            </dl>
+                          <% } %>
+
+                          <% if (section.emotionCards && section.emotionCards.length > 0) { %>
+                            <div class="chat-inner-world__emotion-grid">
+                              <% section.emotionCards.forEach(function(card) { %>
+                                <div class="chat-inner-world__emotion-card">
+                                  <span class="chat-inner-world__eyebrow"><%= card.label %></span>
+                                  <p><%= card.value %></p>
+                                </div>
+                              <% }); %>
+                            </div>
+                          <% } %>
+
+                          <% if (section.subtext) { %>
+                            <div class="chat-inner-world__copy-block">
+                              <span class="chat-inner-world__eyebrow">Subtext</span>
+                              <p><%= section.subtext %></p>
+                            </div>
+                          <% } %>
+
+                          <% if (section.mustAddress && section.mustAddress.length > 0) { %>
+                            <div class="chat-inner-world__copy-block">
+                              <span class="chat-inner-world__eyebrow">Must address</span>
+                              <ul class="chat-inner-world__list">
+                                <% section.mustAddress.forEach(function(item) { %>
+                                  <li class="chat-inner-world__list-item"><%= item %></li>
+                                <% }); %>
+                              </ul>
+                            </div>
+                          <% } %>
+
+                          <% if (section.mustAvoid && section.mustAvoid.length > 0) { %>
+                            <div class="chat-inner-world__copy-block">
+                              <span class="chat-inner-world__eyebrow">Must avoid</span>
+                              <ul class="chat-inner-world__list">
+                                <% section.mustAvoid.forEach(function(item) { %>
+                                  <li class="chat-inner-world__list-item"><%= item %></li>
+                                <% }); %>
+                              </ul>
+                            </div>
+                          <% } %>
+
+                          <% if (section.actionPlan && section.actionPlan.length > 0) { %>
+                            <ul class="chat-inner-world__list">
+                              <% section.actionPlan.forEach(function(item) { %>
+                                <li class="chat-inner-world__list-item">
+                                  <div class="chat-inner-world__action-item">
+                                    <span class="chat-inner-world__pill"><%= item.kind %></span>
+                                    <span class="chat-inner-world__action-text"><%= item.text %></span>
+                                    <% if (item.changesPhysicalState) { %>
+                                      <span class="chat-inner-world__pill chat-inner-world__pill--physical">Physical change</span>
+                                    <% } %>
+                                  </div>
+                                </li>
+                              <% }); %>
+                            </ul>
+                          <% } %>
+
+                          <% if (section.expectsReply || section.endsWithQuestion) { %>
+                            <div class="chat-inner-world__pill-row">
+                              <% if (section.expectsReply) { %>
+                                <span class="chat-inner-world__pill">Expects reply</span>
+                              <% } %>
+                              <% if (section.endsWithQuestion) { %>
+                                <span class="chat-inner-world__pill">Ends with question</span>
+                              <% } %>
+                            </div>
+                          <% } %>
+
+                          <% if (section.relationshipShifts && section.relationshipShifts.length > 0) { %>
+                            <div class="chat-inner-world__copy-block">
+                              <span class="chat-inner-world__eyebrow">Relationship shifts</span>
+                              <ul class="chat-inner-world__list">
+                                <% section.relationshipShifts.forEach(function(shift) { %>
+                                  <li class="chat-inner-world__list-item">
+                                    <strong><%= shift.shiftDescription %></strong>
+                                    (Valence <%= formatSignedInnerWorldNumber(shift.suggestedValenceChange) %>, Tension <%= formatSignedInnerWorldNumber(shift.suggestedTensionChange) %>)
+                                    <% if (shift.suggestedNewDynamic) { %>
+                                      . Suggested dynamic: <%= shift.suggestedNewDynamic %>.
+                                    <% } %>
+                                  </li>
+                                <% }); %>
+                              </ul>
+                            </div>
+                          <% } %>
+                        </section>
                       <% }); %>
                     </div>
-                  </article>
-                <% }); %>
+                  </details>
+                <% } %>
               <% } %>
             </div>
-          </div>
-        </article>
-
-        <aside class="story-card" id="chat-sidebar">
-          <div class="story-card-content">
-            <h2>Scene State</h2>
-
-            <section id="chat-physical-context">
-              <h3>Physical Context</h3>
-              <p><strong>Location:</strong> <span data-chat-field="location"><%= session.physicalContext.location %></span></p>
-              <p><strong>Micro-Location:</strong> <span data-chat-field="microLocation"><%= session.physicalContext.microLocation %></span></p>
-              <p><strong>Time:</strong> <span data-chat-field="timeOfDay"><%= session.physicalContext.timeOfDay %></span></p>
-              <p><strong>Privacy:</strong> <span data-chat-field="privacy"><%= session.physicalContext.privacy %></span></p>
-              <p><strong>Distance:</strong> <span data-chat-field="distanceBand"><%= session.physicalContext.distanceBand %></span></p>
-              <p><strong>Activity:</strong> <span data-chat-field="characterActivity"><%= session.physicalContext.characterActivity %></span></p>
-              <p><strong>Objects:</strong> <span data-chat-field="interactableObjects"><%= session.physicalContext.interactableObjects.join(', ') || 'None' %></span></p>
-              <p><strong>Conditions:</strong> <span data-chat-field="ambientConditions"><%= session.physicalContext.ambientConditions.join(', ') || 'None' %></span></p>
-            </section>
-
-            <section id="chat-relationship-state">
-              <h3>Relationship State</h3>
-              <p><strong>Dynamic:</strong> <span data-chat-field="dynamic"><%= session.relationshipState.dynamic || 'Unformed' %></span></p>
-              <p><strong>Valence:</strong> <span data-chat-field="valence"><%= session.relationshipState.valence %></span></p>
-              <p><strong>Tension:</strong> <span data-chat-field="tension"><%= session.relationshipState.tension %></span></p>
-              <p><strong>Leverage:</strong> <span data-chat-field="leverage"><%= session.relationshipState.leverage || 'None' %></span></p>
-            </section>
-
-            <section id="chat-lead-in-context">
-              <h3>Lead-In</h3>
-              <p><%= session.leadInContext.leadInSummary %></p>
-              <% if (session.leadInContext.recentEvents.length > 0) { %>
-                <ul id="chat-recent-events">
-                  <% session.leadInContext.recentEvents.forEach(function(eventSummary) { %>
-                    <li><%= eventSummary %></li>
-                  <% }); %>
-                </ul>
-              <% } %>
-              <p><strong>Why now:</strong> <span data-chat-field="whyNow"><%= session.leadInContext.whyNow %></span></p>
-            </section>
-          </div>
-        </aside>
-      </div>
+          </article>
+        <% }); %>
+      <% } %>
     </section>
 
-    <section class="form-section">
-      <form id="chat-turn-form" data-chat-turn-form>
-        <div class="story-card">
-          <div class="story-card-content">
-            <h2>Send Turn</h2>
+    <%- include('../partials/chat-sidebar', {
+      session,
+      bootstrapRelationshipPresentation,
+      formatSignedInnerWorldNumber,
+      bootstrapRelationshipSnapshot,
+      sanitizeSidebarItems,
+      bootstrapKnowledgeState,
+      knowledgeSummary,
+      currentObjectiveSummary,
+      normalizeSidebarText,
+      bootstrapChatBible,
+      bootstrapRollingSummary,
+      conversationSummary,
+      guardrailsSummary
+    }) %>
 
-            <div class="form-group">
-              <label for="chat-api-key">OpenRouter API Key</label>
+    <section class="chat-input-bar">
+      <form id="chat-turn-form" class="chat-input-form" data-chat-turn-form>
+        <div class="chat-input-form__composer">
+          <div class="chat-apikey-popover-anchor">
+            <button
+              type="button"
+              id="chat-apikey-toggle"
+              class="btn btn-secondary btn-small chat-apikey-btn"
+              aria-controls="chat-apikey-popover"
+              aria-expanded="false"
+              aria-label="Open API key settings"
+              title="API key settings"
+            >
+              <span class="chat-apikey-btn__icon" aria-hidden="true">Unlocked</span>
+              <span class="chat-apikey-btn__label">API Key</span>
+            </button>
+
+            <div id="chat-apikey-popover" class="chat-apikey-popover" hidden>
+              <label class="chat-apikey-popover__label" for="chat-api-key">OpenRouter API Key</label>
               <input
                 type="password"
                 id="chat-api-key"
@@ -126,36 +620,38 @@
               >
               <p class="form-help">Stored client-side for turn generation only.</p>
             </div>
-
-            <div class="form-group">
-              <label for="chat-message">Message</label>
-              <textarea
-                id="chat-message"
-                name="message"
-                rows="5"
-                maxlength="2000"
-                placeholder="Use *asterisks* for actions and plain text for speech."
-                required
-              ></textarea>
-            </div>
-
-            <div class="alert alert-error" id="chat-turn-error" style="display: none;" role="alert"></div>
-
-            <div id="chat-loading-indicator" style="display: none;" aria-live="polite">
-              Character is thinking...
-            </div>
-            <div id="chat-progress-status" data-chat-progress></div>
           </div>
-          <div class="story-card-actions">
-            <button type="submit" class="btn btn-primary" id="chat-send-button">Send</button>
+
+          <div class="chat-input-form__message">
+            <label class="sr-only" for="chat-message">Message</label>
+            <textarea
+              id="chat-message"
+              name="message"
+              rows="1"
+              maxlength="2000"
+              placeholder="Use *asterisks* for actions and plain text for speech."
+              required
+            ></textarea>
+          </div>
+
+          <div class="chat-input-form__actions">
+            <button type="submit" class="btn btn-primary chat-send-btn" id="chat-send-button">Send</button>
           </div>
         </div>
+
+        <div class="alert alert-error" id="chat-turn-error" style="display: none;" role="alert"></div>
+
+        <div id="chat-loading-indicator" style="display: none;" aria-live="polite">
+          Character is thinking...
+        </div>
+        <div id="chat-progress-status" data-chat-progress></div>
       </form>
     </section>
   </main>
 
   <%- include('../partials/footer') %>
 
+  <script type="application/json" id="chat-ui-bootstrap"><%- JSON.stringify(chatUiBootstrap ?? null) %></script>
   <script src="/js/app.js"></script>
 </body>
 </html>

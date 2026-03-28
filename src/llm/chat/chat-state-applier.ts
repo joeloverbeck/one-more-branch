@@ -1,8 +1,9 @@
-import type { ChatSession, ChatStateUpdate } from '../../models/chat/index.js';
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
+import {
+  applyRelationshipStateUpdate,
+  type ChatRelationshipSnapshot,
+  type ChatSession,
+  type ChatStateUpdate,
+} from '../../models/chat/index.js';
 
 function mergeUnique(existing: readonly string[], additions: readonly string[]): string[] {
   const seen = new Set(existing);
@@ -21,20 +22,10 @@ function mergeUnique(existing: readonly string[], additions: readonly string[]):
 export function applyChatStateUpdate(
   session: ChatSession,
   stateUpdate: ChatStateUpdate,
-  updatedAt = new Date().toISOString()
+  updatedAt = new Date().toISOString(),
+  relationshipSnapshot?: ChatRelationshipSnapshot
 ): ChatSession {
-  const relationshipDelta = stateUpdate.relationshipShifts.reduce(
-    (accumulator, shift) => ({
-      valence: accumulator.valence + shift.suggestedValenceChange,
-      tension: accumulator.tension + shift.suggestedTensionChange,
-      dynamic: shift.suggestedNewDynamic ?? accumulator.dynamic,
-    }),
-    {
-      valence: session.relationshipState.valence,
-      tension: session.relationshipState.tension,
-      dynamic: session.relationshipState.dynamic,
-    }
-  );
+  const nextRelationshipState = applyRelationshipStateUpdate(session.relationshipState, stateUpdate);
 
   const correctedFalseBeliefs = new Set(stateUpdate.knowledgeChanges.falseBeliefsCorrected);
   const nextPhysicalContext = stateUpdate.physicalStateUpdate.locationChanged
@@ -53,12 +44,20 @@ export function applyChatStateUpdate(
     updatedAt,
     turnCount: session.turnCount + 1,
     physicalContext: nextPhysicalContext,
-    relationshipState: {
-      ...session.relationshipState,
-      dynamic: relationshipDelta.dynamic,
-      valence: clamp(relationshipDelta.valence, -5, 5),
-      tension: clamp(relationshipDelta.tension, 0, 10),
-    },
+    relationshipState:
+      relationshipSnapshot === undefined
+        ? {
+            ...session.relationshipState,
+            dynamic: nextRelationshipState.dynamic,
+            valence: nextRelationshipState.valence,
+            tension: nextRelationshipState.tension,
+          }
+        : {
+            dynamic: relationshipSnapshot.dynamic,
+            valence: relationshipSnapshot.valence,
+            tension: relationshipSnapshot.tension,
+            leverage: relationshipSnapshot.leverage,
+          },
     knowledgeState: {
       knownFacts: mergeUnique(
         session.knowledgeState.knownFacts,

@@ -1,12 +1,15 @@
 import { type Request, type Response, Router } from 'express';
 import { LLMError } from '../../llm/llm-client-types.js';
 import {
+  buildChatRelationshipPresentation,
+  buildChatRelationshipTimeline,
   ChatDomainError,
   DISTANCE_BAND_VALUES,
   PRIVACY_VALUES,
   TIME_OF_DAY_VALUES,
   type ChatLeadInContext,
   type ChatPhysicalContext,
+  type ChatSession,
 } from '../../models/chat/index.js';
 import { logger } from '../../logging/index.js';
 import { chatService } from '../services/index.js';
@@ -44,6 +47,28 @@ interface ChatTurnBody {
   readonly apiKey?: unknown;
   readonly progressId?: unknown;
   readonly isSessionResume?: unknown;
+}
+
+interface ChatUiBootstrap {
+  readonly chatBible: ChatSession['chatBible'];
+  readonly rollingSummary: ChatSession['rollingSummary'];
+  readonly knowledgeState: ChatSession['knowledgeState'];
+  readonly relationshipTimeline: ReturnType<typeof buildChatRelationshipTimeline>;
+  readonly relationshipPresentation: ReturnType<typeof buildChatRelationshipPresentation>;
+}
+
+function buildChatUiBootstrap(session: ChatSession, turns: Parameters<typeof buildChatRelationshipTimeline>[0]): ChatUiBootstrap {
+  const relationshipTimeline = buildChatRelationshipTimeline(turns);
+  return {
+    chatBible: session.chatBible,
+    rollingSummary: session.rollingSummary,
+    knowledgeState: session.knowledgeState,
+    relationshipTimeline,
+    relationshipPresentation: buildChatRelationshipPresentation(
+      relationshipTimeline,
+      session.relationshipState
+    ),
+  };
 }
 
 class RouteValidationError extends Error {
@@ -253,10 +278,12 @@ chatRoutes.get(
     try {
       const chatId = flattenParam(req.params['chatId']) ?? '';
       const { session, turns } = await chatService.resumeChat(chatId);
+      const chatUiBootstrap = buildChatUiBootstrap(session, turns);
       return res.render('pages/chat', {
         title: `Chat with ${session.targetCharacterName} - One More Branch`,
         session,
         turns,
+        chatUiBootstrap,
       });
     } catch (error) {
       renderPageError(res, error, 'chat rendering');

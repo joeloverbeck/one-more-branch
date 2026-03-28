@@ -2,25 +2,31 @@ import { randomUUID } from 'crypto';
 import type { GenerationStageCallback } from '../../engine/types.js';
 import { runChatPipeline, type ChatPipelineResult } from '../../llm/index.js';
 import type {
+  ChatRelationshipPresentation,
   ChatLeadInContext,
   ChatPhysicalContext,
   ChatSession,
   ChatSessionSummary,
   ChatTurn,
 } from '../../models/chat/index.js';
-import { ChatDomainError, parseChatInput } from '../../models/chat/index.js';
+import {
+  buildChatRelationshipPresentation,
+  buildChatRelationshipTimeline,
+  ChatDomainError,
+  parseChatInput,
+} from '../../models/chat/index.js';
 import type { DecomposedWorld } from '../../models/decomposed-world.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
 import { loadCharacter } from '../../persistence/character-repository.js';
 import { loadWorldbuildingById } from '../../services/worldbuilding-service.js';
 import {
+  commitChatTurn,
   deleteChat,
   getRecentTurns,
   listChats,
   loadChat,
   loadTurns,
   saveChat,
-  saveTurn,
 } from '../../persistence/chat-repository.js';
 
 export interface CreateChatParams {
@@ -41,16 +47,17 @@ export interface SendTurnParams {
 
 export interface SendTurnResult extends ChatPipelineResult {
   readonly userTurn: ChatTurn;
+  readonly relationshipPresentation: ChatRelationshipPresentation;
 }
 
 interface ChatServiceDeps {
   readonly loadCharacter: typeof loadCharacter;
   readonly loadWorldbuildingById: typeof loadWorldbuildingById;
   readonly saveChat: typeof saveChat;
+  readonly commitChatTurn: typeof commitChatTurn;
   readonly loadChat: typeof loadChat;
   readonly listChats: typeof listChats;
   readonly deleteChat: typeof deleteChat;
-  readonly saveTurn: typeof saveTurn;
   readonly loadTurns: typeof loadTurns;
   readonly getRecentTurns: typeof getRecentTurns;
   readonly parseChatInput: typeof parseChatInput;
@@ -71,10 +78,10 @@ const defaultDeps: ChatServiceDeps = {
   loadCharacter,
   loadWorldbuildingById,
   saveChat,
+  commitChatTurn,
   loadChat,
   listChats,
   deleteChat,
-  saveTurn,
   loadTurns,
   getRecentTurns,
   parseChatInput,
@@ -232,9 +239,7 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
         timestamp: userTurnTimestamp,
       };
 
-      await deps.saveTurn(params.chatId, userTurn);
-
-      const [targetCharacter, interlocutorCharacter, decomposedWorld, recentTurns, allTurns] =
+      const [targetCharacter, interlocutorCharacter, decomposedWorld, priorRecentTurns, priorAllTurns] =
         await Promise.all([
         requireCharacter(deps, 'Target', session.targetCharacterId),
         requireCharacter(deps, 'Interlocutor', session.interlocutorCharacterId),
@@ -242,6 +247,9 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
         deps.getRecentTurns(params.chatId, 12),
         deps.loadTurns(params.chatId),
       ]);
+
+      const allTurns = [...priorAllTurns, userTurn];
+      const recentTurns = [...priorRecentTurns, userTurn].slice(-12);
 
       const pipelineResult = await deps.runChatPipeline(
         {
@@ -258,10 +266,22 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
         params.onGenerationStage
       );
 
-      await deps.saveTurn(params.chatId, pipelineResult.characterTurn);
-      await deps.saveChat(pipelineResult.updatedSession);
+      await deps.commitChatTurn(params.chatId, {
+        userTurn,
+        characterTurn: pipelineResult.characterTurn,
+        updatedSession: pipelineResult.updatedSession,
+      });
+      const relationshipTimeline = buildChatRelationshipTimeline([
+        ...priorAllTurns,
+        userTurn,
+        pipelineResult.characterTurn,
+      ]);
       return {
         userTurn,
+        relationshipPresentation: buildChatRelationshipPresentation(
+          relationshipTimeline,
+          pipelineResult.updatedSession.relationshipState
+        ),
         ...pipelineResult,
       };
     },

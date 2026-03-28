@@ -1,4 +1,4 @@
-const mockRunLlmStage = jest.fn();
+const mockRunLlmStage = jest.fn<Promise<{ parsed: unknown; rawResponse: string }>, [unknown]>();
 const mockBuildMessages = jest.fn().mockReturnValue([
   { role: 'system', content: 'System prompt' },
   { role: 'user', content: 'User prompt' },
@@ -10,15 +10,17 @@ jest.mock('../../../../src/llm/llm-stage-runner', () => ({
   },
 }));
 
-jest.mock('../../../../src/llm/prompts/chat/chat-bible-prompt', () => ({
-  get buildChatBibleMessages(): typeof mockBuildMessages {
+jest.mock('../../../../src/llm/prompts/chat/chat-character-context-prompt', () => ({
+  get buildChatCharacterContextMessages(): typeof mockBuildMessages {
     return mockBuildMessages;
   },
 }));
 
-import { generateChatBible, type ChatBibleContext } from '../../../../src/llm/chat/chat-bible-generation';
-import { CHAT_BIBLE_SCHEMA } from '../../../../src/llm/schemas/chat-bible-schema';
+import { generateChatCharacterContext } from '../../../../src/llm/chat/chat-character-context-generation';
+import type { ChatGenerationContext } from '../../../../src/llm/chat/chat-generation-context';
 import { LLMError } from '../../../../src/llm/llm-client-types';
+import { CHAT_CHARACTER_CONTEXT_SCHEMA } from '../../../../src/llm/schemas/chat-character-context-schema';
+import type { ChatSceneContext } from '../../../../src/models/chat';
 import type { DecomposedWorld } from '../../../../src/models/decomposed-world';
 
 const DECOMPOSED_WORLD: DecomposedWorld = {
@@ -37,7 +39,7 @@ const DECOMPOSED_WORLD: DecomposedWorld = {
   rawWorldbuilding: 'An observatory city built around a dead star clock.',
 };
 
-function makeContext(): ChatBibleContext {
+function makeContext(): ChatGenerationContext {
   return {
     targetCharacter: {
       id: 'char-1',
@@ -118,25 +120,36 @@ function makeContext(): ChatBibleContext {
   };
 }
 
-const PARSED_CHAT_BIBLE = {
-  sessionPremise: 'Two allies test whether trust is still possible.',
-  physicalReality: {
-    location: 'Observatory',
-    microLocation: 'Upper hall',
-    timeOfDay: 'EVENING',
-    privacy: 'PRIVATE',
-    distanceBand: 'CONVERSATIONAL',
-    characterActivity: 'Watching the door',
-    interactableObjects: ['Lantern'],
-    ambientConditions: ['Rain'],
-  },
-  preChatMomentum: {
-    leadInSummary: 'They meet after the failed rendezvous.',
-    recentEvents: ['The signal failed'],
-    whyNow: 'They are out of time.',
-    stakesNow: ['Find the courier'],
-    unresolvedPressures: ['Mutual distrust'],
-  },
+function makeSceneContext(): ChatSceneContext {
+  return {
+    sessionPremise: 'Two allies test whether trust is still possible.',
+    physicalReality: {
+      location: 'Observatory',
+      microLocation: 'Upper hall',
+      timeOfDay: 'EVENING',
+      privacy: 'PRIVATE',
+      distanceBand: 'CONVERSATIONAL',
+      characterActivity: 'Watching the door',
+      interactableObjects: ['Lantern'],
+      ambientConditions: ['Rain'],
+    },
+    preChatMomentum: {
+      leadInSummary: 'They meet after the failed rendezvous.',
+      recentEvents: ['The signal failed'],
+      whyNow: 'They are out of time.',
+      stakesNow: ['Find the courier'],
+      unresolvedPressures: ['Mutual distrust'],
+    },
+    conversationNow: {
+      activeThreads: ['Who lied first'],
+      commitments: [],
+      sensitiveTopics: ['Her brother'],
+      lastTurnPressure: null,
+    },
+  };
+}
+
+const PARSED_CHARACTER_CONTEXT = {
   characterNow: {
     currentObjective: 'Get the truth first',
     immediateNeedFromConversation: 'Test his honesty',
@@ -160,13 +173,6 @@ const PARSED_CHAT_BIBLE = {
     secretsKept: ['She still has the key'],
     knowledgeBoundaries: ['She does not know who ordered the theft'],
   },
-  conversationNow: {
-    rollingSummary: null,
-    activeThreads: ['Who lied first'],
-    commitments: [],
-    sensitiveTopics: ['Her brother'],
-    lastTurnPressure: null,
-  },
   continuityGuardrails: ['Do not invent new evidence'],
   responseConstraints: ['Keep the next turn compressed'],
 };
@@ -174,45 +180,28 @@ const PARSED_CHAT_BIBLE = {
 beforeEach(() => {
   jest.clearAllMocks();
   mockRunLlmStage.mockResolvedValue({
-    parsed: PARSED_CHAT_BIBLE,
-    rawResponse: '{"sessionPremise":"Two allies test whether trust is still possible."}',
+    parsed: PARSED_CHARACTER_CONTEXT,
+    rawResponse: '{"characterNow":{"currentObjective":"Get the truth first"}}',
   });
 });
 
-describe('generateChatBible', () => {
-  it('calls the prompt builder with the provided context', async () => {
+describe('generateChatCharacterContext', () => {
+  it('calls the prompt builder with the provided context and scene context', async () => {
     const context = makeContext();
-    await generateChatBible(context, 'test-key');
+    const sceneContext = makeSceneContext();
+    await generateChatCharacterContext(context, sceneContext, 'test-key');
 
-    expect(mockBuildMessages).toHaveBeenCalledWith(context);
-  });
-
-  it('passes structured rolling summaries through to the prompt builder unchanged', async () => {
-    const context = {
-      ...makeContext(),
-      rollingSummary: {
-        compressedSummary: 'The confrontation hardened into open suspicion.',
-        keyCommitments: ['Meet again at dawn.'],
-        keyRevelations: ['She copied the ledger.'],
-        unresolvedQuestions: ['Who else knows about the ledger?'],
-        leverageShifts: ['She gained initiative by naming the ledger first.'],
-        emotionalTrajectory: 'Distrust tightening into accusation.',
-      },
-    };
-
-    await generateChatBible(context, 'test-key');
-
-    expect(mockBuildMessages).toHaveBeenCalledWith(context);
+    expect(mockBuildMessages).toHaveBeenCalledWith(context, sceneContext);
   });
 
   it('calls runLlmStage with the correct stage metadata and schema', async () => {
-    await generateChatBible(makeContext(), 'test-key');
+    await generateChatCharacterContext(makeContext(), makeSceneContext(), 'test-key');
 
     expect(mockRunLlmStage).toHaveBeenCalledWith(
       expect.objectContaining({
-        stageModel: 'chatBible',
-        promptType: 'chatBible',
-        schema: CHAT_BIBLE_SCHEMA,
+        stageModel: 'chatCharacterContext',
+        promptType: 'chatCharacterContext',
+        schema: CHAT_CHARACTER_CONTEXT_SCHEMA,
         apiKey: 'test-key',
         parseResponse: expect.any(Function) as unknown,
       })
@@ -220,7 +209,7 @@ describe('generateChatBible', () => {
   });
 
   it('passes options through to the stage runner', async () => {
-    await generateChatBible(makeContext(), 'test-key', {
+    await generateChatCharacterContext(makeContext(), makeSceneContext(), 'test-key', {
       model: 'custom/model',
       temperature: 0.15,
     });
@@ -232,16 +221,48 @@ describe('generateChatBible', () => {
     );
   });
 
-  it('returns the parsed chat bible together with rawResponse', async () => {
-    const result = await generateChatBible(makeContext(), 'test-key');
+  it('returns the parsed character context together with rawResponse', async () => {
+    const result = await generateChatCharacterContext(makeContext(), makeSceneContext(), 'test-key');
 
-    expect(result.chatBible).toEqual(PARSED_CHAT_BIBLE);
-    expect(result.rawResponse).toContain('sessionPremise');
+    expect(result.characterContext).toEqual(PARSED_CHARACTER_CONTEXT);
+    expect(result.rawResponse).toContain('currentObjective');
+  });
+
+  it('retries with a lenient schema when the provider rejects the strict grammar', async () => {
+    mockRunLlmStage
+      .mockRejectedValueOnce(new Error('reduce the number of strict tools'))
+      .mockResolvedValueOnce({
+        parsed: PARSED_CHARACTER_CONTEXT,
+        rawResponse: '{"characterNow":{"currentObjective":"Get the truth first"}}',
+      });
+
+    const result = await generateChatCharacterContext(makeContext(), makeSceneContext(), 'test-key');
+
+    expect(result.characterContext).toEqual(PARSED_CHARACTER_CONTEXT);
+    expect(mockRunLlmStage).toHaveBeenCalledTimes(2);
+    expect(mockRunLlmStage).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        schema: CHAT_CHARACTER_CONTEXT_SCHEMA,
+      })
+    );
+    const secondStageInput: unknown = mockRunLlmStage.mock.calls[1]?.[0];
+    expect(secondStageInput).toMatchObject({
+      schema: {
+        json_schema: {
+            name: CHAT_CHARACTER_CONTEXT_SCHEMA.json_schema.name,
+            strict: false,
+        },
+      },
+    });
   });
 
   it('propagates LLM client errors', async () => {
     mockRunLlmStage.mockRejectedValue(new LLMError('API error', 'API_ERROR', true));
 
-    await expect(generateChatBible(makeContext(), 'test-key')).rejects.toThrow('API error');
+    await expect(
+      generateChatCharacterContext(makeContext(), makeSceneContext(), 'test-key')
+    ).rejects.toThrow('API error');
+    expect(mockRunLlmStage).toHaveBeenCalledTimes(1);
   });
 });

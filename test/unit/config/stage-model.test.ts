@@ -1,3 +1,7 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
 import {
   getStageModel,
   getStageMaxTokens,
@@ -7,174 +11,94 @@ import {
 import { getConfig, loadConfig, resetConfig } from '@/config/index';
 import { LLM_STAGE_KEYS } from '@/config/llm-stage-registry';
 
-describe('getStageModel', () => {
+function withConfigDir(config: Record<string, unknown>): string {
+  const configDir = fs.mkdtempSync(path.join(os.tmpdir(), 'omb-stage-model-'));
+  fs.writeFileSync(path.join(configDir, 'default.json'), JSON.stringify(config), 'utf8');
+  return configDir;
+}
+
+describe('stage-model resolution', () => {
+  const originalConfigPath = process.env['CONFIG_PATH'];
+
   beforeEach(() => {
     resetConfig();
+    delete process.env['CONFIG_PATH'];
   });
 
   afterEach(() => {
     resetConfig();
+    if (originalConfigPath !== undefined) {
+      process.env['CONFIG_PATH'] = originalConfigPath;
+    } else {
+      delete process.env['CONFIG_PATH'];
+    }
   });
 
-  it('returns defaultModel when no models config exists', () => {
+  it('uses catalog model defaults before the global default model', () => {
     process.env['CONFIG_PATH'] = '/dev/null';
     loadConfig();
-    delete process.env['CONFIG_PATH'];
 
-    const config = getConfig();
-    const model = getStageModel('writer');
-    expect(model).toBe(config.llm.defaultModel);
+    expect(getStageModel('conceptSeeder')).toBe('anthropic/claude-sonnet-4.6');
+    expect(getStageModel('characterBrainstormer')).toBe('anthropic/claude-sonnet-4.6');
+    expect(getStageModel('kernelIdeator')).toBe(getConfig().llm.defaultModel);
   });
 
-  it('returns defaultModel when stage key is absent from models', () => {
+  it('uses catalog max-token and temperature defaults for split chat stages', () => {
     process.env['CONFIG_PATH'] = '/dev/null';
     loadConfig();
-    delete process.env['CONFIG_PATH'];
 
-    // No models section exists, so any stage falls back to defaultModel
-    const config = getConfig();
-    const model = getStageModel('writer');
-    expect(model).toBe(config.llm.defaultModel);
+    expect(getStageMaxTokens('chatSceneContext')).toBe(3000);
+    expect(getStageMaxTokens('chatCharacterContext')).toBe(3000);
+    expect(getStageTemperature('chatSceneContext')).toBe(0.3);
+    expect(getStageTemperature('chatCharacterContext')).toBe(0.3);
   });
 
-  it('returns stage-specific model when stage key is present in models', () => {
+  it('uses global defaults for stages without stage-specific catalog overrides', () => {
+    process.env['CONFIG_PATH'] = '/dev/null';
     loadConfig();
 
     const config = getConfig();
-    const model = getStageModel('structureEvaluator');
-    // Should match whatever the config file says for structureEvaluator
-    const expected = config.llm.models?.['structureEvaluator'] ?? config.llm.defaultModel;
-    expect(model).toBe(expected);
+    expect(getStageMaxTokens('writer')).toBe(config.llm.maxTokens);
+    expect(getStageTemperature('writer')).toBe(config.llm.temperature);
   });
 
-  it('resolves concept and kernel stage models from config when configured', () => {
+  it('prefers config override maps over catalog defaults', () => {
+    process.env['CONFIG_PATH'] = withConfigDir({
+      llm: {
+        defaultModel: 'global/model',
+        maxTokens: 4096,
+        temperature: 0.8,
+        models: {
+          chatSceneContext: 'override/model',
+        },
+        stageMaxTokens: {
+          chatSceneContext: 2048,
+        },
+        stageTemperatures: {
+          chatSceneContext: 0.6,
+        },
+      },
+    });
     loadConfig();
 
-    const config = getConfig();
-    expect(config.llm.models?.['kernelIdeator']).toBeDefined();
-    expect(config.llm.models?.['kernelEvaluator']).toBeDefined();
-    expect(config.llm.models?.['conceptSeeder']).toBeDefined();
-    expect(config.llm.models?.['conceptEvolverSeeder']).toBeDefined();
-    expect(config.llm.models?.['conceptArchitect']).toBeDefined();
-    expect(config.llm.models?.['conceptEngineer']).toBeDefined();
-    expect(config.llm.models?.['conceptEvaluator']).toBeDefined();
-    expect(config.llm.models?.['conceptStressTester']).toBeDefined();
-
-    expect(getStageModel('kernelIdeator')).toBe(config.llm.models?.['kernelIdeator']);
-    expect(getStageModel('kernelEvaluator')).toBe(config.llm.models?.['kernelEvaluator']);
-    expect(getStageModel('conceptSeeder')).toBe(config.llm.models?.['conceptSeeder']);
-    expect(getStageModel('conceptEvolverSeeder')).toBe(config.llm.models?.['conceptEvolverSeeder']);
-    expect(getStageModel('conceptArchitect')).toBe(config.llm.models?.['conceptArchitect']);
-    expect(getStageModel('conceptEngineer')).toBe(config.llm.models?.['conceptEngineer']);
-    expect(getStageModel('conceptEvaluator')).toBe(config.llm.models?.['conceptEvaluator']);
-    expect(getStageModel('conceptStressTester')).toBe(config.llm.models?.['conceptStressTester']);
+    expect(getStageModel('chatSceneContext')).toBe('override/model');
+    expect(getStageMaxTokens('chatSceneContext')).toBe(2048);
+    expect(getStageTemperature('chatSceneContext')).toBe(0.6);
   });
 
-  it('resolves each valid LlmStage value to a non-empty string', () => {
+  it('resolves every registered stage to a valid model, token budget, and temperature', () => {
     loadConfig();
 
     const stages: readonly LlmStage[] = LLM_STAGE_KEYS;
 
     for (const stage of stages) {
       const model = getStageModel(stage);
-      expect(typeof model).toBe('string');
-      expect(model.length).toBeGreaterThan(0);
-    }
-  });
-});
-
-describe('getStageMaxTokens', () => {
-  beforeEach(() => {
-    resetConfig();
-  });
-
-  afterEach(() => {
-    resetConfig();
-  });
-
-  it('returns global maxTokens when no stageMaxTokens config exists', () => {
-    process.env['CONFIG_PATH'] = '/dev/null';
-    loadConfig();
-    delete process.env['CONFIG_PATH'];
-
-    const config = getConfig();
-    const maxTokens = getStageMaxTokens('writer');
-    expect(maxTokens).toBe(config.llm.maxTokens);
-  });
-
-  it('returns stage-specific maxTokens when configured', () => {
-    loadConfig();
-
-    const config = getConfig();
-    const maxTokens = getStageMaxTokens('agendaResolver');
-    const expected = config.llm.stageMaxTokens?.['agendaResolver'] ?? config.llm.maxTokens;
-    expect(maxTokens).toBe(expected);
-    expect(maxTokens).toBe(32768);
-  });
-
-  it('returns global maxTokens for stage without per-stage override', () => {
-    loadConfig();
-
-    const config = getConfig();
-    // 'writer' is not in stageMaxTokens in default.json
-    const maxTokens = getStageMaxTokens('writer');
-    expect(maxTokens).toBe(config.llm.maxTokens);
-  });
-
-  it('resolves each LlmStage to a positive number', () => {
-    loadConfig();
-
-    for (const stage of LLM_STAGE_KEYS) {
       const maxTokens = getStageMaxTokens(stage);
-      expect(typeof maxTokens).toBe('number');
-      expect(maxTokens).toBeGreaterThan(0);
-    }
-  });
-});
-
-describe('getStageTemperature', () => {
-  beforeEach(() => {
-    resetConfig();
-  });
-
-  afterEach(() => {
-    resetConfig();
-  });
-
-  it('returns global temperature when no stageTemperatures config exists', () => {
-    process.env['CONFIG_PATH'] = '/dev/null';
-    loadConfig();
-    delete process.env['CONFIG_PATH'];
-
-    const config = getConfig();
-    const temperature = getStageTemperature('writer');
-    expect(temperature).toBe(config.llm.temperature);
-  });
-
-  it('returns stage-specific temperature when configured', () => {
-    loadConfig();
-
-    const config = getConfig();
-    const temperature = getStageTemperature('chatBible');
-    const expected = config.llm.stageTemperatures?.['chatBible'] ?? config.llm.temperature;
-    expect(temperature).toBe(expected);
-    expect(temperature).toBe(0.3);
-  });
-
-  it('returns global temperature for stage without per-stage override', () => {
-    loadConfig();
-
-    const config = getConfig();
-    const temperature = getStageTemperature('writer');
-    expect(temperature).toBe(config.llm.temperature);
-  });
-
-  it('resolves each LlmStage to a valid temperature', () => {
-    loadConfig();
-
-    for (const stage of LLM_STAGE_KEYS) {
       const temperature = getStageTemperature(stage);
-      expect(typeof temperature).toBe('number');
+
+      expect(model).toEqual(expect.any(String));
+      expect(model).not.toHaveLength(0);
+      expect(maxTokens).toBeGreaterThan(0);
       expect(temperature).toBeGreaterThanOrEqual(0);
       expect(temperature).toBeLessThanOrEqual(2);
     }

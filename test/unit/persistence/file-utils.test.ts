@@ -11,8 +11,7 @@ import {
   ensureStoriesDir,
   fileExists,
   getChatDir,
-  getChatSessionFilePath,
-  getChatTurnsFilePath,
+  getChatStateFilePath,
   getChatsDir,
   getKernelFilePath,
   getKernelGenerationFilePath,
@@ -51,10 +50,7 @@ describe('file-utils', () => {
   it('builds deterministic chat paths', () => {
     const chatsDir = getChatsDir();
     expect(getChatDir('chat-123')).toBe(path.join(chatsDir, 'chat-123'));
-    expect(getChatSessionFilePath('chat-123')).toBe(
-      path.join(chatsDir, 'chat-123', 'chat.json')
-    );
-    expect(getChatTurnsFilePath('chat-123')).toBe(path.join(chatsDir, 'chat-123', 'turns.json'));
+    expect(getChatStateFilePath('chat-123')).toBe(path.join(chatsDir, 'chat-123', 'state.json'));
   });
 
   it('builds deterministic kernel and kernel generation paths', () => {

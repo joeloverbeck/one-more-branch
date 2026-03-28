@@ -3,7 +3,7 @@ import { CONTENT_POLICY } from '../content-policy.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
 import { buildWorldSection } from './sections/shared/worldbuilding-sections.js';
 import type { SpinePromptContext } from './spine-prompt.js';
-import { formatStandaloneCharacterSummary } from '../../models/standalone-decomposed-character.js';
+import { formatStandaloneCharacterPromptSummary } from '../../models/standalone-decomposed-character.js';
 import { formatNpcsForPrompt } from '../../models/npc.js';
 
 const FOUNDATION_ROLE_INTRO = `You are a story architect specializing in thematic foundation design for interactive branching fiction. Your task is to generate 5-6 DIVERGENT thematic foundations — the bedrock choices (conflict axis, character arc trajectory, protagonist's deepest fear, and tonal direction) that will anchor the entire story.
@@ -101,7 +101,7 @@ export function buildSpineFoundationPrompt(context: SpinePromptContext): ChatMes
       : '';
 
   const protagonistSection = context.decomposedCharacters?.[0]
-    ? `PROTAGONIST CHARACTER:\n${formatStandaloneCharacterSummary(context.decomposedCharacters[0])}\n\n`
+    ? `PROTAGONIST CHARACTER:\n${formatStandaloneCharacterPromptSummary(context.decomposedCharacters[0], 'standalone')}\n\n`
     : context.characterConcept
       ? `CHARACTER CONCEPT:\n${context.characterConcept}\n\n`
       : '';
@@ -109,7 +109,9 @@ export function buildSpineFoundationPrompt(context: SpinePromptContext): ChatMes
   const npcCharacters = context.decomposedCharacters?.slice(1);
   const npcsSection =
     npcCharacters && npcCharacters.length > 0
-      ? `NPC CHARACTERS (Pre-Decomposed Profiles):\n${npcCharacters.map(formatStandaloneCharacterSummary).join('\n\n')}\n\n`
+      ? `NPC CHARACTERS (Pre-Decomposed Profiles):\n${npcCharacters
+          .map((character) => formatStandaloneCharacterPromptSummary(character, 'standalone'))
+          .join('\n\n')}\n\n`
       : context.npcs && context.npcs.length > 0
         ? `NPCS (Available Characters):\n${formatNpcsForPrompt(context.npcs)}\n\n`
         : '';

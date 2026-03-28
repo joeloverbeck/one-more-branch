@@ -153,11 +153,13 @@ export const CHAT_PLANNER_SCHEMA: JsonSchema = {
           properties: {
             relationshipDeltaHint: {
               type: 'number',
-              description: 'Expected near-term relationship delta hint.',
+              description:
+                'Expected near-term relationship valence delta, integer from -2 (large cooling) to +2 (large warming).',
             },
             tensionDeltaHint: {
               type: 'number',
-              description: 'Expected near-term tension delta hint.',
+              description:
+                'Expected near-term tension delta, integer from -2 (major de-escalation) to +2 (major escalation).',
             },
             revealsSecret: {
               type: 'boolean',

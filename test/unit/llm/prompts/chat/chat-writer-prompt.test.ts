@@ -39,6 +39,15 @@ function makeCharacter(
 function makeContext(): ChatWriterContext {
   return {
     targetCharacter: makeCharacter('Iria Vale'),
+    interlocutorCharacterName: 'Tomas Braga',
+    rollingSummary: {
+      compressedSummary: 'Their last meeting ended with a threat and no proof.',
+      keyCommitments: ['Meet before dawn'],
+      keyRevelations: ['Iria copied the key'],
+      unresolvedQuestions: ['Who ordered the theft?'],
+      leverageShifts: ['Tomas forced Iria onto the defensive.'],
+      emotionalTrajectory: 'Guarded hostility.',
+    },
     chatBible: {
       sessionPremise: 'A guarded reunion after a failed mission.',
       physicalReality: {
@@ -82,7 +91,6 @@ function makeContext(): ChatWriterContext {
         knowledgeBoundaries: ['She does not know who ordered the theft'],
       },
       conversationNow: {
-        rollingSummary: 'Their last meeting ended with a threat and no proof.',
         activeThreads: ['Who betrayed whom first'],
         commitments: ['Meet before dawn'],
         sensitiveTopics: ['Her brother'],
@@ -171,6 +179,7 @@ describe('buildChatWriterMessages', () => {
     expect(userContent).toContain('TARGET CHARACTER NAME');
     expect(userContent).toContain('FULL SPEECH FINGERPRINT');
     expect(userContent).toContain('CHAT BIBLE');
+    expect(userContent).toContain('OLDER CHAT SUMMARY');
     expect(userContent).toContain('TURN PLAN');
     expect(userContent).toContain('RECENT CHAT TURNS');
     expect(userContent).toContain('LATEST USER TURN');
@@ -184,16 +193,24 @@ describe('buildChatWriterMessages', () => {
     expect(userContent).toContain('- Stay on bearing, and maybe we survive this yet.');
     expect(userContent).toContain('Response Goal: Probe without surrendering leverage.');
     expect(userContent).toContain('Block Plan: ACTION -> SPEECH');
+    expect(userContent).toContain('- Valence: cool and guarded');
+    expect(userContent).toContain('- Tension: high tension');
+    expect(userContent).toContain('- Relationship Delta Hint: slight cooling');
+    expect(userContent).toContain('- Tension Delta Hint: major escalation');
+    expect(userContent).not.toContain('- Valence: -1');
+    expect(userContent).not.toContain('- Tension: 7');
     expect(userContent).toContain(
       '- GESTURE: Sets the lantern down with deliberate care. (changesPhysicalState=false)'
     );
+    expect(userContent).toContain('Compressed Summary: Their last meeting ended with a threat and no proof.');
+    expect(userContent).not.toContain('Rolling Summary: Their last meeting ended with a threat and no proof.');
   });
 
   it('formats recent turns and latest user turn separately', () => {
     const userContent = buildChatWriterMessages(makeContext())[1].content;
 
-    expect(userContent).toContain('RECENT CHAT TURNS\nTURN 11 [USER]');
-    expect(userContent).toContain('LATEST USER TURN\nTURN 12 [USER]');
+    expect(userContent).toContain('RECENT CHAT TURNS\nTURN 11 [Tomas Braga]');
+    expect(userContent).toContain('LATEST USER TURN\nTURN 12 [Tomas Braga]');
     expect(userContent).toContain('- ACTION: steps closer');
     expect(userContent).toContain('- SPEECH: Then prove it.');
   });

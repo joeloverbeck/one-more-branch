@@ -213,6 +213,26 @@ describe('buildLorekeeperPrompt', () => {
     expect(userPrompt).toContain('[cs-1] Wounded in the battle');
   });
 
+  it('renders semantic valence labels for accumulated NPC relationships', () => {
+    const context = buildMinimalContext({
+      accumulatedNpcRelationships: {
+        Voss: {
+          npcName: 'Voss',
+          valence: -2,
+          dynamic: 'manipulator',
+          history: 'Has been using Jon as an unwitting enforcer.',
+          currentTension: 'Fears Jon will discover the truth.',
+          leverage: "Knows Jon's criminal past.",
+        },
+      },
+    });
+    const messages = buildLorekeeperPrompt(context);
+    const userPrompt = messages[1]?.content ?? '';
+
+    expect(userPrompt).toContain('Dynamic: manipulator | Valence: wary and distrustful');
+    expect(userPrompt).not.toContain('Dynamic: manipulator | Valence: -2');
+  });
+
   it('includes active state when populated', () => {
     const context = buildMinimalContext({
       activeState: {

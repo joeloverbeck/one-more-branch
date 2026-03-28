@@ -10,8 +10,17 @@ import {
   PRIVACY_VALUES,
   TIME_OF_DAY_VALUES,
 } from './chat-session.js';
-import type { ChatBible, ChatBibleCharacterNow, ChatBibleConversationNow, ChatBibleKnowledgeNow, ChatBiblePreChatMomentum, ChatBibleRelationshipNow } from './chat-bible.js';
+import type {
+  ChatBible,
+  ChatBibleCharacterNow,
+  ChatBibleConversationNow,
+  ChatBibleKnowledgeNow,
+  ChatBiblePreChatMomentum,
+  ChatBibleRelationshipNow,
+} from './chat-bible.js';
 import { WILLINGNESS_TO_ENGAGE_VALUES } from './chat-bible.js';
+import type { ChatCharacterContext } from './chat-character-context.js';
+import type { ChatSceneContext } from './chat-scene-context.js';
 import type {
   ActionPlanItem,
   TurnPlannerExpectedImpact,
@@ -26,6 +35,7 @@ import {
 } from './chat-turn-plan.js';
 import type {
   ChatBlock,
+  ChatRelationshipSnapshot,
   ChatSpeaker,
   ChatTurn,
   TurnMeta,
@@ -81,6 +91,17 @@ function isEnumValue<TValue extends string>(
   return typeof value === 'string' && candidates.includes(value as TValue);
 }
 
+function hasExactKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {
+  const actualKeys = Object.keys(value).sort();
+  const expectedKeys = [...keys].sort();
+
+  if (actualKeys.length !== expectedKeys.length) {
+    return false;
+  }
+
+  return expectedKeys.every((key, index) => actualKeys[index] === key);
+}
+
 export function isChatPhysicalContext(value: unknown): value is ChatPhysicalContext {
   if (!isObjectRecord(value)) {
     return false;
@@ -117,8 +138,8 @@ export function isChatRelationshipState(value: unknown): value is ChatRelationsh
 
   return (
     isString(value['dynamic']) &&
-    isFiniteNumber(value['valence']) &&
-    isFiniteNumber(value['tension']) &&
+    isNumberInRange(value['valence'], -5, 5) &&
+    isNumberInRange(value['tension'], 0, 10) &&
     isString(value['leverage'])
   );
 }
@@ -160,7 +181,7 @@ function isChatBibleCharacterNow(value: unknown): value is ChatBibleCharacterNow
   );
 }
 
-function isChatBibleRelationshipNow(value: unknown): value is ChatBibleRelationshipNow {
+export function isChatRelationshipSnapshot(value: unknown): value is ChatRelationshipSnapshot {
   if (!isChatRelationshipState(value)) {
     return false;
   }
@@ -168,6 +189,10 @@ function isChatBibleRelationshipNow(value: unknown): value is ChatBibleRelations
   return isStringArray(
     (value as unknown as Record<string, unknown>)['whatCharacterBelievesAboutInterlocutor']
   );
+}
+
+function isChatBibleRelationshipNow(value: unknown): value is ChatBibleRelationshipNow {
+  return isChatRelationshipSnapshot(value);
 }
 
 function isChatBibleKnowledgeNow(value: unknown): value is ChatBibleKnowledgeNow {
@@ -185,11 +210,38 @@ function isChatBibleConversationNow(value: unknown): value is ChatBibleConversat
   }
 
   return (
-    isNullableString(value['rollingSummary']) &&
+    hasExactKeys(value, ['activeThreads', 'commitments', 'sensitiveTopics', 'lastTurnPressure']) &&
     isStringArray(value['activeThreads']) &&
     isStringArray(value['commitments']) &&
     isStringArray(value['sensitiveTopics']) &&
     isNullableString(value['lastTurnPressure'])
+  );
+}
+
+export function isChatSceneContext(value: unknown): value is ChatSceneContext {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  return (
+    isString(value['sessionPremise']) &&
+    isChatPhysicalContext(value['physicalReality']) &&
+    isChatBiblePreChatMomentum(value['preChatMomentum']) &&
+    isChatBibleConversationNow(value['conversationNow'])
+  );
+}
+
+export function isChatCharacterContext(value: unknown): value is ChatCharacterContext {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  return (
+    isChatBibleCharacterNow(value['characterNow']) &&
+    isChatBibleRelationshipNow(value['relationshipNow']) &&
+    isChatBibleKnowledgeNow(value['knowledgeNow']) &&
+    isStringArray(value['continuityGuardrails']) &&
+    isStringArray(value['responseConstraints'])
   );
 }
 
@@ -374,15 +426,26 @@ export function isChatTurn(value: unknown): value is ChatTurn {
     return false;
   }
 
+  const speaker = value['speaker'];
+  const relationshipSnapshot = value['relationshipSnapshot'];
+  const hasValidRelationshipSnapshot =
+    relationshipSnapshot === undefined || isChatRelationshipSnapshot(relationshipSnapshot);
+  const hasRequiredRelationshipSnapshot =
+    speaker === 'CHARACTER'
+      ? relationshipSnapshot !== undefined && isChatRelationshipSnapshot(relationshipSnapshot)
+      : relationshipSnapshot === undefined;
+
   return (
     Number.isInteger(value['turnNumber']) &&
-    isEnumValue(value['speaker'], CHAT_SPEAKER_VALUES) &&
+    isEnumValue(speaker, CHAT_SPEAKER_VALUES) &&
     Array.isArray(value['blocks']) &&
     value['blocks'].every(isChatBlock) &&
     (value['rawText'] === undefined || isString(value['rawText'])) &&
     (value['turnMeta'] === undefined || isTurnMeta(value['turnMeta'])) &&
     (value['plannerOutput'] === undefined || isTurnPlannerOutput(value['plannerOutput'])) &&
     (value['stateUpdate'] === undefined || isChatStateUpdate(value['stateUpdate'])) &&
+    hasValidRelationshipSnapshot &&
+    hasRequiredRelationshipSnapshot &&
     isIsoDateString(value['timestamp'])
   );
 }

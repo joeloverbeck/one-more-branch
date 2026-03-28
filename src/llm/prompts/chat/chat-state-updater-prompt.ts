@@ -1,4 +1,3 @@
-import type { ChatTurn } from '../../../models/chat/index.js';
 import type { ChatMessage } from '../../llm-client-types.js';
 import { CONTENT_POLICY } from '../../content-policy.js';
 import type { ChatStateUpdaterContext } from '../../chat/chat-state-updater-generation.js';
@@ -8,9 +7,11 @@ import {
   formatRecentTurns,
   formatTurnPlan,
 } from './chat-prompt-formatters.js';
+import { formatRollingSummaryForPrompt } from './chat-memory-prompt-adapter.js';
 
 const SYSTEM_PROMPT = `Extract only state changes that actually occurred.
 Track relationship shifts only when meaningful.
+Return the canonical post-turn relationship snapshot after the character turn completes.
 Track knowledge asymmetry: what changed in who knows what, what false beliefs remain, and what secrets moved.
 Track commitments, threats, opened questions, and resolved questions.
 Track physical changes only if they are visible in the written turn.
@@ -19,14 +20,15 @@ Signal when the chat bible should be refreshed.
 Signal when a rolling summary should be generated.
 Do not invent state changes unsupported by the provided turn.`;
 
-function formatLatestUserTurn(turn: ChatTurn): string {
-  return formatRecentTurns([turn]);
-}
-
 export function buildChatStateUpdaterMessages(context: ChatStateUpdaterContext): ChatMessage[] {
+  const speakerNames = {
+    target: context.targetCharacterName,
+    interlocutor: context.interlocutorCharacterName,
+  };
   const userSections = [
     `PRE-TURN CHAT BIBLE\n${formatChatBible(context.chatBible)}`,
-    `LATEST USER TURN\n${formatLatestUserTurn(context.latestUserTurn)}`,
+    `OLDER CHAT SUMMARY\n${formatRollingSummaryForPrompt(context.rollingSummary)}`,
+    `LATEST USER TURN\n${formatRecentTurns([context.latestUserTurn], speakerNames)}`,
     `TURN PLAN\n${formatTurnPlan(context.turnPlan)}`,
     `FINAL WRITTEN TURN\n${formatChatWriterTurn(context.writerTurn)}`,
   ];

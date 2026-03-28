@@ -11,6 +11,7 @@ import {
 import { isStructuredOutputNotSupported } from './schemas/error-detection.js';
 import { STATE_ACCOUNTANT_SCHEMA } from './schemas/state-accountant-schema.js';
 import { validateStateAccountantResponse } from './schemas/state-accountant-response-transformer.js';
+import { buildLenientSchema, isGrammarTooLargeError } from './structured-output-fallback.js';
 import type {
   GenerationObservabilityContext,
   GenerationOptions,
@@ -139,29 +140,6 @@ async function callAccountantStructured(
   }
 }
 
-function buildLenientAccountantSchema(): JsonSchema {
-  return {
-    ...STATE_ACCOUNTANT_SCHEMA,
-    json_schema: {
-      ...STATE_ACCOUNTANT_SCHEMA.json_schema,
-      strict: false,
-    },
-  };
-}
-
-function isAccountantGrammarTooLargeError(error: unknown): boolean {
-  const signalPhrases = ['compiled grammar is too large', 'reduce the number of strict tools'];
-
-  const message = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
-  const rawErrorBody =
-    error instanceof LLMError && typeof error.context?.['rawErrorBody'] === 'string'
-      ? error.context['rawErrorBody']
-      : '';
-
-  const combined = `${message}\n${rawErrorBody}`.toLowerCase();
-  return signalPhrases.some((phrase) => combined.includes(phrase));
-}
-
 export async function generateAccountantWithFallback(
   messages: ChatMessage[],
   options: GenerationOptions
@@ -169,8 +147,8 @@ export async function generateAccountantWithFallback(
   try {
     return await callAccountantStructured(messages, options);
   } catch (error) {
-    if (isAccountantGrammarTooLargeError(error)) {
-      return callAccountantStructured(messages, options, buildLenientAccountantSchema());
+    if (isGrammarTooLargeError(error)) {
+      return callAccountantStructured(messages, options, buildLenientSchema(STATE_ACCOUNTANT_SCHEMA));
     }
 
     if (isStructuredOutputNotSupported(error)) {

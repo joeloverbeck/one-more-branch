@@ -370,12 +370,12 @@ describe('Kernel Route Integration', () => {
     );
     expect(progressFailSpy).toHaveBeenCalledWith(
       'kernel-progress-3',
-      'API request error: Provider returned error'
+      'API request error (model: openai/gpt-4o-mini): Provider returned error'
     );
     expect(status).toHaveBeenCalledWith(500);
     expect(json).toHaveBeenCalledWith({
       success: false,
-      error: 'API request error: Provider returned error',
+      error: 'API request error (model: openai/gpt-4o-mini): Provider returned error',
       code: 'HTTP_400',
       retryable: false,
       debug: {

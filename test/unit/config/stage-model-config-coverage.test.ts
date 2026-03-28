@@ -1,71 +1,89 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import { LLM_STAGE_KEYS } from '@/config/llm-stage-registry';
+import { loadConfig, resetConfig } from '@/config';
+import { LLM_STAGE_CATALOG, LLM_STAGE_KEYS } from '@/config/llm-stage-registry';
+import { getStageMaxTokens, getStageModel, getStageTemperature } from '@/config/stage-model';
 
-function readDefaultStageModels(): Record<string, string> {
+function readDefaultConfig(): {
+  llm?: {
+    models?: Record<string, string>;
+    stageMaxTokens?: Record<string, number>;
+    stageTemperatures?: Record<string, number>;
+  };
+} {
   const configPath = path.resolve(process.cwd(), 'configs/default.json');
-  const parsed = JSON.parse(fs.readFileSync(configPath, 'utf8')) as {
+  return JSON.parse(fs.readFileSync(configPath, 'utf8')) as {
     llm?: {
       models?: Record<string, string>;
+      stageMaxTokens?: Record<string, number>;
       stageTemperatures?: Record<string, number>;
     };
   };
-
-  return parsed.llm?.models ?? {};
-}
-
-function readDefaultStageTemperatures(): Record<string, number> {
-  const configPath = path.resolve(process.cwd(), 'configs/default.json');
-  const parsed = JSON.parse(fs.readFileSync(configPath, 'utf8')) as {
-    llm?: { stageTemperatures?: Record<string, number> };
-  };
-
-  return parsed.llm?.stageTemperatures ?? {};
 }
 
 describe('stage-model config coverage', () => {
-  it('defines an explicit llm.models entry for every registered stage', () => {
-    const models = readDefaultStageModels();
+  beforeEach(() => {
+    resetConfig();
+  });
 
-    expect(Object.keys(models)).toHaveLength(LLM_STAGE_KEYS.length);
+  afterEach(() => {
+    resetConfig();
+  });
 
-    for (const stage of LLM_STAGE_KEYS) {
-      expect(models).toHaveProperty(stage);
-      expect(models[stage]).toEqual(expect.any(String));
-      expect(models[stage]).not.toHaveLength(0);
+  it('derives stage keys directly from the typed catalog in order', () => {
+    expect(LLM_STAGE_KEYS).toEqual(LLM_STAGE_CATALOG.map((entry) => entry.key));
+    expect(new Set(LLM_STAGE_KEYS).size).toBe(LLM_STAGE_KEYS.length);
+  });
+
+  it('keeps split chat stage keys canonical and excludes the legacy chatBible stage', () => {
+    expect(LLM_STAGE_KEYS).toContain('chatSceneContext');
+    expect(LLM_STAGE_KEYS).toContain('chatCharacterContext');
+    expect(LLM_STAGE_KEYS).not.toContain('chatBible');
+
+    expect(LLM_STAGE_CATALOG).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ key: 'chatSceneContext' }),
+        expect.objectContaining({ key: 'chatCharacterContext' }),
+      ])
+    );
+    expect(LLM_STAGE_CATALOG).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ key: 'chatBible' })])
+    );
+  });
+
+  it('keeps runtime config override maps sparse and free of unknown stage keys', () => {
+    const config = readDefaultConfig();
+    const stageKeySet = new Set(LLM_STAGE_KEYS);
+
+    for (const overrides of [
+      config.llm?.models ?? {},
+      config.llm?.stageMaxTokens ?? {},
+      config.llm?.stageTemperatures ?? {},
+    ]) {
+      for (const key of Object.keys(overrides)) {
+        expect(stageKeySet.has(key as (typeof LLM_STAGE_KEYS)[number])).toBe(true);
+      }
     }
   });
 
-  it('keeps user-facing stage model entries populated', () => {
-    const models = readDefaultStageModels();
+  it('does not keep legacy chatBible stage overrides in default.json', () => {
+    const config = readDefaultConfig();
 
-    expect(models.structure).toEqual(expect.any(String));
-    expect(models.structure).not.toHaveLength(0);
-    expect(models.sceneIdeator).toEqual(expect.any(String));
-    expect(models.sceneIdeator).not.toHaveLength(0);
+    expect(config.llm?.models ?? {}).not.toHaveProperty('chatBible');
+    expect(config.llm?.stageMaxTokens ?? {}).not.toHaveProperty('chatBible');
+    expect(config.llm?.stageTemperatures ?? {}).not.toHaveProperty('chatBible');
   });
 
-  it('contains no orphaned llm.models entries and preserves registry order', () => {
-    const modelKeys = Object.keys(readDefaultStageModels());
+  it('resolves every catalog stage through the live config without exhaustive JSON maps', () => {
+    loadConfig();
 
-    expect(modelKeys).toEqual([...LLM_STAGE_KEYS]);
-  });
-
-  it('defines stage temperature overrides only for explicitly tuned stages', () => {
-    const temperatures = readDefaultStageTemperatures();
-
-    expect(Object.keys(temperatures)).toEqual([
-      'chatBible',
-      'chatPlanner',
-      'chatWriter',
-      'chatStateUpdater',
-      'chatSummarizer',
-    ]);
-    expect(temperatures.chatBible).toBe(0.3);
-    expect(temperatures.chatPlanner).toBe(0.3);
-    expect(temperatures.chatWriter).toBe(0.7);
-    expect(temperatures.chatStateUpdater).toBe(0.2);
-    expect(temperatures.chatSummarizer).toBe(0.2);
+    for (const stage of LLM_STAGE_KEYS) {
+      expect(getStageModel(stage)).toEqual(expect.any(String));
+      expect(getStageModel(stage)).not.toHaveLength(0);
+      expect(getStageMaxTokens(stage)).toBeGreaterThan(0);
+      expect(getStageTemperature(stage)).toBeGreaterThanOrEqual(0);
+      expect(getStageTemperature(stage)).toBeLessThanOrEqual(2);
+    }
   });
 });

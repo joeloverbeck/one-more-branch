@@ -85,7 +85,7 @@ describe('buildNpcRelationshipsSection', () => {
 
     expect(result).toContain('NPC-PROTAGONIST RELATIONSHIPS');
     expect(result).toContain('[Elena]');
-    expect(result).toContain('Dynamic: ally | Valence: 3');
+    expect(result).toContain('Dynamic: ally | Valence: trusting and close');
     expect(result).toContain('Tension: Disagrees about the plan.');
   });
 
@@ -113,7 +113,7 @@ describe('buildNpcRelationshipsSection', () => {
 
     expect(result).toContain('[Elena]');
     expect(result).toContain('[Marcus]');
-    expect(result).toContain('Dynamic: ally | Valence: 3');
-    expect(result).toContain('Dynamic: rival | Valence: -2');
+    expect(result).toContain('Dynamic: ally | Valence: trusting and close');
+    expect(result).toContain('Dynamic: rival | Valence: wary and distrustful');
   });
 });

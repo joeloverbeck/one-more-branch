@@ -211,6 +211,8 @@ describe('buildCharPresentationPrompt', () => {
     expect(messages[1].content).toContain('AGENCY MODEL (from Stage 3):');
     expect(messages[1].content).toContain('DEEP RELATIONSHIPS (from Stage 4):');
     expect(messages[1].content).toContain('Personal Dilemmas: If he tells Mira the truth');
+    expect(messages[1].content).toContain('(AMBIVALENT, wary and distrustful)');
+    expect(messages[1].content).not.toContain('(AMBIVALENT, -2)');
   });
 
   it('includes optional summaries and notes when provided', () => {

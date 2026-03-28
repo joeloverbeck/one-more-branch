@@ -1,5 +1,5 @@
-import { buildChatBibleMessages } from '../../../../../src/llm/prompts/chat/chat-bible-prompt';
-import type { ChatBibleContext } from '../../../../../src/llm/chat/chat-bible-generation';
+import { buildChatSceneContextMessages } from '../../../../../src/llm/prompts/chat/chat-scene-context-prompt';
+import type { ChatGenerationContext } from '../../../../../src/llm/chat/chat-generation-context';
 import type { DecomposedWorld } from '../../../../../src/models/decomposed-world';
 import type { StandaloneDecomposedCharacter } from '../../../../../src/models/standalone-decomposed-character';
 
@@ -14,21 +14,6 @@ const DECOMPOSED_WORLD: DecomposedWorld = {
       factType: 'PRACTICE',
       narrativeWeight: 'HIGH',
       sensoryHook: 'Voices drop whenever the ritual wording begins.',
-    },
-    {
-      id: 'wf-2',
-      domain: 'geography',
-      fact: 'Most private meetings happen in upper galleries above the flood line.',
-      scope: 'district',
-      narrativeWeight: 'MEDIUM',
-    },
-    {
-      id: 'wf-3',
-      domain: 'language',
-      fact: 'Honorifics mark whether a debt is still considered open.',
-      scope: 'citywide',
-      factType: 'NORM',
-      narrativeWeight: 'MEDIUM',
     },
   ],
   rawWorldbuilding: 'A rain-soaked observatory city running on oath and suspicion.',
@@ -68,13 +53,10 @@ function makeCharacter(
   };
 }
 
-function makeContext(): ChatBibleContext {
+function makeContext(): ChatGenerationContext {
   return {
     targetCharacter: makeCharacter('Iria Vale'),
-    interlocutorCharacter: makeCharacter('Tomas Wren', {
-      coreTraits: ['gentle', 'secretive'],
-      knowledgeBoundaries: 'Knows the route, not the full conspiracy.',
-    }),
+    interlocutorCharacter: makeCharacter('Tomas Wren'),
     decomposedWorld: DECOMPOSED_WORLD,
     relationshipState: {
       dynamic: 'Brittle allies',
@@ -122,106 +104,48 @@ function makeContext(): ChatBibleContext {
         ],
         timestamp: '2026-03-02T09:00:00.000Z',
       },
-      {
-        turnNumber: 12,
-        speaker: 'CHARACTER',
-        blocks: [
-          { type: 'ACTION', text: 'does not look up from the telescope' },
-          { type: 'SPEECH', delivery: 'flat', text: 'If I had, you would already know.' },
-        ],
-        turnMeta: {
-          expectsReply: true,
-          endsWithQuestion: false,
-          visibleEmotion: 'contained anger',
-          finalPressure: 'Demands proof instead of denial',
-        },
-        timestamp: '2026-03-02T09:01:00.000Z',
-      },
     ],
   };
 }
 
-describe('buildChatBibleMessages', () => {
+describe('buildChatSceneContextMessages', () => {
   it('returns exactly 2 messages with system and user roles', () => {
-    const messages = buildChatBibleMessages(makeContext());
+    const messages = buildChatSceneContextMessages(makeContext());
 
     expect(messages).toHaveLength(2);
     expect(messages[0].role).toBe('system');
     expect(messages[1].role).toBe('user');
   });
 
-  it('includes the content policy block in the system prompt', () => {
-    const messages = buildChatBibleMessages(makeContext());
+  it('uses a scene-focused system prompt with content policy', () => {
+    const systemContent = buildChatSceneContextMessages(makeContext())[0].content;
 
-    expect(messages[0].content).toContain('CONTENT GUIDELINES');
-    expect(messages[0].content).toContain('NC-21');
+    expect(systemContent).toContain('objective scene reality');
+    expect(systemContent).toContain('Do not analyze character psychology.');
+    expect(systemContent).toContain('CONTENT GUIDELINES');
   });
 
-  it('includes all required user sections', () => {
-    const userContent = buildChatBibleMessages(makeContext())[1].content;
+  it('includes scene-relevant sections and excludes relationship and knowledge state', () => {
+    const userContent = buildChatSceneContextMessages(makeContext())[1].content;
 
     expect(userContent).toContain('TARGET CHARACTER DECOMPOSITION');
     expect(userContent).toContain('INTERLOCUTOR CHARACTER PROFILE');
     expect(userContent).toContain('WORLDBUILDING');
-    expect(userContent).toContain('RELATIONSHIP STATE');
-    expect(userContent).toContain('KNOWLEDGE STATE');
     expect(userContent).toContain('PHYSICAL CONTEXT');
     expect(userContent).toContain('PRE-CHAT LEAD-IN');
     expect(userContent).toContain('OLDER CHAT SUMMARY');
     expect(userContent).toContain('RECENT CHAT TURNS');
+    expect(userContent).not.toContain('RELATIONSHIP STATE');
+    expect(userContent).not.toContain('KNOWLEDGE STATE');
   });
 
-  it('formats recent turns with block boundaries and speaker ownership', () => {
-    const userContent = buildChatBibleMessages(makeContext())[1].content;
+  it('keeps character sections identity-focused instead of full-profile dumps', () => {
+    const userContent = buildChatSceneContextMessages(makeContext())[1].content;
 
-    expect(userContent).toContain('TURN 11 [USER]');
-    expect(userContent).toContain('TURN 12 [CHARACTER]');
-    expect(userContent).toContain('- ACTION: shuts the door');
-    expect(userContent).toContain('- SPEECH: Did you sell me out?');
-    expect(userContent).toContain('- SPEECH (flat): If I had, you would already know.');
-  });
-
-  it('renders absent prior history explicitly', () => {
-    const userContent = buildChatBibleMessages({
-      ...makeContext(),
-      decomposedWorld: { facts: [], rawWorldbuilding: '' },
-      rollingSummary: null,
-      recentTurns: [],
-    })[1].content;
-
-    expect(userContent).toContain('WORLDBUILDING:\n(none provided)');
-    expect(userContent).toContain('OLDER CHAT SUMMARY\nNone');
-    expect(userContent).toContain('RECENT CHAT TURNS\nNo prior turns in this session.');
-  });
-
-  it('renders chat-specific worldbuilding sections when facts are present', () => {
-    const userContent = buildChatBibleMessages(makeContext())[1].content;
-
-    expect(userContent).toContain('WORLDBUILDING (structured for chat):');
-    expect(userContent).toContain('[SOCIAL & CULTURAL CONTEXT]');
-    expect(userContent).toContain('Naming a betrayer aloud in a sealed room is treated as a binding accusation.');
-    expect(userContent).toContain('Honorifics mark whether a debt is still considered open.');
-    expect(userContent).toContain('[GEOGRAPHY & SETTING]');
-    expect(userContent).toContain('Most private meetings happen in upper galleries above the flood line.');
-  });
-
-  it('formats structured rolling summaries into deterministic text', () => {
-    const userContent = buildChatBibleMessages(makeContext())[1].content;
-
-    expect(userContent).toContain('OLDER CHAT SUMMARY');
-    expect(userContent).toContain(
-      'Compressed Summary: Their last meeting ended with a threat and no proof.'
-    );
-    expect(userContent).toContain('Key Commitments:');
-    expect(userContent).toContain('- Meet before dawn');
-    expect(userContent).toContain('Key Revelations:');
-    expect(userContent).toContain('- Iria copied the key');
-    expect(userContent).toContain('Unresolved Questions:');
-    expect(userContent).toContain('- Who warned the courier?');
-    expect(userContent).toContain('Leverage Shifts:');
-    expect(userContent).toContain('- Tomas forced Iria to show how much she knew.');
-    expect(userContent).toContain(
-      'Emotional Trajectory: Guarded hostility tightening into direct accusation.'
-    );
+    expect(userContent).toContain('Name: Iria Vale');
+    expect(userContent).not.toContain('Description: Iria Vale is dangerous and exhausted.');
+    expect(userContent).not.toContain('Knowledge Boundaries:');
+    expect(userContent).not.toContain('SPEECH FINGERPRINT');
+    expect(userContent).not.toContain('Immediate Objectives:');
   });
 });

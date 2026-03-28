@@ -5,6 +5,8 @@ import type {
 } from './decomposed-character.js';
 import type { EmotionSalience } from './character-enums.js';
 
+export type StandaloneCharacterSummaryView = 'identity' | 'psychology' | 'standalone';
+
 export interface StandaloneDecomposedCharacter {
   readonly id: string;
   readonly name: string;
@@ -62,8 +64,129 @@ export function isStandaloneDecomposedCharacter(
   );
 }
 
-export function formatStandaloneCharacterSummary(char: StandaloneDecomposedCharacter): string {
-  const lines: string[] = [`${char.name}`, `  Traits: ${char.coreTraits.join(', ')}`];
+export function formatStandaloneCharacterPromptSummary(
+  char: StandaloneDecomposedCharacter,
+  view: StandaloneCharacterSummaryView
+): string {
+  switch (view) {
+    case 'identity':
+      return formatIdentitySummary(char);
+    case 'psychology':
+      return formatPsychologySummary(char);
+    case 'standalone':
+      return formatStandaloneSummary(char);
+  }
+}
+
+function formatIdentitySummary(char: StandaloneDecomposedCharacter): string {
+  return [
+    `Name: ${char.name}`,
+    `Core Traits: ${joinInlineList(char.coreTraits) || 'None'}`,
+    `Appearance: ${char.appearance}`,
+  ].join('\n');
+}
+
+function formatPsychologySummary(char: StandaloneDecomposedCharacter): string {
+  const lines = [`Name: ${char.name}`, `Core Traits: ${joinInlineList(char.coreTraits) || 'None'}`];
+
+  if (char.superObjective) {
+    lines.push(`Super-Objective: ${char.superObjective}`);
+  }
+
+  if (hasItems(char.stakes)) {
+    lines.push('Stakes:');
+    lines.push(formatBulletedList(char.stakes));
+  }
+
+  if (char.pressurePoint) {
+    lines.push(`Pressure Point: ${char.pressurePoint}`);
+  }
+
+  if (hasItems(char.personalDilemmas)) {
+    lines.push('Personal Dilemmas:');
+    lines.push(formatBulletedList(char.personalDilemmas));
+  }
+
+  if (char.emotionSalience) {
+    lines.push(`Emotion Salience: ${char.emotionSalience}`);
+  }
+
+  if (char.moralLine) {
+    lines.push(`Moral Line: ${char.moralLine}`);
+  }
+
+  if (char.worstFear) {
+    lines.push(`Worst Fear: ${char.worstFear}`);
+  }
+
+  if (char.formativeWound) {
+    lines.push(`Formative Wound: ${char.formativeWound}`);
+  }
+
+  if (char.misbelief) {
+    lines.push(`Misbelief: ${char.misbelief}`);
+  }
+
+  if (char.focalizationFilter) {
+    lines.push('Focalization Filter:');
+    lines.push(...formatFocalizationFilter(char.focalizationFilter, '- '));
+  }
+
+  if (hasItems(char.escalationLadder)) {
+    lines.push('Escalation Ladder:');
+    lines.push(formatBulletedList(char.escalationLadder));
+  }
+
+  if (char.stressVariants) {
+    lines.push('Stress Variants:');
+    lines.push(...formatStressVariants(char.stressVariants, '- '));
+  }
+
+  lines.push(`Knowledge Boundaries: ${char.knowledgeBoundaries}`);
+  lines.push(`Decision Pattern: ${char.decisionPattern}`);
+  lines.push(`Conflict Priority: ${char.conflictPriority}`);
+  lines.push(`Appearance: ${char.appearance}`);
+  lines.push('Core Beliefs:');
+  lines.push(formatBulletedList(char.coreBeliefs));
+
+  if (hasItems(char.falseBeliefs)) {
+    lines.push('False Beliefs:');
+    lines.push(formatBulletedList(char.falseBeliefs));
+  }
+
+  if (hasItems(char.secretsKept)) {
+    lines.push('Secrets Kept:');
+    lines.push(formatBulletedList(char.secretsKept));
+  }
+
+  if (hasItems(char.immediateObjectives)) {
+    lines.push(`Immediate Objectives: ${char.immediateObjectives.join('; ')}`);
+  }
+
+  if (hasItems(char.constraints)) {
+    lines.push('Constraints:');
+    lines.push(formatBulletedList(char.constraints));
+  }
+
+  if (hasItems(char.desires)) {
+    lines.push('Desires:');
+    lines.push(formatBulletedList(char.desires));
+  }
+
+  if (hasItems(char.currentIntentions)) {
+    lines.push('Current Intentions:');
+    lines.push(formatBulletedList(char.currentIntentions));
+  }
+
+  if (char.sociology) {
+    lines.push(`Sociology: ${char.sociology}`);
+  }
+
+  return lines.join('\n');
+}
+
+function formatStandaloneSummary(char: StandaloneDecomposedCharacter): string {
+  const lines: string[] = [`${char.name}`, `  Traits: ${joinInlineList(char.coreTraits)}`];
 
   if (char.superObjective) {
     lines.push(`  Super-Objective: ${char.superObjective}`);
@@ -71,16 +194,16 @@ export function formatStandaloneCharacterSummary(char: StandaloneDecomposedChara
 
   lines.push(`  Appearance: ${char.appearance}`);
 
-  if (char.stakes && char.stakes.length > 0) {
-    lines.push(`  Stakes: ${char.stakes.join(', ')}`);
+  if (hasItems(char.stakes)) {
+    lines.push(`  Stakes: ${joinInlineList(char.stakes)}`);
   }
 
   if (char.pressurePoint) {
     lines.push(`  Pressure Point: ${char.pressurePoint}`);
   }
 
-  if (char.personalDilemmas && char.personalDilemmas.length > 0) {
-    lines.push(`  Dilemmas: ${char.personalDilemmas.join(', ')}`);
+  if (hasItems(char.personalDilemmas)) {
+    lines.push(`  Dilemmas: ${joinInlineList(char.personalDilemmas)}`);
   }
 
   if (char.emotionSalience) {
@@ -103,23 +226,33 @@ export function formatStandaloneCharacterSummary(char: StandaloneDecomposedChara
     lines.push(`  Misbelief: ${char.misbelief}`);
   }
 
-  if (char.escalationLadder && char.escalationLadder.length > 0) {
+  if (char.focalizationFilter) {
+    lines.push('  Focalization Filter:');
+    lines.push(...formatFocalizationFilter(char.focalizationFilter, '    '));
+  }
+
+  if (char.stressVariants) {
+    lines.push('  Stress Variants:');
+    lines.push(...formatStressVariants(char.stressVariants, '    '));
+  }
+
+  if (hasItems(char.escalationLadder)) {
     lines.push(`  Escalation Ladder: ${char.escalationLadder.join(' → ')}`);
   }
 
-  if (char.immediateObjectives && char.immediateObjectives.length > 0) {
+  if (hasItems(char.immediateObjectives)) {
     lines.push(`  Immediate Objectives: ${char.immediateObjectives.join('; ')}`);
   }
 
-  if (char.constraints && char.constraints.length > 0) {
+  if (hasItems(char.constraints)) {
     lines.push(`  Constraints: ${char.constraints.join('; ')}`);
   }
 
-  if (char.desires && char.desires.length > 0) {
+  if (hasItems(char.desires)) {
     lines.push(`  Desires: ${char.desires.join('; ')}`);
   }
 
-  if (char.currentIntentions && char.currentIntentions.length > 0) {
+  if (hasItems(char.currentIntentions)) {
     lines.push(`  Current Intentions: ${char.currentIntentions.join('; ')}`);
   }
 
@@ -128,4 +261,40 @@ export function formatStandaloneCharacterSummary(char: StandaloneDecomposedChara
   }
 
   return lines.join('\n');
+}
+
+function formatBulletedList(values: readonly string[]): string {
+  return values.map((value) => `- ${value}`).join('\n');
+}
+
+function formatFocalizationFilter(
+  filter: FocalizationFilter,
+  prefix: string
+): [string, string, string] {
+  return [
+    `${prefix}Notices First: ${filter.noticesFirst}`,
+    `${prefix}Systematically Misses: ${filter.systematicallyMisses}`,
+    `${prefix}Misreads As: ${filter.misreadsAs}`,
+  ];
+}
+
+function formatStressVariants(
+  stressVariants: StressVariants,
+  prefix: string
+): [string, string, string, string, string] {
+  return [
+    `${prefix}Under Threat: ${stressVariants.underThreat}`,
+    `${prefix}In Intimacy: ${stressVariants.inIntimacy}`,
+    `${prefix}When Lying: ${stressVariants.whenLying}`,
+    `${prefix}When Ashamed: ${stressVariants.whenAshamed}`,
+    `${prefix}When Winning: ${stressVariants.whenWinning}`,
+  ];
+}
+
+function hasItems(values: readonly string[] | undefined): values is readonly string[] {
+  return Boolean(values && values.length > 0);
+}
+
+function joinInlineList(values: readonly string[]): string {
+  return values.join(', ');
 }

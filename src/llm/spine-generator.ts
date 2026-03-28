@@ -32,7 +32,7 @@ import type { SpinePromptContext } from './prompts/spine-prompt.js';
 import { buildSpineFoundationPrompt } from './prompts/spine-foundation-prompt.js';
 import { buildSpineArcEnginePrompt } from './prompts/spine-arc-engine-prompt.js';
 import { buildSpineSynthesisPrompt } from './prompts/spine-synthesis-prompt.js';
-import { formatStandaloneCharacterSummary } from '../models/standalone-decomposed-character.js';
+import { formatStandaloneCharacterPromptSummary } from '../models/standalone-decomposed-character.js';
 import { SPINE_FOUNDATION_SCHEMA } from './schemas/spine-foundation-schema.js';
 import { SPINE_ARC_ENGINE_SCHEMA } from './schemas/spine-arc-engine-schema.js';
 import { SPINE_SYNTHESIS_SCHEMA } from './schemas/spine-synthesis-schema.js';
@@ -445,7 +445,7 @@ export async function generateStorySpines(
 
   // Compute protagonist summary once for downstream stages
   const protagonistSummary = context.decomposedCharacters?.[0]
-    ? formatStandaloneCharacterSummary(context.decomposedCharacters[0])
+    ? formatStandaloneCharacterPromptSummary(context.decomposedCharacters[0], 'standalone')
     : (context.characterConcept ?? '');
 
   // --- Stage 1: Thematic Foundation Ideation ---

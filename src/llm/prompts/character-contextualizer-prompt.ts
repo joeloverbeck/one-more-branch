@@ -1,6 +1,6 @@
 import type { ConceptSpec } from '../../models/concept-generator.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
-import { formatStandaloneCharacterSummary } from '../../models/standalone-decomposed-character.js';
+import { formatStandaloneCharacterPromptSummary } from '../../models/standalone-decomposed-character.js';
 import type { StoryKernel } from '../../models/story-kernel.js';
 import type { StorySpine } from '../../models/story-spine.js';
 import { CONTENT_POLICY } from '../content-policy.js';
@@ -41,7 +41,7 @@ function formatCharacterForContextualization(
   isProtagonist: boolean
 ): string {
   const label = isProtagonist ? ' (PROTAGONIST)' : ' (NPC)';
-  return formatStandaloneCharacterSummary(char) + label;
+  return formatStandaloneCharacterPromptSummary(char, 'standalone') + label;
 }
 
 function buildSpineSection(spine: StorySpine): string {

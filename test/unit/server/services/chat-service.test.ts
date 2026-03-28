@@ -191,6 +191,13 @@ function createCharacterTurn(overrides: Partial<ChatTurn> = {}): ChatTurn {
       shouldRefreshChatBible: false,
       shouldTriggerSummary: false,
     },
+    relationshipSnapshot: {
+      dynamic: 'controlled suspicion',
+      valence: -1,
+      tension: 7,
+      leverage: 'She knows more than she says.',
+      whatCharacterBelievesAboutInterlocutor: ['He is testing her.'],
+    },
     timestamp: '2026-03-27T09:02:00.000Z',
     ...overrides,
   };
@@ -233,10 +240,10 @@ function createDeps(overrides: Partial<ChatServiceDeps> = {}): ChatServiceDeps {
     }),
     loadWorldbuildingById: jest.fn().mockResolvedValue(createWorldbuilding()),
     saveChat: jest.fn().mockResolvedValue(undefined),
+    commitChatTurn: jest.fn().mockResolvedValue(createSession({ turnCount: 2 })),
     loadChat: jest.fn().mockResolvedValue(createSession()),
     listChats: jest.fn().mockResolvedValue([createSummary()]),
     deleteChat: jest.fn().mockResolvedValue(undefined),
-    saveTurn: jest.fn().mockResolvedValue(undefined),
     loadTurns: jest.fn().mockResolvedValue([createUserTurn()]),
     getRecentTurns: jest.fn().mockResolvedValue([createUserTurn()]),
     parseChatInput: jest.fn().mockReturnValue([{ type: 'SPEECH', text: 'Tell me what happened.' }]),
@@ -365,12 +372,12 @@ describe('chat-service', () => {
     });
   });
 
-  it('saves the user turn before calling the pipeline', async () => {
+  it('runs the pipeline before atomically committing the turn result', async () => {
     const callOrder: string[] = [];
     const deps = createDeps({
-      saveTurn: jest.fn((_chatId: string, turn: ChatTurn) => {
-        callOrder.push(`saveTurn:${turn.speaker}`);
-        return Promise.resolve();
+      commitChatTurn: jest.fn(() => {
+        callOrder.push('commit');
+        return Promise.resolve(createSession({ turnCount: 2 }));
       }),
       runChatPipeline: jest.fn(() => {
         callOrder.push('pipeline');
@@ -388,10 +395,10 @@ describe('chat-service', () => {
       apiKey: 'test-key',
     });
 
-    expect(callOrder).toEqual(['saveTurn:USER', 'pipeline', 'saveTurn:CHARACTER']);
+    expect(callOrder).toEqual(['pipeline', 'commit']);
   });
 
-  it('saves the character turn after the pipeline and persists the updated session', async () => {
+  it('commits both turns and the updated session after the pipeline', async () => {
     const pipelineResult = createPipelineResult();
     const deps = createDeps({
       runChatPipeline: jest.fn().mockResolvedValue(pipelineResult),
@@ -407,15 +414,106 @@ describe('chat-service', () => {
 
     expect(result).toEqual({
       userTurn: createUserTurn({ timestamp: '2026-03-27T09:01:00.000Z' }),
+      relationshipPresentation: {
+        valence: {
+          value: -1,
+          delta: -1,
+          summary: 'Frayed and cooling',
+          trend: 'cooling',
+          gaugeAriaLabel:
+            'Valence: Frayed and cooling. Current value -1 on a scale from -5 to 5.',
+          sparklineAriaLabel: 'Valence trend: Frayed and cooling across 1 recorded turn.',
+        },
+        tension: {
+          value: 7,
+          delta: 7,
+          summary: 'Breaking and rising',
+          trend: 'rising',
+          gaugeAriaLabel:
+            'Tension: Breaking and rising. Current value 7 on a scale from 0 to 10.',
+          sparklineAriaLabel: 'Tension trend: Breaking and rising across 1 recorded turn.',
+        },
+      },
       ...pipelineResult,
     });
-    expect(deps.saveTurn).toHaveBeenNthCalledWith(
-      1,
+    expect(deps.commitChatTurn).toHaveBeenCalledWith(
       'chat-1',
-      createUserTurn({ timestamp: '2026-03-27T09:01:00.000Z' })
+      {
+        userTurn: createUserTurn({ timestamp: '2026-03-27T09:01:00.000Z' }),
+        characterTurn: pipelineResult.characterTurn,
+        updatedSession: pipelineResult.updatedSession,
+      }
     );
-    expect(deps.saveTurn).toHaveBeenNthCalledWith(2, 'chat-1', pipelineResult.characterTurn);
-    expect(deps.saveChat).toHaveBeenCalledWith(pipelineResult.updatedSession);
+    expect(deps.saveChat).not.toHaveBeenCalled();
+  });
+
+  it('does not persist turns or session when the pipeline fails', async () => {
+    const deps = createDeps({
+      runChatPipeline: jest.fn().mockRejectedValue(new Error('pipeline failed')),
+      now: jest.fn().mockReturnValue('2026-03-27T09:01:00.000Z'),
+    });
+    const service = createChatService(deps);
+
+    await expect(
+      service.sendTurn({
+        chatId: 'chat-1',
+        userMessage: 'Tell me what happened.',
+        apiKey: 'test-key',
+      })
+    ).rejects.toThrow('pipeline failed');
+
+    expect(deps.commitChatTurn).not.toHaveBeenCalled();
+    expect(deps.saveChat).not.toHaveBeenCalled();
+  });
+
+  it('reconstructs recentTurns and allTurns in memory before invoking the pipeline', async () => {
+    const priorUserTurn = createUserTurn({
+      turnNumber: 1,
+      timestamp: '2026-03-27T08:59:00.000Z',
+    });
+    const priorCharacterTurn = createCharacterTurn({
+      turnNumber: 2,
+      timestamp: '2026-03-27T09:00:00.000Z',
+    });
+    const nextUserTurn = createUserTurn({
+      turnNumber: 3,
+      rawText: 'Tell me what happened.',
+      timestamp: '2026-03-27T09:01:00.000Z',
+    });
+    const pipelineResult = createPipelineResult({
+      characterTurn: createCharacterTurn({
+        turnNumber: 4,
+        timestamp: '2026-03-27T09:02:00.000Z',
+      }),
+      updatedSession: createSession({
+        turnCount: 4,
+        updatedAt: '2026-03-27T09:02:00.000Z',
+      }),
+    });
+    const deps = createDeps({
+      loadChat: jest.fn().mockResolvedValue(createSession({ turnCount: 2 })),
+      loadTurns: jest.fn().mockResolvedValue([priorUserTurn, priorCharacterTurn]),
+      getRecentTurns: jest.fn().mockResolvedValue([priorUserTurn, priorCharacterTurn]),
+      runChatPipeline: jest.fn().mockResolvedValue(pipelineResult),
+      now: jest.fn().mockReturnValue('2026-03-27T09:01:00.000Z'),
+    });
+    const service = createChatService(deps);
+
+    await service.sendTurn({
+      chatId: 'chat-1',
+      userMessage: 'Tell me what happened.',
+      apiKey: 'test-key',
+    });
+
+    expect(deps.runChatPipeline).toHaveBeenCalledWith(
+      expect.objectContaining({
+        latestUserTurn: nextUserTurn,
+        recentTurns: [priorUserTurn, priorCharacterTurn, nextUserTurn],
+        allTurns: [priorUserTurn, priorCharacterTurn, nextUserTurn],
+      }),
+      'test-key',
+      undefined
+    );
   });
 
   it('returns the canonical saved user turn so callers do not duplicate parsing logic', async () => {
@@ -444,6 +542,8 @@ describe('chat-service', () => {
       rawText: '*I close the ledger.* Tell me what happened.',
       timestamp: '2026-03-27T09:01:00.000Z',
     });
+    expect(result.relationshipPresentation.valence.summary).toBe('Frayed and cooling');
+    expect(result.relationshipPresentation.tension.summary).toBe('Breaking and rising');
   });
 
   it('rejects sendTurn when the chat session is missing', async () => {
@@ -480,7 +580,7 @@ describe('chat-service', () => {
       message: 'User message is required',
     });
 
-    expect(deps.saveTurn).not.toHaveBeenCalled();
+    expect(deps.commitChatTurn).not.toHaveBeenCalled();
     expect(deps.runChatPipeline).not.toHaveBeenCalled();
   });
 
@@ -501,7 +601,7 @@ describe('chat-service', () => {
       message: 'User message is required',
     });
 
-    expect(deps.saveTurn).not.toHaveBeenCalled();
+    expect(deps.commitChatTurn).not.toHaveBeenCalled();
     expect(deps.runChatPipeline).not.toHaveBeenCalled();
   });
 

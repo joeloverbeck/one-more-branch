@@ -15,13 +15,19 @@ function initChatPage() {
   var messageList = document.getElementById('chat-message-list');
   var form = document.getElementById('chat-turn-form');
   var apiKeyInput = document.getElementById('chat-api-key');
+  var apiKeyToggle = document.getElementById('chat-apikey-toggle');
+  var apiKeyPopover = document.getElementById('chat-apikey-popover');
   var messageInput = document.getElementById('chat-message');
   var sendButton = document.getElementById('chat-send-button');
   var loadingIndicator = document.getElementById('chat-loading-indicator');
   var progressStatus = document.getElementById('chat-progress-status');
   var pageError = document.getElementById('chat-error');
   var turnError = document.getElementById('chat-turn-error');
-
+  var sidebarToggle = page.querySelector('[data-chat-sidebar-toggle]');
+  var apiKeyToggleIcon = apiKeyToggle
+    ? apiKeyToggle.querySelector('.chat-apikey-btn__icon')
+    : null;
+  var apiKeyAnchor = apiKeyToggle && apiKeyToggle.parentElement ? apiKeyToggle.parentElement : null;
   if (
     !messageList ||
     !form ||
@@ -52,10 +58,13 @@ function initChatPage() {
     progressElement: progressStatus,
     buttonElement: sendButton,
     onShow: function () {
+      messageInput.readOnly = true;
       progressStatus.style.display = 'block';
     },
     onHide: function () {
+      messageInput.readOnly = false;
       progressStatus.style.display = 'none';
+      updateSendButtonState();
     },
   });
 
@@ -82,6 +91,86 @@ function initChatPage() {
     clearError(turnError);
   }
 
+  function getMessageValue() {
+    return typeof messageInput.value === 'string' ? messageInput.value.trim() : '';
+  }
+
+  function getApiKeyValue() {
+    return typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
+  }
+
+  function updateSendButtonState() {
+    sendButton.disabled = inFlight || getMessageValue().length === 0 || getApiKeyValue().length < 10;
+  }
+
+  function syncApiKeyToggleState() {
+    if (!apiKeyToggle) {
+      return;
+    }
+
+    var hasApiKey = getApiKeyValue().length >= 10;
+    apiKeyToggle.classList.toggle('chat-apikey-btn--configured', hasApiKey);
+    apiKeyToggle.setAttribute(
+      'aria-label',
+      hasApiKey ? 'API key configured' : 'Open API key settings'
+    );
+    apiKeyToggle.setAttribute('title', hasApiKey ? 'API key configured' : 'API key settings');
+
+    if (apiKeyToggleIcon) {
+      apiKeyToggleIcon.textContent = hasApiKey ? 'Locked' : 'Unlocked';
+    }
+  }
+
+  function isApiKeyPopoverOpen() {
+    return Boolean(apiKeyPopover && !apiKeyPopover.hasAttribute('hidden'));
+  }
+
+  function closeApiKeyPopover() {
+    if (!apiKeyPopover || !apiKeyToggle) {
+      return;
+    }
+
+    apiKeyPopover.setAttribute('hidden', '');
+    apiKeyToggle.setAttribute('aria-expanded', 'false');
+  }
+
+  function openApiKeyPopover() {
+    if (!apiKeyPopover || !apiKeyToggle) {
+      return;
+    }
+
+    apiKeyPopover.removeAttribute('hidden');
+    apiKeyToggle.setAttribute('aria-expanded', 'true');
+  }
+
+  function toggleApiKeyPopover() {
+    if (isApiKeyPopoverOpen()) {
+      closeApiKeyPopover();
+      return;
+    }
+
+    openApiKeyPopover();
+    if (typeof apiKeyInput.focus === 'function') {
+      apiKeyInput.focus();
+    }
+  }
+
+  function autoResizeMessageInput() {
+    var computedStyles =
+      typeof window.getComputedStyle === 'function' ? window.getComputedStyle(messageInput) : null;
+    var minHeight = computedStyles ? Number.parseFloat(computedStyles.minHeight) : NaN;
+    var maxHeight = computedStyles ? Number.parseFloat(computedStyles.maxHeight) : NaN;
+    var resolvedMinHeight = Number.isFinite(minHeight) ? minHeight : 46;
+    var resolvedMaxHeight = Number.isFinite(maxHeight) ? maxHeight : 168;
+
+    messageInput.style.height = 'auto';
+    var nextHeight = Math.min(
+      Math.max(messageInput.scrollHeight, resolvedMinHeight),
+      resolvedMaxHeight
+    );
+    messageInput.style.height = nextHeight + 'px';
+  }
+
   function formatTimestamp(timestamp) {
     if (!timestamp) {
       return '';
@@ -100,47 +189,6 @@ function initChatPage() {
     }
   }
 
-  function buildTurnBlockHtml(block) {
-    if (!block || block.type === 'ACTION') {
-      return '<p data-chat-block="ACTION"><em>' + escapeHtml(block && block.text) + '</em></p>';
-    }
-
-    return (
-      '<p data-chat-block="SPEECH">' +
-      (block.delivery ? '<strong>' + escapeHtml(block.delivery) + ':</strong> ' : '') +
-      '&ldquo;' +
-      escapeHtml(block.text) +
-      '&rdquo;</p>'
-    );
-  }
-
-  function buildTurnHtml(turn) {
-    var speakerName =
-      turn.speaker === 'CHARACTER' ? targetCharacterName : interlocutorCharacterName;
-    var blocks = Array.isArray(turn.blocks) ? turn.blocks : [];
-
-    return (
-      '<article class="story-card" data-chat-turn data-chat-speaker="' +
-      escapeHtml(turn.speaker || '') +
-      '" data-turn-number="' +
-      escapeHtml(String(turn.turnNumber || '')) +
-      '">' +
-      '<div class="story-card-content">' +
-      '<h3>' +
-      escapeHtml(speakerName) +
-      '<small>#' +
-      escapeHtml(String(turn.turnNumber || '')) +
-      '</small></h3>' +
-      '<p class="form-help"><time datetime="' +
-      escapeHtml(turn.timestamp || '') +
-      '">' +
-      escapeHtml(formatTimestamp(turn.timestamp || '')) +
-      '</time></p>' +
-      blocks.map(buildTurnBlockHtml).join('') +
-      '</div></article>'
-    );
-  }
-
   function appendTurn(turn) {
     if (!turn) {
       return;
@@ -151,47 +199,64 @@ function initChatPage() {
       emptyState.parentNode.removeChild(emptyState);
     }
 
-    messageList.insertAdjacentHTML('beforeend', buildTurnHtml(turn));
-    var turns = messageList.querySelectorAll('[data-chat-turn]');
-    var lastTurn = turns.length > 0 ? turns[turns.length - 1] : null;
-    if (lastTurn && typeof lastTurn.scrollIntoView === 'function') {
-      lastTurn.scrollIntoView({ block: 'end' });
+    messageList.insertAdjacentHTML(
+      'beforeend',
+      window.ChatTurnRenderer.buildTurnHtml(turn, {
+        targetCharacterName: targetCharacterName,
+        interlocutorCharacterName: interlocutorCharacterName,
+        formatTimestamp: formatTimestamp,
+      })
+    );
+    messageList.scrollTop = messageList.scrollHeight;
+
+    updateTurnCount();
+  }
+
+  function updateTurnCount() {
+    var turnCount = page.querySelectorAll('[data-chat-turn]').length;
+    var turnCountLabel = page.querySelector('[data-chat-turn-count]');
+    if (turnCountLabel) {
+      turnCountLabel.textContent = turnCount + ' ' + (turnCount === 1 ? 'turn' : 'turns');
     }
   }
 
-  function updateField(name, value, fallback) {
-    var field = page.querySelector('[data-chat-field="' + name + '"]');
-    if (field) {
-      field.textContent = value || fallback || '';
+  function getFieldText(name, index) {
+    var fields = page.querySelectorAll('[data-chat-field="' + name + '"]');
+    var targetIndex = typeof index === 'number' ? index : 0;
+    var field = fields.length > targetIndex ? fields[targetIndex] : null;
+    return field && typeof field.textContent === 'string' ? field.textContent : '';
+  }
+
+  function parseFieldList(name) {
+    var rawValue = getFieldText(name, 0);
+    return rawValue
+      .split(',')
+      .map(function (item) {
+        return item.trim();
+      })
+      .filter(function (item) {
+        return item.length > 0 && item !== 'None';
+      });
+  }
+
+  function syncSidebarToggle() {
+    if (!sidebarToggle) {
+      return;
     }
+
+    var isCollapsed = page.classList.contains('sidebar-collapsed');
+    sidebarToggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+    sidebarToggle.textContent = isCollapsed ? 'Show Scene State' : 'Hide Scene State';
   }
 
-  function joinList(values) {
-    return Array.isArray(values) && values.length > 0 ? values.join(', ') : 'None';
-  }
-
-  function updateSidebar(session) {
+  function updateSidebar(session, options) {
     if (!session) {
       return;
     }
 
-    var physicalContext = session.physicalContext || {};
-    var relationshipState = session.relationshipState || {};
-    var leadInContext = session.leadInContext || {};
-
-    updateField('location', physicalContext.location, '');
-    updateField('microLocation', physicalContext.microLocation, '');
-    updateField('timeOfDay', physicalContext.timeOfDay, '');
-    updateField('privacy', physicalContext.privacy, '');
-    updateField('distanceBand', physicalContext.distanceBand, '');
-    updateField('characterActivity', physicalContext.characterActivity, '');
-    updateField('interactableObjects', joinList(physicalContext.interactableObjects), 'None');
-    updateField('ambientConditions', joinList(physicalContext.ambientConditions), 'None');
-    updateField('dynamic', relationshipState.dynamic, 'Unformed');
-    updateField('valence', String(relationshipState.valence != null ? relationshipState.valence : 0), '0');
-    updateField('tension', String(relationshipState.tension != null ? relationshipState.tension : 0), '0');
-    updateField('leverage', relationshipState.leverage, 'None');
-    updateField('whyNow', leadInContext.whyNow, '');
+    if (window.ChatSidebar && typeof window.ChatSidebar.update === 'function') {
+      window.ChatSidebar.update(page, session, options);
+    }
   }
 
   async function submitTurn() {
@@ -201,20 +266,24 @@ function initChatPage() {
 
     clearErrors();
 
-    var rawMessage = typeof messageInput.value === 'string' ? messageInput.value.trim() : '';
+    var rawMessage = getMessageValue();
     if (rawMessage.length === 0) {
       setError(turnError, 'Message is required');
+      updateSendButtonState();
       return;
     }
 
-    var apiKey = typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
+    var apiKey = getApiKeyValue();
     if (apiKey.length < 10) {
       setError(turnError, 'OpenRouter API key is required');
+      updateSendButtonState();
       return;
     }
 
     inFlight = true;
     setApiKey(apiKey);
+    syncApiKeyToggleState();
+    updateSendButtonState();
 
     try {
       var data = await loadingSession.withProgress(async function (progressId) {
@@ -242,7 +311,20 @@ function initChatPage() {
         }
 
         if (!response.ok || !payload || !payload.success) {
-          throw new Error((payload && payload.error) || 'Failed to send chat turn');
+          var errorMessage = (payload && payload.error) || 'Failed to send chat turn';
+          if (payload && payload.debug) {
+            var debugParts = [];
+            if (payload.debug.model) {
+              debugParts.push('Model: ' + payload.debug.model);
+            }
+            if (payload.debug.httpStatus) {
+              debugParts.push('HTTP ' + payload.debug.httpStatus);
+            }
+            if (debugParts.length > 0) {
+              errorMessage += ' [' + debugParts.join(', ') + ']';
+            }
+          }
+          throw new Error(errorMessage);
         }
 
         return payload;
@@ -250,19 +332,68 @@ function initChatPage() {
 
       appendTurn(data.userTurn);
       appendTurn(data.characterTurn);
-      updateSidebar(data.updatedSession);
+      updateSidebar(data.updatedSession, {
+        latestRelationshipSnapshot: data.characterTurn && data.characterTurn.relationshipSnapshot,
+        latestTurnNumber: data.characterTurn && data.characterTurn.turnNumber,
+        relationshipPresentation: data.relationshipPresentation,
+      });
       messageInput.value = '';
+      autoResizeMessageInput();
+      closeApiKeyPopover();
       shouldSendResumeFlag = false;
     } catch (error) {
       setError(turnError, error instanceof Error ? error.message : 'Failed to send chat turn');
     } finally {
       inFlight = false;
+      updateSendButtonState();
     }
   }
 
   form.addEventListener('submit', function (event) {
     event.preventDefault();
     void submitTurn();
+  });
+
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', function () {
+      page.classList.toggle('sidebar-collapsed');
+      syncSidebarToggle();
+    });
+  }
+
+  if (apiKeyToggle) {
+    apiKeyToggle.addEventListener('click', function () {
+      toggleApiKeyPopover();
+    });
+  }
+
+  document.addEventListener('click', function (event) {
+    if (!isApiKeyPopoverOpen() || !apiKeyAnchor) {
+      return;
+    }
+
+    var target = event.target;
+    if (target instanceof Node && apiKeyAnchor.contains(target)) {
+      return;
+    }
+
+    closeApiKeyPopover();
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+      closeApiKeyPopover();
+    }
+  });
+
+  apiKeyInput.addEventListener('input', function () {
+    syncApiKeyToggleState();
+    updateSendButtonState();
+  });
+
+  messageInput.addEventListener('input', function () {
+    autoResizeMessageInput();
+    updateSendButtonState();
   });
 
   messageInput.addEventListener('keydown', function (event) {
@@ -278,4 +409,33 @@ function initChatPage() {
 
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
   });
+
+  updateTurnCount();
+  if (window.ChatSidebar && typeof window.ChatSidebar.init === 'function') {
+    window.ChatSidebar.init(page, {
+      physicalContext: {
+        location: getFieldText('location'),
+        microLocation: getFieldText('microLocation'),
+        timeOfDay: getFieldText('timeOfDay'),
+        privacy: getFieldText('privacy'),
+        distanceBand: getFieldText('distanceBand'),
+        characterActivity: getFieldText('characterActivity'),
+        interactableObjects: parseFieldList('interactableObjects'),
+        ambientConditions: parseFieldList('ambientConditions'),
+      },
+      relationshipState: {
+        dynamic: getFieldText('dynamic'),
+        valence: Number(getFieldText('valence') || '0'),
+        tension: Number(getFieldText('tension') || '0'),
+        leverage: getFieldText('leverage'),
+      },
+      leadInContext: {
+        whyNow: getFieldText('whyNow'),
+      },
+    });
+  }
+  syncSidebarToggle();
+  syncApiKeyToggleState();
+  autoResizeMessageInput();
+  updateSendButtonState();
 }

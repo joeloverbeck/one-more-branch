@@ -1674,11 +1674,17 @@ const STAGE_PHRASE_POOLS = {
     'Planting contradictions that make characters unpredictable...',
     'Excavating backstory events specific enough to be unforgettable...',
   ],
-  CURATING_CHAT_BIBLE: [
-    'Distilling the relationship pressure into a sharper conversational brief...',
-    'Rebuilding the chat bible around what matters right now...',
-    'Selecting the facts that should constrain this exchange...',
-    'Curating the emotional and physical reality before anyone speaks...',
+  CURATING_CHAT_SCENE: [
+    'Locking in the physical scene and active pressures...',
+    'Distilling what is concretely true before anyone speaks...',
+    'Curating the environmental and conversational state of play...',
+    'Establishing the scene reality that should constrain the exchange...',
+  ],
+  CURATING_CHAT_CHARACTER: [
+    'Projecting the character\'s motives against the established scene...',
+    'Synthesizing what the character wants, fears, and will protect...',
+    'Mapping relationship leverage and knowledge boundaries for the next reply...',
+    'Curating the character-side continuity guardrails before the turn is planned...',
   ],
   PLANNING_CHAT_TURN: [
     'Deciding what the character wants from this reply...',
@@ -1756,7 +1762,8 @@ const STAGE_DISPLAY_NAMES = {
   GENERATING_WORLD_SEED: 'SEEDING WORLD',
   ELABORATING_WORLD: 'ELABORATING WORLD',
   BRAINSTORMING_CHARACTERS: 'BRAINSTORMING CHARACTERS',
-  CURATING_CHAT_BIBLE: 'CURATING CHAT BIBLE',
+  CURATING_CHAT_SCENE: 'CURATING CHAT SCENE',
+  CURATING_CHAT_CHARACTER: 'CURATING CHAT CHARACTER',
   PLANNING_CHAT_TURN: 'PLANNING CHAT TURN',
   WRITING_CHAT_TURN: 'WRITING CHAT TURN',
   UPDATING_CHAT_STATE: 'UPDATING CHAT STATE',
@@ -14858,13 +14865,19 @@ function initChatPage() {
   var messageList = document.getElementById('chat-message-list');
   var form = document.getElementById('chat-turn-form');
   var apiKeyInput = document.getElementById('chat-api-key');
+  var apiKeyToggle = document.getElementById('chat-apikey-toggle');
+  var apiKeyPopover = document.getElementById('chat-apikey-popover');
   var messageInput = document.getElementById('chat-message');
   var sendButton = document.getElementById('chat-send-button');
   var loadingIndicator = document.getElementById('chat-loading-indicator');
   var progressStatus = document.getElementById('chat-progress-status');
   var pageError = document.getElementById('chat-error');
   var turnError = document.getElementById('chat-turn-error');
-
+  var sidebarToggle = page.querySelector('[data-chat-sidebar-toggle]');
+  var apiKeyToggleIcon = apiKeyToggle
+    ? apiKeyToggle.querySelector('.chat-apikey-btn__icon')
+    : null;
+  var apiKeyAnchor = apiKeyToggle && apiKeyToggle.parentElement ? apiKeyToggle.parentElement : null;
   if (
     !messageList ||
     !form ||
@@ -14895,10 +14908,13 @@ function initChatPage() {
     progressElement: progressStatus,
     buttonElement: sendButton,
     onShow: function () {
+      messageInput.readOnly = true;
       progressStatus.style.display = 'block';
     },
     onHide: function () {
+      messageInput.readOnly = false;
       progressStatus.style.display = 'none';
+      updateSendButtonState();
     },
   });
 
@@ -14925,6 +14941,86 @@ function initChatPage() {
     clearError(turnError);
   }
 
+  function getMessageValue() {
+    return typeof messageInput.value === 'string' ? messageInput.value.trim() : '';
+  }
+
+  function getApiKeyValue() {
+    return typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
+  }
+
+  function updateSendButtonState() {
+    sendButton.disabled = inFlight || getMessageValue().length === 0 || getApiKeyValue().length < 10;
+  }
+
+  function syncApiKeyToggleState() {
+    if (!apiKeyToggle) {
+      return;
+    }
+
+    var hasApiKey = getApiKeyValue().length >= 10;
+    apiKeyToggle.classList.toggle('chat-apikey-btn--configured', hasApiKey);
+    apiKeyToggle.setAttribute(
+      'aria-label',
+      hasApiKey ? 'API key configured' : 'Open API key settings'
+    );
+    apiKeyToggle.setAttribute('title', hasApiKey ? 'API key configured' : 'API key settings');
+
+    if (apiKeyToggleIcon) {
+      apiKeyToggleIcon.textContent = hasApiKey ? 'Locked' : 'Unlocked';
+    }
+  }
+
+  function isApiKeyPopoverOpen() {
+    return Boolean(apiKeyPopover && !apiKeyPopover.hasAttribute('hidden'));
+  }
+
+  function closeApiKeyPopover() {
+    if (!apiKeyPopover || !apiKeyToggle) {
+      return;
+    }
+
+    apiKeyPopover.setAttribute('hidden', '');
+    apiKeyToggle.setAttribute('aria-expanded', 'false');
+  }
+
+  function openApiKeyPopover() {
+    if (!apiKeyPopover || !apiKeyToggle) {
+      return;
+    }
+
+    apiKeyPopover.removeAttribute('hidden');
+    apiKeyToggle.setAttribute('aria-expanded', 'true');
+  }
+
+  function toggleApiKeyPopover() {
+    if (isApiKeyPopoverOpen()) {
+      closeApiKeyPopover();
+      return;
+    }
+
+    openApiKeyPopover();
+    if (typeof apiKeyInput.focus === 'function') {
+      apiKeyInput.focus();
+    }
+  }
+
+  function autoResizeMessageInput() {
+    var computedStyles =
+      typeof window.getComputedStyle === 'function' ? window.getComputedStyle(messageInput) : null;
+    var minHeight = computedStyles ? Number.parseFloat(computedStyles.minHeight) : NaN;
+    var maxHeight = computedStyles ? Number.parseFloat(computedStyles.maxHeight) : NaN;
+    var resolvedMinHeight = Number.isFinite(minHeight) ? minHeight : 46;
+    var resolvedMaxHeight = Number.isFinite(maxHeight) ? maxHeight : 168;
+
+    messageInput.style.height = 'auto';
+    var nextHeight = Math.min(
+      Math.max(messageInput.scrollHeight, resolvedMinHeight),
+      resolvedMaxHeight
+    );
+    messageInput.style.height = nextHeight + 'px';
+  }
+
   function formatTimestamp(timestamp) {
     if (!timestamp) {
       return '';
@@ -14943,47 +15039,6 @@ function initChatPage() {
     }
   }
 
-  function buildTurnBlockHtml(block) {
-    if (!block || block.type === 'ACTION') {
-      return '<p data-chat-block="ACTION"><em>' + escapeHtml(block && block.text) + '</em></p>';
-    }
-
-    return (
-      '<p data-chat-block="SPEECH">' +
-      (block.delivery ? '<strong>' + escapeHtml(block.delivery) + ':</strong> ' : '') +
-      '&ldquo;' +
-      escapeHtml(block.text) +
-      '&rdquo;</p>'
-    );
-  }
-
-  function buildTurnHtml(turn) {
-    var speakerName =
-      turn.speaker === 'CHARACTER' ? targetCharacterName : interlocutorCharacterName;
-    var blocks = Array.isArray(turn.blocks) ? turn.blocks : [];
-
-    return (
-      '<article class="story-card" data-chat-turn data-chat-speaker="' +
-      escapeHtml(turn.speaker || '') +
-      '" data-turn-number="' +
-      escapeHtml(String(turn.turnNumber || '')) +
-      '">' +
-      '<div class="story-card-content">' +
-      '<h3>' +
-      escapeHtml(speakerName) +
-      '<small>#' +
-      escapeHtml(String(turn.turnNumber || '')) +
-      '</small></h3>' +
-      '<p class="form-help"><time datetime="' +
-      escapeHtml(turn.timestamp || '') +
-      '">' +
-      escapeHtml(formatTimestamp(turn.timestamp || '')) +
-      '</time></p>' +
-      blocks.map(buildTurnBlockHtml).join('') +
-      '</div></article>'
-    );
-  }
-
   function appendTurn(turn) {
     if (!turn) {
       return;
@@ -14994,47 +15049,64 @@ function initChatPage() {
       emptyState.parentNode.removeChild(emptyState);
     }
 
-    messageList.insertAdjacentHTML('beforeend', buildTurnHtml(turn));
-    var turns = messageList.querySelectorAll('[data-chat-turn]');
-    var lastTurn = turns.length > 0 ? turns[turns.length - 1] : null;
-    if (lastTurn && typeof lastTurn.scrollIntoView === 'function') {
-      lastTurn.scrollIntoView({ block: 'end' });
+    messageList.insertAdjacentHTML(
+      'beforeend',
+      window.ChatTurnRenderer.buildTurnHtml(turn, {
+        targetCharacterName: targetCharacterName,
+        interlocutorCharacterName: interlocutorCharacterName,
+        formatTimestamp: formatTimestamp,
+      })
+    );
+    messageList.scrollTop = messageList.scrollHeight;
+
+    updateTurnCount();
+  }
+
+  function updateTurnCount() {
+    var turnCount = page.querySelectorAll('[data-chat-turn]').length;
+    var turnCountLabel = page.querySelector('[data-chat-turn-count]');
+    if (turnCountLabel) {
+      turnCountLabel.textContent = turnCount + ' ' + (turnCount === 1 ? 'turn' : 'turns');
     }
   }
 
-  function updateField(name, value, fallback) {
-    var field = page.querySelector('[data-chat-field="' + name + '"]');
-    if (field) {
-      field.textContent = value || fallback || '';
+  function getFieldText(name, index) {
+    var fields = page.querySelectorAll('[data-chat-field="' + name + '"]');
+    var targetIndex = typeof index === 'number' ? index : 0;
+    var field = fields.length > targetIndex ? fields[targetIndex] : null;
+    return field && typeof field.textContent === 'string' ? field.textContent : '';
+  }
+
+  function parseFieldList(name) {
+    var rawValue = getFieldText(name, 0);
+    return rawValue
+      .split(',')
+      .map(function (item) {
+        return item.trim();
+      })
+      .filter(function (item) {
+        return item.length > 0 && item !== 'None';
+      });
+  }
+
+  function syncSidebarToggle() {
+    if (!sidebarToggle) {
+      return;
     }
+
+    var isCollapsed = page.classList.contains('sidebar-collapsed');
+    sidebarToggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+    sidebarToggle.textContent = isCollapsed ? 'Show Scene State' : 'Hide Scene State';
   }
 
-  function joinList(values) {
-    return Array.isArray(values) && values.length > 0 ? values.join(', ') : 'None';
-  }
-
-  function updateSidebar(session) {
+  function updateSidebar(session, options) {
     if (!session) {
       return;
     }
 
-    var physicalContext = session.physicalContext || {};
-    var relationshipState = session.relationshipState || {};
-    var leadInContext = session.leadInContext || {};
-
-    updateField('location', physicalContext.location, '');
-    updateField('microLocation', physicalContext.microLocation, '');
-    updateField('timeOfDay', physicalContext.timeOfDay, '');
-    updateField('privacy', physicalContext.privacy, '');
-    updateField('distanceBand', physicalContext.distanceBand, '');
-    updateField('characterActivity', physicalContext.characterActivity, '');
-    updateField('interactableObjects', joinList(physicalContext.interactableObjects), 'None');
-    updateField('ambientConditions', joinList(physicalContext.ambientConditions), 'None');
-    updateField('dynamic', relationshipState.dynamic, 'Unformed');
-    updateField('valence', String(relationshipState.valence != null ? relationshipState.valence : 0), '0');
-    updateField('tension', String(relationshipState.tension != null ? relationshipState.tension : 0), '0');
-    updateField('leverage', relationshipState.leverage, 'None');
-    updateField('whyNow', leadInContext.whyNow, '');
+    if (window.ChatSidebar && typeof window.ChatSidebar.update === 'function') {
+      window.ChatSidebar.update(page, session, options);
+    }
   }
 
   async function submitTurn() {
@@ -15044,20 +15116,24 @@ function initChatPage() {
 
     clearErrors();
 
-    var rawMessage = typeof messageInput.value === 'string' ? messageInput.value.trim() : '';
+    var rawMessage = getMessageValue();
     if (rawMessage.length === 0) {
       setError(turnError, 'Message is required');
+      updateSendButtonState();
       return;
     }
 
-    var apiKey = typeof apiKeyInput.value === 'string' ? apiKeyInput.value.trim() : '';
+    var apiKey = getApiKeyValue();
     if (apiKey.length < 10) {
       setError(turnError, 'OpenRouter API key is required');
+      updateSendButtonState();
       return;
     }
 
     inFlight = true;
     setApiKey(apiKey);
+    syncApiKeyToggleState();
+    updateSendButtonState();
 
     try {
       var data = await loadingSession.withProgress(async function (progressId) {
@@ -15085,7 +15161,20 @@ function initChatPage() {
         }
 
         if (!response.ok || !payload || !payload.success) {
-          throw new Error((payload && payload.error) || 'Failed to send chat turn');
+          var errorMessage = (payload && payload.error) || 'Failed to send chat turn';
+          if (payload && payload.debug) {
+            var debugParts = [];
+            if (payload.debug.model) {
+              debugParts.push('Model: ' + payload.debug.model);
+            }
+            if (payload.debug.httpStatus) {
+              debugParts.push('HTTP ' + payload.debug.httpStatus);
+            }
+            if (debugParts.length > 0) {
+              errorMessage += ' [' + debugParts.join(', ') + ']';
+            }
+          }
+          throw new Error(errorMessage);
         }
 
         return payload;
@@ -15093,19 +15182,68 @@ function initChatPage() {
 
       appendTurn(data.userTurn);
       appendTurn(data.characterTurn);
-      updateSidebar(data.updatedSession);
+      updateSidebar(data.updatedSession, {
+        latestRelationshipSnapshot: data.characterTurn && data.characterTurn.relationshipSnapshot,
+        latestTurnNumber: data.characterTurn && data.characterTurn.turnNumber,
+        relationshipPresentation: data.relationshipPresentation,
+      });
       messageInput.value = '';
+      autoResizeMessageInput();
+      closeApiKeyPopover();
       shouldSendResumeFlag = false;
     } catch (error) {
       setError(turnError, error instanceof Error ? error.message : 'Failed to send chat turn');
     } finally {
       inFlight = false;
+      updateSendButtonState();
     }
   }
 
   form.addEventListener('submit', function (event) {
     event.preventDefault();
     void submitTurn();
+  });
+
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', function () {
+      page.classList.toggle('sidebar-collapsed');
+      syncSidebarToggle();
+    });
+  }
+
+  if (apiKeyToggle) {
+    apiKeyToggle.addEventListener('click', function () {
+      toggleApiKeyPopover();
+    });
+  }
+
+  document.addEventListener('click', function (event) {
+    if (!isApiKeyPopoverOpen() || !apiKeyAnchor) {
+      return;
+    }
+
+    var target = event.target;
+    if (target instanceof Node && apiKeyAnchor.contains(target)) {
+      return;
+    }
+
+    closeApiKeyPopover();
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+      closeApiKeyPopover();
+    }
+  });
+
+  apiKeyInput.addEventListener('input', function () {
+    syncApiKeyToggleState();
+    updateSendButtonState();
+  });
+
+  messageInput.addEventListener('input', function () {
+    autoResizeMessageInput();
+    updateSendButtonState();
   });
 
   messageInput.addEventListener('keydown', function (event) {
@@ -15121,7 +15259,1158 @@ function initChatPage() {
 
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
   });
+
+  updateTurnCount();
+  if (window.ChatSidebar && typeof window.ChatSidebar.init === 'function') {
+    window.ChatSidebar.init(page, {
+      physicalContext: {
+        location: getFieldText('location'),
+        microLocation: getFieldText('microLocation'),
+        timeOfDay: getFieldText('timeOfDay'),
+        privacy: getFieldText('privacy'),
+        distanceBand: getFieldText('distanceBand'),
+        characterActivity: getFieldText('characterActivity'),
+        interactableObjects: parseFieldList('interactableObjects'),
+        ambientConditions: parseFieldList('ambientConditions'),
+      },
+      relationshipState: {
+        dynamic: getFieldText('dynamic'),
+        valence: Number(getFieldText('valence') || '0'),
+        tension: Number(getFieldText('tension') || '0'),
+        leverage: getFieldText('leverage'),
+      },
+      leadInContext: {
+        whyNow: getFieldText('whyNow'),
+      },
+    });
+  }
+  syncSidebarToggle();
+  syncApiKeyToggleState();
+  autoResizeMessageInput();
+  updateSendButtonState();
 }
+
+window.ChatTurnRenderer = (function () {
+  function hasText(value) {
+    return typeof value === 'string' && value.trim().length > 0;
+  }
+
+  function hasItems(items) {
+    return Array.isArray(items) && items.length > 0;
+  }
+
+  function formatSignedNumber(value) {
+    if (typeof value !== 'number' || !isFinite(value) || value === 0) {
+      return String(value || 0);
+    }
+
+    return (value > 0 ? '+' : '') + String(value);
+  }
+
+  function buildDefinitionListHtml(rows) {
+    var safeRows = Array.isArray(rows) ? rows.filter(function (row) {
+      return row && hasText(row.label) && hasText(row.value);
+    }) : [];
+
+    if (safeRows.length === 0) {
+      return '';
+    }
+
+    return (
+      '<dl class="chat-inner-world__details">' +
+      safeRows.map(function (row) {
+        return (
+          '<div class="chat-inner-world__detail">' +
+          '<dt>' + escapeHtml(row.label) + '</dt>' +
+          '<dd>' + escapeHtml(row.value) + '</dd>' +
+          '</div>'
+        );
+      }).join('') +
+      '</dl>'
+    );
+  }
+
+  function buildListHtml(items, itemClass, renderItem) {
+    var safeItems = Array.isArray(items) ? items.filter(function (item) {
+      return item != null;
+    }) : [];
+
+    if (safeItems.length === 0) {
+      return '';
+    }
+
+    return (
+      '<ul class="chat-inner-world__list">' +
+      safeItems.map(function (item) {
+        return (
+          '<li class="' + escapeHtml(itemClass || 'chat-inner-world__list-item') + '">' +
+          renderItem(item) +
+          '</li>'
+        );
+      }).join('') +
+      '</ul>'
+    );
+  }
+
+  function buildSectionHtml(title, body, modifierClass) {
+    if (!body) {
+      return '';
+    }
+
+    return (
+      '<section class="chat-inner-world__section' +
+      (modifierClass ? ' ' + modifierClass : '') +
+      '">' +
+      '<h3 class="chat-inner-world__section-title">' + escapeHtml(title) + '</h3>' +
+      body +
+      '</section>'
+    );
+  }
+
+  function buildInternalSelfCheckHtml(plannerOutput) {
+    if (!plannerOutput || !plannerOutput.internalSelfCheck) {
+      return '';
+    }
+
+    return buildSectionHtml(
+      'Internal Self-Check',
+      buildDefinitionListHtml([
+        { label: 'What I want', value: plannerOutput.internalSelfCheck.whatDoIWant },
+        { label: 'What I know', value: plannerOutput.internalSelfCheck.whatDoIKnow },
+        { label: "What I'm hiding", value: plannerOutput.internalSelfCheck.whatAmIHiding },
+        { label: 'How honest am I', value: plannerOutput.internalSelfCheck.howHonestAmI },
+      ])
+    );
+  }
+
+  function buildEmotionalLayerHtml(plannerOutput) {
+    if (!plannerOutput) {
+      return '';
+    }
+
+    var emotionCards = '';
+    if (hasText(plannerOutput.surfaceEmotion) || hasText(plannerOutput.suppressedEmotion)) {
+      emotionCards =
+        '<div class="chat-inner-world__emotion-grid">' +
+        (hasText(plannerOutput.surfaceEmotion)
+          ? '<div class="chat-inner-world__emotion-card">' +
+            '<span class="chat-inner-world__eyebrow">Surface emotion</span>' +
+            '<p>' + escapeHtml(plannerOutput.surfaceEmotion) + '</p>' +
+            '</div>'
+          : '') +
+        (hasText(plannerOutput.suppressedEmotion)
+          ? '<div class="chat-inner-world__emotion-card">' +
+            '<span class="chat-inner-world__eyebrow">Suppressed emotion</span>' +
+            '<p>' + escapeHtml(plannerOutput.suppressedEmotion) + '</p>' +
+            '</div>'
+          : '') +
+        '</div>';
+    }
+
+    var subtextHtml = hasText(plannerOutput.subtext)
+      ? '<div class="chat-inner-world__copy-block">' +
+        '<span class="chat-inner-world__eyebrow">Subtext</span>' +
+        '<p>' + escapeHtml(plannerOutput.subtext) + '</p>' +
+        '</div>'
+      : '';
+
+    return buildSectionHtml('Emotional Layer', emotionCards + subtextHtml);
+  }
+
+  function buildResponseStrategyHtml(plannerOutput) {
+    if (!plannerOutput) {
+      return '';
+    }
+
+    var mustAddressHtml = hasItems(plannerOutput.mustAddress)
+      ? '<div class="chat-inner-world__copy-block">' +
+        '<span class="chat-inner-world__eyebrow">Must address</span>' +
+        buildListHtml(plannerOutput.mustAddress, 'chat-inner-world__list-item', function (item) {
+          return escapeHtml(String(item));
+        }) +
+        '</div>'
+      : '';
+    var mustAvoidHtml = hasItems(plannerOutput.mustAvoid)
+      ? '<div class="chat-inner-world__copy-block">' +
+        '<span class="chat-inner-world__eyebrow">Must avoid</span>' +
+        buildListHtml(plannerOutput.mustAvoid, 'chat-inner-world__list-item', function (item) {
+          return escapeHtml(String(item));
+        }) +
+        '</div>'
+      : '';
+
+    return buildSectionHtml(
+      'Response Strategy',
+      buildDefinitionListHtml([
+        { label: 'Response goal', value: plannerOutput.responseGoal },
+        { label: 'Target length', value: plannerOutput.targetLength },
+      ]) +
+      mustAddressHtml +
+      mustAvoidHtml
+    );
+  }
+
+  function buildActionPlanHtml(plannerOutput) {
+    if (!plannerOutput || !hasItems(plannerOutput.actionPlan)) {
+      return '';
+    }
+
+    return buildSectionHtml(
+      'Action Plan',
+      buildListHtml(plannerOutput.actionPlan, 'chat-inner-world__list-item', function (item) {
+        var changeBadge = item.changesPhysicalState
+          ? '<span class="chat-inner-world__pill chat-inner-world__pill--physical">Physical change</span>'
+          : '';
+        return (
+          '<div class="chat-inner-world__action-item">' +
+          '<span class="chat-inner-world__pill">' + escapeHtml(String(item.kind || '')) + '</span>' +
+          '<span class="chat-inner-world__action-text">' + escapeHtml(String(item.text || '')) + '</span>' +
+          changeBadge +
+          '</div>'
+        );
+      })
+    );
+  }
+
+  function buildTurnImpactHtml(turn) {
+    if (!turn) {
+      return '';
+    }
+
+    var turnMeta = turn.turnMeta || {};
+    var expectedImpact = turn.plannerOutput && turn.plannerOutput.expectedImpact
+      ? turn.plannerOutput.expectedImpact
+      : null;
+    var replyBadges = '';
+
+    if (turnMeta.expectsReply === true) {
+      replyBadges += '<span class="chat-inner-world__pill">Expects reply</span>';
+    }
+    if (turnMeta.endsWithQuestion === true) {
+      replyBadges += '<span class="chat-inner-world__pill">Ends with question</span>';
+    }
+
+    return buildSectionHtml(
+      'Turn Impact',
+      buildDefinitionListHtml([
+        { label: 'Final pressure', value: turnMeta.finalPressure },
+        expectedImpact
+          ? {
+              label: 'Relationship delta hint',
+              value: formatSignedNumber(expectedImpact.relationshipDeltaHint),
+            }
+          : null,
+        expectedImpact
+          ? {
+              label: 'Tension delta hint',
+              value: formatSignedNumber(expectedImpact.tensionDeltaHint),
+            }
+          : null,
+        expectedImpact
+          ? {
+              label: 'Reveals secret',
+              value: expectedImpact.revealsSecret ? 'Yes' : 'No',
+            }
+          : null,
+      ]) +
+      (replyBadges
+        ? '<div class="chat-inner-world__pill-row">' + replyBadges + '</div>'
+        : '')
+    );
+  }
+
+  function buildStateChangesHtml(stateUpdate) {
+    if (!stateUpdate) {
+      return '';
+    }
+
+    var relationshipShiftsHtml = hasItems(stateUpdate.relationshipShifts)
+      ? '<div class="chat-inner-world__copy-block">' +
+        '<span class="chat-inner-world__eyebrow">Relationship shifts</span>' +
+        buildListHtml(stateUpdate.relationshipShifts, 'chat-inner-world__list-item', function (shift) {
+          var dynamicText = hasText(shift.suggestedNewDynamic)
+            ? ' Suggested dynamic: ' + escapeHtml(shift.suggestedNewDynamic) + '.'
+            : '';
+          return (
+            '<strong>' + escapeHtml(String(shift.shiftDescription || '')) + '</strong>' +
+            ' (' +
+            'Valence ' + escapeHtml(formatSignedNumber(shift.suggestedValenceChange)) +
+            ', Tension ' + escapeHtml(formatSignedNumber(shift.suggestedTensionChange)) +
+            ').' +
+            dynamicText
+          );
+        }) +
+        '</div>'
+      : '';
+    var knowledgeChanges = stateUpdate.knowledgeChanges || {};
+    var knowledgeChangesHtml = buildDefinitionListHtml([
+      {
+        label: 'New known facts',
+        value: hasItems(knowledgeChanges.newKnownFacts) ? knowledgeChanges.newKnownFacts.join(', ') : '',
+      },
+      {
+        label: 'New suspicions',
+        value: hasItems(knowledgeChanges.newSuspicions) ? knowledgeChanges.newSuspicions.join(', ') : '',
+      },
+      {
+        label: 'False beliefs corrected',
+        value: hasItems(knowledgeChanges.falseBeliefsCorrected)
+          ? knowledgeChanges.falseBeliefsCorrected.join(', ')
+          : '',
+      },
+      {
+        label: 'Secrets revealed',
+        value: hasItems(knowledgeChanges.secretsRevealed) ? knowledgeChanges.secretsRevealed.join(', ') : '',
+      },
+    ]);
+    var conversationUpdate = stateUpdate.conversationUpdate || {};
+    var conversationUpdateHtml = buildDefinitionListHtml([
+      {
+        label: 'Commitments made',
+        value: hasItems(conversationUpdate.commitmentsMade) ? conversationUpdate.commitmentsMade.join(', ') : '',
+      },
+      {
+        label: 'Threats made',
+        value: hasItems(conversationUpdate.threatsMade) ? conversationUpdate.threatsMade.join(', ') : '',
+      },
+      {
+        label: 'Questions opened',
+        value: hasItems(conversationUpdate.questionsOpened) ? conversationUpdate.questionsOpened.join(', ') : '',
+      },
+      {
+        label: 'Questions resolved',
+        value: hasItems(conversationUpdate.questionsResolved) ? conversationUpdate.questionsResolved.join(', ') : '',
+      },
+    ]);
+    var physicalStateUpdate = stateUpdate.physicalStateUpdate || {};
+    var physicalChangesHtml = buildDefinitionListHtml([
+      {
+        label: 'Location changed',
+        value: typeof physicalStateUpdate.locationChanged === 'boolean'
+          ? (physicalStateUpdate.locationChanged ? 'Yes' : 'No')
+          : '',
+      },
+      { label: 'New location', value: physicalStateUpdate.newLocation },
+      { label: 'New micro-location', value: physicalStateUpdate.newMicroLocation },
+      { label: 'New distance band', value: physicalStateUpdate.newDistanceBand },
+      {
+        label: 'Object state changes',
+        value: hasItems(physicalStateUpdate.objectStateChanges)
+          ? physicalStateUpdate.objectStateChanges.join(', ')
+          : '',
+      },
+    ]);
+
+    return buildSectionHtml(
+      'State Changes',
+      buildDefinitionListHtml([{ label: 'Summary', value: stateUpdate.summaryDelta }]) +
+      relationshipShiftsHtml +
+      knowledgeChangesHtml +
+      conversationUpdateHtml +
+      physicalChangesHtml
+    );
+  }
+
+  function buildInnerWorldHtml(turn) {
+    if (!turn || turn.speaker !== 'CHARACTER') {
+      return '';
+    }
+
+    var plannerOutput = turn.plannerOutput || null;
+    var stateUpdate = turn.stateUpdate || null;
+    var sections = [
+      buildInternalSelfCheckHtml(plannerOutput),
+      buildEmotionalLayerHtml(plannerOutput),
+      buildResponseStrategyHtml(plannerOutput),
+      buildActionPlanHtml(plannerOutput),
+      buildTurnImpactHtml(turn),
+      buildStateChangesHtml(stateUpdate),
+    ].join('');
+
+    if (!sections) {
+      return '';
+    }
+
+    return (
+      '<details class="chat-inner-world">' +
+      '<summary class="chat-inner-world__summary">Character&#39;s Inner World</summary>' +
+      '<div class="chat-inner-world__content">' +
+      sections +
+      '</div>' +
+      '</details>'
+    );
+  }
+
+  function buildTurnBlockHtml(block) {
+    if (!block || block.type === 'ACTION') {
+      return (
+        '<div class="chat-block chat-block--action" data-chat-block="ACTION">' +
+        '<em>' +
+        escapeHtml(block && block.text) +
+        '</em>' +
+        '</div>'
+      );
+    }
+
+    return (
+      '<div class="chat-block chat-block--speech" data-chat-block="SPEECH">' +
+      (block.delivery
+        ? '<span class="chat-delivery">' + escapeHtml(block.delivery) + '</span>'
+        : '') +
+      '<p>&ldquo;' +
+      escapeHtml(block.text) +
+      '&rdquo;</p>' +
+      '</div>'
+    );
+  }
+
+  function buildTurnTagHtml(text, modifierClass) {
+    if (!text) {
+      return '';
+    }
+
+    return (
+      '<span class="chat-tag ' +
+      modifierClass +
+      '">' +
+      escapeHtml(text) +
+      '</span>'
+    );
+  }
+
+  function buildTurnTagBarHtml(turn) {
+    if (!turn || turn.speaker !== 'CHARACTER') {
+      return '';
+    }
+
+    var plannerOutput = turn.plannerOutput || {};
+    var turnMeta = turn.turnMeta || {};
+    var tags =
+      buildTurnTagHtml(plannerOutput.speechAct, 'chat-tag--speech-act') +
+      buildTurnTagHtml(plannerOutput.honestyMode, 'chat-tag--honesty') +
+      buildTurnTagHtml(turnMeta.visibleEmotion, 'chat-tag--emotion');
+
+    if (!tags) {
+      return '';
+    }
+
+    return '<div class="chat-tag-bar">' + tags + '</div>';
+  }
+
+  function buildTurnHtml(turn, options) {
+    var safeOptions = options || {};
+    var speakerName =
+      turn.speaker === 'CHARACTER'
+        ? safeOptions.targetCharacterName || 'Character'
+        : safeOptions.interlocutorCharacterName || 'You';
+    var blocks = Array.isArray(turn.blocks) ? turn.blocks : [];
+    var turnClass = turn.speaker === 'CHARACTER' ? 'character' : 'user';
+    var timestamp = turn && turn.timestamp ? String(turn.timestamp) : '';
+    var formattedTimestamp = safeOptions.formatTimestamp
+      ? safeOptions.formatTimestamp(timestamp)
+      : timestamp;
+
+    return (
+      '<article class="chat-turn chat-turn--' +
+      turnClass +
+      '" data-chat-turn data-chat-speaker="' +
+      escapeHtml(turn.speaker || '') +
+      '" data-turn-number="' +
+      escapeHtml(String(turn.turnNumber || '')) +
+      '">' +
+      '<div class="chat-turn__card">' +
+      '<h2 class="chat-turn__heading"><span>' +
+      escapeHtml(speakerName) +
+      '</span><small>#' +
+      escapeHtml(String(turn.turnNumber || '')) +
+      '</small></h2>' +
+      '<p class="form-help"><time datetime="' +
+      escapeHtml(timestamp) +
+      '">' +
+      escapeHtml(formattedTimestamp) +
+      '</time></p>' +
+      blocks.map(buildTurnBlockHtml).join('') +
+      buildTurnTagBarHtml(turn) +
+      buildInnerWorldHtml(turn) +
+      '</div></article>'
+    );
+  }
+
+  return {
+    buildTurnBlockHtml: buildTurnBlockHtml,
+    buildInnerWorldHtml: buildInnerWorldHtml,
+    buildTurnTagBarHtml: buildTurnTagBarHtml,
+    buildTurnHtml: buildTurnHtml,
+  };
+})();
+
+window.ChatSidebar = (function () {
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function formatSignedNumber(value) {
+    if (typeof value !== 'number' || !isFinite(value) || value === 0) {
+      return String(value || 0);
+    }
+
+    return (value > 0 ? '+' : '') + String(value);
+  }
+
+  function readBootstrap() {
+    var script = document.getElementById('chat-ui-bootstrap');
+    if (!script || !script.textContent) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(script.textContent);
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function updateField(root, name, value, fallback) {
+    root.querySelectorAll('[data-chat-field="' + name + '"]').forEach(function (field) {
+      field.textContent = value || fallback || '';
+    });
+  }
+
+  function normalizeText(value, fallback) {
+    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : fallback;
+  }
+
+  function sanitizeItems(items) {
+    return Array.isArray(items)
+      ? items.filter(function (item) {
+          return typeof item === 'string' && item.trim().length > 0;
+        })
+      : [];
+  }
+
+  function pluralizeCount(count, singular, plural) {
+    return String(count) + ' ' + (count === 1 ? singular : plural);
+  }
+
+  function buildKnowledgeSummary(knowledgeState) {
+    var knownFacts = sanitizeItems(knowledgeState && knowledgeState.knownFacts);
+    var suspicions = sanitizeItems(knowledgeState && knowledgeState.suspicions);
+    return pluralizeCount(knownFacts.length, 'fact', 'facts') + ', ' +
+      pluralizeCount(suspicions.length, 'suspicion', 'suspicions');
+  }
+
+  function buildConversationSummary(chatBible) {
+    var activeThreads = sanitizeItems(chatBible && chatBible.conversationNow && chatBible.conversationNow.activeThreads);
+    var commitments = sanitizeItems(chatBible && chatBible.conversationNow && chatBible.conversationNow.commitments);
+    return pluralizeCount(activeThreads.length, 'thread', 'threads') + ', ' +
+      pluralizeCount(commitments.length, 'commitment', 'commitments');
+  }
+
+  function buildGuardrailsSummary(chatBible) {
+    var guardrails = sanitizeItems(chatBible && chatBible.continuityGuardrails);
+    var constraints = sanitizeItems(chatBible && chatBible.responseConstraints);
+    return pluralizeCount(guardrails.length, 'guardrail', 'guardrails') + ', ' +
+      pluralizeCount(constraints.length, 'constraint', 'constraints');
+  }
+
+  function truncateSummary(value, maxLength, fallback) {
+    var normalized = normalizeText(value, fallback || '');
+    if (normalized.length === 0 || normalized === (fallback || '')) {
+      return normalized || fallback || '';
+    }
+
+    return normalized.length > maxLength
+      ? normalized.slice(0, Math.max(maxLength - 3, 1)).replace(/\s+$/, '') + '...'
+      : normalized;
+  }
+
+  function renderPillList(container, items, emptyLabel) {
+    if (!container) {
+      return;
+    }
+
+    var safeItems = Array.isArray(items) ? items.filter(function (item) {
+      return typeof item === 'string' && item.trim().length > 0;
+    }) : [];
+
+    container.innerHTML = '';
+
+    if (safeItems.length === 0) {
+      var emptyPill = document.createElement('span');
+      emptyPill.className = 'chat-pill chat-pill--empty';
+      emptyPill.textContent = emptyLabel;
+      container.appendChild(emptyPill);
+      return;
+    }
+
+    safeItems.forEach(function (item) {
+      var pill = document.createElement('span');
+      pill.className = 'chat-pill';
+      pill.textContent = item;
+      container.appendChild(pill);
+    });
+  }
+
+  function renderBulletList(container, items, emptyLabel, options) {
+    if (!container) {
+      return;
+    }
+
+    var safeItems = sanitizeItems(items);
+    var settings = options || {};
+
+    container.innerHTML = '';
+
+    if (safeItems.length === 0) {
+      var emptyItem = document.createElement('li');
+      emptyItem.className = 'chat-sidebar-list__empty';
+      emptyItem.textContent = emptyLabel;
+      container.appendChild(emptyItem);
+      return;
+    }
+
+    safeItems.forEach(function (item) {
+      var listItem = document.createElement('li');
+      if (settings.itemClass) {
+        listItem.className = settings.itemClass;
+      }
+
+      if (settings.prefixText) {
+        var prefix = document.createElement('span');
+        prefix.className = settings.prefixClass || '';
+        prefix.textContent = settings.prefixText;
+        prefix.setAttribute('aria-hidden', 'true');
+        listItem.appendChild(prefix);
+
+        var text = document.createElement('span');
+        text.textContent = item;
+        listItem.appendChild(text);
+      } else {
+        listItem.textContent = item;
+      }
+      container.appendChild(listItem);
+    });
+  }
+
+  function getGaugeBounds(name) {
+    if (name === 'valence') {
+      return { min: -5, max: 5 };
+    }
+
+    return { min: 0, max: 10 };
+  }
+
+  function readRelationshipMetricPresentation(relationshipPresentation, name) {
+    if (!relationshipPresentation || typeof relationshipPresentation !== 'object') {
+      return null;
+    }
+
+    var metricPresentation = relationshipPresentation[name];
+    return metricPresentation && typeof metricPresentation === 'object' ? metricPresentation : null;
+  }
+
+  function normalizeGaugePosition(name, value) {
+    var bounds = getGaugeBounds(name);
+    return clamp((value - bounds.min) / (bounds.max - bounds.min), 0, 1);
+  }
+
+  function renderGauge(root, name, value, previousValue, ariaLabel) {
+    var gauge = root.querySelector('[data-chat-gauge="' + name + '"]');
+    if (!gauge) {
+      return;
+    }
+
+    var marker = gauge.querySelector('.chat-gauge__marker');
+    var ghost = gauge.querySelector('.chat-gauge__ghost');
+    if (!marker) {
+      return;
+    }
+
+    var bounds = getGaugeBounds(name);
+    var normalized = normalizeGaugePosition(name, value);
+    marker.style.left = String(normalized * 100) + '%';
+
+    if (ghost) {
+      if (typeof previousValue === 'number' && isFinite(previousValue)) {
+        ghost.style.left = String(normalizeGaugePosition(name, previousValue) * 100) + '%';
+        ghost.style.display = 'block';
+      } else {
+        ghost.style.display = 'none';
+        ghost.style.left = '';
+      }
+    }
+
+    gauge.setAttribute('aria-valuemin', String(bounds.min));
+    gauge.setAttribute('aria-valuemax', String(bounds.max));
+    gauge.setAttribute('aria-valuenow', String(value));
+    if (typeof ariaLabel === 'string' && ariaLabel.length > 0) {
+      gauge.setAttribute('aria-label', ariaLabel);
+    }
+  }
+
+  function buildSparklinePoints(values, min, max) {
+    if (!Array.isArray(values) || values.length === 0) {
+      return '';
+    }
+
+    if (values.length === 1) {
+      var singleY = 26 - (((values[0] - min) / (max - min || 1)) * 20);
+      return '60,' + String(singleY);
+    }
+
+    return values.map(function (value, index) {
+      var x = (index / (values.length - 1)) * 120;
+      var y = 26 - (((value - min) / (max - min || 1)) * 20);
+      return String(Math.round(x * 100) / 100) + ',' + String(Math.round(y * 100) / 100);
+    }).join(' ');
+  }
+
+  function renderSparkline(root, name, history, ariaLabel) {
+    var sparkline = root.querySelector('[data-chat-sparkline="' + name + '"]');
+    if (!sparkline) {
+      return;
+    }
+
+    var values = Array.isArray(history)
+      ? history.map(function (point) {
+          return point && typeof point[name] === 'number' ? point[name] : null;
+        }).filter(function (value) {
+          return value !== null;
+        })
+      : [];
+    var bounds = getGaugeBounds(name);
+
+    sparkline.innerHTML = '';
+    sparkline.setAttribute('preserveAspectRatio', 'none');
+
+    if (values.length === 0) {
+      return;
+    }
+
+    var currentValue = values[values.length - 1];
+    var previousValue = values.length > 1 ? values[values.length - 2] : currentValue;
+    var polyline = document.createElementNS(SVG_NS, 'polyline');
+    polyline.setAttribute('points', buildSparklinePoints(values, bounds.min, bounds.max));
+    polyline.setAttribute('fill', 'none');
+    polyline.setAttribute('stroke', name === 'valence' ? '#7ae7ba' : '#ff8f6b');
+    polyline.setAttribute('stroke-width', '2');
+    polyline.setAttribute('stroke-linecap', 'round');
+    polyline.setAttribute('stroke-linejoin', 'round');
+    sparkline.appendChild(polyline);
+
+    var currentDot = document.createElementNS(SVG_NS, 'circle');
+    currentDot.setAttribute('class', 'chat-sparkline__current-dot');
+    currentDot.setAttribute('r', '3.5');
+    currentDot.setAttribute('cx', values.length === 1 ? '60' : '120');
+    currentDot.setAttribute(
+      'cy',
+      String(26 - (((currentValue - bounds.min) / (bounds.max - bounds.min || 1)) * 20))
+    );
+    currentDot.setAttribute('fill', '#f7f9ff');
+    currentDot.setAttribute('stroke', name === 'valence' ? '#7ae7ba' : '#ff8f6b');
+    currentDot.setAttribute('stroke-width', '2');
+    sparkline.appendChild(currentDot);
+    sparkline.setAttribute('role', 'img');
+    if (typeof ariaLabel === 'string' && ariaLabel.length > 0) {
+      sparkline.setAttribute('aria-label', ariaLabel);
+    }
+  }
+
+  function getLatestRelationshipSnapshot(relationshipTimeline) {
+    if (!Array.isArray(relationshipTimeline) || relationshipTimeline.length === 0) {
+      return null;
+    }
+
+    var latestPoint = relationshipTimeline[relationshipTimeline.length - 1];
+    return latestPoint && latestPoint.snapshot ? latestPoint.snapshot : null;
+  }
+
+  function buildRelationshipHistory(relationshipTimeline) {
+    var history = [{
+      turnNumber: 0,
+      valence: 0,
+      tension: 0,
+      dynamic: '',
+    }];
+
+    if (!Array.isArray(relationshipTimeline)) {
+      return history;
+    }
+
+    relationshipTimeline.forEach(function (point) {
+      if (!point || !point.snapshot) {
+        return;
+      }
+
+      history.push({
+        turnNumber: typeof point.turnNumber === 'number' ? point.turnNumber : history.length,
+        valence: typeof point.snapshot.valence === 'number' ? point.snapshot.valence : 0,
+        tension: typeof point.snapshot.tension === 'number' ? point.snapshot.tension : 0,
+        dynamic: point.snapshot.dynamic || '',
+      });
+    });
+
+    return history;
+  }
+
+  function buildNextRelationshipTimeline(existingTimeline, latestRelationshipSnapshot, latestTurnNumber) {
+    var timeline = Array.isArray(existingTimeline) ? existingTimeline.slice() : [];
+    if (!latestRelationshipSnapshot || typeof latestTurnNumber !== 'number') {
+      return timeline;
+    }
+
+    var lastPoint = timeline.length > 0 ? timeline[timeline.length - 1] : null;
+    if (lastPoint && lastPoint.turnNumber === latestTurnNumber) {
+      timeline[timeline.length - 1] = {
+        turnNumber: latestTurnNumber,
+        snapshot: latestRelationshipSnapshot,
+      };
+      return timeline;
+    }
+
+    timeline.push({
+      turnNumber: latestTurnNumber,
+      snapshot: latestRelationshipSnapshot,
+    });
+    return timeline;
+  }
+
+  function resolveRelationshipMetric(relationshipSnapshot, relationshipState, name) {
+    var absoluteValue = relationshipSnapshot && relationshipSnapshot[name];
+    if (typeof absoluteValue === 'number' && isFinite(absoluteValue)) {
+      return absoluteValue;
+    }
+
+    var fallbackValue = relationshipState && relationshipState[name];
+    return typeof fallbackValue === 'number' && isFinite(fallbackValue) ? fallbackValue : 0;
+  }
+
+  function readDelta(history, name) {
+    if (!Array.isArray(history) || history.length < 2) {
+      return 0;
+    }
+
+    var previousPoint = history[history.length - 2];
+    var currentPoint = history[history.length - 1];
+    return currentPoint[name] - previousPoint[name];
+  }
+
+  function updateRelationshipVisuals(root, relationshipTimeline, relationshipState, relationshipPresentation) {
+    var relationshipSnapshot = getLatestRelationshipSnapshot(relationshipTimeline);
+    var history = buildRelationshipHistory(relationshipTimeline);
+    var valencePresentation = readRelationshipMetricPresentation(relationshipPresentation, 'valence');
+    var tensionPresentation = readRelationshipMetricPresentation(relationshipPresentation, 'tension');
+    var valence = valencePresentation && typeof valencePresentation.value === 'number'
+      ? valencePresentation.value
+      : resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'valence');
+    var tension = tensionPresentation && typeof tensionPresentation.value === 'number'
+      ? tensionPresentation.value
+      : resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'tension');
+    var valenceDeltaValue = valencePresentation && typeof valencePresentation.delta === 'number'
+      ? valencePresentation.delta
+      : readDelta(history, 'valence');
+    var tensionDeltaValue = tensionPresentation && typeof tensionPresentation.delta === 'number'
+      ? tensionPresentation.delta
+      : readDelta(history, 'tension');
+    var previousValence = valence - valenceDeltaValue;
+    var previousTension = tension - tensionDeltaValue;
+
+    renderGauge(
+      root,
+      'valence',
+      valence,
+      previousValence,
+      valencePresentation && valencePresentation.gaugeAriaLabel
+    );
+    renderGauge(
+      root,
+      'tension',
+      tension,
+      previousTension,
+      tensionPresentation && tensionPresentation.gaugeAriaLabel
+    );
+    renderSparkline(
+      root,
+      'valence',
+      history,
+      valencePresentation && valencePresentation.sparklineAriaLabel
+    );
+    renderSparkline(
+      root,
+      'tension',
+      history,
+      tensionPresentation && tensionPresentation.sparklineAriaLabel
+    );
+
+    var valenceValue = root.querySelector('[data-chat-gauge-value="valence"]');
+    var tensionValue = root.querySelector('[data-chat-gauge-value="tension"]');
+    var valenceDelta = root.querySelector('[data-chat-gauge-delta="valence"]');
+    var tensionDelta = root.querySelector('[data-chat-gauge-delta="tension"]');
+    var valenceSummary = root.querySelector('[data-chat-gauge-summary="valence"]');
+    var tensionSummary = root.querySelector('[data-chat-gauge-summary="tension"]');
+    var valenceTrend = root.querySelector('[data-chat-gauge-trend="valence"]');
+    var tensionTrend = root.querySelector('[data-chat-gauge-trend="tension"]');
+
+    if (valenceValue) {
+      valenceValue.textContent = String(valence);
+    }
+    if (tensionValue) {
+      tensionValue.textContent = String(tension);
+    }
+    if (valenceDelta) {
+      valenceDelta.textContent = formatSignedNumber(valenceDeltaValue);
+    }
+    if (tensionDelta) {
+      tensionDelta.textContent = formatSignedNumber(tensionDeltaValue);
+    }
+    if (valenceSummary) {
+      valenceSummary.textContent = valencePresentation && valencePresentation.summary
+        ? valencePresentation.summary
+        : valenceSummary.textContent;
+    }
+    if (tensionSummary) {
+      tensionSummary.textContent = tensionPresentation && tensionPresentation.summary
+        ? tensionPresentation.summary
+        : tensionSummary.textContent;
+    }
+    if (valenceTrend) {
+      valenceTrend.textContent = valencePresentation && valencePresentation.trend
+        ? valencePresentation.trend
+        : valenceTrend.textContent;
+    }
+    if (tensionTrend) {
+      tensionTrend.textContent = tensionPresentation && tensionPresentation.trend
+        ? tensionPresentation.trend
+        : tensionTrend.textContent;
+    }
+  }
+
+  function update(root, session, options) {
+    if (!root || !session) {
+      return;
+    }
+
+    var priorState = root.__chatSidebarState || {};
+    var physicalContext = session.physicalContext || {};
+    var relationshipState = session.relationshipState || {};
+    var leadInContext = session.leadInContext || {};
+    var hasKnowledgeState = Object.prototype.hasOwnProperty.call(session, 'knowledgeState');
+    var hasChatBible = Object.prototype.hasOwnProperty.call(session, 'chatBible');
+    var hasRollingSummary = Object.prototype.hasOwnProperty.call(session, 'rollingSummary');
+    var knowledgeState = hasKnowledgeState ? (session.knowledgeState || {}) : (priorState.knowledgeState || {});
+    var chatBible = hasChatBible ? session.chatBible : (priorState.chatBible || null);
+    var rollingSummary = hasRollingSummary ? session.rollingSummary : (priorState.rollingSummary || null);
+    var relationshipTimeline = options && Array.isArray(options.relationshipTimeline)
+      ? options.relationshipTimeline
+      : buildNextRelationshipTimeline(
+        root.__chatRelationshipTimeline,
+        options && options.latestRelationshipSnapshot,
+        options && options.latestTurnNumber
+      );
+    var relationshipPresentation = options && options.relationshipPresentation
+      ? options.relationshipPresentation
+      : root.__chatRelationshipPresentation;
+    var relationshipSnapshot = getLatestRelationshipSnapshot(relationshipTimeline);
+
+    updateField(root, 'location', physicalContext.location, '');
+    updateField(root, 'microLocation', physicalContext.microLocation, '');
+    updateField(root, 'timeOfDay', physicalContext.timeOfDay, '');
+    updateField(root, 'privacy', physicalContext.privacy, '');
+    updateField(root, 'distanceBand', physicalContext.distanceBand, '');
+    updateField(root, 'characterActivity', physicalContext.characterActivity, '');
+    updateField(
+      root,
+      'interactableObjects',
+      Array.isArray(physicalContext.interactableObjects) && physicalContext.interactableObjects.length > 0
+        ? physicalContext.interactableObjects.join(', ')
+        : 'None',
+      'None'
+    );
+    updateField(
+      root,
+      'ambientConditions',
+      Array.isArray(physicalContext.ambientConditions) && physicalContext.ambientConditions.length > 0
+        ? physicalContext.ambientConditions.join(', ')
+        : 'None',
+      'None'
+    );
+    updateField(root, 'dynamic', relationshipSnapshot && relationshipSnapshot.dynamic, relationshipState.dynamic || 'Unformed');
+    updateField(root, 'valence', String(resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'valence')), '0');
+    updateField(root, 'tension', String(resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'tension')), '0');
+    updateField(root, 'leverage', relationshipSnapshot && relationshipSnapshot.leverage, relationshipState.leverage || 'None');
+    updateField(root, 'whyNow', leadInContext.whyNow, '');
+
+    renderPillList(
+      root.querySelector('[data-chat-list="interactableObjects"]'),
+      physicalContext.interactableObjects,
+      'None'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="ambientConditions"]'),
+      physicalContext.ambientConditions,
+      'None'
+    );
+    updateField(root, 'knowledgeSummary', buildKnowledgeSummary(knowledgeState), '0 facts, 0 suspicions');
+    renderBulletList(root.querySelector('[data-chat-list="knownFacts"]'), knowledgeState.knownFacts, 'No facts tracked.');
+    renderBulletList(root.querySelector('[data-chat-list="suspicions"]'), knowledgeState.suspicions, 'No suspicions tracked.');
+    renderBulletList(
+      root.querySelector('[data-chat-list="falseBeliefs"]'),
+      knowledgeState.falseBeliefs,
+      'No false beliefs tracked.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="secretsRevealed"]'),
+      knowledgeState.secretsRevealed,
+      'No secrets revealed.'
+    );
+
+    updateField(
+      root,
+      'currentObjectiveSummary',
+      truncateSummary(chatBible && chatBible.characterNow && chatBible.characterNow.currentObjective, 60, 'No objective available'),
+      'No objective available'
+    );
+    updateField(
+      root,
+      'currentObjective',
+      normalizeText(chatBible && chatBible.characterNow && chatBible.characterNow.currentObjective, 'No current objective available.'),
+      'No current objective available.'
+    );
+    updateField(
+      root,
+      'immediateNeedFromConversation',
+      normalizeText(
+        chatBible && chatBible.characterNow && chatBible.characterNow.immediateNeedFromConversation,
+        'No immediate need available.'
+      ),
+      'No immediate need available.'
+    );
+    updateField(
+      root,
+      'emotionalState',
+      normalizeText(chatBible && chatBible.characterNow && chatBible.characterNow.emotionalState, 'No emotional state available.'),
+      'No emotional state available.'
+    );
+    updateField(
+      root,
+      'willingnessToEngage',
+      normalizeText(chatBible && chatBible.characterNow && chatBible.characterNow.willingnessToEngage, 'Unknown'),
+      'Unknown'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="topicsToAdvance"]'),
+      chatBible && chatBible.characterNow && chatBible.characterNow.topicsToAdvance,
+      'No active advance topics.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="topicsToProtect"]'),
+      chatBible && chatBible.characterNow && chatBible.characterNow.topicsToProtect,
+      'No protected topics.',
+      { prefixText: 'Lock', prefixClass: 'chat-list-prefix' }
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="beliefsAboutInterlocutor"]'),
+      relationshipSnapshot && relationshipSnapshot.whatCharacterBelievesAboutInterlocutor,
+      'No beliefs recorded.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="secretsKept"]'),
+      chatBible && chatBible.knowledgeNow && chatBible.knowledgeNow.secretsKept,
+      'No secrets currently kept.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="knowledgeBoundaries"]'),
+      chatBible && chatBible.knowledgeNow && chatBible.knowledgeNow.knowledgeBoundaries,
+      'No active knowledge boundaries.'
+    );
+    updateField(root, 'conversationSummary', buildConversationSummary(chatBible), '0 threads, 0 commitments');
+    updateField(
+      root,
+      'lastTurnPressure',
+      normalizeText(chatBible && chatBible.conversationNow && chatBible.conversationNow.lastTurnPressure, 'No active last-turn pressure.'),
+      'No active last-turn pressure.'
+    );
+    updateField(
+      root,
+      'conversationRollingSummary',
+      normalizeText(rollingSummary && rollingSummary.compressedSummary, 'No rolling summary available.'),
+      'No rolling summary available.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="activeThreads"]'),
+      chatBible && chatBible.conversationNow && chatBible.conversationNow.activeThreads,
+      'No active threads.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="commitments"]'),
+      chatBible && chatBible.conversationNow && chatBible.conversationNow.commitments,
+      'No commitments tracked.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="sensitiveTopics"]'),
+      chatBible && chatBible.conversationNow && chatBible.conversationNow.sensitiveTopics,
+      'No sensitive topics noted.'
+    );
+    updateField(root, 'guardrailsSummary', buildGuardrailsSummary(chatBible), '0 guardrails, 0 constraints');
+    renderBulletList(
+      root.querySelector('[data-chat-list="continuityGuardrails"]'),
+      chatBible && chatBible.continuityGuardrails,
+      'No continuity guardrails.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="responseConstraints"]'),
+      chatBible && chatBible.responseConstraints,
+      'No response constraints.'
+    );
+
+    updateRelationshipVisuals(root, relationshipTimeline, relationshipState, relationshipPresentation);
+    root.__chatRelationshipTimeline = relationshipTimeline;
+    root.__chatRelationshipPresentation = relationshipPresentation;
+    root.__chatSidebarState = {
+      physicalContext: physicalContext,
+      relationshipState: relationshipState,
+      leadInContext: leadInContext,
+      knowledgeState: knowledgeState,
+      rollingSummary: rollingSummary,
+      chatBible: chatBible,
+    };
+  }
+
+  function init(root, session) {
+    if (!root) {
+      return;
+    }
+
+    var bootstrap = readBootstrap();
+    var relationshipTimeline = bootstrap && Array.isArray(bootstrap.relationshipTimeline)
+      ? bootstrap.relationshipTimeline
+      : [];
+    var relationshipPresentation = bootstrap && bootstrap.relationshipPresentation
+      ? bootstrap.relationshipPresentation
+      : null;
+    var initialSession = Object.assign({}, session, {
+      knowledgeState: bootstrap && bootstrap.knowledgeState ? bootstrap.knowledgeState : undefined,
+      rollingSummary: bootstrap && Object.prototype.hasOwnProperty.call(bootstrap, 'rollingSummary')
+        ? bootstrap.rollingSummary
+        : undefined,
+      chatBible: bootstrap && Object.prototype.hasOwnProperty.call(bootstrap, 'chatBible')
+        ? bootstrap.chatBible
+        : undefined,
+    });
+
+    update(root, initialSession, {
+      relationshipTimeline: relationshipTimeline,
+      relationshipPresentation: relationshipPresentation,
+    });
+  }
+
+  return {
+    init: init,
+    update: update,
+  };
+})();
 
 function initChatNewPage() {
   var form = document.querySelector('form[data-chat-new-form]');

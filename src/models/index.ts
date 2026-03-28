@@ -476,6 +476,8 @@ export type {
   ChatBibleRelationshipNow,
   ChatBibleKnowledgeNow,
   ChatBibleConversationNow,
+  ChatSceneContext,
+  ChatCharacterContext,
   ChatBible,
   SpeechAct,
   HonestyMode,
@@ -494,6 +496,7 @@ export type {
 } from './chat';
 export {
   parseChatInput,
+  assembleChatBible,
   TIME_OF_DAY_VALUES,
   PRIVACY_VALUES,
   DISTANCE_BAND_VALUES,
