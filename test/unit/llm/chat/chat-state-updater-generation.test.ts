@@ -163,10 +163,21 @@ const PARSED_STATE_UPDATE = {
   shouldTriggerSummary: false,
 };
 
+const PARSED_RELATIONSHIP_SNAPSHOT = {
+  dynamic: 'mutual suspicion',
+  valence: -2,
+  tension: 10,
+  leverage: 'She knows about the second key.',
+  whatCharacterBelievesAboutInterlocutor: ['He may have hidden it on purpose.'],
+};
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockRunLlmStage.mockResolvedValue({
-    parsed: PARSED_STATE_UPDATE,
+    parsed: {
+      stateUpdate: PARSED_STATE_UPDATE,
+      relationshipSnapshot: PARSED_RELATIONSHIP_SNAPSHOT,
+    },
     rawResponse: '{"summaryDelta":"The exchange sharpens into a veiled accusation."}',
   });
 });
@@ -210,6 +221,7 @@ describe('generateChatStateUpdate', () => {
     const result = await generateChatStateUpdate(makeContext(), 'test-key');
 
     expect(result.stateUpdate).toEqual(PARSED_STATE_UPDATE);
+    expect(result.relationshipSnapshot).toEqual(PARSED_RELATIONSHIP_SNAPSHOT);
     expect(result.rawResponse).toContain('summaryDelta');
   });
 
@@ -217,13 +229,17 @@ describe('generateChatStateUpdate', () => {
     mockRunLlmStage
       .mockRejectedValueOnce(new Error('The compiled grammar is too large'))
       .mockResolvedValueOnce({
-        parsed: PARSED_STATE_UPDATE,
+        parsed: {
+          stateUpdate: PARSED_STATE_UPDATE,
+          relationshipSnapshot: PARSED_RELATIONSHIP_SNAPSHOT,
+        },
         rawResponse: '{"summaryDelta":"The exchange sharpens into a veiled accusation."}',
       });
 
     const result = await generateChatStateUpdate(makeContext(), 'test-key');
 
     expect(result.stateUpdate).toEqual(PARSED_STATE_UPDATE);
+    expect(result.relationshipSnapshot).toEqual(PARSED_RELATIONSHIP_SNAPSHOT);
     expect(mockRunLlmStage).toHaveBeenCalledTimes(2);
     expect(mockRunLlmStage).toHaveBeenNthCalledWith(
       1,

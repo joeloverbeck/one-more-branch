@@ -37,6 +37,13 @@ function makeContext(): ChatSummaryContext {
           visibleEmotion: 'contained anger',
           finalPressure: 'She forces him to say the accusation plainly.',
         },
+        relationshipSnapshot: {
+          dynamic: 'guarded hostility',
+          valence: -2,
+          tension: 8,
+          leverage: 'She forced him to answer first.',
+          whatCharacterBelievesAboutInterlocutor: ['He is still hiding the courier warning.'],
+        },
         timestamp: '2026-03-27T09:01:00.000Z',
       },
     ],

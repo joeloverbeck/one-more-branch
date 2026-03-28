@@ -1,5 +1,6 @@
 import type {
   ChatBible,
+  ChatRelationshipSnapshot,
   ChatStateUpdate,
   ChatTurn,
   RollingSummaryOutput,
@@ -27,6 +28,7 @@ export interface ChatStateUpdaterContext {
 
 export interface ChatStateUpdaterGenerationResult {
   readonly stateUpdate: ChatStateUpdate;
+  readonly relationshipSnapshot: ChatRelationshipSnapshot;
   readonly rawResponse: string;
 }
 
@@ -60,7 +62,8 @@ export async function generateChatStateUpdate(
   );
 
   return {
-    stateUpdate: result.parsed,
+    stateUpdate: result.parsed.stateUpdate,
+    relationshipSnapshot: result.parsed.relationshipSnapshot,
     rawResponse: result.rawResponse,
   };
 }

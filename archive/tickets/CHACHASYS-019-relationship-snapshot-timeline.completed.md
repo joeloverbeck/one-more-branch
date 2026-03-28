@@ -1,9 +1,9 @@
 # CHACHASYS-019: Make relationship snapshots a first-class per-turn timeline
 
-**Status**: PENDING
+**Status**: COMPLETED
 **Priority**: HIGH
 **Effort**: Large
-**Engine Changes**: Yes — chat pipeline, chat models, persistence, server bootstrap/UI data flow
+**Engine Changes**: Yes — chat pipeline, state-updater contract, chat models, persistence, server bootstrap/UI data flow
 **Deps**: [archive/tickets/CHATUIFIX-003-chat-bible-gauge-values.completed.md](/home/joeloverbeck/projects/one-more-branch/archive/tickets/CHATUIFIX-003-chat-bible-gauge-values.completed.md), [archive/tickets/CHATCOMMIT-001-atomically-persist-chat-turn-results.md](/home/joeloverbeck/projects/one-more-branch/archive/tickets/CHATCOMMIT-001-atomically-persist-chat-turn-results.md)
 
 ## Problem
@@ -22,6 +22,8 @@ Worse, the current `chatBible` is not refreshed every turn. Persisting opportuni
 4. `src/server/routes/chat.ts:58-63` sends that delta-derived history to the client bootstrap, and `public/js/src/20b-chat-sidebar.js:280-320` now rebases it against the latest `chatBible.relationshipNow`. Confirmed.
 5. Because the full `chatBible` is intentionally stale on many turns, "store historical `chatBible.relationshipNow`" would not be sufficient. Corrected scope: introduce an always-produced per-turn relationship snapshot contract instead of depending on opportunistic bible refreshes.
 6. `src/persistence/chat-repository.ts` already persists chats as a single aggregate `state.json`, so adding canonical turn-level snapshot data fits the current persistence architecture cleanly. Confirmed.
+7. `src/llm/chat/chat-state-updater-generation.ts` and `src/llm/schemas/chat-state-updater-schema.ts` already own post-turn state extraction. Corrected architecture: extend the existing updater response contract to emit the canonical post-turn relationship snapshot instead of adding a second LLM stage with overlapping responsibility.
+8. `public/js/src/20-chat-controller.js:333-336` currently updates the sidebar after a send-turn response using only `updatedSession`. Corrected scope: live client updates must also incorporate the newly committed character turn snapshot, otherwise the canonical timeline would only be used on initial page load.
 
 ## Architecture Check
 
@@ -32,7 +34,8 @@ Worse, the current `chatBible` is not refreshed every turn. Persisting opportuni
    - it avoids introducing another session-level cache that can drift from the transcript
 3. The UI should ultimately stop treating `chatBible.relationshipNow` as the canonical relationship-display source. `chatBible` can remain a prompt/runtime object, but relationship visualization should use the persisted snapshot timeline.
 4. The snapshot must be produced every character turn, not only when the full `chatBible` refreshes. Otherwise we would just persist stale data under a more official name.
-5. No backwards-compatibility aliasing or dual-source rendering should remain after the cutover. Once snapshots exist, replace the rebased-history UI path rather than keeping it as a permanent parallel architecture.
+5. The existing chat state-updater stage is the right owner for this snapshot because it already judges post-turn state from the written turn. Adding a separate relationship-curation stage would create duplicated authority and another LLM round-trip for the same domain.
+6. No backwards-compatibility aliasing or dual-source rendering should remain after the cutover. Once snapshots exist, replace the rebased-history UI path rather than keeping it as a permanent parallel architecture.
 
 ## What to Change
 
@@ -58,16 +61,22 @@ If naming is reconsidered, prefer something explicit like `relationshipSnapshot`
 
 ### 2. Generate a relationship snapshot every character turn
 
-Add a dedicated generation/update path in the chat pipeline so a fresh relationship snapshot is produced every successful character turn, independent of whether the full `chatBible` refreshes.
+Extend the existing chat state-updater stage so a fresh relationship snapshot is produced for every successful character turn, independent of whether the full `chatBible` refreshes.
 
 Requirements:
 
 - do not rely on `chatBible` refresh cadence
-- do not infer the snapshot from delta accumulation alone
+- do not infer the full snapshot from delta accumulation alone
 - keep the snapshot aligned with the post-turn conversation state
 - preserve the existing `chatBible` refresh cadence unless this ticket explicitly replaces it
 
-The cleanest implementation is likely a dedicated lightweight relationship-curation stage that runs each turn and returns the canonical snapshot payload.
+Preferred implementation:
+
+- extend the existing updater response contract to return:
+  - the existing delta-oriented `stateUpdate`
+  - one absolute `relationshipSnapshot`
+- attach the returned snapshot to the committed character turn in the chat pipeline
+- do not persist the same snapshot twice inside both the turn root and `stateUpdate`
 
 ### 3. Persist and validate the snapshot as part of the chat aggregate
 
@@ -89,6 +98,7 @@ Requirements:
 - historical graphics come from prior snapshots in order
 - delta badges may still use computed turn-over-turn differences, but those differences should be derived from adjacent snapshots, not from `relationshipState`
 - remove the long-term rebasing path introduced in `CHATUIFIX-003`
+- cover both initial page bootstrap and live post-send sidebar updates
 
 ### 5. Reassess `relationshipState` ownership after snapshot cutover
 
@@ -100,6 +110,12 @@ Possible acceptable outcomes:
 - keep it as deterministic delta accumulator for prompts, while snapshots own display/history
 
 This ticket should make that ownership explicit so the app is not left with ambiguous overlapping contracts.
+
+Decision for this ticket:
+
+- keep `relationshipState` as the session-level prompt/runtime state that the pipeline mutates each turn
+- keep the new turn-level `relationshipSnapshot` as the canonical UI/history contract
+- require the two to agree on numeric/dynamic/leverage state after a successful character turn
 
 ### 6. Document the canonical relationship-display contract
 
@@ -117,14 +133,20 @@ Add or update a chat-system design/spec document that states:
 - `src/models/chat/chat-validation.ts` (modify)
 - `src/models/chat/index.ts` (modify, if new type exports are added)
 - `src/llm/chat/chat-pipeline.ts` (modify)
-- `src/llm/chat/` (modify or add relationship snapshot generation stage/module)
+- `src/llm/chat/chat-state-updater-generation.ts` (modify)
+- `src/llm/schemas/chat-state-updater-schema.ts` (modify)
+- `src/llm/prompts/chat/chat-state-updater-prompt.ts` (modify)
+- `prompts/chat-state-updater-prompt.md` (modify)
 - `src/persistence/chat-repository.ts` (modify)
 - `src/server/routes/chat.ts` (modify)
 - `src/server/views/pages/chat.ejs` (modify)
+- `public/js/src/20-chat-controller.js` (modify)
 - `public/js/src/20b-chat-sidebar.js` (modify)
 - `public/js/app.js` (regenerated)
 - `test/unit/llm/chat/chat-pipeline.test.ts` (modify)
 - `test/unit/models/chat/chat-models.test.ts` (modify)
+- `test/unit/llm/schemas/chat-state-updater-schema.test.ts` (modify)
+- `test/unit/llm/prompts/chat/chat-state-updater-prompt.test.ts` (modify)
 - `test/unit/persistence/chat-repository.test.ts` (modify)
 - `test/unit/server/routes/chat.test.ts` (modify)
 - `test/unit/server/views/chat.test.ts` (modify)
@@ -146,6 +168,7 @@ Add or update a chat-system design/spec document that states:
 2. The server bootstrap and client relationship UI build current and historical relationship visuals from the snapshot timeline, not from rebased delta history.
 3. Turn-over-turn deltas shown in the UI are derived from adjacent snapshots.
 4. Sessions whose full `chatBible` was not refreshed on a turn still receive a fresh relationship snapshot for that turn.
+5. Live sidebar updates after `POST /chat/:id/turn` append the committed character turn snapshot rather than synthesizing history from session-level state.
 5. Existing suite: `npm test`
 
 ### Invariants
@@ -161,15 +184,36 @@ Add or update a chat-system design/spec document that states:
 
 1. `test/unit/llm/chat/chat-pipeline.test.ts` — verify a fresh relationship snapshot is attached to every generated character turn, even when the full `chatBible` was reused.
 2. `test/unit/models/chat/chat-models.test.ts` — verify runtime validation accepts valid snapshot-bearing turns and rejects malformed snapshot payloads.
-3. `test/unit/persistence/chat-repository.test.ts` — verify chat aggregate persistence round-trips snapshot-bearing character turns without loss.
-4. `test/unit/server/routes/chat.test.ts` — verify route bootstrap exposes canonical snapshot history instead of delta-derived relationship history.
-5. `test/unit/server/views/chat.test.ts` — verify initial relationship rendering uses the latest snapshot contract.
-6. `test/unit/client/chat-page/controller.test.ts` — verify current values, deltas, ghost markers, and sparklines are all derived from the snapshot timeline.
+3. `test/unit/llm/schemas/chat-state-updater-schema.test.ts` — verify the state-updater schema now requires the absolute post-turn relationship snapshot.
+4. `test/unit/llm/prompts/chat/chat-state-updater-prompt.test.ts` — verify the prompt contract documents/emits the snapshot responsibility alongside delta extraction.
+5. `test/unit/persistence/chat-repository.test.ts` — verify chat aggregate persistence round-trips snapshot-bearing character turns without loss.
+6. `test/unit/server/routes/chat.test.ts` — verify route bootstrap exposes canonical snapshot history instead of delta-derived relationship history.
+7. `test/unit/server/views/chat.test.ts` — verify initial relationship rendering uses the latest snapshot contract.
+8. `test/unit/client/chat-page/controller.test.ts` — verify current values, deltas, ghost markers, sparklines, and live updates are all derived from the snapshot timeline.
 
 ### Commands
 
-1. `npm run test:unit -- --coverage=false --runInBand test/unit/llm/chat/chat-pipeline.test.ts test/unit/models/chat/chat-models.test.ts test/unit/persistence/chat-repository.test.ts test/unit/server/routes/chat.test.ts test/unit/server/views/chat.test.ts test/unit/client/chat-page/controller.test.ts`
+1. `npm run test:unit -- --coverage=false --runInBand test/unit/llm/chat/chat-pipeline.test.ts test/unit/models/chat/chat-models.test.ts test/unit/llm/schemas/chat-state-updater-schema.test.ts test/unit/llm/prompts/chat/chat-state-updater-prompt.test.ts test/unit/persistence/chat-repository.test.ts test/unit/server/routes/chat.test.ts test/unit/server/views/chat.test.ts test/unit/client/chat-page/controller.test.ts`
 2. `npm run lint`
 3. `npm run typecheck`
 4. `npm run build`
 5. `npm test`
+
+## Outcome
+
+- Completed: 2026-03-28
+- Actual implementation:
+  - added a canonical `relationshipSnapshot` contract on persisted character turns
+  - extended the chat state-updater response to return both delta-oriented `stateUpdate` data and an absolute post-turn relationship snapshot
+  - cut server bootstrap, SSR rendering, and live client updates over to a canonical persisted `relationshipTimeline`
+  - kept session-level `relationshipState` as runtime/prompt state, but now force it to agree with the latest snapshot after each successful character turn
+  - documented the relationship-display contract in `specs/character-chat-relationship-timeline.md`
+- Deviations from original plan:
+  - did not add a second relationship-only LLM stage; the existing state-updater stage was extended instead
+  - did not duplicate the canonical snapshot inside `stateUpdate`; the snapshot is persisted once on the character turn and returned separately by the updater response
+- Verification:
+  - targeted relationship/chat unit coverage passed
+  - `npm run lint` passed
+  - `npm run typecheck` passed
+  - `npm run build` passed
+  - `npm test` passed

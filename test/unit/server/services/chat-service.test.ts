@@ -191,6 +191,13 @@ function createCharacterTurn(overrides: Partial<ChatTurn> = {}): ChatTurn {
       shouldRefreshChatBible: false,
       shouldTriggerSummary: false,
     },
+    relationshipSnapshot: {
+      dynamic: 'controlled suspicion',
+      valence: -1,
+      tension: 7,
+      leverage: 'She knows more than she says.',
+      whatCharacterBelievesAboutInterlocutor: ['He is testing her.'],
+    },
     timestamp: '2026-03-27T09:02:00.000Z',
     ...overrides,
   };

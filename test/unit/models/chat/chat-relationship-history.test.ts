@@ -1,6 +1,6 @@
 import {
   applyRelationshipStateUpdate,
-  buildChatRelationshipHistory,
+  buildChatRelationshipTimeline,
   type ChatRelationshipState,
   type ChatTurn,
 } from '../../../../src/models/chat';
@@ -76,6 +76,13 @@ function makeCharacterTurn(turnNumber: number, shifts: NonNullable<ChatTurn['sta
       shouldRefreshChatBible: false,
       shouldTriggerSummary: false,
     },
+    relationshipSnapshot: {
+      dynamic: shifts[0]?.suggestedNewDynamic ?? 'strained allies',
+      valence: turnNumber === 2 ? -2 : -1,
+      tension: turnNumber === 2 ? 3 : 1,
+      leverage: 'Shared guilt',
+      whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+    },
     timestamp: '2026-03-27T09:02:00.000Z',
   };
 }
@@ -104,8 +111,8 @@ describe('chat relationship history helpers', () => {
     });
   });
 
-  it('builds cumulative history from turn deltas and skips turns without state updates', () => {
-    const history = buildChatRelationshipHistory([
+  it('builds canonical relationship timeline points from persisted character turn snapshots', () => {
+    const history = buildChatRelationshipTimeline([
       {
         turnNumber: 1,
         speaker: 'USER',
@@ -139,9 +146,26 @@ describe('chat relationship history helpers', () => {
     ]);
 
     expect(history).toEqual([
-      { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
-      { turnNumber: 2, valence: -2, tension: 3, dynamic: 'open suspicion' },
-      { turnNumber: 4, valence: -1, tension: 1, dynamic: 'open suspicion' },
+      {
+        turnNumber: 2,
+        snapshot: {
+          dynamic: 'open suspicion',
+          valence: -2,
+          tension: 3,
+          leverage: 'Shared guilt',
+          whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+        },
+      },
+      {
+        turnNumber: 4,
+        snapshot: {
+          dynamic: 'strained allies',
+          valence: -1,
+          tension: 1,
+          leverage: 'Shared guilt',
+          whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+        },
+      },
     ]);
   });
 });

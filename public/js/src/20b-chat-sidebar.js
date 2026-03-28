@@ -241,82 +241,73 @@ window.ChatSidebar = (function () {
     sparkline.appendChild(polyline);
   }
 
-  function buildNextHistory(existingHistory, relationshipState) {
-    var history = Array.isArray(existingHistory) ? existingHistory.slice() : [];
-    if (!relationshipState) {
+  function getLatestRelationshipSnapshot(relationshipTimeline) {
+    if (!Array.isArray(relationshipTimeline) || relationshipTimeline.length === 0) {
+      return null;
+    }
+
+    var latestPoint = relationshipTimeline[relationshipTimeline.length - 1];
+    return latestPoint && latestPoint.snapshot ? latestPoint.snapshot : null;
+  }
+
+  function buildRelationshipHistory(relationshipTimeline) {
+    var history = [{
+      turnNumber: 0,
+      valence: 0,
+      tension: 0,
+      dynamic: '',
+    }];
+
+    if (!Array.isArray(relationshipTimeline)) {
       return history;
     }
 
-    var lastPoint = history.length > 0 ? history[history.length - 1] : null;
-    if (
-      lastPoint &&
-      lastPoint.valence === relationshipState.valence &&
-      lastPoint.tension === relationshipState.tension &&
-      lastPoint.dynamic === relationshipState.dynamic
-    ) {
-      return history;
-    }
+    relationshipTimeline.forEach(function (point) {
+      if (!point || !point.snapshot) {
+        return;
+      }
 
-    history.push({
-      turnNumber: lastPoint ? lastPoint.turnNumber + 1 : 0,
-      valence: relationshipState.valence,
-      tension: relationshipState.tension,
-      dynamic: relationshipState.dynamic || '',
+      history.push({
+        turnNumber: typeof point.turnNumber === 'number' ? point.turnNumber : history.length,
+        valence: typeof point.snapshot.valence === 'number' ? point.snapshot.valence : 0,
+        tension: typeof point.snapshot.tension === 'number' ? point.snapshot.tension : 0,
+        dynamic: point.snapshot.dynamic || '',
+      });
     });
+
     return history;
   }
 
-  function resolveRelationshipMetric(relationshipState, chatBible, name) {
-    var relationshipNow = chatBible && chatBible.relationshipNow ? chatBible.relationshipNow : null;
-    var absoluteValue = relationshipNow && relationshipNow[name];
+  function buildNextRelationshipTimeline(existingTimeline, latestRelationshipSnapshot, latestTurnNumber) {
+    var timeline = Array.isArray(existingTimeline) ? existingTimeline.slice() : [];
+    if (!latestRelationshipSnapshot || typeof latestTurnNumber !== 'number') {
+      return timeline;
+    }
+
+    var lastPoint = timeline.length > 0 ? timeline[timeline.length - 1] : null;
+    if (lastPoint && lastPoint.turnNumber === latestTurnNumber) {
+      timeline[timeline.length - 1] = {
+        turnNumber: latestTurnNumber,
+        snapshot: latestRelationshipSnapshot,
+      };
+      return timeline;
+    }
+
+    timeline.push({
+      turnNumber: latestTurnNumber,
+      snapshot: latestRelationshipSnapshot,
+    });
+    return timeline;
+  }
+
+  function resolveRelationshipMetric(relationshipSnapshot, relationshipState, name) {
+    var absoluteValue = relationshipSnapshot && relationshipSnapshot[name];
     if (typeof absoluteValue === 'number' && isFinite(absoluteValue)) {
       return absoluteValue;
     }
 
     var fallbackValue = relationshipState && relationshipState[name];
     return typeof fallbackValue === 'number' && isFinite(fallbackValue) ? fallbackValue : 0;
-  }
-
-  function rebaseRelationshipHistory(history, relationshipState, chatBible) {
-    if (!Array.isArray(history) || history.length === 0) {
-      return [];
-    }
-
-    var relationshipNow = chatBible && chatBible.relationshipNow ? chatBible.relationshipNow : null;
-    if (
-      !relationshipNow ||
-      typeof relationshipNow.valence !== 'number' ||
-      !isFinite(relationshipNow.valence) ||
-      typeof relationshipNow.tension !== 'number' ||
-      !isFinite(relationshipNow.tension)
-    ) {
-      return history.slice();
-    }
-
-    var lastPoint = history[history.length - 1];
-    var fallbackCurrentValence = relationshipState && typeof relationshipState.valence === 'number'
-      ? relationshipState.valence
-      : 0;
-    var fallbackCurrentTension = relationshipState && typeof relationshipState.tension === 'number'
-      ? relationshipState.tension
-      : 0;
-    var currentValence = lastPoint && typeof lastPoint.valence === 'number'
-      ? lastPoint.valence
-      : fallbackCurrentValence;
-    var currentTension = lastPoint && typeof lastPoint.tension === 'number'
-      ? lastPoint.tension
-      : fallbackCurrentTension;
-    var valenceOffset = relationshipNow.valence - currentValence;
-    var tensionOffset = relationshipNow.tension - currentTension;
-
-    return history.map(function (point) {
-      return {
-        turnNumber: point.turnNumber,
-        valence: point.valence + valenceOffset,
-        tension: point.tension + tensionOffset,
-        dynamic: point.dynamic,
-      };
-    });
   }
 
   function readDelta(history, name) {
@@ -329,9 +320,11 @@ window.ChatSidebar = (function () {
     return currentPoint[name] - previousPoint[name];
   }
 
-  function updateRelationshipVisuals(root, history, relationshipState, chatBible) {
-    var valence = resolveRelationshipMetric(relationshipState, chatBible, 'valence');
-    var tension = resolveRelationshipMetric(relationshipState, chatBible, 'tension');
+  function updateRelationshipVisuals(root, relationshipTimeline, relationshipState) {
+    var relationshipSnapshot = getLatestRelationshipSnapshot(relationshipTimeline);
+    var history = buildRelationshipHistory(relationshipTimeline);
+    var valence = resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'valence');
+    var tension = resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'tension');
     var previousPoint = Array.isArray(history) && history.length > 1 ? history[history.length - 2] : null;
 
     renderGauge(
@@ -383,10 +376,14 @@ window.ChatSidebar = (function () {
     var knowledgeState = hasKnowledgeState ? (session.knowledgeState || {}) : (priorState.knowledgeState || {});
     var chatBible = hasChatBible ? session.chatBible : (priorState.chatBible || null);
     var rollingSummary = hasRollingSummary ? session.rollingSummary : (priorState.rollingSummary || null);
-    var rawHistory = options && Array.isArray(options.relationshipHistory)
-      ? options.relationshipHistory
-      : buildNextHistory(root.__chatRelationshipHistory, relationshipState);
-    var displayHistory = rebaseRelationshipHistory(rawHistory, relationshipState, chatBible);
+    var relationshipTimeline = options && Array.isArray(options.relationshipTimeline)
+      ? options.relationshipTimeline
+      : buildNextRelationshipTimeline(
+        root.__chatRelationshipTimeline,
+        options && options.latestRelationshipSnapshot,
+        options && options.latestTurnNumber
+      );
+    var relationshipSnapshot = getLatestRelationshipSnapshot(relationshipTimeline);
 
     updateField(root, 'location', physicalContext.location, '');
     updateField(root, 'microLocation', physicalContext.microLocation, '');
@@ -410,10 +407,10 @@ window.ChatSidebar = (function () {
         : 'None',
       'None'
     );
-    updateField(root, 'dynamic', relationshipState.dynamic, 'Unformed');
-    updateField(root, 'valence', String(resolveRelationshipMetric(relationshipState, chatBible, 'valence')), '0');
-    updateField(root, 'tension', String(resolveRelationshipMetric(relationshipState, chatBible, 'tension')), '0');
-    updateField(root, 'leverage', relationshipState.leverage, 'None');
+    updateField(root, 'dynamic', relationshipSnapshot && relationshipSnapshot.dynamic, relationshipState.dynamic || 'Unformed');
+    updateField(root, 'valence', String(resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'valence')), '0');
+    updateField(root, 'tension', String(resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'tension')), '0');
+    updateField(root, 'leverage', relationshipSnapshot && relationshipSnapshot.leverage, relationshipState.leverage || 'None');
     updateField(root, 'whyNow', leadInContext.whyNow, '');
 
     renderPillList(
@@ -486,7 +483,7 @@ window.ChatSidebar = (function () {
     );
     renderBulletList(
       root.querySelector('[data-chat-list="beliefsAboutInterlocutor"]'),
-      chatBible && chatBible.relationshipNow && chatBible.relationshipNow.whatCharacterBelievesAboutInterlocutor,
+      relationshipSnapshot && relationshipSnapshot.whatCharacterBelievesAboutInterlocutor,
       'No beliefs recorded.'
     );
     renderBulletList(
@@ -539,8 +536,8 @@ window.ChatSidebar = (function () {
       'No response constraints.'
     );
 
-    updateRelationshipVisuals(root, displayHistory, relationshipState, chatBible);
-    root.__chatRelationshipHistory = rawHistory;
+    updateRelationshipVisuals(root, relationshipTimeline, relationshipState);
+    root.__chatRelationshipTimeline = relationshipTimeline;
     root.__chatSidebarState = {
       physicalContext: physicalContext,
       relationshipState: relationshipState,
@@ -557,8 +554,8 @@ window.ChatSidebar = (function () {
     }
 
     var bootstrap = readBootstrap();
-    var relationshipHistory = bootstrap && Array.isArray(bootstrap.relationshipHistory)
-      ? bootstrap.relationshipHistory
+    var relationshipTimeline = bootstrap && Array.isArray(bootstrap.relationshipTimeline)
+      ? bootstrap.relationshipTimeline
       : [];
     var initialSession = Object.assign({}, session, {
       knowledgeState: bootstrap && bootstrap.knowledgeState ? bootstrap.knowledgeState : undefined,
@@ -570,7 +567,7 @@ window.ChatSidebar = (function () {
         : undefined,
     });
 
-    update(root, initialSession, { relationshipHistory: relationshipHistory });
+    update(root, initialSession, { relationshipTimeline: relationshipTimeline });
   }
 
   return {

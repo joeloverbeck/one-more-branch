@@ -134,6 +134,7 @@ describe('buildChatStateUpdaterMessages', () => {
 
     expect(systemContent).toContain('CONTENT GUIDELINES');
     expect(systemContent).toContain('Track knowledge asymmetry');
+    expect(systemContent).toContain('Return the canonical post-turn relationship snapshot');
     expect(systemContent).toContain('Do not invent state changes unsupported by the provided turn.');
   });
 

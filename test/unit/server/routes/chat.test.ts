@@ -234,6 +234,13 @@ function createCharacterTurn(): ChatTurn {
       shouldRefreshChatBible: false,
       shouldTriggerSummary: false,
     },
+    relationshipSnapshot: {
+      dynamic: 'strained allies',
+      valence: -1,
+      tension: 7,
+      leverage: 'Shared guilt',
+      whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+    },
     timestamp: '2026-03-27T09:02:00.000Z',
   };
 }
@@ -404,9 +411,17 @@ describe('chat routes', () => {
           chatBible: null,
           rollingSummary: null,
           knowledgeState: expect.any(Object),
-          relationshipHistory: [
-            { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
-            { turnNumber: 2, valence: 0, tension: 0, dynamic: '' },
+          relationshipTimeline: [
+            {
+              turnNumber: 2,
+              snapshot: {
+                dynamic: 'strained allies',
+                valence: -1,
+                tension: 7,
+                leverage: 'Shared guilt',
+                whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+              },
+            },
           ],
         }),
       })
@@ -430,6 +445,13 @@ describe('chat routes', () => {
           },
         ],
       },
+      relationshipSnapshot: {
+        dynamic: 'open suspicion',
+        valence: -1,
+        tension: 1,
+        leverage: 'Shared guilt',
+        whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+      },
     };
 
     mockChatService.resumeChat.mockResolvedValue({
@@ -451,6 +473,13 @@ describe('chat routes', () => {
                 suggestedNewDynamic: 'open suspicion',
               },
             ],
+          },
+          relationshipSnapshot: {
+            dynamic: 'open suspicion',
+            valence: -2,
+            tension: 3,
+            leverage: 'Shared guilt',
+            whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
           },
         },
         {
@@ -476,10 +505,27 @@ describe('chat routes', () => {
           chatBible: createChatBible(),
           rollingSummary: null,
           knowledgeState: expect.any(Object),
-          relationshipHistory: [
-            { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
-            { turnNumber: 2, valence: -2, tension: 3, dynamic: 'open suspicion' },
-            { turnNumber: 4, valence: -1, tension: 1, dynamic: 'open suspicion' },
+          relationshipTimeline: [
+            {
+              turnNumber: 2,
+              snapshot: {
+                dynamic: 'open suspicion',
+                valence: -2,
+                tension: 3,
+                leverage: 'Shared guilt',
+                whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+              },
+            },
+            {
+              turnNumber: 4,
+              snapshot: {
+                dynamic: 'open suspicion',
+                valence: -1,
+                tension: 1,
+                leverage: 'Shared guilt',
+                whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+              },
+            },
           ],
         },
       })

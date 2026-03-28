@@ -249,13 +249,13 @@ function initChatPage() {
     sidebarToggle.textContent = isCollapsed ? 'Show Scene State' : 'Hide Scene State';
   }
 
-  function updateSidebar(session) {
+  function updateSidebar(session, options) {
     if (!session) {
       return;
     }
 
     if (window.ChatSidebar && typeof window.ChatSidebar.update === 'function') {
-      window.ChatSidebar.update(page, session);
+      window.ChatSidebar.update(page, session, options);
     }
   }
 
@@ -332,7 +332,10 @@ function initChatPage() {
 
       appendTurn(data.userTurn);
       appendTurn(data.characterTurn);
-      updateSidebar(data.updatedSession);
+      updateSidebar(data.updatedSession, {
+        latestRelationshipSnapshot: data.characterTurn && data.characterTurn.relationshipSnapshot,
+        latestTurnNumber: data.characterTurn && data.characterTurn.turnNumber,
+      });
       messageInput.value = '';
       autoResizeMessageInput();
       closeApiKeyPopover();

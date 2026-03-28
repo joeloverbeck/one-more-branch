@@ -1,12 +1,10 @@
 import type { ChatRelationshipState } from './chat-session.js';
 import type { ChatStateUpdate } from './chat-state-update.js';
-import type { ChatTurn } from './chat-turn.js';
+import type { ChatRelationshipSnapshot, ChatTurn } from './chat-turn.js';
 
-export interface ChatRelationshipHistoryPoint {
+export interface ChatRelationshipTimelinePoint {
   readonly turnNumber: number;
-  readonly valence: number;
-  readonly tension: number;
-  readonly dynamic: string;
+  readonly snapshot: ChatRelationshipSnapshot;
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -28,38 +26,19 @@ export function applyRelationshipStateUpdate(
   );
 }
 
-export function buildChatRelationshipHistory(
+export function buildChatRelationshipTimeline(
   turns: readonly ChatTurn[]
-): ChatRelationshipHistoryPoint[] {
-  const history: ChatRelationshipHistoryPoint[] = [
-    {
-      turnNumber: 0,
-      valence: 0,
-      tension: 0,
-      dynamic: '',
-    },
-  ];
-
-  let currentState: ChatRelationshipState = {
-    dynamic: '',
-    valence: 0,
-    tension: 0,
-    leverage: '',
-  };
-
-  for (const turn of turns) {
-    if (turn.stateUpdate === undefined) {
-      continue;
+): ChatRelationshipTimelinePoint[] {
+  return turns.flatMap((turn) => {
+    if (turn.speaker !== 'CHARACTER' || turn.relationshipSnapshot === undefined) {
+      return [];
     }
 
-    currentState = applyRelationshipStateUpdate(currentState, turn.stateUpdate);
-    history.push({
-      turnNumber: turn.turnNumber,
-      valence: currentState.valence,
-      tension: currentState.tension,
-      dynamic: currentState.dynamic,
-    });
-  }
-
-  return history;
+    return [
+      {
+        turnNumber: turn.turnNumber,
+        snapshot: turn.relationshipSnapshot,
+      },
+    ];
+  });
 }

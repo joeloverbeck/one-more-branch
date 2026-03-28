@@ -199,7 +199,7 @@ describe('chat page controller', () => {
           </form>
         </section>
       </main>
-      <script type="application/json" id="chat-ui-bootstrap">{"chatBible":{"characterNow":{"currentObjective":"Keep Iven talking long enough to learn who else touched the ledger tonight.","immediateNeedFromConversation":"Confirm whether he saw the copied seal.","emotionalState":"guarded","willingnessToEngage":"GUARDED","topicsToAdvance":["the ledger"],"topicsToProtect":["the copy"]},"relationshipNow":{"dynamic":"guarded detente","valence":3,"tension":8,"leverage":"She knows which ledger page is missing.","whatCharacterBelievesAboutInterlocutor":["He is stalling."]},"knowledgeNow":{"knownFacts":["This should stay out of Character Mind"],"suspicions":["This should stay out of Character Mind"],"falseBeliefs":["This should stay out of Character Mind"],"secretsRevealed":["This should stay out of Character Mind"],"secretsKept":["Mara copied one page."],"knowledgeBoundaries":["Who ordered the raid."]},"conversationNow":{"activeThreads":["the ledger"],"commitments":[],"sensitiveTopics":["the copy"],"lastTurnPressure":"Iven is testing how much Mara knows."},"continuityGuardrails":["Do not confess without direct pressure."],"responseConstraints":["Stay grounded in the immediate exchange."]},"rollingSummary":{"compressedSummary":"They are circling the copied ledger without naming who moved it."},"knowledgeState":{"knownFacts":["The ledger seal matters."],"suspicions":["Iven hid the copy."],"falseBeliefs":["The room is unwatched."],"secretsRevealed":["Mara searched his satchel."]},"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""},{"turnNumber":2,"valence":-1,"tension":6,"dynamic":"strained allies"}]}</script>
+      <script type="application/json" id="chat-ui-bootstrap">{"chatBible":{"characterNow":{"currentObjective":"Keep Iven talking long enough to learn who else touched the ledger tonight.","immediateNeedFromConversation":"Confirm whether he saw the copied seal.","emotionalState":"guarded","willingnessToEngage":"GUARDED","topicsToAdvance":["the ledger"],"topicsToProtect":["the copy"]},"relationshipNow":{"dynamic":"stale prompt state","valence":-2,"tension":4,"leverage":"This should not drive display.","whatCharacterBelievesAboutInterlocutor":["This should not drive display."]},"knowledgeNow":{"knownFacts":["This should stay out of Character Mind"],"suspicions":["This should stay out of Character Mind"],"falseBeliefs":["This should stay out of Character Mind"],"secretsRevealed":["This should stay out of Character Mind"],"secretsKept":["Mara copied one page."],"knowledgeBoundaries":["Who ordered the raid."]},"conversationNow":{"activeThreads":["the ledger"],"commitments":[],"sensitiveTopics":["the copy"],"lastTurnPressure":"Iven is testing how much Mara knows."},"continuityGuardrails":["Do not confess without direct pressure."],"responseConstraints":["Stay grounded in the immediate exchange."]},"rollingSummary":{"compressedSummary":"They are circling the copied ledger without naming who moved it."},"knowledgeState":{"knownFacts":["The ledger seal matters."],"suspicions":["Iven hid the copy."],"falseBeliefs":["The room is unwatched."],"secretsRevealed":["Mara searched his satchel."]},"relationshipTimeline":[{"turnNumber":2,"snapshot":{"dynamic":"guarded detente","valence":3,"tension":6,"leverage":"She knows which ledger page is missing.","whatCharacterBelievesAboutInterlocutor":["He is stalling."]}}]}</script>
     `;
   }
 
@@ -268,7 +268,7 @@ describe('chat page controller', () => {
             success: true,
             progressId: 'chat-progress-id-1',
             userTurn: {
-              turnNumber: 1,
+              turnNumber: 3,
               speaker: 'USER',
               blocks: [
                 { type: 'ACTION', text: 'I close the ledger.' },
@@ -278,7 +278,7 @@ describe('chat page controller', () => {
               timestamp: '2026-03-27T10:00:00.000Z',
             },
             characterTurn: {
-              turnNumber: 2,
+              turnNumber: 4,
               speaker: 'CHARACTER',
               turnMeta: {
                 expectsReply: true,
@@ -345,6 +345,15 @@ describe('chat page controller', () => {
                   objectStateChanges: ['The lamp flame shivers.'],
                 },
               },
+              relationshipSnapshot: {
+                dynamic: 'fragile alliance',
+                valence: 5,
+                tension: 8,
+                leverage: 'The copied seal is now mutual leverage.',
+                whatCharacterBelievesAboutInterlocutor: [
+                  'He is buying time for someone else.',
+                ],
+              },
               blocks: [
                 { type: 'ACTION', text: 'Mara stiffens.' },
                 { type: 'SPEECH', delivery: 'dry', text: 'You already know enough.' },
@@ -364,9 +373,9 @@ describe('chat page controller', () => {
               },
               relationshipState: {
                 dynamic: 'fragile alliance',
-                valence: 1,
+                valence: 5,
                 tension: 8,
-                leverage: 'The missing ledger copy',
+                leverage: 'The copied seal is now mutual leverage.',
               },
               leadInContext: {
                 whyNow: 'The bells will cover the truth.',
@@ -389,11 +398,11 @@ describe('chat page controller', () => {
                 },
                 relationshipNow: {
                   dynamic: 'veiled brinkmanship',
-                  valence: 5,
-                  tension: 8,
-                  leverage: 'The copied seal is now mutual leverage.',
+                  valence: -3,
+                  tension: 2,
+                  leverage: 'This should not drive display.',
                   whatCharacterBelievesAboutInterlocutor: [
-                    'He is buying time for someone else.',
+                    'This should not drive display.',
                   ],
                 },
                 knowledgeNow: {
@@ -624,7 +633,7 @@ describe('chat page controller', () => {
     expect(sendButton.disabled).toBe(true);
   });
 
-  it('renders initial gauge and sparkline state from bootstrap history', () => {
+  it('renders initial gauge and sparkline state from the bootstrap relationship timeline', () => {
     global.fetch = jest.fn((url: string) => {
       if (url.startsWith('/generation-progress/')) {
         return Promise.resolve(mockJsonResponse({ status: 'completed' }));
@@ -651,20 +660,20 @@ describe('chat page controller', () => {
       'rain'
     );
     expect(document.querySelector('[data-chat-gauge-value="valence"]')?.textContent).toBe('3');
-    expect(document.querySelector('[data-chat-gauge-delta="valence"]')?.textContent).toBe('-1');
-    expect(document.querySelector('[data-chat-gauge-value="tension"]')?.textContent).toBe('8');
+    expect(document.querySelector('[data-chat-gauge-delta="valence"]')?.textContent).toBe('+3');
+    expect(document.querySelector('[data-chat-gauge-value="tension"]')?.textContent).toBe('6');
     expect(document.querySelector('[data-chat-gauge-delta="tension"]')?.textContent).toBe('+6');
     expect((document.querySelector('[data-chat-gauge="valence"] .chat-gauge__ghost') as HTMLElement)?.style.left).toBe(
-      '90%'
+      '50%'
     );
     expect((document.querySelector('[data-chat-gauge="tension"] .chat-gauge__ghost') as HTMLElement)?.style.left).toBe(
-      '20%'
+      '0%'
     );
     expect(document.querySelector('[data-chat-sparkline="valence"] polyline')).not.toBeNull();
     expect(document.querySelector('[data-chat-sparkline="tension"] polyline')).not.toBeNull();
   });
 
-  it('falls back to relationshipState values when chat bible relationship metrics are absent', () => {
+  it('falls back to relationshipState values when the canonical relationship timeline is absent', () => {
     const bootstrap = document.getElementById('chat-ui-bootstrap') as HTMLScriptElement;
     bootstrap.textContent = JSON.stringify({
       chatBible: {
@@ -677,7 +686,7 @@ describe('chat page controller', () => {
           topicsToProtect: ['the copy'],
         },
         relationshipNow: {
-          whatCharacterBelievesAboutInterlocutor: ['He is stalling.'],
+          dynamic: 99,
         },
         knowledgeNow: {
           knownFacts: [],
@@ -703,10 +712,7 @@ describe('chat page controller', () => {
         falseBeliefs: ['The room is unwatched.'],
         secretsRevealed: ['Mara searched his satchel.'],
       },
-      relationshipHistory: [
-        { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
-        { turnNumber: 2, valence: -1, tension: 6, dynamic: 'strained allies' },
-      ],
+      relationshipTimeline: [],
     });
 
     global.fetch = jest.fn((url: string) => {

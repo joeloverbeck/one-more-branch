@@ -116,11 +116,15 @@ describe('chat page template', () => {
           falseBeliefs: string[];
           secretsRevealed: string[];
         };
-        relationshipHistory: Array<{
+        relationshipTimeline: Array<{
           turnNumber: number;
-          valence: number;
-          tension: number;
-          dynamic: string;
+          snapshot: {
+            dynamic: string;
+            valence: number;
+            tension: number;
+            leverage: string;
+            whatCharacterBelievesAboutInterlocutor: string[];
+          };
         }>;
       };
     },
@@ -292,9 +296,17 @@ describe('chat page template', () => {
             falseBeliefs: ['The reading alcove is unwatched.'],
             secretsRevealed: ['Mara already searched his satchel.'],
           },
-          relationshipHistory: [
-            { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
-            { turnNumber: 2, valence: 0, tension: 0, dynamic: '' },
+          relationshipTimeline: [
+            {
+              turnNumber: 2,
+              snapshot: {
+                dynamic: 'guarded detente',
+                valence: 4,
+                tension: 8,
+                leverage: 'She knows which ledger page is missing.',
+                whatCharacterBelievesAboutInterlocutor: ['He is testing how much I already know.'],
+              },
+            },
           ],
         },
       },
@@ -447,9 +459,17 @@ describe('chat page template', () => {
             falseBeliefs: [],
             secretsRevealed: [],
           },
-          relationshipHistory: [
-            { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
-            { turnNumber: 2, valence: 0, tension: 0, dynamic: '' },
+          relationshipTimeline: [
+            {
+              turnNumber: 2,
+              snapshot: {
+                dynamic: 'strained allies',
+                valence: 0,
+                tension: 0,
+                leverage: 'Shared guilt',
+                whatCharacterBelievesAboutInterlocutor: [],
+              },
+            },
           ],
         },
       },
@@ -517,7 +537,7 @@ describe('chat page template', () => {
             falseBeliefs: [],
             secretsRevealed: [],
           },
-          relationshipHistory: [{ turnNumber: 0, valence: 0, tension: 0, dynamic: '' }],
+          relationshipTimeline: [],
         },
       },
       { filename: templatePath }
@@ -570,7 +590,7 @@ describe('chat page template', () => {
             falseBeliefs: [],
             secretsRevealed: [],
           },
-          relationshipHistory: [{ turnNumber: 0, valence: 0, tension: 0, dynamic: '' }],
+          relationshipTimeline: [],
         },
       },
       { filename: templatePath }
@@ -605,7 +625,7 @@ describe('chat page template', () => {
     expect(html).toContain('id="chat-loading-indicator"');
     expect(html).toContain('data-chat-progress');
     expect(html).toContain('<script type="application/json" id="chat-ui-bootstrap">');
-    expect(html).toContain('"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""}]');
+    expect(html).toContain('"relationshipTimeline":[]');
     expect(html).toContain('No turns yet. Start the conversation below.');
     expect(html).toContain('None');
     expect(html).toContain('Unformed');
@@ -654,7 +674,7 @@ describe('chat page template', () => {
             falseBeliefs: [],
             secretsRevealed: [],
           },
-          relationshipHistory: [{ turnNumber: 0, valence: 0, tension: 0, dynamic: '' }],
+          relationshipTimeline: [],
         },
       },
       { filename: templatePath }

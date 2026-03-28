@@ -258,6 +258,13 @@ describe('chat model contracts', () => {
         },
       },
       stateUpdate,
+      relationshipSnapshot: {
+        dynamic: 'former allies under strain',
+        valence: -1,
+        tension: 7,
+        leverage: 'She knows what he hid.',
+        whatCharacterBelievesAboutInterlocutor: ['He is stalling for time.'],
+      },
       timestamp: '2026-03-27T09:05:00.000Z',
     };
 
@@ -416,6 +423,45 @@ describe('chat model contracts', () => {
     );
   });
 
+  it('requires a canonical relationship snapshot on persisted character turns', () => {
+    const invalidTurn = {
+      turnNumber: 2,
+      speaker: 'CHARACTER',
+      blocks: [{ type: 'SPEECH', text: 'You already know enough.' }],
+      stateUpdate: {
+        summaryDelta: 'The exchange tightens.',
+        relationshipShifts: [],
+        knowledgeChanges: {
+          newKnownFacts: [],
+          newSuspicions: [],
+          falseBeliefsCorrected: [],
+          secretsRevealed: [],
+        },
+        conversationUpdate: {
+          commitmentsMade: [],
+          threatsMade: [],
+          questionsOpened: [],
+          questionsResolved: [],
+        },
+        physicalStateUpdate: {
+          locationChanged: false,
+          newLocation: null,
+          newMicroLocation: null,
+          newDistanceBand: null,
+          objectStateChanges: [],
+        },
+        shouldRefreshChatBible: false,
+        shouldTriggerSummary: false,
+      },
+      timestamp: '2026-03-27T09:05:00.000Z',
+    };
+
+    expect(isChatTurn(invalidTurn)).toBe(false);
+    expect(() => parseChatTurns([invalidTurn], 'turns.json')).toThrow(
+      'Invalid chat turns payload at turns.json'
+    );
+  });
+
   it('rejects chat bible payloads that try to persist a duplicate rolling-summary string', () => {
     const invalidBible = {
       sessionPremise: 'A tense private meeting after a betrayal.',
@@ -542,6 +588,13 @@ describe('chat model contracts', () => {
         },
         shouldRefreshChatBible: false,
         shouldTriggerSummary: false,
+      },
+      relationshipSnapshot: {
+        dynamic: 'open hostility',
+        valence: -4,
+        tension: 9,
+        leverage: 'He thinks she is cornered.',
+        whatCharacterBelievesAboutInterlocutor: ['He expects her to flinch.'],
       },
       timestamp: '2026-03-27T09:05:00.000Z',
     };

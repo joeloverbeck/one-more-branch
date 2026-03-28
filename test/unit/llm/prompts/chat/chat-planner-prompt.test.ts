@@ -135,6 +135,13 @@ function makeContext(): ChatPlannerContext {
           visibleEmotion: 'contained anger',
           finalPressure: 'Demands proof instead of denial',
         },
+        relationshipSnapshot: {
+          dynamic: 'brittle allies',
+          valence: -1,
+          tension: 7,
+          leverage: 'Each knows one ruinous fact about the other',
+          whatCharacterBelievesAboutInterlocutor: ['He still wants the alliance to survive'],
+        },
         timestamp: '2026-03-02T09:01:00.000Z',
       },
     ],

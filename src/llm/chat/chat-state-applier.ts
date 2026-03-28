@@ -1,5 +1,6 @@
 import {
   applyRelationshipStateUpdate,
+  type ChatRelationshipSnapshot,
   type ChatSession,
   type ChatStateUpdate,
 } from '../../models/chat/index.js';
@@ -21,7 +22,8 @@ function mergeUnique(existing: readonly string[], additions: readonly string[]):
 export function applyChatStateUpdate(
   session: ChatSession,
   stateUpdate: ChatStateUpdate,
-  updatedAt = new Date().toISOString()
+  updatedAt = new Date().toISOString(),
+  relationshipSnapshot?: ChatRelationshipSnapshot
 ): ChatSession {
   const nextRelationshipState = applyRelationshipStateUpdate(session.relationshipState, stateUpdate);
 
@@ -42,12 +44,20 @@ export function applyChatStateUpdate(
     updatedAt,
     turnCount: session.turnCount + 1,
     physicalContext: nextPhysicalContext,
-    relationshipState: {
-      ...session.relationshipState,
-      dynamic: nextRelationshipState.dynamic,
-      valence: nextRelationshipState.valence,
-      tension: nextRelationshipState.tension,
-    },
+    relationshipState:
+      relationshipSnapshot === undefined
+        ? {
+            ...session.relationshipState,
+            dynamic: nextRelationshipState.dynamic,
+            valence: nextRelationshipState.valence,
+            tension: nextRelationshipState.tension,
+          }
+        : {
+            dynamic: relationshipSnapshot.dynamic,
+            valence: relationshipSnapshot.valence,
+            tension: relationshipSnapshot.tension,
+            leverage: relationshipSnapshot.leverage,
+          },
     knowledgeState: {
       knownFacts: mergeUnique(
         session.knowledgeState.knownFacts,

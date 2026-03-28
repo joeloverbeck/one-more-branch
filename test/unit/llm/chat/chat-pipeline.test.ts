@@ -164,6 +164,13 @@ function makeContext(overrides: Partial<ChatPipelineContext> = {}): ChatPipeline
       shouldRefreshChatBible: false,
       shouldTriggerSummary: false,
     },
+    relationshipSnapshot: {
+      dynamic: 'strained allies',
+      valence: -1,
+      tension: 7,
+      leverage: 'Shared culpability',
+      whatCharacterBelievesAboutInterlocutor: ['He is stalling.'],
+    },
     timestamp: '2026-03-27T09:05:00.000Z',
   };
 
@@ -331,6 +338,7 @@ const GENERATED_CHARACTER_CONTEXT: ChatCharacterContext = {
 };
 
 const GENERATED_BIBLE = assembleChatBible(GENERATED_SCENE_CONTEXT, GENERATED_CHARACTER_CONTEXT);
+const RELATIONSHIP_SNAPSHOT = GENERATED_CHARACTER_CONTEXT.relationshipNow;
 
 const TURN_PLAN = {
   internalSelfCheck: {
@@ -422,7 +430,11 @@ beforeEach(() => {
   });
   mockGenerateChatTurnPlan.mockResolvedValue({ turnPlan: TURN_PLAN, rawResponse: '{}' });
   mockGenerateChatWriterTurn.mockResolvedValue({ writerTurn: WRITER_TURN, rawResponse: '{}' });
-  mockGenerateChatStateUpdate.mockResolvedValue({ stateUpdate: STATE_UPDATE, rawResponse: '{}' });
+  mockGenerateChatStateUpdate.mockResolvedValue({
+    stateUpdate: STATE_UPDATE,
+    relationshipSnapshot: RELATIONSHIP_SNAPSHOT,
+    rawResponse: '{}',
+  });
   mockGenerateChatSummary.mockResolvedValue({
     summary: {
       compressedSummary: 'Compressed summary text.',
@@ -621,6 +633,7 @@ describe('runChatPipeline', () => {
         ...STATE_UPDATE,
         shouldTriggerSummary: true,
       },
+      relationshipSnapshot: RELATIONSHIP_SNAPSHOT,
       rawResponse: '{}',
     });
 
@@ -637,7 +650,7 @@ describe('runChatPipeline', () => {
     expect(result.summaryWasGenerated).toBe(false);
   });
 
-  it('returns the assembled character turn with writer blocks, turnMeta, plannerOutput, and stateUpdate', async () => {
+  it('returns the assembled character turn with writer blocks, turnMeta, plannerOutput, stateUpdate, and relationshipSnapshot', async () => {
     const result = await runChatPipeline(makeContext(), 'test-key');
 
     expect(result.characterTurn.speaker).toBe('CHARACTER');
@@ -646,6 +659,13 @@ describe('runChatPipeline', () => {
     expect(result.characterTurn.turnMeta).toEqual(WRITER_TURN.turnMeta);
     expect(result.characterTurn.plannerOutput).toEqual(TURN_PLAN);
     expect(result.characterTurn.stateUpdate).toEqual(STATE_UPDATE);
+    expect(result.characterTurn.relationshipSnapshot).toEqual(RELATIONSHIP_SNAPSHOT);
+    expect(result.updatedSession.relationshipState).toEqual({
+      dynamic: RELATIONSHIP_SNAPSHOT.dynamic,
+      valence: RELATIONSHIP_SNAPSHOT.valence,
+      tension: RELATIONSHIP_SNAPSHOT.tension,
+      leverage: RELATIONSHIP_SNAPSHOT.leverage,
+    });
   });
 
   it('stores summary.compressedSummary in updatedSession.rollingSummary', async () => {

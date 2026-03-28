@@ -141,6 +141,13 @@ function createChatTurn(turnNumber: number, speaker: ChatTurn['speaker']): ChatT
             shouldRefreshChatBible: true,
             shouldTriggerSummary: false,
           },
+          relationshipSnapshot: {
+            dynamic: 'mutual suspicion',
+            valence: -2,
+            tension: 9,
+            leverage: 'She knows about the second key.',
+            whatCharacterBelievesAboutInterlocutor: ['He is still hiding the ledger movement.'],
+          },
         }),
     timestamp: `2026-03-27T09:0${turnNumber}:00.000Z`,
   };

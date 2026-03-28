@@ -1,3 +1,4 @@
+import type { ChatBibleRelationshipNow } from './chat-bible.js';
 import type { ChatStateUpdate } from './chat-state-update.js';
 import type { TurnPlannerOutput } from './chat-turn-plan.js';
 
@@ -22,6 +23,8 @@ export interface TurnMeta {
   readonly finalPressure: string | null;
 }
 
+export type ChatRelationshipSnapshot = ChatBibleRelationshipNow;
+
 export interface ChatTurn {
   readonly turnNumber: number;
   readonly speaker: ChatSpeaker;
@@ -30,5 +33,6 @@ export interface ChatTurn {
   readonly turnMeta?: TurnMeta;
   readonly plannerOutput?: TurnPlannerOutput;
   readonly stateUpdate?: ChatStateUpdate;
+  readonly relationshipSnapshot?: ChatRelationshipSnapshot;
   readonly timestamp: string;
 }

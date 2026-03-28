@@ -69,8 +69,16 @@
         : normalized;
     }
 
-    function resolveRelationshipMetric(relationshipNow, relationshipState, name) {
-      const absoluteValue = relationshipNow?.[name];
+    function getLatestRelationshipSnapshot(relationshipTimeline) {
+      if (!Array.isArray(relationshipTimeline) || relationshipTimeline.length === 0) {
+        return null;
+      }
+
+      return relationshipTimeline[relationshipTimeline.length - 1]?.snapshot ?? null;
+    }
+
+    function resolveRelationshipMetric(relationshipSnapshot, relationshipState, name) {
+      const absoluteValue = relationshipSnapshot?.[name];
       if (typeof absoluteValue === 'number' && Number.isFinite(absoluteValue)) {
         return absoluteValue;
       }
@@ -290,6 +298,10 @@
       falseBeliefs: [],
       secretsRevealed: [],
     };
+    var bootstrapRelationshipTimeline = Array.isArray(chatUiBootstrap?.relationshipTimeline)
+      ? chatUiBootstrap.relationshipTimeline
+      : [];
+    var bootstrapRelationshipSnapshot = getLatestRelationshipSnapshot(bootstrapRelationshipTimeline);
     var bootstrapChatBible = chatUiBootstrap?.chatBible ?? null;
     var bootstrapRollingSummary = chatUiBootstrap?.rollingSummary ?? null;
     var knowledgeSummary = buildKnowledgeSummary(bootstrapKnowledgeState);
@@ -301,12 +313,12 @@
     var guardrailsSummary = buildGuardrailsSummary(bootstrapChatBible);
     var displayedRelationshipNow = {
       valence: resolveRelationshipMetric(
-        bootstrapChatBible?.relationshipNow,
+        bootstrapRelationshipSnapshot,
         session.relationshipState,
         'valence'
       ),
       tension: resolveRelationshipMetric(
-        bootstrapChatBible?.relationshipNow,
+        bootstrapRelationshipSnapshot,
         session.relationshipState,
         'tension'
       ),
@@ -634,11 +646,11 @@
           <dl class="chat-sidebar-details chat-sidebar-details--compact">
             <div class="chat-sidebar-details__row">
               <dt>Dynamic</dt>
-              <dd><span data-chat-field="dynamic"><%= session.relationshipState.dynamic || 'Unformed' %></span></dd>
+              <dd><span data-chat-field="dynamic"><%= (bootstrapRelationshipSnapshot?.dynamic || session.relationshipState.dynamic) || 'Unformed' %></span></dd>
             </div>
             <div class="chat-sidebar-details__row">
               <dt>Leverage</dt>
-              <dd><span data-chat-field="leverage"><%= session.relationshipState.leverage || 'None' %></span></dd>
+              <dd><span data-chat-field="leverage"><%= (bootstrapRelationshipSnapshot?.leverage || session.relationshipState.leverage) || 'None' %></span></dd>
             </div>
           </dl>
         </div>
@@ -776,10 +788,10 @@
           <section class="chat-sidebar-group">
             <h3>Beliefs About Interlocutor</h3>
             <ul class="chat-sidebar-list" data-chat-list="beliefsAboutInterlocutor">
-              <% if (sanitizeSidebarItems(bootstrapChatBible?.relationshipNow?.whatCharacterBelievesAboutInterlocutor).length === 0) { %>
+              <% if (sanitizeSidebarItems(bootstrapRelationshipSnapshot?.whatCharacterBelievesAboutInterlocutor).length === 0) { %>
                 <li class="chat-sidebar-list__empty">No beliefs recorded.</li>
               <% } else { %>
-                <% sanitizeSidebarItems(bootstrapChatBible?.relationshipNow?.whatCharacterBelievesAboutInterlocutor).forEach(function(item) { %>
+                <% sanitizeSidebarItems(bootstrapRelationshipSnapshot?.whatCharacterBelievesAboutInterlocutor).forEach(function(item) { %>
                   <li><%= item %></li>
                 <% }); %>
               <% } %>

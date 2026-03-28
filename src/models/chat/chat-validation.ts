@@ -35,6 +35,7 @@ import {
 } from './chat-turn-plan.js';
 import type {
   ChatBlock,
+  ChatRelationshipSnapshot,
   ChatSpeaker,
   ChatTurn,
   TurnMeta,
@@ -180,7 +181,7 @@ function isChatBibleCharacterNow(value: unknown): value is ChatBibleCharacterNow
   );
 }
 
-function isChatBibleRelationshipNow(value: unknown): value is ChatBibleRelationshipNow {
+export function isChatRelationshipSnapshot(value: unknown): value is ChatRelationshipSnapshot {
   if (!isChatRelationshipState(value)) {
     return false;
   }
@@ -188,6 +189,10 @@ function isChatBibleRelationshipNow(value: unknown): value is ChatBibleRelations
   return isStringArray(
     (value as unknown as Record<string, unknown>)['whatCharacterBelievesAboutInterlocutor']
   );
+}
+
+function isChatBibleRelationshipNow(value: unknown): value is ChatBibleRelationshipNow {
+  return isChatRelationshipSnapshot(value);
 }
 
 function isChatBibleKnowledgeNow(value: unknown): value is ChatBibleKnowledgeNow {
@@ -421,15 +426,26 @@ export function isChatTurn(value: unknown): value is ChatTurn {
     return false;
   }
 
+  const speaker = value['speaker'];
+  const relationshipSnapshot = value['relationshipSnapshot'];
+  const hasValidRelationshipSnapshot =
+    relationshipSnapshot === undefined || isChatRelationshipSnapshot(relationshipSnapshot);
+  const hasRequiredRelationshipSnapshot =
+    speaker === 'CHARACTER'
+      ? relationshipSnapshot !== undefined && isChatRelationshipSnapshot(relationshipSnapshot)
+      : relationshipSnapshot === undefined;
+
   return (
     Number.isInteger(value['turnNumber']) &&
-    isEnumValue(value['speaker'], CHAT_SPEAKER_VALUES) &&
+    isEnumValue(speaker, CHAT_SPEAKER_VALUES) &&
     Array.isArray(value['blocks']) &&
     value['blocks'].every(isChatBlock) &&
     (value['rawText'] === undefined || isString(value['rawText'])) &&
     (value['turnMeta'] === undefined || isTurnMeta(value['turnMeta'])) &&
     (value['plannerOutput'] === undefined || isTurnPlannerOutput(value['plannerOutput'])) &&
     (value['stateUpdate'] === undefined || isChatStateUpdate(value['stateUpdate'])) &&
+    hasValidRelationshipSnapshot &&
+    hasRequiredRelationshipSnapshot &&
     isIsoDateString(value['timestamp'])
   );
 }

@@ -91,7 +91,7 @@ function shouldGenerateSummary(
 function buildCharacterTurn(latestUserTurn: ChatTurn, completedAt: string, writerTurn: {
   readonly blocks: readonly ChatTurn['blocks'][number][];
   readonly turnMeta: NonNullable<ChatTurn['turnMeta']>;
-}, turnPlan: NonNullable<ChatTurn['plannerOutput']>, stateUpdate: NonNullable<ChatTurn['stateUpdate']>): ChatTurn {
+}, turnPlan: NonNullable<ChatTurn['plannerOutput']>, stateUpdate: NonNullable<ChatTurn['stateUpdate']>, relationshipSnapshot: NonNullable<ChatTurn['relationshipSnapshot']>): ChatTurn {
   return {
     turnNumber: latestUserTurn.turnNumber + 1,
     speaker: 'CHARACTER',
@@ -99,6 +99,7 @@ function buildCharacterTurn(latestUserTurn: ChatTurn, completedAt: string, write
     turnMeta: writerTurn.turnMeta,
     plannerOutput: turnPlan,
     stateUpdate,
+    relationshipSnapshot,
     timestamp: completedAt,
   };
 }
@@ -186,7 +187,7 @@ export async function runChatPipeline(
     )
   ).writerTurn;
 
-  const stateUpdate = (
+  const stateUpdateResult = (
     await runGenerationStage(
       onGenerationStage,
       CHAT_STATE_STAGE,
@@ -204,17 +205,25 @@ export async function runChatPipeline(
           apiKey
         )
     )
-  ).stateUpdate;
+  );
 
   const completedAt = new Date().toISOString();
-  const characterTurn = buildCharacterTurn(context.latestUserTurn, completedAt, writerTurn, turnPlan, stateUpdate);
+  const characterTurn = buildCharacterTurn(
+    context.latestUserTurn,
+    completedAt,
+    writerTurn,
+    turnPlan,
+    stateUpdateResult.stateUpdate,
+    stateUpdateResult.relationshipSnapshot
+  );
   let updatedSession = applyChatStateUpdate(
     {
       ...context.chatSession,
       chatBible,
     },
-    stateUpdate,
-    completedAt
+    stateUpdateResult.stateUpdate,
+    completedAt,
+    stateUpdateResult.relationshipSnapshot
   );
 
   const summaryWasGenerated = shouldGenerateSummary(updatedSession, characterTurn, context.isSessionResume);
