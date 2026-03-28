@@ -29,18 +29,55 @@ describe('chat page controller', () => {
           <p id="chat-empty-state">No turns yet. Start the conversation below.</p>
         </section>
         <aside class="chat-sidebar" id="chat-sidebar">
-          <span data-chat-field="location">Archive</span>
-          <span data-chat-field="microLocation">Reading alcove</span>
-          <span data-chat-field="timeOfDay">EVENING</span>
-          <span data-chat-field="privacy">PRIVATE</span>
-          <span data-chat-field="distanceBand">CONVERSATIONAL</span>
-          <span data-chat-field="characterActivity">Cataloguing ledgers</span>
-          <span data-chat-field="interactableObjects">ledger</span>
-          <span data-chat-field="ambientConditions">rain</span>
-          <span data-chat-field="dynamic">strained allies</span>
-          <span data-chat-field="valence">-1</span>
-          <span data-chat-field="tension">6</span>
-          <span data-chat-field="leverage">Shared guilt</span>
+          <details class="chat-accordion chat-sidebar__section" data-chat-section="physical" open>
+            <summary class="chat-accordion-summary">
+              <span class="chat-accordion-summary__title">Physical Context</span>
+              <span class="chat-accordion-summary__meta">
+                <span class="chat-summary-chip" data-chat-field="microLocation">Reading alcove</span>
+                <span class="chat-summary-chip" data-chat-field="timeOfDay">EVENING</span>
+                <span class="chat-summary-chip chat-summary-chip--accent" data-chat-field="distanceBand">CONVERSATIONAL</span>
+              </span>
+            </summary>
+            <div class="chat-accordion-content">
+              <span data-chat-field="location">Archive</span>
+              <span data-chat-field="microLocation">Reading alcove</span>
+              <span data-chat-field="timeOfDay">EVENING</span>
+              <span data-chat-field="privacy">PRIVATE</span>
+              <span data-chat-field="distanceBand">CONVERSATIONAL</span>
+              <span data-chat-field="characterActivity">Cataloguing ledgers</span>
+              <span data-chat-field="interactableObjects">ledger</span>
+              <div data-chat-list="interactableObjects"></div>
+              <span data-chat-field="ambientConditions">rain</span>
+              <ul data-chat-list="ambientConditions"></ul>
+            </div>
+          </details>
+          <details class="chat-accordion chat-sidebar__section" data-chat-section="relationship" open>
+            <summary class="chat-accordion-summary">
+              <span class="chat-accordion-summary__title">Relationship</span>
+              <span class="chat-accordion-summary__meta">
+                <span class="chat-summary-stat">V: <span data-chat-field="valence">-1</span></span>
+                <span class="chat-summary-stat">T: <span data-chat-field="tension">6</span></span>
+              </span>
+            </summary>
+            <div class="chat-accordion-content">
+              <span data-chat-gauge-value="valence">-1</span>
+              <span data-chat-gauge-delta="valence">0</span>
+              <div class="chat-gauge chat-gauge--valence" data-chat-gauge="valence">
+                <span class="chat-gauge__track"></span>
+                <span class="chat-gauge__marker"></span>
+              </div>
+              <svg class="chat-sparkline" data-chat-sparkline="valence" viewBox="0 0 120 32"></svg>
+              <span data-chat-gauge-value="tension">6</span>
+              <span data-chat-gauge-delta="tension">0</span>
+              <div class="chat-gauge chat-gauge--tension" data-chat-gauge="tension">
+                <span class="chat-gauge__track"></span>
+                <span class="chat-gauge__marker"></span>
+              </div>
+              <svg class="chat-sparkline" data-chat-sparkline="tension" viewBox="0 0 120 32"></svg>
+              <span data-chat-field="dynamic">strained allies</span>
+              <span data-chat-field="leverage">Shared guilt</span>
+            </div>
+          </details>
           <span data-chat-field="whyNow">Before dawn.</span>
         </aside>
         <section class="chat-input-bar">
@@ -72,6 +109,7 @@ describe('chat page controller', () => {
           </form>
         </section>
       </main>
+      <script type="application/json" id="chat-ui-bootstrap">{"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""},{"turnNumber":2,"valence":-1,"tension":6,"dynamic":"strained allies"}]}</script>
     `;
   }
 
@@ -330,14 +368,57 @@ describe('chat page controller', () => {
     expect(document.querySelector('[data-chat-field="interactableObjects"]')?.textContent).toBe(
       'ledger, lamp'
     );
+    expect(document.querySelector('[data-chat-list="interactableObjects"]')?.textContent).toContain(
+      'ledger'
+    );
+    expect(document.querySelector('[data-chat-list="interactableObjects"]')?.textContent).toContain(
+      'lamp'
+    );
+    expect(document.querySelector('[data-chat-list="ambientConditions"]')?.textContent).toContain(
+      'bells'
+    );
     expect(document.querySelector('[data-chat-field="whyNow"]')?.textContent).toBe(
       'The bells will cover the truth.'
     );
+    expect(document.querySelector('[data-chat-gauge-value="valence"]')?.textContent).toBe('1');
+    expect(document.querySelector('[data-chat-gauge-delta="valence"]')?.textContent).toBe('+2');
+    expect(document.querySelector('[data-chat-gauge-value="tension"]')?.textContent).toBe('8');
+    expect(document.querySelector('[data-chat-gauge-delta="tension"]')?.textContent).toBe('+2');
+    expect(
+      document.querySelector('[data-chat-gauge="valence"]')?.getAttribute('aria-valuenow')
+    ).toBe('1');
+    expect(document.querySelector('[data-chat-sparkline="valence"] polyline')).not.toBeNull();
+    expect(document.querySelector('[data-chat-sparkline="tension"] polyline')).not.toBeNull();
     expect(document.querySelector('[data-chat-turn-count]')?.textContent).toBe('2 turns');
     expect(scrollIntoViewMock).toHaveBeenCalled();
     expect(loadingIndicator.style.display).toBe('none');
     expect(messageInput.readOnly).toBe(false);
     expect(sendButton.disabled).toBe(true);
+  });
+
+  it('renders initial gauge and sparkline state from bootstrap history', () => {
+    global.fetch = jest.fn((url: string) => {
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, 404));
+    }) as jest.Mock;
+
+    loadAppAndInit();
+
+    expect(document.querySelector('[data-chat-list="interactableObjects"]')?.textContent).toContain(
+      'ledger'
+    );
+    expect(document.querySelector('[data-chat-list="ambientConditions"]')?.textContent).toContain(
+      'rain'
+    );
+    expect(document.querySelector('[data-chat-gauge-value="valence"]')?.textContent).toBe('-1');
+    expect(document.querySelector('[data-chat-gauge-delta="valence"]')?.textContent).toBe('-1');
+    expect(document.querySelector('[data-chat-gauge-value="tension"]')?.textContent).toBe('6');
+    expect(document.querySelector('[data-chat-gauge-delta="tension"]')?.textContent).toBe('+6');
+    expect(document.querySelector('[data-chat-sparkline="valence"] polyline')).not.toBeNull();
+    expect(document.querySelector('[data-chat-sparkline="tension"] polyline')).not.toBeNull();
   });
 
   it('updates composer state from message and API key input, and manages the API key popover', () => {

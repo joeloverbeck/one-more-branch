@@ -212,22 +212,31 @@ function initChatPage() {
     updateTurnCount();
   }
 
-  function updateField(name, value, fallback) {
-    page.querySelectorAll('[data-chat-field="' + name + '"]').forEach(function (field) {
-      field.textContent = value || fallback || '';
-    });
-  }
-
-  function joinList(values) {
-    return Array.isArray(values) && values.length > 0 ? values.join(', ') : 'None';
-  }
-
   function updateTurnCount() {
     var turnCount = page.querySelectorAll('[data-chat-turn]').length;
     var turnCountLabel = page.querySelector('[data-chat-turn-count]');
     if (turnCountLabel) {
       turnCountLabel.textContent = turnCount + ' ' + (turnCount === 1 ? 'turn' : 'turns');
     }
+  }
+
+  function getFieldText(name, index) {
+    var fields = page.querySelectorAll('[data-chat-field="' + name + '"]');
+    var targetIndex = typeof index === 'number' ? index : 0;
+    var field = fields.length > targetIndex ? fields[targetIndex] : null;
+    return field && typeof field.textContent === 'string' ? field.textContent : '';
+  }
+
+  function parseFieldList(name) {
+    var rawValue = getFieldText(name, 0);
+    return rawValue
+      .split(',')
+      .map(function (item) {
+        return item.trim();
+      })
+      .filter(function (item) {
+        return item.length > 0 && item !== 'None';
+      });
   }
 
   function syncSidebarToggle() {
@@ -245,23 +254,9 @@ function initChatPage() {
       return;
     }
 
-    var physicalContext = session.physicalContext || {};
-    var relationshipState = session.relationshipState || {};
-    var leadInContext = session.leadInContext || {};
-
-    updateField('location', physicalContext.location, '');
-    updateField('microLocation', physicalContext.microLocation, '');
-    updateField('timeOfDay', physicalContext.timeOfDay, '');
-    updateField('privacy', physicalContext.privacy, '');
-    updateField('distanceBand', physicalContext.distanceBand, '');
-    updateField('characterActivity', physicalContext.characterActivity, '');
-    updateField('interactableObjects', joinList(physicalContext.interactableObjects), 'None');
-    updateField('ambientConditions', joinList(physicalContext.ambientConditions), 'None');
-    updateField('dynamic', relationshipState.dynamic, 'Unformed');
-    updateField('valence', String(relationshipState.valence != null ? relationshipState.valence : 0), '0');
-    updateField('tension', String(relationshipState.tension != null ? relationshipState.tension : 0), '0');
-    updateField('leverage', relationshipState.leverage, 'None');
-    updateField('whyNow', leadInContext.whyNow, '');
+    if (window.ChatSidebar && typeof window.ChatSidebar.update === 'function') {
+      window.ChatSidebar.update(page, session);
+    }
   }
 
   async function submitTurn() {
@@ -412,6 +407,29 @@ function initChatPage() {
   });
 
   updateTurnCount();
+  if (window.ChatSidebar && typeof window.ChatSidebar.init === 'function') {
+    window.ChatSidebar.init(page, {
+      physicalContext: {
+        location: getFieldText('location'),
+        microLocation: getFieldText('microLocation'),
+        timeOfDay: getFieldText('timeOfDay'),
+        privacy: getFieldText('privacy'),
+        distanceBand: getFieldText('distanceBand'),
+        characterActivity: getFieldText('characterActivity'),
+        interactableObjects: parseFieldList('interactableObjects'),
+        ambientConditions: parseFieldList('ambientConditions'),
+      },
+      relationshipState: {
+        dynamic: getFieldText('dynamic'),
+        valence: Number(getFieldText('valence') || '0'),
+        tension: Number(getFieldText('tension') || '0'),
+        leverage: getFieldText('leverage'),
+      },
+      leadInContext: {
+        whyNow: getFieldText('whyNow'),
+      },
+    });
+  }
   syncSidebarToggle();
   syncApiKeyToggleState();
   autoResizeMessageInput();

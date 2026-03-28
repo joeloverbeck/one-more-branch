@@ -271,6 +271,9 @@ describe('chat page template', () => {
     expect(html).toContain('class="chat-conversation"');
     expect(html).toContain('class="chat-sidebar"');
     expect(html).toContain('class="chat-input-bar"');
+    expect(html).toContain('data-chat-section="physical"');
+    expect(html).toContain('data-chat-section="relationship"');
+    expect(html).toContain('class="chat-accordion-summary"');
     expect(html).toContain('class="chat-block chat-block--action"');
     expect(html).toContain('<em>He sets the ledger on the table.</em>');
     expect(html).toContain('class="chat-block chat-block--speech"');
@@ -299,6 +302,12 @@ describe('chat page template', () => {
     expect(html).toContain('State Changes');
     expect(html).toContain('The conversation hardens into suspicion.');
     expect(html).toContain('Trust frays further.');
+    expect(html).toContain('data-chat-gauge="valence"');
+    expect(html).toContain('data-chat-gauge="tension"');
+    expect(html).toContain('data-chat-sparkline="valence"');
+    expect(html).toContain('data-chat-sparkline="tension"');
+    expect(html).toContain('data-chat-list="interactableObjects"');
+    expect(html).toContain('data-chat-list="ambientConditions"');
     expect(html).not.toContain('chat-tag-bar"><span class="chat-tag chat-tag--speech-act">Tell');
     expect(html).not.toContain('<details class="chat-inner-world" open');
   });
@@ -483,6 +492,10 @@ describe('chat page template', () => {
     );
 
     expect(html).toContain('id="chat-physical-context"');
+    expect(html).toContain('data-chat-section="physical"');
+    expect(html).toContain('data-chat-section="relationship"');
+    expect(html).toContain('data-chat-gauge="valence"');
+    expect(html).toContain('data-chat-sparkline="valence"');
     expect(html).toContain('data-chat-turn-count');
     expect(html).toContain('Hide Scene State');
     expect(html).toContain('data-chat-sidebar-toggle');

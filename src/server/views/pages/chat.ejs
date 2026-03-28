@@ -442,25 +442,124 @@
         <h2>Scene State</h2>
       </div>
 
-      <section class="chat-sidebar__section" id="chat-physical-context">
-        <h3>Physical Context</h3>
-        <p><strong>Location:</strong> <span data-chat-field="location"><%= session.physicalContext.location %></span></p>
-        <p><strong>Micro-Location:</strong> <span data-chat-field="microLocation"><%= session.physicalContext.microLocation %></span></p>
-        <p><strong>Time:</strong> <span data-chat-field="timeOfDay"><%= session.physicalContext.timeOfDay %></span></p>
-        <p><strong>Privacy:</strong> <span data-chat-field="privacy"><%= session.physicalContext.privacy %></span></p>
-        <p><strong>Distance:</strong> <span data-chat-field="distanceBand"><%= session.physicalContext.distanceBand %></span></p>
-        <p><strong>Activity:</strong> <span data-chat-field="characterActivity"><%= session.physicalContext.characterActivity %></span></p>
-        <p><strong>Objects:</strong> <span data-chat-field="interactableObjects"><%= session.physicalContext.interactableObjects.join(', ') || 'None' %></span></p>
-        <p><strong>Conditions:</strong> <span data-chat-field="ambientConditions"><%= session.physicalContext.ambientConditions.join(', ') || 'None' %></span></p>
-      </section>
+      <details
+        class="chat-accordion chat-sidebar__section"
+        id="chat-physical-context"
+        data-chat-section="physical"
+        open
+      >
+        <summary class="chat-accordion-summary">
+          <span class="chat-accordion-summary__title">Physical Context</span>
+          <span class="chat-accordion-summary__meta">
+            <span class="chat-summary-chip" data-chat-field="microLocation"><%= session.physicalContext.microLocation %></span>
+            <span class="chat-summary-chip" data-chat-field="timeOfDay"><%= session.physicalContext.timeOfDay %></span>
+            <span class="chat-summary-chip chat-summary-chip--accent" data-chat-field="distanceBand"><%= session.physicalContext.distanceBand %></span>
+          </span>
+        </summary>
 
-      <section class="chat-sidebar__section" id="chat-relationship-state">
-        <h3>Relationship State</h3>
-        <p><strong>Dynamic:</strong> <span data-chat-field="dynamic"><%= session.relationshipState.dynamic || 'Unformed' %></span></p>
-        <p><strong>Valence:</strong> <span data-chat-field="valence"><%= session.relationshipState.valence %></span></p>
-        <p><strong>Tension:</strong> <span data-chat-field="tension"><%= session.relationshipState.tension %></span></p>
-        <p><strong>Leverage:</strong> <span data-chat-field="leverage"><%= session.relationshipState.leverage || 'None' %></span></p>
-      </section>
+        <div class="chat-accordion-content">
+          <dl class="chat-sidebar-details">
+            <div class="chat-sidebar-details__row">
+              <dt>Location</dt>
+              <dd><span data-chat-field="location"><%= session.physicalContext.location %></span></dd>
+            </div>
+            <div class="chat-sidebar-details__row">
+              <dt>Micro-Location</dt>
+              <dd><span data-chat-field="microLocation"><%= session.physicalContext.microLocation %></span></dd>
+            </div>
+            <div class="chat-sidebar-details__row">
+              <dt>Time</dt>
+              <dd><span data-chat-field="timeOfDay"><%= session.physicalContext.timeOfDay %></span></dd>
+            </div>
+            <div class="chat-sidebar-details__row">
+              <dt>Privacy</dt>
+              <dd><span data-chat-field="privacy"><%= session.physicalContext.privacy %></span></dd>
+            </div>
+            <div class="chat-sidebar-details__row">
+              <dt>Distance</dt>
+              <dd><span data-chat-field="distanceBand"><%= session.physicalContext.distanceBand %></span></dd>
+            </div>
+            <div class="chat-sidebar-details__row">
+              <dt>Activity</dt>
+              <dd><span data-chat-field="characterActivity"><%= session.physicalContext.characterActivity %></span></dd>
+            </div>
+            <div class="chat-sidebar-details__row chat-sidebar-details__row--stacked">
+              <dt>Objects</dt>
+              <dd>
+                <span class="sr-only" data-chat-field="interactableObjects"><%= session.physicalContext.interactableObjects.join(', ') || 'None' %></span>
+                <div class="chat-pill-row" data-chat-list="interactableObjects"></div>
+              </dd>
+            </div>
+            <div class="chat-sidebar-details__row chat-sidebar-details__row--stacked">
+              <dt>Conditions</dt>
+              <dd>
+                <span class="sr-only" data-chat-field="ambientConditions"><%= session.physicalContext.ambientConditions.join(', ') || 'None' %></span>
+                <ul class="chat-sidebar-list" data-chat-list="ambientConditions"></ul>
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </details>
+
+      <details
+        class="chat-accordion chat-sidebar__section"
+        id="chat-relationship-state"
+        data-chat-section="relationship"
+        open
+      >
+        <summary class="chat-accordion-summary">
+          <span class="chat-accordion-summary__title">Relationship</span>
+          <span class="chat-accordion-summary__meta">
+            <span class="chat-summary-stat">V: <span data-chat-field="valence"><%= session.relationshipState.valence %></span></span>
+            <span class="chat-summary-stat">T: <span data-chat-field="tension"><%= session.relationshipState.tension %></span></span>
+          </span>
+        </summary>
+
+        <div class="chat-accordion-content">
+          <div class="chat-relationship-visuals">
+            <section class="chat-metric-card">
+              <div class="chat-metric-card__header">
+                <h3>Valence</h3>
+                <div class="chat-metric-card__meta">
+                  <span class="chat-metric-card__value" data-chat-gauge-value="valence"><%= session.relationshipState.valence %></span>
+                  <span class="chat-metric-card__delta" data-chat-gauge-delta="valence">0</span>
+                </div>
+              </div>
+              <div class="chat-gauge chat-gauge--valence" data-chat-gauge="valence">
+                <span class="chat-gauge__track"></span>
+                <span class="chat-gauge__marker"></span>
+              </div>
+              <svg class="chat-sparkline" data-chat-sparkline="valence" viewBox="0 0 120 32" aria-label="Valence trend"></svg>
+            </section>
+
+            <section class="chat-metric-card">
+              <div class="chat-metric-card__header">
+                <h3>Tension</h3>
+                <div class="chat-metric-card__meta">
+                  <span class="chat-metric-card__value" data-chat-gauge-value="tension"><%= session.relationshipState.tension %></span>
+                  <span class="chat-metric-card__delta" data-chat-gauge-delta="tension">0</span>
+                </div>
+              </div>
+              <div class="chat-gauge chat-gauge--tension" data-chat-gauge="tension">
+                <span class="chat-gauge__track"></span>
+                <span class="chat-gauge__marker"></span>
+              </div>
+              <svg class="chat-sparkline" data-chat-sparkline="tension" viewBox="0 0 120 32" aria-label="Tension trend"></svg>
+            </section>
+          </div>
+
+          <dl class="chat-sidebar-details chat-sidebar-details--compact">
+            <div class="chat-sidebar-details__row">
+              <dt>Dynamic</dt>
+              <dd><span data-chat-field="dynamic"><%= session.relationshipState.dynamic || 'Unformed' %></span></dd>
+            </div>
+            <div class="chat-sidebar-details__row">
+              <dt>Leverage</dt>
+              <dd><span data-chat-field="leverage"><%= session.relationshipState.leverage || 'None' %></span></dd>
+            </div>
+          </dl>
+        </div>
+      </details>
 
       <section class="chat-sidebar__section" id="chat-lead-in-context">
         <h3>Lead-In</h3>
