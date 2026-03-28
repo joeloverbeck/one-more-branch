@@ -83,4 +83,22 @@ describe('public stylesheet', () => {
     expect(css).toContain('box-sizing: border-box;');
     expect(css).toContain('min-height: 46px;');
   });
+
+  it('applies thin dark scrollbars to the chat page scroll containers', () => {
+    const css = fs.readFileSync(cssPath, 'utf8');
+
+    expect(css).toContain('.chat-conversation,\n.chat-sidebar {');
+    expect(css).toContain('scrollbar-width: thin;');
+    expect(css).toContain('scrollbar-color: rgba(39, 64, 111, 0.5) transparent;');
+    expect(css).toContain('.chat-conversation::-webkit-scrollbar,\n.chat-sidebar::-webkit-scrollbar {');
+    expect(css).toContain(
+      '.chat-conversation::-webkit-scrollbar-track,\n.chat-sidebar::-webkit-scrollbar-track {'
+    );
+    expect(css).toContain(
+      '.chat-conversation::-webkit-scrollbar-thumb,\n.chat-sidebar::-webkit-scrollbar-thumb {'
+    );
+    expect(css).toContain(
+      '.chat-conversation::-webkit-scrollbar-thumb:hover,\n.chat-sidebar::-webkit-scrollbar-thumb:hover {'
+    );
+  });
 });

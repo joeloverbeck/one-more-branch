@@ -792,6 +792,34 @@ body.chat-page-body main {
   align-content: start;
 }
 
+.chat-conversation,
+.chat-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(39, 64, 111, 0.5) transparent;
+}
+
+.chat-conversation::-webkit-scrollbar,
+.chat-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-conversation::-webkit-scrollbar-track,
+.chat-sidebar::-webkit-scrollbar-track {
+  background: rgba(14, 24, 49, 0.3);
+  border-radius: 3px;
+}
+
+.chat-conversation::-webkit-scrollbar-thumb,
+.chat-sidebar::-webkit-scrollbar-thumb {
+  background: rgba(39, 64, 111, 0.5);
+  border-radius: 3px;
+}
+
+.chat-conversation::-webkit-scrollbar-thumb:hover,
+.chat-sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(39, 64, 111, 0.8);
+}
+
 .chat-sidebar__section {
   padding-bottom: 0.9rem;
   border-bottom: 1px solid rgba(183, 189, 208, 0.12);
