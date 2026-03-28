@@ -25,6 +25,7 @@ import { LLMError } from '../../../../src/llm/llm-client-types';
 
 function makeContext(): ChatStateUpdaterContext {
   return {
+    rollingSummary: null,
     chatBible: {
       sessionPremise: 'Two allies test whether trust is still possible.',
       physicalReality: {
@@ -68,7 +69,6 @@ function makeContext(): ChatStateUpdaterContext {
         knowledgeBoundaries: ['She does not know who ordered the theft'],
       },
       conversationNow: {
-        rollingSummary: null,
         activeThreads: ['Who lied first'],
         commitments: [],
         sensitiveTopics: ['Her brother'],

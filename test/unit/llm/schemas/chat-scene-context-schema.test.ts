@@ -25,7 +25,6 @@ function makeValidSceneContext(): Record<string, unknown> {
       unresolvedPressures: ['Mutual distrust', 'Time pressure'],
     },
     conversationNow: {
-      rollingSummary: 'Their last exchange ended with a threat and no proof.',
       activeThreads: ['Who betrayed whom first', 'Whether to keep working together'],
       commitments: ['Meet before dawn', 'Do not involve the admiralty'],
       sensitiveTopics: ['Her brother', 'The mutiny'],
@@ -76,7 +75,7 @@ describe('CHAT_SCENE_CONTEXT_SCHEMA', () => {
     expect(schema.additionalProperties).toBe(false);
   });
 
-  it('uses anyOf for nullable conversation fields', () => {
+  it('uses anyOf for nullable conversation fields that remain in the schema', () => {
     const schema = CHAT_SCENE_CONTEXT_SCHEMA.json_schema.schema as {
       properties: {
         conversationNow: {
@@ -85,10 +84,6 @@ describe('CHAT_SCENE_CONTEXT_SCHEMA', () => {
       };
     };
 
-    expect(schema.properties.conversationNow.properties.rollingSummary.anyOf).toEqual([
-      { type: 'string' },
-      { type: 'null' },
-    ]);
     expect(schema.properties.conversationNow.properties.lastTurnPressure.anyOf).toEqual([
       { type: 'string' },
       { type: 'null' },
@@ -96,7 +91,7 @@ describe('CHAT_SCENE_CONTEXT_SCHEMA', () => {
   });
 
   it('stays within the grammar leaf-property safety budget', () => {
-    expect(countLeafProperties(CHAT_SCENE_CONTEXT_SCHEMA.json_schema.schema)).toBe(19);
+    expect(countLeafProperties(CHAT_SCENE_CONTEXT_SCHEMA.json_schema.schema)).toBe(18);
   });
 });
 
@@ -114,12 +109,10 @@ describe('parseChatSceneContextResponse', () => {
       ...makeValidSceneContext(),
       conversationNow: {
         ...(makeValidSceneContext().conversationNow as Record<string, unknown>),
-        rollingSummary: null,
         lastTurnPressure: null,
       },
     });
 
-    expect(result.conversationNow.rollingSummary).toBeNull();
     expect(result.conversationNow.lastTurnPressure).toBeNull();
   });
 

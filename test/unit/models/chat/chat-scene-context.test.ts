@@ -22,7 +22,6 @@ function makeSceneContext(): ChatSceneContext {
       unresolvedPressures: ['Neither trusts the other to tell the full truth'],
     },
     conversationNow: {
-      rollingSummary: 'The exchange has narrowed to the missing ledger.',
       activeThreads: ['the failed handoff', 'the missing ledger'],
       commitments: ['Keep the door barred'],
       sensitiveTopics: ['the witness'],

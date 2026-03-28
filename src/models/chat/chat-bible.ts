@@ -41,7 +41,6 @@ export interface ChatBibleKnowledgeNow extends ChatKnowledgeState {
 }
 
 export interface ChatBibleConversationNow {
-  readonly rollingSummary: string | null;
   readonly activeThreads: readonly string[];
   readonly commitments: readonly string[];
   readonly sensitiveTopics: readonly string[];

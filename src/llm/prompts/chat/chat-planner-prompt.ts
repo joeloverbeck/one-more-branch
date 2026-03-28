@@ -7,6 +7,7 @@ import {
   formatRecentTurns,
   formatSpeechFingerprint,
 } from './chat-prompt-formatters.js';
+import { formatRollingSummaryForPrompt } from './chat-memory-prompt-adapter.js';
 
 const SYSTEM_PROMPT = `You are planning exactly one in-character reply turn for a one-on-one chat.
 Produce a hidden response plan, not visible prose.
@@ -23,6 +24,7 @@ export function buildChatPlannerMessages(context: ChatPlannerContext): ChatMessa
   };
   const userSections = [
     `CHAT BIBLE\n${formatChatBible(context.chatBible)}`,
+    `OLDER CHAT SUMMARY\n${formatRollingSummaryForPrompt(context.rollingSummary)}`,
     `TARGET CHARACTER DECOMPOSITION\n${formatStandaloneCharacterPromptSummary(context.targetCharacter, 'standalone')}`,
     `TARGET CHARACTER SPEECH FINGERPRINT\n${formatSpeechFingerprint(context.targetCharacter.speechFingerprint)}`,
     `RECENT CHAT TURNS\n${formatRecentTurns(context.recentTurns, speakerNames)}`,

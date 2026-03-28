@@ -90,6 +90,17 @@ function isEnumValue<TValue extends string>(
   return typeof value === 'string' && candidates.includes(value as TValue);
 }
 
+function hasExactKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {
+  const actualKeys = Object.keys(value).sort();
+  const expectedKeys = [...keys].sort();
+
+  if (actualKeys.length !== expectedKeys.length) {
+    return false;
+  }
+
+  return expectedKeys.every((key, index) => actualKeys[index] === key);
+}
+
 export function isChatPhysicalContext(value: unknown): value is ChatPhysicalContext {
   if (!isObjectRecord(value)) {
     return false;
@@ -194,7 +205,7 @@ function isChatBibleConversationNow(value: unknown): value is ChatBibleConversat
   }
 
   return (
-    isNullableString(value['rollingSummary']) &&
+    hasExactKeys(value, ['activeThreads', 'commitments', 'sensitiveTopics', 'lastTurnPressure']) &&
     isStringArray(value['activeThreads']) &&
     isStringArray(value['commitments']) &&
     isStringArray(value['sensitiveTopics']) &&

@@ -52,6 +52,14 @@ function makeContext(): ChatPlannerContext {
   return {
     targetCharacter: makeCharacter('Iria Vale'),
     interlocutorCharacterName: 'Tomas Braga',
+    rollingSummary: {
+      compressedSummary: 'Their last meeting ended with a threat and no proof.',
+      keyCommitments: ['Meet before dawn'],
+      keyRevelations: ['Iria copied the key'],
+      unresolvedQuestions: ['Who ordered the theft?'],
+      leverageShifts: ['Tomas forced Iria onto the defensive.'],
+      emotionalTrajectory: 'Guarded hostility.',
+    },
     chatBible: {
       sessionPremise: 'A guarded reunion after a failed mission.',
       physicalReality: {
@@ -95,7 +103,6 @@ function makeContext(): ChatPlannerContext {
         knowledgeBoundaries: ['She does not know who ordered the theft'],
       },
       conversationNow: {
-        rollingSummary: 'Their last meeting ended with a threat and no proof.',
         activeThreads: ['Who betrayed whom first'],
         commitments: ['Meet before dawn'],
         sensitiveTopics: ['Her brother'],
@@ -164,6 +171,7 @@ describe('buildChatPlannerMessages', () => {
     const userContent = buildChatPlannerMessages(makeContext())[1].content;
 
     expect(userContent).toContain('CHAT BIBLE');
+    expect(userContent).toContain('OLDER CHAT SUMMARY');
     expect(userContent).toContain('TARGET CHARACTER DECOMPOSITION');
     expect(userContent).toContain('TARGET CHARACTER SPEECH FINGERPRINT');
     expect(userContent).toContain('RECENT CHAT TURNS');
@@ -195,5 +203,12 @@ describe('buildChatPlannerMessages', () => {
     expect(userContent).toContain('LATEST USER TURN\nTURN 13 [Tomas Braga]');
     expect(userContent).toContain('- ACTION: steps closer');
     expect(userContent).toContain('- SPEECH: Then prove it.');
+  });
+
+  it('renders the canonical session rolling summary outside the chat bible', () => {
+    const userContent = buildChatPlannerMessages(makeContext())[1].content;
+
+    expect(userContent).toContain('OLDER CHAT SUMMARY\nCompressed Summary: Their last meeting ended with a threat and no proof.');
+    expect(userContent).not.toContain('Rolling Summary: Their last meeting ended with a threat and no proof.');
   });
 });

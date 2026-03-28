@@ -5,6 +5,14 @@ function makeContext(): ChatStateUpdaterContext {
   return {
     targetCharacterName: 'Iria Vale',
     interlocutorCharacterName: 'Tomas Braga',
+    rollingSummary: {
+      compressedSummary: 'Their last meeting ended with a threat and no proof.',
+      keyCommitments: ['Meet before dawn'],
+      keyRevelations: ['Iria copied the key'],
+      unresolvedQuestions: ['Who ordered the theft?'],
+      leverageShifts: ['Tomas forced Iria onto the defensive.'],
+      emotionalTrajectory: 'Guarded hostility.',
+    },
     chatBible: {
       sessionPremise: 'A guarded reunion after a failed mission.',
       physicalReality: {
@@ -48,7 +56,6 @@ function makeContext(): ChatStateUpdaterContext {
         knowledgeBoundaries: ['She does not know who ordered the theft'],
       },
       conversationNow: {
-        rollingSummary: 'Their last meeting ended with a threat and no proof.',
         activeThreads: ['Who betrayed whom first'],
         commitments: ['Meet before dawn'],
         sensitiveTopics: ['Her brother'],
@@ -134,6 +141,7 @@ describe('buildChatStateUpdaterMessages', () => {
     const userContent = buildChatStateUpdaterMessages(makeContext())[1].content;
 
     expect(userContent).toContain('PRE-TURN CHAT BIBLE');
+    expect(userContent).toContain('OLDER CHAT SUMMARY');
     expect(userContent).toContain('LATEST USER TURN');
     expect(userContent).toContain('TURN PLAN');
     expect(userContent).toContain('FINAL WRITTEN TURN');
@@ -153,5 +161,7 @@ describe('buildChatStateUpdaterMessages', () => {
     expect(userContent).toContain(
       'Turn Meta: expectsReply=true; endsWithQuestion=false; visibleEmotion=controlled anger; finalPressure=She refuses to let him redirect.'
     );
+    expect(userContent).toContain('Compressed Summary: Their last meeting ended with a threat and no proof.');
+    expect(userContent).not.toContain('Rolling Summary: Their last meeting ended with a threat and no proof.');
   });
 });

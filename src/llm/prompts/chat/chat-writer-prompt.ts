@@ -7,6 +7,7 @@ import {
   formatSpeechFingerprint,
   formatTurnPlan,
 } from './chat-prompt-formatters.js';
+import { formatRollingSummaryForPrompt } from './chat-memory-prompt-adapter.js';
 
 const SYSTEM_PROMPT = `Write exactly one in-world turn for the target character.
 This is chat, not page prose.
@@ -29,6 +30,7 @@ export function buildChatWriterMessages(context: ChatWriterContext): ChatMessage
     `TARGET CHARACTER NAME\n${context.targetCharacter.name}`,
     `FULL SPEECH FINGERPRINT\n${formatSpeechFingerprint(context.targetCharacter.speechFingerprint)}`,
     `CHAT BIBLE\n${formatChatBible(context.chatBible)}`,
+    `OLDER CHAT SUMMARY\n${formatRollingSummaryForPrompt(context.rollingSummary)}`,
     `TURN PLAN\n${formatTurnPlan(context.turnPlan)}`,
     `RECENT CHAT TURNS\n${formatRecentTurns(context.recentTurns, speakerNames)}`,
     `LATEST USER TURN\n${formatRecentTurns([context.latestUserTurn], speakerNames)}`,

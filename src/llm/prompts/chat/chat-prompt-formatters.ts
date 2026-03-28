@@ -2,6 +2,7 @@ import type { SpeechFingerprint } from '../../../models/decomposed-character.js'
 import type {
   ChatBible,
   ChatBlock,
+  RollingSummaryOutput,
   ChatSceneContext,
   ChatTurn,
   TurnMeta,
@@ -132,7 +133,6 @@ export function formatChatBible(chatBible: ChatBible): string {
     'Knowledge Boundaries:',
     formatStringList(chatBible.knowledgeNow.knowledgeBoundaries),
     'Conversation Now:',
-    `Rolling Summary: ${chatBible.conversationNow.rollingSummary ?? 'None'}`,
     'Active Threads:',
     formatStringList(chatBible.conversationNow.activeThreads),
     'Commitments:',
@@ -171,7 +171,6 @@ export function formatChatSceneContext(sceneContext: ChatSceneContext): string {
     'Unresolved Pressures:',
     formatStringList(sceneContext.preChatMomentum.unresolvedPressures),
     'Conversation Now:',
-    `- Rolling Summary: ${sceneContext.conversationNow.rollingSummary ?? 'None'}`,
     'Active Threads:',
     formatStringList(sceneContext.conversationNow.activeThreads),
     'Commitments:',
@@ -180,6 +179,10 @@ export function formatChatSceneContext(sceneContext: ChatSceneContext): string {
     formatStringList(sceneContext.conversationNow.sensitiveTopics),
     `- Last Turn Pressure: ${sceneContext.conversationNow.lastTurnPressure ?? 'None'}`,
   ].join('\n');
+}
+
+export function formatRollingSummaryText(summary: RollingSummaryOutput | null): string {
+  return summary?.compressedSummary ?? 'None';
 }
 
 export function formatTurnPlan(turnPlan: TurnPlannerOutput): string {

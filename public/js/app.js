@@ -16040,8 +16040,10 @@ window.ChatSidebar = (function () {
     var leadInContext = session.leadInContext || {};
     var hasKnowledgeState = Object.prototype.hasOwnProperty.call(session, 'knowledgeState');
     var hasChatBible = Object.prototype.hasOwnProperty.call(session, 'chatBible');
+    var hasRollingSummary = Object.prototype.hasOwnProperty.call(session, 'rollingSummary');
     var knowledgeState = hasKnowledgeState ? (session.knowledgeState || {}) : (priorState.knowledgeState || {});
     var chatBible = hasChatBible ? session.chatBible : (priorState.chatBible || null);
+    var rollingSummary = hasRollingSummary ? session.rollingSummary : (priorState.rollingSummary || null);
     var history = options && Array.isArray(options.relationshipHistory)
       ? options.relationshipHistory
       : buildNextHistory(root.__chatRelationshipHistory, relationshipState);
@@ -16167,7 +16169,7 @@ window.ChatSidebar = (function () {
     updateField(
       root,
       'conversationRollingSummary',
-      normalizeText(chatBible && chatBible.conversationNow && chatBible.conversationNow.rollingSummary, 'No rolling summary available.'),
+      normalizeText(rollingSummary && rollingSummary.compressedSummary, 'No rolling summary available.'),
       'No rolling summary available.'
     );
     renderBulletList(
@@ -16204,6 +16206,7 @@ window.ChatSidebar = (function () {
       relationshipState: relationshipState,
       leadInContext: leadInContext,
       knowledgeState: knowledgeState,
+      rollingSummary: rollingSummary,
       chatBible: chatBible,
     };
   }
@@ -16219,6 +16222,9 @@ window.ChatSidebar = (function () {
       : [];
     var initialSession = Object.assign({}, session, {
       knowledgeState: bootstrap && bootstrap.knowledgeState ? bootstrap.knowledgeState : undefined,
+      rollingSummary: bootstrap && Object.prototype.hasOwnProperty.call(bootstrap, 'rollingSummary')
+        ? bootstrap.rollingSummary
+        : undefined,
       chatBible: bootstrap && Object.prototype.hasOwnProperty.call(bootstrap, 'chatBible')
         ? bootstrap.chatBible
         : undefined,

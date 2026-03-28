@@ -1,4 +1,10 @@
-import type { ChatBible, ChatStateUpdate, ChatTurn, TurnPlannerOutput } from '../../models/chat/index.js';
+import type {
+  ChatBible,
+  ChatStateUpdate,
+  ChatTurn,
+  RollingSummaryOutput,
+  TurnPlannerOutput,
+} from '../../models/chat/index.js';
 import type { GenerationOptions } from '../generation-pipeline-types.js';
 import { runLlmStage } from '../llm-stage-runner.js';
 import { buildChatStateUpdaterMessages } from '../prompts/chat/chat-state-updater-prompt.js';
@@ -13,6 +19,7 @@ export interface ChatStateUpdaterContext {
   readonly targetCharacterName: string;
   readonly interlocutorCharacterName: string;
   readonly chatBible: ChatBible;
+  readonly rollingSummary: RollingSummaryOutput | null;
   readonly latestUserTurn: ChatTurn;
   readonly turnPlan: TurnPlannerOutput;
   readonly writerTurn: ChatWriterTurn;

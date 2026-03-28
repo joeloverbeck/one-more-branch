@@ -148,7 +148,6 @@ function makeSceneContext(): ChatSceneContext {
       unresolvedPressures: ['Neither believes the other came alone.'],
     },
     conversationNow: {
-      rollingSummary: 'The accusation is explicit now.',
       activeThreads: ['Who reached the courier first'],
       commitments: ['No one leaves with the map'],
       sensitiveTopics: ['The copied cipher key'],

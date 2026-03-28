@@ -107,6 +107,9 @@ describe('chat page template', () => {
       }>;
       chatUiBootstrap: {
         chatBible: Record<string, unknown> | null;
+        rollingSummary: {
+          compressedSummary: string;
+        } | null;
         knowledgeState: {
           knownFacts: string[];
           suspicions: string[];
@@ -267,7 +270,6 @@ describe('chat page template', () => {
               knowledgeBoundaries: ['She still does not know who ordered the raid.'],
             },
             conversationNow: {
-              rollingSummary: 'They are circling the copied ledger without admitting who moved it.',
               activeThreads: ['the missing ledger', 'who moved the copy'],
               commitments: ['Iven will answer before dawn.'],
               sensitiveTopics: ['the copied seal'],
@@ -275,6 +277,10 @@ describe('chat page template', () => {
             },
             continuityGuardrails: ['Do not confess without direct pressure.'],
             responseConstraints: ['Stay grounded in the immediate exchange.'],
+          },
+          rollingSummary: {
+            compressedSummary:
+              'They are circling the copied ledger without admitting who moved it.',
           },
           knowledgeState: {
             knownFacts: ['Iven recognizes the ledger seal.'],
@@ -425,6 +431,7 @@ describe('chat page template', () => {
         ],
         chatUiBootstrap: {
           chatBible: null,
+          rollingSummary: null,
           knowledgeState: {
             knownFacts: [],
             suspicions: [],
@@ -494,6 +501,7 @@ describe('chat page template', () => {
         ],
         chatUiBootstrap: {
           chatBible: null,
+          rollingSummary: null,
           knowledgeState: {
             knownFacts: [],
             suspicions: [],
@@ -546,6 +554,7 @@ describe('chat page template', () => {
         turns: [],
         chatUiBootstrap: {
           chatBible: null,
+          rollingSummary: null,
           knowledgeState: {
             knownFacts: [],
             suspicions: [],
@@ -629,6 +638,7 @@ describe('chat page template', () => {
         turns: [],
         chatUiBootstrap: {
           chatBible: null,
+          rollingSummary: null,
           knowledgeState: {
             knownFacts: [],
             suspicions: [],

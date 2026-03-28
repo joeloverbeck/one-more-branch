@@ -2,6 +2,7 @@ import type {
   ChatBible,
   ChatBlock,
   ChatTurn,
+  RollingSummaryOutput,
   TurnPlannerOutput,
 } from '../../models/chat/index.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
@@ -20,6 +21,7 @@ export interface ChatWriterContext {
   readonly targetCharacter: StandaloneDecomposedCharacter;
   readonly interlocutorCharacterName: string;
   readonly chatBible: ChatBible;
+  readonly rollingSummary: RollingSummaryOutput | null;
   readonly turnPlan: TurnPlannerOutput;
   readonly recentTurns: readonly ChatTurn[];
   readonly latestUserTurn: ChatTurn;

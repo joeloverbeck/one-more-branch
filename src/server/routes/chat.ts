@@ -50,6 +50,7 @@ interface ChatTurnBody {
 
 interface ChatUiBootstrap {
   readonly chatBible: ChatSession['chatBible'];
+  readonly rollingSummary: ChatSession['rollingSummary'];
   readonly knowledgeState: ChatSession['knowledgeState'];
   readonly relationshipHistory: ReturnType<typeof buildChatRelationshipHistory>;
 }
@@ -57,6 +58,7 @@ interface ChatUiBootstrap {
 function buildChatUiBootstrap(session: ChatSession, turns: Parameters<typeof buildChatRelationshipHistory>[0]): ChatUiBootstrap {
   return {
     chatBible: session.chatBible,
+    rollingSummary: session.rollingSummary,
     knowledgeState: session.knowledgeState,
     relationshipHistory: buildChatRelationshipHistory(turns),
   };

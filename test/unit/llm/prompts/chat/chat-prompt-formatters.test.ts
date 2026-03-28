@@ -1,9 +1,15 @@
 import {
   formatChatBible,
   formatChatSceneContext,
+  formatRollingSummaryText,
   formatTurnPlan,
 } from '../../../../../src/llm/prompts/chat/chat-prompt-formatters';
-import type { ChatBible, ChatSceneContext, TurnPlannerOutput } from '../../../../../src/models/chat/index';
+import type {
+  ChatBible,
+  ChatSceneContext,
+  RollingSummaryOutput,
+  TurnPlannerOutput,
+} from '../../../../../src/models/chat/index';
 
 function makeSceneContext(): ChatSceneContext {
   return {
@@ -26,7 +32,6 @@ function makeSceneContext(): ChatSceneContext {
       unresolvedPressures: ['Neither knows who else is listening.'],
     },
     conversationNow: {
-      rollingSummary: null,
       activeThreads: ['ledger', 'guard disappearance'],
       commitments: ['Meet again at dawn'],
       sensitiveTopics: ['the second key'],
@@ -51,7 +56,6 @@ describe('formatChatSceneContext', () => {
     expect(formatted).toContain('Stakes Now:');
     expect(formatted).toContain('- Exposure would ruin both of them.');
     expect(formatted).toContain('Conversation Now:');
-    expect(formatted).toContain('- Rolling Summary: None');
     expect(formatted).toContain('Sensitive Topics:');
     expect(formatted).toContain('- the second key');
     expect(formatted).toContain('- Last Turn Pressure: None');
@@ -87,7 +91,6 @@ function makeChatBible(): ChatBible {
       knowledgeBoundaries: ['She does not know who ordered the raid.'],
     },
     conversationNow: {
-      rollingSummary: null,
       activeThreads: ['ledger'],
       commitments: ['Meet again at dawn'],
       sensitiveTopics: ['the second key'],
@@ -134,6 +137,24 @@ describe('formatChatBible', () => {
     expect(formatted).toContain('- Tension: high tension');
     expect(formatted).not.toContain('- Valence: -1');
     expect(formatted).not.toContain('- Tension: 7');
+  });
+});
+
+describe('formatRollingSummaryText', () => {
+  it('uses compressedSummary as the canonical display text', () => {
+    const summary: RollingSummaryOutput = {
+      compressedSummary: 'The accusation hardened into a controlled standoff.',
+      keyCommitments: [],
+      keyRevelations: [],
+      unresolvedQuestions: [],
+      leverageShifts: [],
+      emotionalTrajectory: 'Guarded distrust.',
+    };
+
+    expect(formatRollingSummaryText(summary)).toBe(
+      'The accusation hardened into a controlled standoff.'
+    );
+    expect(formatRollingSummaryText(null)).toBe('None');
   });
 });
 

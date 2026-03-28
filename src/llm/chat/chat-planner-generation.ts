@@ -1,4 +1,9 @@
-import type { ChatBible, ChatTurn, TurnPlannerOutput } from '../../models/chat/index.js';
+import type {
+  ChatBible,
+  ChatTurn,
+  RollingSummaryOutput,
+  TurnPlannerOutput,
+} from '../../models/chat/index.js';
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
 import type { GenerationOptions } from '../generation-pipeline-types.js';
 import { runLlmStage } from '../llm-stage-runner.js';
@@ -13,6 +18,7 @@ export interface ChatPlannerContext {
   readonly targetCharacter: StandaloneDecomposedCharacter;
   readonly interlocutorCharacterName: string;
   readonly chatBible: ChatBible;
+  readonly rollingSummary: RollingSummaryOutput | null;
   readonly recentTurns: readonly ChatTurn[];
   readonly latestUserTurn: ChatTurn;
 }

@@ -197,7 +197,7 @@ describe('chat page controller', () => {
           </form>
         </section>
       </main>
-      <script type="application/json" id="chat-ui-bootstrap">{"chatBible":{"characterNow":{"currentObjective":"Keep Iven talking long enough to learn who else touched the ledger tonight.","immediateNeedFromConversation":"Confirm whether he saw the copied seal.","emotionalState":"guarded","willingnessToEngage":"GUARDED","topicsToAdvance":["the ledger"],"topicsToProtect":["the copy"]},"relationshipNow":{"whatCharacterBelievesAboutInterlocutor":["He is stalling."]},"knowledgeNow":{"knownFacts":["This should stay out of Character Mind"],"suspicions":["This should stay out of Character Mind"],"falseBeliefs":["This should stay out of Character Mind"],"secretsRevealed":["This should stay out of Character Mind"],"secretsKept":["Mara copied one page."],"knowledgeBoundaries":["Who ordered the raid."]},"conversationNow":{"rollingSummary":"They are circling the copied ledger without naming who moved it.","activeThreads":["the ledger"],"commitments":[],"sensitiveTopics":["the copy"],"lastTurnPressure":"Iven is testing how much Mara knows."},"continuityGuardrails":["Do not confess without direct pressure."],"responseConstraints":["Stay grounded in the immediate exchange."]},"knowledgeState":{"knownFacts":["The ledger seal matters."],"suspicions":["Iven hid the copy."],"falseBeliefs":["The room is unwatched."],"secretsRevealed":["Mara searched his satchel."]},"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""},{"turnNumber":2,"valence":-1,"tension":6,"dynamic":"strained allies"}]}</script>
+      <script type="application/json" id="chat-ui-bootstrap">{"chatBible":{"characterNow":{"currentObjective":"Keep Iven talking long enough to learn who else touched the ledger tonight.","immediateNeedFromConversation":"Confirm whether he saw the copied seal.","emotionalState":"guarded","willingnessToEngage":"GUARDED","topicsToAdvance":["the ledger"],"topicsToProtect":["the copy"]},"relationshipNow":{"whatCharacterBelievesAboutInterlocutor":["He is stalling."]},"knowledgeNow":{"knownFacts":["This should stay out of Character Mind"],"suspicions":["This should stay out of Character Mind"],"falseBeliefs":["This should stay out of Character Mind"],"secretsRevealed":["This should stay out of Character Mind"],"secretsKept":["Mara copied one page."],"knowledgeBoundaries":["Who ordered the raid."]},"conversationNow":{"activeThreads":["the ledger"],"commitments":[],"sensitiveTopics":["the copy"],"lastTurnPressure":"Iven is testing how much Mara knows."},"continuityGuardrails":["Do not confess without direct pressure."],"responseConstraints":["Stay grounded in the immediate exchange."]},"rollingSummary":{"compressedSummary":"They are circling the copied ledger without naming who moved it."},"knowledgeState":{"knownFacts":["The ledger seal matters."],"suspicions":["Iven hid the copy."],"falseBeliefs":["The room is unwatched."],"secretsRevealed":["Mara searched his satchel."]},"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""},{"turnNumber":2,"valence":-1,"tension":6,"dynamic":"strained allies"}]}</script>
     `;
   }
 
@@ -399,7 +399,6 @@ describe('chat page controller', () => {
                   knowledgeBoundaries: ['Who ordered the bells to ring early.'],
                 },
                 conversationNow: {
-                  rollingSummary: 'The bells now cover both the accusation and the next move.',
                   activeThreads: ['the missing ledger', 'whether backup is waiting below'],
                   commitments: ['She will answer before dawn.'],
                   sensitiveTopics: ['the copied seal'],
@@ -407,6 +406,9 @@ describe('chat page controller', () => {
                 },
                 continuityGuardrails: ['Do not confess without direct pressure.'],
                 responseConstraints: ['Answer the accusation directly without inventing new evidence.'],
+              },
+              rollingSummary: {
+                compressedSummary: 'The bells now cover both the accusation and the next move.',
               },
             },
           })

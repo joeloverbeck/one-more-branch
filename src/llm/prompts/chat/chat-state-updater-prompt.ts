@@ -7,6 +7,7 @@ import {
   formatRecentTurns,
   formatTurnPlan,
 } from './chat-prompt-formatters.js';
+import { formatRollingSummaryForPrompt } from './chat-memory-prompt-adapter.js';
 
 const SYSTEM_PROMPT = `Extract only state changes that actually occurred.
 Track relationship shifts only when meaningful.
@@ -25,6 +26,7 @@ export function buildChatStateUpdaterMessages(context: ChatStateUpdaterContext):
   };
   const userSections = [
     `PRE-TURN CHAT BIBLE\n${formatChatBible(context.chatBible)}`,
+    `OLDER CHAT SUMMARY\n${formatRollingSummaryForPrompt(context.rollingSummary)}`,
     `LATEST USER TURN\n${formatRecentTurns([context.latestUserTurn], speakerNames)}`,
     `TURN PLAN\n${formatTurnPlan(context.turnPlan)}`,
     `FINAL WRITTEN TURN\n${formatChatWriterTurn(context.writerTurn)}`,

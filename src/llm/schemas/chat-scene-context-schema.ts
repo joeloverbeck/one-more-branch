@@ -108,17 +108,8 @@ export const CHAT_SCENE_CONTEXT_SCHEMA: JsonSchema = {
         conversationNow: {
           type: 'object',
           additionalProperties: false,
-          required: [
-            'rollingSummary',
-            'activeThreads',
-            'commitments',
-            'sensitiveTopics',
-            'lastTurnPressure',
-          ],
+          required: ['activeThreads', 'commitments', 'sensitiveTopics', 'lastTurnPressure'],
           properties: {
-            rollingSummary: buildNullableStringSchema(
-              'Compressed older conversation history, if available.'
-            ),
             activeThreads: buildStringArraySchema(
               'Active threads the next few turns should stay coherent with.'
             ),

@@ -21,6 +21,35 @@ import {
   parseChatTurns,
 } from '../../../../src/models/chat/index.js';
 
+function makeSceneContext(): ChatSceneContext {
+  return {
+    sessionPremise: 'A tense private meeting after a betrayal.',
+    physicalReality: {
+      location: 'Archive',
+      microLocation: 'Lamp-lit records table',
+      timeOfDay: 'EVENING',
+      privacy: 'PRIVATE',
+      distanceBand: 'CONVERSATIONAL',
+      characterActivity: 'Sorting damaged ledgers',
+      interactableObjects: ['ledger', 'oil lamp'],
+      ambientConditions: ['rain on the roof', 'ink smell'],
+    },
+    preChatMomentum: {
+      leadInSummary: 'They arrive separately after the raid.',
+      recentEvents: ['A guard vanished.', 'The vault was left open.'],
+      whyNow: 'The missing ledger cannot stay hidden until morning.',
+      stakesNow: ['Exposure would ruin both of them.'],
+      unresolvedPressures: ['Neither knows who else is listening.'],
+    },
+    conversationNow: {
+      activeThreads: ['ledger', 'guard disappearance'],
+      commitments: ['Meet again at dawn'],
+      sensitiveTopics: ['the second key'],
+      lastTurnPressure: 'He asked how much she knows.',
+    },
+  };
+}
+
 describe('chat model contracts', () => {
   it('exports canonical chat literal value sets from the chat barrel', () => {
     expect(chatModels.TIME_OF_DAY_VALUES).toEqual([
@@ -140,7 +169,6 @@ describe('chat model contracts', () => {
         knowledgeBoundaries: ['She does not know who ordered the raid.'],
       },
       conversationNow: {
-        rollingSummary: 'They circle around the accusation without naming it.',
         activeThreads: ['ledger', 'guard disappearance'],
         commitments: ['Meet again at dawn'],
         sensitiveTopics: ['the second key'],
@@ -260,7 +288,6 @@ describe('chat model contracts', () => {
         unresolvedPressures: ['Neither knows who else is listening.'],
       },
       conversationNow: {
-        rollingSummary: 'They circle around the accusation without naming it.',
         activeThreads: ['ledger', 'guard disappearance'],
         commitments: ['Meet again at dawn'],
         sensitiveTopics: ['the second key'],
@@ -387,6 +414,48 @@ describe('chat model contracts', () => {
     expect(() => parseChatTurns([{ turnNumber: 1, speaker: 'USER' }], 'turns.json')).toThrow(
       'Invalid chat turns payload at turns.json'
     );
+  });
+
+  it('rejects chat bible payloads that try to persist a duplicate rolling-summary string', () => {
+    const invalidBible = {
+      sessionPremise: 'A tense private meeting after a betrayal.',
+      physicalReality: makeSceneContext().physicalReality,
+      preChatMomentum: makeSceneContext().preChatMomentum,
+      characterNow: {
+        currentObjective: 'Protect her leverage without admitting fear.',
+        immediateNeedFromConversation: 'Confirm what he suspects.',
+        emotionalState: 'contained anger',
+        willingnessToEngage: 'GUARDED',
+        topicsToAdvance: ['the missing ledger'],
+        topicsToProtect: ['the second key'],
+      },
+      relationshipNow: {
+        dynamic: 'former allies under strain',
+        valence: -1,
+        tension: 7,
+        leverage: 'She knows what he hid.',
+        whatCharacterBelievesAboutInterlocutor: ['He is stalling for time.'],
+      },
+      knowledgeNow: {
+        knownFacts: ['The ledger is missing.'],
+        suspicions: ['He staged part of the raid.'],
+        falseBeliefs: ['He thinks she trusts him.'],
+        secretsRevealed: ['She found the duplicate seal.'],
+        secretsKept: ['She already copied the ledger.'],
+        knowledgeBoundaries: ['She does not know who ordered the raid.'],
+      },
+      conversationNow: {
+        rollingSummary: 'duplicate string ownership',
+        activeThreads: ['ledger'],
+        commitments: [],
+        sensitiveTopics: ['the second key'],
+        lastTurnPressure: null,
+      },
+      continuityGuardrails: ['No sudden confession without pressure.'],
+      responseConstraints: ['Keep the reply grounded and immediate.'],
+    };
+
+    expect(isChatBible(invalidBible)).toBe(false);
   });
 
   it('rejects string-backed rolling summaries on persisted chat sessions', () => {

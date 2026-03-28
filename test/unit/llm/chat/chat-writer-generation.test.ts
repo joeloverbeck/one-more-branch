@@ -48,6 +48,7 @@ function makeContext(): ChatWriterContext {
       appearance: 'severe',
       createdAt: '2026-03-01T00:00:00.000Z',
     },
+    rollingSummary: null,
     chatBible: {
       sessionPremise: 'Two allies test whether trust is still possible.',
       physicalReality: {
@@ -91,7 +92,6 @@ function makeContext(): ChatWriterContext {
         knowledgeBoundaries: ['She does not know who ordered the theft'],
       },
       conversationNow: {
-        rollingSummary: null,
         activeThreads: ['Who lied first'],
         commitments: [],
         sensitiveTopics: ['Her brother'],

@@ -234,7 +234,6 @@ function makeContext(overrides: Partial<ChatPipelineContext> = {}): ChatPipeline
           knowledgeBoundaries: ['She does not know who ordered the theft.'],
         },
         conversationNow: {
-          rollingSummary: 'They circle around the accusation.',
           activeThreads: ['ledger'],
           commitments: [],
           sensitiveTopics: ['the duplicate seal'],
@@ -296,7 +295,6 @@ const GENERATED_SCENE_CONTEXT: ChatSceneContext = {
     unresolvedPressures: ['Neither trusts the other'],
   },
   conversationNow: {
-    rollingSummary: 'They circle around the accusation.',
     activeThreads: ['ledger'],
     commitments: [],
     sensitiveTopics: ['the duplicate seal'],
@@ -553,21 +551,38 @@ describe('runChatPipeline', () => {
     expect(mockGenerateChatTurnPlan).toHaveBeenCalledWith(
       expect.objectContaining({
         chatBible: context.chatSession.chatBible,
+        rollingSummary: context.chatSession.rollingSummary,
       }),
       'test-key'
     );
     expect(mockGenerateChatWriterTurn).toHaveBeenCalledWith(
       expect.objectContaining({
         chatBible: context.chatSession.chatBible,
+        rollingSummary: context.chatSession.rollingSummary,
       }),
       'test-key'
     );
     expect(mockGenerateChatStateUpdate).toHaveBeenCalledWith(
       expect.objectContaining({
         chatBible: context.chatSession.chatBible,
+        rollingSummary: context.chatSession.rollingSummary,
       }),
       'test-key'
     );
+  });
+
+  it('keeps rolling summary out of the assembled chat bible contract', async () => {
+    const result = await runChatPipeline(
+      makeContext({
+        chatSession: {
+          ...makeContext().chatSession,
+          chatBible: null,
+        },
+      }),
+      'test-key'
+    );
+
+    expect(result.updatedSession.chatBible?.conversationNow).not.toHaveProperty('rollingSummary');
   });
 
   it('stores the assembled bible on the updated session when a refresh occurs', async () => {

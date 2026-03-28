@@ -163,7 +163,6 @@ function createChatBible(): ChatBible {
       knowledgeBoundaries: ['Who ordered the raid.'],
     },
     conversationNow: {
-      rollingSummary: null,
       activeThreads: ['the missing ledger'],
       commitments: [],
       sensitiveTopics: ['the copy'],
@@ -403,6 +402,7 @@ describe('chat routes', () => {
         turns: expect.any(Array),
         chatUiBootstrap: expect.objectContaining({
           chatBible: null,
+          rollingSummary: null,
           knowledgeState: expect.any(Object),
           relationshipHistory: [
             { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
@@ -474,6 +474,7 @@ describe('chat routes', () => {
       expect.objectContaining({
         chatUiBootstrap: {
           chatBible: createChatBible(),
+          rollingSummary: null,
           knowledgeState: expect.any(Object),
           relationshipHistory: [
             { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },

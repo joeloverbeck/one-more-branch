@@ -1,6 +1,6 @@
 # Chat UI Visual Overhaul
 
-**Status**: ACTIVE
+**Status**: COMPLETED
 **Goal**: Transform the chat page from a long vertical scroll into a modern chat-app layout with full transparency into the character's psychology, scene state, and conversation dynamics.
 
 ## Problem

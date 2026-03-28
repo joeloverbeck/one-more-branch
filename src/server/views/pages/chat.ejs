@@ -281,6 +281,7 @@
       secretsRevealed: [],
     };
     var bootstrapChatBible = chatUiBootstrap?.chatBible ?? null;
+    var bootstrapRollingSummary = chatUiBootstrap?.rollingSummary ?? null;
     var knowledgeSummary = buildKnowledgeSummary(bootstrapKnowledgeState);
     var currentObjectiveSummary = truncateSidebarSummary(
       bootstrapChatBible?.characterNow?.currentObjective,
@@ -810,7 +811,7 @@
             </div>
             <div class="chat-sidebar-details__row">
               <dt>Rolling Summary</dt>
-              <dd><span data-chat-field="conversationRollingSummary"><%= normalizeSidebarText(bootstrapChatBible?.conversationNow?.rollingSummary, 'No rolling summary available.') %></span></dd>
+              <dd><span data-chat-field="conversationRollingSummary"><%= normalizeSidebarText(bootstrapRollingSummary?.compressedSummary, 'No rolling summary available.') %></span></dd>
             </div>
           </dl>
 

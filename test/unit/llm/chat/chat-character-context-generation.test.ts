@@ -141,7 +141,6 @@ function makeSceneContext(): ChatSceneContext {
       unresolvedPressures: ['Mutual distrust'],
     },
     conversationNow: {
-      rollingSummary: null,
       activeThreads: ['Who lied first'],
       commitments: [],
       sensitiveTopics: ['Her brother'],
