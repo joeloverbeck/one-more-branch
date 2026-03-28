@@ -424,6 +424,13 @@ describe('chat page controller', () => {
     const loadingIndicator = document.getElementById('chat-loading-indicator') as HTMLDivElement;
     const sendButton = document.getElementById('chat-send-button') as HTMLButtonElement;
     const apiKeyToggle = document.getElementById('chat-apikey-toggle') as HTMLButtonElement;
+    const messageList = document.getElementById('chat-message-list') as HTMLElement;
+
+    Object.defineProperty(messageList, 'scrollHeight', {
+      configurable: true,
+      get: () => 480,
+    });
+    messageList.scrollTop = 0;
 
     expect(apiKeyInput.value).toBe('sk-or-stored-key-12345');
     expect(apiKeyToggle.classList.contains('chat-apikey-btn--configured')).toBe(true);
@@ -596,7 +603,8 @@ describe('chat page controller', () => {
     expect(document.querySelector('[data-chat-sparkline="valence"] polyline')).not.toBeNull();
     expect(document.querySelector('[data-chat-sparkline="tension"] polyline')).not.toBeNull();
     expect(document.querySelector('[data-chat-turn-count]')?.textContent).toBe('2 turns');
-    expect(scrollIntoViewMock).toHaveBeenCalled();
+    expect(messageList.scrollTop).toBe(480);
+    expect(scrollIntoViewMock).not.toHaveBeenCalled();
     expect(loadingIndicator.style.display).toBe('none');
     expect(messageInput.readOnly).toBe(false);
     expect(sendButton.disabled).toBe(true);

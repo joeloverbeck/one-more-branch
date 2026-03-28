@@ -15053,11 +15053,7 @@ function initChatPage() {
         formatTimestamp: formatTimestamp,
       })
     );
-    var turns = messageList.querySelectorAll('[data-chat-turn]');
-    var lastTurn = turns.length > 0 ? turns[turns.length - 1] : null;
-    if (lastTurn && typeof lastTurn.scrollIntoView === 'function') {
-      lastTurn.scrollIntoView({ block: 'end' });
-    }
+    messageList.scrollTop = messageList.scrollHeight;
 
     updateTurnCount();
   }
