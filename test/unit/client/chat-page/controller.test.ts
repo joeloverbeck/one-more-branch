@@ -129,6 +129,43 @@ describe('chat page controller', () => {
               </ul>
             </div>
           </details>
+          <details class="chat-accordion chat-sidebar__section" data-chat-section="conversation" open>
+            <summary class="chat-accordion-summary">
+              <span class="chat-accordion-summary__title">Conversation</span>
+              <span class="chat-accordion-summary__meta">
+                <span class="chat-summary-chip" data-chat-field="conversationSummary">0 threads, 0 commitments</span>
+              </span>
+            </summary>
+            <div class="chat-accordion-content">
+              <span data-chat-field="lastTurnPressure">No active last-turn pressure.</span>
+              <span data-chat-field="conversationRollingSummary">No rolling summary available.</span>
+              <ul class="chat-sidebar-list" data-chat-list="activeThreads">
+                <li class="chat-sidebar-list__empty">No active threads.</li>
+              </ul>
+              <ul class="chat-sidebar-list" data-chat-list="commitments">
+                <li class="chat-sidebar-list__empty">No commitments tracked.</li>
+              </ul>
+              <ul class="chat-sidebar-list" data-chat-list="sensitiveTopics">
+                <li class="chat-sidebar-list__empty">No sensitive topics noted.</li>
+              </ul>
+            </div>
+          </details>
+          <details class="chat-accordion chat-sidebar__section" data-chat-section="guardrails" open>
+            <summary class="chat-accordion-summary">
+              <span class="chat-accordion-summary__title">Guardrails &amp; Constraints</span>
+              <span class="chat-accordion-summary__meta">
+                <span class="chat-summary-chip" data-chat-field="guardrailsSummary">0 guardrails, 0 constraints</span>
+              </span>
+            </summary>
+            <div class="chat-accordion-content">
+              <ul class="chat-sidebar-list" data-chat-list="continuityGuardrails">
+                <li class="chat-sidebar-list__empty">No continuity guardrails.</li>
+              </ul>
+              <ul class="chat-sidebar-list" data-chat-list="responseConstraints">
+                <li class="chat-sidebar-list__empty">No response constraints.</li>
+              </ul>
+            </div>
+          </details>
           <span data-chat-field="whyNow">Before dawn.</span>
         </aside>
         <section class="chat-input-bar">
@@ -160,7 +197,7 @@ describe('chat page controller', () => {
           </form>
         </section>
       </main>
-      <script type="application/json" id="chat-ui-bootstrap">{"chatBible":{"characterNow":{"currentObjective":"Keep Iven talking long enough to learn who else touched the ledger tonight.","immediateNeedFromConversation":"Confirm whether he saw the copied seal.","emotionalState":"guarded","willingnessToEngage":"GUARDED","topicsToAdvance":["the ledger"],"topicsToProtect":["the copy"]},"relationshipNow":{"whatCharacterBelievesAboutInterlocutor":["He is stalling."]},"knowledgeNow":{"knownFacts":["This should stay out of Character Mind"],"suspicions":["This should stay out of Character Mind"],"falseBeliefs":["This should stay out of Character Mind"],"secretsRevealed":["This should stay out of Character Mind"],"secretsKept":["Mara copied one page."],"knowledgeBoundaries":["Who ordered the raid."]}},"knowledgeState":{"knownFacts":["The ledger seal matters."],"suspicions":["Iven hid the copy."],"falseBeliefs":["The room is unwatched."],"secretsRevealed":["Mara searched his satchel."]},"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""},{"turnNumber":2,"valence":-1,"tension":6,"dynamic":"strained allies"}]}</script>
+      <script type="application/json" id="chat-ui-bootstrap">{"chatBible":{"characterNow":{"currentObjective":"Keep Iven talking long enough to learn who else touched the ledger tonight.","immediateNeedFromConversation":"Confirm whether he saw the copied seal.","emotionalState":"guarded","willingnessToEngage":"GUARDED","topicsToAdvance":["the ledger"],"topicsToProtect":["the copy"]},"relationshipNow":{"whatCharacterBelievesAboutInterlocutor":["He is stalling."]},"knowledgeNow":{"knownFacts":["This should stay out of Character Mind"],"suspicions":["This should stay out of Character Mind"],"falseBeliefs":["This should stay out of Character Mind"],"secretsRevealed":["This should stay out of Character Mind"],"secretsKept":["Mara copied one page."],"knowledgeBoundaries":["Who ordered the raid."]},"conversationNow":{"rollingSummary":"They are circling the copied ledger without naming who moved it.","activeThreads":["the ledger"],"commitments":[],"sensitiveTopics":["the copy"],"lastTurnPressure":"Iven is testing how much Mara knows."},"continuityGuardrails":["Do not confess without direct pressure."],"responseConstraints":["Stay grounded in the immediate exchange."]},"knowledgeState":{"knownFacts":["The ledger seal matters."],"suspicions":["Iven hid the copy."],"falseBeliefs":["The room is unwatched."],"secretsRevealed":["Mara searched his satchel."]},"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""},{"turnNumber":2,"valence":-1,"tension":6,"dynamic":"strained allies"}]}</script>
     `;
   }
 
@@ -361,6 +398,15 @@ describe('chat page controller', () => {
                   secretsKept: ['She copied a second page.'],
                   knowledgeBoundaries: ['Who ordered the bells to ring early.'],
                 },
+                conversationNow: {
+                  rollingSummary: 'The bells now cover both the accusation and the next move.',
+                  activeThreads: ['the missing ledger', 'whether backup is waiting below'],
+                  commitments: ['She will answer before dawn.'],
+                  sensitiveTopics: ['the copied seal'],
+                  lastTurnPressure: 'He is pressing Mara to admit what she knows about the copy.',
+                },
+                continuityGuardrails: ['Do not confess without direct pressure.'],
+                responseConstraints: ['Answer the accusation directly without inventing new evidence.'],
               },
             },
           })
@@ -508,6 +554,33 @@ describe('chat page controller', () => {
     );
     expect(document.querySelector('[data-chat-list="knowledgeBoundaries"]')?.textContent).toContain(
       'Who ordered the bells to ring early.'
+    );
+    expect(document.querySelector('[data-chat-field="conversationSummary"]')?.textContent).toBe(
+      '2 threads, 1 commitment'
+    );
+    expect(document.querySelector('[data-chat-field="lastTurnPressure"]')?.textContent).toBe(
+      'He is pressing Mara to admit what she knows about the copy.'
+    );
+    expect(document.querySelector('[data-chat-field="conversationRollingSummary"]')?.textContent).toBe(
+      'The bells now cover both the accusation and the next move.'
+    );
+    expect(document.querySelector('[data-chat-list="activeThreads"]')?.textContent).toContain(
+      'whether backup is waiting below'
+    );
+    expect(document.querySelector('[data-chat-list="commitments"]')?.textContent).toContain(
+      'She will answer before dawn.'
+    );
+    expect(document.querySelector('[data-chat-list="sensitiveTopics"]')?.textContent).toContain(
+      'the copied seal'
+    );
+    expect(document.querySelector('[data-chat-field="guardrailsSummary"]')?.textContent).toBe(
+      '1 guardrail, 1 constraint'
+    );
+    expect(document.querySelector('[data-chat-list="continuityGuardrails"]')?.textContent).toContain(
+      'Do not confess without direct pressure.'
+    );
+    expect(document.querySelector('[data-chat-list="responseConstraints"]')?.textContent).toContain(
+      'Answer the accusation directly without inventing new evidence.'
     );
     expect(document.body.textContent).not.toContain('This should still stay out of Character Mind');
     expect(document.querySelector('[data-chat-field="whyNow"]')?.textContent).toBe(

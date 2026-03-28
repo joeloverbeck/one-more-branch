@@ -192,9 +192,9 @@ Source: `session.chatBible`
 - Commitments (list: `chatBible.conversationNow.commitments`)
 - Sensitive topics (list: `chatBible.conversationNow.sensitiveTopics`)
 - Last turn pressure (text: `chatBible.conversationNow.lastTurnPressure`)
-- Rolling summary (text, when available: `session.rollingSummary`)
+- Rolling summary (text, when available: `chatBible.conversationNow.rollingSummary`)
 
-Source: `session.chatBible.conversationNow` + `session.rollingSummary`
+Source: `session.chatBible.conversationNow`
 
 ### 3.6 Guardrails & Constraints
 **Collapsed**: `guardrail-count guardrails, constraint-count constraints`

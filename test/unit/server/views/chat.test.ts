@@ -266,6 +266,15 @@ describe('chat page template', () => {
               secretsKept: ['Mara hid one copied page.'],
               knowledgeBoundaries: ['She still does not know who ordered the raid.'],
             },
+            conversationNow: {
+              rollingSummary: 'They are circling the copied ledger without admitting who moved it.',
+              activeThreads: ['the missing ledger', 'who moved the copy'],
+              commitments: ['Iven will answer before dawn.'],
+              sensitiveTopics: ['the copied seal'],
+              lastTurnPressure: 'Iven pressed Mara on what she already knows.',
+            },
+            continuityGuardrails: ['Do not confess without direct pressure.'],
+            responseConstraints: ['Stay grounded in the immediate exchange.'],
           },
           knowledgeState: {
             knownFacts: ['Iven recognizes the ledger seal.'],
@@ -296,6 +305,8 @@ describe('chat page template', () => {
     expect(html).toContain('data-chat-section="relationship"');
     expect(html).toContain('data-chat-section="knowledge"');
     expect(html).toContain('data-chat-section="mind"');
+    expect(html).toContain('data-chat-section="conversation"');
+    expect(html).toContain('data-chat-section="guardrails"');
     expect(html).toContain('class="chat-accordion-summary"');
     expect(html).toContain('class="chat-block chat-block--action"');
     expect(html).toContain('<em>He sets the ledger on the table.</em>');
@@ -350,6 +361,20 @@ describe('chat page template', () => {
     expect(html).toContain('He is testing how much I already know.');
     expect(html).toContain('Mara hid one copied page.');
     expect(html).toContain('She still does not know who ordered the raid.');
+    expect(html).toContain('data-chat-field="conversationSummary">2 threads, 1 commitment</span>');
+    expect(html).toContain('Active Threads');
+    expect(html).toContain('who moved the copy');
+    expect(html).toContain('Commitments');
+    expect(html).toContain('Iven will answer before dawn.');
+    expect(html).toContain('Sensitive Topics');
+    expect(html).toContain('the copied seal');
+    expect(html).toContain('Iven pressed Mara on what she already knows.');
+    expect(html).toContain('They are circling the copied ledger without admitting who moved it.');
+    expect(html).toContain('data-chat-field="guardrailsSummary">1 guardrail, 1 constraint</span>');
+    expect(html).toContain('Continuity Guardrails');
+    expect(html).toContain('Do not confess without direct pressure.');
+    expect(html).toContain('Response Constraints');
+    expect(html).toContain('Stay grounded in the immediate exchange.');
     expect(html).not.toContain('chat-tag-bar"><span class="chat-tag chat-tag--speech-act">Tell');
     expect(html).not.toContain('<details class="chat-inner-world" open');
   });
@@ -538,6 +563,8 @@ describe('chat page template', () => {
     expect(html).toContain('data-chat-section="relationship"');
     expect(html).toContain('data-chat-section="knowledge"');
     expect(html).toContain('data-chat-section="mind"');
+    expect(html).toContain('data-chat-section="conversation"');
+    expect(html).toContain('data-chat-section="guardrails"');
     expect(html).toContain('data-chat-gauge="valence"');
     expect(html).toContain('data-chat-sparkline="valence"');
     expect(html).toContain('data-chat-turn-count');
@@ -629,5 +656,14 @@ describe('chat page template', () => {
     expect(html).toContain('No beliefs recorded.');
     expect(html).toContain('No secrets currently kept.');
     expect(html).toContain('No active knowledge boundaries.');
+    expect(html).toContain('data-chat-field="conversationSummary">0 threads, 0 commitments</span>');
+    expect(html).toContain('No active last-turn pressure.');
+    expect(html).toContain('No rolling summary available.');
+    expect(html).toContain('No active threads.');
+    expect(html).toContain('No commitments tracked.');
+    expect(html).toContain('No sensitive topics noted.');
+    expect(html).toContain('data-chat-field="guardrailsSummary">0 guardrails, 0 constraints</span>');
+    expect(html).toContain('No continuity guardrails.');
+    expect(html).toContain('No response constraints.');
   });
 });

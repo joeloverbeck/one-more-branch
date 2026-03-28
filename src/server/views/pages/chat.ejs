@@ -46,6 +46,18 @@
       return `${pluralizeSidebarCount(knownFacts.length, 'fact', 'facts')}, ${pluralizeSidebarCount(suspicions.length, 'suspicion', 'suspicions')}`;
     }
 
+    function buildConversationSummary(chatBible) {
+      const activeThreads = sanitizeSidebarItems(chatBible?.conversationNow?.activeThreads);
+      const commitments = sanitizeSidebarItems(chatBible?.conversationNow?.commitments);
+      return `${pluralizeSidebarCount(activeThreads.length, 'thread', 'threads')}, ${pluralizeSidebarCount(commitments.length, 'commitment', 'commitments')}`;
+    }
+
+    function buildGuardrailsSummary(chatBible) {
+      const guardrails = sanitizeSidebarItems(chatBible?.continuityGuardrails);
+      const constraints = sanitizeSidebarItems(chatBible?.responseConstraints);
+      return `${pluralizeSidebarCount(guardrails.length, 'guardrail', 'guardrails')}, ${pluralizeSidebarCount(constraints.length, 'constraint', 'constraints')}`;
+    }
+
     function truncateSidebarSummary(value, maxLength) {
       const normalized = normalizeSidebarText(value, '');
       if (normalized.length === 0) {
@@ -274,6 +286,8 @@
       bootstrapChatBible?.characterNow?.currentObjective,
       60
     );
+    var conversationSummary = buildConversationSummary(bootstrapChatBible);
+    var guardrailsSummary = buildGuardrailsSummary(bootstrapChatBible);
   %>
 
   <main
@@ -767,6 +781,114 @@
                 <li class="chat-sidebar-list__empty">No active knowledge boundaries.</li>
               <% } else { %>
                 <% sanitizeSidebarItems(bootstrapChatBible?.knowledgeNow?.knowledgeBoundaries).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+        </div>
+      </details>
+
+      <details
+        class="chat-accordion chat-sidebar__section"
+        id="chat-conversation-state"
+        data-chat-section="conversation"
+        open
+      >
+        <summary class="chat-accordion-summary">
+          <span class="chat-accordion-summary__title">Conversation</span>
+          <span class="chat-accordion-summary__meta">
+            <span class="chat-summary-chip" data-chat-field="conversationSummary"><%= conversationSummary %></span>
+          </span>
+        </summary>
+
+        <div class="chat-accordion-content">
+          <dl class="chat-sidebar-details chat-sidebar-details--compact">
+            <div class="chat-sidebar-details__row">
+              <dt>Last Turn Pressure</dt>
+              <dd><span data-chat-field="lastTurnPressure"><%= normalizeSidebarText(bootstrapChatBible?.conversationNow?.lastTurnPressure, 'No active last-turn pressure.') %></span></dd>
+            </div>
+            <div class="chat-sidebar-details__row">
+              <dt>Rolling Summary</dt>
+              <dd><span data-chat-field="conversationRollingSummary"><%= normalizeSidebarText(bootstrapChatBible?.conversationNow?.rollingSummary, 'No rolling summary available.') %></span></dd>
+            </div>
+          </dl>
+
+          <section class="chat-sidebar-group">
+            <h3>Active Threads</h3>
+            <ul class="chat-sidebar-list" data-chat-list="activeThreads">
+              <% if (sanitizeSidebarItems(bootstrapChatBible?.conversationNow?.activeThreads).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No active threads.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapChatBible?.conversationNow?.activeThreads).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+
+          <section class="chat-sidebar-group">
+            <h3>Commitments</h3>
+            <ul class="chat-sidebar-list" data-chat-list="commitments">
+              <% if (sanitizeSidebarItems(bootstrapChatBible?.conversationNow?.commitments).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No commitments tracked.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapChatBible?.conversationNow?.commitments).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+
+          <section class="chat-sidebar-group">
+            <h3>Sensitive Topics</h3>
+            <ul class="chat-sidebar-list" data-chat-list="sensitiveTopics">
+              <% if (sanitizeSidebarItems(bootstrapChatBible?.conversationNow?.sensitiveTopics).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No sensitive topics noted.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapChatBible?.conversationNow?.sensitiveTopics).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+        </div>
+      </details>
+
+      <details
+        class="chat-accordion chat-sidebar__section"
+        id="chat-guardrails"
+        data-chat-section="guardrails"
+        open
+      >
+        <summary class="chat-accordion-summary">
+          <span class="chat-accordion-summary__title">Guardrails &amp; Constraints</span>
+          <span class="chat-accordion-summary__meta">
+            <span class="chat-summary-chip" data-chat-field="guardrailsSummary"><%= guardrailsSummary %></span>
+          </span>
+        </summary>
+
+        <div class="chat-accordion-content">
+          <section class="chat-sidebar-group">
+            <h3>Continuity Guardrails</h3>
+            <ul class="chat-sidebar-list" data-chat-list="continuityGuardrails">
+              <% if (sanitizeSidebarItems(bootstrapChatBible?.continuityGuardrails).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No continuity guardrails.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapChatBible?.continuityGuardrails).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+
+          <section class="chat-sidebar-group">
+            <h3>Response Constraints</h3>
+            <ul class="chat-sidebar-list" data-chat-list="responseConstraints">
+              <% if (sanitizeSidebarItems(bootstrapChatBible?.responseConstraints).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No response constraints.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapChatBible?.responseConstraints).forEach(function(item) { %>
                   <li><%= item %></li>
                 <% }); %>
               <% } %>

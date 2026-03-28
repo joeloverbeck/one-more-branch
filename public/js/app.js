@@ -15797,6 +15797,20 @@ window.ChatSidebar = (function () {
       pluralizeCount(suspicions.length, 'suspicion', 'suspicions');
   }
 
+  function buildConversationSummary(chatBible) {
+    var activeThreads = sanitizeItems(chatBible && chatBible.conversationNow && chatBible.conversationNow.activeThreads);
+    var commitments = sanitizeItems(chatBible && chatBible.conversationNow && chatBible.conversationNow.commitments);
+    return pluralizeCount(activeThreads.length, 'thread', 'threads') + ', ' +
+      pluralizeCount(commitments.length, 'commitment', 'commitments');
+  }
+
+  function buildGuardrailsSummary(chatBible) {
+    var guardrails = sanitizeItems(chatBible && chatBible.continuityGuardrails);
+    var constraints = sanitizeItems(chatBible && chatBible.responseConstraints);
+    return pluralizeCount(guardrails.length, 'guardrail', 'guardrails') + ', ' +
+      pluralizeCount(constraints.length, 'constraint', 'constraints');
+  }
+
   function truncateSummary(value, maxLength, fallback) {
     var normalized = normalizeText(value, fallback || '');
     if (normalized.length === 0 || normalized === (fallback || '')) {
@@ -16146,6 +16160,45 @@ window.ChatSidebar = (function () {
       root.querySelector('[data-chat-list="knowledgeBoundaries"]'),
       chatBible && chatBible.knowledgeNow && chatBible.knowledgeNow.knowledgeBoundaries,
       'No active knowledge boundaries.'
+    );
+    updateField(root, 'conversationSummary', buildConversationSummary(chatBible), '0 threads, 0 commitments');
+    updateField(
+      root,
+      'lastTurnPressure',
+      normalizeText(chatBible && chatBible.conversationNow && chatBible.conversationNow.lastTurnPressure, 'No active last-turn pressure.'),
+      'No active last-turn pressure.'
+    );
+    updateField(
+      root,
+      'conversationRollingSummary',
+      normalizeText(chatBible && chatBible.conversationNow && chatBible.conversationNow.rollingSummary, 'No rolling summary available.'),
+      'No rolling summary available.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="activeThreads"]'),
+      chatBible && chatBible.conversationNow && chatBible.conversationNow.activeThreads,
+      'No active threads.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="commitments"]'),
+      chatBible && chatBible.conversationNow && chatBible.conversationNow.commitments,
+      'No commitments tracked.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="sensitiveTopics"]'),
+      chatBible && chatBible.conversationNow && chatBible.conversationNow.sensitiveTopics,
+      'No sensitive topics noted.'
+    );
+    updateField(root, 'guardrailsSummary', buildGuardrailsSummary(chatBible), '0 guardrails, 0 constraints');
+    renderBulletList(
+      root.querySelector('[data-chat-list="continuityGuardrails"]'),
+      chatBible && chatBible.continuityGuardrails,
+      'No continuity guardrails.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="responseConstraints"]'),
+      chatBible && chatBible.responseConstraints,
+      'No response constraints.'
     );
 
     updateRelationshipVisuals(root, history, relationshipState);

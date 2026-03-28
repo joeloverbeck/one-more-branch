@@ -14,17 +14,19 @@ After all the visual components are in place, the client-side `submitTurn()` flo
 
 1. `submitTurn()` in `20-chat-controller.js:197` calls the POST endpoint and receives `data.userTurn`, `data.characterTurn`, `data.updatedSession` — confirmed.
 2. `appendTurn()` at line 144 appends a turn and scrolls into view — confirmed, but needs update for new rendering.
-3. `updateSidebar()` at line 173 updates flat field values — confirmed, needs expansion for accordion sections.
-4. POST response will include `updatedChatBible` per CHAUIOVE-001 — new field.
+3. Sidebar updates no longer live in `20-chat-controller.js`; the current architecture already delegates sidebar rendering to `public/js/src/20b-chat-sidebar.js`, and `20-chat-controller.js` only orchestrates calls into it.
+4. The POST response does not include `updatedChatBible`; current route tests explicitly assert that this alias is absent. The canonical post-turn source for sidebar data is `data.updatedSession.chatBible`.
 5. `loadingSession.withProgress()` handles spinner and progress — confirmed.
+6. `chatBible.conversationNow.rollingSummary` is currently the UI-facing rolling-summary string. Any deeper contract cleanup between that field and `updatedSession.rollingSummary` belongs in a separate architecture ticket, not in this integration ticket.
 
 ## Architecture Check
 
 1. This is an integration/wiring ticket — no new visual components, just connecting the POST response data to the renderers built in prior tickets.
 2. By the time this ticket lands, turn rendering should live in `20a-chat-turn-renderer.js` and sidebar rendering should live in `20b-chat-sidebar.js`. This ticket should integrate those modules, not grow `20-chat-controller.js`.
-3. The key change is coordinating the existing helpers so post-turn updates refresh: knowledge state counts/lists, character mind fields, conversation fields, guardrails, gauges, and sparklines.
+3. The key change is coordinating the existing helpers so post-turn updates refresh: knowledge state counts/lists, character mind fields, conversation fields, guardrails, gauges, and sparklines, all from `data.updatedSession`.
 4. `appendTurn()` must call the extracted turn-renderer helpers from CHAUIOVE-004/005.
 5. Loading state moves from the old `chat-loading-indicator` to inline display near the send button in the compact input bar.
+6. No alias response fields should be introduced. If a helper needs chat-bible data, it should read `updatedSession.chatBible`, not a parallel `updatedChatBible` payload.
 
 ## What to Change
 
@@ -34,9 +36,9 @@ After a successful POST response, the sidebar helpers must update:
 - Physical Context fields (existing, minor updates)
 - Relationship fields + gauge marker repositioning + sparkline append
 - Knowledge State counts and lists (from `data.updatedSession.knowledgeState`)
-- Character Mind fields (from `data.updatedChatBible.characterNow` etc.)
-- Conversation fields (from `data.updatedChatBible.conversationNow`)
-- Guardrails fields (from `data.updatedChatBible`)
+- Character Mind fields (from `data.updatedSession.chatBible?.characterNow` etc.)
+- Conversation fields (from `data.updatedSession.chatBible?.conversationNow`)
+- Guardrails fields (from `data.updatedSession.chatBible`)
 - Accordion summary lines (counts, truncated text)
 
 ### 2. Update `appendTurn()` auto-scroll target
@@ -72,6 +74,7 @@ After successful API key usage in `submitTurn()`, ensure the lock icon shows "lo
 - Server-side route changes (CHAUIOVE-001)
 - New CSS layout or component design (prior tickets)
 - New accordion sections or turn rendering features
+- Canonicalizing the duplicate rolling-summary representations between `updatedSession.rollingSummary` and `updatedSession.chatBible.conversationNow.rollingSummary` (handled by a dedicated follow-up architecture ticket)
 
 ## Acceptance Criteria
 
@@ -94,6 +97,7 @@ After successful API key usage in `submitTurn()`, ensure the lock icon shows "lo
 3. Error display still works (turn errors shown in `#chat-turn-error`)
 4. `shouldSendResumeFlag` logic unchanged
 5. `inFlight` guard prevents double-submission
+6. Post-turn sidebar data comes from `updatedSession` only; no `updatedChatBible` alias is introduced
 
 ## Test Plan
 
@@ -102,6 +106,7 @@ After successful API key usage in `submitTurn()`, ensure the lock icon shows "lo
 1. Client-side tests: after simulated turn submission, verify sidebar fields updated
 2. Client-side tests: verify auto-scroll targets `.chat-conversation` container
 3. Client-side tests: verify loading state toggles on send button and textarea
+4. `test/unit/server/routes/chat.test.ts` — keep/strengthen the contract assertion that the JSON response does not introduce `updatedChatBible`
 
 ### Commands
 
