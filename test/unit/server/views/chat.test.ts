@@ -44,6 +44,21 @@ describe('chat page template', () => {
           delivery?: string;
         }>;
       }>;
+      chatUiBootstrap: {
+        chatBible: Record<string, unknown> | null;
+        knowledgeState: {
+          knownFacts: string[];
+          suspicions: string[];
+          falseBeliefs: string[];
+          secretsRevealed: string[];
+        };
+        relationshipHistory: Array<{
+          turnNumber: number;
+          valence: number;
+          tension: number;
+          dynamic: string;
+        }>;
+      };
     },
     options: { filename: string }
   ) => string;
@@ -98,6 +113,19 @@ describe('chat page template', () => {
             blocks: [{ type: 'SPEECH', text: 'You already know enough.', delivery: 'dryly' }],
           },
         ],
+        chatUiBootstrap: {
+          chatBible: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipHistory: [
+            { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
+            { turnNumber: 2, valence: 0, tension: 0, dynamic: '' },
+          ],
+        },
       },
       { filename: templatePath }
     );
@@ -147,6 +175,16 @@ describe('chat page template', () => {
           },
         },
         turns: [],
+        chatUiBootstrap: {
+          chatBible: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipHistory: [{ turnNumber: 0, valence: 0, tension: 0, dynamic: '' }],
+        },
       },
       { filename: templatePath }
     );
@@ -160,6 +198,8 @@ describe('chat page template', () => {
     expect(html).toContain('name="message"');
     expect(html).toContain('id="chat-loading-indicator"');
     expect(html).toContain('data-chat-progress');
+    expect(html).toContain('<script type="application/json" id="chat-ui-bootstrap">');
+    expect(html).toContain('"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""}]');
     expect(html).toContain('No turns yet. Start the conversation below.');
     expect(html).toContain('None');
     expect(html).toContain('Unformed');

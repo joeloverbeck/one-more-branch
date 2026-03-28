@@ -6,6 +6,7 @@ export * from './chat-scene-context.js';
 export * from './chat-character-context.js';
 export * from './chat-turn-plan.js';
 export * from './chat-state-update.js';
+export * from './chat-relationship-history.js';
 export * from './chat-rolling-summary.js';
 export * from './chat-errors.js';
 export * from './chat-validation.js';

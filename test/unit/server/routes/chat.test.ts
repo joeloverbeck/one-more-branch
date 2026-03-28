@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-assignment */
 import type { Request, Response } from 'express';
+import type { ChatBible, ChatSession, ChatTurn } from '@/models/chat';
 
 const mockChatService = {
   listChats: jest.fn(),
@@ -75,7 +76,7 @@ function mockRes(): Response {
   } as unknown as Response;
 }
 
-function createSession(): Record<string, unknown> {
+function createSession(): ChatSession {
   return {
     id: 'chat-1',
     createdAt: '2026-03-27T09:00:00.000Z',
@@ -118,7 +119,62 @@ function createSession(): Record<string, unknown> {
   };
 }
 
-function createCharacterTurn(): Record<string, unknown> {
+function createChatBible(): ChatBible {
+  return {
+    sessionPremise: 'A private confrontation after the raid.',
+    physicalReality: {
+      location: 'Archive',
+      microLocation: 'Reading alcove',
+      timeOfDay: 'EVENING',
+      privacy: 'PRIVATE',
+      distanceBand: 'CONVERSATIONAL',
+      characterActivity: 'Cataloguing ledgers',
+      interactableObjects: ['ledger'],
+      ambientConditions: ['rain'],
+    },
+    preChatMomentum: {
+      leadInSummary: 'They meet after the raid.',
+      recentEvents: ['A witness vanished.'],
+      whyNow: 'The ledger must be found before dawn.',
+      stakesNow: ['Exposure ruins them both.'],
+      unresolvedPressures: ['Neither knows who else is listening.'],
+    },
+    characterNow: {
+      currentObjective: 'Keep the upper hand.',
+      immediateNeedFromConversation: 'Find out what Iven knows.',
+      emotionalState: 'guarded',
+      willingnessToEngage: 'GUARDED',
+      topicsToAdvance: ['the ledger'],
+      topicsToProtect: ['the copy'],
+    },
+    relationshipNow: {
+      dynamic: 'strained allies',
+      valence: -1,
+      tension: 6,
+      leverage: 'Shared guilt',
+      whatCharacterBelievesAboutInterlocutor: ['He is hiding something.'],
+    },
+    knowledgeNow: {
+      knownFacts: ['The ledger is missing.'],
+      suspicions: ['Iven moved it.'],
+      falseBeliefs: [],
+      secretsRevealed: [],
+      secretsKept: ['Mara copied one page.'],
+      knowledgeBoundaries: ['Who ordered the raid.'],
+    },
+    conversationNow: {
+      rollingSummary: null,
+      activeThreads: ['the missing ledger'],
+      commitments: [],
+      sensitiveTopics: ['the copy'],
+      lastTurnPressure: 'Iven asked what Mara already knows.',
+    },
+    continuityGuardrails: ['Do not confess without pressure.'],
+    responseConstraints: ['Stay grounded in the immediate exchange.'],
+  };
+}
+
+function createCharacterTurn(): ChatTurn {
   return {
     turnNumber: 2,
     speaker: 'CHARACTER' as const,
@@ -183,7 +239,7 @@ function createCharacterTurn(): Record<string, unknown> {
   };
 }
 
-function createUserTurn(): Record<string, unknown> {
+function createUserTurn(): ChatTurn {
   return {
     turnNumber: 1,
     speaker: 'USER' as const,
@@ -345,6 +401,86 @@ describe('chat routes', () => {
         title: 'Chat with Mara - One More Branch',
         session: expect.objectContaining({ id: 'chat-1' }),
         turns: expect.any(Array),
+        chatUiBootstrap: expect.objectContaining({
+          chatBible: null,
+          knowledgeState: expect.any(Object),
+          relationshipHistory: [
+            { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
+            { turnNumber: 2, valence: 0, tension: 0, dynamic: '' },
+          ],
+        }),
+      })
+    );
+  });
+
+  it('GET /:chatId builds cumulative relationship history for the bootstrap payload', async () => {
+    const characterTurn = createCharacterTurn();
+    const laterCharacterTurn = {
+      ...createCharacterTurn(),
+      turnNumber: 4,
+      timestamp: '2026-03-27T09:04:00.000Z',
+      stateUpdate: {
+        ...createCharacterTurn().stateUpdate,
+        relationshipShifts: [
+          {
+            shiftDescription: 'Mara softens slightly.',
+            suggestedValenceChange: 1,
+            suggestedTensionChange: -2,
+            suggestedNewDynamic: null,
+          },
+        ],
+      },
+    };
+
+    mockChatService.resumeChat.mockResolvedValue({
+      session: {
+        ...createSession(),
+        chatBible: createChatBible(),
+      },
+      turns: [
+        createUserTurn(),
+        {
+          ...characterTurn,
+          stateUpdate: {
+            ...characterTurn.stateUpdate,
+            relationshipShifts: [
+              {
+                shiftDescription: 'The accusation lands.',
+                suggestedValenceChange: -2,
+                suggestedTensionChange: 3,
+                suggestedNewDynamic: 'open suspicion',
+              },
+            ],
+          },
+        },
+        {
+          ...createUserTurn(),
+          turnNumber: 3,
+          timestamp: '2026-03-27T09:03:00.000Z',
+        },
+        laterCharacterTurn,
+      ],
+    });
+
+    const handler = getRouteHandler('get', '/:chatId');
+    const req = mockReq({ params: { chatId: 'chat-1' } });
+    const res = mockRes();
+
+    void handler(req, res);
+    await flushPromises();
+
+    expect(res.render).toHaveBeenCalledWith(
+      'pages/chat',
+      expect.objectContaining({
+        chatUiBootstrap: {
+          chatBible: createChatBible(),
+          knowledgeState: expect.any(Object),
+          relationshipHistory: [
+            { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
+            { turnNumber: 2, valence: -2, tension: 3, dynamic: 'open suspicion' },
+            { turnNumber: 4, valence: -1, tension: 1, dynamic: 'open suspicion' },
+          ],
+        },
       })
     );
   });
@@ -461,6 +597,8 @@ describe('chat routes', () => {
         updatedSession: expect.any(Object),
       })
     );
+    const jsonCalls = (res.json as jest.Mock).mock.calls as Array<[Record<string, unknown>]>;
+    expect(jsonCalls[0]?.[0]).not.toHaveProperty('updatedChatBible');
   });
 
   it('POST /:chatId/turn maps missing chats to 404 and fails progress', async () => {
