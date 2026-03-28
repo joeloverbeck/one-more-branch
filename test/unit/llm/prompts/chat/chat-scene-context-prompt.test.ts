@@ -143,7 +143,7 @@ describe('buildChatSceneContextMessages', () => {
     const userContent = buildChatSceneContextMessages(makeContext())[1].content;
 
     expect(userContent).toContain('Name: Iria Vale');
-    expect(userContent).toContain('Description: Iria Vale is dangerous and exhausted.');
+    expect(userContent).not.toContain('Description: Iria Vale is dangerous and exhausted.');
     expect(userContent).not.toContain('Knowledge Boundaries:');
     expect(userContent).not.toContain('SPEECH FINGERPRINT');
     expect(userContent).not.toContain('Immediate Objectives:');

@@ -39,7 +39,7 @@ describe('stage-model resolution', () => {
     loadConfig();
 
     expect(getStageModel('conceptSeeder')).toBe('anthropic/claude-sonnet-4.6');
-    expect(getStageModel('characterBrainstormer')).toBe('anthropic/claude-sonnet-4.5');
+    expect(getStageModel('characterBrainstormer')).toBe('anthropic/claude-sonnet-4.6');
     expect(getStageModel('kernelIdeator')).toBe(getConfig().llm.defaultModel);
   });
 

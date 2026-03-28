@@ -103,6 +103,22 @@ export function formatStandaloneCharacterSummary(char: StandaloneDecomposedChara
     lines.push(`  Misbelief: ${char.misbelief}`);
   }
 
+  if (char.focalizationFilter) {
+    lines.push('  Focalization Filter:');
+    lines.push(`    Notices First: ${char.focalizationFilter.noticesFirst}`);
+    lines.push(`    Systematically Misses: ${char.focalizationFilter.systematicallyMisses}`);
+    lines.push(`    Misreads As: ${char.focalizationFilter.misreadsAs}`);
+  }
+
+  if (char.stressVariants) {
+    lines.push('  Stress Variants:');
+    lines.push(`    Under Threat: ${char.stressVariants.underThreat}`);
+    lines.push(`    In Intimacy: ${char.stressVariants.inIntimacy}`);
+    lines.push(`    When Lying: ${char.stressVariants.whenLying}`);
+    lines.push(`    When Ashamed: ${char.stressVariants.whenAshamed}`);
+    lines.push(`    When Winning: ${char.stressVariants.whenWinning}`);
+  }
+
   if (char.escalationLadder && char.escalationLadder.length > 0) {
     lines.push(`  Escalation Ladder: ${char.escalationLadder.join(' → ')}`);
   }

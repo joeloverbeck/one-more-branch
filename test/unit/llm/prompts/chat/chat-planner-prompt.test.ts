@@ -31,6 +31,18 @@ function makeCharacter(
     conflictPriority: 'Mission over comfort',
     appearance: 'Rain-dark coat and immaculate gloves',
     createdAt: '2026-03-01T10:00:00.000Z',
+    stressVariants: {
+      underThreat: 'Gets colder and more procedural',
+      inIntimacy: 'Deflects with mission language',
+      whenLying: 'Over-explains tactical details',
+      whenAshamed: 'Turns severe and overcorrects',
+      whenWinning: 'Presses for irreversible leverage',
+    },
+    focalizationFilter: {
+      noticesFirst: 'Breaks in resolve',
+      systematicallyMisses: 'Unscripted kindness',
+      misreadsAs: 'Reads hesitation as stalling',
+    },
     immediateObjectives: ['Secure the map', 'Test Tomas'],
     ...overrides,
   };
@@ -161,6 +173,10 @@ describe('buildChatPlannerMessages', () => {
     const userContent = buildChatPlannerMessages(makeContext())[1].content;
 
     expect(userContent).toContain('Immediate Objectives: Secure the map; Test Tomas');
+    expect(userContent).toContain('Focalization Filter:');
+    expect(userContent).toContain('Notices First: Breaks in resolve');
+    expect(userContent).toContain('Stress Variants:');
+    expect(userContent).toContain('When Lying: Over-explains tactical details');
     expect(userContent).toContain('Vocabulary Profile: Clipped naval diction');
     expect(userContent).toContain('Dialogue Samples:');
     expect(userContent).toContain('- Stay on bearing, and maybe we survive this yet.');

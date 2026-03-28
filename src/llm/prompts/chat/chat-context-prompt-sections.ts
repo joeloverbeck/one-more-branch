@@ -15,7 +15,6 @@ function formatCharacterIdentitySummary(
 ): string {
   return [
     `Name: ${contextCharacter.name}`,
-    `Description: ${contextCharacter.rawDescription}`,
     `Core Traits: ${contextCharacter.coreTraits.join(', ') || 'None'}`,
     `Appearance: ${contextCharacter.appearance}`,
   ].join('\n');
@@ -24,12 +23,66 @@ function formatCharacterIdentitySummary(
 function formatCharacterPsychologySummary(character: StandaloneDecomposedCharacter): string {
   const lines = [
     `Name: ${character.name}`,
-    `Description: ${character.rawDescription}`,
     `Core Traits: ${character.coreTraits.join(', ') || 'None'}`,
   ];
 
   if (character.superObjective) {
     lines.push(`Super-Objective: ${character.superObjective}`);
+  }
+
+  if (character.stakes && character.stakes.length > 0) {
+    lines.push('Stakes:');
+    lines.push(formatStringList(character.stakes));
+  }
+
+  if (character.pressurePoint) {
+    lines.push(`Pressure Point: ${character.pressurePoint}`);
+  }
+
+  if (character.personalDilemmas && character.personalDilemmas.length > 0) {
+    lines.push('Personal Dilemmas:');
+    lines.push(formatStringList(character.personalDilemmas));
+  }
+
+  if (character.emotionSalience) {
+    lines.push(`Emotion Salience: ${character.emotionSalience}`);
+  }
+
+  if (character.moralLine) {
+    lines.push(`Moral Line: ${character.moralLine}`);
+  }
+
+  if (character.worstFear) {
+    lines.push(`Worst Fear: ${character.worstFear}`);
+  }
+
+  if (character.formativeWound) {
+    lines.push(`Formative Wound: ${character.formativeWound}`);
+  }
+
+  if (character.misbelief) {
+    lines.push(`Misbelief: ${character.misbelief}`);
+  }
+
+  if (character.focalizationFilter) {
+    lines.push('Focalization Filter:');
+    lines.push(`- Notices First: ${character.focalizationFilter.noticesFirst}`);
+    lines.push(`- Systematically Misses: ${character.focalizationFilter.systematicallyMisses}`);
+    lines.push(`- Misreads As: ${character.focalizationFilter.misreadsAs}`);
+  }
+
+  if (character.escalationLadder && character.escalationLadder.length > 0) {
+    lines.push('Escalation Ladder:');
+    lines.push(formatStringList(character.escalationLadder));
+  }
+
+  if (character.stressVariants) {
+    lines.push('Stress Variants:');
+    lines.push(`- Under Threat: ${character.stressVariants.underThreat}`);
+    lines.push(`- In Intimacy: ${character.stressVariants.inIntimacy}`);
+    lines.push(`- When Lying: ${character.stressVariants.whenLying}`);
+    lines.push(`- When Ashamed: ${character.stressVariants.whenAshamed}`);
+    lines.push(`- When Winning: ${character.stressVariants.whenWinning}`);
   }
 
   lines.push(`Knowledge Boundaries: ${character.knowledgeBoundaries}`);
@@ -66,6 +119,10 @@ function formatCharacterPsychologySummary(character: StandaloneDecomposedCharact
   if (character.currentIntentions && character.currentIntentions.length > 0) {
     lines.push('Current Intentions:');
     lines.push(formatStringList(character.currentIntentions));
+  }
+
+  if (character.sociology) {
+    lines.push(`Sociology: ${character.sociology}`);
   }
 
   return lines.join('\n');

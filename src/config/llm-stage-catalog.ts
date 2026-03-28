@@ -39,7 +39,7 @@ export const LLM_STAGE_CATALOG = [
   { key: 'entityDecomposer' },
   { key: 'characterDecomposer' },
   { key: 'characterContextualizer' },
-  { key: 'characterBrainstormer', defaultModel: 'anthropic/claude-sonnet-4.5' },
+  { key: 'characterBrainstormer', defaultModel: 'anthropic/claude-sonnet-4.6' },
   {
     key: 'chatSceneContext',
     defaultModel: 'anthropic/claude-sonnet-4.6',

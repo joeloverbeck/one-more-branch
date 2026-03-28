@@ -1,6 +1,7 @@
 import { buildChatCharacterContextMessages } from '../../../../../src/llm/prompts/chat/chat-character-context-prompt';
 import type { ChatGenerationContext } from '../../../../../src/llm/chat/chat-generation-context';
 import type { ChatSceneContext } from '../../../../../src/models/chat/index';
+import { EmotionSalience } from '../../../../../src/models/character-enums';
 import type { DecomposedWorld } from '../../../../../src/models/decomposed-world';
 import type { StandaloneDecomposedCharacter } from '../../../../../src/models/standalone-decomposed-character';
 
@@ -49,7 +50,29 @@ function makeCharacter(
     conflictPriority: 'Mission over comfort',
     appearance: 'Rain-dark coat and immaculate gloves',
     createdAt: '2026-03-01T10:00:00.000Z',
+    stakes: ['Lose the map', 'Expose her informant'],
+    pressurePoint: 'Any hint she failed the mission alone',
+    personalDilemmas: ['Protect the source or save the alliance'],
+    emotionSalience: EmotionSalience.HIGH,
+    moralLine: 'Will not hand civilians to the tribunal',
+    worstFear: 'Being trapped under someone else’s command again',
+    formativeWound: 'A prior captain framed her to save himself',
+    misbelief: 'If she needs anyone, they own her',
+    stressVariants: {
+      underThreat: 'Gets colder and more procedural',
+      inIntimacy: 'Deflects with mission language',
+      whenLying: 'Over-explains tactical details',
+      whenAshamed: 'Becomes ruthlessly efficient',
+      whenWinning: 'Pushes too hard for total control',
+    },
+    focalizationFilter: {
+      noticesFirst: 'Hesitation before commitment',
+      systematicallyMisses: 'Good-faith offers of care',
+      misreadsAs: 'Treats uncertainty as manipulation',
+    },
+    escalationLadder: ['Warn once', 'Corner verbally', 'Force a commitment'],
     immediateObjectives: ['Secure the map', 'Test Tomas'],
+    sociology: 'Officer caste training with dockside survival habits',
     ...overrides,
   };
 }
@@ -170,7 +193,29 @@ describe('buildChatCharacterContextMessages', () => {
       .content;
 
     expect(userContent).toContain('Super-Objective: Recover the map');
+    expect(userContent).toContain('Stakes:');
+    expect(userContent).toContain('- Lose the map');
+    expect(userContent).toContain('Pressure Point: Any hint she failed the mission alone');
+    expect(userContent).toContain('Personal Dilemmas:');
+    expect(userContent).toContain('- Protect the source or save the alliance');
+    expect(userContent).toContain('Emotion Salience: HIGH');
+    expect(userContent).toContain('Moral Line: Will not hand civilians to the tribunal');
+    expect(userContent).toContain(
+      'Worst Fear: Being trapped under someone else’s command again'
+    );
+    expect(userContent).toContain('Formative Wound: A prior captain framed her to save himself');
+    expect(userContent).toContain('Misbelief: If she needs anyone, they own her');
+    expect(userContent).toContain('Stress Variants:');
+    expect(userContent).toContain('- When Lying: Over-explains tactical details');
+    expect(userContent).toContain('Focalization Filter:');
+    expect(userContent).toContain('- Systematically Misses: Good-faith offers of care');
+    expect(userContent).toContain('Escalation Ladder:');
+    expect(userContent).toContain('- Force a commitment');
     expect(userContent).toContain('Knowledge Boundaries: Knows the codes, not the mastermind.');
     expect(userContent).toContain('Immediate Objectives: Secure the map; Test Tomas');
+    expect(userContent).toContain(
+      'Sociology: Officer caste training with dockside survival habits'
+    );
+    expect(userContent).not.toContain('Description: Iria Vale is dangerous and exhausted.');
   });
 });
