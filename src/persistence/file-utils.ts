@@ -44,12 +44,8 @@ export function getChatDir(chatId: string): string {
   return path.join(getChatsDir(), chatId);
 }
 
-export function getChatSessionFilePath(chatId: string): string {
-  return path.join(getChatDir(chatId), 'chat.json');
-}
-
-export function getChatTurnsFilePath(chatId: string): string {
-  return path.join(getChatDir(chatId), 'turns.json');
+export function getChatStateFilePath(chatId: string): string {
+  return path.join(getChatDir(chatId), 'state.json');
 }
 
 export async function atomicWriteFile(filePath: string, data: string): Promise<void> {

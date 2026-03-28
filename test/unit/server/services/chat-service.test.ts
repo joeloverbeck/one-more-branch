@@ -233,10 +233,10 @@ function createDeps(overrides: Partial<ChatServiceDeps> = {}): ChatServiceDeps {
     }),
     loadWorldbuildingById: jest.fn().mockResolvedValue(createWorldbuilding()),
     saveChat: jest.fn().mockResolvedValue(undefined),
+    commitChatTurn: jest.fn().mockResolvedValue(createSession({ turnCount: 2 })),
     loadChat: jest.fn().mockResolvedValue(createSession()),
     listChats: jest.fn().mockResolvedValue([createSummary()]),
     deleteChat: jest.fn().mockResolvedValue(undefined),
-    saveTurn: jest.fn().mockResolvedValue(undefined),
     loadTurns: jest.fn().mockResolvedValue([createUserTurn()]),
     getRecentTurns: jest.fn().mockResolvedValue([createUserTurn()]),
     parseChatInput: jest.fn().mockReturnValue([{ type: 'SPEECH', text: 'Tell me what happened.' }]),
@@ -365,12 +365,12 @@ describe('chat-service', () => {
     });
   });
 
-  it('runs the pipeline before persisting either turn', async () => {
+  it('runs the pipeline before atomically committing the turn result', async () => {
     const callOrder: string[] = [];
     const deps = createDeps({
-      saveTurn: jest.fn((_chatId: string, turn: ChatTurn) => {
-        callOrder.push(`saveTurn:${turn.speaker}`);
-        return Promise.resolve();
+      commitChatTurn: jest.fn(() => {
+        callOrder.push('commit');
+        return Promise.resolve(createSession({ turnCount: 2 }));
       }),
       runChatPipeline: jest.fn(() => {
         callOrder.push('pipeline');
@@ -388,10 +388,10 @@ describe('chat-service', () => {
       apiKey: 'test-key',
     });
 
-    expect(callOrder).toEqual(['pipeline', 'saveTurn:USER', 'saveTurn:CHARACTER']);
+    expect(callOrder).toEqual(['pipeline', 'commit']);
   });
 
-  it('saves the character turn after the pipeline and persists the updated session', async () => {
+  it('commits both turns and the updated session after the pipeline', async () => {
     const pipelineResult = createPipelineResult();
     const deps = createDeps({
       runChatPipeline: jest.fn().mockResolvedValue(pipelineResult),
@@ -409,13 +409,15 @@ describe('chat-service', () => {
       userTurn: createUserTurn({ timestamp: '2026-03-27T09:01:00.000Z' }),
       ...pipelineResult,
     });
-    expect(deps.saveTurn).toHaveBeenNthCalledWith(
-      1,
+    expect(deps.commitChatTurn).toHaveBeenCalledWith(
       'chat-1',
-      createUserTurn({ timestamp: '2026-03-27T09:01:00.000Z' })
+      {
+        userTurn: createUserTurn({ timestamp: '2026-03-27T09:01:00.000Z' }),
+        characterTurn: pipelineResult.characterTurn,
+        updatedSession: pipelineResult.updatedSession,
+      }
     );
-    expect(deps.saveTurn).toHaveBeenNthCalledWith(2, 'chat-1', pipelineResult.characterTurn);
-    expect(deps.saveChat).toHaveBeenCalledWith(pipelineResult.updatedSession);
+    expect(deps.saveChat).not.toHaveBeenCalled();
   });
 
   it('does not persist turns or session when the pipeline fails', async () => {
@@ -433,7 +435,7 @@ describe('chat-service', () => {
       })
     ).rejects.toThrow('pipeline failed');
 
-    expect(deps.saveTurn).not.toHaveBeenCalled();
+    expect(deps.commitChatTurn).not.toHaveBeenCalled();
     expect(deps.saveChat).not.toHaveBeenCalled();
   });
 
@@ -549,7 +551,7 @@ describe('chat-service', () => {
       message: 'User message is required',
     });
 
-    expect(deps.saveTurn).not.toHaveBeenCalled();
+    expect(deps.commitChatTurn).not.toHaveBeenCalled();
     expect(deps.runChatPipeline).not.toHaveBeenCalled();
   });
 
@@ -570,7 +572,7 @@ describe('chat-service', () => {
       message: 'User message is required',
     });
 
-    expect(deps.saveTurn).not.toHaveBeenCalled();
+    expect(deps.commitChatTurn).not.toHaveBeenCalled();
     expect(deps.runChatPipeline).not.toHaveBeenCalled();
   });
 

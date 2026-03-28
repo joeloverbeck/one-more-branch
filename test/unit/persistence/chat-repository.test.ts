@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { ChatDomainError, type ChatSession, type ChatTurn } from '@/models/chat';
 import {
+  commitChatTurn,
   deleteChat,
   getRecentTurns,
   listChats,
@@ -10,14 +11,7 @@ import {
   saveTurn,
   updateChat,
 } from '@/persistence/chat-repository';
-import {
-  directoryExists,
-  ensureDirectory,
-  getChatDir,
-  getChatSessionFilePath,
-  getChatTurnsFilePath,
-  writeJsonFile,
-} from '@/persistence/file-utils';
+import * as fileUtils from '@/persistence/file-utils';
 
 const TEST_PREFIX = 'TEST: CHACHASYS-002';
 
@@ -156,6 +150,8 @@ describe('chat-repository', () => {
   const createdChatIds = new Set<string>();
 
   afterEach(async () => {
+    jest.restoreAllMocks();
+
     for (const chatId of createdChatIds) {
       await deleteChat(chatId);
     }
@@ -199,6 +195,7 @@ describe('chat-repository', () => {
   it('saves and loads turns, appending without losing earlier turns', async () => {
     const chatId = `${TEST_PREFIX}-${randomUUID()}`;
     createdChatIds.add(chatId);
+    await saveChat(createChatSession(chatId));
 
     const firstTurn = createChatTurn(1, 'USER');
     const secondTurn = createChatTurn(2, 'CHARACTER');
@@ -209,9 +206,89 @@ describe('chat-repository', () => {
     await expect(loadTurns(chatId)).resolves.toEqual([firstTurn, secondTurn]);
   });
 
+  it('rejects saving turns for a missing chat aggregate', async () => {
+    const chatId = `${TEST_PREFIX}-${randomUUID()}`;
+
+    await expect(saveTurn(chatId, createChatTurn(1, 'USER'))).rejects.toMatchObject({
+      code: 'RESOURCE_NOT_FOUND',
+      message: `Chat not found: ${chatId}`,
+    });
+  });
+
+  it('commits a successful chat exchange through one aggregate write path', async () => {
+    const chatId = `${TEST_PREFIX}-${randomUUID()}`;
+    createdChatIds.add(chatId);
+    const session = createChatSession(chatId);
+    const userTurn = createChatTurn(1, 'USER');
+    const characterTurn = createChatTurn(2, 'CHARACTER');
+    const updatedSession = {
+      ...session,
+      updatedAt: '2026-03-27T09:02:00.000Z',
+      turnCount: 2,
+    };
+
+    await saveChat(session);
+    await commitChatTurn(chatId, { userTurn, characterTurn, updatedSession });
+
+    await expect(loadChat(chatId)).resolves.toEqual(updatedSession);
+    await expect(loadTurns(chatId)).resolves.toEqual([userTurn, characterTurn]);
+  });
+
+  it('rejects invalid commit payloads before mutating persisted state', async () => {
+    const chatId = `${TEST_PREFIX}-${randomUUID()}`;
+    createdChatIds.add(chatId);
+    const session = createChatSession(chatId);
+
+    await saveChat(session);
+
+    await expect(
+      commitChatTurn(chatId, {
+        userTurn: createChatTurn(1, 'CHARACTER'),
+        characterTurn: createChatTurn(2, 'CHARACTER'),
+        updatedSession: {
+          ...session,
+          turnCount: 2,
+          updatedAt: '2026-03-27T09:02:00.000Z',
+        },
+      })
+    ).rejects.toMatchObject({
+      code: 'INVARIANT_VIOLATION',
+      message: 'Atomic chat commit requires userTurn speaker USER',
+    });
+
+    await expect(loadChat(chatId)).resolves.toEqual(session);
+    await expect(loadTurns(chatId)).resolves.toEqual([]);
+  });
+
+  it('leaves aggregate state untouched when the atomic commit write fails', async () => {
+    const chatId = `${TEST_PREFIX}-${randomUUID()}`;
+    createdChatIds.add(chatId);
+    const session = createChatSession(chatId);
+    const userTurn = createChatTurn(1, 'USER');
+    const characterTurn = createChatTurn(2, 'CHARACTER');
+    const updatedSession = {
+      ...session,
+      updatedAt: '2026-03-27T09:02:00.000Z',
+      turnCount: 2,
+    };
+
+    await saveChat(session);
+    jest
+      .spyOn(fileUtils, 'writeJsonFile')
+      .mockRejectedValueOnce(new Error('disk full'));
+
+    await expect(
+      commitChatTurn(chatId, { userTurn, characterTurn, updatedSession })
+    ).rejects.toThrow('disk full');
+
+    await expect(loadChat(chatId)).resolves.toEqual(session);
+    await expect(loadTurns(chatId)).resolves.toEqual([]);
+  });
+
   it('returns recent turns from the end of the transcript', async () => {
     const chatId = `${TEST_PREFIX}-${randomUUID()}`;
     createdChatIds.add(chatId);
+    await saveChat(createChatSession(chatId));
 
     await saveTurn(chatId, createChatTurn(1, 'USER'));
     await saveTurn(chatId, createChatTurn(2, 'CHARACTER'));
@@ -303,41 +380,47 @@ describe('chat-repository', () => {
     createdChatIds.add(chatId);
     await saveChat(createChatSession(chatId));
 
-    await expect(directoryExists(getChatDir(chatId))).resolves.toBe(true);
+    await expect(fileUtils.directoryExists(fileUtils.getChatDir(chatId))).resolves.toBe(true);
 
     await deleteChat(chatId);
     await deleteChat(chatId);
     createdChatIds.delete(chatId);
 
-    await expect(directoryExists(getChatDir(chatId))).resolves.toBe(false);
+    await expect(fileUtils.directoryExists(fileUtils.getChatDir(chatId))).resolves.toBe(false);
   });
 
-  it('throws for malformed persisted chat sessions', async () => {
+  it('throws for malformed persisted chat sessions inside the aggregate file', async () => {
     const chatId = `${TEST_PREFIX}-${randomUUID()}`;
     createdChatIds.add(chatId);
-    await ensureDirectory(getChatDir(chatId));
-    await writeJsonFile(getChatSessionFilePath(chatId), {
-      id: chatId,
-      updatedAt: '2026-03-27T09:05:00.000Z',
+    await fileUtils.ensureDirectory(fileUtils.getChatDir(chatId));
+    await fileUtils.writeJsonFile(fileUtils.getChatStateFilePath(chatId), {
+      session: {
+        id: chatId,
+        updatedAt: '2026-03-27T09:05:00.000Z',
+      },
+      turns: [],
     });
 
     await expect(loadChat(chatId)).rejects.toBeInstanceOf(ChatDomainError);
     await expect(loadChat(chatId)).rejects.toMatchObject({
       code: 'INVALID_PERSISTED_DATA',
-      message: `Invalid chat session payload at ${getChatSessionFilePath(chatId)}`,
+      message: `Invalid chat session payload at ${fileUtils.getChatStateFilePath(chatId)}`,
     });
   });
 
-  it('throws for malformed persisted turns', async () => {
+  it('throws for malformed persisted turns inside the aggregate file', async () => {
     const chatId = `${TEST_PREFIX}-${randomUUID()}`;
     createdChatIds.add(chatId);
-    await ensureDirectory(getChatDir(chatId));
-    await writeJsonFile(getChatTurnsFilePath(chatId), [{ turnNumber: 1, speaker: 'USER' }]);
+    await fileUtils.ensureDirectory(fileUtils.getChatDir(chatId));
+    await fileUtils.writeJsonFile(fileUtils.getChatStateFilePath(chatId), {
+      session: createChatSession(chatId),
+      turns: [{ turnNumber: 1, speaker: 'USER' }],
+    });
 
     await expect(loadTurns(chatId)).rejects.toBeInstanceOf(ChatDomainError);
     await expect(loadTurns(chatId)).rejects.toMatchObject({
       code: 'INVALID_PERSISTED_DATA',
-      message: `Invalid chat turns payload at ${getChatTurnsFilePath(chatId)}`,
+      message: `Invalid chat turns payload at ${fileUtils.getChatStateFilePath(chatId)}`,
     });
   });
 });

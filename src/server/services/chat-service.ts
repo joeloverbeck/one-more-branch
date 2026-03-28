@@ -14,13 +14,13 @@ import type { StandaloneDecomposedCharacter } from '../../models/standalone-deco
 import { loadCharacter } from '../../persistence/character-repository.js';
 import { loadWorldbuildingById } from '../../services/worldbuilding-service.js';
 import {
+  commitChatTurn,
   deleteChat,
   getRecentTurns,
   listChats,
   loadChat,
   loadTurns,
   saveChat,
-  saveTurn,
 } from '../../persistence/chat-repository.js';
 
 export interface CreateChatParams {
@@ -47,10 +47,10 @@ interface ChatServiceDeps {
   readonly loadCharacter: typeof loadCharacter;
   readonly loadWorldbuildingById: typeof loadWorldbuildingById;
   readonly saveChat: typeof saveChat;
+  readonly commitChatTurn: typeof commitChatTurn;
   readonly loadChat: typeof loadChat;
   readonly listChats: typeof listChats;
   readonly deleteChat: typeof deleteChat;
-  readonly saveTurn: typeof saveTurn;
   readonly loadTurns: typeof loadTurns;
   readonly getRecentTurns: typeof getRecentTurns;
   readonly parseChatInput: typeof parseChatInput;
@@ -71,10 +71,10 @@ const defaultDeps: ChatServiceDeps = {
   loadCharacter,
   loadWorldbuildingById,
   saveChat,
+  commitChatTurn,
   loadChat,
   listChats,
   deleteChat,
-  saveTurn,
   loadTurns,
   getRecentTurns,
   parseChatInput,
@@ -259,9 +259,11 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
         params.onGenerationStage
       );
 
-      await deps.saveTurn(params.chatId, userTurn);
-      await deps.saveTurn(params.chatId, pipelineResult.characterTurn);
-      await deps.saveChat(pipelineResult.updatedSession);
+      await deps.commitChatTurn(params.chatId, {
+        userTurn,
+        characterTurn: pipelineResult.characterTurn,
+        updatedSession: pipelineResult.updatedSession,
+      });
       return {
         userTurn,
         ...pipelineResult,
