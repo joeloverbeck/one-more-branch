@@ -143,6 +143,18 @@ describe('public client script', () => {
     expect(script).toContain("VALIDATING_STRUCTURE: 'VALIDATING'");
   });
 
+  it('ships split chat stage metadata and excludes the legacy chat bible stage', () => {
+    const script = fs.readFileSync(scriptPath, 'utf8');
+
+    expect(script).toContain('CURATING_CHAT_SCENE: [');
+    expect(script).toContain('CURATING_CHAT_CHARACTER: [');
+    expect(script).toContain("CURATING_CHAT_SCENE: 'CURATING CHAT SCENE'");
+    expect(script).toContain("CURATING_CHAT_CHARACTER: 'CURATING CHAT CHARACTER'");
+    expect(countStagePhrases(script, 'CURATING_CHAT_SCENE')).toBeGreaterThanOrEqual(1);
+    expect(countStagePhrases(script, 'CURATING_CHAT_CHARACTER')).toBeGreaterThanOrEqual(1);
+    expect(script).not.toContain('CURATING_CHAT_BIBLE');
+  });
+
   it('ships 20+ phrase variants for each concept stage pool', () => {
     const script = fs.readFileSync(scriptPath, 'utf8');
 

@@ -2,7 +2,7 @@ import { formatStandaloneCharacterSummary } from '../../../models/standalone-dec
 import type { ChatSceneContext } from '../../../models/chat/index.js';
 import type { StandaloneDecomposedCharacter } from '../../../models/standalone-decomposed-character.js';
 import { buildWorldSection } from '../sections/shared/worldbuilding-sections.js';
-import type { ChatBibleContext } from '../../chat/chat-bible-context.js';
+import type { ChatGenerationContext } from '../../chat/chat-generation-context.js';
 import { formatRollingSummaryForPrompt } from './chat-memory-prompt-adapter.js';
 import {
   formatChatSceneContext,
@@ -10,7 +10,9 @@ import {
   formatStringList,
 } from './chat-prompt-formatters.js';
 
-function formatCharacterIdentitySummary(contextCharacter: ChatBibleContext['targetCharacter']): string {
+function formatCharacterIdentitySummary(
+  contextCharacter: ChatGenerationContext['targetCharacter']
+): string {
   return [
     `Name: ${contextCharacter.name}`,
     `Description: ${contextCharacter.rawDescription}`,
@@ -70,7 +72,7 @@ function formatCharacterPsychologySummary(character: StandaloneDecomposedCharact
 }
 
 export function buildTargetCharacterSummarySection(
-  context: ChatBibleContext,
+  context: ChatGenerationContext,
   detailLevel: 'identity' | 'legacyFull' | 'full'
 ): string {
   const body =
@@ -84,7 +86,7 @@ export function buildTargetCharacterSummarySection(
 }
 
 export function buildInterlocutorSummarySection(
-  context: ChatBibleContext,
+  context: ChatGenerationContext,
   detailLevel: 'identity' | 'legacyFull' | 'full'
 ): string {
   const body =
@@ -97,13 +99,13 @@ export function buildInterlocutorSummarySection(
   return `INTERLOCUTOR CHARACTER PROFILE\n${body}`;
 }
 
-export function buildWorldbuildingSection(context: ChatBibleContext): string {
+export function buildWorldbuildingSection(context: ChatGenerationContext): string {
   return context.decomposedWorld.facts.length > 0
     ? buildWorldSection(context.decomposedWorld, 'CHAT')
     : 'WORLDBUILDING:\n(none provided)';
 }
 
-export function buildRelationshipSection(context: ChatBibleContext): string {
+export function buildRelationshipSection(context: ChatGenerationContext): string {
   const { relationshipState } = context;
 
   return [
@@ -115,7 +117,7 @@ export function buildRelationshipSection(context: ChatBibleContext): string {
   ].join('\n');
 }
 
-export function buildKnowledgeSection(context: ChatBibleContext): string {
+export function buildKnowledgeSection(context: ChatGenerationContext): string {
   const { knowledgeState } = context;
 
   return [
@@ -131,7 +133,7 @@ export function buildKnowledgeSection(context: ChatBibleContext): string {
   ].join('\n');
 }
 
-export function buildPhysicalContextSection(context: ChatBibleContext): string {
+export function buildPhysicalContextSection(context: ChatGenerationContext): string {
   const { physicalContext } = context;
 
   return [
@@ -149,7 +151,7 @@ export function buildPhysicalContextSection(context: ChatBibleContext): string {
   ].join('\n');
 }
 
-export function buildLeadInSection(context: ChatBibleContext): string {
+export function buildLeadInSection(context: ChatGenerationContext): string {
   const { leadInContext } = context;
 
   return [
@@ -161,11 +163,11 @@ export function buildLeadInSection(context: ChatBibleContext): string {
   ].join('\n');
 }
 
-export function buildOlderChatSummarySection(context: ChatBibleContext): string {
+export function buildOlderChatSummarySection(context: ChatGenerationContext): string {
   return `OLDER CHAT SUMMARY\n${formatRollingSummaryForPrompt(context.rollingSummary)}`;
 }
 
-export function buildRecentTurnsSection(context: ChatBibleContext): string {
+export function buildRecentTurnsSection(context: ChatGenerationContext): string {
   return `RECENT CHAT TURNS\n${formatRecentTurns(context.recentTurns)}`;
 }
 

@@ -1,5 +1,5 @@
 import { buildChatCharacterContextMessages } from '../../../../../src/llm/prompts/chat/chat-character-context-prompt';
-import type { ChatBibleContext } from '../../../../../src/llm/chat/chat-bible-context';
+import type { ChatGenerationContext } from '../../../../../src/llm/chat/chat-generation-context';
 import type { ChatSceneContext } from '../../../../../src/models/chat/index';
 import type { DecomposedWorld } from '../../../../../src/models/decomposed-world';
 import type { StandaloneDecomposedCharacter } from '../../../../../src/models/standalone-decomposed-character';
@@ -54,7 +54,7 @@ function makeCharacter(
   };
 }
 
-function makeContext(): ChatBibleContext {
+function makeContext(): ChatGenerationContext {
   return {
     targetCharacter: makeCharacter('Iria Vale'),
     interlocutorCharacter: makeCharacter('Tomas Wren'),

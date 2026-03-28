@@ -36,6 +36,22 @@ describe('stage-model config coverage', () => {
     expect(new Set(LLM_STAGE_KEYS).size).toBe(LLM_STAGE_KEYS.length);
   });
 
+  it('keeps split chat stage keys canonical and excludes the legacy chatBible stage', () => {
+    expect(LLM_STAGE_KEYS).toContain('chatSceneContext');
+    expect(LLM_STAGE_KEYS).toContain('chatCharacterContext');
+    expect(LLM_STAGE_KEYS).not.toContain('chatBible');
+
+    expect(LLM_STAGE_CATALOG).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ key: 'chatSceneContext' }),
+        expect.objectContaining({ key: 'chatCharacterContext' }),
+      ])
+    );
+    expect(LLM_STAGE_CATALOG).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ key: 'chatBible' })])
+    );
+  });
+
   it('keeps runtime config override maps sparse and free of unknown stage keys', () => {
     const config = readDefaultConfig();
     const stageKeySet = new Set(LLM_STAGE_KEYS);

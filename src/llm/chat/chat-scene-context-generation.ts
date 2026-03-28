@@ -1,7 +1,7 @@
 import type { ChatSceneContext } from '../../models/chat/index.js';
 import type { GenerationOptions } from '../generation-pipeline-types.js';
 import { runLlmStage } from '../llm-stage-runner.js';
-import type { ChatBibleContext } from './chat-bible-context.js';
+import type { ChatGenerationContext } from './chat-generation-context.js';
 import { buildChatSceneContextMessages } from '../prompts/chat/chat-scene-context-prompt.js';
 import {
   CHAT_SCENE_CONTEXT_SCHEMA,
@@ -14,7 +14,7 @@ export interface ChatSceneContextGenerationResult {
 }
 
 export async function generateChatSceneContext(
-  context: ChatBibleContext,
+  context: ChatGenerationContext,
   apiKey: string,
   options?: Partial<GenerationOptions>
 ): Promise<ChatSceneContextGenerationResult> {

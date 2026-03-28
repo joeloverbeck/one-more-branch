@@ -7,6 +7,17 @@ describe('generation stage metadata', () => {
     expect(metadataStageIds).toEqual(GENERATION_STAGES);
   });
 
+  it('keeps split chat generation stages canonical and excludes the legacy chat bible stage', () => {
+    const metadataStageIds = stageMetadata.stages.map((stage) => stage.id);
+
+    expect(metadataStageIds).toContain('CURATING_CHAT_SCENE');
+    expect(metadataStageIds).toContain('CURATING_CHAT_CHARACTER');
+    expect(metadataStageIds).not.toContain('CURATING_CHAT_BIBLE');
+    expect(GENERATION_STAGES).toContain('CURATING_CHAT_SCENE');
+    expect(GENERATION_STAGES).toContain('CURATING_CHAT_CHARACTER');
+    expect(GENERATION_STAGES).not.toContain('CURATING_CHAT_BIBLE');
+  });
+
   it('defines display names and phrase pools for every stage', () => {
     for (const stage of stageMetadata.stages) {
       expect(stage.displayName.trim().length).toBeGreaterThan(0);

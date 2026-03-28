@@ -1,6 +1,6 @@
 import type { ChatMessage } from '../../llm-client-types.js';
 import { CONTENT_POLICY } from '../../content-policy.js';
-import type { ChatBibleContext } from '../../chat/chat-bible-context.js';
+import type { ChatGenerationContext } from '../../chat/chat-generation-context.js';
 import {
   buildInterlocutorSummarySection,
   buildLeadInSection,
@@ -18,7 +18,7 @@ State why this conversation is happening now and what pressures are active.
 Compress aggressively for the next 1-3 turns only.
 Do not write dialogue. Do not analyze character psychology.`;
 
-export function buildChatSceneContextMessages(context: ChatBibleContext): ChatMessage[] {
+export function buildChatSceneContextMessages(context: ChatGenerationContext): ChatMessage[] {
   const userSections = [
     buildTargetCharacterSummarySection(context, 'identity'),
     buildInterlocutorSummarySection(context, 'identity'),

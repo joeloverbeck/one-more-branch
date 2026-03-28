@@ -6,7 +6,7 @@ import {
   CHAT_CHARACTER_CONTEXT_SCHEMA,
   parseChatCharacterContextResponse,
 } from '../schemas/chat-character-context-schema.js';
-import type { ChatBibleContext } from './chat-bible-context.js';
+import type { ChatGenerationContext } from './chat-generation-context.js';
 
 export interface ChatCharacterContextGenerationResult {
   readonly characterContext: ChatCharacterContext;
@@ -14,7 +14,7 @@ export interface ChatCharacterContextGenerationResult {
 }
 
 export async function generateChatCharacterContext(
-  context: ChatBibleContext,
+  context: ChatGenerationContext,
   sceneContext: ChatSceneContext,
   apiKey: string,
   options?: Partial<GenerationOptions>

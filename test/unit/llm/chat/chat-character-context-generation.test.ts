@@ -17,7 +17,7 @@ jest.mock('../../../../src/llm/prompts/chat/chat-character-context-prompt', () =
 }));
 
 import { generateChatCharacterContext } from '../../../../src/llm/chat/chat-character-context-generation';
-import type { ChatBibleContext } from '../../../../src/llm/chat/chat-bible-context';
+import type { ChatGenerationContext } from '../../../../src/llm/chat/chat-generation-context';
 import { LLMError } from '../../../../src/llm/llm-client-types';
 import { CHAT_CHARACTER_CONTEXT_SCHEMA } from '../../../../src/llm/schemas/chat-character-context-schema';
 import type { ChatSceneContext } from '../../../../src/models/chat';
@@ -39,7 +39,7 @@ const DECOMPOSED_WORLD: DecomposedWorld = {
   rawWorldbuilding: 'An observatory city built around a dead star clock.',
 };
 
-function makeContext(): ChatBibleContext {
+function makeContext(): ChatGenerationContext {
   return {
     targetCharacter: {
       id: 'char-1',

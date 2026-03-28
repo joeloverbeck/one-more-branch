@@ -9,7 +9,7 @@ import type {
 import type { StandaloneDecomposedCharacter } from '../../models/standalone-decomposed-character.js';
 import type { DecomposedWorld } from '../../models/decomposed-world.js';
 
-export interface ChatBibleContext {
+export interface ChatGenerationContext {
   readonly targetCharacter: StandaloneDecomposedCharacter;
   readonly interlocutorCharacter: StandaloneDecomposedCharacter;
   readonly decomposedWorld: DecomposedWorld;

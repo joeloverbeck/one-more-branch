@@ -1,7 +1,7 @@
 import type { ChatSceneContext } from '../../../models/chat/index.js';
 import type { ChatMessage } from '../../llm-client-types.js';
 import { CONTENT_POLICY } from '../../content-policy.js';
-import type { ChatBibleContext } from '../../chat/chat-bible-context.js';
+import type { ChatGenerationContext } from '../../chat/chat-generation-context.js';
 import {
   buildEstablishedSceneContextSection,
   buildInterlocutorSummarySection,
@@ -20,7 +20,7 @@ Compress aggressively for the next 1-3 turns only.
 Do not write dialogue.`;
 
 export function buildChatCharacterContextMessages(
-  context: ChatBibleContext,
+  context: ChatGenerationContext,
   sceneContext: ChatSceneContext
 ): ChatMessage[] {
   const userSections = [
