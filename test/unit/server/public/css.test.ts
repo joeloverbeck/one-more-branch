@@ -46,6 +46,10 @@ describe('public stylesheet', () => {
     expect(css).toContain('.chat-inner-world__summary');
     expect(css).toContain('.chat-inner-world__emotion-grid');
     expect(css).toContain('.chat-inner-world__pill--physical');
+    expect(css).toContain('.chat-metric-card__summary');
+    expect(css).toContain('.chat-metric-card__trend');
+    expect(css).toContain('.chat-gauge__anchors');
+    expect(css).toContain('.chat-sparkline__current-dot');
   });
 
   it('includes mobile and spinner animation rules', () => {

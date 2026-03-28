@@ -87,6 +87,84 @@
       return typeof fallbackValue === 'number' && Number.isFinite(fallbackValue) ? fallbackValue : 0;
     }
 
+    function buildRelationshipHistory(relationshipTimeline) {
+      const history = [{
+        turnNumber: 0,
+        valence: 0,
+        tension: 0,
+      }];
+
+      if (!Array.isArray(relationshipTimeline)) {
+        return history;
+      }
+
+      relationshipTimeline.forEach((point) => {
+        if (!point?.snapshot) {
+          return;
+        }
+
+        history.push({
+          turnNumber: typeof point.turnNumber === 'number' ? point.turnNumber : history.length,
+          valence: typeof point.snapshot.valence === 'number' ? point.snapshot.valence : 0,
+          tension: typeof point.snapshot.tension === 'number' ? point.snapshot.tension : 0,
+        });
+      });
+
+      return history;
+    }
+
+    function readRelationshipDelta(history, name) {
+      if (!Array.isArray(history) || history.length < 2) {
+        return 0;
+      }
+
+      const previousPoint = history[history.length - 2];
+      const currentPoint = history[history.length - 1];
+      return currentPoint[name] - previousPoint[name];
+    }
+
+    function relationshipMetricBand(name, value) {
+      if (name === 'valence') {
+        if (value <= -3) return 'Hostile';
+        if (value < 0) return 'Frayed';
+        if (value === 0) return 'Neutral';
+        if (value < 3) return 'Open';
+        return 'Loyal';
+      }
+
+      if (value <= 2) return 'Calm';
+      if (value <= 6) return 'Strained';
+      return 'Breaking';
+    }
+
+    function relationshipMetricTrend(name, delta) {
+      if (typeof delta !== 'number' || !Number.isFinite(delta) || delta === 0) {
+        return 'steady';
+      }
+
+      if (name === 'valence') {
+        return delta > 0 ? 'warming' : 'cooling';
+      }
+
+      return delta > 0 ? 'rising' : 'easing';
+    }
+
+    function buildRelationshipMetricSummary(name, value, delta) {
+      return `${relationshipMetricBand(name, value)} and ${relationshipMetricTrend(name, delta)}`;
+    }
+
+    function buildRelationshipGaugeAriaLabel(name, value, delta) {
+      const bounds = name === 'valence' ? { min: -5, max: 5 } : { min: 0, max: 10 };
+      const title = name === 'valence' ? 'Valence' : 'Tension';
+      return `${title}: ${buildRelationshipMetricSummary(name, value, delta)}. Current value ${value} on a scale from ${bounds.min} to ${bounds.max}.`;
+    }
+
+    function buildRelationshipSparklineAriaLabel(name, value, delta, history) {
+      const title = name === 'valence' ? 'Valence' : 'Tension';
+      const pointCount = Math.max((Array.isArray(history) ? history.length : 1) - 1, 0);
+      return `${title} trend: ${buildRelationshipMetricSummary(name, value, delta)} across ${pointCount} recorded ${pointCount === 1 ? 'turn' : 'turns'}.`;
+    }
+
     function buildInnerWorldData(turn) {
       if (!turn || turn.speaker !== 'CHARACTER') {
         return [];
@@ -302,6 +380,7 @@
       ? chatUiBootstrap.relationshipTimeline
       : [];
     var bootstrapRelationshipSnapshot = getLatestRelationshipSnapshot(bootstrapRelationshipTimeline);
+    var bootstrapRelationshipHistory = buildRelationshipHistory(bootstrapRelationshipTimeline);
     var bootstrapChatBible = chatUiBootstrap?.chatBible ?? null;
     var bootstrapRollingSummary = chatUiBootstrap?.rollingSummary ?? null;
     var knowledgeSummary = buildKnowledgeSummary(bootstrapKnowledgeState);
@@ -322,6 +401,10 @@
         session.relationshipState,
         'tension'
       ),
+    };
+    var displayedRelationshipDelta = {
+      valence: readRelationshipDelta(bootstrapRelationshipHistory, 'valence'),
+      tension: readRelationshipDelta(bootstrapRelationshipHistory, 'tension'),
     };
   %>
 
@@ -612,34 +695,74 @@
           <div class="chat-relationship-visuals">
             <section class="chat-metric-card">
               <div class="chat-metric-card__header">
-                <h3>Valence</h3>
+                <div>
+                  <h3>Valence</h3>
+                  <p class="chat-metric-card__summary" data-chat-gauge-summary="valence"><%= buildRelationshipMetricSummary('valence', displayedRelationshipNow.valence, displayedRelationshipDelta.valence) %></p>
+                </div>
                 <div class="chat-metric-card__meta">
                   <span class="chat-metric-card__value" data-chat-gauge-value="valence"><%= displayedRelationshipNow.valence %></span>
-                  <span class="chat-metric-card__delta" data-chat-gauge-delta="valence">0</span>
+                  <span class="chat-metric-card__delta" data-chat-gauge-delta="valence"><%= formatSignedInnerWorldNumber(displayedRelationshipDelta.valence) %></span>
+                  <span class="chat-metric-card__trend" data-chat-gauge-trend="valence"><%= relationshipMetricTrend('valence', displayedRelationshipDelta.valence) %></span>
                 </div>
               </div>
-              <div class="chat-gauge chat-gauge--valence" data-chat-gauge="valence">
+              <div
+                class="chat-gauge chat-gauge--valence"
+                data-chat-gauge="valence"
+                role="meter"
+                aria-label="<%= buildRelationshipGaugeAriaLabel('valence', displayedRelationshipNow.valence, displayedRelationshipDelta.valence) %>"
+              >
                 <span class="chat-gauge__track"></span>
                 <span class="chat-gauge__ghost"></span>
                 <span class="chat-gauge__marker"></span>
               </div>
-              <svg class="chat-sparkline" data-chat-sparkline="valence" viewBox="0 0 120 32" aria-label="Valence trend"></svg>
+              <div class="chat-gauge__anchors" aria-hidden="true">
+                <span>Hostile</span>
+                <span>Neutral</span>
+                <span>Loyal</span>
+              </div>
+              <svg
+                class="chat-sparkline"
+                data-chat-sparkline="valence"
+                viewBox="0 0 120 32"
+                role="img"
+                aria-label="<%= buildRelationshipSparklineAriaLabel('valence', displayedRelationshipNow.valence, displayedRelationshipDelta.valence, bootstrapRelationshipHistory) %>"
+              ></svg>
             </section>
 
             <section class="chat-metric-card">
               <div class="chat-metric-card__header">
-                <h3>Tension</h3>
+                <div>
+                  <h3>Tension</h3>
+                  <p class="chat-metric-card__summary" data-chat-gauge-summary="tension"><%= buildRelationshipMetricSummary('tension', displayedRelationshipNow.tension, displayedRelationshipDelta.tension) %></p>
+                </div>
                 <div class="chat-metric-card__meta">
                   <span class="chat-metric-card__value" data-chat-gauge-value="tension"><%= displayedRelationshipNow.tension %></span>
-                  <span class="chat-metric-card__delta" data-chat-gauge-delta="tension">0</span>
+                  <span class="chat-metric-card__delta" data-chat-gauge-delta="tension"><%= formatSignedInnerWorldNumber(displayedRelationshipDelta.tension) %></span>
+                  <span class="chat-metric-card__trend" data-chat-gauge-trend="tension"><%= relationshipMetricTrend('tension', displayedRelationshipDelta.tension) %></span>
                 </div>
               </div>
-              <div class="chat-gauge chat-gauge--tension" data-chat-gauge="tension">
+              <div
+                class="chat-gauge chat-gauge--tension"
+                data-chat-gauge="tension"
+                role="meter"
+                aria-label="<%= buildRelationshipGaugeAriaLabel('tension', displayedRelationshipNow.tension, displayedRelationshipDelta.tension) %>"
+              >
                 <span class="chat-gauge__track"></span>
                 <span class="chat-gauge__ghost"></span>
                 <span class="chat-gauge__marker"></span>
               </div>
-              <svg class="chat-sparkline" data-chat-sparkline="tension" viewBox="0 0 120 32" aria-label="Tension trend"></svg>
+              <div class="chat-gauge__anchors" aria-hidden="true">
+                <span>Calm</span>
+                <span>Strained</span>
+                <span>Breaking</span>
+              </div>
+              <svg
+                class="chat-sparkline"
+                data-chat-sparkline="tension"
+                viewBox="0 0 120 32"
+                role="img"
+                aria-label="<%= buildRelationshipSparklineAriaLabel('tension', displayedRelationshipNow.tension, displayedRelationshipDelta.tension, bootstrapRelationshipHistory) %>"
+              ></svg>
             </section>
           </div>
 

@@ -60,22 +60,28 @@ describe('chat page controller', () => {
               </span>
             </summary>
             <div class="chat-accordion-content">
+              <p data-chat-gauge-summary="valence">Frayed and steady</p>
               <span data-chat-gauge-value="valence">-1</span>
               <span data-chat-gauge-delta="valence">0</span>
+              <span data-chat-gauge-trend="valence">steady</span>
               <div class="chat-gauge chat-gauge--valence" data-chat-gauge="valence">
                 <span class="chat-gauge__track"></span>
                 <span class="chat-gauge__ghost"></span>
                 <span class="chat-gauge__marker"></span>
               </div>
-              <svg class="chat-sparkline" data-chat-sparkline="valence" viewBox="0 0 120 32"></svg>
+              <div class="chat-gauge__anchors"><span>Hostile</span><span>Neutral</span><span>Loyal</span></div>
+              <svg class="chat-sparkline" data-chat-sparkline="valence" viewBox="0 0 120 32" aria-label="Valence trend: Frayed and steady."></svg>
+              <p data-chat-gauge-summary="tension">Strained and steady</p>
               <span data-chat-gauge-value="tension">6</span>
               <span data-chat-gauge-delta="tension">0</span>
+              <span data-chat-gauge-trend="tension">steady</span>
               <div class="chat-gauge chat-gauge--tension" data-chat-gauge="tension">
                 <span class="chat-gauge__track"></span>
                 <span class="chat-gauge__ghost"></span>
                 <span class="chat-gauge__marker"></span>
               </div>
-              <svg class="chat-sparkline" data-chat-sparkline="tension" viewBox="0 0 120 32"></svg>
+              <div class="chat-gauge__anchors"><span>Calm</span><span>Strained</span><span>Breaking</span></div>
+              <svg class="chat-sparkline" data-chat-sparkline="tension" viewBox="0 0 120 32" aria-label="Tension trend: Strained and steady."></svg>
               <span data-chat-field="dynamic">strained allies</span>
               <span data-chat-field="leverage">Shared guilt</span>
             </div>
@@ -612,11 +618,22 @@ describe('chat page controller', () => {
     );
     expect(document.querySelector('[data-chat-gauge-value="valence"]')?.textContent).toBe('5');
     expect(document.querySelector('[data-chat-gauge-delta="valence"]')?.textContent).toBe('+2');
+    expect(document.querySelector('[data-chat-gauge-summary="valence"]')?.textContent).toBe(
+      'Loyal and warming'
+    );
+    expect(document.querySelector('[data-chat-gauge-trend="valence"]')?.textContent).toBe('warming');
     expect(document.querySelector('[data-chat-gauge-value="tension"]')?.textContent).toBe('8');
     expect(document.querySelector('[data-chat-gauge-delta="tension"]')?.textContent).toBe('+2');
+    expect(document.querySelector('[data-chat-gauge-summary="tension"]')?.textContent).toBe(
+      'Breaking and rising'
+    );
+    expect(document.querySelector('[data-chat-gauge-trend="tension"]')?.textContent).toBe('rising');
     expect(
       document.querySelector('[data-chat-gauge="valence"]')?.getAttribute('aria-valuenow')
     ).toBe('5');
+    expect(
+      document.querySelector('[data-chat-gauge="valence"]')?.getAttribute('aria-label')
+    ).toContain('Loyal and warming');
     expect((document.querySelector('[data-chat-gauge="valence"] .chat-gauge__ghost') as HTMLElement)?.style.left).toBe(
       '80%'
     );
@@ -624,7 +641,11 @@ describe('chat page controller', () => {
       '60%'
     );
     expect(document.querySelector('[data-chat-sparkline="valence"] polyline')).not.toBeNull();
+    expect(document.querySelector('[data-chat-sparkline="valence"] circle')).not.toBeNull();
     expect(document.querySelector('[data-chat-sparkline="tension"] polyline')).not.toBeNull();
+    expect(
+      document.querySelector('[data-chat-sparkline="tension"]')?.getAttribute('aria-label')
+    ).toContain('Breaking and rising');
     expect(document.querySelector('[data-chat-turn-count]')?.textContent).toBe('2 turns');
     expect(messageList.scrollTop).toBe(480);
     expect(scrollIntoViewMock).not.toHaveBeenCalled();
@@ -661,8 +682,14 @@ describe('chat page controller', () => {
     );
     expect(document.querySelector('[data-chat-gauge-value="valence"]')?.textContent).toBe('3');
     expect(document.querySelector('[data-chat-gauge-delta="valence"]')?.textContent).toBe('+3');
+    expect(document.querySelector('[data-chat-gauge-summary="valence"]')?.textContent).toBe(
+      'Loyal and warming'
+    );
     expect(document.querySelector('[data-chat-gauge-value="tension"]')?.textContent).toBe('6');
     expect(document.querySelector('[data-chat-gauge-delta="tension"]')?.textContent).toBe('+6');
+    expect(document.querySelector('[data-chat-gauge-summary="tension"]')?.textContent).toBe(
+      'Strained and rising'
+    );
     expect((document.querySelector('[data-chat-gauge="valence"] .chat-gauge__ghost') as HTMLElement)?.style.left).toBe(
       '50%'
     );
@@ -671,6 +698,9 @@ describe('chat page controller', () => {
     );
     expect(document.querySelector('[data-chat-sparkline="valence"] polyline')).not.toBeNull();
     expect(document.querySelector('[data-chat-sparkline="tension"] polyline')).not.toBeNull();
+    expect(
+      document.querySelector('[data-chat-sparkline="valence"]')?.getAttribute('aria-label')
+    ).toContain('Loyal and warming');
   });
 
   it('falls back to relationshipState values when the canonical relationship timeline is absent', () => {
@@ -727,6 +757,12 @@ describe('chat page controller', () => {
 
     expect(document.querySelector('[data-chat-gauge-value="valence"]')?.textContent).toBe('-1');
     expect(document.querySelector('[data-chat-gauge-value="tension"]')?.textContent).toBe('6');
+    expect(document.querySelector('[data-chat-gauge-summary="valence"]')?.textContent).toBe(
+      'Frayed and steady'
+    );
+    expect(document.querySelector('[data-chat-gauge-summary="tension"]')?.textContent).toBe(
+      'Strained and steady'
+    );
     expect(
       document.querySelector('[data-chat-gauge="valence"]')?.getAttribute('aria-valuenow')
     ).toBe('-1');

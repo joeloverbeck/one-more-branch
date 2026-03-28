@@ -156,6 +156,62 @@ window.ChatSidebar = (function () {
     return { min: 0, max: 10 };
   }
 
+  function getMetricBand(name, value) {
+    if (name === 'valence') {
+      if (value <= -3) {
+        return 'Hostile';
+      }
+      if (value < 0) {
+        return 'Frayed';
+      }
+      if (value === 0) {
+        return 'Neutral';
+      }
+      if (value < 3) {
+        return 'Open';
+      }
+      return 'Loyal';
+    }
+
+    if (value <= 2) {
+      return 'Calm';
+    }
+    if (value <= 6) {
+      return 'Strained';
+    }
+    return 'Breaking';
+  }
+
+  function getMetricTrend(name, delta) {
+    if (typeof delta !== 'number' || !isFinite(delta) || delta === 0) {
+      return 'steady';
+    }
+
+    if (name === 'valence') {
+      return delta > 0 ? 'warming' : 'cooling';
+    }
+
+    return delta > 0 ? 'rising' : 'easing';
+  }
+
+  function buildMetricSummary(name, value, delta) {
+    return getMetricBand(name, value) + ' and ' + getMetricTrend(name, delta);
+  }
+
+  function buildGaugeAriaLabel(name, value, delta) {
+    var bounds = getGaugeBounds(name);
+    var title = name === 'valence' ? 'Valence' : 'Tension';
+    return title + ': ' + buildMetricSummary(name, value, delta) + '. Current value ' + String(value) +
+      ' on a scale from ' + String(bounds.min) + ' to ' + String(bounds.max) + '.';
+  }
+
+  function buildSparklineAriaLabel(name, value, delta, pointCount) {
+    var title = name === 'valence' ? 'Valence' : 'Tension';
+    var turns = typeof pointCount === 'number' && pointCount > 0 ? pointCount : 0;
+    return title + ' trend: ' + buildMetricSummary(name, value, delta) + ' across ' +
+      String(turns) + ' recorded ' + (turns === 1 ? 'turn' : 'turns') + '.';
+  }
+
   function normalizeGaugePosition(name, value) {
     var bounds = getGaugeBounds(name);
     return clamp((value - bounds.min) / (bounds.max - bounds.min), 0, 1);
@@ -190,6 +246,14 @@ window.ChatSidebar = (function () {
     gauge.setAttribute('aria-valuemin', String(bounds.min));
     gauge.setAttribute('aria-valuemax', String(bounds.max));
     gauge.setAttribute('aria-valuenow', String(value));
+    gauge.setAttribute(
+      'aria-label',
+      buildGaugeAriaLabel(
+        name,
+        value,
+        typeof previousValue === 'number' && isFinite(previousValue) ? value - previousValue : 0
+      )
+    );
   }
 
   function buildSparklinePoints(values, min, max) {
@@ -231,6 +295,8 @@ window.ChatSidebar = (function () {
       return;
     }
 
+    var currentValue = values[values.length - 1];
+    var previousValue = values.length > 1 ? values[values.length - 2] : currentValue;
     var polyline = document.createElementNS(SVG_NS, 'polyline');
     polyline.setAttribute('points', buildSparklinePoints(values, bounds.min, bounds.max));
     polyline.setAttribute('fill', 'none');
@@ -239,6 +305,21 @@ window.ChatSidebar = (function () {
     polyline.setAttribute('stroke-linecap', 'round');
     polyline.setAttribute('stroke-linejoin', 'round');
     sparkline.appendChild(polyline);
+
+    var currentDot = document.createElementNS(SVG_NS, 'circle');
+    currentDot.setAttribute('class', 'chat-sparkline__current-dot');
+    currentDot.setAttribute('r', '3.5');
+    currentDot.setAttribute('cx', values.length === 1 ? '60' : '120');
+    currentDot.setAttribute(
+      'cy',
+      String(26 - (((currentValue - bounds.min) / (bounds.max - bounds.min || 1)) * 20))
+    );
+    currentDot.setAttribute('fill', '#f7f9ff');
+    currentDot.setAttribute('stroke', name === 'valence' ? '#7ae7ba' : '#ff8f6b');
+    currentDot.setAttribute('stroke-width', '2');
+    sparkline.appendChild(currentDot);
+    sparkline.setAttribute('role', 'img');
+    sparkline.setAttribute('aria-label', buildSparklineAriaLabel(name, currentValue, currentValue - previousValue, values.length));
   }
 
   function getLatestRelationshipSnapshot(relationshipTimeline) {
@@ -326,6 +407,8 @@ window.ChatSidebar = (function () {
     var valence = resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'valence');
     var tension = resolveRelationshipMetric(relationshipSnapshot, relationshipState, 'tension');
     var previousPoint = Array.isArray(history) && history.length > 1 ? history[history.length - 2] : null;
+    var valenceDeltaValue = readDelta(history, 'valence');
+    var tensionDeltaValue = readDelta(history, 'tension');
 
     renderGauge(
       root,
@@ -346,6 +429,10 @@ window.ChatSidebar = (function () {
     var tensionValue = root.querySelector('[data-chat-gauge-value="tension"]');
     var valenceDelta = root.querySelector('[data-chat-gauge-delta="valence"]');
     var tensionDelta = root.querySelector('[data-chat-gauge-delta="tension"]');
+    var valenceSummary = root.querySelector('[data-chat-gauge-summary="valence"]');
+    var tensionSummary = root.querySelector('[data-chat-gauge-summary="tension"]');
+    var valenceTrend = root.querySelector('[data-chat-gauge-trend="valence"]');
+    var tensionTrend = root.querySelector('[data-chat-gauge-trend="tension"]');
 
     if (valenceValue) {
       valenceValue.textContent = String(valence);
@@ -354,10 +441,22 @@ window.ChatSidebar = (function () {
       tensionValue.textContent = String(tension);
     }
     if (valenceDelta) {
-      valenceDelta.textContent = formatSignedNumber(readDelta(history, 'valence'));
+      valenceDelta.textContent = formatSignedNumber(valenceDeltaValue);
     }
     if (tensionDelta) {
-      tensionDelta.textContent = formatSignedNumber(readDelta(history, 'tension'));
+      tensionDelta.textContent = formatSignedNumber(tensionDeltaValue);
+    }
+    if (valenceSummary) {
+      valenceSummary.textContent = buildMetricSummary('valence', valence, valenceDeltaValue);
+    }
+    if (tensionSummary) {
+      tensionSummary.textContent = buildMetricSummary('tension', tension, tensionDeltaValue);
+    }
+    if (valenceTrend) {
+      valenceTrend.textContent = getMetricTrend('valence', valenceDeltaValue);
+    }
+    if (tensionTrend) {
+      tensionTrend.textContent = getMetricTrend('tension', tensionDeltaValue);
     }
   }
 
