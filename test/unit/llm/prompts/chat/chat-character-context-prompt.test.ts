@@ -188,34 +188,17 @@ describe('buildChatCharacterContextMessages', () => {
     expect(userContent).toContain('RECENT CHAT TURNS');
   });
 
-  it('includes full character profiles for the psychology stage', () => {
+  it('wires the psychology summary view into character sections without leaking raw descriptions', () => {
     const userContent = buildChatCharacterContextMessages(makeContext(), makeSceneContext())[1]
       .content;
 
+    expect(userContent).toContain('TARGET CHARACTER DECOMPOSITION\nName: Iria Vale');
+    expect(userContent).toContain('INTERLOCUTOR CHARACTER PROFILE\nName: Tomas Wren');
     expect(userContent).toContain('Super-Objective: Recover the map');
     expect(userContent).toContain('Stakes:');
-    expect(userContent).toContain('- Lose the map');
-    expect(userContent).toContain('Pressure Point: Any hint she failed the mission alone');
-    expect(userContent).toContain('Personal Dilemmas:');
-    expect(userContent).toContain('- Protect the source or save the alliance');
-    expect(userContent).toContain('Emotion Salience: HIGH');
-    expect(userContent).toContain('Moral Line: Will not hand civilians to the tribunal');
-    expect(userContent).toContain(
-      'Worst Fear: Being trapped under someone else’s command again'
-    );
-    expect(userContent).toContain('Formative Wound: A prior captain framed her to save himself');
-    expect(userContent).toContain('Misbelief: If she needs anyone, they own her');
-    expect(userContent).toContain('Stress Variants:');
-    expect(userContent).toContain('- When Lying: Over-explains tactical details');
-    expect(userContent).toContain('Focalization Filter:');
-    expect(userContent).toContain('- Systematically Misses: Good-faith offers of care');
-    expect(userContent).toContain('Escalation Ladder:');
-    expect(userContent).toContain('- Force a commitment');
     expect(userContent).toContain('Knowledge Boundaries: Knows the codes, not the mastermind.');
     expect(userContent).toContain('Immediate Objectives: Secure the map; Test Tomas');
-    expect(userContent).toContain(
-      'Sociology: Officer caste training with dockside survival habits'
-    );
-    expect(userContent).not.toContain('Description: Iria Vale is dangerous and exhausted.');
+    expect(userContent).not.toContain('TARGET CHARACTER DECOMPOSITION\nIria Vale\n  Traits:');
+    expect(userContent).not.toContain('Iria Vale is dangerous and exhausted.');
   });
 });

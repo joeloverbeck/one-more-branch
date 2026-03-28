@@ -68,8 +68,10 @@ describe('buildSpineFoundationPrompt', () => {
     expect(messages).toHaveLength(2);
     expect(userContent).toContain('PROTAGONIST CHARACTER:');
     expect(userContent).toContain('NPC CHARACTERS (Pre-Decomposed Profiles):');
+    expect(userContent).toContain('PROTAGONIST CHARACTER:\nIria Vale\n  Traits: guarded, precise');
     expect(userContent).toContain('  Traits: guarded, precise');
     expect(userContent).toContain('  Immediate Objectives: Secure the map; Test Tomas');
+    expect(userContent).not.toContain('Knowledge Boundaries:');
     expect(userContent).not.toContain('Iria Vale is dangerous and exhausted.');
     expect(userContent).not.toContain('Tomas Wren is dangerous and exhausted.');
   });

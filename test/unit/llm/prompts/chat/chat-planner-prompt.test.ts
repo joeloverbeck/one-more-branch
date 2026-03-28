@@ -169,14 +169,18 @@ describe('buildChatPlannerMessages', () => {
     expect(userContent).toContain('LATEST USER TURN');
   });
 
-  it('includes decomposed motivation context and speech fingerprint guidance', () => {
+  it('wires the standalone summary view and keeps speech fingerprint guidance separate', () => {
     const userContent = buildChatPlannerMessages(makeContext())[1].content;
 
+    expect(userContent).toContain('TARGET CHARACTER DECOMPOSITION\nIria Vale\n  Traits: guarded, precise');
     expect(userContent).toContain('Immediate Objectives: Secure the map; Test Tomas');
     expect(userContent).toContain('Focalization Filter:');
     expect(userContent).toContain('Notices First: Breaks in resolve');
     expect(userContent).toContain('Stress Variants:');
     expect(userContent).toContain('When Lying: Over-explains tactical details');
+    expect(userContent).not.toContain('Knowledge Boundaries: Knows the codes, not the mastermind.');
+    expect(userContent).not.toContain('Core Beliefs:');
+    expect(userContent).not.toContain('Iria Vale is dangerous and exhausted.');
     expect(userContent).toContain('Vocabulary Profile: Clipped naval diction');
     expect(userContent).toContain('Dialogue Samples:');
     expect(userContent).toContain('- Stay on bearing, and maybe we survive this yet.');
