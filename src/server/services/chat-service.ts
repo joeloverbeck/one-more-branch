@@ -232,9 +232,7 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
         timestamp: userTurnTimestamp,
       };
 
-      await deps.saveTurn(params.chatId, userTurn);
-
-      const [targetCharacter, interlocutorCharacter, decomposedWorld, recentTurns, allTurns] =
+      const [targetCharacter, interlocutorCharacter, decomposedWorld, priorRecentTurns, priorAllTurns] =
         await Promise.all([
         requireCharacter(deps, 'Target', session.targetCharacterId),
         requireCharacter(deps, 'Interlocutor', session.interlocutorCharacterId),
@@ -242,6 +240,9 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
         deps.getRecentTurns(params.chatId, 12),
         deps.loadTurns(params.chatId),
       ]);
+
+      const allTurns = [...priorAllTurns, userTurn];
+      const recentTurns = [...priorRecentTurns, userTurn].slice(-12);
 
       const pipelineResult = await deps.runChatPipeline(
         {
@@ -258,6 +259,7 @@ export function createChatService(deps: ChatServiceDeps = defaultDeps): ChatServ
         params.onGenerationStage
       );
 
+      await deps.saveTurn(params.chatId, userTurn);
       await deps.saveTurn(params.chatId, pipelineResult.characterTurn);
       await deps.saveChat(pipelineResult.updatedSession);
       return {
