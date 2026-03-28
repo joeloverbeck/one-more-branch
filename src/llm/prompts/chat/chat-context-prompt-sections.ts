@@ -102,7 +102,11 @@ export function buildOlderChatSummarySection(context: ChatGenerationContext): st
 }
 
 export function buildRecentTurnsSection(context: ChatGenerationContext): string {
-  return `RECENT CHAT TURNS\n${formatRecentTurns(context.recentTurns)}`;
+  const speakerNames = {
+    target: context.targetCharacter.name,
+    interlocutor: context.interlocutorCharacter.name,
+  };
+  return `RECENT CHAT TURNS\n${formatRecentTurns(context.recentTurns, speakerNames)}`;
 }
 
 export function buildEstablishedSceneContextSection(sceneContext: ChatSceneContext): string {

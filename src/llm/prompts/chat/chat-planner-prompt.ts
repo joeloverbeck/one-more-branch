@@ -1,4 +1,3 @@
-import type { ChatTurn } from '../../../models/chat/index.js';
 import { formatStandaloneCharacterPromptSummary } from '../../../models/standalone-decomposed-character.js';
 import type { ChatMessage } from '../../llm-client-types.js';
 import { CONTENT_POLICY } from '../../content-policy.js';
@@ -17,17 +16,17 @@ Plan from motivation, leverage, and subtext first; use speech fingerprint to sha
 Do not invent knowledge, off-screen events, or state changes unsupported by the provided context.
 Keep the plan specific enough for a downstream writer to execute without improvising intent.`;
 
-function formatLatestUserTurn(turn: ChatTurn): string {
-  return formatRecentTurns([turn]);
-}
-
 export function buildChatPlannerMessages(context: ChatPlannerContext): ChatMessage[] {
+  const speakerNames = {
+    target: context.targetCharacter.name,
+    interlocutor: context.interlocutorCharacterName,
+  };
   const userSections = [
     `CHAT BIBLE\n${formatChatBible(context.chatBible)}`,
     `TARGET CHARACTER DECOMPOSITION\n${formatStandaloneCharacterPromptSummary(context.targetCharacter, 'standalone')}`,
     `TARGET CHARACTER SPEECH FINGERPRINT\n${formatSpeechFingerprint(context.targetCharacter.speechFingerprint)}`,
-    `RECENT CHAT TURNS\n${formatRecentTurns(context.recentTurns)}`,
-    `LATEST USER TURN\n${formatLatestUserTurn(context.latestUserTurn)}`,
+    `RECENT CHAT TURNS\n${formatRecentTurns(context.recentTurns, speakerNames)}`,
+    `LATEST USER TURN\n${formatRecentTurns([context.latestUserTurn], speakerNames)}`,
   ];
 
   return [

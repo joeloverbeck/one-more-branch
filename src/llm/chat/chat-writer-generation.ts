@@ -18,6 +18,7 @@ import {
 
 export interface ChatWriterContext {
   readonly targetCharacter: StandaloneDecomposedCharacter;
+  readonly interlocutorCharacterName: string;
   readonly chatBible: ChatBible;
   readonly turnPlan: TurnPlannerOutput;
   readonly recentTurns: readonly ChatTurn[];

@@ -16,14 +16,24 @@ export function formatStringList(items: readonly string[]): string {
   return items.map((item) => `- ${item}`).join('\n');
 }
 
-export function formatRecentTurns(turns: readonly ChatTurn[]): string {
+export interface SpeakerNames {
+  readonly target: string;
+  readonly interlocutor: string;
+}
+
+export function formatRecentTurns(
+  turns: readonly ChatTurn[],
+  speakerNames: SpeakerNames
+): string {
   if (turns.length === 0) {
     return 'No prior turns in this session.';
   }
 
   return turns
     .map((turn) => {
-      const lines = [`TURN ${turn.turnNumber} [${turn.speaker}]`];
+      const speakerName =
+        turn.speaker === 'CHARACTER' ? speakerNames.target : speakerNames.interlocutor;
+      const lines = [`TURN ${turn.turnNumber} [${speakerName}]`];
 
       if (turn.rawText) {
         lines.push(`Raw Text: ${turn.rawText}`);

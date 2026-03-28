@@ -1,4 +1,3 @@
-import type { ChatTurn } from '../../../models/chat/index.js';
 import type { ChatMessage } from '../../llm-client-types.js';
 import { CONTENT_POLICY } from '../../content-policy.js';
 import type { ChatStateUpdaterContext } from '../../chat/chat-state-updater-generation.js';
@@ -19,14 +18,14 @@ Signal when the chat bible should be refreshed.
 Signal when a rolling summary should be generated.
 Do not invent state changes unsupported by the provided turn.`;
 
-function formatLatestUserTurn(turn: ChatTurn): string {
-  return formatRecentTurns([turn]);
-}
-
 export function buildChatStateUpdaterMessages(context: ChatStateUpdaterContext): ChatMessage[] {
+  const speakerNames = {
+    target: context.targetCharacterName,
+    interlocutor: context.interlocutorCharacterName,
+  };
   const userSections = [
     `PRE-TURN CHAT BIBLE\n${formatChatBible(context.chatBible)}`,
-    `LATEST USER TURN\n${formatLatestUserTurn(context.latestUserTurn)}`,
+    `LATEST USER TURN\n${formatRecentTurns([context.latestUserTurn], speakerNames)}`,
     `TURN PLAN\n${formatTurnPlan(context.turnPlan)}`,
     `FINAL WRITTEN TURN\n${formatChatWriterTurn(context.writerTurn)}`,
   ];

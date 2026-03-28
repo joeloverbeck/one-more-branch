@@ -3,6 +3,8 @@ import type { ChatSummaryContext } from '../../../../../src/llm/chat/chat-summar
 
 function makeContext(): ChatSummaryContext {
   return {
+    targetCharacterName: 'Iria Vale',
+    interlocutorCharacterName: 'Tomas Braga',
     existingSummary: {
       compressedSummary: 'They ended the previous exchange with an accusation and no proof.',
       keyCommitments: ['Meet before dawn'],
@@ -78,8 +80,8 @@ describe('buildChatSummaryMessages', () => {
 
     expect(userContent).toContain('EXISTING ROLLING SUMMARY\nNone');
     expect(userContent).toContain('TURNS TO COMPRESS');
-    expect(userContent).toContain('TURN 9 [USER]');
-    expect(userContent).toContain('TURN 10 [CHARACTER]');
+    expect(userContent).toContain('TURN 9 [Tomas Braga]');
+    expect(userContent).toContain('TURN 10 [Iria Vale]');
     expect(userContent).toContain('- ACTION: bars the door');
     expect(userContent).toContain('- SPEECH: Stop lying to me.');
     expect(userContent).toContain('- SPEECH (flat): Then ask the question you are afraid of.');

@@ -39,6 +39,7 @@ function makeCharacter(
 function makeContext(): ChatWriterContext {
   return {
     targetCharacter: makeCharacter('Iria Vale'),
+    interlocutorCharacterName: 'Tomas Braga',
     chatBible: {
       sessionPremise: 'A guarded reunion after a failed mission.',
       physicalReality: {
@@ -192,8 +193,8 @@ describe('buildChatWriterMessages', () => {
   it('formats recent turns and latest user turn separately', () => {
     const userContent = buildChatWriterMessages(makeContext())[1].content;
 
-    expect(userContent).toContain('RECENT CHAT TURNS\nTURN 11 [USER]');
-    expect(userContent).toContain('LATEST USER TURN\nTURN 12 [USER]');
+    expect(userContent).toContain('RECENT CHAT TURNS\nTURN 11 [Tomas Braga]');
+    expect(userContent).toContain('LATEST USER TURN\nTURN 12 [Tomas Braga]');
     expect(userContent).toContain('- ACTION: steps closer');
     expect(userContent).toContain('- SPEECH: Then prove it.');
   });

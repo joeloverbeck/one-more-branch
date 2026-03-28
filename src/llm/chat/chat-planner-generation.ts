@@ -11,6 +11,7 @@ import {
 
 export interface ChatPlannerContext {
   readonly targetCharacter: StandaloneDecomposedCharacter;
+  readonly interlocutorCharacterName: string;
   readonly chatBible: ChatBible;
   readonly recentTurns: readonly ChatTurn[];
   readonly latestUserTurn: ChatTurn;

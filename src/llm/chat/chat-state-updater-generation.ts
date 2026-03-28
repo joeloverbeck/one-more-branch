@@ -10,6 +10,8 @@ import {
 import type { ChatWriterTurn } from './chat-writer-generation.js';
 
 export interface ChatStateUpdaterContext {
+  readonly targetCharacterName: string;
+  readonly interlocutorCharacterName: string;
   readonly chatBible: ChatBible;
   readonly latestUserTurn: ChatTurn;
   readonly turnPlan: TurnPlannerOutput;

@@ -155,6 +155,7 @@ export async function runChatPipeline(
         generateChatTurnPlan(
           {
             targetCharacter: context.targetCharacter,
+            interlocutorCharacterName: context.chatSession.interlocutorCharacterName,
             chatBible,
             recentTurns: context.recentTurns,
             latestUserTurn: context.latestUserTurn,
@@ -172,6 +173,7 @@ export async function runChatPipeline(
         generateChatWriterTurn(
           {
             targetCharacter: context.targetCharacter,
+            interlocutorCharacterName: context.chatSession.interlocutorCharacterName,
             chatBible,
             turnPlan,
             recentTurns: context.recentTurns,
@@ -189,6 +191,8 @@ export async function runChatPipeline(
       async () =>
         generateChatStateUpdate(
           {
+            targetCharacterName: context.targetCharacter.name,
+            interlocutorCharacterName: context.chatSession.interlocutorCharacterName,
             chatBible,
             latestUserTurn: context.latestUserTurn,
             turnPlan,
@@ -220,6 +224,8 @@ export async function runChatPipeline(
         async () =>
           generateChatSummary(
             {
+              targetCharacterName: context.targetCharacter.name,
+              interlocutorCharacterName: context.chatSession.interlocutorCharacterName,
               existingSummary: updatedSession.rollingSummary,
               turnsToCompress: [...context.allTurns, characterTurn],
             },
