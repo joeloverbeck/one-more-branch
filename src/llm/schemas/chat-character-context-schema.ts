@@ -77,11 +77,13 @@ export const CHAT_CHARACTER_CONTEXT_SCHEMA: JsonSchema = {
             },
             valence: {
               type: 'number',
-              description: 'Numeric relationship valence.',
+              description:
+                'Numeric relationship valence, integer from -5 (deeply hostile) to +5 (unconditionally loyal). 0 = neutral.',
             },
             tension: {
               type: 'number',
-              description: 'Numeric current relationship tension.',
+              description:
+                'Numeric current relationship tension, integer from 0 (no tension) to 10 (unbearable pressure).',
             },
             leverage: {
               type: 'string',

@@ -186,6 +186,10 @@ describe('buildChatCharacterContextMessages', () => {
     expect(userContent).toContain('RELATIONSHIP STATE');
     expect(userContent).toContain('KNOWLEDGE STATE');
     expect(userContent).toContain('RECENT CHAT TURNS');
+    expect(userContent).toContain('Valence: cool and guarded');
+    expect(userContent).toContain('Tension: high tension');
+    expect(userContent).not.toContain('Valence: -1');
+    expect(userContent).not.toContain('Tension: 7');
   });
 
   it('wires the psychology summary view into character sections without leaking raw descriptions', () => {

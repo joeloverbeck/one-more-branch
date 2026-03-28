@@ -88,6 +88,30 @@ describe('CHAT_CHARACTER_CONTEXT_SCHEMA', () => {
   it('stays within the grammar leaf-property safety budget', () => {
     expect(countLeafProperties(CHAT_CHARACTER_CONTEXT_SCHEMA.json_schema.schema)).toBe(19);
   });
+
+  it('describes relationship ranges semantically without numeric constraints', () => {
+    const relationshipNow = (
+      CHAT_CHARACTER_CONTEXT_SCHEMA.json_schema.schema as {
+        properties: {
+          relationshipNow: {
+            properties: {
+              valence: { description: string; minimum?: number; maximum?: number };
+              tension: { description: string; minimum?: number; maximum?: number };
+            };
+          };
+        };
+      }
+    ).properties.relationshipNow.properties;
+
+    expect(relationshipNow.valence.description).toContain('-5 (deeply hostile)');
+    expect(relationshipNow.valence.description).toContain('+5 (unconditionally loyal)');
+    expect(relationshipNow.tension.description).toContain('0 (no tension)');
+    expect(relationshipNow.tension.description).toContain('10 (unbearable pressure)');
+    expect(relationshipNow.valence).not.toHaveProperty('minimum');
+    expect(relationshipNow.valence).not.toHaveProperty('maximum');
+    expect(relationshipNow.tension).not.toHaveProperty('minimum');
+    expect(relationshipNow.tension).not.toHaveProperty('maximum');
+  });
 });
 
 describe('parseChatCharacterContextResponse', () => {

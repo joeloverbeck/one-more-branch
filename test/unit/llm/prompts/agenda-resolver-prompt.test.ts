@@ -132,6 +132,38 @@ describe('buildAgendaResolverPrompt', () => {
     expect(user).toContain('Off-screen: Bribing guards');
   });
 
+  it('renders semantic labels for current relationships and analyst valence-shift guidance', () => {
+    const messages = buildAgendaResolverPrompt(
+      buildMinimalContext({
+        currentRelationships: {
+          Azra: {
+            npcName: 'Azra',
+            valence: -1,
+            dynamic: 'uneasy ally',
+            history: 'Former military comrades, now on opposite sides.',
+            currentTension: "Distrusts the protagonist's motives.",
+            leverage: "Knows the protagonist's old contacts.",
+          },
+        },
+        analystSignals: {
+          relationshipShiftsDetected: [
+            {
+              npcName: 'Azra',
+              shiftDescription: 'Her trust cools after the hallway confrontation.',
+              suggestedValenceChange: -1,
+              suggestedNewDynamic: 'openly suspicious',
+            },
+          ],
+        },
+      })
+    );
+    const user = messages[1]?.content ?? '';
+
+    expect(user).toContain('Dynamic: uneasy ally | Valence: cool and guarded');
+    expect(user).toContain('suggested valence change: slight cooling, suggested new dynamic: openly suspicious');
+    expect(user).not.toContain('Dynamic: uneasy ally | Valence: -1');
+  });
+
   it('includes structure context when provided', () => {
     const context = buildMinimalContext({
       structure: {

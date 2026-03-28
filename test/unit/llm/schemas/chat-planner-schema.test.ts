@@ -115,6 +115,30 @@ describe('CHAT_PLANNER_SCHEMA', () => {
     ]);
     expect(schema.properties.questionBack.anyOf).toEqual([{ type: 'string' }, { type: 'null' }]);
   });
+
+  it('describes expected-impact deltas semantically without numeric constraints', () => {
+    const expectedImpact = (
+      CHAT_PLANNER_SCHEMA.json_schema.schema as {
+        properties: {
+          expectedImpact: {
+            properties: {
+              relationshipDeltaHint: { description: string; minimum?: number; maximum?: number };
+              tensionDeltaHint: { description: string; minimum?: number; maximum?: number };
+            };
+          };
+        };
+      }
+    ).properties.expectedImpact.properties;
+
+    expect(expectedImpact.relationshipDeltaHint.description).toContain('-2 (large cooling)');
+    expect(expectedImpact.relationshipDeltaHint.description).toContain('+2 (large warming)');
+    expect(expectedImpact.tensionDeltaHint.description).toContain('-2 (major de-escalation)');
+    expect(expectedImpact.tensionDeltaHint.description).toContain('+2 (major escalation)');
+    expect(expectedImpact.relationshipDeltaHint).not.toHaveProperty('minimum');
+    expect(expectedImpact.relationshipDeltaHint).not.toHaveProperty('maximum');
+    expect(expectedImpact.tensionDeltaHint).not.toHaveProperty('minimum');
+    expect(expectedImpact.tensionDeltaHint).not.toHaveProperty('maximum');
+  });
 });
 
 describe('parseChatPlannerResponse', () => {

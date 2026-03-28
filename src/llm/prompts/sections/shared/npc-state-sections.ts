@@ -1,5 +1,6 @@
 import type { AccumulatedNpcAgendas } from '../../../../models/state/npc-agenda.js';
 import type { AccumulatedNpcRelationships } from '../../../../models/state/npc-relationship.js';
+import { valenceLabel } from '../../relationship-label-maps.js';
 
 export function buildNpcAgendasSection(agendas?: AccumulatedNpcAgendas): string {
   if (!agendas) {
@@ -39,7 +40,7 @@ export function buildNpcRelationshipsSection(relationships?: AccumulatedNpcRelat
   const lines = entries.map(
     (r) =>
       `[${r.npcName}]
-  Dynamic: ${r.dynamic} | Valence: ${r.valence}
+  Dynamic: ${r.dynamic} | Valence: ${valenceLabel(r.valence)}
   Tension: ${r.currentTension}`
   );
 

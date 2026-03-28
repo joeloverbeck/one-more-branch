@@ -77,11 +77,13 @@ export const CHAT_STATE_UPDATER_SCHEMA: JsonSchema = {
               },
               suggestedValenceChange: {
                 type: 'number',
-                description: 'Suggested relationship valence delta in the range -2..+2.',
+                description:
+                  'Suggested relationship valence delta, integer from -2 (large cooling) to +2 (large warming). 0 = no change.',
               },
               suggestedTensionChange: {
                 type: 'number',
-                description: 'Suggested tension delta in the range -2..+2.',
+                description:
+                  'Suggested tension delta, integer from -2 (major de-escalation) to +2 (major escalation). 0 = no change.',
               },
               suggestedNewDynamic: buildNullableStringSchema(
                 'Replacement relationship dynamic label, if the dynamic materially changed.'

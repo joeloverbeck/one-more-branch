@@ -1,5 +1,9 @@
-import { formatChatSceneContext } from '../../../../../src/llm/prompts/chat/chat-prompt-formatters';
-import type { ChatSceneContext } from '../../../../../src/models/chat/index';
+import {
+  formatChatBible,
+  formatChatSceneContext,
+  formatTurnPlan,
+} from '../../../../../src/llm/prompts/chat/chat-prompt-formatters';
+import type { ChatBible, ChatSceneContext, TurnPlannerOutput } from '../../../../../src/models/chat/index';
 
 function makeSceneContext(): ChatSceneContext {
   return {
@@ -51,5 +55,95 @@ describe('formatChatSceneContext', () => {
     expect(formatted).toContain('Sensitive Topics:');
     expect(formatted).toContain('- the second key');
     expect(formatted).toContain('- Last Turn Pressure: None');
+  });
+});
+
+function makeChatBible(): ChatBible {
+  return {
+    sessionPremise: 'A private confrontation about a missing ledger.',
+    physicalReality: makeSceneContext().physicalReality,
+    preChatMomentum: makeSceneContext().preChatMomentum,
+    characterNow: {
+      currentObjective: 'Force a useful admission.',
+      immediateNeedFromConversation: 'Make him overcommit.',
+      emotionalState: 'controlled anger',
+      willingnessToEngage: 'GUARDED',
+      topicsToAdvance: ['The missing ledger'],
+      topicsToProtect: ['The second key'],
+    },
+    relationshipNow: {
+      dynamic: 'fractured allies',
+      valence: -1,
+      tension: 7,
+      leverage: 'Each knows enough to ruin the other',
+      whatCharacterBelievesAboutInterlocutor: ['He is stalling for time.'],
+    },
+    knowledgeNow: {
+      knownFacts: ['The ledger is missing.'],
+      suspicions: ['He staged the raid.'],
+      falseBeliefs: ['He thinks she still trusts him.'],
+      secretsRevealed: ['She found the duplicate seal.'],
+      secretsKept: ['She already copied the ledger.'],
+      knowledgeBoundaries: ['She does not know who ordered the raid.'],
+    },
+    conversationNow: {
+      rollingSummary: null,
+      activeThreads: ['ledger'],
+      commitments: ['Meet again at dawn'],
+      sensitiveTopics: ['the second key'],
+      lastTurnPressure: null,
+    },
+    continuityGuardrails: ['Do not invent new evidence.'],
+    responseConstraints: ['Stay immediate and reply-shaped.'],
+  };
+}
+
+function makeTurnPlan(): TurnPlannerOutput {
+  return {
+    internalSelfCheck: {
+      whatDoIWant: 'Make him expose his lie.',
+      whatDoIKnow: 'He reached the vault first.',
+      whatAmIHiding: 'I copied the ledger already.',
+      howHonestAmI: 'Only as honest as leverage requires.',
+    },
+    responseGoal: 'Corner him without losing composure.',
+    speechAct: 'CHALLENGE',
+    honestyMode: 'PARTIAL',
+    surfaceEmotion: 'cold focus',
+    suppressedEmotion: 'fear',
+    subtext: 'I already know enough to hurt you.',
+    mustAddress: ['the missing ledger'],
+    mustAvoid: ['the copied ledger'],
+    blockPlan: ['ACTION', 'SPEECH'],
+    actionPlan: [],
+    questionBack: null,
+    targetLength: 'MEDIUM',
+    expectedImpact: {
+      relationshipDeltaHint: -1,
+      tensionDeltaHint: 2,
+      revealsSecret: false,
+    },
+  };
+}
+
+describe('formatChatBible', () => {
+  it('renders semantic relationship labels instead of bare numeric scores', () => {
+    const formatted = formatChatBible(makeChatBible());
+
+    expect(formatted).toContain('- Valence: cool and guarded');
+    expect(formatted).toContain('- Tension: high tension');
+    expect(formatted).not.toContain('- Valence: -1');
+    expect(formatted).not.toContain('- Tension: 7');
+  });
+});
+
+describe('formatTurnPlan', () => {
+  it('renders semantic delta hints instead of bare numeric deltas', () => {
+    const formatted = formatTurnPlan(makeTurnPlan());
+
+    expect(formatted).toContain('- Relationship Delta Hint: slight cooling');
+    expect(formatted).toContain('- Tension Delta Hint: major escalation');
+    expect(formatted).not.toContain('- Relationship Delta Hint: -1');
+    expect(formatted).not.toContain('- Tension Delta Hint: 2');
   });
 });

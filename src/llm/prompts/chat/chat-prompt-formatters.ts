@@ -7,6 +7,12 @@ import type {
   TurnMeta,
   TurnPlannerOutput,
 } from '../../../models/chat/index.js';
+import {
+  tensionDeltaLabel,
+  tensionLabel,
+  valenceDeltaLabel,
+  valenceLabel,
+} from '../relationship-label-maps.js';
 
 export function formatStringList(items: readonly string[]): string {
   if (items.length === 0) {
@@ -109,8 +115,8 @@ export function formatChatBible(chatBible: ChatBible): string {
     formatStringList(chatBible.characterNow.topicsToProtect),
     'Relationship Now:',
     `- Dynamic: ${chatBible.relationshipNow.dynamic}`,
-    `- Valence: ${chatBible.relationshipNow.valence}`,
-    `- Tension: ${chatBible.relationshipNow.tension}`,
+    `- Valence: ${valenceLabel(chatBible.relationshipNow.valence)}`,
+    `- Tension: ${tensionLabel(chatBible.relationshipNow.tension)}`,
     `- Leverage: ${chatBible.relationshipNow.leverage}`,
     'Beliefs About Interlocutor:',
     formatStringList(chatBible.relationshipNow.whatCharacterBelievesAboutInterlocutor),
@@ -206,8 +212,8 @@ export function formatTurnPlan(turnPlan: TurnPlannerOutput): string {
     `Question Back: ${turnPlan.questionBack ?? 'None'}`,
     `Target Length: ${turnPlan.targetLength}`,
     'Expected Impact:',
-    `- Relationship Delta Hint: ${turnPlan.expectedImpact.relationshipDeltaHint}`,
-    `- Tension Delta Hint: ${turnPlan.expectedImpact.tensionDeltaHint}`,
+    `- Relationship Delta Hint: ${valenceDeltaLabel(turnPlan.expectedImpact.relationshipDeltaHint)}`,
+    `- Tension Delta Hint: ${tensionDeltaLabel(turnPlan.expectedImpact.tensionDeltaHint)}`,
     `- Reveals Secret: ${turnPlan.expectedImpact.revealsSecret}`,
   ].join('\n');
 }

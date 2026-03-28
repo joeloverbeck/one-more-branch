@@ -13,6 +13,7 @@ import type { ChatMessage } from '../llm-client-types.js';
 import { CONTENT_POLICY } from '../content-policy.js';
 import { buildSpineSection } from './sections/shared/spine-section.js';
 import { buildToneDirective } from './sections/shared/tone-block.js';
+import { valenceDeltaLabel, valenceLabel } from './relationship-label-maps.js';
 
 const AGENDA_RESOLVER_SYSTEM_PROMPT = `You are the NPC Agenda Resolver for an interactive branching story. After each scene, you evaluate how events affect each NPC's agenda and update their goals, leverage, fears, and off-screen behavior accordingly.
 
@@ -85,7 +86,7 @@ function formatCurrentRelationships(relationships: AccumulatedNpcRelationships):
     .map(
       (r: NpcRelationship) =>
         `[${r.npcName}]
-  Dynamic: ${r.dynamic} | Valence: ${r.valence}
+  Dynamic: ${r.dynamic} | Valence: ${valenceLabel(r.valence)}
   History: ${r.history}
   Current Tension: ${r.currentTension}
   Leverage: ${r.leverage}`
@@ -116,7 +117,7 @@ function buildAnalystRelationshipShiftsSection(context: AgendaResolverPromptCont
 
   const lines = shifts.map(
     (s) =>
-      `- ${s.npcName}: ${s.shiftDescription} (suggested valence change: ${s.suggestedValenceChange > 0 ? '+' : ''}${s.suggestedValenceChange}${s.suggestedNewDynamic ? `, suggested new dynamic: ${s.suggestedNewDynamic}` : ''})`
+      `- ${s.npcName}: ${s.shiftDescription} (suggested valence change: ${valenceDeltaLabel(s.suggestedValenceChange)}${s.suggestedNewDynamic ? `, suggested new dynamic: ${s.suggestedNewDynamic}` : ''})`
   );
 
   return `ANALYST RELATIONSHIP SHIFT SIGNALS:

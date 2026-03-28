@@ -102,6 +102,40 @@ describe('CHAT_STATE_UPDATER_SCHEMA', () => {
       { type: 'null' },
     ]);
   });
+
+  it('describes relationship deltas semantically without numeric constraints', () => {
+    const relationshipShiftProperties = (
+      CHAT_STATE_UPDATER_SCHEMA.json_schema.schema as {
+        properties: {
+          relationshipShifts: {
+            items: {
+              properties: {
+                suggestedValenceChange: { description: string; minimum?: number; maximum?: number };
+                suggestedTensionChange: { description: string; minimum?: number; maximum?: number };
+              };
+            };
+          };
+        };
+      }
+    ).properties.relationshipShifts.items.properties;
+
+    expect(relationshipShiftProperties.suggestedValenceChange.description).toContain(
+      '-2 (large cooling)'
+    );
+    expect(relationshipShiftProperties.suggestedValenceChange.description).toContain(
+      '+2 (large warming)'
+    );
+    expect(relationshipShiftProperties.suggestedTensionChange.description).toContain(
+      '-2 (major de-escalation)'
+    );
+    expect(relationshipShiftProperties.suggestedTensionChange.description).toContain(
+      '+2 (major escalation)'
+    );
+    expect(relationshipShiftProperties.suggestedValenceChange).not.toHaveProperty('minimum');
+    expect(relationshipShiftProperties.suggestedValenceChange).not.toHaveProperty('maximum');
+    expect(relationshipShiftProperties.suggestedTensionChange).not.toHaveProperty('minimum');
+    expect(relationshipShiftProperties.suggestedTensionChange).not.toHaveProperty('maximum');
+  });
 });
 
 describe('parseChatStateUpdaterResponse', () => {

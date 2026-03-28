@@ -185,6 +185,12 @@ describe('buildChatWriterMessages', () => {
     expect(userContent).toContain('- Stay on bearing, and maybe we survive this yet.');
     expect(userContent).toContain('Response Goal: Probe without surrendering leverage.');
     expect(userContent).toContain('Block Plan: ACTION -> SPEECH');
+    expect(userContent).toContain('- Valence: cool and guarded');
+    expect(userContent).toContain('- Tension: high tension');
+    expect(userContent).toContain('- Relationship Delta Hint: slight cooling');
+    expect(userContent).toContain('- Tension Delta Hint: major escalation');
+    expect(userContent).not.toContain('- Valence: -1');
+    expect(userContent).not.toContain('- Tension: 7');
     expect(userContent).toContain(
       '- GESTURE: Sets the lantern down with deliberate care. (changesPhysicalState=false)'
     );

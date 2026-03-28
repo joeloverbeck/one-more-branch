@@ -126,8 +126,8 @@ export function isChatRelationshipState(value: unknown): value is ChatRelationsh
 
   return (
     isString(value['dynamic']) &&
-    isFiniteNumber(value['valence']) &&
-    isFiniteNumber(value['tension']) &&
+    isNumberInRange(value['valence'], -5, 5) &&
+    isNumberInRange(value['tension'], 0, 10) &&
     isString(value['leverage'])
   );
 }

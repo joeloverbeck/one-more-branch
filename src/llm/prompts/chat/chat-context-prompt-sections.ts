@@ -4,6 +4,7 @@ import { buildWorldSection } from '../sections/shared/worldbuilding-sections.js'
 import type { ChatGenerationContext } from '../../chat/chat-generation-context.js';
 import { formatRollingSummaryForPrompt } from './chat-memory-prompt-adapter.js';
 import { formatChatSceneContext, formatRecentTurns, formatStringList } from './chat-prompt-formatters.js';
+import { tensionLabel, valenceLabel } from '../relationship-label-maps.js';
 
 export function buildTargetCharacterSummarySection(
   context: ChatGenerationContext,
@@ -45,8 +46,8 @@ export function buildRelationshipSection(context: ChatGenerationContext): string
   return [
     'RELATIONSHIP STATE',
     `Dynamic: ${relationshipState.dynamic}`,
-    `Valence: ${relationshipState.valence}`,
-    `Tension: ${relationshipState.tension}`,
+    `Valence: ${valenceLabel(relationshipState.valence)}`,
+    `Tension: ${tensionLabel(relationshipState.tension)}`,
     `Leverage: ${relationshipState.leverage}`,
   ].join('\n');
 }
