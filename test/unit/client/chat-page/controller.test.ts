@@ -78,6 +78,57 @@ describe('chat page controller', () => {
               <span data-chat-field="leverage">Shared guilt</span>
             </div>
           </details>
+          <details class="chat-accordion chat-sidebar__section" data-chat-section="knowledge" open>
+            <summary class="chat-accordion-summary">
+              <span class="chat-accordion-summary__title">Knowledge State</span>
+              <span class="chat-accordion-summary__meta">
+                <span class="chat-summary-chip" data-chat-field="knowledgeSummary">1 fact, 1 suspicion</span>
+              </span>
+            </summary>
+            <div class="chat-accordion-content">
+              <ul class="chat-sidebar-list" data-chat-list="knownFacts">
+                <li>The ledger seal matters.</li>
+              </ul>
+              <ul class="chat-sidebar-list chat-list--italic" data-chat-list="suspicions">
+                <li>Iven hid the copy.</li>
+              </ul>
+              <ul class="chat-sidebar-list chat-list--warning" data-chat-list="falseBeliefs">
+                <li>The room is unwatched.</li>
+              </ul>
+              <ul class="chat-sidebar-list" data-chat-list="secretsRevealed">
+                <li>Mara searched his satchel.</li>
+              </ul>
+            </div>
+          </details>
+          <details class="chat-accordion chat-sidebar__section" data-chat-section="mind" open>
+            <summary class="chat-accordion-summary">
+              <span class="chat-accordion-summary__title">Character Mind</span>
+              <span class="chat-accordion-summary__meta">
+                <span class="chat-summary-chip" data-chat-field="currentObjectiveSummary">Keep Iven talking...</span>
+              </span>
+            </summary>
+            <div class="chat-accordion-content">
+              <span data-chat-field="currentObjective">Keep Iven talking.</span>
+              <span data-chat-field="immediateNeedFromConversation">Confirm what he saw.</span>
+              <span data-chat-field="emotionalState">guarded</span>
+              <span class="chat-pill chat-pill--badge" data-chat-field="willingnessToEngage">GUARDED</span>
+              <ul class="chat-sidebar-list" data-chat-list="topicsToAdvance">
+                <li>the ledger</li>
+              </ul>
+              <ul class="chat-sidebar-list chat-sidebar-list--prefixed" data-chat-list="topicsToProtect">
+                <li><span class="chat-list-prefix" aria-hidden="true">Lock</span><span>the copy</span></li>
+              </ul>
+              <ul class="chat-sidebar-list" data-chat-list="beliefsAboutInterlocutor">
+                <li>He is stalling.</li>
+              </ul>
+              <ul class="chat-sidebar-list" data-chat-list="secretsKept">
+                <li>Mara copied one page.</li>
+              </ul>
+              <ul class="chat-sidebar-list" data-chat-list="knowledgeBoundaries">
+                <li>Who ordered the raid.</li>
+              </ul>
+            </div>
+          </details>
           <span data-chat-field="whyNow">Before dawn.</span>
         </aside>
         <section class="chat-input-bar">
@@ -109,7 +160,7 @@ describe('chat page controller', () => {
           </form>
         </section>
       </main>
-      <script type="application/json" id="chat-ui-bootstrap">{"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""},{"turnNumber":2,"valence":-1,"tension":6,"dynamic":"strained allies"}]}</script>
+      <script type="application/json" id="chat-ui-bootstrap">{"chatBible":{"characterNow":{"currentObjective":"Keep Iven talking long enough to learn who else touched the ledger tonight.","immediateNeedFromConversation":"Confirm whether he saw the copied seal.","emotionalState":"guarded","willingnessToEngage":"GUARDED","topicsToAdvance":["the ledger"],"topicsToProtect":["the copy"]},"relationshipNow":{"whatCharacterBelievesAboutInterlocutor":["He is stalling."]},"knowledgeNow":{"knownFacts":["This should stay out of Character Mind"],"suspicions":["This should stay out of Character Mind"],"falseBeliefs":["This should stay out of Character Mind"],"secretsRevealed":["This should stay out of Character Mind"],"secretsKept":["Mara copied one page."],"knowledgeBoundaries":["Who ordered the raid."]}},"knowledgeState":{"knownFacts":["The ledger seal matters."],"suspicions":["Iven hid the copy."],"falseBeliefs":["The room is unwatched."],"secretsRevealed":["Mara searched his satchel."]},"relationshipHistory":[{"turnNumber":0,"valence":0,"tension":0,"dynamic":""},{"turnNumber":2,"valence":-1,"tension":6,"dynamic":"strained allies"}]}</script>
     `;
   }
 
@@ -281,6 +332,36 @@ describe('chat page controller', () => {
               leadInContext: {
                 whyNow: 'The bells will cover the truth.',
               },
+              knowledgeState: {
+                knownFacts: ['She knows the ledger seal.', 'The bells mask footsteps.'],
+                suspicions: ['He suspects Mara moved the copy.'],
+                falseBeliefs: ['The tower is empty.'],
+                secretsRevealed: ['Mara searched his satchel.'],
+              },
+              chatBible: {
+                characterNow: {
+                  currentObjective:
+                    'Keep him talking until the bells hide the next move toward the archive stairs.',
+                  immediateNeedFromConversation: 'Learn whether he has backup waiting below.',
+                  emotionalState: 'cold focus',
+                  willingnessToEngage: 'RESISTANT',
+                  topicsToAdvance: ['the missing ledger', 'the bell timing'],
+                  topicsToProtect: ['the copied seal'],
+                },
+                relationshipNow: {
+                  whatCharacterBelievesAboutInterlocutor: [
+                    'He is buying time for someone else.',
+                  ],
+                },
+                knowledgeNow: {
+                  knownFacts: ['This should still stay out of Character Mind'],
+                  suspicions: ['This should still stay out of Character Mind'],
+                  falseBeliefs: ['This should still stay out of Character Mind'],
+                  secretsRevealed: ['This should still stay out of Character Mind'],
+                  secretsKept: ['She copied a second page.'],
+                  knowledgeBoundaries: ['Who ordered the bells to ring early.'],
+                },
+              },
             },
           })
         );
@@ -377,6 +458,58 @@ describe('chat page controller', () => {
     expect(document.querySelector('[data-chat-list="ambientConditions"]')?.textContent).toContain(
       'bells'
     );
+    expect(document.querySelector('[data-chat-field="knowledgeSummary"]')?.textContent).toBe(
+      '2 facts, 1 suspicion'
+    );
+    expect(document.querySelector('[data-chat-list="knownFacts"]')?.textContent).toContain(
+      'She knows the ledger seal.'
+    );
+    expect(document.querySelector('[data-chat-list="knownFacts"]')?.textContent).toContain(
+      'The bells mask footsteps.'
+    );
+    expect(document.querySelector('[data-chat-list="suspicions"]')?.textContent).toContain(
+      'He suspects Mara moved the copy.'
+    );
+    expect(document.querySelector('[data-chat-list="falseBeliefs"]')?.textContent).toContain(
+      'The tower is empty.'
+    );
+    expect(document.querySelector('[data-chat-list="secretsRevealed"]')?.textContent).toContain(
+      'Mara searched his satchel.'
+    );
+    expect(document.querySelector('[data-chat-field="currentObjectiveSummary"]')?.textContent).toBe(
+      'Keep him talking until the bells hide the next move towar...'
+    );
+    expect(document.querySelector('[data-chat-field="currentObjective"]')?.textContent).toBe(
+      'Keep him talking until the bells hide the next move toward the archive stairs.'
+    );
+    expect(
+      document.querySelector('[data-chat-field="immediateNeedFromConversation"]')?.textContent
+    ).toBe('Learn whether he has backup waiting below.');
+    expect(document.querySelector('[data-chat-field="emotionalState"]')?.textContent).toBe(
+      'cold focus'
+    );
+    expect(document.querySelector('[data-chat-field="willingnessToEngage"]')?.textContent).toBe(
+      'RESISTANT'
+    );
+    expect(document.querySelector('[data-chat-list="topicsToAdvance"]')?.textContent).toContain(
+      'the bell timing'
+    );
+    expect(document.querySelector('[data-chat-list="topicsToProtect"]')?.textContent).toContain(
+      'Lock'
+    );
+    expect(document.querySelector('[data-chat-list="topicsToProtect"]')?.textContent).toContain(
+      'the copied seal'
+    );
+    expect(
+      document.querySelector('[data-chat-list="beliefsAboutInterlocutor"]')?.textContent
+    ).toContain('He is buying time for someone else.');
+    expect(document.querySelector('[data-chat-list="secretsKept"]')?.textContent).toContain(
+      'She copied a second page.'
+    );
+    expect(document.querySelector('[data-chat-list="knowledgeBoundaries"]')?.textContent).toContain(
+      'Who ordered the bells to ring early.'
+    );
+    expect(document.body.textContent).not.toContain('This should still stay out of Character Mind');
     expect(document.querySelector('[data-chat-field="whyNow"]')?.textContent).toBe(
       'The bells will cover the truth.'
     );
@@ -409,6 +542,15 @@ describe('chat page controller', () => {
 
     expect(document.querySelector('[data-chat-list="interactableObjects"]')?.textContent).toContain(
       'ledger'
+    );
+    expect(document.querySelector('[data-chat-field="knowledgeSummary"]')?.textContent).toBe(
+      '1 fact, 1 suspicion'
+    );
+    expect(document.querySelector('[data-chat-field="currentObjectiveSummary"]')?.textContent).toBe(
+      'Keep Iven talking long enough to learn who else touched t...'
+    );
+    expect(document.querySelector('[data-chat-list="topicsToProtect"]')?.textContent).toContain(
+      'the copy'
     );
     expect(document.querySelector('[data-chat-list="ambientConditions"]')?.textContent).toContain(
       'rain'

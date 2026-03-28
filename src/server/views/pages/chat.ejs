@@ -26,6 +26,37 @@
       return `${value > 0 ? '+' : ''}${value}`;
     }
 
+    function normalizeSidebarText(value, fallback) {
+      return typeof value === 'string' && value.trim().length > 0 ? value.trim() : fallback;
+    }
+
+    function sanitizeSidebarItems(values) {
+      return Array.isArray(values)
+        ? values.filter((value) => typeof value === 'string' && value.trim().length > 0)
+        : [];
+    }
+
+    function pluralizeSidebarCount(count, singular, plural) {
+      return `${count} ${count === 1 ? singular : plural}`;
+    }
+
+    function buildKnowledgeSummary(knowledgeState) {
+      const knownFacts = sanitizeSidebarItems(knowledgeState?.knownFacts);
+      const suspicions = sanitizeSidebarItems(knowledgeState?.suspicions);
+      return `${pluralizeSidebarCount(knownFacts.length, 'fact', 'facts')}, ${pluralizeSidebarCount(suspicions.length, 'suspicion', 'suspicions')}`;
+    }
+
+    function truncateSidebarSummary(value, maxLength) {
+      const normalized = normalizeSidebarText(value, '');
+      if (normalized.length === 0) {
+        return 'No objective available';
+      }
+
+      return normalized.length > maxLength
+        ? `${normalized.slice(0, Math.max(maxLength - 3, 1)).trimEnd()}...`
+        : normalized;
+    }
+
     function buildInnerWorldData(turn) {
       if (!turn || turn.speaker !== 'CHARACTER') {
         return [];
@@ -230,6 +261,19 @@
         );
       });
     }
+
+    var bootstrapKnowledgeState = chatUiBootstrap?.knowledgeState ?? {
+      knownFacts: [],
+      suspicions: [],
+      falseBeliefs: [],
+      secretsRevealed: [],
+    };
+    var bootstrapChatBible = chatUiBootstrap?.chatBible ?? null;
+    var knowledgeSummary = buildKnowledgeSummary(bootstrapKnowledgeState);
+    var currentObjectiveSummary = truncateSidebarSummary(
+      bootstrapChatBible?.characterNow?.currentObjective,
+      60
+    );
   %>
 
   <main
@@ -558,6 +602,176 @@
               <dd><span data-chat-field="leverage"><%= session.relationshipState.leverage || 'None' %></span></dd>
             </div>
           </dl>
+        </div>
+      </details>
+
+      <details
+        class="chat-accordion chat-sidebar__section"
+        id="chat-knowledge-state"
+        data-chat-section="knowledge"
+        open
+      >
+        <summary class="chat-accordion-summary">
+          <span class="chat-accordion-summary__title">Knowledge State</span>
+          <span class="chat-accordion-summary__meta">
+            <span class="chat-summary-chip" data-chat-field="knowledgeSummary"><%= knowledgeSummary %></span>
+          </span>
+        </summary>
+
+        <div class="chat-accordion-content">
+          <section class="chat-sidebar-group">
+            <h3>Known Facts</h3>
+            <ul class="chat-sidebar-list" data-chat-list="knownFacts">
+              <% if (sanitizeSidebarItems(bootstrapKnowledgeState.knownFacts).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No facts tracked.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapKnowledgeState.knownFacts).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+
+          <section class="chat-sidebar-group">
+            <h3>Suspicions</h3>
+            <ul class="chat-sidebar-list chat-list--italic" data-chat-list="suspicions">
+              <% if (sanitizeSidebarItems(bootstrapKnowledgeState.suspicions).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No suspicions tracked.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapKnowledgeState.suspicions).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+
+          <section class="chat-sidebar-group">
+            <h3>False Beliefs</h3>
+            <ul class="chat-sidebar-list chat-list--warning" data-chat-list="falseBeliefs">
+              <% if (sanitizeSidebarItems(bootstrapKnowledgeState.falseBeliefs).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No false beliefs tracked.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapKnowledgeState.falseBeliefs).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+
+          <section class="chat-sidebar-group">
+            <h3>Secrets Revealed</h3>
+            <ul class="chat-sidebar-list" data-chat-list="secretsRevealed">
+              <% if (sanitizeSidebarItems(bootstrapKnowledgeState.secretsRevealed).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No secrets revealed.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapKnowledgeState.secretsRevealed).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+        </div>
+      </details>
+
+      <details
+        class="chat-accordion chat-sidebar__section"
+        id="chat-character-mind"
+        data-chat-section="mind"
+        open
+      >
+        <summary class="chat-accordion-summary">
+          <span class="chat-accordion-summary__title">Character Mind</span>
+          <span class="chat-accordion-summary__meta">
+            <span class="chat-summary-chip" data-chat-field="currentObjectiveSummary"><%= currentObjectiveSummary %></span>
+          </span>
+        </summary>
+
+        <div class="chat-accordion-content">
+          <dl class="chat-sidebar-details chat-sidebar-details--compact">
+            <div class="chat-sidebar-details__row">
+              <dt>Current Objective</dt>
+              <dd><span data-chat-field="currentObjective"><%= normalizeSidebarText(bootstrapChatBible?.characterNow?.currentObjective, 'No current objective available.') %></span></dd>
+            </div>
+            <div class="chat-sidebar-details__row">
+              <dt>Immediate Need</dt>
+              <dd><span data-chat-field="immediateNeedFromConversation"><%= normalizeSidebarText(bootstrapChatBible?.characterNow?.immediateNeedFromConversation, 'No immediate need available.') %></span></dd>
+            </div>
+            <div class="chat-sidebar-details__row">
+              <dt>Emotional State</dt>
+              <dd><span data-chat-field="emotionalState"><%= normalizeSidebarText(bootstrapChatBible?.characterNow?.emotionalState, 'No emotional state available.') %></span></dd>
+            </div>
+            <div class="chat-sidebar-details__row">
+              <dt>Willingness</dt>
+              <dd>
+                <span class="chat-pill chat-pill--badge" data-chat-field="willingnessToEngage"><%= normalizeSidebarText(bootstrapChatBible?.characterNow?.willingnessToEngage, 'Unknown') %></span>
+              </dd>
+            </div>
+          </dl>
+
+          <section class="chat-sidebar-group">
+            <h3>Topics to Advance</h3>
+            <ul class="chat-sidebar-list" data-chat-list="topicsToAdvance">
+              <% if (sanitizeSidebarItems(bootstrapChatBible?.characterNow?.topicsToAdvance).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No active advance topics.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapChatBible?.characterNow?.topicsToAdvance).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+
+          <section class="chat-sidebar-group">
+            <h3>Topics to Protect</h3>
+            <ul class="chat-sidebar-list chat-sidebar-list--prefixed" data-chat-list="topicsToProtect">
+              <% if (sanitizeSidebarItems(bootstrapChatBible?.characterNow?.topicsToProtect).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No protected topics.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapChatBible?.characterNow?.topicsToProtect).forEach(function(item) { %>
+                  <li><span class="chat-list-prefix" aria-hidden="true">Lock</span><span><%= item %></span></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+
+          <section class="chat-sidebar-group">
+            <h3>Beliefs About Interlocutor</h3>
+            <ul class="chat-sidebar-list" data-chat-list="beliefsAboutInterlocutor">
+              <% if (sanitizeSidebarItems(bootstrapChatBible?.relationshipNow?.whatCharacterBelievesAboutInterlocutor).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No beliefs recorded.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapChatBible?.relationshipNow?.whatCharacterBelievesAboutInterlocutor).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+
+          <section class="chat-sidebar-group">
+            <h3>Secrets Kept</h3>
+            <ul class="chat-sidebar-list" data-chat-list="secretsKept">
+              <% if (sanitizeSidebarItems(bootstrapChatBible?.knowledgeNow?.secretsKept).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No secrets currently kept.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapChatBible?.knowledgeNow?.secretsKept).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
+
+          <section class="chat-sidebar-group">
+            <h3>Knowledge Boundaries</h3>
+            <ul class="chat-sidebar-list" data-chat-list="knowledgeBoundaries">
+              <% if (sanitizeSidebarItems(bootstrapChatBible?.knowledgeNow?.knowledgeBoundaries).length === 0) { %>
+                <li class="chat-sidebar-list__empty">No active knowledge boundaries.</li>
+              <% } else { %>
+                <% sanitizeSidebarItems(bootstrapChatBible?.knowledgeNow?.knowledgeBoundaries).forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }); %>
+              <% } %>
+            </ul>
+          </section>
         </div>
       </details>
 

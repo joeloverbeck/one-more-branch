@@ -245,12 +245,33 @@ describe('chat page template', () => {
           },
         ],
         chatUiBootstrap: {
-          chatBible: null,
+          chatBible: {
+            characterNow: {
+              currentObjective:
+                'Keep Iven talking long enough to learn who else touched the ledger tonight.',
+              immediateNeedFromConversation: 'Confirm whether he saw the copied seal.',
+              emotionalState: 'guarded',
+              willingnessToEngage: 'GUARDED',
+              topicsToAdvance: ['the missing ledger'],
+              topicsToProtect: ['the copied seal'],
+            },
+            relationshipNow: {
+              whatCharacterBelievesAboutInterlocutor: ['He is testing how much I already know.'],
+            },
+            knowledgeNow: {
+              knownFacts: ['This should not render in Character Mind'],
+              suspicions: ['This should not render in Character Mind'],
+              falseBeliefs: ['This should not render in Character Mind'],
+              secretsRevealed: ['This should not render in Character Mind'],
+              secretsKept: ['Mara hid one copied page.'],
+              knowledgeBoundaries: ['She still does not know who ordered the raid.'],
+            },
+          },
           knowledgeState: {
-            knownFacts: [],
-            suspicions: [],
-            falseBeliefs: [],
-            secretsRevealed: [],
+            knownFacts: ['Iven recognizes the ledger seal.'],
+            suspicions: ['He hid the copy intentionally.'],
+            falseBeliefs: ['The reading alcove is unwatched.'],
+            secretsRevealed: ['Mara already searched his satchel.'],
           },
           relationshipHistory: [
             { turnNumber: 0, valence: 0, tension: 0, dynamic: '' },
@@ -273,6 +294,8 @@ describe('chat page template', () => {
     expect(html).toContain('class="chat-input-bar"');
     expect(html).toContain('data-chat-section="physical"');
     expect(html).toContain('data-chat-section="relationship"');
+    expect(html).toContain('data-chat-section="knowledge"');
+    expect(html).toContain('data-chat-section="mind"');
     expect(html).toContain('class="chat-accordion-summary"');
     expect(html).toContain('class="chat-block chat-block--action"');
     expect(html).toContain('<em>He sets the ledger on the table.</em>');
@@ -308,6 +331,25 @@ describe('chat page template', () => {
     expect(html).toContain('data-chat-sparkline="tension"');
     expect(html).toContain('data-chat-list="interactableObjects"');
     expect(html).toContain('data-chat-list="ambientConditions"');
+    expect(html).toContain('data-chat-field="knowledgeSummary">1 fact, 1 suspicion</span>');
+    expect(html).toContain('Known Facts');
+    expect(html).toContain('Iven recognizes the ledger seal.');
+    expect(html).toContain('class="chat-sidebar-list chat-list--italic" data-chat-list="suspicions"');
+    expect(html).toContain('He hid the copy intentionally.');
+    expect(html).toContain('class="chat-sidebar-list chat-list--warning" data-chat-list="falseBeliefs"');
+    expect(html).toContain('The reading alcove is unwatched.');
+    expect(html).toContain('Mara already searched his satchel.');
+    expect(html).toContain(
+      'data-chat-field="currentObjectiveSummary">Keep Iven talking long enough to learn who else touched t...'
+    );
+    expect(html).toContain('Current Objective');
+    expect(html).toContain('Confirm whether he saw the copied seal.');
+    expect(html).toContain('data-chat-field="willingnessToEngage">GUARDED</span>');
+    expect(html).toContain('Topics to Protect');
+    expect(html).toContain('Lock</span><span>the copied seal</span>');
+    expect(html).toContain('He is testing how much I already know.');
+    expect(html).toContain('Mara hid one copied page.');
+    expect(html).toContain('She still does not know who ordered the raid.');
     expect(html).not.toContain('chat-tag-bar"><span class="chat-tag chat-tag--speech-act">Tell');
     expect(html).not.toContain('<details class="chat-inner-world" open');
   });
@@ -494,6 +536,8 @@ describe('chat page template', () => {
     expect(html).toContain('id="chat-physical-context"');
     expect(html).toContain('data-chat-section="physical"');
     expect(html).toContain('data-chat-section="relationship"');
+    expect(html).toContain('data-chat-section="knowledge"');
+    expect(html).toContain('data-chat-section="mind"');
     expect(html).toContain('data-chat-gauge="valence"');
     expect(html).toContain('data-chat-sparkline="valence"');
     expect(html).toContain('data-chat-turn-count');
@@ -520,5 +564,70 @@ describe('chat page template', () => {
     expect(html).toContain('No turns yet. Start the conversation below.');
     expect(html).toContain('None');
     expect(html).toContain('Unformed');
+  });
+
+  it('renders knowledge and character mind empty states when bootstrap data is absent', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+
+    const html = renderTemplate(
+      template,
+      {
+        title: 'Chat with Mara - One More Branch',
+        session: {
+          id: 'chat-1',
+          targetCharacterName: 'Mara',
+          interlocutorCharacterName: 'Iven',
+          physicalContext: {
+            location: 'Archive',
+            microLocation: 'Reading alcove',
+            timeOfDay: 'EVENING',
+            privacy: 'PRIVATE',
+            distanceBand: 'CONVERSATIONAL',
+            characterActivity: 'Cataloguing ledgers',
+            interactableObjects: [],
+            ambientConditions: [],
+          },
+          leadInContext: {
+            leadInSummary: 'They meet after the raid.',
+            recentEvents: [],
+            whyNow: 'The ledger must be found before dawn.',
+          },
+          relationshipState: {
+            dynamic: '',
+            valence: 0,
+            tension: 0,
+            leverage: '',
+          },
+        },
+        turns: [],
+        chatUiBootstrap: {
+          chatBible: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipHistory: [{ turnNumber: 0, valence: 0, tension: 0, dynamic: '' }],
+        },
+      },
+      { filename: templatePath }
+    );
+
+    expect(html).toContain('data-chat-field="knowledgeSummary">0 facts, 0 suspicions</span>');
+    expect(html).toContain('No facts tracked.');
+    expect(html).toContain('No suspicions tracked.');
+    expect(html).toContain('No false beliefs tracked.');
+    expect(html).toContain('No secrets revealed.');
+    expect(html).toContain('data-chat-field="currentObjectiveSummary">No objective available</span>');
+    expect(html).toContain('No current objective available.');
+    expect(html).toContain('No immediate need available.');
+    expect(html).toContain('No emotional state available.');
+    expect(html).toContain('data-chat-field="willingnessToEngage">Unknown</span>');
+    expect(html).toContain('No active advance topics.');
+    expect(html).toContain('No protected topics.');
+    expect(html).toContain('No beliefs recorded.');
+    expect(html).toContain('No secrets currently kept.');
+    expect(html).toContain('No active knowledge boundaries.');
   });
 });

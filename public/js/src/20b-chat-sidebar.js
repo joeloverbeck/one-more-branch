@@ -32,6 +32,40 @@ window.ChatSidebar = (function () {
     });
   }
 
+  function normalizeText(value, fallback) {
+    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : fallback;
+  }
+
+  function sanitizeItems(items) {
+    return Array.isArray(items)
+      ? items.filter(function (item) {
+          return typeof item === 'string' && item.trim().length > 0;
+        })
+      : [];
+  }
+
+  function pluralizeCount(count, singular, plural) {
+    return String(count) + ' ' + (count === 1 ? singular : plural);
+  }
+
+  function buildKnowledgeSummary(knowledgeState) {
+    var knownFacts = sanitizeItems(knowledgeState && knowledgeState.knownFacts);
+    var suspicions = sanitizeItems(knowledgeState && knowledgeState.suspicions);
+    return pluralizeCount(knownFacts.length, 'fact', 'facts') + ', ' +
+      pluralizeCount(suspicions.length, 'suspicion', 'suspicions');
+  }
+
+  function truncateSummary(value, maxLength, fallback) {
+    var normalized = normalizeText(value, fallback || '');
+    if (normalized.length === 0 || normalized === (fallback || '')) {
+      return normalized || fallback || '';
+    }
+
+    return normalized.length > maxLength
+      ? normalized.slice(0, Math.max(maxLength - 3, 1)).replace(/\s+$/, '') + '...'
+      : normalized;
+  }
+
   function renderPillList(container, items, emptyLabel) {
     if (!container) {
       return;
@@ -59,14 +93,13 @@ window.ChatSidebar = (function () {
     });
   }
 
-  function renderBulletList(container, items, emptyLabel) {
+  function renderBulletList(container, items, emptyLabel, options) {
     if (!container) {
       return;
     }
 
-    var safeItems = Array.isArray(items) ? items.filter(function (item) {
-      return typeof item === 'string' && item.trim().length > 0;
-    }) : [];
+    var safeItems = sanitizeItems(items);
+    var settings = options || {};
 
     container.innerHTML = '';
 
@@ -80,7 +113,23 @@ window.ChatSidebar = (function () {
 
     safeItems.forEach(function (item) {
       var listItem = document.createElement('li');
-      listItem.textContent = item;
+      if (settings.itemClass) {
+        listItem.className = settings.itemClass;
+      }
+
+      if (settings.prefixText) {
+        var prefix = document.createElement('span');
+        prefix.className = settings.prefixClass || '';
+        prefix.textContent = settings.prefixText;
+        prefix.setAttribute('aria-hidden', 'true');
+        listItem.appendChild(prefix);
+
+        var text = document.createElement('span');
+        text.textContent = item;
+        listItem.appendChild(text);
+      } else {
+        listItem.textContent = item;
+      }
       container.appendChild(listItem);
     });
   }
@@ -233,9 +282,14 @@ window.ChatSidebar = (function () {
       return;
     }
 
+    var priorState = root.__chatSidebarState || {};
     var physicalContext = session.physicalContext || {};
     var relationshipState = session.relationshipState || {};
     var leadInContext = session.leadInContext || {};
+    var hasKnowledgeState = Object.prototype.hasOwnProperty.call(session, 'knowledgeState');
+    var hasChatBible = Object.prototype.hasOwnProperty.call(session, 'chatBible');
+    var knowledgeState = hasKnowledgeState ? (session.knowledgeState || {}) : (priorState.knowledgeState || {});
+    var chatBible = hasChatBible ? session.chatBible : (priorState.chatBible || null);
     var history = options && Array.isArray(options.relationshipHistory)
       ? options.relationshipHistory
       : buildNextHistory(root.__chatRelationshipHistory, relationshipState);
@@ -278,9 +332,89 @@ window.ChatSidebar = (function () {
       physicalContext.ambientConditions,
       'None'
     );
+    updateField(root, 'knowledgeSummary', buildKnowledgeSummary(knowledgeState), '0 facts, 0 suspicions');
+    renderBulletList(root.querySelector('[data-chat-list="knownFacts"]'), knowledgeState.knownFacts, 'No facts tracked.');
+    renderBulletList(root.querySelector('[data-chat-list="suspicions"]'), knowledgeState.suspicions, 'No suspicions tracked.');
+    renderBulletList(
+      root.querySelector('[data-chat-list="falseBeliefs"]'),
+      knowledgeState.falseBeliefs,
+      'No false beliefs tracked.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="secretsRevealed"]'),
+      knowledgeState.secretsRevealed,
+      'No secrets revealed.'
+    );
+
+    updateField(
+      root,
+      'currentObjectiveSummary',
+      truncateSummary(chatBible && chatBible.characterNow && chatBible.characterNow.currentObjective, 60, 'No objective available'),
+      'No objective available'
+    );
+    updateField(
+      root,
+      'currentObjective',
+      normalizeText(chatBible && chatBible.characterNow && chatBible.characterNow.currentObjective, 'No current objective available.'),
+      'No current objective available.'
+    );
+    updateField(
+      root,
+      'immediateNeedFromConversation',
+      normalizeText(
+        chatBible && chatBible.characterNow && chatBible.characterNow.immediateNeedFromConversation,
+        'No immediate need available.'
+      ),
+      'No immediate need available.'
+    );
+    updateField(
+      root,
+      'emotionalState',
+      normalizeText(chatBible && chatBible.characterNow && chatBible.characterNow.emotionalState, 'No emotional state available.'),
+      'No emotional state available.'
+    );
+    updateField(
+      root,
+      'willingnessToEngage',
+      normalizeText(chatBible && chatBible.characterNow && chatBible.characterNow.willingnessToEngage, 'Unknown'),
+      'Unknown'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="topicsToAdvance"]'),
+      chatBible && chatBible.characterNow && chatBible.characterNow.topicsToAdvance,
+      'No active advance topics.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="topicsToProtect"]'),
+      chatBible && chatBible.characterNow && chatBible.characterNow.topicsToProtect,
+      'No protected topics.',
+      { prefixText: 'Lock', prefixClass: 'chat-list-prefix' }
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="beliefsAboutInterlocutor"]'),
+      chatBible && chatBible.relationshipNow && chatBible.relationshipNow.whatCharacterBelievesAboutInterlocutor,
+      'No beliefs recorded.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="secretsKept"]'),
+      chatBible && chatBible.knowledgeNow && chatBible.knowledgeNow.secretsKept,
+      'No secrets currently kept.'
+    );
+    renderBulletList(
+      root.querySelector('[data-chat-list="knowledgeBoundaries"]'),
+      chatBible && chatBible.knowledgeNow && chatBible.knowledgeNow.knowledgeBoundaries,
+      'No active knowledge boundaries.'
+    );
 
     updateRelationshipVisuals(root, history, relationshipState);
     root.__chatRelationshipHistory = history;
+    root.__chatSidebarState = {
+      physicalContext: physicalContext,
+      relationshipState: relationshipState,
+      leadInContext: leadInContext,
+      knowledgeState: knowledgeState,
+      chatBible: chatBible,
+    };
   }
 
   function init(root, session) {
@@ -292,8 +426,14 @@ window.ChatSidebar = (function () {
     var relationshipHistory = bootstrap && Array.isArray(bootstrap.relationshipHistory)
       ? bootstrap.relationshipHistory
       : [];
+    var initialSession = Object.assign({}, session, {
+      knowledgeState: bootstrap && bootstrap.knowledgeState ? bootstrap.knowledgeState : undefined,
+      chatBible: bootstrap && Object.prototype.hasOwnProperty.call(bootstrap, 'chatBible')
+        ? bootstrap.chatBible
+        : undefined,
+    });
 
-    update(root, session, { relationshipHistory: relationshipHistory });
+    update(root, initialSession, { relationshipHistory: relationshipHistory });
   }
 
   return {
