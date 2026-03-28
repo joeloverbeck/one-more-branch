@@ -820,6 +820,86 @@ describe('chat page template', () => {
     expect(html).not.toContain('A resumable exchange grounded in the current scene state.');
   });
 
+  it('renders identity, scene context, and meta controls in separate header regions', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+
+    const html = renderTemplate(
+      template,
+      {
+        title: 'Chat with Mara - One More Branch',
+        session: {
+          id: 'chat-1',
+          targetCharacterName: 'Mara',
+          interlocutorCharacterName: 'Iven',
+          physicalContext: {
+            location: 'Archive',
+            microLocation: 'Reading alcove',
+            timeOfDay: 'EVENING',
+            privacy: 'PRIVATE',
+            distanceBand: 'CONVERSATIONAL',
+            characterActivity: 'Cataloguing ledgers',
+            interactableObjects: [],
+            ambientConditions: [],
+          },
+          leadInContext: {
+            leadInSummary: 'They meet after the raid.',
+            recentEvents: [],
+            whyNow: 'Before dawn.',
+          },
+          relationshipState: {
+            dynamic: 'strained allies',
+            valence: -1,
+            tension: 6,
+            leverage: 'Shared guilt',
+          },
+        },
+        turns: [],
+        chatUiBootstrap: {
+          chatBible: null,
+          rollingSummary: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipTimeline: [],
+          relationshipPresentation: {
+            valence: {
+              value: -1,
+              delta: 0,
+              summary: 'Frayed and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Valence: Frayed and steady. Current value -1 on a scale from -5 to 5.',
+              sparklineAriaLabel: 'Valence trend: Frayed and steady across 0 recorded turns.',
+            },
+            tension: {
+              value: 6,
+              delta: 0,
+              summary: 'Strained and steady',
+              trend: 'steady',
+              gaugeAriaLabel:
+                'Tension: Strained and steady. Current value 6 on a scale from 0 to 10.',
+              sparklineAriaLabel: 'Tension trend: Strained and steady across 0 recorded turns.',
+            },
+          },
+        },
+      },
+      { filename: templatePath }
+    );
+
+    expect(html).toMatch(
+      /<div class="chat-header__identity">[\s\S]*?<h1>Mara and Iven<\/h1>[\s\S]*?<\/div>/
+    );
+    expect(html).toMatch(
+      /<div class="chat-header__context">[\s\S]*?data-chat-field="timeOfDay"[\s\S]*?data-chat-field="privacy"[\s\S]*?data-chat-field="distanceBand"[\s\S]*?<\/div>/
+    );
+    expect(html).toMatch(
+      /<div class="chat-header__meta">[\s\S]*?data-chat-turn-count[\s\S]*?data-chat-sidebar-toggle[\s\S]*?<\/div>/
+    );
+  });
+
   it('renders knowledge and character mind empty states when bootstrap data is absent', () => {
     const template = fs.readFileSync(templatePath, 'utf8');
 

@@ -14,11 +14,19 @@ describe('chat page controller', () => {
         data-interlocutor-character-name="Iven"
       >
         <header class="chat-header">
+          <div class="chat-header__identity">
+            <p class="chat-header__eyebrow">In-Character Conversation</p>
+            <h1>Mara and Iven</h1>
+          </div>
+          <div class="chat-header__context">
+            <div class="chat-header__context-badges">
+              <span data-chat-field="timeOfDay">EVENING</span>
+              <span data-chat-field="privacy">PRIVATE</span>
+              <span data-chat-field="distanceBand">CONVERSATIONAL</span>
+            </div>
+          </div>
           <div class="chat-header__meta">
-            <span data-chat-turn-count>0 turns</span>
-            <span data-chat-field="timeOfDay">EVENING</span>
-            <span data-chat-field="privacy">PRIVATE</span>
-            <span data-chat-field="distanceBand">CONVERSATIONAL</span>
+            <span class="chat-badge chat-badge--accent" data-chat-turn-count>0 turns</span>
             <button type="button" data-chat-sidebar-toggle aria-controls="chat-sidebar" aria-expanded="true">
               Hide Scene State
             </button>
@@ -257,6 +265,75 @@ describe('chat page controller', () => {
     expect(page.classList.contains('sidebar-collapsed')).toBe(false);
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(toggle.textContent).toBe('Hide Scene State');
+  });
+
+  it('keeps scene badges in the dedicated header context region and updates all duplicates', () => {
+    global.fetch = jest.fn((url: string) => {
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, 404));
+    }) as jest.Mock;
+
+    loadAppAndInit();
+
+    const page = document.getElementById('chat-page') as HTMLElement;
+    const context = page.querySelector('.chat-header__context') as HTMLElement;
+
+    expect(context.querySelector('[data-chat-field="timeOfDay"]')?.textContent).toBe('EVENING');
+    expect(context.querySelector('[data-chat-field="privacy"]')?.textContent).toBe('PRIVATE');
+    expect(context.querySelector('[data-chat-field="distanceBand"]')?.textContent).toBe(
+      'CONVERSATIONAL'
+    );
+
+    (
+      window as Window & {
+        ChatSidebar: {
+          update: (root: Element | null, session: Record<string, unknown>, options: object) => void;
+        };
+      }
+    ).ChatSidebar.update(
+      page,
+      {
+        physicalContext: {
+          location: 'Bell tower',
+          microLocation: 'Narrow stair',
+          timeOfDay: 'LATE_NIGHT',
+          privacy: 'SEMI_PRIVATE',
+          distanceBand: 'ARM_REACH',
+          characterActivity: 'Listening for footsteps',
+          interactableObjects: ['ledger', 'lamp'],
+          ambientConditions: ['rain', 'bells'],
+        },
+        relationshipState: {
+          dynamic: 'fragile alliance',
+          valence: 5,
+          tension: 8,
+          leverage: 'The copied seal is now mutual leverage.',
+        },
+        leadInContext: {
+          whyNow: 'The bells will cover the truth.',
+        },
+      },
+      {}
+    );
+
+    expect(
+      Array.from(document.querySelectorAll('[data-chat-field="timeOfDay"]')).map(
+        (node) => node.textContent
+      )
+    ).toEqual(['LATE_NIGHT', 'LATE_NIGHT', 'LATE_NIGHT']);
+    expect(
+      Array.from(document.querySelectorAll('[data-chat-field="privacy"]')).map(
+        (node) => node.textContent
+      )
+    ).toEqual(['SEMI_PRIVATE', 'SEMI_PRIVATE']);
+    expect(
+      Array.from(document.querySelectorAll('[data-chat-field="distanceBand"]')).map(
+        (node) => node.textContent
+      )
+    ).toEqual(['ARM_REACH', 'ARM_REACH', 'ARM_REACH']);
   });
 
   it('restores the API key, submits the turn, renders returned blocks, and updates sidebar state', async () => {

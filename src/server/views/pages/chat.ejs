@@ -380,13 +380,18 @@
         <h1><%= session.targetCharacterName %> and <%= session.interlocutorCharacterName %></h1>
       </div>
 
+      <div class="chat-header__context">
+        <div class="chat-header__context-badges">
+          <span class="chat-badge" data-chat-field="timeOfDay"><%= session.physicalContext.timeOfDay %></span>
+          <span class="chat-badge" data-chat-field="privacy"><%= session.physicalContext.privacy %></span>
+          <span class="chat-badge" data-chat-field="distanceBand"><%= session.physicalContext.distanceBand %></span>
+        </div>
+      </div>
+
       <div class="chat-header__meta">
         <span class="chat-badge chat-badge--accent" data-chat-turn-count>
           <%= turns.length %> <%= turns.length === 1 ? 'turn' : 'turns' %>
         </span>
-        <span class="chat-badge" data-chat-field="timeOfDay"><%= session.physicalContext.timeOfDay %></span>
-        <span class="chat-badge" data-chat-field="privacy"><%= session.physicalContext.privacy %></span>
-        <span class="chat-badge" data-chat-field="distanceBand"><%= session.physicalContext.distanceBand %></span>
         <button
           type="button"
           class="btn btn-secondary btn-small chat-sidebar-toggle"
