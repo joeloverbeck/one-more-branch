@@ -473,11 +473,6 @@ body.chat-page-body main {
   text-transform: uppercase;
 }
 
-.chat-header__summary {
-  margin: 0;
-  color: var(--color-text-muted);
-}
-
 .chat-header__meta {
   justify-items: end;
   align-content: start;
