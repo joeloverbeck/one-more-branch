@@ -9,6 +9,229 @@
 <body class="chat-page-body">
   <%- include('../partials/header') %>
 
+  <%
+    function hasInnerWorldText(value) {
+      return typeof value === 'string' && value.trim().length > 0;
+    }
+
+    function hasInnerWorldItems(values) {
+      return Array.isArray(values) && values.length > 0;
+    }
+
+    function formatSignedInnerWorldNumber(value) {
+      if (typeof value !== 'number' || !Number.isFinite(value) || value === 0) {
+        return String(value || 0);
+      }
+
+      return `${value > 0 ? '+' : ''}${value}`;
+    }
+
+    function buildInnerWorldData(turn) {
+      if (!turn || turn.speaker !== 'CHARACTER') {
+        return [];
+      }
+
+      const plannerOutput = turn.plannerOutput ?? null;
+      const turnMeta = turn.turnMeta ?? {};
+      const stateUpdate = turn.stateUpdate ?? null;
+      const sections = [];
+
+      if (plannerOutput?.internalSelfCheck) {
+        const internalSelfCheckRows = [
+          { label: 'What I want', value: plannerOutput.internalSelfCheck.whatDoIWant },
+          { label: 'What I know', value: plannerOutput.internalSelfCheck.whatDoIKnow },
+          { label: "What I'm hiding", value: plannerOutput.internalSelfCheck.whatAmIHiding },
+          { label: 'How honest am I', value: plannerOutput.internalSelfCheck.howHonestAmI },
+        ].filter((row) => hasInnerWorldText(row.value));
+
+        if (internalSelfCheckRows.length > 0) {
+          sections.push({
+            title: 'Internal Self-Check',
+            rows: internalSelfCheckRows,
+          });
+        }
+      }
+
+      if (plannerOutput) {
+        const emotionCards = [];
+        if (hasInnerWorldText(plannerOutput.surfaceEmotion)) {
+          emotionCards.push({
+            label: 'Surface emotion',
+            value: plannerOutput.surfaceEmotion,
+          });
+        }
+        if (hasInnerWorldText(plannerOutput.suppressedEmotion)) {
+          emotionCards.push({
+            label: 'Suppressed emotion',
+            value: plannerOutput.suppressedEmotion,
+          });
+        }
+
+        if (emotionCards.length > 0 || hasInnerWorldText(plannerOutput.subtext)) {
+          sections.push({
+            title: 'Emotional Layer',
+            emotionCards,
+            subtext: hasInnerWorldText(plannerOutput.subtext) ? plannerOutput.subtext : null,
+          });
+        }
+
+        const strategyRows = [
+          { label: 'Response goal', value: plannerOutput.responseGoal },
+          { label: 'Target length', value: plannerOutput.targetLength },
+        ].filter((row) => hasInnerWorldText(row.value));
+
+        if (
+          strategyRows.length > 0 ||
+          hasInnerWorldItems(plannerOutput.mustAddress) ||
+          hasInnerWorldItems(plannerOutput.mustAvoid)
+        ) {
+          sections.push({
+            title: 'Response Strategy',
+            rows: strategyRows,
+            mustAddress: hasInnerWorldItems(plannerOutput.mustAddress) ? plannerOutput.mustAddress : [],
+            mustAvoid: hasInnerWorldItems(plannerOutput.mustAvoid) ? plannerOutput.mustAvoid : [],
+          });
+        }
+
+        if (hasInnerWorldItems(plannerOutput.actionPlan)) {
+          sections.push({
+            title: 'Action Plan',
+            actionPlan: plannerOutput.actionPlan,
+          });
+        }
+      }
+
+      const turnImpactRows = [
+        { label: 'Final pressure', value: turnMeta.finalPressure },
+        plannerOutput?.expectedImpact
+          ? {
+              label: 'Relationship delta hint',
+              value: formatSignedInnerWorldNumber(plannerOutput.expectedImpact.relationshipDeltaHint),
+            }
+          : null,
+        plannerOutput?.expectedImpact
+          ? {
+              label: 'Tension delta hint',
+              value: formatSignedInnerWorldNumber(plannerOutput.expectedImpact.tensionDeltaHint),
+            }
+          : null,
+        plannerOutput?.expectedImpact
+          ? {
+              label: 'Reveals secret',
+              value: plannerOutput.expectedImpact.revealsSecret ? 'Yes' : 'No',
+            }
+          : null,
+      ].filter((row) => row && hasInnerWorldText(row.value));
+
+      if (turnImpactRows.length > 0 || turnMeta.expectsReply === true || turnMeta.endsWithQuestion === true) {
+        sections.push({
+          title: 'Turn Impact',
+          rows: turnImpactRows,
+          expectsReply: turnMeta.expectsReply === true,
+          endsWithQuestion: turnMeta.endsWithQuestion === true,
+        });
+      }
+
+      if (stateUpdate) {
+        const knowledgeChanges = stateUpdate.knowledgeChanges ?? {};
+        const conversationUpdate = stateUpdate.conversationUpdate ?? {};
+        const physicalStateUpdate = stateUpdate.physicalStateUpdate ?? {};
+
+        const stateRows = [
+          { label: 'Summary', value: stateUpdate.summaryDelta },
+          {
+            label: 'New known facts',
+            value: hasInnerWorldItems(knowledgeChanges.newKnownFacts)
+              ? knowledgeChanges.newKnownFacts.join(', ')
+              : '',
+          },
+          {
+            label: 'New suspicions',
+            value: hasInnerWorldItems(knowledgeChanges.newSuspicions)
+              ? knowledgeChanges.newSuspicions.join(', ')
+              : '',
+          },
+          {
+            label: 'False beliefs corrected',
+            value: hasInnerWorldItems(knowledgeChanges.falseBeliefsCorrected)
+              ? knowledgeChanges.falseBeliefsCorrected.join(', ')
+              : '',
+          },
+          {
+            label: 'Secrets revealed',
+            value: hasInnerWorldItems(knowledgeChanges.secretsRevealed)
+              ? knowledgeChanges.secretsRevealed.join(', ')
+              : '',
+          },
+          {
+            label: 'Commitments made',
+            value: hasInnerWorldItems(conversationUpdate.commitmentsMade)
+              ? conversationUpdate.commitmentsMade.join(', ')
+              : '',
+          },
+          {
+            label: 'Threats made',
+            value: hasInnerWorldItems(conversationUpdate.threatsMade)
+              ? conversationUpdate.threatsMade.join(', ')
+              : '',
+          },
+          {
+            label: 'Questions opened',
+            value: hasInnerWorldItems(conversationUpdate.questionsOpened)
+              ? conversationUpdate.questionsOpened.join(', ')
+              : '',
+          },
+          {
+            label: 'Questions resolved',
+            value: hasInnerWorldItems(conversationUpdate.questionsResolved)
+              ? conversationUpdate.questionsResolved.join(', ')
+              : '',
+          },
+          {
+            label: 'Location changed',
+            value:
+              typeof physicalStateUpdate.locationChanged === 'boolean'
+                ? physicalStateUpdate.locationChanged
+                  ? 'Yes'
+                  : 'No'
+                : '',
+          },
+          { label: 'New location', value: physicalStateUpdate.newLocation },
+          { label: 'New micro-location', value: physicalStateUpdate.newMicroLocation },
+          { label: 'New distance band', value: physicalStateUpdate.newDistanceBand },
+          {
+            label: 'Object state changes',
+            value: hasInnerWorldItems(physicalStateUpdate.objectStateChanges)
+              ? physicalStateUpdate.objectStateChanges.join(', ')
+              : '',
+          },
+        ].filter((row) => hasInnerWorldText(row.value));
+
+        sections.push({
+          title: 'State Changes',
+          rows: stateRows,
+          relationshipShifts: hasInnerWorldItems(stateUpdate.relationshipShifts)
+            ? stateUpdate.relationshipShifts
+            : [],
+        });
+      }
+
+      return sections.filter((section) => {
+        return (
+          hasInnerWorldItems(section.rows) ||
+          hasInnerWorldItems(section.emotionCards) ||
+          hasInnerWorldItems(section.mustAddress) ||
+          hasInnerWorldItems(section.mustAvoid) ||
+          hasInnerWorldItems(section.actionPlan) ||
+          hasInnerWorldItems(section.relationshipShifts) ||
+          hasInnerWorldText(section.subtext) ||
+          section.expectsReply === true ||
+          section.endsWithQuestion === true
+        );
+      });
+    }
+  %>
+
   <main
     class="chat-layout"
     id="chat-page"
@@ -85,6 +308,7 @@
                 <% const speechAct = turn.plannerOutput?.speechAct; %>
                 <% const honestyMode = turn.plannerOutput?.honestyMode; %>
                 <% const visibleEmotion = turn.turnMeta?.visibleEmotion; %>
+                <% const innerWorldSections = buildInnerWorldData(turn); %>
                 <% if (speechAct || honestyMode || visibleEmotion) { %>
                   <div class="chat-tag-bar">
                     <% if (speechAct) { %>
@@ -97,6 +321,114 @@
                       <span class="chat-tag chat-tag--emotion"><%= visibleEmotion %></span>
                     <% } %>
                   </div>
+                <% } %>
+
+                <% if (innerWorldSections.length > 0) { %>
+                  <details class="chat-inner-world">
+                    <summary class="chat-inner-world__summary">Character's Inner World</summary>
+                    <div class="chat-inner-world__content">
+                      <% innerWorldSections.forEach(function(section) { %>
+                        <section class="chat-inner-world__section">
+                          <h3 class="chat-inner-world__section-title"><%= section.title %></h3>
+
+                          <% if (section.rows && section.rows.length > 0) { %>
+                            <dl class="chat-inner-world__details">
+                              <% section.rows.forEach(function(row) { %>
+                                <div class="chat-inner-world__detail">
+                                  <dt><%= row.label %></dt>
+                                  <dd><%= row.value %></dd>
+                                </div>
+                              <% }); %>
+                            </dl>
+                          <% } %>
+
+                          <% if (section.emotionCards && section.emotionCards.length > 0) { %>
+                            <div class="chat-inner-world__emotion-grid">
+                              <% section.emotionCards.forEach(function(card) { %>
+                                <div class="chat-inner-world__emotion-card">
+                                  <span class="chat-inner-world__eyebrow"><%= card.label %></span>
+                                  <p><%= card.value %></p>
+                                </div>
+                              <% }); %>
+                            </div>
+                          <% } %>
+
+                          <% if (section.subtext) { %>
+                            <div class="chat-inner-world__copy-block">
+                              <span class="chat-inner-world__eyebrow">Subtext</span>
+                              <p><%= section.subtext %></p>
+                            </div>
+                          <% } %>
+
+                          <% if (section.mustAddress && section.mustAddress.length > 0) { %>
+                            <div class="chat-inner-world__copy-block">
+                              <span class="chat-inner-world__eyebrow">Must address</span>
+                              <ul class="chat-inner-world__list">
+                                <% section.mustAddress.forEach(function(item) { %>
+                                  <li class="chat-inner-world__list-item"><%= item %></li>
+                                <% }); %>
+                              </ul>
+                            </div>
+                          <% } %>
+
+                          <% if (section.mustAvoid && section.mustAvoid.length > 0) { %>
+                            <div class="chat-inner-world__copy-block">
+                              <span class="chat-inner-world__eyebrow">Must avoid</span>
+                              <ul class="chat-inner-world__list">
+                                <% section.mustAvoid.forEach(function(item) { %>
+                                  <li class="chat-inner-world__list-item"><%= item %></li>
+                                <% }); %>
+                              </ul>
+                            </div>
+                          <% } %>
+
+                          <% if (section.actionPlan && section.actionPlan.length > 0) { %>
+                            <ul class="chat-inner-world__list">
+                              <% section.actionPlan.forEach(function(item) { %>
+                                <li class="chat-inner-world__list-item">
+                                  <div class="chat-inner-world__action-item">
+                                    <span class="chat-inner-world__pill"><%= item.kind %></span>
+                                    <span class="chat-inner-world__action-text"><%= item.text %></span>
+                                    <% if (item.changesPhysicalState) { %>
+                                      <span class="chat-inner-world__pill chat-inner-world__pill--physical">Physical change</span>
+                                    <% } %>
+                                  </div>
+                                </li>
+                              <% }); %>
+                            </ul>
+                          <% } %>
+
+                          <% if (section.expectsReply || section.endsWithQuestion) { %>
+                            <div class="chat-inner-world__pill-row">
+                              <% if (section.expectsReply) { %>
+                                <span class="chat-inner-world__pill">Expects reply</span>
+                              <% } %>
+                              <% if (section.endsWithQuestion) { %>
+                                <span class="chat-inner-world__pill">Ends with question</span>
+                              <% } %>
+                            </div>
+                          <% } %>
+
+                          <% if (section.relationshipShifts && section.relationshipShifts.length > 0) { %>
+                            <div class="chat-inner-world__copy-block">
+                              <span class="chat-inner-world__eyebrow">Relationship shifts</span>
+                              <ul class="chat-inner-world__list">
+                                <% section.relationshipShifts.forEach(function(shift) { %>
+                                  <li class="chat-inner-world__list-item">
+                                    <strong><%= shift.shiftDescription %></strong>
+                                    (Valence <%= formatSignedInnerWorldNumber(shift.suggestedValenceChange) %>, Tension <%= formatSignedInnerWorldNumber(shift.suggestedTensionChange) %>)
+                                    <% if (shift.suggestedNewDynamic) { %>
+                                      . Suggested dynamic: <%= shift.suggestedNewDynamic %>.
+                                    <% } %>
+                                  </li>
+                                <% }); %>
+                              </ul>
+                            </div>
+                          <% } %>
+                        </section>
+                      <% }); %>
+                    </div>
+                  </details>
                 <% } %>
               <% } %>
             </div>

@@ -159,8 +159,63 @@ describe('chat page controller', () => {
                 finalPressure: null,
               },
               plannerOutput: {
+                internalSelfCheck: {
+                  whatDoIWant: 'Keep control.',
+                  whatDoIKnow: 'He is bluffing.',
+                  whatAmIHiding: 'I moved the copy.',
+                  howHonestAmI: 'Partially.',
+                },
+                responseGoal: 'Deflect and probe.',
                 speechAct: 'DEFLECT',
                 honestyMode: 'PARTIAL',
+                surfaceEmotion: 'guarded',
+                suppressedEmotion: 'fear',
+                subtext: 'If I bend now, I lose the room.',
+                mustAddress: ['The ledger'],
+                mustAvoid: ['The copy'],
+                targetLength: 'MEDIUM',
+                actionPlan: [
+                  {
+                    kind: 'GESTURE',
+                    text: 'Steady my hands before I answer.',
+                    changesPhysicalState: false,
+                  },
+                ],
+                expectedImpact: {
+                  relationshipDeltaHint: -1,
+                  tensionDeltaHint: 2,
+                  revealsSecret: false,
+                },
+              },
+              stateUpdate: {
+                summaryDelta: 'The exchange sharpens into mutual suspicion.',
+                relationshipShifts: [
+                  {
+                    shiftDescription: 'Trust slips.',
+                    suggestedValenceChange: -1,
+                    suggestedTensionChange: 2,
+                    suggestedNewDynamic: 'escalating standoff',
+                  },
+                ],
+                knowledgeChanges: {
+                  newKnownFacts: ['She knows the ledger seal.'],
+                  newSuspicions: ['He suspects there is a copy.'],
+                  falseBeliefsCorrected: [],
+                  secretsRevealed: [],
+                },
+                conversationUpdate: {
+                  commitmentsMade: ['She will answer before dawn.'],
+                  threatsMade: [],
+                  questionsOpened: ['Who moved the copy?'],
+                  questionsResolved: [],
+                },
+                physicalStateUpdate: {
+                  locationChanged: false,
+                  newLocation: null,
+                  newMicroLocation: null,
+                  newDistanceBand: 'ARM_REACH',
+                  objectStateChanges: ['The lamp flame shivers.'],
+                },
               },
               blocks: [
                 { type: 'ACTION', text: 'Mara stiffens.' },
@@ -247,7 +302,21 @@ describe('chat page controller', () => {
     expect(document.querySelector('.chat-turn--character .chat-tag--emotion')?.textContent).toBe(
       'guarded'
     );
+    expect(document.querySelector('.chat-turn--character .chat-inner-world')).not.toBeNull();
+    expect(
+      document.querySelector('.chat-turn--character .chat-inner-world__summary')?.textContent
+    ).toContain("Character's Inner World");
+    expect(document.querySelector('.chat-turn--character .chat-inner-world__section-title')?.textContent).toBe(
+      'Internal Self-Check'
+    );
+    expect(document.querySelector('.chat-turn--character .chat-inner-world__pill')?.textContent).toBe(
+      'GESTURE'
+    );
+    expect(document.querySelector('.chat-turn--character .chat-inner-world')?.textContent).toContain(
+      'The exchange sharpens into mutual suspicion.'
+    );
     expect(document.querySelector('.chat-turn--user .chat-tag-bar')).toBeNull();
+    expect(document.querySelector('.chat-turn--user .chat-inner-world')).toBeNull();
     expect(document.querySelector('[data-chat-field="location"]')?.textContent).toBe('Bell tower');
     expect(document.querySelectorAll('[data-chat-field="timeOfDay"]')[0]?.textContent).toBe(
       'LATE_NIGHT'
@@ -459,6 +528,7 @@ describe('chat page controller', () => {
 
     expect(document.querySelectorAll('[data-chat-turn]')).toHaveLength(2);
     expect(document.querySelector('.chat-turn--character .chat-tag-bar')).toBeNull();
+    expect(document.querySelector('.chat-turn--character .chat-inner-world')).toBeNull();
     expect(
       document.querySelector('.chat-turn--character [data-chat-block="SPEECH"] p')?.textContent
     ).toContain('No.');

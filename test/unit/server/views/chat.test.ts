@@ -39,11 +39,65 @@ describe('chat page template', () => {
         speaker: 'USER' | 'CHARACTER';
         timestamp: string;
         turnMeta?: {
+          expectsReply?: boolean;
+          endsWithQuestion?: boolean;
           visibleEmotion: string;
+          finalPressure?: string | null;
         };
         plannerOutput?: {
+          internalSelfCheck?: {
+            whatDoIWant: string;
+            whatDoIKnow: string;
+            whatAmIHiding: string;
+            howHonestAmI: string;
+          };
+          responseGoal?: string;
           speechAct?: string;
           honestyMode?: string;
+          surfaceEmotion?: string;
+          suppressedEmotion?: string | null;
+          subtext?: string;
+          mustAddress?: string[];
+          mustAvoid?: string[];
+          targetLength?: string;
+          actionPlan?: Array<{
+            kind: string;
+            text: string;
+            changesPhysicalState: boolean;
+          }>;
+          expectedImpact?: {
+            relationshipDeltaHint: number;
+            tensionDeltaHint: number;
+            revealsSecret: boolean;
+          };
+        };
+        stateUpdate?: {
+          summaryDelta?: string;
+          relationshipShifts?: Array<{
+            shiftDescription: string;
+            suggestedValenceChange: number;
+            suggestedTensionChange: number;
+            suggestedNewDynamic: string | null;
+          }>;
+          knowledgeChanges?: {
+            newKnownFacts: string[];
+            newSuspicions: string[];
+            falseBeliefsCorrected: string[];
+            secretsRevealed: string[];
+          };
+          conversationUpdate?: {
+            commitmentsMade: string[];
+            threatsMade: string[];
+            questionsOpened: string[];
+            questionsResolved: string[];
+          };
+          physicalStateUpdate?: {
+            locationChanged: boolean;
+            newLocation: string | null;
+            newMicroLocation: string | null;
+            newDistanceBand: string | null;
+            objectStateChanges: string[];
+          };
         };
         blocks: Array<{
           type: 'ACTION' | 'SPEECH';
@@ -118,11 +172,74 @@ describe('chat page template', () => {
             speaker: 'CHARACTER',
             timestamp: '2026-03-27T09:02:00.000Z',
             turnMeta: {
+              expectsReply: true,
+              endsWithQuestion: false,
               visibleEmotion: 'guarded',
+              finalPressure: 'Keep him defensive.',
             },
             plannerOutput: {
+              internalSelfCheck: {
+                whatDoIWant: 'An admission I can use later.',
+                whatDoIKnow: 'He is hiding the second ledger.',
+                whatAmIHiding: 'I know where the copy is.',
+                howHonestAmI: 'Only as honest as leverage requires.',
+              },
+              responseGoal: 'Corner him without losing composure.',
               speechAct: 'DEFLECT',
               honestyMode: 'PARTIAL',
+              surfaceEmotion: 'cold focus',
+              suppressedEmotion: 'fear',
+              subtext: 'If he pushes harder, I will expose him first.',
+              mustAddress: ['the missing ledger'],
+              mustAvoid: ['the copied ledger'],
+              targetLength: 'MEDIUM',
+              actionPlan: [
+                {
+                  kind: 'GESTURE',
+                  text: 'Fold my hands to look calm.',
+                  changesPhysicalState: false,
+                },
+                {
+                  kind: 'MOVEMENT',
+                  text: 'Take one step toward the lamp.',
+                  changesPhysicalState: true,
+                },
+              ],
+              expectedImpact: {
+                relationshipDeltaHint: -1,
+                tensionDeltaHint: 2,
+                revealsSecret: false,
+              },
+            },
+            stateUpdate: {
+              summaryDelta: 'The conversation hardens into suspicion.',
+              relationshipShifts: [
+                {
+                  shiftDescription: 'Trust frays further.',
+                  suggestedValenceChange: -1,
+                  suggestedTensionChange: 2,
+                  suggestedNewDynamic: 'escalating standoff',
+                },
+              ],
+              knowledgeChanges: {
+                newKnownFacts: ['He recognizes the ledger seal.'],
+                newSuspicions: ['He hid the copy intentionally.'],
+                falseBeliefsCorrected: [],
+                secretsRevealed: [],
+              },
+              conversationUpdate: {
+                commitmentsMade: ['He will answer before dawn.'],
+                threatsMade: [],
+                questionsOpened: ['Who moved the copy?'],
+                questionsResolved: [],
+              },
+              physicalStateUpdate: {
+                locationChanged: false,
+                newLocation: null,
+                newMicroLocation: null,
+                newDistanceBand: 'ARM_REACH',
+                objectStateChanges: ['The lamp guttered lower.'],
+              },
             },
             blocks: [{ type: 'SPEECH', text: 'You already know enough.', delivery: 'dryly' }],
           },
@@ -164,7 +281,26 @@ describe('chat page template', () => {
     expect(html).toContain('class="chat-tag chat-tag--speech-act">DEFLECT</span>');
     expect(html).toContain('class="chat-tag chat-tag--honesty">PARTIAL</span>');
     expect(html).toContain('class="chat-tag chat-tag--emotion">guarded</span>');
+    expect(html).toContain('class="chat-inner-world"');
+    expect(html).toContain("Character's Inner World");
+    expect(html).toContain('Internal Self-Check');
+    expect(html).toContain('What I want');
+    expect(html).toContain('An admission I can use later.');
+    expect(html).toContain('Emotional Layer');
+    expect(html).toContain('Surface emotion');
+    expect(html).toContain('Suppressed emotion');
+    expect(html).toContain('Response Strategy');
+    expect(html).toContain('Must address');
+    expect(html).toContain('Action Plan');
+    expect(html).toContain('Physical change');
+    expect(html).toContain('Turn Impact');
+    expect(html).toContain('Expects reply');
+    expect(html).toContain('Relationship delta hint');
+    expect(html).toContain('State Changes');
+    expect(html).toContain('The conversation hardens into suspicion.');
+    expect(html).toContain('Trust frays further.');
     expect(html).not.toContain('chat-tag-bar"><span class="chat-tag chat-tag--speech-act">Tell');
+    expect(html).not.toContain('<details class="chat-inner-world" open');
   });
 
   it('omits missing character tag pills without skipping the rest of the turn', () => {
@@ -232,7 +368,70 @@ describe('chat page template', () => {
     expect(html).toContain('class="chat-tag chat-tag--emotion">guarded</span>');
     expect(html).not.toContain('chat-tag--speech-act');
     expect(html).not.toContain('chat-tag--honesty');
+    expect(html).not.toContain('class="chat-inner-world"');
     expect(html).toContain('&ldquo;You already know enough.&rdquo;');
+  });
+
+  it('never renders the inner-world panel for user turns', () => {
+    const template = fs.readFileSync(templatePath, 'utf8');
+
+    const html = renderTemplate(
+      template,
+      {
+        title: 'Chat with Mara - One More Branch',
+        session: {
+          id: 'chat-1',
+          targetCharacterName: 'Mara',
+          interlocutorCharacterName: 'Iven',
+          physicalContext: {
+            location: 'Archive',
+            microLocation: 'Reading alcove',
+            timeOfDay: 'EVENING',
+            privacy: 'PRIVATE',
+            distanceBand: 'CONVERSATIONAL',
+            characterActivity: 'Cataloguing ledgers',
+            interactableObjects: ['ledger', 'lamp'],
+            ambientConditions: ['rain', 'dust'],
+          },
+          leadInContext: {
+            leadInSummary: 'They meet after the raid.',
+            recentEvents: ['A witness vanished.'],
+            whyNow: 'The ledger must be found before dawn.',
+          },
+          relationshipState: {
+            dynamic: 'strained allies',
+            valence: -1,
+            tension: 6,
+            leverage: 'Shared guilt',
+          },
+        },
+        turns: [
+          {
+            turnNumber: 1,
+            speaker: 'USER',
+            timestamp: '2026-03-27T09:01:00.000Z',
+            plannerOutput: {
+              speechAct: 'DEFLECT',
+            },
+            blocks: [{ type: 'SPEECH', text: 'Tell me what happened.' }],
+          },
+        ],
+        chatUiBootstrap: {
+          chatBible: null,
+          knowledgeState: {
+            knownFacts: [],
+            suspicions: [],
+            falseBeliefs: [],
+            secretsRevealed: [],
+          },
+          relationshipHistory: [{ turnNumber: 0, valence: 0, tension: 0, dynamic: '' }],
+        },
+      },
+      { filename: templatePath }
+    );
+
+    expect(html).not.toContain('class="chat-inner-world"');
+    expect(html).not.toContain('Character\'s Inner World');
   });
 
   it('renders scene-state and composer hooks for client enhancement', () => {

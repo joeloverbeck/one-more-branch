@@ -42,6 +42,10 @@ describe('public stylesheet', () => {
     expect(css).toContain('.chat-delivery');
     expect(css).toContain('.chat-tag-bar');
     expect(css).toContain('.chat-tag--emotion');
+    expect(css).toContain('.chat-inner-world');
+    expect(css).toContain('.chat-inner-world__summary');
+    expect(css).toContain('.chat-inner-world__emotion-grid');
+    expect(css).toContain('.chat-inner-world__pill--physical');
   });
 
   it('includes mobile and spinner animation rules', () => {
