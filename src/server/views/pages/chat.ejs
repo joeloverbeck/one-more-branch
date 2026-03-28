@@ -6,150 +6,161 @@
   <title><%= title %></title>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body>
+<body class="chat-page-body">
   <%- include('../partials/header') %>
 
   <main
-    class="container"
+    class="chat-layout"
     id="chat-page"
     data-chat-id="<%= session.id %>"
     data-target-character-name="<%= session.targetCharacterName %>"
     data-interlocutor-character-name="<%= session.interlocutorCharacterName %>"
   >
-    <section class="hero">
-      <h1><%= session.targetCharacterName %> and <%= session.interlocutorCharacterName %></h1>
-      <p class="tagline">A resumable in-character conversation grounded in the current scene state.</p>
-    </section>
-
-    <div class="alert alert-error" id="chat-error" style="display: none;" role="alert"></div>
-
-    <section class="form-section">
-      <div class="stories-grid">
-        <article class="story-card">
-          <div class="story-card-content">
-            <h2>Conversation</h2>
-            <div id="chat-message-list" aria-live="polite">
-              <% if (!Array.isArray(turns) || turns.length === 0) { %>
-                <p id="chat-empty-state">No turns yet. Start the conversation below.</p>
-              <% } else { %>
-                <% turns.forEach(function(turn) { %>
-                  <article
-                    class="story-card"
-                    data-chat-turn
-                    data-chat-speaker="<%= turn.speaker %>"
-                    data-turn-number="<%= turn.turnNumber %>"
-                  >
-                    <div class="story-card-content">
-                      <h3>
-                        <%= turn.speaker === 'CHARACTER' ? session.targetCharacterName : session.interlocutorCharacterName %>
-                        <small>#<%= turn.turnNumber %></small>
-                      </h3>
-                      <p class="form-help">
-                        <time datetime="<%= turn.timestamp %>"><%= new Date(turn.timestamp).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }) %> UTC</time>
-                      </p>
-
-                      <% turn.blocks.forEach(function(block) { %>
-                        <% if (block.type === 'ACTION') { %>
-                          <p data-chat-block="ACTION"><em><%= block.text %></em></p>
-                        <% } else { %>
-                          <p data-chat-block="SPEECH">
-                            <% if (block.delivery) { %>
-                              <strong><%= block.delivery %>:</strong>
-                            <% } %>
-                            &ldquo;<%= block.text %>&rdquo;
-                          </p>
-                        <% } %>
-                      <% }); %>
-                    </div>
-                  </article>
-                <% }); %>
-              <% } %>
-            </div>
-          </div>
-        </article>
-
-        <aside class="story-card" id="chat-sidebar">
-          <div class="story-card-content">
-            <h2>Scene State</h2>
-
-            <section id="chat-physical-context">
-              <h3>Physical Context</h3>
-              <p><strong>Location:</strong> <span data-chat-field="location"><%= session.physicalContext.location %></span></p>
-              <p><strong>Micro-Location:</strong> <span data-chat-field="microLocation"><%= session.physicalContext.microLocation %></span></p>
-              <p><strong>Time:</strong> <span data-chat-field="timeOfDay"><%= session.physicalContext.timeOfDay %></span></p>
-              <p><strong>Privacy:</strong> <span data-chat-field="privacy"><%= session.physicalContext.privacy %></span></p>
-              <p><strong>Distance:</strong> <span data-chat-field="distanceBand"><%= session.physicalContext.distanceBand %></span></p>
-              <p><strong>Activity:</strong> <span data-chat-field="characterActivity"><%= session.physicalContext.characterActivity %></span></p>
-              <p><strong>Objects:</strong> <span data-chat-field="interactableObjects"><%= session.physicalContext.interactableObjects.join(', ') || 'None' %></span></p>
-              <p><strong>Conditions:</strong> <span data-chat-field="ambientConditions"><%= session.physicalContext.ambientConditions.join(', ') || 'None' %></span></p>
-            </section>
-
-            <section id="chat-relationship-state">
-              <h3>Relationship State</h3>
-              <p><strong>Dynamic:</strong> <span data-chat-field="dynamic"><%= session.relationshipState.dynamic || 'Unformed' %></span></p>
-              <p><strong>Valence:</strong> <span data-chat-field="valence"><%= session.relationshipState.valence %></span></p>
-              <p><strong>Tension:</strong> <span data-chat-field="tension"><%= session.relationshipState.tension %></span></p>
-              <p><strong>Leverage:</strong> <span data-chat-field="leverage"><%= session.relationshipState.leverage || 'None' %></span></p>
-            </section>
-
-            <section id="chat-lead-in-context">
-              <h3>Lead-In</h3>
-              <p><%= session.leadInContext.leadInSummary %></p>
-              <% if (session.leadInContext.recentEvents.length > 0) { %>
-                <ul id="chat-recent-events">
-                  <% session.leadInContext.recentEvents.forEach(function(eventSummary) { %>
-                    <li><%= eventSummary %></li>
-                  <% }); %>
-                </ul>
-              <% } %>
-              <p><strong>Why now:</strong> <span data-chat-field="whyNow"><%= session.leadInContext.whyNow %></span></p>
-            </section>
-          </div>
-        </aside>
+    <header class="chat-header">
+      <div class="chat-header__identity">
+        <p class="chat-header__eyebrow">In-Character Conversation</p>
+        <h1><%= session.targetCharacterName %> and <%= session.interlocutorCharacterName %></h1>
+        <p class="chat-header__summary">A resumable exchange grounded in the current scene state.</p>
       </div>
+
+      <div class="chat-header__meta">
+        <span class="chat-badge chat-badge--accent" data-chat-turn-count>
+          <%= turns.length %> <%= turns.length === 1 ? 'turn' : 'turns' %>
+        </span>
+        <span class="chat-badge" data-chat-field="timeOfDay"><%= session.physicalContext.timeOfDay %></span>
+        <span class="chat-badge" data-chat-field="privacy"><%= session.physicalContext.privacy %></span>
+        <span class="chat-badge" data-chat-field="distanceBand"><%= session.physicalContext.distanceBand %></span>
+        <button
+          type="button"
+          class="btn btn-secondary btn-small chat-sidebar-toggle"
+          data-chat-sidebar-toggle
+          aria-controls="chat-sidebar"
+          aria-expanded="true"
+        >
+          Hide Scene State
+        </button>
+      </div>
+    </header>
+
+    <section class="chat-conversation" id="chat-message-list" aria-live="polite">
+      <div class="alert alert-error" id="chat-error" style="display: none;" role="alert"></div>
+
+      <% if (!Array.isArray(turns) || turns.length === 0) { %>
+        <p id="chat-empty-state" class="chat-empty-state">No turns yet. Start the conversation below.</p>
+      <% } else { %>
+        <% turns.forEach(function(turn) { %>
+          <article
+            class="chat-turn chat-turn--<%= turn.speaker === 'CHARACTER' ? 'character' : 'user' %>"
+            data-chat-turn
+            data-chat-speaker="<%= turn.speaker %>"
+            data-turn-number="<%= turn.turnNumber %>"
+          >
+            <div class="chat-turn__card">
+              <h2 class="chat-turn__heading">
+                <span>
+                  <%= turn.speaker === 'CHARACTER' ? session.targetCharacterName : session.interlocutorCharacterName %>
+                </span>
+                <small>#<%= turn.turnNumber %></small>
+              </h2>
+              <p class="form-help">
+                <time datetime="<%= turn.timestamp %>"><%= new Date(turn.timestamp).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }) %> UTC</time>
+              </p>
+
+              <% turn.blocks.forEach(function(block) { %>
+                <% if (block.type === 'ACTION') { %>
+                  <p data-chat-block="ACTION"><em><%= block.text %></em></p>
+                <% } else { %>
+                  <p data-chat-block="SPEECH">
+                    <% if (block.delivery) { %>
+                      <strong><%= block.delivery %>:</strong>
+                    <% } %>
+                    &ldquo;<%= block.text %>&rdquo;
+                  </p>
+                <% } %>
+              <% }); %>
+            </div>
+          </article>
+        <% }); %>
+      <% } %>
     </section>
 
-    <section class="form-section">
-      <form id="chat-turn-form" data-chat-turn-form>
-        <div class="story-card">
-          <div class="story-card-content">
-            <h2>Send Turn</h2>
+    <aside class="chat-sidebar" id="chat-sidebar">
+      <div class="chat-sidebar__section">
+        <h2>Scene State</h2>
+      </div>
 
-            <div class="form-group">
-              <label for="chat-api-key">OpenRouter API Key</label>
-              <input
-                type="password"
-                id="chat-api-key"
-                name="apiKey"
-                placeholder="sk-or-..."
-                autocomplete="off"
-              >
-              <p class="form-help">Stored client-side for turn generation only.</p>
-            </div>
+      <section class="chat-sidebar__section" id="chat-physical-context">
+        <h3>Physical Context</h3>
+        <p><strong>Location:</strong> <span data-chat-field="location"><%= session.physicalContext.location %></span></p>
+        <p><strong>Micro-Location:</strong> <span data-chat-field="microLocation"><%= session.physicalContext.microLocation %></span></p>
+        <p><strong>Time:</strong> <span data-chat-field="timeOfDay"><%= session.physicalContext.timeOfDay %></span></p>
+        <p><strong>Privacy:</strong> <span data-chat-field="privacy"><%= session.physicalContext.privacy %></span></p>
+        <p><strong>Distance:</strong> <span data-chat-field="distanceBand"><%= session.physicalContext.distanceBand %></span></p>
+        <p><strong>Activity:</strong> <span data-chat-field="characterActivity"><%= session.physicalContext.characterActivity %></span></p>
+        <p><strong>Objects:</strong> <span data-chat-field="interactableObjects"><%= session.physicalContext.interactableObjects.join(', ') || 'None' %></span></p>
+        <p><strong>Conditions:</strong> <span data-chat-field="ambientConditions"><%= session.physicalContext.ambientConditions.join(', ') || 'None' %></span></p>
+      </section>
 
-            <div class="form-group">
-              <label for="chat-message">Message</label>
-              <textarea
-                id="chat-message"
-                name="message"
-                rows="5"
-                maxlength="2000"
-                placeholder="Use *asterisks* for actions and plain text for speech."
-                required
-              ></textarea>
-            </div>
+      <section class="chat-sidebar__section" id="chat-relationship-state">
+        <h3>Relationship State</h3>
+        <p><strong>Dynamic:</strong> <span data-chat-field="dynamic"><%= session.relationshipState.dynamic || 'Unformed' %></span></p>
+        <p><strong>Valence:</strong> <span data-chat-field="valence"><%= session.relationshipState.valence %></span></p>
+        <p><strong>Tension:</strong> <span data-chat-field="tension"><%= session.relationshipState.tension %></span></p>
+        <p><strong>Leverage:</strong> <span data-chat-field="leverage"><%= session.relationshipState.leverage || 'None' %></span></p>
+      </section>
 
-            <div class="alert alert-error" id="chat-turn-error" style="display: none;" role="alert"></div>
+      <section class="chat-sidebar__section" id="chat-lead-in-context">
+        <h3>Lead-In</h3>
+        <p><%= session.leadInContext.leadInSummary %></p>
+        <% if (session.leadInContext.recentEvents.length > 0) { %>
+          <ul id="chat-recent-events">
+            <% session.leadInContext.recentEvents.forEach(function(eventSummary) { %>
+              <li><%= eventSummary %></li>
+            <% }); %>
+          </ul>
+        <% } %>
+        <p><strong>Why now:</strong> <span data-chat-field="whyNow"><%= session.leadInContext.whyNow %></span></p>
+      </section>
+    </aside>
 
-            <div id="chat-loading-indicator" style="display: none;" aria-live="polite">
-              Character is thinking...
-            </div>
-            <div id="chat-progress-status" data-chat-progress></div>
+    <section class="chat-input-bar">
+      <form id="chat-turn-form" class="chat-input-form" data-chat-turn-form>
+        <div class="chat-input-form__row">
+          <div class="form-group chat-input-form__api-key">
+            <label for="chat-api-key">OpenRouter API Key</label>
+            <input
+              type="password"
+              id="chat-api-key"
+              name="apiKey"
+              placeholder="sk-or-..."
+              autocomplete="off"
+            >
+            <p class="form-help">Stored client-side for turn generation only.</p>
           </div>
-          <div class="story-card-actions">
+
+          <div class="form-group chat-input-form__message">
+            <label for="chat-message">Message</label>
+            <textarea
+              id="chat-message"
+              name="message"
+              rows="3"
+              maxlength="2000"
+              placeholder="Use *asterisks* for actions and plain text for speech."
+              required
+            ></textarea>
+          </div>
+
+          <div class="chat-input-form__actions">
             <button type="submit" class="btn btn-primary" id="chat-send-button">Send</button>
           </div>
         </div>
+
+        <div class="alert alert-error" id="chat-turn-error" style="display: none;" role="alert"></div>
+
+        <div id="chat-loading-indicator" style="display: none;" aria-live="polite">
+          Character is thinking...
+        </div>
+        <div id="chat-progress-status" data-chat-progress></div>
       </form>
     </section>
   </main>

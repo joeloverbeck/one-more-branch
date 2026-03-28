@@ -21,6 +21,7 @@ function initChatPage() {
   var progressStatus = document.getElementById('chat-progress-status');
   var pageError = document.getElementById('chat-error');
   var turnError = document.getElementById('chat-turn-error');
+  var sidebarToggle = page.querySelector('[data-chat-sidebar-toggle]');
 
   if (
     !messageList ||
@@ -118,19 +119,22 @@ function initChatPage() {
     var speakerName =
       turn.speaker === 'CHARACTER' ? targetCharacterName : interlocutorCharacterName;
     var blocks = Array.isArray(turn.blocks) ? turn.blocks : [];
+    var turnClass = turn.speaker === 'CHARACTER' ? 'character' : 'user';
 
     return (
-      '<article class="story-card" data-chat-turn data-chat-speaker="' +
+      '<article class="chat-turn chat-turn--' +
+      turnClass +
+      '" data-chat-turn data-chat-speaker="' +
       escapeHtml(turn.speaker || '') +
       '" data-turn-number="' +
       escapeHtml(String(turn.turnNumber || '')) +
       '">' +
-      '<div class="story-card-content">' +
-      '<h3>' +
+      '<div class="chat-turn__card">' +
+      '<h2 class="chat-turn__heading"><span>' +
       escapeHtml(speakerName) +
-      '<small>#' +
+      '</span><small>#' +
       escapeHtml(String(turn.turnNumber || '')) +
-      '</small></h3>' +
+      '</small></h2>' +
       '<p class="form-help"><time datetime="' +
       escapeHtml(turn.timestamp || '') +
       '">' +
@@ -157,17 +161,36 @@ function initChatPage() {
     if (lastTurn && typeof lastTurn.scrollIntoView === 'function') {
       lastTurn.scrollIntoView({ block: 'end' });
     }
+
+    updateTurnCount();
   }
 
   function updateField(name, value, fallback) {
-    var field = page.querySelector('[data-chat-field="' + name + '"]');
-    if (field) {
+    page.querySelectorAll('[data-chat-field="' + name + '"]').forEach(function (field) {
       field.textContent = value || fallback || '';
-    }
+    });
   }
 
   function joinList(values) {
     return Array.isArray(values) && values.length > 0 ? values.join(', ') : 'None';
+  }
+
+  function updateTurnCount() {
+    var turnCount = page.querySelectorAll('[data-chat-turn]').length;
+    var turnCountLabel = page.querySelector('[data-chat-turn-count]');
+    if (turnCountLabel) {
+      turnCountLabel.textContent = turnCount + ' ' + (turnCount === 1 ? 'turn' : 'turns');
+    }
+  }
+
+  function syncSidebarToggle() {
+    if (!sidebarToggle) {
+      return;
+    }
+
+    var isCollapsed = page.classList.contains('sidebar-collapsed');
+    sidebarToggle.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+    sidebarToggle.textContent = isCollapsed ? 'Show Scene State' : 'Hide Scene State';
   }
 
   function updateSidebar(session) {
@@ -278,6 +301,13 @@ function initChatPage() {
     void submitTurn();
   });
 
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', function () {
+      page.classList.toggle('sidebar-collapsed');
+      syncSidebarToggle();
+    });
+  }
+
   messageInput.addEventListener('keydown', function (event) {
     if (event.key !== 'Enter' || event.shiftKey) {
       return;
@@ -291,4 +321,7 @@ function initChatPage() {
 
     form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
   });
+
+  updateTurnCount();
+  syncSidebarToggle();
 }

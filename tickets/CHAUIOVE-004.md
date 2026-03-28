@@ -21,7 +21,8 @@ Turn rendering currently uses generic `story-card` styling. The spec calls for: 
 
 1. Tag bar data (`plannerOutput`, `turnMeta`) is only present on CHARACTER turns, not USER turns. The rendering code must check `turn.speaker === 'CHARACTER'` before rendering the tag bar.
 2. Server-side EJS rendering and client-side `buildTurnHtml()` must produce identical markup. Define the structure once in this ticket, used by both.
-3. No new JS files needed — changes fit within `20-chat-controller.js` and `chat.ejs`.
+3. This ticket is the right place to stop `20-chat-controller.js` from absorbing more turn-markup responsibility. Move turn-specific HTML builders into a dedicated `public/js/src/20a-chat-turn-renderer.js` module and keep `20-chat-controller.js` focused on orchestration, submission, and event wiring.
+4. `20a-chat-turn-renderer.js` should expose small focused helpers such as block rendering, tag-bar rendering, and full-turn rendering so CHAUIOVE-005 can extend them cleanly instead of rewriting controller-owned string templates.
 
 ## What to Change
 
@@ -63,7 +64,7 @@ Only rendered when `turn.speaker === 'CHARACTER'` and the data exists.
 ### 4. Update both render paths
 
 - **EJS template** (`chat.ejs`): Update the `turns.forEach` loop for server-side rendering
-- **Client JS** (`20-chat-controller.js`): Update `buildTurnHtml()` and `buildTurnBlockHtml()`
+- **Client JS** (`20a-chat-turn-renderer.js` + `20-chat-controller.js`): move `buildTurnHtml()` / `buildTurnBlockHtml()` into the renderer module and have the controller call into it
 
 ### 5. CSS classes
 
@@ -72,7 +73,8 @@ Add `.chat-turn`, `.chat-turn--user`, `.chat-turn--character`, `.chat-block`, `.
 ## Files to Touch
 
 - `src/server/views/pages/chat.ejs` (modify) — update turn rendering markup
-- `public/js/src/20-chat-controller.js` (modify) — update `buildTurnHtml()`, `buildTurnBlockHtml()`
+- `public/js/src/20-chat-controller.js` (modify) — use the extracted turn renderer helpers instead of owning turn HTML construction
+- `public/js/src/20a-chat-turn-renderer.js` (new) — turn-specific HTML builders for blocks, tag bar, and full-turn markup
 - `public/css/styles.css` (modify) — add chat turn and tag bar CSS classes
 - `test/unit/server/views/chat.test.ts` (modify) — update turn markup assertions
 

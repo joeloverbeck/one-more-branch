@@ -22,6 +22,7 @@ The sidebar does not display conversation dynamics (active threads, commitments,
 1. Two final `<details>` sections complete the sidebar accordion (6 total sections across CHAUIOVE-006, -007, -008).
 2. Same pattern as previous sections — summary line when collapsed, full detail when expanded.
 3. Data comes from `chatBible` template variable set by CHAUIOVE-001.
+4. Follow the sidebar ownership boundary established in CHAUIOVE-006: section rendering and post-turn updates belong in `20b-chat-sidebar.js`, not in `20-chat-controller.js`.
 
 ## What to Change
 
@@ -46,7 +47,7 @@ The sidebar does not display conversation dynamics (active threads, commitments,
 
 ### 3. Client JS updates
 
-Update `updateSidebar()` to update Conversation and Guardrails fields when `chatBible` is present in the POST response.
+Extend `20b-chat-sidebar.js` to update Conversation and Guardrails fields when `chatBible` is present in the POST response.
 
 ### 4. CSS
 
@@ -55,7 +56,8 @@ Minimal — reuses existing accordion and list styles from CHAUIOVE-006.
 ## Files to Touch
 
 - `src/server/views/pages/chat.ejs` (modify) — add Conversation and Guardrails accordion sections
-- `public/js/src/20-chat-controller.js` or `20b-chat-sidebar.js` (modify) — update sidebar rendering
+- `public/js/src/20b-chat-sidebar.js` (modify) — update sidebar rendering
+- `public/js/src/20-chat-controller.js` (modify only if wiring changes are needed) — keep orchestration thin
 - `public/css/styles.css` (modify) — minor additions if needed
 - `test/unit/server/views/chat.test.ts` (modify) — add assertions for new sections
 

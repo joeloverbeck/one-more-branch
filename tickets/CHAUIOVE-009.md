@@ -21,15 +21,16 @@ After all the visual components are in place, the client-side `submitTurn()` flo
 ## Architecture Check
 
 1. This is an integration/wiring ticket — no new visual components, just connecting the POST response data to the renderers built in prior tickets.
-2. The key change is expanding `updateSidebar()` to also update: knowledge state counts/lists, character mind fields, conversation fields, guardrails, gauges (reposition markers), and sparklines (append new data point).
-3. `appendTurn()` must call the updated `buildTurnHtml()` from CHAUIOVE-004/005 which already includes tag bar and inner world.
-4. Loading state moves from the old `chat-loading-indicator` to inline display near the send button in the compact input bar.
+2. By the time this ticket lands, turn rendering should live in `20a-chat-turn-renderer.js` and sidebar rendering should live in `20b-chat-sidebar.js`. This ticket should integrate those modules, not grow `20-chat-controller.js`.
+3. The key change is coordinating the existing helpers so post-turn updates refresh: knowledge state counts/lists, character mind fields, conversation fields, guardrails, gauges, and sparklines.
+4. `appendTurn()` must call the extracted turn-renderer helpers from CHAUIOVE-004/005.
+5. Loading state moves from the old `chat-loading-indicator` to inline display near the send button in the compact input bar.
 
 ## What to Change
 
 ### 1. Expand `updateSidebar()` for all accordion sections
 
-After a successful POST response, `updateSidebar(data.updatedSession)` must update:
+After a successful POST response, the sidebar helpers must update:
 - Physical Context fields (existing, minor updates)
 - Relationship fields + gauge marker repositioning + sparkline append
 - Knowledge State counts and lists (from `data.updatedSession.knowledgeState`)
@@ -60,8 +61,9 @@ After successful API key usage in `submitTurn()`, ensure the lock icon shows "lo
 
 ## Files to Touch
 
-- `public/js/src/20-chat-controller.js` (modify) — update `updateSidebar()`, `appendTurn()`, loading state, sparkline append
-- `public/js/src/20b-chat-sidebar.js` (modify, if exists) — sidebar update functions
+- `public/js/src/20-chat-controller.js` (modify) — orchestrate submit flow, call extracted renderer/sidebar helpers, manage loading state
+- `public/js/src/20a-chat-turn-renderer.js` (modify, if exists) — append-turn rendering helpers used after POST success
+- `public/js/src/20b-chat-sidebar.js` (modify) — sidebar update functions, gauge/sparkline refresh
 - `public/css/styles.css` (modify) — loading state styles for input bar
 
 ## Out of Scope

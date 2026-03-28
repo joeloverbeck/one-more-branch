@@ -22,7 +22,8 @@ Character turns contain extremely rich psychology data (`plannerOutput`, `turnMe
 1. The expandable panel is a `<details>` / `<summary>` element or a custom toggle — `<details>` is semantically correct and requires no JS for basic expand/collapse.
 2. Sub-sections within the panel use simple heading + content structure. No nested accordions needed.
 3. The panel renders empty/hidden when `plannerOutput` is null (user turns always have null plannerOutput).
-4. Large change but contained to rendering code — no server logic changes.
+4. This ticket should extend the extracted turn-renderer module from CHAUIOVE-004 rather than add more markup-building branches back into `20-chat-controller.js`.
+5. Large change but contained to rendering code — no server logic changes.
 
 ## What to Change
 
@@ -63,7 +64,7 @@ Below the tag bar on each character turn:
 ### 3. Update both render paths
 
 - EJS template: add `<details>` block inside the character turn loop
-- Client JS `buildTurnHtml()`: add inner world HTML when `turn.plannerOutput` exists
+- Client JS `20a-chat-turn-renderer.js`: extend turn rendering helpers with inner-world markup when `turn.plannerOutput` exists
 
 ### 4. CSS
 
@@ -74,7 +75,8 @@ Below the tag bar on each character turn:
 ## Files to Touch
 
 - `src/server/views/pages/chat.ejs` (modify) — add expandable panel inside character turn loop
-- `public/js/src/20-chat-controller.js` (modify) — update `buildTurnHtml()` to include inner world panel
+- `public/js/src/20a-chat-turn-renderer.js` (modify) — update turn rendering helpers to include the inner world panel
+- `public/js/src/20-chat-controller.js` (modify) — keep orchestration only; consume renderer helpers
 - `public/css/styles.css` (modify) — add `.chat-inner-world` and sub-section styles
 - `test/unit/server/views/chat.test.ts` (modify) — verify inner world panel renders for character turns
 

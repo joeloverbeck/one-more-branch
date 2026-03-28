@@ -23,6 +23,7 @@ The sidebar currently does not display knowledge state details (facts, suspicion
 1. Two new `<details>` sections added to the sidebar, following the same accordion pattern from CHAUIOVE-006.
 2. Data comes from template variables set up by CHAUIOVE-001 (`chatBible`, `knowledgeState`).
 3. Sections gracefully handle null/undefined data (render "No data available" or hide the section).
+4. This ticket should build on the extracted sidebar module from CHAUIOVE-006 and must not add new sidebar rendering branches directly into `20-chat-controller.js`.
 
 ## What to Change
 
@@ -68,7 +69,7 @@ The sidebar currently does not display knowledge state details (facts, suspicion
 
 ### 3. Client JS updates
 
-Update `updateSidebar()` to also update Knowledge State and Character Mind fields when `chatBible` and `knowledgeState` are present in the POST response.
+Extend the sidebar helpers from `20b-chat-sidebar.js` to update Knowledge State and Character Mind fields when `chatBible` and `knowledgeState` are present in the POST response.
 
 ### 4. CSS
 
@@ -80,7 +81,8 @@ Update `updateSidebar()` to also update Knowledge State and Character Mind field
 ## Files to Touch
 
 - `src/server/views/pages/chat.ejs` (modify) — add Knowledge State and Character Mind accordion sections
-- `public/js/src/20-chat-controller.js` or `20b-chat-sidebar.js` (modify) — update sidebar rendering for new sections
+- `public/js/src/20b-chat-sidebar.js` (modify) — update sidebar rendering for the new sections
+- `public/js/src/20-chat-controller.js` (modify only if wiring changes are needed) — keep orchestration thin
 - `public/css/styles.css` (modify) — add section-specific styles
 - `test/unit/server/views/chat.test.ts` (modify) — add assertions for new sections
 

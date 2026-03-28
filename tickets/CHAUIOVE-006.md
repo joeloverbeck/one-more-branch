@@ -12,7 +12,7 @@ The current sidebar is a flat list of fields inside a single `story-card`. The s
 
 ## Assumption Reassessment (2026-03-28)
 
-1. Current sidebar is `<aside class="story-card" id="chat-sidebar">` with flat `<section>` blocks — confirmed in `chat.ejs:71-108`.
+1. Current sidebar is already `<aside class="chat-sidebar" id="chat-sidebar">` with flat `.chat-sidebar__section` blocks after CHAUIOVE-002; this ticket now replaces that flat chat-specific sidebar with accordion sections.
 2. `session.physicalContext` has `location`, `microLocation`, `timeOfDay`, `privacy`, `distanceBand`, `characterActivity`, `interactableObjects`, `ambientConditions` — confirmed.
 3. `session.relationshipState` has `dynamic`, `valence`, `tension`, `leverage` — confirmed in `chat.ejs:87-93`.
 4. Sparkline data will be passed as `sparklineHistory` by CHAUIOVE-001.
@@ -24,6 +24,7 @@ The current sidebar is a flat list of fields inside a single `story-card`. The s
 2. Each section has a `data-chat-section` attribute for targeted updates from `updateSidebar()`.
 3. Sparklines are pure CSS/SVG — small inline SVG polylines computed from the `sparklineHistory` array. No charting library.
 4. Valence/tension gauges are CSS gradient bars with a marker. Pure CSS, no canvas.
+5. Sidebar rendering/update logic should move into `public/js/src/20b-chat-sidebar.js` in this ticket. The remaining sidebar tickets depend on this infrastructure, and leaving it in `20-chat-controller.js` would make every follow-up ticket harder to reason about.
 
 ## What to Change
 
@@ -70,14 +71,15 @@ Replace flat sections with `<details>` elements:
 
 - New function `renderSparkline(container, dataPoints, color)` to create SVG polyline
 - New function `renderGauge(container, value, min, max, colorScheme)` to create gauge bar
-- Update `updateSidebar()` to also update gauge markers and sparkline data
-- Extract sidebar update code into a separate file if `20-chat-controller.js` exceeds ~400 lines: `20b-chat-sidebar.js`
+- Move sidebar-specific rendering/update logic into `20b-chat-sidebar.js`
+- Keep `20-chat-controller.js` limited to orchestration and calls into sidebar helpers
+- Update sidebar helpers to also update gauge markers and sparkline data
 
 ## Files to Touch
 
 - `src/server/views/pages/chat.ejs` (modify) — replace sidebar content with accordion sections
-- `public/js/src/20-chat-controller.js` (modify) — update `updateSidebar()`, add gauge/sparkline render functions
-- `public/js/src/20b-chat-sidebar.js` (new, if needed) — sidebar-specific rendering logic
+- `public/js/src/20-chat-controller.js` (modify) — delegate sidebar work to the extracted sidebar helpers
+- `public/js/src/20b-chat-sidebar.js` (new) — sidebar-specific rendering, gauges, sparklines, and DOM updates
 - `public/css/styles.css` (modify) — add accordion, gauge, sparkline, pill CSS
 - `test/unit/server/views/chat.test.ts` (modify) — update sidebar assertions
 

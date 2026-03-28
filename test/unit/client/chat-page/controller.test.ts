@@ -7,34 +7,43 @@ describe('chat page controller', () => {
   function getPageHtml(): string {
     return `
       <main
-        class="container"
+        class="chat-layout"
         id="chat-page"
         data-chat-id="chat-1"
         data-target-character-name="Mara"
         data-interlocutor-character-name="Iven"
       >
-        <div id="chat-error" class="alert alert-error" style="display: none;" role="alert"></div>
-        <section class="form-section">
-          <div id="chat-message-list" aria-live="polite">
-            <p id="chat-empty-state">No turns yet. Start the conversation below.</p>
-          </div>
-          <aside id="chat-sidebar">
-            <span data-chat-field="location">Archive</span>
-            <span data-chat-field="microLocation">Reading alcove</span>
+        <header class="chat-header">
+          <div class="chat-header__meta">
+            <span data-chat-turn-count>0 turns</span>
             <span data-chat-field="timeOfDay">EVENING</span>
             <span data-chat-field="privacy">PRIVATE</span>
             <span data-chat-field="distanceBand">CONVERSATIONAL</span>
-            <span data-chat-field="characterActivity">Cataloguing ledgers</span>
-            <span data-chat-field="interactableObjects">ledger</span>
-            <span data-chat-field="ambientConditions">rain</span>
-            <span data-chat-field="dynamic">strained allies</span>
-            <span data-chat-field="valence">-1</span>
-            <span data-chat-field="tension">6</span>
-            <span data-chat-field="leverage">Shared guilt</span>
-            <span data-chat-field="whyNow">Before dawn.</span>
-          </aside>
+            <button type="button" data-chat-sidebar-toggle aria-controls="chat-sidebar" aria-expanded="true">
+              Hide Scene State
+            </button>
+          </div>
+        </header>
+        <section class="chat-conversation" id="chat-message-list" aria-live="polite">
+          <div id="chat-error" class="alert alert-error" style="display: none;" role="alert"></div>
+          <p id="chat-empty-state">No turns yet. Start the conversation below.</p>
         </section>
-        <section class="form-section">
+        <aside class="chat-sidebar" id="chat-sidebar">
+          <span data-chat-field="location">Archive</span>
+          <span data-chat-field="microLocation">Reading alcove</span>
+          <span data-chat-field="timeOfDay">EVENING</span>
+          <span data-chat-field="privacy">PRIVATE</span>
+          <span data-chat-field="distanceBand">CONVERSATIONAL</span>
+          <span data-chat-field="characterActivity">Cataloguing ledgers</span>
+          <span data-chat-field="interactableObjects">ledger</span>
+          <span data-chat-field="ambientConditions">rain</span>
+          <span data-chat-field="dynamic">strained allies</span>
+          <span data-chat-field="valence">-1</span>
+          <span data-chat-field="tension">6</span>
+          <span data-chat-field="leverage">Shared guilt</span>
+          <span data-chat-field="whyNow">Before dawn.</span>
+        </aside>
+        <section class="chat-input-bar">
           <form id="chat-turn-form" data-chat-turn-form>
             <input type="password" id="chat-api-key" name="apiKey" />
             <textarea id="chat-message" name="message"></textarea>
@@ -70,6 +79,34 @@ describe('chat page controller', () => {
     jest.restoreAllMocks();
     sessionStorage.clear();
     document.body.innerHTML = '';
+  });
+
+  it('toggles the sidebar collapsed class from the header button', () => {
+    global.fetch = jest.fn((url: string) => {
+      if (url.startsWith('/generation-progress/')) {
+        return Promise.resolve(mockJsonResponse({ status: 'completed' }));
+      }
+
+      return Promise.resolve(mockJsonResponse({ success: false, error: 'Unexpected URL' }, 404));
+    }) as jest.Mock;
+
+    loadAppAndInit();
+
+    const page = document.getElementById('chat-page') as HTMLElement;
+    const toggle = document.querySelector('[data-chat-sidebar-toggle]') as HTMLButtonElement;
+
+    expect(page.classList.contains('sidebar-collapsed')).toBe(false);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+
+    toggle.click();
+    expect(page.classList.contains('sidebar-collapsed')).toBe(true);
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(toggle.textContent).toBe('Show Scene State');
+
+    toggle.click();
+    expect(page.classList.contains('sidebar-collapsed')).toBe(false);
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(toggle.textContent).toBe('Hide Scene State');
   });
 
   it('restores the API key, submits the turn, renders returned blocks, and updates sidebar state', async () => {
@@ -165,6 +202,12 @@ describe('chat page controller', () => {
       'dry:'
     );
     expect(document.querySelector('[data-chat-field="location"]')?.textContent).toBe('Bell tower');
+    expect(document.querySelectorAll('[data-chat-field="timeOfDay"]')[0]?.textContent).toBe(
+      'LATE_NIGHT'
+    );
+    expect(document.querySelectorAll('[data-chat-field="timeOfDay"]')[1]?.textContent).toBe(
+      'LATE_NIGHT'
+    );
     expect(document.querySelector('[data-chat-field="dynamic"]')?.textContent).toBe(
       'fragile alliance'
     );
@@ -174,6 +217,7 @@ describe('chat page controller', () => {
     expect(document.querySelector('[data-chat-field="whyNow"]')?.textContent).toBe(
       'The bells will cover the truth.'
     );
+    expect(document.querySelector('[data-chat-turn-count]')?.textContent).toBe('2 turns');
     expect(scrollIntoViewMock).toHaveBeenCalled();
     expect(loadingIndicator.style.display).toBe('none');
   });

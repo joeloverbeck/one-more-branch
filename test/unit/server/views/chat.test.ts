@@ -131,10 +131,15 @@ describe('chat page template', () => {
     );
 
     expect(html).toContain('id="chat-page"');
+    expect(html).toContain('class="chat-page-body"');
+    expect(html).toContain('class="chat-layout"');
     expect(html).toContain('data-chat-id="chat-1"');
     expect(html).toContain('data-chat-turn');
     expect(html).toContain('data-chat-speaker="USER"');
     expect(html).toContain('data-chat-speaker="CHARACTER"');
+    expect(html).toContain('class="chat-conversation"');
+    expect(html).toContain('class="chat-sidebar"');
+    expect(html).toContain('class="chat-input-bar"');
     expect(html).toContain('<em>He sets the ledger on the table.</em>');
     expect(html).toContain('&ldquo;Tell me what happened.&rdquo;');
     expect(html).toContain('dryly:');
@@ -190,6 +195,12 @@ describe('chat page template', () => {
     );
 
     expect(html).toContain('id="chat-physical-context"');
+    expect(html).toContain('data-chat-turn-count');
+    expect(html).toContain('Hide Scene State');
+    expect(html).toContain('data-chat-sidebar-toggle');
+    expect(html).toContain('EVENING');
+    expect(html).toContain('PRIVATE');
+    expect(html).toContain('CONVERSATIONAL');
     expect(html).toContain('data-chat-field="location"');
     expect(html).toContain('data-chat-field="dynamic"');
     expect(html).toContain('id="chat-turn-form"');
