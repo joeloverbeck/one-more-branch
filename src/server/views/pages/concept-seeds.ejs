@@ -138,21 +138,23 @@
                   <% if (seed.conflictType) { %><span class="spine-badge spine-badge-conflict"><%= seed.conflictType.replace(/_/g, ' ') %></span><% } %>
                   <% if (seed.settingScale) { %><span class="spine-badge spine-badge-type"><%= seed.settingScale.replace(/_/g, ' ') %></span><% } %>
                 </div>
-                <h3 class="spine-cdq"><%= seed.name %></h3>
-                <div class="spine-field"><span class="spine-label">Protagonist:</span> <%= seed.protagonistRole || '' %></div>
-                <% if (seed.coreFlaw) { %><div class="spine-field"><span class="spine-label">Core Flaw:</span> <%= seed.coreFlaw %></div><% } %>
-                <% if (seed.coreConflictLoop) { %><div class="spine-field"><span class="spine-label">Conflict Loop:</span> <%= seed.coreConflictLoop %></div><% } %>
-                <% if (seed.whatIfQuestion) { %><p class="spine-field"><span class="spine-label">What If:</span> <em><%= seed.whatIfQuestion %></em></p><% } %>
-                <% if (seed.playerFantasy) { %><p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em><%= seed.playerFantasy %></em></p><% } %>
-                <% if (seed.genreSubversion) { %><div class="spine-field"><span class="spine-label">Genre Subversion:</span> <%= seed.genreSubversion %></div><% } %>
-                <% if (Array.isArray(seed.settingAxioms) && seed.settingAxioms.length > 0) { %><div class="spine-field"><span class="spine-label">Setting Axioms:</span><ul><% seed.settingAxioms.forEach(function(a) { %><li><%= a %></li><% }); %></ul></div><% } %>
-                <% if (Array.isArray(seed.constraintSet) && seed.constraintSet.length > 0) { %><div class="spine-field"><span class="spine-label">Constraints:</span><ul><% seed.constraintSet.forEach(function(a) { %><li><%= a %></li><% }); %></ul></div><% } %>
-                <% if (Array.isArray(seed.keyInstitutions) && seed.keyInstitutions.length > 0) { %><div class="spine-field"><span class="spine-label">Key Institutions:</span><ul><% seed.keyInstitutions.forEach(function(a) { %><li><%= a %></li><% }); %></ul></div><% } %>
+                <h3 class="spine-cdq spine-field" data-field-key="name" data-field-type="text"><span class="concept-field-value"><%= seed.name %></span></h3>
+                <div class="spine-field" data-field-key="oneLineHook" data-field-type="text"><span class="spine-label">Hook:</span> <span class="concept-field-value"><%= seed.oneLineHook || '' %></span></div>
+                <div class="spine-field" data-field-key="protagonistRole" data-field-type="text"><span class="spine-label">Protagonist:</span> <span class="concept-field-value"><%= seed.protagonistRole || '' %></span></div>
+                <div class="spine-field" data-field-key="coreCompetence" data-field-type="text"><span class="spine-label">Core Competence:</span> <span class="concept-field-value"><%= seed.coreCompetence || '' %></span></div>
+                <% if (seed.coreFlaw) { %><div class="spine-field" data-field-key="coreFlaw" data-field-type="text"><span class="spine-label">Core Flaw:</span> <span class="concept-field-value"><%= seed.coreFlaw %></span></div><% } %>
+                <% if (seed.coreConflictLoop) { %><div class="spine-field" data-field-key="coreConflictLoop" data-field-type="text"><span class="spine-label">Conflict Loop:</span> <span class="concept-field-value"><%= seed.coreConflictLoop %></span></div><% } %>
+                <% if (seed.whatIfQuestion) { %><div class="spine-field" data-field-key="whatIfQuestion" data-field-type="text"><span class="spine-label">What If:</span> <span class="concept-field-value"><em><%= seed.whatIfQuestion %></em></span></div><% } %>
+                <% if (seed.playerFantasy) { %><div class="spine-field" data-field-key="playerFantasy" data-field-type="text"><span class="spine-label">Player Fantasy:</span> <span class="concept-field-value"><em><%= seed.playerFantasy %></em></span></div><% } %>
+                <% if (seed.genreSubversion) { %><div class="spine-field" data-field-key="genreSubversion" data-field-type="text"><span class="spine-label">Genre Subversion:</span> <span class="concept-field-value"><%= seed.genreSubversion %></span></div><% } %>
+                <% if (Array.isArray(seed.actionVerbs) && seed.actionVerbs.length > 0) { %><div class="spine-field" data-field-key="actionVerbs" data-field-type="array"><span class="spine-label">Action Verbs:</span> <span class="concept-field-value"><ul><% seed.actionVerbs.forEach(function(a) { %><li><%= a %></li><% }); %></ul></span></div><% } %>
+                <% if (Array.isArray(seed.settingAxioms) && seed.settingAxioms.length > 0) { %><div class="spine-field" data-field-key="settingAxioms" data-field-type="array"><span class="spine-label">Setting Axioms:</span> <span class="concept-field-value"><ul><% seed.settingAxioms.forEach(function(a) { %><li><%= a %></li><% }); %></ul></span></div><% } %>
+                <% if (Array.isArray(seed.constraintSet) && seed.constraintSet.length > 0) { %><div class="spine-field" data-field-key="constraintSet" data-field-type="array"><span class="spine-label">Constraints:</span> <span class="concept-field-value"><ul><% seed.constraintSet.forEach(function(a) { %><li><%= a %></li><% }); %></ul></span></div><% } %>
+                <% if (Array.isArray(seed.keyInstitutions) && seed.keyInstitutions.length > 0) { %><div class="spine-field" data-field-key="keyInstitutions" data-field-type="array"><span class="spine-label">Key Institutions:</span> <span class="concept-field-value"><ul><% seed.keyInstitutions.forEach(function(a) { %><li><%= a %></li><% }); %></ul></span></div><% } %>
                 <div class="spine-field">
                   <span class="spine-label">Created:</span> <%= new Date(seed.createdAt).toLocaleDateString() %>
                 </div>
                 <div class="form-actions" style="margin-top: 0.5rem;">
-                  <button type="button" class="btn btn-secondary btn-small seed-edit-btn" data-seed-id="<%= seed.id %>">Edit Name</button>
                   <button type="button" class="btn btn-danger btn-small seed-delete-btn" data-seed-id="<%= seed.id %>">Delete</button>
                 </div>
               </article>
