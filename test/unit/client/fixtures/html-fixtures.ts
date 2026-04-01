@@ -831,7 +831,22 @@ export function buildConceptSeedsPageHtml(): string {
           <div id="seed-result-cards" class="spine-options-container"></div>
         </section>
         <section id="saved-seeds-section">
-          <div id="saved-seeds-list" class="spine-options-container"></div>
+          <div id="saved-seeds-list" class="spine-options-container">
+            <details class="genre-group" data-genre="FANTASY" open>
+              <summary class="genre-group__header">
+                <span class="genre-group__label">Fantasy</span>
+                <span class="genre-group__count">(1)</span>
+              </summary>
+              <div class="genre-group__body spine-options-container">
+                <article class="spine-card saved-seed-card" data-seed-id="seed-1">
+                  <h3 class="spine-cdq spine-field" data-field-key="name" data-field-type="text"><span class="concept-field-value">Test Seed</span></h3>
+                  <div class="spine-field" data-field-key="protagonistRole" data-field-type="text"><span class="spine-label">Protagonist:</span> <span class="concept-field-value">A warrior</span></div>
+                  <div class="spine-field" data-field-key="settingAxioms" data-field-type="array"><span class="spine-label">Setting Axioms:</span> <span class="concept-field-value"><ul><li>Axiom 1</li><li>Axiom 2</li></ul></span></div>
+                  <div class="form-actions"><button type="button" class="btn btn-danger btn-small seed-delete-btn" data-seed-id="seed-1">Delete</button></div>
+                </article>
+              </div>
+            </details>
+          </div>
         </section>
       </section>
       <div class="loading-overlay" id="loading" style="display:none;">

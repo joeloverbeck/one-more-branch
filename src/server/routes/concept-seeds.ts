@@ -16,6 +16,11 @@ import {
 } from '../../persistence/concept-seed-repository.js';
 import { loadKernel } from '../../persistence/kernel-repository.js';
 import { conceptService } from '../services/index.js';
+import {
+  isEditableConceptSeedField,
+  validateConceptSeedFieldValue,
+  applyConceptSeedFieldUpdate,
+} from '../utils/concept-seed-field-updater.js';
 import { buildLlmRouteErrorResult, groupSeedsByGenre, wrapAsyncRoute } from '../utils/index.js';
 import { createRouteGenerationProgress } from './generation-progress-route.js';
 
@@ -246,17 +251,32 @@ conceptSeedRoutes.put(
   '/api/:seedId',
   wrapAsyncRoute(async (req: Request, res: Response) => {
     const { seedId } = req.params;
-    const body = req.body as { name?: string };
+    const body = req.body as { fieldPath?: string; value?: unknown };
 
     if (!(await seedExists(seedId as string))) {
       return res.status(404).json({ success: false, error: 'Seed not found' });
     }
 
+    const fieldPath = body.fieldPath;
+    if (!fieldPath || !isEditableConceptSeedField(fieldPath)) {
+      return res
+        .status(400)
+        .json({ success: false, error: `Invalid or non-editable field: "${String(fieldPath)}"` });
+    }
+
+    const validationError = validateConceptSeedFieldValue(fieldPath, body.value);
+    if (validationError) {
+      return res.status(400).json({ success: false, error: validationError });
+    }
+
     const updated = await updateSeed(seedId as string, (existing) => {
       const now = new Date().toISOString();
-      const trimmed = body.name?.trim();
-      const updatedName = trimmed && trimmed.length > 0 ? trimmed : existing.name;
-      return { ...existing, name: updatedName, updatedAt: now };
+      const patched = applyConceptSeedFieldUpdate(
+        existing,
+        fieldPath,
+        body.value as string | readonly string[]
+      );
+      return { ...patched, updatedAt: now };
     });
 
     return res.json({ success: true, seed: updated });
