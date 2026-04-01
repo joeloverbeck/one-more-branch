@@ -11682,22 +11682,24 @@ if (document.readyState === 'loading') {
           '<span class="spine-badge spine-badge-conflict">' + escapeHtml(conflictLabel) + '</span>' +
           conflictTypeBadge + scaleBadge +
         '</div>' +
-        '<h3 class="spine-cdq">' + escapeHtml(seed.name) + '</h3>' +
-        '<div class="spine-field"><span class="spine-label">Protagonist:</span> ' + escapeHtml(seed.protagonistRole || '') + '</div>';
+        '<h3 class="spine-cdq spine-field" data-field-key="name" data-field-type="text"><span class="concept-field-value">' + escapeHtml(seed.name) + '</span></h3>' +
+        '<div class="spine-field" data-field-key="oneLineHook" data-field-type="text"><span class="spine-label">Hook:</span> <span class="concept-field-value">' + escapeHtml(seed.oneLineHook || '') + '</span></div>' +
+        '<div class="spine-field" data-field-key="protagonistRole" data-field-type="text"><span class="spine-label">Protagonist:</span> <span class="concept-field-value">' + escapeHtml(seed.protagonistRole || '') + '</span></div>' +
+        '<div class="spine-field" data-field-key="coreCompetence" data-field-type="text"><span class="spine-label">Core Competence:</span> <span class="concept-field-value">' + escapeHtml(seed.coreCompetence || '') + '</span></div>';
 
-      if (seed.coreFlaw) html += '<div class="spine-field"><span class="spine-label">Core Flaw:</span> ' + escapeHtml(seed.coreFlaw) + '</div>';
-      if (seed.coreConflictLoop) html += '<div class="spine-field"><span class="spine-label">Conflict Loop:</span> ' + escapeHtml(seed.coreConflictLoop) + '</div>';
-      if (seed.whatIfQuestion) html += '<p class="spine-field"><span class="spine-label">What If:</span> <em>' + escapeHtml(seed.whatIfQuestion) + '</em></p>';
-      if (seed.playerFantasy) html += '<p class="spine-field"><span class="spine-label">Player Fantasy:</span> <em>' + escapeHtml(seed.playerFantasy) + '</em></p>';
-      if (seed.genreSubversion) html += '<div class="spine-field"><span class="spine-label">Genre Subversion:</span> ' + escapeHtml(seed.genreSubversion) + '</div>';
-      if (Array.isArray(seed.settingAxioms) && seed.settingAxioms.length > 0) html += '<div class="spine-field"><span class="spine-label">Setting Axioms:</span><ul>' + renderListItems(seed.settingAxioms) + '</ul></div>';
-      if (Array.isArray(seed.constraintSet) && seed.constraintSet.length > 0) html += '<div class="spine-field"><span class="spine-label">Constraints:</span><ul>' + renderListItems(seed.constraintSet) + '</ul></div>';
-      if (Array.isArray(seed.keyInstitutions) && seed.keyInstitutions.length > 0) html += '<div class="spine-field"><span class="spine-label">Key Institutions:</span><ul>' + renderListItems(seed.keyInstitutions) + '</ul></div>';
+      if (seed.coreFlaw) html += '<div class="spine-field" data-field-key="coreFlaw" data-field-type="text"><span class="spine-label">Core Flaw:</span> <span class="concept-field-value">' + escapeHtml(seed.coreFlaw) + '</span></div>';
+      if (seed.coreConflictLoop) html += '<div class="spine-field" data-field-key="coreConflictLoop" data-field-type="text"><span class="spine-label">Conflict Loop:</span> <span class="concept-field-value">' + escapeHtml(seed.coreConflictLoop) + '</span></div>';
+      if (seed.whatIfQuestion) html += '<div class="spine-field" data-field-key="whatIfQuestion" data-field-type="text"><span class="spine-label">What If:</span> <span class="concept-field-value"><em>' + escapeHtml(seed.whatIfQuestion) + '</em></span></div>';
+      if (seed.playerFantasy) html += '<div class="spine-field" data-field-key="playerFantasy" data-field-type="text"><span class="spine-label">Player Fantasy:</span> <span class="concept-field-value"><em>' + escapeHtml(seed.playerFantasy) + '</em></span></div>';
+      if (seed.genreSubversion) html += '<div class="spine-field" data-field-key="genreSubversion" data-field-type="text"><span class="spine-label">Genre Subversion:</span> <span class="concept-field-value">' + escapeHtml(seed.genreSubversion) + '</span></div>';
+      if (Array.isArray(seed.actionVerbs) && seed.actionVerbs.length > 0) html += '<div class="spine-field" data-field-key="actionVerbs" data-field-type="array"><span class="spine-label">Action Verbs:</span> <span class="concept-field-value"><ul>' + renderListItems(seed.actionVerbs) + '</ul></span></div>';
+      if (Array.isArray(seed.settingAxioms) && seed.settingAxioms.length > 0) html += '<div class="spine-field" data-field-key="settingAxioms" data-field-type="array"><span class="spine-label">Setting Axioms:</span> <span class="concept-field-value"><ul>' + renderListItems(seed.settingAxioms) + '</ul></span></div>';
+      if (Array.isArray(seed.constraintSet) && seed.constraintSet.length > 0) html += '<div class="spine-field" data-field-key="constraintSet" data-field-type="array"><span class="spine-label">Constraints:</span> <span class="concept-field-value"><ul>' + renderListItems(seed.constraintSet) + '</ul></span></div>';
+      if (Array.isArray(seed.keyInstitutions) && seed.keyInstitutions.length > 0) html += '<div class="spine-field" data-field-key="keyInstitutions" data-field-type="array"><span class="spine-label">Key Institutions:</span> <span class="concept-field-value"><ul>' + renderListItems(seed.keyInstitutions) + '</ul></span></div>';
 
       html +=
         '<div class="spine-field"><span class="spine-label">Created:</span> ' + escapeHtml(new Date(seed.createdAt).toLocaleDateString()) + '</div>' +
         '<div class="form-actions" style="margin-top: 0.5rem;">' +
-          '<button type="button" class="btn btn-secondary btn-small seed-edit-btn" data-seed-id="' + escapeHtml(seed.id) + '">Edit Name</button>' +
           '<button type="button" class="btn btn-danger btn-small seed-delete-btn" data-seed-id="' + escapeHtml(seed.id) + '">Delete</button>' +
         '</div>';
 
@@ -11714,7 +11716,7 @@ if (document.readyState === 'loading') {
       }
     }
 
-    // ── Edit seed name & Delete ──────────────────────────────────────
+    // ── Inline editing & Delete ────────────────────────────────────────
 
     if (savedSeedsList) {
       savedSeedsList.addEventListener('click', function (event) {
@@ -11730,10 +11732,49 @@ if (document.readyState === 'loading') {
           return;
         }
 
-        var editBtn = target.closest('.seed-edit-btn');
-        if (editBtn) {
-          var editSeedId = editBtn.dataset.seedId;
-          if (editSeedId) handleSeedEditName(editSeedId, editBtn);
+        // Inline editing: click on a concept-field-value span
+        var valueEl = target.closest('.concept-field-value');
+        if (!valueEl) return;
+        // Don't re-enter if already editing
+        if (valueEl.querySelector('.concept-inline-input, .concept-inline-textarea, .concept-inline-list-editor')) return;
+
+        var fieldContainer = valueEl.closest('[data-field-key]');
+        if (!fieldContainer) return;
+
+        var fieldKey = fieldContainer.dataset.fieldKey;
+        var fieldType = fieldContainer.dataset.fieldType;
+        var card = valueEl.closest('.saved-seed-card');
+        var cardSeedId = card ? card.dataset.seedId : null;
+        if (!fieldKey || !cardSeedId) return;
+
+        function commitSeedField(newValue) {
+          fetch('/concept-seeds/api/' + encodeURIComponent(cardSeedId), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fieldPath: fieldKey, value: newValue }),
+          })
+            .then(function (resp) { return resp.json(); })
+            .then(function (data) {
+              if (!data.success) {
+                showError(data.error || 'Failed to update field');
+              }
+            })
+            .catch(function (err) {
+              showError(err instanceof Error ? err.message : 'Failed to update field');
+            });
+        }
+
+        if (fieldType === 'array') {
+          var items = [];
+          var listItems = valueEl.querySelectorAll('li');
+          for (var i = 0; i < listItems.length; i++) {
+            var text = listItems[i].textContent || '';
+            if (text.trim()) items.push(text.trim());
+          }
+          createInlineListEditor(valueEl, items, commitSeedField);
+        } else {
+          var currentText = valueEl.textContent || '';
+          createInlineTextEditor(valueEl, currentText.trim(), commitSeedField);
         }
       });
     }
@@ -11761,34 +11802,6 @@ if (document.readyState === 'loading') {
       } catch (error) {
         btn.disabled = false;
         showError(error instanceof Error ? error.message : 'Failed to delete seed');
-      }
-    }
-
-    async function handleSeedEditName(seedId, btn) {
-      var card = btn.closest('.saved-seed-card');
-      var titleEl = card ? card.querySelector('.spine-cdq') : null;
-      var currentName = titleEl ? titleEl.textContent : '';
-      var newName = prompt('Edit seed name:', currentName);
-      if (newName === null || newName.trim() === currentName) return;
-
-      btn.disabled = true;
-      try {
-        var response = await fetch('/concept-seeds/api/' + encodeURIComponent(seedId), {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: newName.trim() }),
-        });
-        var data = await response.json();
-        if (!response.ok || !data.success) {
-          throw new Error(data.error || 'Failed to update seed');
-        }
-        if (titleEl && data.seed) {
-          titleEl.textContent = data.seed.name;
-        }
-      } catch (error) {
-        showError(error instanceof Error ? error.message : 'Failed to update seed name');
-      } finally {
-        btn.disabled = false;
       }
     }
 
