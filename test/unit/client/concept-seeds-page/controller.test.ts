@@ -220,14 +220,14 @@ describe('concept seeds page controller', () => {
     input.dispatchEvent(new Event('blur'));
     await flushPromises();
 
-    const putCall = fetchMock.mock.calls.find(
-      (c: [RequestInfo | URL, RequestInit?]) => {
+    const putCall = (fetchMock.mock.calls as [RequestInfo | URL, RequestInit?][]).find(
+      (c) => {
         const url = typeof c[0] === 'string' ? c[0] : '';
         return url.includes('/concept-seeds/api/seed-1') && c[1]?.method === 'PUT';
       }
     );
     expect(putCall).toBeDefined();
-    const body = JSON.parse(putCall![1]!.body as string);
+    const body: unknown = JSON.parse(putCall![1]!.body as string);
     expect(body).toEqual({ fieldPath: 'name', value: 'Updated Name' });
   });
 

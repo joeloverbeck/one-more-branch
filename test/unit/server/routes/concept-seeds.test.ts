@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import type { Request, Response } from 'express';
 
 jest.mock('../../../../src/persistence/concept-seed-repository.js', () => ({
@@ -100,7 +101,7 @@ describe('PUT /concept-seeds/api/:seedId', () => {
       params: { seedId: 'missing' },
       body: { fieldPath: 'name', value: 'New' },
     } as unknown as Request;
-    handler(req, res as unknown as Response);
+    void handler(req, res as unknown as Response);
     await flushPromises();
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: false }));
@@ -112,7 +113,7 @@ describe('PUT /concept-seeds/api/:seedId', () => {
       params: { seedId: 'seed-1' },
       body: { fieldPath: 'id', value: 'hack' },
     } as unknown as Request;
-    handler(req, res as unknown as Response);
+    void handler(req, res as unknown as Response);
     await flushPromises();
     expect(res.status).toHaveBeenCalledWith(400);
   });
@@ -120,7 +121,7 @@ describe('PUT /concept-seeds/api/:seedId', () => {
   it('returns 400 for missing fieldPath', async () => {
     seedExistsMock.mockResolvedValue(true);
     const req = { params: { seedId: 'seed-1' }, body: {} } as unknown as Request;
-    handler(req, res as unknown as Response);
+    void handler(req, res as unknown as Response);
     await flushPromises();
     expect(res.status).toHaveBeenCalledWith(400);
   });
@@ -131,7 +132,7 @@ describe('PUT /concept-seeds/api/:seedId', () => {
       params: { seedId: 'seed-1' },
       body: { fieldPath: 'name', value: 42 },
     } as unknown as Request;
-    handler(req, res as unknown as Response);
+    void handler(req, res as unknown as Response);
     await flushPromises();
     expect(res.status).toHaveBeenCalledWith(400);
   });
@@ -139,14 +140,15 @@ describe('PUT /concept-seeds/api/:seedId', () => {
   it('updates a string field and returns updated seed', async () => {
     const seed = makeSeed();
     seedExistsMock.mockResolvedValue(true);
-    updateSeedMock.mockImplementation((_id: string, fn: (s: ConceptSeed) => ConceptSeed) =>
-      Promise.resolve(fn(seed))
+    updateSeedMock.mockImplementation(
+      (_id: string, fn: (s: ConceptSeed) => ConceptSeed): Promise<ConceptSeed> =>
+        Promise.resolve(fn(seed))
     );
     const req = {
       params: { seedId: 'seed-1' },
       body: { fieldPath: 'name', value: 'Updated Name' },
     } as unknown as Request;
-    handler(req, res as unknown as Response);
+    void handler(req, res as unknown as Response);
     await flushPromises();
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -159,14 +161,15 @@ describe('PUT /concept-seeds/api/:seedId', () => {
   it('updates an array field and returns updated seed', async () => {
     const seed = makeSeed();
     seedExistsMock.mockResolvedValue(true);
-    updateSeedMock.mockImplementation((_id: string, fn: (s: ConceptSeed) => ConceptSeed) =>
-      Promise.resolve(fn(seed))
+    updateSeedMock.mockImplementation(
+      (_id: string, fn: (s: ConceptSeed) => ConceptSeed): Promise<ConceptSeed> =>
+        Promise.resolve(fn(seed))
     );
     const req = {
       params: { seedId: 'seed-1' },
       body: { fieldPath: 'settingAxioms', value: ['New Axiom'] },
     } as unknown as Request;
-    handler(req, res as unknown as Response);
+    void handler(req, res as unknown as Response);
     await flushPromises();
     expect(res.json).toHaveBeenCalledWith(
       expect.objectContaining({
