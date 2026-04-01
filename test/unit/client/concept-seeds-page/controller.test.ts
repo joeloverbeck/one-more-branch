@@ -168,4 +168,71 @@ describe('concept seeds page controller', () => {
     expect(error.style.display).toBe('block');
     expect(generateBtn.disabled).toBe(false);
   });
+
+  it('opens text editor when clicking a concept-field-value in a saved seed', async () => {
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const url =
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+      if (url === '/kernels/api/list') {
+        return Promise.resolve(mockJsonResponse({ success: true, kernels: [] }));
+      }
+      return Promise.resolve(mockJsonResponse({ success: true }));
+    });
+
+    document.body.innerHTML = buildConceptSeedsPageHtml();
+    loadAppAndInit();
+    await flushPromises();
+
+    const nameValue = document.querySelector(
+      '[data-field-key="name"] .concept-field-value'
+    ) as HTMLElement;
+    expect(nameValue).not.toBeNull();
+    nameValue.click();
+
+    const input = nameValue.querySelector('input, textarea');
+    expect(input).not.toBeNull();
+  });
+
+  it('sends PUT with fieldPath and value when inline edit commits', async () => {
+    fetchMock.mockImplementation((input: RequestInfo | URL) => {
+      const url =
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+      if (url === '/kernels/api/list') {
+        return Promise.resolve(mockJsonResponse({ success: true, kernels: [] }));
+      }
+      if (url.includes('/concept-seeds/api/seed-1')) {
+        return Promise.resolve(mockJsonResponse({ success: true, seed: { name: 'Updated' } }));
+      }
+      return Promise.resolve(mockJsonResponse({ success: true }));
+    });
+
+    document.body.innerHTML = buildConceptSeedsPageHtml();
+    loadAppAndInit();
+    await flushPromises();
+
+    const nameValue = document.querySelector(
+      '[data-field-key="name"] .concept-field-value'
+    ) as HTMLElement;
+    nameValue.click();
+
+    const input = nameValue.querySelector('input') as HTMLInputElement;
+    input.value = 'Updated Name';
+    input.dispatchEvent(new Event('blur'));
+    await flushPromises();
+
+    const putCall = fetchMock.mock.calls.find(
+      (c: [RequestInfo | URL, RequestInit?]) => {
+        const url = typeof c[0] === 'string' ? c[0] : '';
+        return url.includes('/concept-seeds/api/seed-1') && c[1]?.method === 'PUT';
+      }
+    );
+    expect(putCall).toBeDefined();
+    const body = JSON.parse(putCall![1]!.body as string);
+    expect(body).toEqual({ fieldPath: 'name', value: 'Updated Name' });
+  });
+
+  it('does not contain Edit Name button references', () => {
+    document.body.innerHTML = buildConceptSeedsPageHtml();
+    expect(document.querySelector('.seed-edit-btn')).toBeNull();
+  });
 });
