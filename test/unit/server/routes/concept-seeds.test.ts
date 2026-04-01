@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-assignment */
 import type { Request, Response } from 'express';
 
-jest.mock('@/persistence/concept-seed-repository', () => ({
+jest.mock('../../../../src/persistence/concept-seed-repository.js', () => ({
   seedExists: jest.fn(),
   updateSeed: jest.fn(),
   listSeeds: jest.fn().mockResolvedValue([]),
@@ -9,19 +8,19 @@ jest.mock('@/persistence/concept-seed-repository', () => ({
   saveSeed: jest.fn(),
   deleteSeed: jest.fn(),
 }));
-jest.mock('@/persistence/kernel-repository', () => ({
+jest.mock('../../../../src/persistence/kernel-repository.js', () => ({
   loadKernel: jest.fn(),
 }));
-jest.mock('@/server/services', () => ({
+jest.mock('../../../../src/server/services/index.js', () => ({
   conceptService: { ideateConcepts: jest.fn() },
 }));
-jest.mock('@/logging', () => ({
+jest.mock('../../../../src/logging/index.js', () => ({
   logger: { error: jest.fn(), info: jest.fn(), warn: jest.fn(), debug: jest.fn() },
 }));
 
-import { seedExists, updateSeed } from '@/persistence/concept-seed-repository';
-import type { ConceptSeed } from '@/models/concept-seed';
-import { conceptSeedRoutes } from '@/server/routes/concept-seeds';
+import { seedExists, updateSeed } from '../../../../src/persistence/concept-seed-repository.js';
+import type { ConceptSeed } from '../../../../src/models/concept-seed.js';
+import { conceptSeedRoutes } from '../../../../src/server/routes/concept-seeds.js';
 
 const seedExistsMock = seedExists as jest.Mock;
 const updateSeedMock = updateSeed as jest.Mock;
